@@ -5678,6 +5678,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.socket = nil;
 
+	if (self.disconnectCallback) {
+		self.disconnectCallback();
+		self.disconnectCallback = nil;
+	}
+
 	[self removeTimedCommands];
 
 	[self removeRequestedCommands];
@@ -5898,11 +5903,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 //	}
 
 	[self changeStateOffWithError:disconnectError];
-
-	if (self.disconnectCallback) {
-		self.disconnectCallback();
-		self.disconnectCallback = nil;
-	}
 
 	[RZNotificationCenter() postNotificationName:IRCClientDidDisconnectNotification object:self];
 }
@@ -11676,7 +11676,13 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	/* We give it two seconds before forcefully breaking so that the graceful
 	 quit with the quit message above can be performed. */
-	[self performSelectorInCommonModes:@selector(disconnect) withObject:nil afterDelay:2.0];
+	if (self.isTerminating) {
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[self disconnect];
+		});
+	} else {
+		[self performSelectorInCommonModes:@selector(disconnect) withObject:nil afterDelay:2.0];
+	}
 }
 
 - (void)cancelReconnect

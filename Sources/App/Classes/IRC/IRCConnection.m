@@ -504,7 +504,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.EOFReceived = YES;
 
-	XRPerformBlockSynchronouslyOnMainQueue(^{
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self.client ircConnectionDidCloseReadStream:self];
 	});
 }
@@ -520,7 +520,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_ircConnectionDidDisconnectWithError:(nullable NSError *)disconnectError
 {
-	XRPerformBlockSynchronouslyOnMainQueue(^{
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self closeInsecureCertificateTrustPanel];
 
 		[self.client ircConnection:self didDisconnectWithError:disconnectError];

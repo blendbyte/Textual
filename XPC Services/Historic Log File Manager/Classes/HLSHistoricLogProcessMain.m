@@ -712,12 +712,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 
 - (void)saveDataWithCompletionBlock:(void (NS_NOESCAPE ^ _Nullable)(void))completionBlock
 {
-	if (self.isPerformingSave == NO) {
-		self.isPerformingSave = YES;
-	} else {
-		return;
-	}
-
 	NSManagedObjectContext *context = self.managedObjectContext;
 
 	[context performBlock:^{
@@ -732,8 +726,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 		}];
 
 		[self _quickSaveContext:context];
-
-		self.isPerformingSave = NO;
 
 		if (completionBlock) {
 			completionBlock();
