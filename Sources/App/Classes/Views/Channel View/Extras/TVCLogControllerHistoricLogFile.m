@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)invalidateProcess
 {
-	if (self.processLoading == NO && self.processLoaded == NO) {
+	if (self.serviceConnection == nil) {
 		return;
 	}
 
@@ -264,11 +264,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id <HLSHistoricLogServerProtocol>)remoteObjectProxyWithErrorHandler:(void (^ _Nullable)(NSError *error))handler
 {
+	__weak typeof(self) weakSelf = self;
 	return [self.serviceConnection remoteObjectProxyWithErrorHandler:^(NSError *error) {
-		self.lastServiceConnectionError = error;
+		weakSelf.lastServiceConnectionError = error;
 
 		LogToConsoleError("Error occurred while communicating with service: %{public}@",
 			error.localizedDescription);
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			weakSelf.isSaving = NO;
+		});
 
 		if (handler) {
 			handler(error);
