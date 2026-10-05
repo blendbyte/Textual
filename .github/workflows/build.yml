@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.runner }}, license manager ${{ matrix.license-manager == '1' && 'on' || 'off' }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+
+    # xcode-27: macOS 27 with Xcode 27, the primary development toolchain
+    # (GitHub preview image). macos-26: Xcode 26.x, to keep the previous
+    # toolchain building for contributors who have not upgraded yet.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: xcode-27
+            license-manager: '1'
+          - runner: xcode-27
+            license-manager: '0'
+          - runner: macos-26
+            license-manager: '1'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      # CI builds are unsigned: the real signing identity is configured in
+      # Configurations/Build/Code Signing Identity.xcconfig and is not
+      # available on runners. Build settings passed here are inherited by
+      # the nested xcodebuild calls in Sources/App/Build Scripts.
+      - name: Build
+        run: |
+          xcodebuild \
+            -workspace Textual.xcworkspace \
+            -scheme "Textual (Standard Release)" \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -quiet \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            TEXTUAL_BUILT_WITH_LICENSE_MANAGER=${{ matrix.license-manager }} \
+            build
+
+      - name: Verify build products
+        run: |
+          app="Build Results/Release/Textual.app"
+          test -x "$app/Contents/MacOS/Textual"
+          ls "$app/Contents/XPCServices"
+          ls "$app/Contents/Resources/Bundled Extensions"
