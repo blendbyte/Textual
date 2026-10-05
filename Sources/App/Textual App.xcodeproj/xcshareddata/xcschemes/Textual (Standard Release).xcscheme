@@ -16,7 +16,7 @@
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "4C1DC5511580420500A47BC9"
                      BuildableName = "Textual.app"
-                     BlueprintName = "Textual (Standard Release)"
+                     BlueprintName = "Textual"
                      ReferencedContainer = "container:Textual App.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
@@ -34,7 +34,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4C1DC5511580420500A47BC9"
                BuildableName = "Textual.app"
-               BlueprintName = "Textual (Standard Release)"
+               BlueprintName = "Textual"
                ReferencedContainer = "container:Textual App.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -64,7 +64,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4C1DC5511580420500A47BC9"
             BuildableName = "Textual.app"
-            BlueprintName = "Textual (Standard Release)"
+            BlueprintName = "Textual"
             ReferencedContainer = "container:Textual App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -81,7 +81,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4C1DC5511580420500A47BC9"
             BuildableName = "Textual.app"
-            BlueprintName = "Textual (Standard Release)"
+            BlueprintName = "Textual"
             ReferencedContainer = "container:Textual App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -103,7 +103,7 @@
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "4C1DC5511580420500A47BC9"
                      BuildableName = "Textual.app"
-                     BlueprintName = "Textual (Standard Release)"
+                     BlueprintName = "Textual"
                      ReferencedContainer = "container:Textual App.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
