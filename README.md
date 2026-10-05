@@ -1,5 +1,9 @@
 > [!IMPORTANT]
-> Textual is no longer being actively maintained. For the life of the project, it only ever had one full time maintainer whom has now moved on to different ventures in their life. To all that have contributed to Textual in some form in the past; be it a suggestion, bug report, pull request, financial support, or some other form of contribution, you will forever be loved. Thank you so much. Words cannot properly express the gratitude we have for every single user. 
+> **Textual is under new maintainership.** For most of its life, Textual had a single full-time maintainer, who has since moved on to other ventures. We've now taken over maintainership, and active development continues here.
+>
+> Development picks up from [Textwerk](https://github.com/bashgeek/Textwerk), a community fork of Textual that has now been retired. Some of the features and fixes made in Textwerk will carry over to a new Textual release.
+>
+> To everyone who has contributed to Textual in any form, whether a suggestion, bug report, pull request, financial support, or something else: thank you. Textual exists because of you, and we're glad to keep it going.
 
 # Textual [![GitHub release](https://img.shields.io/github/tag/Codeux-Software/Textual.svg)](https://github.com/Codeux-Software/Textual/blob/master) [![Platform](https://img.shields.io/badge/platform-OS%20X-lightgrey.svg)](http://www.textualapp.com/mac-app-store)
 
