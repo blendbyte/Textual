@@ -669,7 +669,11 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 	NSString *applicationVersion = [TPCApplicationInfo applicationVersion].percentEncodedString;
 
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 	NSString *authorization = TLOLicenseManagerAuthorizationCode();
+#else
+	NSString *authorization = @"";
+#endif
 
 	NSString *requestBodyString = nil;
 
