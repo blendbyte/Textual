@@ -1,7 +1,3 @@
-<img src="Sources/App/Resources/Images/Application/applicationIcon.iconset/icon_128x128@2x.png" alt="Textual icon" width="128" height="128">
-
-# Textual
-
 > [!WARNING]
 > **This branch is a work in progress toward Textual 8.**
 >
@@ -15,6 +11,10 @@
 > Development picks up from [Textwerk](https://github.com/bashgeek/Textwerk), a community fork of Textual that has now been retired. Many of the features and fixes made in Textwerk will carry over to Textual 8.
 >
 > To everyone who has contributed to Textual in any form, whether a suggestion, bug report, pull request, financial support, or something else: thank you. Textual exists because of you, and we're glad to keep it going.
+
+<img src="Sources/App/Resources/Images/Application/applicationIcon.iconset/icon_128x128@2x.png" alt="Textual icon" width="128" height="128">
+
+# Textual
 
 Textual is a highly customizable app for Internet Relay Chat (IRC) on macOS. It can be customized with styles written in CSS, HTML, and JavaScript, plugins written in Objective-C and Swift, and scripts written in AppleScript and many other languages.
 
