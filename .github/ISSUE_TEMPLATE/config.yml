@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/blendbyte/Textual/discussions
+    about: Not a bug or a concrete feature request? Start a discussion instead.
+  - name: Documentation
+    url: https://www.textualapp.com/docs
+    about: Guides and reference documentation for Textual.
+  - name: Chat on IRC
+    url: https://web.libera.chat/#textual
+    about: Join #textual on irc.libera.chat.
+  - name: Security vulnerability
+    url: https://github.com/blendbyte/Textual/security/advisories/new
+    about: Please report security issues privately via GitHub's advisory system.

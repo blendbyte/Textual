@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest something new or an improvement to existing behavior
+labels: ["Feature Request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for concrete proposals. For open-ended ideas or to gauge interest first, start a thread in [Discussions → Ideas](https://github.com/blendbyte/Textual/discussions/categories/ideas).
+
+        Please search [existing issues](https://github.com/blendbyte/Textual/issues) and discussions first to avoid duplicates.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation you're in and why the current behavior falls short.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like to see? Mockups, examples from other IRC clients, or links to relevant specs (for example IRCv3) are welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Any other approaches you've thought about or tried, including workarounds, plugins, or scripts.
+
+  - type: dropdown
+    id: willing_to_pr
+    attributes:
+      label: Would you be willing to open a pull request for this?
+      options:
+        - "Yes"
+        - "Maybe, with guidance"
+        - "No"
+    validations:
+      required: true
