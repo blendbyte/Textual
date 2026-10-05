@@ -2,6 +2,10 @@
 
 set -e
 
+# Start from an empty staging folder so an extension that failed to build
+# can never be replaced by a stale copy from an earlier build.
+rm -rf "${TEXTUAL_WORKSPACE_TEMP_DIR:?}/SharedBuildProducts-ICLExtension"
+
 ICL_PRODUCT_LOCATION="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}"
 ICL_PRODUCT_BINARY="${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}"
 

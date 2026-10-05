@@ -4494,8 +4494,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/BuildExtensions.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildExtensions.txt\"\n";
+			shellPath = /bin/bash;
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildExtensions.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildExtensions.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4C2BEB612C384E16008F8F0D /* Postprocess Sparkle */ = {
@@ -4514,8 +4514,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/PostprocessSparkle.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/PostprocessSparkle.txt\"\n";
+			shellPath = /bin/bash;
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/PostprocessSparkle.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/PostprocessSparkle.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4C48B46520E4D37C00CF5F84 /* Merge Swift Libraries */ = {
@@ -4568,8 +4568,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/BuildServices.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildServices.txt\"\n";
+			shellPath = /bin/bash;
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildServices.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildServices.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4C761BB01E155DD900A505B7 /* Build XPC Services */ = {
@@ -4584,8 +4584,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/BuildServices.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildServices.txt\"\n";
+			shellPath = /bin/bash;
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildServices.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildServices.txt\"\n";
 		};
 		4CCF301715804DD1006FFE21 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4617,8 +4617,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/BuildExtensions.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildExtensions.txt\"\n";
+			shellPath = /bin/bash;
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildExtensions.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildExtensions.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

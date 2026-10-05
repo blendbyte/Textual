@@ -4,6 +4,10 @@ set -e
 
 echo "Building using architecture: ${ARCHS}"
 
+# Start from an empty staging folder so a plugin that failed to build
+# can never be replaced by a stale copy from an earlier build.
+rm -rf "${TEXTUAL_WORKSPACE_TEMP_DIR:?}/SharedBuildProducts-Extensions"
+
 TEXTUAL_PRODUCT_LOCATION="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}"
 TEXTUAL_PRODUCT_BINARY="${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}"
 
