@@ -16,6 +16,9 @@
       <FileRef
          location = "group:Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj">
       </FileRef>
+      <FileRef
+         location = "group:Frameworks/GRMustache/GRMustache.xcodeproj">
+      </FileRef>
    </Group>
    <Group
       location = "container:"

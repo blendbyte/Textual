@@ -54,7 +54,7 @@ Textual bundles or links against the following third-party components:
 
 | Component | License | Copyright |
 |---|---|---|
-| [GRMustache](https://github.com/groue/GRMustache) | MIT | (c) 2013 Gwendal Roué |
+| [GRMustache](https://github.com/groue/GRMustache) | MIT | (c) 2014 Gwendal Roué |
 | [Google Toolbox for Mac](https://github.com/google/google-toolbox-for-mac) (`GTMNSString+HTML`) | Apache 2.0 | (c) 2006-2008 Google Inc. |
 | [Reachability](https://github.com/tonymillion/Reachability) | BSD | (c) 2011 Tony Million |
 | [AutoHyperlinks Framework](https://github.com/Codeux-Software/AutoHyperlinks) | BSD 3-Clause | (c) 2005-2011 The Adium Team, (c) 2011 Codeux Software, LLC |

@@ -670,6 +670,20 @@
 			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
 			remoteInfo = CocoaExtensions;
 		};
+		4CC78BB5A031E94DE8C4A83B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C8ABA28841284F49E5FB45D /* GRMustache.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 6E42AEFBAE01D2DFD981F7DA;
+			remoteInfo = GRMustache.framework;
+		};
+		4C3EA4D6E39473C4CD78FC27 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C8ABA28841284F49E5FB45D /* GRMustache.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6EF5BF48AA40CAD7891EB709;
+			remoteInfo = GRMustache;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1375,7 +1389,7 @@
 		4CB638CB2D45A06C002B2CC3 /* FeatureFlags.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FeatureFlags.h; path = "../../.tmp/Build Headers/FeatureFlags.h"; sourceTree = SOURCE_ROOT; };
 		4CB873D622B4A497005AB046 /* TDCPreferencesUserStyleSheetPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDCPreferencesUserStyleSheetPrivate.h; sourceTree = "<group>"; };
 		4CB873DB22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesUserStyleSheet.m; sourceTree = "<group>"; };
-		4CC4A7371F8A1404008FF15F /* GRMustache.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GRMustache.framework; path = "../../Frameworks/Static Libraries/Libraries/GRMustache.framework"; sourceTree = SOURCE_ROOT; };
+		4CC4A7371F8A1404008FF15F /* GRMustache.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GRMustache.framework; path = "../../.tmp/SharedBuildProducts-Frameworks/GRMustache.framework"; sourceTree = SOURCE_ROOT; };
 		4CC70202171E1CB400BDFAE0 /* BuildConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BuildConfig.h; path = "../../.tmp/Build Headers/BuildConfig.h"; sourceTree = SOURCE_ROOT; };
 		4CCD93FC1CA7291300335381 /* JavaScript */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JavaScript; sourceTree = "<group>"; };
 		4CCE521A18C7BE0600D49601 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -1393,6 +1407,7 @@
 		4C0CC9E7F901D2850E33EEEB /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 		4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Hyperlink Processor.xcodeproj"; path = "../../Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj"; sourceTree = "<group>"; };
 		4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Cocoa Extensions.xcodeproj"; path = "../../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj"; sourceTree = "<group>"; };
+		4C8ABA28841284F49E5FB45D /* GRMustache.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GRMustache.xcodeproj; path = ../../Frameworks/GRMustache/GRMustache.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2786,6 +2801,7 @@
 				4C24DC751A93C9CE0098D1BE /* Sparkle.framework */,
 				4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */,
 				4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */,
+				4C8ABA28841284F49E5FB45D /* GRMustache.xcodeproj */,
 			);
 			name = "External Frameworks";
 			sourceTree = "<group>";
@@ -2874,6 +2890,14 @@
 			isa = PBXGroup;
 			children = (
 				4C9AF9993592B1546B7A6445 /* CocoaExtensions.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4CB303ECFDE896BEB9A3C0E4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4C04882B76E627A88AF661B3 /* GRMustache.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3173,6 +3197,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4CAA9942E87CD9EE86E50BAF /* PBXTargetDependency */,
 				4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */,
 				4C485D8CDEB765B5D34DDB5D /* PBXTargetDependency */,
 				4CBB842D16F0DA1D004E3ED6 /* PBXTargetDependency */,
@@ -3221,6 +3246,10 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
+					ProductGroup = 4CB303ECFDE896BEB9A3C0E4 /* Products */;
+					ProjectRef = 4C8ABA28841284F49E5FB45D /* GRMustache.xcodeproj */;
+				},
+				{
 					ProductGroup = 4CCBDA4131A9E666AFCA7C43 /* Products */;
 					ProjectRef = 4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */;
 				},
@@ -3250,6 +3279,13 @@
 			fileType = wrapper.framework;
 			path = CocoaExtensions.framework;
 			remoteRef = 4CEDFCBEB390158CBE796808 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4C04882B76E627A88AF661B3 /* GRMustache.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = GRMustache.framework;
+			remoteRef = 4C3EA4D6E39473C4CD78FC27 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -3699,6 +3735,11 @@
 			isa = PBXTargetDependency;
 			name = CocoaExtensions.framework;
 			targetProxy = 4C005893610EDC5A32658966 /* PBXContainerItemProxy */;
+		};
+		4CAA9942E87CD9EE86E50BAF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GRMustache.framework;
+			targetProxy = 4CC78BB5A031E94DE8C4A83B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
