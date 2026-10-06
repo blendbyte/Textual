@@ -1,18 +1,29 @@
-*~
-*~.*
+# macOS
 .DS_Store
 .LSOverride
-*.mode1v3
-*.mode2v3
-*.pbxuser
-*.perspectivev3
-*.pyc
-.tmp
-build
-Build Results
-xcuserdata
-*.xcworkspace
-Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Installation Files/Extensions/*
-Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Packages/MACAPPSTORE/*
-Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Packages/STANDALONE/*
-!/Configurations/Build
+
+# Editor backups
+*~
+*~.*
+
+# Xcode per-user state
+xcuserdata/
+
+# Workspaces Xcode creates inside a project opened on its own. The
+# top-level Textual.xcworkspace is tracked in full, so shared settings
+# (e.g. a Package.resolved) get committed.
+**/*.xcodeproj/project.xcworkspace/
+
+# Build output
+/.tmp/
+/Build Results/
+
+# Intermediates of the nested xcodebuild calls in the build scripts
+/Sources/App/build/
+/Sources/Plugins/**/build/
+/XPC Services/**/build/
+
+# Extras installer staging
+/Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Installation Files/Extensions/*
+/Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Packages/MACAPPSTORE/*
+/Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Packages/STANDALONE/*
