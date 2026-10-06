@@ -273,6 +273,17 @@ NS_ASSUME_NONNULL_BEGIN
 		resultValue = [NSString stringWithFormat:@"%@:%hu", serverAddress, serverPort.unsignedShortValue];
 	}
 
+#ifdef DEBUG
+	/* Textual Dev connects to test servers on this Mac straight away
+	 (Development/dev connect), as a new server each time because the
+	 test servers differ only by port. */
+	if ([@[@"127.0.0.1", @"localhost", @"::1"] containsObject:serverAddress]) {
+		[self createConnectionToServer:resultValue channelList:channelList connectWhenCreated:YES mergeConnectionIfPossible:NO selectFirstChannelAdded:NO];
+
+		return;
+	}
+#endif
+
 	/* A URL is consider untrusted and will not auto connect */
 	[self createConnectionToServer:resultValue channelList:channelList connectWhenCreated:NO mergeConnectionIfPossible:YES selectFirstChannelAdded:NO];
 }

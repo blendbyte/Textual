@@ -41,6 +41,13 @@ if [ "${TEXTUAL_BUILT_WITH_SPARKLE_ENABLED}" != "1" ]; then
 	done
 fi
 
+# Debug builds show as "Textual Dev" so they can't be mistaken for an
+# installed copy of Textual (they also have their own identifier).
+if [ "${CONFIGURATION}" = "Debug" ]; then
+	/usr/libexec/PlistBuddy -c "Set \"CFBundleName\" \"Textual Dev\"" _Info.plist
+	/usr/libexec/PlistBuddy -c "Set \"CFBundleDisplayName\" \"Textual Dev\"" _Info.plist
+fi
+
 if cmp -s "Info.plist" "_Info.plist"; then
 	echo "Step 1: Info.plist hasn't changed (version '${bundleVersionNew}')."
 

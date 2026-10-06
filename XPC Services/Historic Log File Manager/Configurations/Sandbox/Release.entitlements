@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>FANJ7JNLP5.com.textualapp.app</string>
+		<string>$(TEXTUAL_GROUP_CONTAINER_IDENTIFIER)</string>
 	</array>
 </dict>
 </plist>

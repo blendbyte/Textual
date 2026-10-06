@@ -89,12 +89,52 @@ static NSInteger _cachedMessageCount = (-1);
 
 	/* The first public commit of Textual occurred on July, 23, 2010. This is the day
 	 that we consider the birthday of the application. */
+	NSImage *icon = nil;
+
 	if (breakdownInfo.month == 7 && breakdownInfo.day == 23) {
-		return [NSImage imageNamed:@"applicationIconBirthday"];
+		icon = [NSImage imageNamed:@"applicationIconBirthday"];
 	} else {
-		return [NSImage imageNamed:@"NSApplicationIcon"];
+		icon = [NSImage imageNamed:@"NSApplicationIcon"];
 	}
+
+#ifdef DEBUG
+	icon = [self developmentIconWithIcon:icon];
+#endif
+
+	return icon;
 }
+
+#ifdef DEBUG
+/* Development builds ("Textual Dev") carry a DEV ribbon so that they
+ cannot be mistaken for an installed copy of Textual in the Dock. */
++ (NSImage *)developmentIconWithIcon:(NSImage *)icon
+{
+	return [NSImage imageWithSize:NSMakeSize(512, 512) flipped:NO drawingHandler:^BOOL(NSRect rect) {
+		[icon drawInRect:rect];
+
+		NSRect ribbonRect = NSMakeRect(NSWidth(rect) * 0.15, NSHeight(rect) * 0.05, NSWidth(rect) * 0.70, NSHeight(rect) * 0.22);
+
+		CGFloat ribbonRadius = (NSHeight(ribbonRect) / 2.0);
+
+		[[NSColor systemOrangeColor] setFill];
+
+		[[NSBezierPath bezierPathWithRoundedRect:ribbonRect xRadius:ribbonRadius yRadius:ribbonRadius] fill];
+
+		NSDictionary *attributes = @{
+			NSFontAttributeName : [NSFont systemFontOfSize:(NSHeight(ribbonRect) * 0.65) weight:NSFontWeightHeavy],
+			NSForegroundColorAttributeName : [NSColor whiteColor]
+		};
+
+		NSAttributedString *label = [[NSAttributedString alloc] initWithString:@"DEV" attributes:attributes];
+
+		NSSize labelSize = label.size;
+
+		[label drawAtPoint:NSMakePoint((NSMidX(ribbonRect) - (labelSize.width / 2.0)), (NSMidY(ribbonRect) - (labelSize.height / 2.0)))];
+
+		return YES;
+	}];
+}
+#endif
 
 + (void)resetCachedCount
 {

@@ -1,0 +1,223 @@
+#!/bin/bash
+#
+# Build, run and test "Textual Dev", the Debug build of Textual.
+#
+# Textual Dev has its own bundle identifier (com.textualapp.app.dev) and
+# app group, so it never shares a container, preferences or logs with an
+# installed copy of Textual. For testing, it connects to IRC servers on
+# this Mac only (see "server" and "scripted" below).
+#
+# Run "Development/dev help" for the commands.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+APP="${ROOT}/Build Results/Debug/Textual.app"
+DATA="${ROOT}/.tmp/dev"
+
+BUNDLE_ID="com.textualapp.app.dev"
+GROUP_ID="FANJ7JNLP5.com.textualapp.app.dev"
+
+ERGO_VERSION="2.19.1"
+ERGO_SHA256_ARM64="1bd97a0917036061e2dcdfc29149c2e252e3bc856282e0956afa2aaaa54dd787"
+ERGO_SHA256_X86_64="68b388a49034257082ee0292703874630a2c10cfba86c73bb2adc37b515c57a3"
+ERGO_DIR="${DATA}/ergo"
+
+die() { echo "dev: $*" >&2; exit 1; }
+
+app_pid() { pgrep -f "^${APP}/Contents/MacOS/Textual" || true; }
+
+check_app() {
+	[ -d "${APP}" ] || die "Textual Dev is not built yet. Run: Development/dev build"
+
+	local identifier
+	identifier=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "${APP}/Contents/Info.plist")
+
+	# Never launch a build that could share data with an installed Textual
+	[ "${identifier}" = "${BUNDLE_ID}" ] || die "${APP} has identifier ${identifier}, expected ${BUNDLE_ID}"
+}
+
+cmd_build() {
+	cd "${ROOT}"
+
+	xcodebuild -workspace Textual.xcworkspace -scheme "Textual (Debug)" build 2>&1 |
+		grep -E "error:|\*\* BUILD" | sort -u
+
+	check_app
+}
+
+cmd_start() {
+	check_app
+
+	if [ -n "$(app_pid)" ]; then
+		echo "Textual Dev is already running."
+		return
+	fi
+
+	open "${APP}"
+}
+
+cmd_stop() {
+	[ -n "$(app_pid)" ] || return 0
+
+	osascript -e "tell application id \"${BUNDLE_ID}\" to quit" > /dev/null 2>&1 || true
+
+	for _ in $(seq 1 20); do
+		[ -n "$(app_pid)" ] || return 0
+		sleep 0.5
+	done
+
+	echo "Textual Dev did not quit; terminating it."
+	kill -TERM $(app_pid) 2> /dev/null || true
+}
+
+cmd_run() {
+	cmd_build
+	cmd_stop
+	cmd_start
+}
+
+cmd_reset() {
+	cmd_stop
+
+	# Only Textual Dev's own data; never anything of an installed Textual.
+	local paths=(
+		"${HOME}/Library/Containers/${BUNDLE_ID}"
+		"${HOME}/Library/Group Containers/${GROUP_ID}"
+		"${HOME}/Library/Application Scripts/${BUNDLE_ID}"
+		"${HOME}/Library/Saved Application State/${BUNDLE_ID}.savedState"
+	)
+
+	echo "This deletes Textual Dev's settings, logs and scrollback:"
+	printf '  %s\n' "${paths[@]}"
+
+	if [ "${1:-}" != "--yes" ]; then
+		read -r -p "Continue? [y/N] " answer
+		[ "${answer}" = "y" ] || [ "${answer}" = "Y" ] || exit 1
+	fi
+
+	for path in "${paths[@]}"; do
+		if [ -e "${path}" ]; then
+			rm -rf "${path}"
+		fi
+	done
+
+	echo "Textual Dev was reset. Its Keychain items (\"Textual (…)\") are not removed."
+}
+
+cmd_logs() {
+	log stream --style compact --level debug \
+		--predicate "processImagePath CONTAINS \"/Build Results/Debug/Textual.app/\""
+}
+
+ergo_install() {
+	[ -x "${ERGO_DIR}/ergo" ] && return
+
+	local arch sha
+	case "$(uname -m)" in
+		arm64) arch="arm64"; sha="${ERGO_SHA256_ARM64}" ;;
+		*) arch="x86_64"; sha="${ERGO_SHA256_X86_64}" ;;
+	esac
+
+	local name="ergo-${ERGO_VERSION}-macos-${arch}"
+	local download="${DATA}/download"
+
+	mkdir -p "${download}"
+
+	echo "Downloading Ergo ${ERGO_VERSION}…"
+	curl -fsSL -o "${download}/${name}.tar.gz" \
+		"https://github.com/ergochat/ergo/releases/download/v${ERGO_VERSION}/${name}.tar.gz"
+
+	echo "${sha}  ${download}/${name}.tar.gz" | shasum -a 256 -c - > /dev/null ||
+		die "Ergo download does not match its checksum"
+
+	tar -xzf "${download}/${name}.tar.gz" -C "${download}"
+	mkdir -p "${ERGO_DIR}"
+	cp -R "${download}/${name}/." "${ERGO_DIR}/"
+	rm -rf "${download}"
+
+	python3 "${ROOT}/Development/ergo-config.py" "${ERGO_DIR}/default.yaml" "${ERGO_DIR}/ircd.yaml"
+
+	(cd "${ERGO_DIR}" && ./ergo mkcerts --conf ircd.yaml --quiet && ./ergo initdb --conf ircd.yaml --quiet)
+}
+
+ergo_pid() { pgrep -f "^${ERGO_DIR}/ergo run" || true; }
+
+cmd_server() {
+	case "${1:-start}" in
+		start)
+			ergo_install
+
+			if [ -n "$(ergo_pid)" ]; then
+				echo "Ergo is already running."
+			else
+				(cd "${ERGO_DIR}" && nohup "${ERGO_DIR}/ergo" run --conf ircd.yaml > "${DATA}/ergo.log" 2>&1 &)
+				sleep 1
+				[ -n "$(ergo_pid)" ] || die "Ergo did not start; see ${DATA}/ergo.log"
+			fi
+
+			echo "Ergo: 127.0.0.1 port 6667 (plain) and 6697 (TLS, self-signed); NickServ host services.textual.test"
+			;;
+		stop)
+			[ -z "$(ergo_pid)" ] || kill $(ergo_pid)
+			;;
+		status)
+			if [ -n "$(ergo_pid)" ]; then echo "Ergo is running."; else echo "Ergo is not running."; fi
+			;;
+		*)
+			die "server takes start, stop or status"
+			;;
+	esac
+}
+
+cmd_scripted() {
+	exec python3 "${ROOT}/Development/scripted-irc-server.py" "$@"
+}
+
+cmd_connect() {
+	check_app
+
+	open -a "${APP}" "${1:-irc://127.0.0.1:6667/#textual-dev}"
+}
+
+cmd_screenshot() {
+	local pid output window
+	pid=$(app_pid)
+	[ -n "${pid}" ] || die "Textual Dev is not running"
+
+	output="${1:-${DATA}/screenshots/$(date +%Y%m%d-%H%M%S).png}"
+	mkdir -p "$(dirname "${output}")"
+
+	# Only Textual Dev's own frontmost window, never the whole screen
+	window=$(swift "${ROOT}/Development/window-id.swift" "${pid}" | head -n 1)
+	[ -n "${window}" ] || die "Textual Dev has no window on screen"
+
+	screencapture -x -o -l "${window}" "${output}"
+
+	echo "${output}"
+}
+
+cmd_help() {
+	cat <<-EOF
+	Usage: Development/dev <command>
+
+	  build                 Build Textual Dev (the Debug build)
+	  run                   Build, quit a running Textual Dev and start it again
+	  start | stop          Start or quit Textual Dev
+	  reset [--yes]         Delete Textual Dev's settings, logs and scrollback
+	  logs                  Stream the log of Textual Dev and its services
+	  connect [url]         Open an irc:// URL in Textual Dev (default: the local Ergo)
+	  screenshot [file]     Capture Textual Dev's window
+	  server [start|stop|status]
+	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
+	  scripted <scenario>   Scripted server for edge cases (scripted --help)
+	EOF
+}
+
+command="${1:-help}"
+shift || true
+
+case "${command}" in
+	build|run|start|stop|reset|logs|server|scripted|connect|screenshot|help) "cmd_${command}" "$@" ;;
+	*) cmd_help; exit 1 ;;
+esac

@@ -152,10 +152,13 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL hostingUnitTests = (NSProcessInfo.processInfo.environment[@"XCTestConfigurationFilePath"] != nil ||
 							 NSProcessInfo.processInfo.environment[@"XCTestSessionIdentifier"] != nil);
 
-	/* Migrate files and preferences */
+	/* Migrate files and preferences. Development builds ("Textual Dev")
+	 never look at another installation's data. */
+#ifndef DEBUG
 	if (hostingUnitTests == NO) {
 		[TPCSandboxMigration migrateResources];
 	}
+#endif
 
 	/* Initialize preferences */
 	[TPCPreferences initPreferences];

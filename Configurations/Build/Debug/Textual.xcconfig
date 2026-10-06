@@ -2,8 +2,10 @@
 #include "../Common/Textual.xcconfig"
 #include "Enabled Features.xcconfig"
 
-TEXTUAL_BUNDLE_IDENTIFIER = com.textualapp.app
-TEXTUAL_GROUP_CONTAINER_IDENTIFIER = FANJ7JNLP5.com.textualapp.app
+// Debug builds are "Textual Dev": their own identifier and group, so they never
+// share a container, preferences or logs with an installed copy of Textual.
+TEXTUAL_BUNDLE_IDENTIFIER = com.textualapp.app.dev
+TEXTUAL_GROUP_CONTAINER_IDENTIFIER = FANJ7JNLP5.com.textualapp.app.dev
 TEXTUAL_BUILD_SCHEME_TOKEN = debug
 
 TEXTUAL_EXTENSION_BUILD_SCHEME = Debug

@@ -34,6 +34,22 @@ Open pull requests against `main` unless you are fixing a bug that only affects 
 3. **Keep pull requests focused.** One behavior change per pull request. Unrelated fixes, refactors, and formatting changes belong in separate pull requests.
 4. **Fill out the pull request template**, including how you tested the change.
 
+## Running a development build
+
+Debug builds are **Textual Dev**: they have their own bundle identifier (`com.textualapp.app.dev`) and app group, so they never share settings, logs or scrollback with an installed copy of Textual. They show "Textual Dev" in the menu bar and a DEV ribbon on the Dock icon.
+
+`Development/dev` builds and runs Textual Dev and provides servers to test against, all on 127.0.0.1:
+
+```sh
+Development/dev run                  # build and start Textual Dev
+Development/dev server start         # local Ergo server (6667, TLS 6697; NickServ, SASL)
+Development/dev connect              # connect Textual Dev to it
+Development/dev scripted --list      # scripted servers for edge cases (floods, spoofed NickServ, …)
+Development/dev reset                # delete Textual Dev's data
+```
+
+In Textual Dev, `irc://` links to 127.0.0.1, localhost or ::1 connect right away; other links only add the server, as in release builds. Use a test nickname rather than your own on public networks, and don't import the settings of your installed Textual: both copies would then use the same Keychain items.
+
 ## Conventions
 
 - **Match the surrounding code.** Follow the existing naming, formatting, and comment style of the file you are editing. Most of the app is Objective-C and uses tabs for indentation.
