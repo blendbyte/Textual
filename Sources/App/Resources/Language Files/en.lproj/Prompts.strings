@@ -40,6 +40,8 @@
 "zjw-bd" = "Continue";
 "qso-2g" = "Cancel";
 "c7s-dq" = "OK";
+"p4f-i1" = "This file can’t be imported";
+"p4f-i2" = "It isn’t a settings file exported by Textual, or it is damaged. Nothing was changed.";
 "xne-79" = "Select";
 "ce6-o1" = "Choose";
 "aqw-q1" = "Close";

@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,18 +34,39 @@
  *
  *********************************************************************** */
 
-#import "TPCPreferencesImportExport.h"
+#import <XCTest/XCTest.h>
+
+#import "TPCPreferencesImportExportPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TPCPreferencesImportExport ()
-+ (void)import:(id)object withKey:(NSString *)key;
+@interface TPCPreferencesImportTests : XCTestCase
+@end
 
-+ (void)importContentsOfDictionary:(NSDictionary<NSString *, id> *)aDict;
+@implementation TPCPreferencesImportTests
 
-/* The part of a settings file that may be imported */
-+ (NSDictionary<NSString *, id> *)importableContentsOfDictionary:(NSDictionary *)aDict;
-+ (void)importClientConfiguration:(NSDictionary<NSString *, id> *)config;
+/* A settings file can come from anyone: only what export writes, with the
+ type each preference has, may be imported */
+- (void)testImportOnlyWhatExportWrites
+{
+	NSDictionary *file = @{
+		@"AutojoinChannelOnInvite" : @YES,
+		@"Theme -> Name" : @"resource:Simplified",
+		@"World Controller Client Configurations" : @[],
+
+		@"ReplyUnignoredExternalCTCPRequests" : @"YES", // wrong type
+		@"Theme -> Name -> Did Not Exist During Last Sync" : @YES, // not exported
+		@"TXRunCount" : @1000, // excluded from export
+		@"SUFeedURL" : @"https://example.com/feed.xml", // excluded from export
+		@"Some Key Textual Never Wrote" : @"value"
+	};
+
+	NSDictionary *importable = [TPCPreferencesImportExport importableContentsOfDictionary:file];
+
+	XCTAssertEqualObjects([NSSet setWithArray:importable.allKeys],
+						  ([NSSet setWithArray:@[@"AutojoinChannelOnInvite", @"Theme -> Name", @"World Controller Client Configurations"]]));
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

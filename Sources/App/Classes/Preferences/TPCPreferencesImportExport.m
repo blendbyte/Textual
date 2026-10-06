@@ -125,17 +125,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSError *parseError = nil;
 
-	NSDictionary *propertyList =
-	[NSPropertyListSerialization propertyListWithData:fileContents options:NSPropertyListImmutable format:NULL error:&parseError];
+	id propertyList = nil;
+
+	if (fileContents) {
+		propertyList = [NSPropertyListSerialization propertyListWithData:fileContents options:NSPropertyListImmutable format:NULL error:&parseError];
+	}
 
 	/* Perform actual import if we have the dictionary. */
-	if (propertyList == nil) {
+	if ([propertyList isKindOfClass:[NSDictionary class]] == NO) {
 		if (parseError) {
 			LogToConsoleError("Import failed: %{public}@", parseError.localizedDescription);
 		}
 
+		[TDCAlert alertWithMessage:TXTLS(@"Prompts[p4f-i2]")
+							 title:TXTLS(@"Prompts[p4f-i1]")
+					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+				   alternateButton:nil];
+
 		return;
 	}
+
+	/* Only what export writes, with values of the expected type */
+	propertyList = [self importableContentsOfDictionary:propertyList];
 
 	/* The loading screen is a generic way to show something during import */
 	[mainWindowLoadingScreen() showProgressViewWithReason:TXTLS(@"TVCMainWindow[5g1-i9]")];
@@ -149,12 +160,59 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Do not push the loading screen right away. Add a little delay to give everything
 	 a chance to settle down before presenting the changes to the user. */
-	[self performSelectorInCommonModes:@selector(importPostflightCleanup:) withObject:propertyList.allKeys afterDelay:2.0];
+	[self performSelectorInCommonModes:@selector(importPostflightCleanup:) withObject:[propertyList allKeys] afterDelay:2.0];
 }
 
 + (void)importContentsOfDictionary:(NSDictionary<NSString *, id> *)aDict
 {
 	[self importContentsOfDictionary:aDict reloadPreferences:YES];
+}
+
+/* A settings file can come from anyone. Import only the keys export writes
+ (on the master list, not excluded: no migration state, bookmarks, run count,
+ licence or update settings) and only values of the type each preference has. */
++ (NSDictionary<NSString *, id> *)importableContentsOfDictionary:(NSDictionary *)aDict
+{
+	NSParameterAssert(aDict != nil);
+
+	NSDictionary<NSString *, id> *defaultValues = [TPCPreferences defaultPreferences];
+
+	NSMutableDictionary<NSString *, id> *importableContents = [NSMutableDictionary dictionaryWithCapacity:aDict.count];
+
+	[aDict enumerateKeysAndObjectsUsingBlock:^(id key, id object, BOOL *stop) {
+		if ([key isKindOfClass:[NSString class]] == NO) {
+			return;
+		}
+
+		if ([self isKeyNameSupposedToBeIgnored:key]) {
+			LogToConsoleInfo("Not importing '%{public}@': export doesn't write it", key);
+
+			return;
+		}
+
+		id defaultValue = defaultValues[key];
+
+		if (defaultValue && [self object:object isOfSameTypeAs:defaultValue] == NO) {
+			LogToConsoleInfo("Not importing '%{public}@': wrong type", key);
+
+			return;
+		}
+
+		importableContents[key] = object;
+	}];
+
+	return [importableContents copy];
+}
+
++ (BOOL)object:(id)object isOfSameTypeAs:(id)otherObject
+{
+	for (Class objectClass in @[[NSString class], [NSNumber class], [NSArray class], [NSDictionary class], [NSData class], [NSDate class]]) {
+		if ([otherObject isKindOfClass:objectClass]) {
+			return [object isKindOfClass:objectClass];
+		}
+	}
+
+	return NO;
 }
 
 + (void)importContentsOfDictionary:(NSDictionary<NSString *, id> *)aDict reloadPreferences:(BOOL)reloadPreferences
@@ -197,6 +255,10 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		[object enumerateObjectsUsingBlock:^(id object, NSUInteger index, BOOL *stop) {
+			if ([object isKindOfClass:[NSDictionary class]] == NO) {
+				return;
+			}
+
 			[self importClientConfiguration:object];
 		}];
 	}
