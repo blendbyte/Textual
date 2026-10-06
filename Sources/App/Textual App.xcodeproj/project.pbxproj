@@ -632,6 +632,11 @@
 		4CEA6AA82C36F90000A36551 /* RegisteredUserDefaultsInContainer.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A620EB676400448776 /* RegisteredUserDefaultsInContainer.plist */; };
 		4CEFEDAB22B4AF42002CEE19 /* TDCPreferencesUserStyleSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CB873D622B4A497005AB046 /* TDCPreferencesUserStyleSheetPrivate.h */; };
 		4CEFEDB222B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4CEFEDAE22B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings */; };
+		4CD29A7005E9204039D14F04 /* IRCColorFormatTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */; };
+		4CB88F3501E8522FE1EEFA73 /* IRCISupportInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */; };
+		4CC7246C1007EA34E0ED6804 /* IRCMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */; };
+		4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1560075456941B0D119C32 /* TLOLinkParserTests.m */; };
+		4CC5003E4997F22C192B99CB /* TestHostTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -683,6 +688,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 6EF5BF48AA40CAD7891EB709;
 			remoteInfo = GRMustache;
+		};
+		4C997AB88057254E278985F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C1DC5491580420500A47BC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4C1DC5511580420500A47BC9;
+			remoteInfo = Textual;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1408,6 +1420,12 @@
 		4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Hyperlink Processor.xcodeproj"; path = "../../Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj"; sourceTree = "<group>"; };
 		4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Cocoa Extensions.xcodeproj"; path = "../../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj"; sourceTree = "<group>"; };
 		4C8ABA28841284F49E5FB45D /* GRMustache.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GRMustache.xcodeproj; path = ../../Frameworks/GRMustache/GRMustache.xcodeproj; sourceTree = "<group>"; };
+		4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCColorFormatTests.m; sourceTree = "<group>"; };
+		4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCISupportInfoTests.m; sourceTree = "<group>"; };
+		4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCMessageTests.m; sourceTree = "<group>"; };
+		4C1560075456941B0D119C32 /* TLOLinkParserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLinkParserTests.m; sourceTree = "<group>"; };
+		4C0F30C914D29E55CE7C8EC7 /* TextualTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextualTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestHostTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1429,6 +1447,13 @@
 				4C06E48320EC54260055D09A /* EncryptionKit.framework in Frameworks */,
 				4C06E48420EC54260055D09A /* GRMustache.framework in Frameworks */,
 				4C06E48720EC54260055D09A /* Sparkle.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C05EBD1593F7175A9539E32 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1637,6 +1662,7 @@
 		4C1DC5471580420500A47BC9 = {
 			isa = PBXGroup;
 			children = (
+				4C225D0159F244226F0FB986 /* Tests */,
 				4C31511220EB673E00448776 /* Classes */,
 				4C3152EC20EB676400448776 /* Resources */,
 				4C1DC5551580420500A47BC9 /* Frameworks */,
@@ -1648,6 +1674,7 @@
 			isa = PBXGroup;
 			children = (
 				4C1DC5521580420500A47BC9 /* Textual.app */,
+				4C0F30C914D29E55CE7C8EC7 /* TextualTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2902,6 +2929,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		4C225D0159F244226F0FB986 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
+				4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */,
+				4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */,
+				4C1560075456941B0D119C32 /* TLOLinkParserTests.m */,
+				4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -3207,6 +3246,24 @@
 			productReference = 4C1DC5521580420500A47BC9 /* Textual.app */;
 			productType = "com.apple.product-type.application";
 		};
+		4C0AB86D285F2B3A545A784A /* TextualTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4C8F5FF4241435C7D00285EC /* Build configuration list for PBXNativeTarget "TextualTests" */;
+			buildPhases = (
+				4C97645EA0334B474C4C9E1E /* Sources */,
+				4C05EBD1593F7175A9539E32 /* Frameworks */,
+				4C9EBA9375446039CD87DE3F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4C02EA4C649C1270ED37A5FC /* PBXTargetDependency */,
+			);
+			name = TextualTests;
+			productName = TextualTests;
+			productReference = 4C0F30C914D29E55CE7C8EC7 /* TextualTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -3261,6 +3318,7 @@
 			projectRoot = "";
 			targets = (
 				4C1DC5511580420500A47BC9 /* Textual */,
+				4C0AB86D285F2B3A545A784A /* TextualTests */,
 				4CCF301015804DCE006FFE21 /* Build Frameworks */,
 			);
 		};
@@ -3433,6 +3491,13 @@
 				4C06E20420EC4AC50055D09A /* TVCMainWindow.xib in Resources */,
 				4C06DFEF20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif in Resources */,
 				4C06DFF020EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C9EBA9375446039CD87DE3F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3718,6 +3783,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4C97645EA0334B474C4C9E1E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4CD29A7005E9204039D14F04 /* IRCColorFormatTests.m in Sources */,
+				4CB88F3501E8522FE1EEFA73 /* IRCISupportInfoTests.m in Sources */,
+				4CC7246C1007EA34E0ED6804 /* IRCMessageTests.m in Sources */,
+				4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */,
+				4CC5003E4997F22C192B99CB /* TestHostTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3740,6 +3817,11 @@
 			isa = PBXTargetDependency;
 			name = GRMustache.framework;
 			targetProxy = 4CC78BB5A031E94DE8C4A83B /* PBXContainerItemProxy */;
+		};
+		4C02EA4C649C1270ED37A5FC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4C1DC5511580420500A47BC9 /* Textual */;
+			targetProxy = 4C997AB88057254E278985F8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -4255,6 +4337,69 @@
 			};
 			name = "App Store";
 		};
+		4C9DBE62F7E156BB1AFDEF23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = "";
+				DEFINES_MODULE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/Classes/Headers/**\"",
+				);
+				INFOPLIST_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.tests;
+				PRODUCT_MODULE_NAME = TextualTests;
+				PRODUCT_NAME = TextualTests;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TEST_HOST = "$(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)/Textual.app/Contents/MacOS/Textual";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		4CFC7D219025C025CE1B6AC4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = "";
+				DEFINES_MODULE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/Classes/Headers/**\"",
+				);
+				INFOPLIST_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.tests;
+				PRODUCT_MODULE_NAME = TextualTests;
+				PRODUCT_NAME = TextualTests;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TEST_HOST = "$(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)/Textual.app/Contents/MacOS/Textual";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+		4C6940CF033C853A3D9CCB78 /* App Store */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = "";
+				DEFINES_MODULE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(PROJECT_DIR)/Classes/Headers/**\"",
+				);
+				INFOPLIST_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.tests;
+				PRODUCT_MODULE_NAME = TextualTests;
+				PRODUCT_NAME = TextualTests;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TEST_HOST = "$(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)/Textual.app/Contents/MacOS/Textual";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = "App Store";
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4287,6 +4432,16 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		4C8F5FF4241435C7D00285EC /* Build configuration list for PBXNativeTarget "TextualTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C9DBE62F7E156BB1AFDEF23 /* Debug */,
+				4CFC7D219025C025CE1B6AC4 /* Release */,
+				4C6940CF033C853A3D9CCB78 /* App Store */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

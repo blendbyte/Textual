@@ -1,0 +1,174 @@
+/* *********************************************************************
+ *                  _____         _               _
+ *                 |_   _|____  _| |_ _   _  __ _| |
+ *                   | |/ _ \ \/ / __| | | |/ _` | |
+ *                   | |  __/>  <| |_| |_| | (_| | |
+ *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
+ *
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  * Neither the name of Textual, "Codeux Software, LLC", nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *********************************************************************** */
+#import <XCTest/XCTest.h>
+
+#import "IRCClientConfig.h"
+#import "IRCClientPrivate.h"
+#import "IRCISupportInfoPrivate.h"
+#import "IRCMessage.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface IRCMessageTests : XCTestCase
+@end
+
+@implementation IRCMessageTests
+
+- (IRCMessage *)parse:(NSString *)line
+{
+	return [self parse:line onClient:nil];
+}
+
+- (IRCMessage *)parse:(NSString *)line onClient:(nullable IRCClient *)client
+{
+	IRCMessage *message = [[IRCMessage alloc] initWithLine:line onClient:client];
+
+	XCTAssertNotNil(message, @"Failed to parse: %@", line);
+
+	return message;
+}
+
+- (IRCClient *)clientConnectedTo:(NSString *)serverAddress
+{
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	client.supportInfo.serverAddress = serverAddress;
+
+	return client;
+}
+
+- (void)testPrivmsgWithHostmask
+{
+	IRCMessage *message = [self parse:@":nick!user@host.example PRIVMSG #channel :hello world"];
+
+	XCTAssertEqualObjects(message.command, @"PRIVMSG");
+	XCTAssertEqualObjects(message.senderNickname, @"nick");
+	XCTAssertEqualObjects(message.senderUsername, @"user");
+	XCTAssertEqualObjects(message.senderAddress, @"host.example");
+	XCTAssertFalse(message.senderIsServer);
+	XCTAssertEqualObjects(message.params, (@[@"#channel", @"hello world"]));
+	XCTAssertEqualObjects([message paramAt:1], @"hello world");
+}
+
+- (void)testNumericFromServer
+{
+	IRCMessage *message = [self parse:@":irc.example.net 001 me :Welcome to the network"];
+
+	XCTAssertEqual(message.commandNumeric, 1);
+	XCTAssertTrue(message.senderIsServer);
+	XCTAssertEqualObjects(message.params, (@[@"me", @"Welcome to the network"]));
+}
+
+- (void)testCommandWithoutPrefixComesFromTheServer
+{
+	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
+
+	IRCMessage *message = [self parse:@"PING :token" onClient:client];
+
+	XCTAssertEqualObjects(message.command, @"PING");
+	XCTAssertEqualObjects(message.params, (@[@"token"]));
+	XCTAssertTrue(message.senderIsServer);
+	XCTAssertEqualObjects(message.senderNickname, @"irc.example.net");
+}
+
+- (void)testEmptyTrailingParameter
+{
+	IRCMessage *message = [self parse:@":nick!user@host TOPIC #channel :"];
+
+	XCTAssertEqualObjects(message.params, (@[@"#channel", @""]));
+}
+
+- (void)testMessageTags
+{
+	IRCMessage *message = [self parse:@"@msgid=abc123;example.com/flag :nick!user@host PRIVMSG #channel :tagged"];
+
+	XCTAssertEqualObjects(message.messageTags[@"msgid"], @"abc123");
+	XCTAssertNotNil(message.messageTags[@"example.com/flag"]);
+	XCTAssertEqualObjects(message.command, @"PRIVMSG");
+	XCTAssertEqualObjects([message paramAt:1], @"tagged");
+}
+
+- (void)testServerTimeTagIsIgnoredWithoutTheCapability
+{
+	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
+
+	IRCMessage *message = [self parse:@"@time=2026-01-02T03:04:05.000Z :nick!user@host PRIVMSG #channel :old" onClient:client];
+
+	XCTAssertFalse(message.isHistoric);
+}
+
+- (void)testServerTimeTagMakesMessageHistoric
+{
+	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
+
+	[client enableCapability:ClientIRCv3SupportedCapabilityServerTime];
+
+	IRCMessage *message = [self parse:@"@time=2026-01-02T03:04:05.000Z :nick!user@host PRIVMSG #channel :old" onClient:client];
+
+	XCTAssertTrue(message.isHistoric);
+
+	NSDateComponents *components = [[NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian] componentsInTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"] fromDate:message.receivedAt];
+
+	XCTAssertEqual(components.year, 2026);
+	XCTAssertEqual(components.month, 1);
+	XCTAssertEqual(components.day, 2);
+	XCTAssertEqual(components.hour, 3);
+	XCTAssertEqual(components.minute, 4);
+	XCTAssertEqual(components.second, 5);
+}
+
+- (void)testTagValueEscapes
+{
+	IRCMessage *message = [self parse:@"@label=semi\\:colon\\sspace\\\\backslash :nick!user@host PRIVMSG #channel :x"];
+
+	XCTAssertEqualObjects(message.messageTags[@"label"], @"semi;colon space\\backslash");
+}
+
+- (void)testTagValueEscapesAreDecodedInOnePass
+{
+	/* "\\s" is an escaped backslash followed by "s", not a space. Unknown escapes
+	 drop the backslash. See https://ircv3.net/specs/extensions/message-tags */
+	XCTExpectFailure(@"Tag values are unescaped with sequential replacements instead of a single pass.");
+
+	IRCMessage *message = [self parse:@"@a=x\\\\sy;b=\\q :nick!user@host PRIVMSG #channel :x"];
+
+	XCTAssertEqualObjects(message.messageTags[@"a"], @"x\\sy");
+	XCTAssertEqualObjects(message.messageTags[@"b"], @"q");
+}
+
+@end
+
+NS_ASSUME_NONNULL_END

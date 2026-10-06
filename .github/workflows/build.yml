@@ -111,6 +111,23 @@ jobs:
             fail "Licence manager code is compiled in although the licence manager is off"
           fi
 
+      # TextualTests (hosted by the Debug app, which skips its normal startup
+      # under XCTest) and the Cocoa Extensions tests.
+      - name: Run unit tests
+        if: matrix.configuration == 'Debug'
+        run: |
+          xcodebuild test \
+            -workspace Textual.xcworkspace \
+            -scheme "Textual (Debug)" \
+            -destination "platform=macOS,arch=$(uname -m)" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -quiet \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER=""
+
       # The samples build against the app like a third-party plugin does:
       # its public headers, its frameworks and its binary as bundle loader.
       - name: Build the sample plugins

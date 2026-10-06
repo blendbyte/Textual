@@ -28,6 +28,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4C0AB86D285F2B3A545A784A"
+               BuildableName = "TextualTests.xctest"
+               BlueprintName = "TextualTests"
+               ReferencedContainer = "container:Textual App.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4C1144752C289575008CD785"
+               BuildableName = "CocoaExtensionsTests.xctest"
+               BlueprintName = "CocoaExtensionsTests"
+               ReferencedContainer = "container:../../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

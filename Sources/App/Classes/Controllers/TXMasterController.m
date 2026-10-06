@@ -146,14 +146,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_awakeFromNib
 {
+	/* When the app hosts unit tests, only set up preferences and appearance.
+	 Migration and the main window (which creates the IRC world, loads plugins
+	 and connects) would act on the user's real data and servers. */
+	BOOL hostingUnitTests = (NSProcessInfo.processInfo.environment[@"XCTestConfigurationFilePath"] != nil ||
+							 NSProcessInfo.processInfo.environment[@"XCTestSessionIdentifier"] != nil);
+
 	/* Migrate files and preferences */
-	[TPCSandboxMigration migrateResources];
+	if (hostingUnitTests == NO) {
+		[TPCSandboxMigration migrateResources];
+	}
 
 	/* Initialize preferences */
 	[TPCPreferences initPreferences];
 
 	/* Call shared instance to warm it */
 	[TXSharedApplication sharedAppearance];
+
+	if (hostingUnitTests) {
+		return;
+	}
 
 	/* We wait until -awakeFromNib to wake the window so that the menu
 	 controller created by the main nib has time to load. */
