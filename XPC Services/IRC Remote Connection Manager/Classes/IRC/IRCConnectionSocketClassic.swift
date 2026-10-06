@@ -200,7 +200,7 @@ final class ConnectionSocketClassic: ConnectionSocket, ConnectionSocketProtocol,
 
 		connection?.readData(to: readDelimiter,
 							 withTimeout: Timeout.none.rawValue,
-							 maxLength: UInt(maximumDataLength),
+							 maxLength: UInt(maximumLineLength),
 							 tag: Tag.none.rawValue)
 	}
 
@@ -293,7 +293,12 @@ final class ConnectionSocketClassic: ConnectionSocket, ConnectionSocketProtocol,
 		if let alternateError = alternateDisconnectError {
 			errorPayload = alternateError
 		} else if let err = error {
-			if let tlsError = ConnectionError(tlsError: err) {
+			let nsError = err as NSError
+
+			/* Reached maxLength of read() without a line break */
+			if (nsError.domain == GCDAsyncSocketErrorDomain && nsError.code == GCDAsyncSocketError.readMaxedOutError.rawValue) {
+				errorPayload = .lineTooLong
+			} else if let tlsError = ConnectionError(tlsError: err) {
 				errorPayload = tlsError
 			} else if (err.code != errSSLClosedGraceful) {
 				errorPayload = ConnectionError(socketError: err)

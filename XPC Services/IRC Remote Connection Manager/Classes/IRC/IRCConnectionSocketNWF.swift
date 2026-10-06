@@ -182,7 +182,7 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		}
 
 		connection?.receive(minimumIncompleteLength: 0,
-							maximumLength: maximumDataLength,
+							maximumLength: maximumLineLength,
 							completion: readCompletionHandler)
 	}
 
@@ -226,10 +226,26 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		}
 
 		for line in lines {
+			if (line.count > maximumLineLength) {
+				newBuffer.removeAll()
+
+				close(with: .lineTooLong)
+
+				return
+			}
+
 			delegate?.connection(self, received: line)
 		}
 
 		if let remainder = remainingData {
+			if (remainder.count > maximumLineLength) {
+				newBuffer.removeAll()
+
+				close(with: .lineTooLong)
+
+				return
+			}
+
 			newBuffer = remainder
 		} else {
 			/* "Pass true to request that the collection avoid releasing its

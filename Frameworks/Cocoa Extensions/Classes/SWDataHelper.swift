@@ -57,7 +57,8 @@ public extension Data
 
 	var IPv4Address: String?
 	{
-		if (isEmpty) {
+		/* inet_ntop() reads exactly 4 bytes */
+		if (count != 4) {
 			return nil
 		}
 
@@ -74,7 +75,8 @@ public extension Data
 
 	var IPv6Address: String?
 	{
-		if (isEmpty) {
+		/* inet_ntop() reads exactly 16 bytes */
+		if (count != 16) {
 			return nil
 		}
 
