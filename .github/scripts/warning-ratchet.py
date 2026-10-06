@@ -34,6 +34,11 @@ count = len(unique)
 with open(baseline_file) as file:
 	baseline = int("".join(character for character in file.read() if character.isdigit()))
 
+print(f"::group::{description} ({count})")
+for path, message in sorted(unique):
+	print(f"{path or '(no file)'}: {message}")
+print("::endgroup::")
+
 print(f"{description}: {count} (baseline {baseline})")
 
 if count > baseline:
