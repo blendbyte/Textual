@@ -642,6 +642,34 @@
 			remoteGlobalIDString = 4CCF301015804DCE006FFE21;
 			remoteInfo = "Build Frameworks";
 		};
+		4CFC800881F1BF194DA21EA2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = AutoHyperlinks.framework;
+		};
+		4C914276343133F8A0E6DB21 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
+			remoteInfo = AutoHyperlinks;
+		};
+		4C005893610EDC5A32658966 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = CocoaExtensions.framework;
+		};
+		4CEDFCBEB390158CBE796808 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
+			remoteInfo = CocoaExtensions;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1363,6 +1391,8 @@
 		4C8C5317B390D2ACFAACFA03 /* Textual App.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual App.xcconfig"; sourceTree = "<group>"; };
 		4C2DB94AC10883593C0AC8B0 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
 		4C0CC9E7F901D2850E33EEEB /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Hyperlink Processor.xcodeproj"; path = "../../Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj"; sourceTree = "<group>"; };
+		4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "Cocoa Extensions.xcodeproj"; path = "../../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2754,6 +2784,8 @@
 				4C8F2F5D1AAE6467007821CC /* EncryptionKit.framework */,
 				4CC4A7371F8A1404008FF15F /* GRMustache.framework */,
 				4C24DC751A93C9CE0098D1BE /* Sparkle.framework */,
+				4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */,
+				4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */,
 			);
 			name = "External Frameworks";
 			sourceTree = "<group>";
@@ -2828,6 +2860,22 @@
 				4C0CC9E7F901D2850E33EEEB /* Textual.xcconfig */,
 			);
 			path = "App Store Release";
+			sourceTree = "<group>";
+		};
+		4CCBDA4131A9E666AFCA7C43 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4CDAFD305A412034EB50227A /* AutoHyperlinks.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4CDB1C5ECBA0327337EAC632 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4C9AF9993592B1546B7A6445 /* CocoaExtensions.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3125,6 +3173,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */,
+				4C485D8CDEB765B5D34DDB5D /* PBXTargetDependency */,
 				4CBB842D16F0DA1D004E3ED6 /* PBXTargetDependency */,
 			);
 			name = Textual;
@@ -3169,6 +3219,16 @@
 			mainGroup = 4C1DC5471580420500A47BC9;
 			productRefGroup = 4C1DC5531580420500A47BC9 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 4CCBDA4131A9E666AFCA7C43 /* Products */;
+					ProjectRef = 4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */;
+				},
+				{
+					ProductGroup = 4CDB1C5ECBA0327337EAC632 /* Products */;
+					ProjectRef = 4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				4C1DC5511580420500A47BC9 /* Textual */,
@@ -3176,6 +3236,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		4CDAFD305A412034EB50227A /* AutoHyperlinks.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = AutoHyperlinks.framework;
+			remoteRef = 4C914276343133F8A0E6DB21 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4C9AF9993592B1546B7A6445 /* CocoaExtensions.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CocoaExtensions.framework;
+			remoteRef = 4CEDFCBEB390158CBE796808 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		4C1DC5501580420500A47BC9 /* Resources */ = {
@@ -3612,6 +3689,16 @@
 			isa = PBXTargetDependency;
 			target = 4CCF301015804DCE006FFE21 /* Build Frameworks */;
 			targetProxy = 4CBB842C16F0DA1D004E3ED6 /* PBXContainerItemProxy */;
+		};
+		4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = AutoHyperlinks.framework;
+			targetProxy = 4CFC800881F1BF194DA21EA2 /* PBXContainerItemProxy */;
+		};
+		4C485D8CDEB765B5D34DDB5D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CocoaExtensions.framework;
+			targetProxy = 4C005893610EDC5A32658966 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

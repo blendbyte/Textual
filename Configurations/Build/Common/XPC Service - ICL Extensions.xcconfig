@@ -16,8 +16,7 @@ ICL_PRODUCT_BINARY = ${ICL_PRODUCT_LOCATION}/Contents/MacOS/InlineContentLoader
 CONFIGURATION_BUILD_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-ICLExtension
 
 HEADER_SEARCH_PATHS = ${inherited} "${ICL_WORKSPACE_DIR}/Classes/Headers/**" "${ICL_WORKSPACE_DIR}/Classes/Modules/**" "${TEXTUAL_WORKSPACE_DIR}/Sources/Shared/Headers/**"
-LIBRARY_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
-FRAMEWORK_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
+FRAMEWORK_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Static Libraries/Libraries"
 
 WRAPPER_EXTENSION = bundle
 

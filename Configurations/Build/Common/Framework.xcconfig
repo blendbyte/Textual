@@ -1,0 +1,21 @@
+// Frameworks built from this repository (Auto Hyperlinks, Cocoa Extensions).
+// Settings on top of Foundation.xcconfig that differ from the app.
+
+TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../..
+
+// The XPC services and plugins are built by separate xcodebuild calls
+// and look for the frameworks here.
+CONFIGURATION_BUILD_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks
+
+// Install names stay @rpath/<Name>.framework: Textual 7 plugins load them.
+INSTALL_PATH = @rpath
+LD_RUNPATH_SEARCH_PATHS = @loader_path/../Frameworks
+
+COPY_PHASE_STRIP = YES
+ENABLE_STRICT_OBJC_MSGSEND = YES
+GCC_PRECOMPILE_PREFIX_HEADER = YES
+GCC_SYMBOLS_PRIVATE_EXTERN = NO
+GCC_WARN_UNDECLARED_SELECTOR = YES
+STRIPFLAGS =
+STRIP_INSTALLED_PRODUCT = YES
+STRIP_STYLE = non-global

@@ -19,11 +19,12 @@ xcb() {
         MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}"
 }
 
+# Auto Hyperlinks and Cocoa Extensions are target dependencies of the app.
+# Encryption Kit is still a submodule of an archived repository whose
+# project cannot be changed, so it is built here until it is removed.
 # Assumes the name and filename of the framework is the same just without spaces.
 frameworks=(
-    'Auto Hyperlinks'
     'Encryption Kit'
-    'Cocoa Extensions'
 )
 
 for framework in "${frameworks[@]}"; do

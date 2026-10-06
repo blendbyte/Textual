@@ -1,0 +1,4 @@
+
+#include "../Common/Foundation Debug.xcconfig"
+#include "Textual.xcconfig"
+#include "../Common/Framework.xcconfig"

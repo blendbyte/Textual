@@ -34,8 +34,10 @@
 		4CA41C121AC1A7F500756137 /* COPYRIGHT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYRIGHT.txt; sourceTree = "<group>"; };
 		4CA41C131AC1A7F500756137 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		4CA41C161AC1A7FC00756137 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
-		4CA41C181AC1A80400756137 /* Build Configuration.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Build Configuration.xcconfig"; path = "Resources/Build Configuration/Build Configuration.xcconfig"; sourceTree = SOURCE_ROOT; };
 		8DC2EF5B0486A6940098B216 /* AutoHyperlinks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CFE95F94C1B5016D7C58128 /* Framework (Debug).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Debug).xcconfig"; path = "../../Configurations/Build/Debug/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
+		4CE1A22FFACF6234726E1E10 /* Framework (Release).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Release).xcconfig"; path = "../../Configurations/Build/Standard Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
+		4C094F6B3694FD87E848CC97 /* Framework (App Store).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (App Store).xcconfig"; path = "../../Configurations/Build/App Store Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,7 +123,9 @@
 		4C6F8E031A901B9F000F49FD /* Build Configuration */ = {
 			isa = PBXGroup;
 			children = (
-				4CA41C181AC1A80400756137 /* Build Configuration.xcconfig */,
+				4CFE95F94C1B5016D7C58128 /* Framework (Debug).xcconfig */,
+				4CE1A22FFACF6234726E1E10 /* Framework (Release).xcconfig */,
+				4C094F6B3694FD87E848CC97 /* Framework (App Store).xcconfig */,
 			);
 			name = "Build Configuration";
 			sourceTree = "<group>";
@@ -251,12 +255,50 @@
 			};
 			name = Release;
 		};
+		4CD5B4A569B39E2C17CE5A14 /* App Store */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_VERSION = A;
+				GCC_PREFIX_HEADER = Classes/AutoHyperlinks.framework_Prefix.pch;
+				INFOPLIST_FILE = Resources/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adiumX.AutoHyperlinks;
+				PRODUCT_NAME = AutoHyperlinks;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = "App Store";
+		};
+		4CDC5958FA842BB7391EA6EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_VERSION = A;
+				GCC_PREFIX_HEADER = Classes/AutoHyperlinks.framework_Prefix.pch;
+				INFOPLIST_FILE = Resources/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adiumX.AutoHyperlinks;
+				PRODUCT_NAME = AutoHyperlinks;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Debug;
+		};
 		DA8A8089085549EE00F24BB3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4CA41C181AC1A80400756137 /* Build Configuration.xcconfig */;
+			baseConfigurationReference = 4CE1A22FFACF6234726E1E10 /* Framework (Release).xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
+		};
+		4C945C8165594AB20B526678 /* App Store */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C094F6B3694FD87E848CC97 /* Framework (App Store).xcconfig */;
+			buildSettings = {
+			};
+			name = "App Store";
+		};
+		4CDF147372C274008805B48D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CFE95F94C1B5016D7C58128 /* Framework (Debug).xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -265,6 +307,8 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA8A8085085549EE00F24BB3 /* Release */,
+				4CDC5958FA842BB7391EA6EE /* Debug */,
+				4CD5B4A569B39E2C17CE5A14 /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -273,6 +317,8 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA8A8089085549EE00F24BB3 /* Release */,
+				4CDF147372C274008805B48D /* Debug */,
+				4C945C8165594AB20B526678 /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

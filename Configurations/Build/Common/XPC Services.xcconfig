@@ -9,8 +9,7 @@ CONFIGURATION_BUILD_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-XPCS
 CODE_SIGN_ENTITLEMENTS = ${TEXTUAL_WORKSPACE_DIR}/Configurations/Sandbox/Inherited.entitlements
 
 HEADER_SEARCH_PATHS = $(inherited) "${TEXTUAL_WORKSPACE_TEMP_DIR}/Build Headers/" "${TEXTUAL_WORKSPACE_DIR}/Sources/Shared/Headers/**"
-LIBRARY_SEARCH_PATHS = $(inherited) "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
-FRAMEWORK_SEARCH_PATHS = $(inherited) "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Static Libraries/Libraries"
 
 WRAPPER_EXTENSION = xpc
 
