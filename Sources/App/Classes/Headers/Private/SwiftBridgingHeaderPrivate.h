@@ -38,6 +38,8 @@
 #import "TextualPrivate.h"
 
 // TLOpenLink.swift
+#import "TDCAlert.h"
+#import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 
 // TLOLinkParser.swift

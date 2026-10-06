@@ -2940,6 +2940,26 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* A link can come from anywhere, so activation is always confirmed */
+	NSString *currentLicenseOwner = TLOLicenseManagerLicenseOwnerName();
+
+	NSString *message = nil;
+
+	if (currentLicenseOwner.length > 0) {
+		message = TXTLS(@"TLOLicenseManager[q7w-k2]", licenseKey, currentLicenseOwner);
+	} else {
+		message = TXTLS(@"TLOLicenseManager[q7w-k1]", licenseKey);
+	}
+
+	BOOL activateLicense = [TDCAlert modalAlertWithMessage:message
+													 title:TXTLS(@"TLOLicenseManager[q7w-k0]")
+											 defaultButton:TXTLS(@"TLOLicenseManager[q7w-k3]")
+										   alternateButton:TXTLS(@"Prompts[qso-2g]")];
+
+	if (activateLicense == NO) {
+		return;
+	}
+
 	[self manageLicense:sender activateLicenseKey:licenseKey licenseKeyPassedByArgument:NO];
 }
 

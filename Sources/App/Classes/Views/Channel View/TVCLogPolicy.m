@@ -39,6 +39,7 @@
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
 #import "IRCChannel.h"
+#import "IRCExtrasPrivate.h"
 #import "TDCAlert.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
@@ -384,35 +385,25 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 {
 	NSParameterAssert(webpageURL != nil);
 
+	if ([TLOpenLink confirmOpeningUntrustedURL:webpageURL] == NO) {
+		return;
+	}
+
+	/* Textual handles these itself, never another app registered for them */
+	NSString *scheme = webpageURL.scheme.lowercaseString;
+
+	if ([scheme isEqualToString:@"irc"] || [scheme isEqualToString:@"ircs"] || [scheme isEqualToString:@"textual"]) {
+		[IRCExtras parseIRCProtocolURI:webpageURL.absoluteString];
+
+		return;
+	}
+
 	BOOL openInBackground = [TPCPreferences openBrowserInBackground];
 
 	NSUInteger keyboardKeys = ([NSEvent modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask);
 
 	if ((keyboardKeys & NSEventModifierFlagCommand) == NSEventModifierFlagCommand) {
 		openInBackground = !openInBackground;
-	}
-
-	if ([webpageURL.scheme isEqualToString:@"http"] ||
-		[webpageURL.scheme isEqualToString:@"https"] ||
-		[webpageURL.scheme isEqualToString:@"textual"])
-	{
-		[TLOpenLink open:webpageURL inBackground:openInBackground];
-
-		return;
-	}
-
-	NSString *applicationName = [RZWorkspace() nameOfApplicationToOpenURL:webpageURL];
-
-	BOOL openLink =
-	[TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[5oq-vv]", webpageURL.absoluteString)
-							  title:TXTLS(@"Prompts[2ul-cl]", applicationName)
-					  defaultButton:TXTLS(@"Prompts[mvh-ms]")
-					alternateButton:TXTLS(@"Prompts[99q-gg]")
-					 suppressionKey:@"open_non_http_url_warning"
-					suppressionText:nil];
-
-	if (openLink == NO) {
-		return;
 	}
 
 	[TLOpenLink open:webpageURL inBackground:openInBackground];

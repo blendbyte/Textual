@@ -35,6 +35,10 @@
  *
  *********************************************************************** */
 
+"q7w-k0" = "Activate this licence key?";
+"q7w-k1" = "A link asks Textual to activate the licence key %@.\n\nOnly continue if the link came from Blendbyte, for example in your purchase email.";
+"q7w-k2" = "A link asks Textual to activate the licence key %1$@. It will replace the licence registered to %2$@.\n\nOnly continue if the link came from Blendbyte, for example in your purchase email.";
+"q7w-k3" = "Activate";
 "nhh-ts" = "A problem was encountered while communicating with the web server located at codeux.com";
 "1cv-0v" = "Try again in a few minutes then contact support if the problem persists.";
 "bqw-cv" = "Contact Support";

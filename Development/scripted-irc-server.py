@@ -280,7 +280,8 @@ async def scenario_links(client):
 	await client.collect(1)
 
 	for text in ["safe https://example.com/page and ircs://irc.libera.chat/#textual",
-				 "unsafe javascript:alert(document.domain) and data:text/html,hello and file:///etc/hosts"]:
+				 "unsafe javascript:alert(document.domain) and data:text/html,hello and file:///etc/hosts",
+				 "ask first: mailto:someone@example.com and textual://activate-license/TEST-KEY-1234"]:
 		await client.send(f":friend!f@friend.test PRIVMSG #links :{text}")
 
 	while await client.collect(3600):

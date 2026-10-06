@@ -67,6 +67,54 @@ public class OpenLink: NSObject
 }
 
 extension OpenLink {
+	/// Schemes opened without asking. Everything else asks first.
+	private static let schemesOpenedDirectly: Set<String> = ["http", "https", "irc", "ircs"]
+
+	/// Schemes for which "Don't ask again" is never offered: file: links open
+	/// local files and textual: links make Textual act (e.g. activate a licence).
+	private static let schemesAlwaysConfirmed: Set<String> = ["file", "textual"]
+
+	/// Decides whether a link from content Textual doesn't control (a message,
+	/// a topic) may be opened, asking the user unless its scheme is safe.
+	/// "Don't ask again" is remembered per scheme.
+	@objc(confirmOpeningUntrustedURL:)
+	public static func confirmOpeningUntrusted(url: URL) -> Bool
+	{
+		let scheme = url.scheme?.lowercased() ?? ""
+
+		if schemesOpenedDirectly.contains(scheme) {
+			return true
+		}
+
+		var applicationName = "Textual"
+
+		if scheme != "textual" {
+			guard let applicationURL = NSWorkspace.shared.urlForApplication(toOpen: url) else {
+				return false // Nothing can open it
+			}
+
+			applicationName = FileManager.default.displayName(atPath: applicationURL.path)
+		}
+
+		var suppressionKey: String? = nil
+
+		if scheme.isEmpty == false && schemesAlwaysConfirmed.contains(scheme) == false {
+			suppressionKey = "open_link_with_scheme_\(scheme)"
+		}
+
+		return TDCAlert.modalAlert(withMessage: localizedString("Prompts[5oq-vv]", url.absoluteString),
+								   title: localizedString("Prompts[2ul-cl]", applicationName),
+								   defaultButton: localizedString("Prompts[mvh-ms]"),
+								   alternateButton: localizedString("Prompts[99q-gg]"),
+								   suppressionKey: suppressionKey,
+								   suppressionText: nil)
+	}
+
+	private static func localizedString(_ key: String, _ arguments: CVarArg...) -> String
+	{
+		return withVaList(arguments) { TXLocalizedString(Bundle.main, key, $0) }
+	}
+
 	@objc(open:)
 	public static func openBridged(url: URL)
 	{

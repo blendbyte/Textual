@@ -159,8 +159,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(location != nil);
 
 #ifdef DEBUG
-	/* Textual Dev only (Development/dev input, config, send, eval, reset) */
-	if ([location hasPrefix:@"textual://dev-eval?"]) {
+	/* Textual Dev only (Development/dev input, config, send, eval, reset),
+	 and only from outside Textual: never from a link clicked in a message. */
+	if (event == nil && [location hasPrefix:@"textual://dev-"]) {
+		return;
+	} else if ([location hasPrefix:@"textual://dev-eval?"]) {
 		[self performDevelopmentEvaluationWithURL:location];
 
 		return;

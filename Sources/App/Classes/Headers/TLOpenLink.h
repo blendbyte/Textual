@@ -44,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)openWithString:(NSString *)url;
 + (void)openWithString:(NSString *)url inBackground:(BOOL)inBackground;
+
+/* For links from content Textual doesn't control, such as messages: returns YES
+ for http, https, irc and ircs; asks the user for any other scheme ("Don't ask
+ again" is remembered per scheme, never offered for file: and textual:). */
++ (BOOL)confirmOpeningUntrustedURL:(NSURL *)url;
 @end
 
 NS_ASSUME_NONNULL_END
