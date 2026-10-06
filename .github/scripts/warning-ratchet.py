@@ -7,9 +7,15 @@ Reads Xcode's structured build results (the .xcresult bundle) rather than the
 text log, whose lines can interleave when files compile in parallel. Each
 warning counts once per file and message, so the per-architecture copies and
 line numbers do not matter and moving code around does not change the count.
+
+Warnings from the nested xcodebuild calls in the build scripts reach the
+result bundle as parsed text: the same warning then appears with and without
+its "[-W…]" flag, and a line cut off in the output can produce a truncated
+copy. Both are folded into the full message.
 """
 
 import json
+import re
 import os
 import subprocess
 import sys
@@ -23,11 +29,19 @@ results = json.loads(subprocess.run(
 
 checkout = os.path.realpath(os.getcwd()) + "/"
 
-unique = set()
+messages_by_file = {}
 
 for issue in results.get(kind, []):
 	path = urllib.parse.unquote(issue.get("sourceURL", "").split("#")[0].removeprefix("file://"))
-	unique.add((path.removeprefix(checkout), issue.get("message", "")))
+	message = re.sub(r"\s*\[-W[^\]]+\]$", "", issue.get("message", ""))
+	messages_by_file.setdefault(path.removeprefix(checkout), set()).add(message)
+
+unique = {
+	(path, message)
+	for path, messages in messages_by_file.items()
+	for message in messages
+	if not any(other != message and other.startswith(message) for other in messages)
+}
 
 count = len(unique)
 
