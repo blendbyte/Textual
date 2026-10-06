@@ -750,15 +750,10 @@
 		4C06E17820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCLicenseManagerDialog.xib; sourceTree = "<group>"; };
 		4C06E17A20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCLicenseManagerRecoverLostLicenseSheet.xib; sourceTree = "<group>"; };
 		4C06E17C20EC4AC40055D09A /* TVCMemberListAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCMemberListAppearance.plist; sourceTree = "<group>"; };
-		4C06E17D20EC4AC40055D09A /* TVCServerListAppearanceTemplate.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCServerListAppearanceTemplate.plist; sourceTree = "<group>"; };
-		4C06E17E20EC4AC40055D09A /* TDCChannelSpotlightAppearanceTemplate.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TDCChannelSpotlightAppearanceTemplate.plist; sourceTree = "<group>"; };
-		4C06E17F20EC4AC40055D09A /* TVCMemberListAppearanceTemplate.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCMemberListAppearanceTemplate.plist; sourceTree = "<group>"; };
-		4C06E18020EC4AC40055D09A /* TVCMainWindowTextViewAppearanceTemplate.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCMainWindowTextViewAppearanceTemplate.plist; sourceTree = "<group>"; };
 		4C06E18120EC4AC40055D09A /* TDCChannelSpotlightAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TDCChannelSpotlightAppearance.plist; sourceTree = "<group>"; };
 		4C06E18220EC4AC40055D09A /* TVCMainWindowAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCMainWindowAppearance.plist; sourceTree = "<group>"; };
 		4C06E18320EC4AC40055D09A /* TVCMainWindowTextViewAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCMainWindowTextViewAppearance.plist; sourceTree = "<group>"; };
 		4C06E18420EC4AC40055D09A /* TVCServerListAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCServerListAppearance.plist; sourceTree = "<group>"; };
-		4C06E18520EC4AC40055D09A /* TVCMainWindowAppearanceTemplate.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TVCMainWindowAppearanceTemplate.plist; sourceTree = "<group>"; };
 		4C06E24720EC4B970055D09A /* IRCConnectionConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IRCConnectionConfig.h; path = ../Shared/Headers/IRCConnectionConfig.h; sourceTree = SOURCE_ROOT; };
 		4C06E25B20EC4BBD0055D09A /* IRCConnectionConfigInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IRCConnectionConfigInternal.h; path = ../Shared/Headers/Internal/IRCConnectionConfigInternal.h; sourceTree = SOURCE_ROOT; };
 		4C06E26020EC4C560055D09A /* TPCPreferencesPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TPCPreferencesPrivate.h; path = ../Shared/Headers/Private/TPCPreferencesPrivate.h; sourceTree = SOURCE_ROOT; };
@@ -1266,7 +1261,6 @@
 		4C31535220EB676400448776 /* encryptionLockIconDark@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "encryptionLockIconDark@2x.tif"; sourceTree = "<group>"; };
 		4C31535320EB676400448776 /* encryptionLockIconLight.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = encryptionLockIconLight.tif; sourceTree = "<group>"; };
 		4C31535620EB676400448776 /* Copyright Information for Images.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Copyright Information for Images.txt"; sourceTree = "<group>"; };
-		4C31535820EB676400448776 /* applicationIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = applicationIcon.icns; sourceTree = "<group>"; };
 		4C31535920EB676400448776 /* applicationIcon.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = applicationIcon.iconset; sourceTree = "<group>"; };
 		4C31535A20EB676400448776 /* applicationIconBirthday.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = applicationIconBirthday.icns; sourceTree = "<group>"; };
 		4C31535F20EB676400448776 /* DIGreenBadgeLeft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIGreenBadgeLeft.png; sourceTree = "<group>"; };
@@ -1436,15 +1430,10 @@
 			isa = PBXGroup;
 			children = (
 				4C06E18120EC4AC40055D09A /* TDCChannelSpotlightAppearance.plist */,
-				4C06E17E20EC4AC40055D09A /* TDCChannelSpotlightAppearanceTemplate.plist */,
 				4C06E18220EC4AC40055D09A /* TVCMainWindowAppearance.plist */,
-				4C06E18520EC4AC40055D09A /* TVCMainWindowAppearanceTemplate.plist */,
 				4C06E18320EC4AC40055D09A /* TVCMainWindowTextViewAppearance.plist */,
-				4C06E18020EC4AC40055D09A /* TVCMainWindowTextViewAppearanceTemplate.plist */,
 				4C06E17C20EC4AC40055D09A /* TVCMemberListAppearance.plist */,
-				4C06E17F20EC4AC40055D09A /* TVCMemberListAppearanceTemplate.plist */,
 				4C06E18420EC4AC40055D09A /* TVCServerListAppearance.plist */,
-				4C06E17D20EC4AC40055D09A /* TVCServerListAppearanceTemplate.plist */,
 			);
 			path = Appearance;
 			sourceTree = "<group>";
@@ -2510,7 +2499,6 @@
 			isa = PBXGroup;
 			children = (
 				4C31535920EB676400448776 /* applicationIcon.iconset */,
-				4C31535820EB676400448776 /* applicationIcon.icns */,
 				4C31535A20EB676400448776 /* applicationIconBirthday.icns */,
 			);
 			path = Application;
@@ -4085,25 +4073,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		4C13442320C75C4900343AB7 /* Release (Sandboxed) */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = "Release (Sandboxed)";
-		};
-		4C13442620C75C4900343AB7 /* Release (Sandboxed) */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = "Release (Sandboxed)";
-		};
-		4C13442820C75C4900343AB7 /* Release (Sandboxed) */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = "Release (Sandboxed)";
-		};
 		4C1DC56E1580420500A47BC9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4C3154DF20EB685700448776 /* Textual App.xcconfig */;
@@ -4152,7 +4121,6 @@
 			buildConfigurations = (
 				4C1DC56E1580420500A47BC9 /* Debug */,
 				4C1DC56F1580420500A47BC9 /* Release */,
-				4C13442320C75C4900343AB7 /* Release (Sandboxed) */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4162,7 +4130,6 @@
 			buildConfigurations = (
 				4C1DC5711580420500A47BC9 /* Debug */,
 				4C1DC5721580420500A47BC9 /* Release */,
-				4C13442620C75C4900343AB7 /* Release (Sandboxed) */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4172,7 +4139,6 @@
 			buildConfigurations = (
 				4CCF301215804DCE006FFE21 /* Debug */,
 				4CCF301315804DCE006FFE21 /* Release */,
-				4C13442820C75C4900343AB7 /* Release (Sandboxed) */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
