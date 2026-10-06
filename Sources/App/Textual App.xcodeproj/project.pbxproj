@@ -1318,7 +1318,6 @@
 		4C3154E420EB685700448776 /* XPC Service - ICL Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL Extensions.xcconfig"; sourceTree = "<group>"; };
 		4C3154E520EB685700448776 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
 		4C3154E720EB68A900448776 /* Standard Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Standard Release.entitlements"; sourceTree = "<group>"; };
-		4C3154E820EB68A900448776 /* Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Debug.entitlements; sourceTree = "<group>"; };
 		4C315EE72C36581A001A16B4 /* KeysExcludedFromExport.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromExport.plist; sourceTree = "<group>"; };
 		4C315EE82C36581A001A16B4 /* PreferenceKeyMasterList.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PreferenceKeyMasterList.plist; sourceTree = "<group>"; };
 		4C33341B20CC471A00ACB9AD /* Bundled Scripts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Bundled Scripts"; sourceTree = "<group>"; };
@@ -2690,7 +2689,6 @@
 		4C3154E620EB68A900448776 /* Sandbox */ = {
 			isa = PBXGroup;
 			children = (
-				4C3154E820EB68A900448776 /* Debug.entitlements */,
 				4C3154E720EB68A900448776 /* Standard Release.entitlements */,
 			);
 			name = Sandbox;

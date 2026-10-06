@@ -3,4 +3,4 @@
 #include "Textual.xcconfig"
 #include "../Common/Textual App.xcconfig"
 
-CODE_SIGN_ENTITLEMENTS = ${PROJECT_DIR}/Configurations/Sandbox/Debug.entitlements
+CODE_SIGN_ENTITLEMENTS = ${PROJECT_DIR}/Configurations/Sandbox/Standard Release.entitlements
