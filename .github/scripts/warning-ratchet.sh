@@ -3,8 +3,10 @@
 # Fails when a build log has more warnings than the committed baseline.
 # Usage: warning-ratchet.sh <build log> <baseline file> <description> [extended grep pattern]
 #
-# Warnings are counted once per file and message (line numbers and the
-# checkout path are ignored), so moving code around does not change the count.
+# Only diagnostics that start with a file path count (not Swift's multi-line
+# notes or tool messages), once per file and message: line numbers and the
+# checkout path are ignored, so moving code around does not change the count.
+# Baselines must come from a clean build, as CI builds from scratch.
 
 set -eo pipefail
 
@@ -13,7 +15,7 @@ baseline_file="$2"
 description="$3"
 pattern="${4:- warning:}"
 
-count=$(grep ' warning:' "$log" | grep -E -- "$pattern" | sed -E "s#${PWD}/##; s/:[0-9]+:[0-9]+:/:/" | sort -u | wc -l | tr -d ' ')
+count=$(grep -E '^/.+: warning: ' "$log" | grep -E -- "$pattern" | sed -E "s#^${PWD}/##; s/:[0-9]+:[0-9]+:/:/" | sort -u | wc -l | tr -d ' ')
 baseline=$(tr -dc '0-9' < "$baseline_file")
 
 echo "$description: $count (baseline $baseline)"
