@@ -60,7 +60,13 @@ NS_ASSUME_NONNULL_BEGIN
 						   messageString:(NSString *)messageString
 {
 	IRCChannel *channel = mainWindow().selectedChannel;
-	
+
+	/* Every command needs a channel or query of the client it was
+	 invoked on; there is none in a server console. */
+	if (channel == nil || channel.associatedClient != client) {
+		return;
+	}
+
 	/* We can brag in private messages so add above if statement */
 	if ([commandString isEqualToString:@"BRAG"]) {
 		[self bragInChannel:channel onClient:client];

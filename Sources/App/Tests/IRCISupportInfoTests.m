@@ -77,6 +77,20 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(info.userModeSymbols[@"characters"], (@[@"@", @"+"]));
 }
 
+- (void)testMalformedPrefixIsIgnored
+{
+	IRCISupportInfo *info = self.client.supportInfo;
+
+	[info processConfigurationData:@"me PREFIX=(qaohv)~&@%+ :are supported by this server"];
+
+	/* A missing closing parenthesis used to crash the app (NSMakeRange with a negative length). */
+	for (NSString *malformed in @[@"(ov", @"ov)@+", @")(ov@+", @"(ov)@"]) {
+		[info processConfigurationData:[NSString stringWithFormat:@"me PREFIX=%@ :are supported by this server", malformed]];
+
+		XCTAssertEqualObjects(info.userModeSymbols[@"modeSymbols"], (@[@"q", @"a", @"o", @"h", @"v"]), @"PREFIX=%@ was not ignored", malformed);
+	}
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

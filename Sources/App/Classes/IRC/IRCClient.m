@@ -11038,9 +11038,15 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	LogToConsoleError("%{public}@", TXTLS(@"IRC[ax0-mt]", errorDescription));
 }
 
-- (void)sendTextualCmdScriptResult:(NSString *)resultString toChannel:(nullable NSString *)channel
+- (void)sendTextualCmdScriptResult:(nullable NSString *)resultString toChannel:(nullable NSString *)channel
 {
-	NSParameterAssert(resultString != nil);
+	/* Scripts that return nothing, a non-string AppleScript result,
+	 or output that is not valid UTF-8 have no output to send. */
+	resultString = resultString.trim;
+
+	if (resultString.length == 0) {
+		return;
+	}
 
 	IRCTreeItem *destination = nil;
 
@@ -11055,8 +11061,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		return;
 	}
-
-	resultString = resultString.trim;
 
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self inputText:resultString destination:destination];

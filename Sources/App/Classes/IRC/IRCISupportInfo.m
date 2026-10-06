@@ -378,8 +378,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSInteger openingParenthesesPosition = [modeString stringPosition:@"("];
 	NSInteger closingParenthesesPosition = [modeString stringPosition:@")"];
 
-	if (openingParenthesesPosition != 0 &&
-		openingParenthesesPosition >= closingParenthesesPosition)
+	if (openingParenthesesPosition != 0 ||
+		closingParenthesesPosition <= openingParenthesesPosition)
 	{
 		return;
 	}

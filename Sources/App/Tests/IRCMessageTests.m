@@ -104,6 +104,16 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(message.senderNickname, @"irc.example.net");
 }
 
+- (void)testCommandWithoutPrefixAndWithoutClient
+{
+	/* The public -initWithLine: has no client to take the server address from. */
+	IRCMessage *message = [self parse:@"PING :token"];
+
+	XCTAssertEqualObjects(message.command, @"PING");
+	XCTAssertTrue(message.senderIsServer);
+	XCTAssertEqualObjects(message.senderNickname, @"");
+}
+
 - (void)testEmptyTrailingParameter
 {
 	IRCMessage *message = [self parse:@":nick!user@host TOPIC #channel :"];
