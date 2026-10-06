@@ -45,10 +45,12 @@ Development/dev run                  # build and start Textual Dev
 Development/dev server start         # local Ergo server (6667, TLS 6697; NickServ, SASL)
 Development/dev connect              # connect Textual Dev to it
 Development/dev scripted --list      # scripted servers for edge cases (floods, spoofed NickServ, …)
+Development/dev input /brag          # run a command as if typed in the newest server
+Development/dev config nickServHost=services.textual.test   # change the newest server's settings
 Development/dev reset                # delete Textual Dev's data
 ```
 
-In Textual Dev, `irc://` links to 127.0.0.1, localhost or ::1 connect right away; other links only add the server, as in release builds. Use a test nickname rather than your own on public networks, and don't import the settings of your installed Textual: both copies would then use the same Keychain items.
+In Textual Dev, `irc://` links to 127.0.0.1, localhost or ::1 connect right away and accept the test servers' self-signed certificates; other links only add the server, as in release builds. `input`, `config` and `reset` use `textual://dev-…` links that only Debug builds understand. Use a test nickname rather than your own on public networks, and don't import the settings of your installed Textual: both copies would then use the same Keychain items.
 
 ## Conventions
 

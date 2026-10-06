@@ -36,11 +36,14 @@
  *
  *********************************************************************** */
 
+#import "BuildConfig.h"
 #import "NSStringHelper.h"
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
 #import "TDCAlert.h"
+#import "TPCApplicationInfo.h"
 #import "TPCPathInfo.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TVCMainWindow.h"
@@ -150,6 +153,23 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)parseIRCProtocolURI:(NSString *)location withDescriptor:(nullable NSAppleEventDescriptor *)event
 {
 	NSParameterAssert(location != nil);
+
+#ifdef DEBUG
+	/* Textual Dev only (Development/dev input, config, reset) */
+	if ([location isEqualToString:@"textual://dev-reset"]) {
+		[self performDevelopmentReset];
+
+		return;
+	} else if ([location hasPrefix:@"textual://dev-input?"]) {
+		[self performDevelopmentInputWithURL:location];
+
+		return;
+	} else if ([location hasPrefix:@"textual://dev-config?"]) {
+		[self performDevelopmentConfigurationWithURL:location];
+
+		return;
+	}
+#endif
 
 	/* Basic input clean up. */
 	NSString *locationValue = location;
@@ -277,7 +297,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Textual Dev connects to test servers on this Mac straight away
 	 (Development/dev connect), as a new server each time because the
 	 test servers differ only by port. */
-	if ([@[@"127.0.0.1", @"localhost", @"::1"] containsObject:serverAddress]) {
+	if ([self isDevelopmentTestServerAddress:serverAddress]) {
 		[self createConnectionToServer:resultValue channelList:channelList connectWhenCreated:YES mergeConnectionIfPossible:NO selectFirstChannelAdded:NO];
 
 		return;
@@ -287,6 +307,130 @@ NS_ASSUME_NONNULL_BEGIN
 	/* A URL is consider untrusted and will not auto connect */
 	[self createConnectionToServer:resultValue channelList:channelList connectWhenCreated:NO mergeConnectionIfPossible:YES selectFirstChannelAdded:NO];
 }
+
+#ifdef DEBUG
++ (BOOL)isDevelopmentTestServerAddress:(NSString *)serverAddress
+{
+	return [@[@"127.0.0.1", @"localhost", @"::1"] containsObject:serverAddress];
+}
+
+/* textual://dev-input?text=<text>[&channel=<channel>] selects the newest server's
+ console, or one of its channels, and runs the text as if it was typed there.
+ Without text, it only selects. */
++ (void)performDevelopmentInputWithURL:(NSString *)location
+{
+	NSURLComponents *components = [NSURLComponents componentsWithString:location];
+
+	NSString *text = nil;
+	NSString *channelName = nil;
+
+	for (NSURLQueryItem *item in components.queryItems) {
+		if ([item.name isEqualToString:@"text"]) {
+			text = item.value;
+		} else if ([item.name isEqualToString:@"channel"]) {
+			channelName = item.value;
+		}
+	}
+
+	IRCClient *client = worldController().clientList.lastObject;
+
+	if (client == nil) {
+		return;
+	}
+
+	IRCTreeItem *destination = client;
+
+	if (channelName.length > 0) {
+		IRCChannel *channel = [client findChannel:channelName];
+
+		if (channel == nil) {
+			return;
+		}
+
+		destination = channel;
+	}
+
+	[mainWindow() select:destination];
+
+	if (text.length == 0) {
+		return;
+	}
+
+	[client inputText:text destination:destination];
+}
+
+/* textual://dev-config?<key>=<value>[&…] changes the newest server's configuration
+ as Server Properties would. Keys are IRCClientConfig property names; switches
+ take 1 or 0. */
++ (void)performDevelopmentConfigurationWithURL:(NSString *)location
+{
+	IRCClient *client = worldController().clientList.lastObject;
+
+	if (client == nil) {
+		return;
+	}
+
+	IRCClientConfigMutable *config = [client.config mutableCopy];
+
+	NSURLComponents *components = [NSURLComponents componentsWithString:location];
+
+	for (NSURLQueryItem *item in components.queryItems) {
+		NSString *setterName = [NSString stringWithFormat:@"set%@%@:", [item.name substringToIndex:1].uppercaseString, [item.name substringFromIndex:1]];
+
+		if ([config respondsToSelector:NSSelectorFromString(setterName)] == NO) {
+			LogToConsoleError("dev-config: unknown key '%{public}@'", item.name);
+
+			continue;
+		}
+
+		[config setValue:item.value forKey:item.name];
+	}
+
+	[client updateConfig:config];
+}
+
+/* textual://dev-reset deletes Textual Dev's own preferences (including the
+ server list), scrollback, caches and logs, then quits without saving. Only
+ the app itself may remove the contents of its containers. The container
+ holds links to the user's folders, so only these folders are removed.
+ Keychain items are kept. */
++ (void)performDevelopmentReset
+{
+	NSString *bundleIdentifier = [TPCApplicationInfo applicationBundleIdentifier];
+
+	if ([bundleIdentifier isEqualToString:@"com.textualapp.app.dev"] == NO) {
+		return;
+	}
+
+	[RZUserDefaults() removePersistentDomainForName:TXBundleBuildGroupContainerIdentifier];
+
+	[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:bundleIdentifier];
+
+	NSURL *containerLibraryURL = [[NSURL fileURLWithPath:NSHomeDirectory()] URLByAppendingPathComponent:@"Library"];
+
+	NSURL *groupContainerLibraryURL = [[TPCPathInfo groupContainerURL] URLByAppendingPathComponent:@"Library"];
+
+	NSArray *folders = @[
+		[containerLibraryURL URLByAppendingPathComponent:@"Application Support"],
+		[containerLibraryURL URLByAppendingPathComponent:@"Caches"],
+		[containerLibraryURL URLByAppendingPathComponent:@"Logs"]
+	];
+
+	if (groupContainerLibraryURL) {
+		folders = [folders arrayByAddingObjectsFromArray:@[
+			[groupContainerLibraryURL URLByAppendingPathComponent:@"Application Support"],
+			[groupContainerLibraryURL URLByAppendingPathComponent:@"Caches"]
+		]];
+	}
+
+	for (NSURL *folder in folders) {
+		[RZFileManager() removeItemAtURL:folder error:NULL];
+	}
+
+	/* Not -terminate:, which would save the server list again */
+	exit(0);
+}
+#endif
 
 + (void)createConnectionToServer:(NSString *)serverInfo channelList:(nullable NSString *)channelList connectWhenCreated:(BOOL)connectWhenCreated
 {
@@ -539,6 +683,13 @@ NS_ASSUME_NONNULL_BEGIN
 		if (serverPassword != nil) {
 			server.serverPassword = serverPassword;
 		}
+
+#ifdef DEBUG
+		/* Textual Dev: the test servers on this Mac use self-signed certificates */
+		if ([self isDevelopmentTestServerAddress:serverAddress]) {
+			baseConfig.validateServerCertificateChain = NO;
+		}
+#endif
 
 		baseConfig.serverList = @[[server copy]];
 

@@ -78,31 +78,39 @@ cmd_run() {
 }
 
 cmd_reset() {
-	cmd_stop
+	check_app
 
-	# Only Textual Dev's own data; never anything of an installed Textual.
-	local paths=(
-		"${HOME}/Library/Containers/${BUNDLE_ID}"
-		"${HOME}/Library/Group Containers/${GROUP_ID}"
-		"${HOME}/Library/Application Scripts/${BUNDLE_ID}"
-		"${HOME}/Library/Saved Application State/${BUNDLE_ID}.savedState"
-	)
-
-	echo "This deletes Textual Dev's settings, logs and scrollback:"
-	printf '  %s\n' "${paths[@]}"
+	echo "This deletes Textual Dev's server list, preferences, scrollback, caches, logs and scripts."
 
 	if [ "${1:-}" != "--yes" ]; then
 		read -r -p "Continue? [y/N] " answer
 		[ "${answer}" = "y" ] || [ "${answer}" = "Y" ] || exit 1
 	fi
 
-	for path in "${paths[@]}"; do
-		if [ -e "${path}" ]; then
-			rm -rf "${path}"
-		fi
+	# macOS lets only the app itself empty its containers, so Textual Dev
+	# deletes its own data (textual://dev-reset) and quits without saving.
+	cmd_start > /dev/null
+
+	for _ in $(seq 1 20); do
+		[ -n "$(app_pid)" ] && break
+		sleep 0.5
 	done
 
-	echo "Textual Dev was reset. Its Keychain items (\"Textual (…)\") are not removed."
+	sleep 3
+
+	open -a "${APP}" "textual://dev-reset"
+
+	for _ in $(seq 1 20); do
+		[ -n "$(app_pid)" ] || break
+		sleep 0.5
+	done
+
+	[ -z "$(app_pid)" ] || die "Textual Dev did not reset; is it a build with textual://dev-reset?"
+
+	rm -rf "${HOME}/Library/Application Scripts/${BUNDLE_ID}" \
+		"${HOME}/Library/Saved Application State/${BUNDLE_ID}.savedState"
+
+	echo "Textual Dev was reset. Its Keychain items (\"Textual (…)\") are kept."
 }
 
 cmd_logs() {
@@ -180,6 +188,41 @@ cmd_connect() {
 	open -a "${APP}" "${1:-irc://127.0.0.1:6667/#textual-dev}"
 }
 
+cmd_input() {
+	check_app
+
+	local channel=""
+
+	if [ "${1:-}" = "--channel" ]; then
+		channel="$2"
+		shift 2
+	fi
+
+	[ $# -gt 0 ] || die "input needs the text to run (or '' to only select), e.g. Development/dev input /brag"
+
+	local url
+	url=$(python3 -c 'import sys, urllib.parse
+query = {"text": sys.argv[1]}
+if sys.argv[2]:
+	query["channel"] = sys.argv[2]
+print("textual://dev-input?" + urllib.parse.urlencode(query, quote_via=urllib.parse.quote))' "$*" "${channel}")
+
+	open -a "${APP}" "${url}"
+}
+
+cmd_config() {
+	check_app
+
+	[ $# -gt 0 ] || die "config needs key=value pairs, e.g. Development/dev config nickServHost=services.textual.test"
+
+	local url
+	url=$(python3 -c 'import sys, urllib.parse
+pairs = [tuple(argument.split("=", 1)) for argument in sys.argv[1:]]
+print("textual://dev-config?" + urllib.parse.urlencode(pairs, quote_via=urllib.parse.quote))' "$@")
+
+	open -a "${APP}" "${url}"
+}
+
 cmd_screenshot() {
 	local pid output window
 	pid=$(app_pid)
@@ -207,6 +250,11 @@ cmd_help() {
 	  reset [--yes]         Delete Textual Dev's settings, logs and scrollback
 	  logs                  Stream the log of Textual Dev and its services
 	  connect [url]         Open an irc:// URL in Textual Dev (default: the local Ergo)
+	  input [--channel c] <text>
+	                        Select the newest server (or its channel c) and run text
+	                        there as if typed; '' only selects
+	  config key=value …    Change the newest server's configuration (IRCClientConfig
+	                        names, e.g. nicknamePassword=… nickServHost=…)
 	  screenshot [file]     Capture Textual Dev's window
 	  server [start|stop|status]
 	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
@@ -218,6 +266,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|scripted|connect|screenshot|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|scripted|connect|input|config|screenshot|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac
