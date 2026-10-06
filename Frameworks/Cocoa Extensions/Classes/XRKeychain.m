@@ -49,7 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 		searchDictionary[(id)kSecClass] = (id)kSecClassGenericPassword;
 	}
 
-	searchDictionary[(id)kSecAttrLabel] = itemName;
+	/* Not the label: it isn't part of what makes an item unique, so an item
+	 saved under another label would not be found, and adding a new one then
+	 fails as a duplicate. The label is only set when saving. */
 	searchDictionary[(id)kSecAttrDescription] = itemKind;
 
 	if (username.length > 0) {
@@ -120,6 +122,23 @@ NS_ASSUME_NONNULL_BEGIN
 					serviceName:(NSString *)service
 					   forCloud:(BOOL)modifyForCloud
 {
+	OSStatus status = [self modifyOrAddKeychainItemReturningStatus:itemName
+													  withItemKind:itemKind
+													   forUsername:username
+												   withNewPassword:newPassword
+													   serviceName:service
+														  forCloud:modifyForCloud];
+
+	return (status == errSecSuccess);
+}
+
++ (OSStatus)modifyOrAddKeychainItemReturningStatus:(NSString *)itemName
+									  withItemKind:(NSString *)itemKind
+									   forUsername:(nullable NSString *)username
+								   withNewPassword:(nullable NSString *)newPassword
+									   serviceName:(NSString *)service
+										  forCloud:(BOOL)modifyForCloud
+{
 	NSParameterAssert(itemName != nil);
 	NSParameterAssert(itemKind != nil);
 	NSParameterAssert(service != nil);
@@ -132,8 +151,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if (modifyForCloud) {
 		oldDictionary[(id)kSecAttrSynchronizable] = (id)kCFBooleanTrue;
 	}
-	
+
+	/* The label is refreshed on every update, so items saved under another one are adopted */
 	NSMutableDictionary *newDictionary = [NSMutableDictionary dictionary];
+
+	newDictionary[(id)kSecAttrLabel] = itemName;
 
 	if (newPassword) {
 		NSData *encodedPassword = [newPassword dataUsingEncoding:NSUTF8StringEncoding];
@@ -148,17 +170,33 @@ NS_ASSUME_NONNULL_BEGIN
 	OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)oldDictionary,
 									(__bridge CFDictionaryRef)newDictionary);
 
-	if (status == errSecItemNotFound) {
-		if (newPassword && newPassword.length > 0) {
-			return [self addKeychainItem:itemName
-							withItemKind:itemKind
-							 forUsername:username
-							withPassword:newPassword
-							 serviceName:service];
-		}
+	if (status != errSecItemNotFound) {
+		return status;
 	}
 
-	return (status == errSecSuccess);
+	if (newPassword.length == 0) {
+		return errSecSuccess; // Nothing to save
+	}
+
+	status = [self _addKeychainItem:itemName
+					   withItemKind:itemKind
+						forUsername:username
+					   withPassword:newPassword
+						serviceName:service
+						  ontoCloud:modifyForCloud];
+
+	/* An item for this service and account exists with another kind (description):
+	 the Keychain still treats it as the same item, so update that one */
+	if (status == errSecDuplicateItem) {
+		[oldDictionary removeObjectForKey:(id)kSecAttrDescription];
+
+		newDictionary[(id)kSecAttrDescription] = itemKind;
+
+		status = SecItemUpdate((__bridge CFDictionaryRef)oldDictionary,
+							   (__bridge CFDictionaryRef)newDictionary);
+	}
+
+	return status;
 }
 
 + (BOOL)addKeychainItem:(NSString *)itemName
@@ -187,10 +225,29 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(password != nil);
 	NSParameterAssert(service != nil);
 
+	OSStatus status = [self _addKeychainItem:itemName
+								withItemKind:itemKind
+								 forUsername:username
+								withPassword:password
+								 serviceName:service
+								   ontoCloud:addToCloud];
+
+	return (status == errSecSuccess);
+}
+
++ (OSStatus)_addKeychainItem:(NSString *)itemName
+				withItemKind:(NSString *)itemKind
+				 forUsername:(nullable NSString *)username
+				withPassword:(NSString *)password
+				 serviceName:(NSString *)service
+				   ontoCloud:(BOOL)addToCloud
+{
 	NSMutableDictionary *dictionary = [self searchDictionary:itemName
 												withItemKind:itemKind
 												 forUsername:username
 												 serviceName:service];
+
+	dictionary[(id)kSecAttrLabel] = itemName;
 
 	if (addToCloud) {
 		dictionary[(id)kSecAttrSynchronizable] = (id)kCFBooleanTrue;
@@ -200,9 +257,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	dictionary[(id)kSecValueData] = encodedPassword;
 
-	OSStatus status = SecItemAdd((__bridge CFDictionaryRef)dictionary, NULL);
-
-	return (status == errSecSuccess);
+	return SecItemAdd((__bridge CFDictionaryRef)dictionary, NULL);
 }
 
 + (nullable NSString *)getPasswordFromKeychainItem:(NSString *)itemName

@@ -36,6 +36,7 @@
  *
  *********************************************************************** */
 
+#import "TLOKeychainPrivate.h"
 #import "NSObjectHelperPrivate.h"
 #import "NSStringHelper.h"
 #import "IRC.h"
@@ -584,12 +585,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	BOOL prefersSecuredConnection = [dic boolForKey:@"prefersSecuredConnection"];
 
-	NSString *serverPasswordServiceName = [NSString stringWithFormat:@"textual.server.%@", self.uniqueIdentifier];
-
-	NSString *serverPassword = [XRKeychain getPasswordFromKeychainItem:@"Textual (Server Password)"
-														  withItemKind:@"application password"
-														   forUsername:nil
-														   serviceName:serverPasswordServiceName];
+	NSString *serverPassword = [TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier];
 
 	IRCServerMutable *server = [IRCServerMutable new];
 
@@ -836,14 +832,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 - (nullable NSString *)nicknamePasswordFromKeychain
 {
-	NSString *nicknamePasswordServiceName = [NSString stringWithFormat:@"textual.nickserv.%@", self.uniqueIdentifier];
-
-	NSString *kcPassword = [XRKeychain getPasswordFromKeychainItem:@"Textual (NickServ)"
-													  withItemKind:@"application password"
-													   forUsername:nil
-													   serviceName:nicknamePasswordServiceName];
-
-	return kcPassword;
+	return [TLOKeychain passwordOfKind:TLOKeychainItemKindNicknamePassword forIdentifier:self.uniqueIdentifier];
 }
 
 - (nullable NSString *)proxyPassword
@@ -857,14 +846,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 - (nullable NSString *)proxyPasswordFromKeychain
 {
-	NSString *proxyPasswordServiceName = [NSString stringWithFormat:@"textual.proxy-server.%@", self.uniqueIdentifier];
-
-	NSString *kcPassword = [XRKeychain getPasswordFromKeychainItem:@"Textual (Proxy Server Password)"
-													  withItemKind:@"application password"
-													   forUsername:nil
-													   serviceName:proxyPasswordServiceName];
-
-	return kcPassword;
+	return [TLOKeychain passwordOfKind:TLOKeychainItemKindProxyPassword forIdentifier:self.uniqueIdentifier];
 }
 
 - (void)writeNicknamePasswordToKeychain
@@ -873,15 +855,10 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		return;
 	}
 
-	NSString *nicknamePasswordServiceName = [NSString stringWithFormat:@"textual.nickserv.%@", self.uniqueIdentifier];
-
-	[XRKeychain modifyOrAddKeychainItem:@"Textual (NickServ)"
-						   withItemKind:@"application password"
-							forUsername:nil
-						withNewPassword:self->_nicknamePassword
-							serviceName:nicknamePasswordServiceName];
-
-	self->_nicknamePassword = nil;
+	/* Kept in memory if the Keychain refuses it */
+	if ([TLOKeychain setPassword:self->_nicknamePassword ofKind:TLOKeychainItemKindNicknamePassword forIdentifier:self.uniqueIdentifier]) {
+		self->_nicknamePassword = nil;
+	}
 }
 
 - (void)writeProxyPasswordToKeychain
@@ -890,37 +867,22 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		return;
 	}
 
-	NSString *proxyPasswordServiceName = [NSString stringWithFormat:@"textual.proxy-server.%@", self.uniqueIdentifier];
-
-	[XRKeychain modifyOrAddKeychainItem:@"Textual (Proxy Server Password)"
-						   withItemKind:@"application password"
-							forUsername:nil
-						withNewPassword:self->_proxyPassword
-							serviceName:proxyPasswordServiceName];
-
-	self->_proxyPassword = nil;
+	/* Kept in memory if the Keychain refuses it */
+	if ([TLOKeychain setPassword:self->_proxyPassword ofKind:TLOKeychainItemKindProxyPassword forIdentifier:self.uniqueIdentifier]) {
+		self->_proxyPassword = nil;
+	}
 }
 
 - (void)destroyNicknamePasswordKeychainItem
 {
-	NSString *nicknamePasswordServiceName = [NSString stringWithFormat:@"textual.nickserv.%@", self.uniqueIdentifier];
-
-	[XRKeychain deleteKeychainItem:@"Textual (NickServ)"
-					  withItemKind:@"application password"
-					   forUsername:nil
-					   serviceName:nicknamePasswordServiceName];
+	[TLOKeychain deletePasswordOfKind:TLOKeychainItemKindNicknamePassword forIdentifier:self.uniqueIdentifier];
 
 	self->_nicknamePassword = nil;
 }
 
 - (void)destroyProxyPasswordKeychainItem
 {
-	NSString *proxyPasswordServiceName = [NSString stringWithFormat:@"textual.proxy-server.%@", self.uniqueIdentifier];
-
-	[XRKeychain deleteKeychainItem:@"Textual (Proxy Server Password)"
-					  withItemKind:@"application password"
-					   forUsername:nil
-					   serviceName:proxyPasswordServiceName];
+	[TLOKeychain deletePasswordOfKind:TLOKeychainItemKindProxyPassword forIdentifier:self.uniqueIdentifier];
 
 	self->_proxyPassword = nil;
 }
@@ -933,12 +895,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	self->_migratedServerPasswordPendingDestroy = NO;
 
-	NSString *serverPasswordServiceName = [NSString stringWithFormat:@"textual.server.%@", self.uniqueIdentifier];
-
-	[XRKeychain deleteKeychainItem:@"Textual (Server Password)"
-					  withItemKind:@"application password"
-					   forUsername:nil
-					   serviceName:serverPasswordServiceName];
+	[TLOKeychain deletePasswordOfKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier];
 }
 
 #pragma mark -

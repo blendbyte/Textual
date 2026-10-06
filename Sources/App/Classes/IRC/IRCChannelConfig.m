@@ -36,6 +36,7 @@
  *
  *********************************************************************** */
 
+#import "TLOKeychainPrivate.h"
 #import "NSObjectHelperPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "IRCChannelConfigInternal.h"
@@ -304,14 +305,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)secretKeyFromKeychain
 {
-	NSString *secretKeyServiceName = [NSString stringWithFormat:@"textual.cjoinkey.%@", self.uniqueIdentifier];
-
-	NSString *kcPassword = [XRKeychain getPasswordFromKeychainItem:@"Textual (Channel JOIN Key)"
-													  withItemKind:@"application password"
-													   forUsername:nil
-													   serviceName:secretKeyServiceName];
-
-	return kcPassword;
+	return [TLOKeychain passwordOfKind:TLOKeychainItemKindChannelKey forIdentifier:self.uniqueIdentifier];
 }
 
 - (void)writeSecretKeyToKeychain
@@ -320,25 +314,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSString *secretKeyServiceName = [NSString stringWithFormat:@"textual.cjoinkey.%@", self.uniqueIdentifier];
-
-	[XRKeychain modifyOrAddKeychainItem:@"Textual (Channel JOIN Key)"
-						   withItemKind:@"application password"
-							forUsername:nil
-						withNewPassword:self->_secretKey
-							serviceName:secretKeyServiceName];
-
-	self->_secretKey = nil;
+	/* Kept in memory if the Keychain refuses it */
+	if ([TLOKeychain setPassword:self->_secretKey ofKind:TLOKeychainItemKindChannelKey forIdentifier:self.uniqueIdentifier]) {
+		self->_secretKey = nil;
+	}
 }
 
 - (void)destroySecretKeyKeychainItem
 {
-	NSString *secretKeyServiceName = [NSString stringWithFormat:@"textual.cjoinkey.%@", self.uniqueIdentifier];
-
-	[XRKeychain deleteKeychainItem:@"Textual (Channel JOIN Key)"
-					  withItemKind:@"application password"
-					   forUsername:nil
-					   serviceName:secretKeyServiceName];
+	[TLOKeychain deletePasswordOfKind:TLOKeychainItemKindChannelKey forIdentifier:self.uniqueIdentifier];
 
 	/* Reset temporary value */
 	self->_secretKey = nil;

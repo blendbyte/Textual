@@ -35,6 +35,7 @@
  *
  *********************************************************************** */
 
+#import "TLOKeychainPrivate.h"
 #import "NSObjectHelperPrivate.h"
 #import "IRC.h"
 #import "IRCConnectionConfig.h"
@@ -165,14 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)serverPasswordFromKeychain
 {
-	NSString *serverPasswordServiceName = [NSString stringWithFormat:@"textual.server.%@", self.uniqueIdentifier];
-
-	NSString *kcPassword = [XRKeychain getPasswordFromKeychainItem:@"Textual (Server Password)"
-													  withItemKind:@"application password"
-													   forUsername:nil
-													   serviceName:serverPasswordServiceName];
-
-	return kcPassword;
+	return [TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier];
 }
 
 - (void)writeServerPasswordToKeychain
@@ -181,25 +175,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSString *serverPasswordServiceName = [NSString stringWithFormat:@"textual.server.%@", self.uniqueIdentifier];
-
-	[XRKeychain modifyOrAddKeychainItem:@"Textual (Server Password)"
-						   withItemKind:@"application password"
-							forUsername:nil
-						withNewPassword:self->_serverPassword
-							serviceName:serverPasswordServiceName];
-
-	self->_serverPassword = nil;
+	/* Kept in memory if the Keychain refuses it */
+	if ([TLOKeychain setPassword:self->_serverPassword ofKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier]) {
+		self->_serverPassword = nil;
+	}
 }
 
 - (void)destroyServerPasswordKeychainItem
 {
-	NSString *serverPasswordServiceName = [NSString stringWithFormat:@"textual.server.%@", self.uniqueIdentifier];
-
-	[XRKeychain deleteKeychainItem:@"Textual (Server Password)"
-					  withItemKind:@"application password"
-					   forUsername:nil
-					   serviceName:serverPasswordServiceName];
+	[TLOKeychain deletePasswordOfKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier];
 
 	self->_serverPassword = nil;
 }

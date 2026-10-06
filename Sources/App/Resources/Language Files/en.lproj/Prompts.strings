@@ -45,6 +45,12 @@
 "w8p-a3" = "This plugin changed since you last decided about it:\n%@\n\nPlugins can do anything Textual can, including reading your messages and passwords. Only load plugins from developers you trust.";
 "w8p-a4" = "Load Plugin";
 "w8p-a5" = "Don’t Load";
+"k3y-t1" = "Textual couldn’t save the %@ in the Keychain";
+"k3y-m1" = "%1$@ (error %2$d)\n\nIt is kept until Textual quits. Save it again, or check the Textual items in Keychain Access.";
+"k3y-n1" = "server password";
+"k3y-n2" = "NickServ password";
+"k3y-n3" = "proxy password";
+"k3y-n4" = "channel key";
 "p4f-i1" = "This file can’t be imported";
 "p4f-i2" = "It isn’t a settings file exported by Textual, or it is damaged. Nothing was changed.";
 "xne-79" = "Select";
