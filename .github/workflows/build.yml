@@ -77,7 +77,11 @@ jobs:
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER="" \
             ${{ matrix.license-manager && format('TEXTUAL_BUILT_WITH_LICENSE_MANAGER={0}', matrix.license-manager) || '' }} \
-            build
+            build 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Check the warning count
+        if: matrix.runner == 'xcode-27' && matrix.configuration == 'Release' && matrix.license-manager == '1'
+        run: .github/scripts/warning-ratchet.sh "$RUNNER_TEMP/build.log" .github/baselines/compiler-warnings "Compiler warnings"
 
       - name: Verify build products
         env:
@@ -167,3 +171,37 @@ jobs:
           if /usr/libexec/PlistBuddy -c Print "$app/Contents/Info.plist" | grep -q '^    SU'; then
             echo "::error::Info.plist contains Sparkle keys"; exit 1
           fi
+
+  analyze:
+    name: Static analyzer
+    runs-on: xcode-27
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Analyze
+        run: |
+          xcodebuild analyze \
+            -workspace Textual.xcworkspace \
+            -scheme "Textual (Standard Release)" \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -quiet \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            2>&1 | tee "$RUNNER_TEMP/analyze.log"
+
+      # Only the analyzer's own findings, by checker name; compiler warnings
+      # are counted by the build job.
+      - name: Check the analyzer findings
+        run: |
+          .github/scripts/warning-ratchet.sh "$RUNNER_TEMP/analyze.log" .github/baselines/analyzer-findings \
+            "Analyzer findings" '\[(core|deadcode|nullability|osx|unix|security|cplusplus|optin|apiModeling)\.'
