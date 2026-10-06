@@ -177,6 +177,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	object->_isPrintOnlyMessage = self->_isPrintOnlyMessage;
 	object->_messageTags = self->_messageTags;
 	object->_params = self->_params;
+	object->_parentBatchMessage = self->_parentBatchMessage;
 	object->_receivedAt = self->_receivedAt;
 	object->_sender = self->_sender;
 }
@@ -192,40 +193,62 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 @implementation IRCMessage (IRCMessageLineParser)
 
+/* One pass over the line: [@tags SP] [:prefix SP] command [SP params] [SP :trailing].
+ Tokens are separated by the space character (0x20) only. Other whitespace (tab,
+ no-break space, U+3000) is part of a token, so "JOIN #a<NBSP>b" names the channel
+ "#a<NBSP>b", not "#a". See https://modern.ircdocs.horse/#message-format */
 - (BOOL)parseLine:(NSString *)line forClient:(nullable IRCClient *)client
 {
 	NSParameterAssert(line != nil);
 
-	NSMutableString *lineMutable = [line mutableCopy];
+	NSUInteger length = line.length;
+	__block NSUInteger position = 0;
 
-	/* Parse extension information (if present) */
-	if ([lineMutable hasPrefix:@"@"]) {
-		NSString *extensionInfo = lineMutable.token;
+	/* Returns the token starting at position and moves past it and the spaces after it */
+	NSString *(^nextToken)(void) = ^NSString *{
+		NSUInteger tokenStart = position;
 
-		if (extensionInfo.length <= 1) {
-			return NO;
+		while (position < length && [line characterAtIndex:position] != ' ') {
+			position += 1;
 		}
 
-		extensionInfo = [extensionInfo substringFromIndex:1];
+		NSString *token = [line substringWithRange:NSMakeRange(tokenStart, (position - tokenStart))];
 
-		[self parseExtensions:extensionInfo forClient:client];
+		while (position < length && [line characterAtIndex:position] == ' ') {
+			position += 1;
+		}
+
+		return token;
+	};
+
+	/* Leading spaces are not part of any token */
+	while (position < length && [line characterAtIndex:position] == ' ') {
+		position += 1;
 	}
 
-	/* Parse sender information (if present) */
-	if ([lineMutable hasPrefix:@":"]) {
-		NSString *senderInfo = lineMutable.token;
+	/* Message tags */
+	if (position < length && [line characterAtIndex:position] == '@') {
+		NSString *tags = nextToken();
 
-		if (senderInfo.length <= 1) {
+		if (tags.length <= 1) {
 			return NO;
 		}
 
-		senderInfo = [senderInfo substringFromIndex:1];
+		[self parseExtensions:[tags substringFromIndex:1] forClient:client];
+	}
 
-		[self parseSender:senderInfo forClient:client];
+	/* Prefix */
+	if (position < length && [line characterAtIndex:position] == ':') {
+		NSString *prefix = nextToken();
+
+		if (prefix.length <= 1) {
+			return NO;
+		}
+
+		[self parseSender:[prefix substringFromIndex:1] forClient:client];
 	} else {
-		/* If the line does not have a sender, then we use the 
-		 server address as the sender. If that isn't known, then
-		 we use the the address the user has configured. */
+		/* If the line does not have a sender, then we use the
+		 server address as the sender. */
 		/* -serverAddress is nil when there is no client (the
 		 public -initWithLine: used by plugins) or the client
 		 isn't connected anywhere. */
@@ -246,10 +269,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		self->_sender = [sender copy];
 	}
 
-	/* Parse command */
-	NSString *command = lineMutable.token;
+	/* Command */
+	NSString *command = nextToken();
 
-	if (command.length < 1) {
+	if (command.length == 0) {
 		return NO;
 	}
 
@@ -263,29 +286,21 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		self->_commandNumeric = 0;
 	}
 
-	/* Parse remaining data */
-	NSMutableArray<NSString *> *parameters = [NSMutableArray new];
+	/* Parameters; a parameter starting with ":" is the last one and may contain spaces */
+	NSMutableArray<NSString *> *parameters = [NSMutableArray array];
 
-	while (lineMutable.length > 0) {
-		if ([lineMutable hasPrefix:@":"])
-		{
-			NSString *sequence = [lineMutable substringFromIndex:1];
-
-			[parameters addObject:sequence];
+	while (position < length) {
+		if ([line characterAtIndex:position] == ':') {
+			[parameters addObject:[line substringFromIndex:(position + 1)]];
 
 			break;
 		}
-		else
-		{
-			NSString *sequence = lineMutable.token;
 
-			[parameters addObject:sequence];
-		}
+		[parameters addObject:nextToken()];
 	}
 
 	self->_params = [parameters copy];
 
-	/* Return success */
 	return YES;
 }
 
@@ -297,10 +312,28 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	 located at: <http://ircv3.net/specs/core/message-tags-3.2.html> */
 	/* An example grouping would look like the following:
 	 @aaa=bbb;ccc;example.com/ddd=eee */
-	NSDictionary<NSString *, NSString *> *extensions =
-	[extensionInfo formDataUsingSeparator:@";" decodingBlock:^NSString *(NSString *value) {
-		return value.decodedMessageTagString;
-	}];
+	/* A tag without "=" or with an empty value has the empty string as its value;
+	 if a tag appears more than once, the last one wins. */
+	NSMutableDictionary<NSString *, NSString *> *extensions = [NSMutableDictionary dictionary];
+
+	for (NSString *tag in [extensionInfo componentsSeparatedByString:@";"]) {
+		NSRange equalSign = [tag rangeOfString:@"="];
+
+		NSString *key = tag;
+		NSString *value = @"";
+
+		if (equalSign.location != NSNotFound) {
+			key = [tag substringToIndex:equalSign.location];
+
+			value = [tag substringFromIndex:NSMaxRange(equalSign)].decodedMessageTagString;
+		}
+
+		if (key.length == 0) {
+			continue;
+		}
+
+		extensions[key] = value;
+	}
 
 	self->_messageTags = [extensions copy];
 

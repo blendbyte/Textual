@@ -714,23 +714,54 @@ return_method:
 
 - (NSString *)decodedMessageTagString
 {
-	if (self.length == 0) {
+	/* One pass, so an escaped backslash followed by "s" stays "\s" instead
+	 of becoming a space. Unknown escapes drop the backslash; a trailing
+	 lone backslash is dropped. */
+	if ([self rangeOfString:@"\\"].location == NSNotFound) {
 		return self;
 	}
 
-	NSMutableString *bob = [self mutableCopy];
-	
-	if ([bob hasSuffix:@"\\"]) {
-		[bob deleteCharactersInRange:NSMakeRange((bob.length - 1), 1)];
+	NSUInteger length = self.length;
+
+	NSMutableString *decoded = [NSMutableString stringWithCapacity:length];
+
+	for (NSUInteger i = 0; i < length; i++) {
+		unichar character = [self characterAtIndex:i];
+
+		if (character != '\\') {
+			[decoded appendFormat:@"%C", character];
+
+			continue;
+		}
+
+		i += 1;
+
+		if (i == length) {
+			break;
+		}
+
+		unichar escaped = [self characterAtIndex:i];
+
+		switch (escaped) {
+			case ':':
+				[decoded appendString:@";"];
+				break;
+			case 's':
+				[decoded appendString:@" "];
+				break;
+			case 'r':
+				[decoded appendString:@"\r"];
+				break;
+			case 'n':
+				[decoded appendString:@"\n"];
+				break;
+			default:
+				[decoded appendFormat:@"%C", escaped];
+				break;
+		}
 	}
-	
-	[bob replaceOccurrencesOfString:@"\\:" withString:@";" options:0 range:bob.range];
-	[bob replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:0 range:bob.range];
-	[bob replaceOccurrencesOfString:@"\\s" withString:@" " options:0 range:bob.range];
-	[bob replaceOccurrencesOfString:@"\\r" withString:@"\r" options:0 range:bob.range];
-	[bob replaceOccurrencesOfString:@"\\n" withString:@"\n" options:0 range:bob.range];
-	
-	return [bob copy];
+
+	return [decoded copy];
 }
 
 - (BOOL)isModeSymbol

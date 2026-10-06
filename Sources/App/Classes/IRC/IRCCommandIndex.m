@@ -59,6 +59,18 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 	});
 }
 
+/* Commands are looked up by their uppercase name, the form the line parser produces */
++ (NSDictionary *)dictionaryWithUppercaseKeys:(NSDictionary<NSString *, id> *)dictionary
+{
+	NSMutableDictionary *uppercased = [NSMutableDictionary dictionaryWithCapacity:dictionary.count];
+
+	[dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id object, BOOL *stop) {
+		uppercased[key.uppercaseString] = object;
+	}];
+
+	return [uppercased copy];
+}
+
 + (void)_populateCommandIndex
 {
 	/* Populate public data */
@@ -69,7 +81,7 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 
 		[publicValuesMutable removeObjectForKey:_reservedSlotDictionaryKey];
 
-		IRCCommandIndexLocalData = [publicValuesMutable copy];
+		IRCCommandIndexLocalData = [self dictionaryWithUppercaseKeys:publicValuesMutable];
 	}
 
 	/* Populate private data */
@@ -80,7 +92,7 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 
 		[privateValuesMutable removeObjectForKey:_reservedSlotDictionaryKey];
 
-		IRCCommandIndexRemoteData = [privateValuesMutable copy];
+		IRCCommandIndexRemoteData = [self dictionaryWithUppercaseKeys:privateValuesMutable];
 	}
 
 	/* Only error checking we need. It either fails or succeeds. */
@@ -136,9 +148,9 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 	NSDictionary *index = nil;
 	
 	if (isLocalCommand) {
-		index = IRCCommandIndexLocalData[command.lowercaseString];
+		index = IRCCommandIndexLocalData[command.uppercaseString];
 	} else {
-		index = IRCCommandIndexRemoteData[command.lowercaseString];
+		index = IRCCommandIndexRemoteData[command.uppercaseString];
 	}
 	
 	if (index == nil) {
@@ -158,7 +170,7 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 {
 	NSParameterAssert(command != nil);
 
-	NSDictionary *index = IRCCommandIndexRemoteData[command.lowercaseString];
+	NSDictionary *index = IRCCommandIndexRemoteData[command.uppercaseString];
 	
 	if (index == nil) {
 		return NSNotFound;
@@ -177,7 +189,7 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 {
 	NSParameterAssert(command != nil);
 
-	NSDictionary *index = IRCCommandIndexLocalData[command.lowercaseString];
+	NSDictionary *index = IRCCommandIndexLocalData[command.uppercaseString];
 
 	if (index == nil) {
 		return nil;

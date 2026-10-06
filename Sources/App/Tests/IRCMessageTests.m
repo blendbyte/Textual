@@ -39,6 +39,8 @@
 #import "IRCClientPrivate.h"
 #import "IRCISupportInfoPrivate.h"
 #import "IRCMessage.h"
+#import "IRCMessageBatchPrivate.h"
+#import "IRCMessagePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -114,6 +116,82 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(message.senderNickname, @"");
 }
 
+- (void)testParametersAreSplitOnSpacesOnly
+{
+	/* A no-break space or a tab is part of the token; splitting on it let
+	 "JOIN #a<NBSP>b" pass for a JOIN of "#a". */
+	IRCMessage *join = [self parse:@":nick!user@host JOIN #a b"];
+
+	XCTAssertEqualObjects(join.params, (@[@"#a b"]));
+
+	IRCMessage *privmsg = [self parse:@":nick!user@host PRIVMSG #a\tb :hello"];
+
+	XCTAssertEqualObjects(privmsg.params, (@[@"#a\tb", @"hello"]));
+}
+
+- (void)testRepeatedSpacesSeparateParameters
+{
+	IRCMessage *message = [self parse:@":nick!user@host  PRIVMSG   #channel    :hello  world "];
+
+	XCTAssertEqualObjects(message.command, @"PRIVMSG");
+	XCTAssertEqualObjects(message.params, (@[@"#channel", @"hello  world "]));
+}
+
+- (void)testTrailingParameterKeepsColons
+{
+	IRCMessage *message = [self parse:@":nick!user@host PRIVMSG #channel ::-) a:b"];
+
+	XCTAssertEqualObjects([message paramAt:1], @":-) a:b");
+}
+
+- (void)testCommandIsUppercased
+{
+	XCTAssertEqualObjects([self parse:@":nick!user@host privmsg #channel :x"].command, @"PRIVMSG");
+}
+
+- (void)testLinesWithoutCommandAreRejected
+{
+	XCTAssertNil([[IRCMessage alloc] initWithLine:@""]);
+	XCTAssertNil([[IRCMessage alloc] initWithLine:@"   "]);
+	XCTAssertNil([[IRCMessage alloc] initWithLine:@"@msgid=abc"]);
+	XCTAssertNil([[IRCMessage alloc] initWithLine:@":nick!user@host"]);
+	XCTAssertNil([[IRCMessage alloc] initWithLine:@"@ :nick!user@host PRIVMSG #channel :x"]);
+	XCTAssertNil([[IRCMessage alloc] initWithLine:@": PRIVMSG #channel :x"]);
+}
+
+- (void)testTagsWithoutValueAndDuplicates
+{
+	IRCMessage *message = [self parse:@"@flag;empty=;dup=first;dup=second;trailing=end\\ :nick!user@host PRIVMSG #channel :x"];
+
+	XCTAssertEqualObjects(message.messageTags[@"flag"], @"");
+	XCTAssertEqualObjects(message.messageTags[@"empty"], @"");
+	XCTAssertEqualObjects(message.messageTags[@"dup"], @"second");
+	XCTAssertEqualObjects(message.messageTags[@"trailing"], @"end");
+}
+
+- (void)testCopiesKeepTheirBatch
+{
+	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
+
+	[client enableCapability:ClientIRCv3SupportedCapabilityBatch];
+
+	IRCMessageBatchMessage *batch = [IRCMessageBatchMessage new];
+
+	batch.batchToken = @"abc";
+	batch.batchIsOpen = YES;
+
+	[(IRCMessageBatchMessageContainer *)[client valueForKey:@"batchMessages"] queueEntry:batch];
+
+	IRCMessage *message = [self parse:@"@batch=abc :nick!user@host PRIVMSG #channel :from playback" onClient:client];
+
+	XCTAssertEqual(message.parentBatchMessage, batch);
+	IRCMessage *copy = [message copy];
+	IRCMessage *mutableCopy = [message mutableCopy];
+
+	XCTAssertEqual(copy.parentBatchMessage, batch);
+	XCTAssertEqual(mutableCopy.parentBatchMessage, batch);
+}
+
 - (void)testEmptyTrailingParameter
 {
 	IRCMessage *message = [self parse:@":nick!user@host TOPIC #channel :"];
@@ -171,7 +249,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	/* "\\s" is an escaped backslash followed by "s", not a space. Unknown escapes
 	 drop the backslash. See https://ircv3.net/specs/extensions/message-tags */
-	XCTExpectFailure(@"Tag values are unescaped with sequential replacements instead of a single pass.");
 
 	IRCMessage *message = [self parse:@"@a=x\\\\sy;b=\\q :nick!user@host PRIVMSG #channel :x"];
 
