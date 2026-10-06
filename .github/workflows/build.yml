@@ -70,6 +70,7 @@ jobs:
             -configuration "${{ matrix.configuration }}" \
             -destination "generic/platform=macOS" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/build.xcresult" \
             -quiet \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
@@ -77,11 +78,11 @@ jobs:
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER="" \
             ${{ matrix.license-manager && format('TEXTUAL_BUILT_WITH_LICENSE_MANAGER={0}', matrix.license-manager) || '' }} \
-            build 2>&1 | tee "$RUNNER_TEMP/build.log"
+            build
 
       - name: Check the warning count
         if: matrix.runner == 'xcode-27' && matrix.configuration == 'Release' && matrix.license-manager == '1'
-        run: .github/scripts/warning-ratchet.sh "$RUNNER_TEMP/build.log" .github/baselines/compiler-warnings "Compiler warnings"
+        run: .github/scripts/warning-ratchet.py "$RUNNER_TEMP/build.xcresult" .github/baselines/compiler-warnings "Compiler warnings" warnings
 
       - name: Verify build products
         env:
@@ -191,17 +192,15 @@ jobs:
             -configuration Release \
             -destination "generic/platform=macOS" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/analyze.xcresult" \
             -quiet \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            2>&1 | tee "$RUNNER_TEMP/analyze.log"
+            PROVISIONING_PROFILE_SPECIFIER=""
 
-      # Only the analyzer's own findings, by checker name; compiler warnings
-      # are counted by the build job.
+      # Only the analyzer's own findings; compiler warnings are counted by
+      # the build job.
       - name: Check the analyzer findings
-        run: |
-          .github/scripts/warning-ratchet.sh "$RUNNER_TEMP/analyze.log" .github/baselines/analyzer-findings \
-            "Analyzer findings" '\[(core|deadcode|nullability|osx|unix|security|cplusplus|optin|apiModeling)\.'
+        run: .github/scripts/warning-ratchet.py "$RUNNER_TEMP/analyze.xcresult" .github/baselines/analyzer-findings "Analyzer findings" analyzerWarnings
