@@ -143,6 +143,7 @@
 #import "IRCMessagePrivate.h"
 #import "IRCMessageBatchPrivate.h"
 #import "IRCModeInfo.h"
+#import "IRCPrefix.h"
 #import "IRCNumerics.h"
 #import "IRCSendingMessage.h"
 #import "IRCServerPrivate.h"
@@ -198,6 +199,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, assign, readwrite) BOOL userIsIRCop;
 @property (nonatomic, assign, readwrite) BOOL userIsIdentifiedWithNickServ;
 @property (nonatomic, assign, readwrite) BOOL isWaitingForNickServ;
+@property (nonatomic, assign) BOOL isAuthenticatedWithSASL;
+@property (nonatomic, assign) BOOL nickServVerificationWarningShown;
 @property (nonatomic, assign, readwrite) BOOL serverHasNickServ;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageReceived;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageServerTime;
@@ -5608,6 +5611,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	self.isWaitingForNickServ = NO;
 	self.serverHasNickServ = NO;
 	self.userIsIdentifiedWithNickServ = NO;
+	self.isAuthenticatedWithSASL = NO;
+	self.nickServVerificationWarningShown = NO;
 
 	self.userIsAway = NO;
 	self.userIsIRCop = NO;
@@ -6574,7 +6579,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		if ([sender isEqualToStringIgnoringCase:@"ChanServ"]) {
 			[self _receiveText_PrivateNoticeFromChanServ:&query text:&text];
 		} else if ([sender isEqualToStringIgnoringCase:@"NickServ"]) {
-			[self _receiveText_PrivateNoticeFromNickServ:&query text:&text];
+			[self _receiveText_PrivateNoticeFromNickServ:&query text:&text sender:m.sender];
 		}
 
 		/* Determine where to send notice messages */
@@ -6741,10 +6746,75 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	*target = channel;
 }
 
-- (void)_receiveText_PrivateNoticeFromNickServ:(IRCChannel **)target text:(NSString **)text
+/* Anyone can use the nickname "NickServ" (during a services outage, for example),
+ so the password is only sent when the notice comes from the network's services
+ host. The host is the server's "NickServ Host" setting, or the built-in host for
+ known networks (StaticStore.plist). Logging in with SASL avoids NickServ entirely. */
++ (nullable NSString *)knownNickServHostForServerAddress:(nullable NSString *)serverAddress
+{
+	if (serverAddress.length == 0) {
+		return nil;
+	}
+
+	NSDictionary<NSString *, NSString *> *knownHosts = [TPCResourceManager dictionaryFromResources:@"StaticStore" key:@"IRCClient NickServ Hosts by Network"];
+
+	NSString *address = serverAddress.lowercaseString;
+
+	for (NSString *networkDomain in knownHosts) {
+		if ([address isEqualToString:networkDomain] ||
+			[address hasSuffix:[@"." stringByAppendingString:networkDomain]])
+		{
+			return knownHosts[networkDomain];
+		}
+	}
+
+	return nil;
+}
+
+- (nullable NSString *)nickServHostForVerification
+{
+	NSString *configuredHost = self.config.nickServHost.trim;
+
+	if (configuredHost.length > 0) {
+		return configuredHost;
+	}
+
+	NSString *knownHost = [IRCClient knownNickServHostForServerAddress:self.server.serverAddress];
+
+	if (knownHost == nil) {
+		knownHost = [IRCClient knownNickServHostForServerAddress:self.serverAddress];
+	}
+
+	return knownHost;
+}
+
+- (BOOL)nickServSenderIsVerified:(IRCPrefix *)sender
+{
+	NSString *expectedHost = self.nickServHostForVerification;
+
+	if (expectedHost != nil && [sender.address isEqualToStringIgnoringCase:expectedHost]) {
+		return YES;
+	}
+
+	/* Say why the password was not sent, once per connection */
+	if (self.nickServVerificationWarningShown == NO) {
+		self.nickServVerificationWarningShown = YES;
+
+		if (expectedHost == nil) {
+			[self printDebugInformationToConsole:TXTLS(@"IRC[n5v-h1]", sender.hostmask)];
+		} else {
+			[self printDebugInformationToConsole:TXTLS(@"IRC[n5v-h2]", sender.hostmask, expectedHost)];
+		}
+	}
+
+	return NO;
+}
+
+- (void)_receiveText_PrivateNoticeFromNickServ:(IRCChannel **)target text:(NSString **)text sender:(IRCPrefix *)sender
 {
 	NSParameterAssert(target != NULL);
 	NSParameterAssert(text != NULL);
+	NSParameterAssert(sender != nil);
 
 	self.serverHasNickServ = YES;
 
@@ -6768,6 +6838,15 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		for (NSString *token in self.nickServSupportedNeedIdentificationTokens) {
 			if ([textIn containsIgnoringCase:token] == NO) {
 				continue;
+			}
+
+			/* Already logged in with SASL: never send the password to NickServ */
+			if (self.isAuthenticatedWithSASL) {
+				break;
+			}
+
+			if ([self nickServSenderIsVerified:sender] == NO) {
+				break;
 			}
 
 			// Send password
@@ -10352,6 +10431,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		case ERR_SASLALREADY:
 		case RPL_SASLMECHS: /* Treated as error */
 		{
+			if (numeric == RPL_SASLSUCCESS) {
+				self.isAuthenticatedWithSASL = YES;
+			}
+
 			if (printMessage) {
 				if (numeric == RPL_SASLSUCCESS) { // success
 					[self printReply:m];

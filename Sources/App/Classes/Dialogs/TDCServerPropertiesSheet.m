@@ -40,7 +40,7 @@
 
 #import "NSStringHelper.h"
 #import "IRCClientConfigPrivate.h"
-#import "IRCClient.h"
+#import "IRCClientPrivate.h"
 #import "IRCChannel.h"
 #import "IRCHighlightMatchCondition.h"
 #import "IRCNetworkList.h"
@@ -139,6 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSTextField *clientCertificateSHA2FingerprintField;
 @property (nonatomic, weak) IBOutlet NSTextField *clientCertificateSHA512FingerprintField;
 @property (nonatomic, weak) IBOutlet NSTextField *nicknamePasswordTextField;
+@property (nonatomic, weak) IBOutlet NSTextField *nickServHostTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *proxyPasswordTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *proxyUsernameTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *serverPasswordTextField;
@@ -941,6 +942,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.nicknamePasswordTextField.stringValue = self.config.nicknamePassword;
 
+	self.nickServHostTextField.stringValue = (self.config.nickServHost ?: @"");
+
+	NSString *knownNickServHost = [IRCClient knownNickServHostForServerAddress:self.config.serverList.firstObject.serverAddress];
+
+	if (knownNickServHost) {
+		self.nickServHostTextField.placeholderString = knownNickServHost;
+	}
+
 	self.autojoinWaitsForNickServCheck.state = self.config.autojoinWaitsForNickServ;
 
 	self.hideAutojoinDelayedWarningsCheck.state = (self.config.hideAutojoinDelayedWarnings == NO);
@@ -1076,6 +1085,10 @@ NS_ASSUME_NONNULL_BEGIN
 	self.config.awayNickname = self.awayNicknameTextField.value;
 
 	self.config.nicknamePassword = self.nicknamePasswordTextField.trimmedStringValue;
+
+	NSString *nickServHost = self.nickServHostTextField.trimmedStringValue;
+
+	self.config.nickServHost = ((nickServHost.length > 0) ? nickServHost : nil);
 
 	self.config.autojoinWaitsForNickServ = (self.autojoinWaitsForNickServCheck.state == NSControlStateValueOn);
 

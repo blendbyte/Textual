@@ -90,6 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nullable) NSData *identityClientSideCertificate;
 @property (readonly, copy, nullable) NSString *awayNickname;
 @property (readonly, copy, nullable) NSString *nicknamePassword;
+@property (readonly, copy, nullable) NSString *nickServHost; // Host NickServ must have before the password is sent; nil = built-in host for known networks
 @property (readonly, copy, nullable) NSString *nicknamePasswordFromKeychain;
 @property (readonly, copy, nullable) NSString *proxyAddress;
 @property (readonly, copy, nullable) NSString *proxyPassword;
@@ -150,6 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSData *identityClientSideCertificate;
 @property (nonatomic, copy, readwrite, nullable) NSString *awayNickname;
 @property (nonatomic, copy, readwrite, nullable) NSString *nicknamePassword;
+@property (nonatomic, copy, readwrite, nullable) NSString *nickServHost;
 @property (nonatomic, copy, readwrite, nullable) NSString *proxyAddress;
 @property (nonatomic, copy, readwrite, nullable) NSString *proxyPassword;
 @property (nonatomic, copy, readwrite, nullable) NSString *proxyUsername;

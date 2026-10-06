@@ -319,6 +319,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignDoubleTo:&self->_lastMessageServerTime forKey:@"cachedLastServerTimeCapabilityReceivedAtTimestamp"];
 	[defaultsMutable assignObjectTo:&self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
 	[defaultsMutable assignStringTo:&self->_awayNickname forKey:@"awayNickname"];
+	[defaultsMutable assignStringTo:&self->_nickServHost forKey:@"nickServHost"];
 	[defaultsMutable assignStringTo:&self->_connectionName forKey:@"connectionName"];
 	[defaultsMutable assignStringTo:&self->_nickname forKey:@"nickname"];
 	[defaultsMutable assignStringTo:&self->_normalLeavingComment forKey:@"normalLeavingComment"];
@@ -693,6 +694,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	[dic maybeSetObject:self.alternateNicknames forKey:@"alternateNicknames"];
 	[dic maybeSetObject:self.awayNickname forKey:@"awayNickname"];
+	[dic maybeSetObject:self.nickServHost forKey:@"nickServHost"];
 	[dic maybeSetObject:self.connectionName forKey:@"connectionName"];
 	[dic maybeSetObject:self.loginCommands forKey:@"onConnectCommands"];
 	[dic maybeSetObject:self.nickname forKey:@"nickname"];
@@ -1000,6 +1002,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic autoSleepModeDisconnect;
 @dynamic autojoinWaitsForNickServ;
 @dynamic awayNickname;
+@dynamic nickServHost;
 @dynamic channelList;
 @dynamic cipherSuites;
 @dynamic connectionName;
@@ -1265,6 +1268,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_identityClientSideCertificate != identityClientSideCertificate) {
 		self->_identityClientSideCertificate = [identityClientSideCertificate copy];
+	}
+}
+
+- (void)setNickServHost:(nullable NSString *)nickServHost
+{
+	if (self->_nickServHost != nickServHost) {
+		self->_nickServHost = [nickServHost copy];
 	}
 }
 

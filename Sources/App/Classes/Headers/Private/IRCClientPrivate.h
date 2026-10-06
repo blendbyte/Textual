@@ -121,6 +121,8 @@ enum {
 
 - (id)queuedBatchMessageWithToken:(NSString *)batchToken;
 
++ (nullable NSString *)knownNickServHostForServerAddress:(nullable NSString *)serverAddress;
+
 - (void)print:(NSString *)messageBody by:(nullable NSString *)nickname inChannel:(nullable IRCChannel *)channel asType:(TVCLogLineType)lineType command:(NSString *)command escapeMessage:(BOOL)escapeMessage;
 
 - (void)onTimedCommand:(IRCTimedCommand *)timedCommand;

@@ -70,6 +70,7 @@
                 <outlet property="highlightListArrayController" destination="XVW-tl-Aro" id="yo0-76-qlh"/>
                 <outlet property="highlightsTable" destination="2454" id="2474"/>
                 <outlet property="navigationOutlineView" destination="Uj0-Wm-eox" id="9jc-dy-sjg"/>
+                <outlet property="nickServHostTextField" destination="n5V-hT-f01" id="n5V-oT-001"/>
                 <outlet property="nicknamePasswordTextField" destination="1601" id="i9R-Eg-aTO"/>
                 <outlet property="nicknameTextField" destination="1595" id="BL9-gX-P5G"/>
                 <outlet property="normalLeavingCommentTextField" destination="2290" id="Fhf-Py-Njw"/>
@@ -567,6 +568,29 @@ Gw
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n5V-hT-f01">
+                    <rect key="frame" x="228" y="68" width="212" height="22"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="22" id="n5V-hT-h01"/>
+                    </constraints>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="services.example.net" drawsBackground="YES" usesSingleLineMode="YES" id="n5V-hT-c01">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <accessibility help="Your password is only sent to NickServ when it comes from this host. Leave empty to use the known host for this network. Not needed when the server supports SASL."/>
+                    <connections>
+                        <accessibilityConnection property="title" destination="n5V-hL-b01" id="n5V-hT-a01"/>
+                    </connections>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n5V-hL-b01">
+                    <rect key="frame" x="100" y="72" width="122" height="16"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="NickServ Host:" id="n5V-hL-c01">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
                 <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="2Zg-jJ-evU">
                     <rect key="frame" x="100" y="139" width="320" height="5"/>
                 </box>
@@ -680,7 +704,13 @@ Gw
                 <constraint firstItem="ptP-ZP-JAf" firstAttribute="top" secondItem="B1u-e0-30u" secondAttribute="bottom" constant="6" symbolic="YES" id="IuK-ad-UDf"/>
                 <constraint firstItem="1604" firstAttribute="top" secondItem="tzn-BP-yin" secondAttribute="bottom" constant="4" id="JKr-Xx-KHb"/>
                 <constraint firstItem="1601" firstAttribute="leading" secondItem="1623" secondAttribute="trailing" constant="8" id="JNn-Jx-8aX"/>
-                <constraint firstItem="B1u-e0-30u" firstAttribute="top" secondItem="1601" secondAttribute="bottom" constant="25" id="KTa-A7-fam"/>
+                <constraint firstItem="B1u-e0-30u" firstAttribute="top" secondItem="n5V-hT-f01" secondAttribute="bottom" constant="25" id="KTa-A7-fam"/>
+                <constraint firstItem="n5V-hT-f01" firstAttribute="top" secondItem="1601" secondAttribute="bottom" constant="8" id="n5V-cS-001"/>
+                <constraint firstItem="n5V-hT-f01" firstAttribute="leading" secondItem="1601" secondAttribute="leading" id="n5V-cS-002"/>
+                <constraint firstItem="n5V-hT-f01" firstAttribute="trailing" secondItem="1601" secondAttribute="trailing" id="n5V-cS-003"/>
+                <constraint firstItem="n5V-hL-b01" firstAttribute="trailing" secondItem="1623" secondAttribute="trailing" id="n5V-cS-004"/>
+                <constraint firstItem="n5V-hL-b01" firstAttribute="firstBaseline" secondItem="n5V-hT-f01" secondAttribute="firstBaseline" id="n5V-cS-005"/>
+                <constraint firstItem="n5V-hL-b01" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="1563" secondAttribute="leading" constant="20" id="n5V-cS-006"/>
                 <constraint firstItem="2Zg-jJ-evU" firstAttribute="top" secondItem="7sG-7N-mzK" secondAttribute="bottom" constant="18" id="M3g-xE-Eg8"/>
                 <constraint firstItem="B1u-e0-30u" firstAttribute="centerX" secondItem="1563" secondAttribute="centerX" id="MVh-Xm-az8"/>
                 <constraint firstItem="1623" firstAttribute="firstBaseline" secondItem="1601" secondAttribute="firstBaseline" id="Znp-dw-sXj"/>

@@ -86,6 +86,34 @@
 		<string>version</string>
 		<string>whowas</string>
 	</array>
+	<key>IRCClient NickServ Hosts by Network</key>
+	<dict>
+		<!-- Host part of NickServ's hostmask, checked with WHOIS on each network on 2026-10-06 -->
+		<key>accessirc.net</key>
+		<string>services.accessirc.net</string>
+		<key>dal.net</key>
+		<string>dal.net</string>
+		<key>esper.net</key>
+		<string>services.esper.net</string>
+		<key>geekshed.net</key>
+		<string>geekshed.net</string>
+		<key>hackint.org</key>
+		<string>services.hackint.org</string>
+		<key>interlinked.me</key>
+		<string>services.interlinked.me</string>
+		<key>irchighway.net</key>
+		<string>services.irchighway.net</string>
+		<key>libera.chat</key>
+		<string>services.libera.chat</string>
+		<key>oftc.net</key>
+		<string>services.oftc.net</string>
+		<key>rizon.net</key>
+		<string>rizon.net</string>
+		<key>snoonet.org</key>
+		<string>services</string>
+		<key>twit.tv</key>
+		<string>irc.twit.tv</string>
+	</dict>
 	<key>THOPluginManager List of Forbidden Extensions</key>
 	<array>
 		<string>com.codeux.app-extensions.textual-Caffeine</string>

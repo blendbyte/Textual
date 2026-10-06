@@ -294,6 +294,8 @@ The identifier for a timer can be found using “/timer list”";
 "drg-b7" = "Disconnected for Sleep Mode";
 "wcl-po" = "Disconnected for server redirect";
 "r3d-t1" = "The server redirected this connection to %1$@ port %2$@. Reconnecting with TLS, as before.";
+"n5v-h1" = "%1$@ asked you to identify, but the NickServ host for this server is not known, so your password was not sent. If this is the network's NickServ, enter its host under Server Properties → Identity → NickServ Host. Logging in with SASL avoids this check.";
+"n5v-h2" = "%1$@ asked you to identify, but this server's NickServ host is %2$@, so your password was not sent. If the network's NickServ has moved, update Server Properties → Identity → NickServ Host.";
 "zro-bg" = "Disconnected from server because of an untrusted certificate";
 "isx-fi" = "Disconnected from server because the Internet is not reachable";
 "9b4-10" = "Disconnected";

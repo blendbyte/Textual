@@ -76,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_connectionName;
 	NSString *_nickname;
 	NSString *_nicknamePassword;
+	NSString *_nickServHost;
 	NSString *_normalLeavingComment;
 	NSString *_proxyAddress;
 	NSString *_proxyPassword;
