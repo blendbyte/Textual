@@ -1,0 +1,283 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 53;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4C6F8E191A901D0B000F49FD /* AHHyperlinkScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C6F8E131A901D0B000F49FD /* AHHyperlinkScanner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4C6F8E1A1A901D0B000F49FD /* AHHyperlinkScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6F8E141A901D0B000F49FD /* AHHyperlinkScanner.m */; };
+		4C6F8E1B1A901D0B000F49FD /* AHLinkLexer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C6F8E151A901D0B000F49FD /* AHLinkLexer.h */; };
+		4C6F8E1C1A901D0B000F49FD /* AHLinkLexer.l in Sources */ = {isa = PBXBuildFile; fileRef = 4C6F8E161A901D0B000F49FD /* AHLinkLexer.l */; };
+		4C6F8E1D1A901D0B000F49FD /* AutoHyperlinks.framework_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 4C6F8E171A901D0B000F49FD /* AutoHyperlinks.framework_Prefix.pch */; };
+		4C6F8E1E1A901D0B000F49FD /* AutoHyperlinks.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C6F8E181A901D0B000F49FD /* AutoHyperlinks.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4C8025751D1935FB00347366 /* AHHyperlinkScannerResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C8025721D1935FB00347366 /* AHHyperlinkScannerResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4C8025761D1935FB00347366 /* AHHyperlinkScannerResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8025731D1935FB00347366 /* AHHyperlinkScannerResult.m */; };
+		4C8025771D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C8025741D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h */; };
+		4CA41C141AC1A7F500756137 /* COPYRIGHT.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CA41C121AC1A7F500756137 /* COPYRIGHT.txt */; };
+		4CA41C151AC1A7F500756137 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CA41C131AC1A7F500756137 /* LICENSE.txt */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		4C6F8E131A901D0B000F49FD /* AHHyperlinkScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AHHyperlinkScanner.h; path = Classes/AHHyperlinkScanner.h; sourceTree = "<group>"; };
+		4C6F8E141A901D0B000F49FD /* AHHyperlinkScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AHHyperlinkScanner.m; path = Classes/AHHyperlinkScanner.m; sourceTree = "<group>"; };
+		4C6F8E151A901D0B000F49FD /* AHLinkLexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AHLinkLexer.h; path = Classes/AHLinkLexer.h; sourceTree = "<group>"; };
+		4C6F8E161A901D0B000F49FD /* AHLinkLexer.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; name = AHLinkLexer.l; path = Classes/AHLinkLexer.l; sourceTree = "<group>"; };
+		4C6F8E171A901D0B000F49FD /* AutoHyperlinks.framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AutoHyperlinks.framework_Prefix.pch; path = Classes/AutoHyperlinks.framework_Prefix.pch; sourceTree = "<group>"; };
+		4C6F8E181A901D0B000F49FD /* AutoHyperlinks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AutoHyperlinks.h; path = Classes/AutoHyperlinks.h; sourceTree = "<group>"; };
+		4C8025721D1935FB00347366 /* AHHyperlinkScannerResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AHHyperlinkScannerResult.h; path = Classes/AHHyperlinkScannerResult.h; sourceTree = "<group>"; };
+		4C8025731D1935FB00347366 /* AHHyperlinkScannerResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AHHyperlinkScannerResult.m; path = Classes/AHHyperlinkScannerResult.m; sourceTree = "<group>"; };
+		4C8025741D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AHHyperlinkScannerResultPrivate.h; path = Classes/AHHyperlinkScannerResultPrivate.h; sourceTree = "<group>"; };
+		4CA41C121AC1A7F500756137 /* COPYRIGHT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYRIGHT.txt; sourceTree = "<group>"; };
+		4CA41C131AC1A7F500756137 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		4CA41C161AC1A7FC00756137 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
+		4CA41C181AC1A80400756137 /* Build Configuration.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Build Configuration.xcconfig"; path = "Resources/Build Configuration/Build Configuration.xcconfig"; sourceTree = SOURCE_ROOT; };
+		8DC2EF5B0486A6940098B216 /* AutoHyperlinks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DC2EF560486A6940098B216 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5B0486A6940098B216 /* AutoHyperlinks.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* AIHyperlinks.framework */ = {
+			isa = PBXGroup;
+			children = (
+				4C6F8E031A901B9F000F49FD /* Build Configuration */,
+				08FB77AEFE84172EC02AAC07 /* Classes */,
+				089C1665FE841158C02AAC07 /* Resources */,
+				0867D69AFE84028FC02AAC07 /* Frameworks */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = AIHyperlinks.framework;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4C6F8E0C1A901C70000F49FD /* Documents */,
+				4CA41C1A1AC1A81900756137 /* Property Lists */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				4C6F8E131A901D0B000F49FD /* AHHyperlinkScanner.h */,
+				4C6F8E141A901D0B000F49FD /* AHHyperlinkScanner.m */,
+				4C8025721D1935FB00347366 /* AHHyperlinkScannerResult.h */,
+				4C8025731D1935FB00347366 /* AHHyperlinkScannerResult.m */,
+				4C8025741D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h */,
+				4C6F8E151A901D0B000F49FD /* AHLinkLexer.h */,
+				4C6F8E161A901D0B000F49FD /* AHLinkLexer.l */,
+				4C6F8E181A901D0B000F49FD /* AutoHyperlinks.h */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				4C6F8E171A901D0B000F49FD /* AutoHyperlinks.framework_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		4C6F8E031A901B9F000F49FD /* Build Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				4CA41C181AC1A80400756137 /* Build Configuration.xcconfig */,
+			);
+			name = "Build Configuration";
+			sourceTree = "<group>";
+		};
+		4C6F8E0C1A901C70000F49FD /* Documents */ = {
+			isa = PBXGroup;
+			children = (
+				4CA41C121AC1A7F500756137 /* COPYRIGHT.txt */,
+				4CA41C131AC1A7F500756137 /* LICENSE.txt */,
+			);
+			name = Documents;
+			sourceTree = "<group>";
+		};
+		4CA41C1A1AC1A81900756137 /* Property Lists */ = {
+			isa = PBXGroup;
+			children = (
+				4CA41C161AC1A7FC00756137 /* Info.plist */,
+			);
+			name = "Property Lists";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		8DC2EF500486A6940098B216 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C8025771D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h in Headers */,
+				4C6F8E1E1A901D0B000F49FD /* AutoHyperlinks.h in Headers */,
+				4C8025751D1935FB00347366 /* AHHyperlinkScannerResult.h in Headers */,
+				4C6F8E191A901D0B000F49FD /* AHHyperlinkScanner.h in Headers */,
+				4C6F8E1B1A901D0B000F49FD /* AHLinkLexer.h in Headers */,
+				4C6F8E1D1A901D0B000F49FD /* AutoHyperlinks.framework_Prefix.pch in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		8DC2EF4F0486A6940098B216 /* AutoHyperlinks.framework */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA8A8083085549EE00F24BB3 /* Build configuration list for PBXNativeTarget "AutoHyperlinks.framework" */;
+			buildPhases = (
+				8DC2EF500486A6940098B216 /* Headers */,
+				8DC2EF520486A6940098B216 /* Resources */,
+				8DC2EF540486A6940098B216 /* Sources */,
+				8DC2EF560486A6940098B216 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AutoHyperlinks.framework;
+			productInstallPath = "$(HOME)/Library/Frameworks";
+			productName = AIHyperlinks.framework;
+			productReference = 8DC2EF5B0486A6940098B216 /* AutoHyperlinks.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1200;
+				TargetAttributes = {
+					8DC2EF4F0486A6940098B216 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = DA8A8087085549EE00F24BB3 /* Build configuration list for PBXProject "Hyperlink Processor" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0867D691FE84028FC02AAC07 /* AIHyperlinks.framework */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DC2EF4F0486A6940098B216 /* AutoHyperlinks.framework */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8DC2EF520486A6940098B216 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4CA41C151AC1A7F500756137 /* LICENSE.txt in Resources */,
+				4CA41C141AC1A7F500756137 /* COPYRIGHT.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DC2EF540486A6940098B216 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C6F8E1C1A901D0B000F49FD /* AHLinkLexer.l in Sources */,
+				4C6F8E1A1A901D0B000F49FD /* AHHyperlinkScanner.m in Sources */,
+				4C8025761D1935FB00347366 /* AHHyperlinkScannerResult.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		DA8A8085085549EE00F24BB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_VERSION = A;
+				GCC_PREFIX_HEADER = Classes/AutoHyperlinks.framework_Prefix.pch;
+				INFOPLIST_FILE = Resources/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adiumX.AutoHyperlinks;
+				PRODUCT_NAME = AutoHyperlinks;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+		DA8A8089085549EE00F24BB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CA41C181AC1A80400756137 /* Build Configuration.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DA8A8083085549EE00F24BB3 /* Build configuration list for PBXNativeTarget "AutoHyperlinks.framework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA8A8085085549EE00F24BB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA8A8087085549EE00F24BB3 /* Build configuration list for PBXProject "Hyperlink Processor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA8A8089085549EE00F24BB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

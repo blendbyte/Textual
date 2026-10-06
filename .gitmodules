@@ -1,6 +1,3 @@
-[submodule "Frameworks/Auto Hyperlinks"]
-	path = Frameworks/Auto Hyperlinks
-	url = https://github.com/Codeux-Software/Auto-Hyperlinks.git
 [submodule "Frameworks/Cocoa Extensions"]
 	path = Frameworks/Cocoa Extensions
 	url = https://github.com/Codeux-Software/Cocoa-Extensions.git

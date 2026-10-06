@@ -1,0 +1,21 @@
+AutoHyperlinks framework
+
+Project forked in 2011 by Codeux Software, LLC.
+
+Originally developed by the following:
+ 
+Colin Barrett
+Graham Booker
+Jorge Salvador Caffarena
+Evan Schoenberg
+Augie Fackler
+Stephen Holt
+Peter Hosey
+Adam Iser
+Jeffrey Melloy
+Toby Peterson
+Eric Richie
+David Smith
+ 
+Copyright © 2005 - 2011 The Adium Team
+Copyright © 2011 Codeux Software, LLC.
