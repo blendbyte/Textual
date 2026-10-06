@@ -475,7 +475,7 @@
 		4C3156FC20EB6D0500448776 /* IRCUserPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151E720EB673E00448776 /* IRCUserPrivate.h */; };
 		4C3156FD20EB6D0500448776 /* IRCUserRelationsPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151B420EB673E00448776 /* IRCUserRelationsPrivate.h */; };
 		4C3156FE20EB6D0500448776 /* IRCWorldPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DB20EB673E00448776 /* IRCWorldPrivate.h */; };
-		4C31570020EB6D0500448776 /* NSTableVIewHelperPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151E220EB673E00448776 /* NSTableVIewHelperPrivate.h */; };
+		4C31570020EB6D0500448776 /* NSTableViewHelperPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151E220EB673E00448776 /* NSTableViewHelperPrivate.h */; };
 		4C31570120EB6D0500448776 /* NSViewHelperPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31521420EB673E00448776 /* NSViewHelperPrivate.h */; };
 		4C31570220EB6D0500448776 /* SwiftBridgingHeaderPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520A20EB673E00448776 /* SwiftBridgingHeaderPrivate.h */; };
 		4C31570320EB6D0500448776 /* TDCAboutDialogPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522820EB673E00448776 /* TDCAboutDialogPrivate.h */; };
@@ -1001,7 +1001,7 @@
 		4C3151DF20EB673E00448776 /* TVCMainWindowTitlebarAccessoryViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowTitlebarAccessoryViewPrivate.h; sourceTree = "<group>"; };
 		4C3151E020EB673E00448776 /* IRCAddressBookMatchCachePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCAddressBookMatchCachePrivate.h; sourceTree = "<group>"; };
 		4C3151E120EB673E00448776 /* IRCMessageBatchPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCMessageBatchPrivate.h; sourceTree = "<group>"; };
-		4C3151E220EB673E00448776 /* NSTableVIewHelperPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSTableVIewHelperPrivate.h; sourceTree = "<group>"; };
+		4C3151E220EB673E00448776 /* NSTableViewHelperPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSTableViewHelperPrivate.h; sourceTree = "<group>"; };
 		4C3151E320EB673E00448776 /* IRCTreeItemPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCTreeItemPrivate.h; sourceTree = "<group>"; };
 		4C3151E420EB673E00448776 /* TPCPreferencesImportExportPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCPreferencesImportExportPrivate.h; sourceTree = "<group>"; };
 		4C3151E620EB673E00448776 /* TDCNicknameColorSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCNicknameColorSheetPrivate.h; sourceTree = "<group>"; };
@@ -1969,7 +1969,7 @@
 				4C3151B420EB673E00448776 /* IRCUserRelationsPrivate.h */,
 				4C3151DB20EB673E00448776 /* IRCWorldPrivate.h */,
 				4C06E26220EC4C560055D09A /* NSObjectHelperPrivate.h */,
-				4C3151E220EB673E00448776 /* NSTableVIewHelperPrivate.h */,
+				4C3151E220EB673E00448776 /* NSTableViewHelperPrivate.h */,
 				4C31521420EB673E00448776 /* NSViewHelperPrivate.h */,
 				4C31520A20EB673E00448776 /* SwiftBridgingHeaderPrivate.h */,
 				4C31522820EB673E00448776 /* TDCAboutDialogPrivate.h */,
@@ -2928,7 +2928,7 @@
 				4C3155E220EB6CB400448776 /* TVCErrorMessagePopoverPrivate.h in Headers */,
 				4C31576B20EB6D0500448776 /* TVCServerListPrivate.h in Headers */,
 				4C31573B20EB6D0500448776 /* TLOLicenseManagerPrivate.h in Headers */,
-				4C31570020EB6D0500448776 /* NSTableVIewHelperPrivate.h in Headers */,
+				4C31570020EB6D0500448776 /* NSTableViewHelperPrivate.h in Headers */,
 				4C3156F220EB6D0500448776 /* IRCExtrasPrivate.h in Headers */,
 				4C3155CA20EB6CB400448776 /* TLOInternetAddressLookup.h in Headers */,
 				4C3155C420EB6CB400448776 /* Textual.h in Headers */,

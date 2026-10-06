@@ -54,7 +54,7 @@
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TVCMainWindowPrivate.h"
-#import "TVCLogControllerInlineMediaServicePrivate.H"
+#import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCNotificationConfigurationViewControllerPrivate.h"
 #import "TDCAlert.h"
 #import "TDCFileTransferDialogPrivate.h"
