@@ -2,6 +2,8 @@
 
 set -e
 
+mkdir -p "${TEXTUAL_WORKSPACE_TEMP_DIR}"
+
 cd "${TEXTUAL_WORKSPACE_TEMP_DIR}/"
 
 # Make a copy of the Info.plist file in the .tmp folder
@@ -23,15 +25,21 @@ fi
 
 # Write the version information to the Info.plist file.
 # The build version is the date of the last commit in git.
-gitBundle=`which git`
+# Without git, or outside a git checkout (e.g. a downloaded archive),
+# fall back to a placeholder version instead of failing.
+gitDateOfLastCommit=""
 
-if [ -z "${gitBundle}" ]; then
+if command -v git > /dev/null 2>&1; then
+	gitDateOfLastCommit=$(git -C "${TEXTUAL_WORKSPACE_DIR}" log -n1 --format="%at" 2> /dev/null || true)
+fi
+
+if [ -z "${gitDateOfLastCommit}" ]; then
+	echo "warning: No git history available; using placeholder build version 000000.00"
+
 	bundleVersionNew="000000.00"
-else 
-	gitDateOfLastCommit=`"${gitBundle}" log -n1 --format="%at"`
-
-	bundleVersionNew=`/bin/date -u -r "${gitDateOfLastCommit}" "+%y%m%d.%H"`
-fi;
+else
+	bundleVersionNew=$(/bin/date -u -r "${gitDateOfLastCommit}" "+%y%m%d.%H")
+fi
 
 bundleVersionOld=$(/usr/libexec/PlistBuddy -c "Print \"CFBundleVersion\"" Info.plist)
 
@@ -84,7 +92,7 @@ fi
 # ------ #
 
 # Compile list of enabled features
-exec "${PROJECT_DIR}/Build Scripts/UpdateFeatureFlags.sh" > "${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/UpdateFeatureFlags.txt"
+"${PROJECT_DIR}/Build Scripts/UpdateFeatureFlags.sh"
 
 # ------ #
 

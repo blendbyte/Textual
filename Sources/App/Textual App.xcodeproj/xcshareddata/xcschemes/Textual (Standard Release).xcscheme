@@ -5,24 +5,6 @@
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "NO">
-      <PreActions>
-         <ExecutionAction
-            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
-            <ActionContent
-               title = "Run Script"
-               scriptText = "&#10;mkdir -p &quot;${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/&quot;&#10;&#10;exec &quot;${PROJECT_DIR}/Build Scripts/UpdateVersionInfo.sh&quot; &gt; &quot;${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/UpdateVersionInfo.txt&quot;&#10;">
-               <EnvironmentBuildable>
-                  <BuildableReference
-                     BuildableIdentifier = "primary"
-                     BlueprintIdentifier = "4C1DC5511580420500A47BC9"
-                     BuildableName = "Textual.app"
-                     BlueprintName = "Textual"
-                     ReferencedContainer = "container:Textual App.xcodeproj">
-                  </BuildableReference>
-               </EnvironmentBuildable>
-            </ActionContent>
-         </ExecutionAction>
-      </PreActions>
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"

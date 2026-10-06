@@ -3108,6 +3108,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4C1DC5701580420500A47BC9 /* Build configuration list for PBXNativeTarget "Textual" */;
 			buildPhases = (
+				4C125F6A31D0B70824CEED24 /* Generate Info.plist and Build Headers */,
 				4C1DC5501580420500A47BC9 /* Resources */,
 				4CEA6AA42C36F8E700A36551 /* Copy Preference Resources */,
 				4C9E534415B4C171000E84A9 /* Copy Acknowledgements */,
@@ -3340,6 +3341,32 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildExtensions.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildExtensions.txt\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4C125F6A31D0B70824CEED24 /* Generate Info.plist and Build Headers */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/Resources/Property Lists/Application Properties/Info.plist",
+				"$(PROJECT_DIR)/Build Scripts/UpdateVersionInfo.sh",
+				"$(PROJECT_DIR)/Build Scripts/UpdateFeatureFlags.sh",
+			);
+			name = "Generate Info.plist and Build Headers";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TEXTUAL_WORKSPACE_TEMP_DIR)/Info.plist",
+				"$(TEXTUAL_WORKSPACE_TEMP_DIR)/Build Headers/BuildConfig.h",
+				"$(TEXTUAL_WORKSPACE_TEMP_DIR)/Build Headers/FeatureFlags.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\n\"${PROJECT_DIR}/Build Scripts/UpdateVersionInfo.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4C2BEB612C384E16008F8F0D /* Postprocess Sparkle */ = {
