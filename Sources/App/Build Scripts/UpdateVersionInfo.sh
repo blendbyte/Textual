@@ -6,24 +6,15 @@ mkdir -p "${TEXTUAL_WORKSPACE_TEMP_DIR}"
 
 cd "${TEXTUAL_WORKSPACE_TEMP_DIR}/"
 
-# Make a copy of the Info.plist file in the .tmp folder
-# This will be the Info.plist file manipulated with the version
-# information that is generated below.
+# Generate the Info.plist used by the build in the .tmp folder. It is
+# regenerated from the source on every build because .tmp is shared by
+# all build configurations, and only replaced when its contents change
+# so that unchanged builds do not reprocess it.
 
 infoPlistSource="${PROJECT_DIR}/Resources/Property Lists/Application Properties/Info.plist"
 
-infoPlistTarget="${TEXTUAL_WORKSPACE_TEMP_DIR}/Info.plist"
+cp "${infoPlistSource}" _Info.plist
 
-if [ ! -f "${infoPlistTarget}" ] || [ "${infoPlistTarget}" -ot "${infoPlistSource}" ]; then
-	echo "Step 1: Info.plist file doesn't exist and/or is oudated. Performing copy."
-
-	# Copy with -p flag to preserve modification time
-	cp -p "${infoPlistSource}" "${infoPlistTarget}"
-else
-	echo "Step 1: Info.plist file hasn't changed."
-fi
-
-# Write the version information to the Info.plist file.
 # The build version is the date of the last commit in git.
 # Without git, or outside a git checkout (e.g. a downloaded archive),
 # fall back to a placeholder version instead of failing.
@@ -41,14 +32,23 @@ else
 	bundleVersionNew=$(/bin/date -u -r "${gitDateOfLastCommit}" "+%y%m%d.%H")
 fi
 
-bundleVersionOld=$(/usr/libexec/PlistBuddy -c "Print \"CFBundleVersion\"" Info.plist)
+/usr/libexec/PlistBuddy -c "Set \"CFBundleVersion\" \"${bundleVersionNew}\"" _Info.plist
 
-if [ "${bundleVersionOld}" != "${bundleVersionNew}" ]; then
-	echo "Step 2: Writing version: New ('${bundleVersionNew}'), Old ('${bundleVersionOld}')"
+# Builds without Sparkle (the App Store build) carry no Sparkle settings.
+if [ "${TEXTUAL_BUILT_WITH_SPARKLE_ENABLED}" != "1" ]; then
+	for key in $(/usr/libexec/PlistBuddy -c "Print" _Info.plist | sed -n 's/^    \(SU[A-Za-z]*\) = .*/\1/p'); do
+		/usr/libexec/PlistBuddy -c "Delete \"${key}\"" _Info.plist
+	done
+fi
 
-	/usr/libexec/PlistBuddy -c "Set \"CFBundleVersion\" \"${bundleVersionNew}\"" Info.plist
+if cmp -s "Info.plist" "_Info.plist"; then
+	echo "Step 1: Info.plist hasn't changed (version '${bundleVersionNew}')."
+
+	rm "_Info.plist"
 else
-	echo "Step 2: The version hasn't changed."
+	echo "Step 1: Writing Info.plist (version '${bundleVersionNew}')."
+
+	mv -f "_Info.plist" "Info.plist"
 fi
 
 # ------ #

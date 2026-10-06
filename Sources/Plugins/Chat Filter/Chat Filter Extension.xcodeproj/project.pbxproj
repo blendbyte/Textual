@@ -49,6 +49,9 @@
 		4C46A0AD20EC6B5A00094EA4 /* TPI_ChatFilterEditFilterSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TPI_ChatFilterEditFilterSheet.h; sourceTree = "<group>"; };
 		4C46A0B420EC6B6A00094EA4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D576316048677EA00EA77CD /* Chat Filters.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Chat Filters.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C7BB8E3F098E603BFAC522B /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4C9C3EFAF05615B9317773EC /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4CB262E102A99122EC506309 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +107,7 @@
 			children = (
 				4C1D109820EBF3C000E72D80 /* Common */,
 				4C1D10AD20EBF3C000E72D80 /* Debug */,
+				4C532EA0A07FDA50C7828523 /* App Store Release */,
 				4C1D108520EBF3C000E72D80 /* Standard Release */,
 			);
 			path = Build;
@@ -194,6 +198,16 @@
 			name = Configurations;
 			path = ../../../Configurations;
 			sourceTree = SOURCE_ROOT;
+		};
+		4C532EA0A07FDA50C7828523 /* App Store Release */ = {
+			isa = PBXGroup;
+			children = (
+				4C7BB8E3F098E603BFAC522B /* Enabled Features.xcconfig */,
+				4C9C3EFAF05615B9317773EC /* Textual Extensions.xcconfig */,
+				4CB262E102A99122EC506309 /* Textual.xcconfig */,
+			);
+			path = "App Store Release";
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -356,6 +370,7 @@
 		};
 		4CCD21EE1FA41E390056F5FE /* Release (App Store) */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C9C3EFAF05615B9317773EC /* Textual Extensions.xcconfig */;
 			buildSettings = {
 			};
 			name = "Release (App Store)";

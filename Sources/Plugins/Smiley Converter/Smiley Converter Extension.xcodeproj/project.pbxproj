@@ -34,6 +34,9 @@
 		4C46A0CB20EC6BB700094EA4 /* conversionTable.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = conversionTable.plist; sourceTree = "<group>"; };
 		4C46A0CC20EC6BB700094EA4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D576316048677EA00EA77CD /* Smiley Converter.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Smiley Converter.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C00852D7248C057358A09E3 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C48661BD3EBD58E82363E58 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +92,7 @@
 			children = (
 				4C1D10F820EBF45200E72D80 /* Common */,
 				4C1D110D20EBF45200E72D80 /* Debug */,
+				4C9A83A41CAE775DA68A9147 /* App Store Release */,
 				4C1D10E520EBF45200E72D80 /* Standard Release */,
 			);
 			path = Build;
@@ -169,6 +173,16 @@
 			name = Configurations;
 			path = ../../../Configurations;
 			sourceTree = SOURCE_ROOT;
+		};
+		4C9A83A41CAE775DA68A9147 /* App Store Release */ = {
+			isa = PBXGroup;
+			children = (
+				4C00852D7248C057358A09E3 /* Enabled Features.xcconfig */,
+				4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */,
+				4C48661BD3EBD58E82363E58 /* Textual.xcconfig */,
+			);
+			path = "App Store Release";
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -302,6 +316,7 @@
 		};
 		4C9580121FA41EA700F18BC8 /* Release (App Store) */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */;
 			buildSettings = {
 			};
 			name = "Release (App Store)";

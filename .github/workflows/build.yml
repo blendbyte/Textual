@@ -16,23 +16,34 @@ concurrency:
 
 jobs:
   build:
-    name: Build (${{ matrix.runner }}, license manager ${{ matrix.license-manager == '1' && 'on' || 'off' }})
+    name: Build (${{ matrix.runner }}, ${{ matrix.configuration }}${{ matrix.license-manager && format(', license manager {0}', matrix.license-manager == '1' && 'on' || 'off') || '' }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
 
     # xcode-27: macOS 27 with Xcode 27, the primary development toolchain
     # (GitHub preview image). macos-26: Xcode 26.x, to keep the previous
     # toolchain building for contributors who have not upgraded yet.
+    # The App Store configuration has its own feature flags (no licence
+    # manager, no Sparkle), so it does not take the licence manager override.
     strategy:
       fail-fast: false
       matrix:
         include:
           - runner: xcode-27
+            scheme: Textual (Standard Release)
+            configuration: Release
             license-manager: '1'
           - runner: xcode-27
+            scheme: Textual (Standard Release)
+            configuration: Release
             license-manager: '0'
           - runner: macos-26
+            scheme: Textual (Standard Release)
+            configuration: Release
             license-manager: '1'
+          - runner: xcode-27
+            scheme: Textual (App Store)
+            configuration: App Store
 
     steps:
       - name: Checkout
@@ -51,8 +62,8 @@ jobs:
         run: |
           xcodebuild \
             -workspace Textual.xcworkspace \
-            -scheme "Textual (Standard Release)" \
-            -configuration Release \
+            -scheme "${{ matrix.scheme }}" \
+            -configuration "${{ matrix.configuration }}" \
             -destination "generic/platform=macOS" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             -quiet \
@@ -61,12 +72,26 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            TEXTUAL_BUILT_WITH_LICENSE_MANAGER=${{ matrix.license-manager }} \
+            ${{ matrix.license-manager && format('TEXTUAL_BUILT_WITH_LICENSE_MANAGER={0}', matrix.license-manager) || '' }} \
             build
 
       - name: Verify build products
         run: |
-          app="Build Results/Release/Textual.app"
+          app="Build Results/${{ matrix.configuration }}/Textual.app"
           test -x "$app/Contents/MacOS/Textual"
           ls "$app/Contents/XPCServices"
           ls "$app/Contents/Resources/Bundled Extensions"
+
+      - name: Verify the App Store build has no Sparkle
+        if: matrix.configuration == 'App Store'
+        run: |
+          app="Build Results/App Store/Textual.app"
+          if test -e "$app/Contents/Frameworks/Sparkle.framework"; then
+            echo "::error::Sparkle.framework is embedded"; exit 1
+          fi
+          if otool -L "$app/Contents/MacOS/Textual" | grep -q Sparkle; then
+            echo "::error::The app links against Sparkle"; exit 1
+          fi
+          if /usr/libexec/PlistBuddy -c Print "$app/Contents/Info.plist" | grep -q '^    SU'; then
+            echo "::error::Info.plist contains Sparkle keys"; exit 1
+          fi

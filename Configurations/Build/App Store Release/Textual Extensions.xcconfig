@@ -1,0 +1,4 @@
+
+#include "../Common/Foundation.xcconfig"
+#include "Textual.xcconfig"
+#include "../Common/Textual Extensions.xcconfig"

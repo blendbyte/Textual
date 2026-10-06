@@ -7,6 +7,12 @@ set -e
 # certificates of more than one team. Unsigned builds fall back to the name.
 SIGNING_IDENTITY="${EXPANDED_CODE_SIGN_IDENTITY:-$CODE_SIGN_IDENTITY}"
 
+if [ "${TEXTUAL_BUILT_WITH_SPARKLE_ENABLED}" != "1" ]; then
+	echo "Sparkle is not part of this build; nothing to postprocess"
+
+	exit 0
+fi
+
 echo "Performing postprocessing on Sparkle framework"
 
 cd "${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}"

@@ -1359,6 +1359,10 @@
 		5D9B8EB6170A0EB400919CB0 /* BuildFrameworks.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = BuildFrameworks.sh; path = "Build Scripts/BuildFrameworks.sh"; sourceTree = "<group>"; };
 		5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = UpdateVersionInfo.sh; path = "Build Scripts/UpdateVersionInfo.sh"; sourceTree = "<group>"; };
 		5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = BuildExtensions.sh; path = "Build Scripts/BuildExtensions.sh"; sourceTree = "<group>"; };
+		4C448F45376261BA75EFE988 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4C8C5317B390D2ACFAACFA03 /* Textual App.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual App.xcconfig"; sourceTree = "<group>"; };
+		4C2DB94AC10883593C0AC8B0 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C0CC9E7F901D2850E33EEEB /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2623,6 +2627,7 @@
 				4C3154D320EB685700448776 /* Code Signing Identity.xcconfig */,
 				4C3154C820EB685700448776 /* Common */,
 				4C3154DD20EB685700448776 /* Debug */,
+				4CB325D5536423BE9326D970 /* App Store Release */,
 				4C3154B520EB685700448776 /* Standard Release */,
 			);
 			name = Build;
@@ -2813,6 +2818,17 @@
 			);
 			name = "Build Scripts";
 			sourceTree = SOURCE_ROOT;
+		};
+		4CB325D5536423BE9326D970 /* App Store Release */ = {
+			isa = PBXGroup;
+			children = (
+				4C448F45376261BA75EFE988 /* Enabled Features.xcconfig */,
+				4C8C5317B390D2ACFAACFA03 /* Textual App.xcconfig */,
+				4C2DB94AC10883593C0AC8B0 /* Textual Extensions.xcconfig */,
+				4C0CC9E7F901D2850E33EEEB /* Textual.xcconfig */,
+			);
+			path = "App Store Release";
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -4065,6 +4081,13 @@
 			};
 			name = Release;
 		};
+		4C1C651F2F662557B87112AB /* App Store */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C8C5317B390D2ACFAACFA03 /* Textual App.xcconfig */;
+			buildSettings = {
+			};
+			name = "App Store";
+		};
 		4C1DC5711580420500A47BC9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4076,6 +4099,12 @@
 			buildSettings = {
 			};
 			name = Release;
+		};
+		4CD3C28CD1AFBBA6DB8FFF58 /* App Store */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = "App Store";
 		};
 		4CCF301215804DCE006FFE21 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -4091,6 +4120,13 @@
 			};
 			name = Release;
 		};
+		4C97519712A289AF05E60B7E /* App Store */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "App Store";
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4099,6 +4135,7 @@
 			buildConfigurations = (
 				4C1DC56E1580420500A47BC9 /* Debug */,
 				4C1DC56F1580420500A47BC9 /* Release */,
+				4C1C651F2F662557B87112AB /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4108,6 +4145,7 @@
 			buildConfigurations = (
 				4C1DC5711580420500A47BC9 /* Debug */,
 				4C1DC5721580420500A47BC9 /* Release */,
+				4CD3C28CD1AFBBA6DB8FFF58 /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -4117,6 +4155,7 @@
 			buildConfigurations = (
 				4CCF301215804DCE006FFE21 /* Debug */,
 				4CCF301315804DCE006FFE21 /* Release */,
+				4C97519712A289AF05E60B7E /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -38,6 +38,9 @@
 		4CE143C220EBF551000E01C9 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
 		4CE143C620EBF551000E01C9 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
 		8D576316048677EA00EA77CD /* System Info.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "System Info.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CCE94708D223A3606ADE1B9 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4CCD4BC99E20E1FBC03DF734 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4CD3E5AF7B860B4653124CB0 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +144,7 @@
 			children = (
 				4CE143A920EBF551000E01C9 /* Common */,
 				4CE143BE20EBF551000E01C9 /* Debug */,
+				4C04B3D447AE8B2755EC1DA2 /* App Store Release */,
 				4CE1439620EBF551000E01C9 /* Standard Release */,
 			);
 			path = Build;
@@ -176,6 +180,16 @@
 				4CE143C120EBF551000E01C9 /* Textual.xcconfig */,
 			);
 			path = Debug;
+			sourceTree = "<group>";
+		};
+		4C04B3D447AE8B2755EC1DA2 /* App Store Release */ = {
+			isa = PBXGroup;
+			children = (
+				4CCE94708D223A3606ADE1B9 /* Enabled Features.xcconfig */,
+				4CCD4BC99E20E1FBC03DF734 /* Textual Extensions.xcconfig */,
+				4CD3E5AF7B860B4653124CB0 /* Textual.xcconfig */,
+			);
+			path = "App Store Release";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -310,6 +324,7 @@
 		};
 		4C95801E1FA41F6D00F18BC8 /* Release (App Store) */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CCD4BC99E20E1FBC03DF734 /* Textual Extensions.xcconfig */;
 			buildSettings = {
 			};
 			name = "Release (App Store)";
