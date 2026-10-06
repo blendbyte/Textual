@@ -250,6 +250,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, strong, nullable) NSMutableString *zncBouncerCertificateChainDataMutable;
 @property (nonatomic, copy, nullable) NSString *temporaryServerAddressOverride;
 @property (nonatomic, assign) uint16_t temporaryServerPortOverride;
+@property (nonatomic, assign) BOOL temporaryServerPrefersSecuredConnection;
 @property (readonly) BOOL isBrokenIRCd_aka_Twitch;
 @property (readonly) BOOL monitorAwayStatus;
 @property (readonly) BOOL supportsAdvancedTracking;
@@ -3205,7 +3206,17 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 					break;
 				}
 
+				/* Another host on the same port and with the same TLS setting as the
+				 configured server; never plaintext if the current connection is secured. */
+				IRCServer *currentServer = self.server;
+
+				if (currentServer == nil) {
+					currentServer = self.config.serverList.firstObject;
+				}
+
 				self.temporaryServerAddressOverride = serverAddress;
+				self.temporaryServerPortOverride = currentServer.serverPort;
+				self.temporaryServerPrefersSecuredConnection = (currentServer.prefersSecuredConnection || self.socket.isSecured);
 			}
 
 			if (self.isConnecting || self.isConnected) {
@@ -8927,6 +8938,16 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 				return;
 			}
 
+			/* A redirect never drops TLS: a server (or anyone tampering with the
+			 redirect) could otherwise move the session, and SASL or NickServ
+			 passwords, to plaintext. Read the state before -disconnect
+			 destroys the socket. */
+			BOOL connectionIsSecured = (self.socket.isSecured || self.socket.config.connectionPrefersSecuredConnection);
+
+			if (connectionIsSecured) {
+				[self printDebugInformationToConsole:TXTLS(@"IRC[r3d-t1]", serverAddress, serverPort)];
+			}
+
 			/* Perform reconnect to specified locations */
 			__weak IRCClient *weakSelf = self;
 
@@ -8939,6 +8960,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			/* -disconnect would destroy this so we set them after... */
 			self.temporaryServerAddressOverride = serverAddress;
 			self.temporaryServerPortOverride = serverPort.integerValue;
+			self.temporaryServerPrefersSecuredConnection = connectionIsSecured;
 
 			break;
 		}
@@ -11311,9 +11333,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	/* Begin populating configuration */
 	/* Temporary values take priority. When a temporary server
-	 address is specified, then the temporary port is used too,
-	 or 6667 without SSL is used. Nothing from the current
-	 server configuration is read if there is temporary server. */
+	 address is specified, then the temporary port and TLS setting
+	 are used too (port 6667 if none was given). Nothing else from
+	 the current server configuration is read if there is a
+	 temporary server. */
 	NSString *serverAddress = nil;
 
 	uint16_t serverPort = IRCConnectionDefaultServerPort;
@@ -11328,6 +11351,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		{
 			serverPort = self.temporaryServerPortOverride;
 		}
+
+		connectionPrefersSecuredConnection = self.temporaryServerPrefersSecuredConnection;
 	}
 
 	if (serverAddress.isValidInternetAddress == NO) {
@@ -11359,6 +11384,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	 store. Once its defined, its to be nil'd out no matter what. */
 	self.temporaryServerAddressOverride = nil;
 	self.temporaryServerPortOverride = 0;
+	self.temporaryServerPrefersSecuredConnection = NO;
 
 	/* Reset status */
 	self.connectType = connectMode;
