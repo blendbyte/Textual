@@ -1,0 +1,4 @@
+
+This repository contains a collection of already assembled open source libraries.
+
+See the Documentation directory for license information.

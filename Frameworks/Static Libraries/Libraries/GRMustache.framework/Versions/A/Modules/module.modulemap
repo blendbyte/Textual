@@ -1,0 +1,6 @@
+framework module GRMustache {
+  umbrella header "GRMustache.h"
+
+  export *
+  module * { export * }
+}
