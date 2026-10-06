@@ -167,6 +167,9 @@ NS_ASSUME_NONNULL_BEGIN
 #define _timeoutInterval			360
 #define _whoCheckInterval			120
 
+#define _CTCPReplyLimit				5 // replies per _CTCPReplyLimitInterval
+#define _CTCPReplyLimitInterval		10
+
 NSString * const IRCClientConfigurationWasUpdatedNotification = @"IRCClientConfigurationWasUpdatedNotification";
 
 NSString * const IRCClientChannelListWasModifiedNotification = @"IRCClientChannelListWasModifiedNotification";
@@ -201,6 +204,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, assign, readwrite) BOOL isWaitingForNickServ;
 @property (nonatomic, assign) BOOL isAuthenticatedWithSASL;
 @property (nonatomic, assign) BOOL nickServVerificationWarningShown;
+@property (nonatomic, assign) NSUInteger CTCPReplyCount;
+@property (nonatomic, assign) NSTimeInterval CTCPReplyCountStarted;
 @property (nonatomic, assign, readwrite) BOOL serverHasNickServ;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageReceived;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageServerTime;
@@ -5614,6 +5619,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	self.isAuthenticatedWithSASL = NO;
 	self.nickServVerificationWarningShown = NO;
 
+	self.CTCPReplyCount = 0;
+	self.CTCPReplyCountStarted = 0;
+
 	self.userIsAway = NO;
 	self.userIsIRCop = NO;
 
@@ -7000,6 +7008,12 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		return;
 	}
 
+	/* A query sent to a channel would make everyone in it reply at once,
+	 so it is not answered. ACTION never reaches this method. */
+	if ([self stringIsChannelName:[m paramAt:0]]) {
+		return;
+	}
+
 	/* Ignore query if the user has configured Textual to do so */
 	if ([TPCPreferences replyToCTCPRequests] == NO) {
 		[self printDebugInformationToConsole:TXTLS(@"IRC[bg3-h2]", command, sender)];
@@ -7011,6 +7025,12 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	if ([command isEqualToString:@"DCC"]) {
 		[self receivedDCCQuery:m text:textMutable ignoreInfo:ignoreInfo];
 
+		return;
+	}
+
+	/* Queries beyond the limit are dropped silently so that a flood
+	 neither fills the console nor delays our own messages. */
+	if ([self CTCPReplyIsWithinLimit] == NO) {
 		return;
 	}
 
@@ -7088,6 +7108,25 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		[self sendCTCPReply:sender command:command text:text];
 	}
+}
+
+- (BOOL)CTCPReplyIsWithinLimit
+{
+	NSTimeInterval now = [NSProcessInfo processInfo].systemUptime;
+
+	if ((now - self.CTCPReplyCountStarted) >= _CTCPReplyLimitInterval) {
+		self.CTCPReplyCountStarted = now;
+
+		self.CTCPReplyCount = 0;
+	}
+
+	if (self.CTCPReplyCount >= _CTCPReplyLimit) {
+		return NO;
+	}
+
+	self.CTCPReplyCount += 1;
+
+	return YES;
 }
 
 - (void)receiveCTCPLagCheckQuery:(IRCMessage *)m text:(NSString *)text
