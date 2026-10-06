@@ -67,6 +67,11 @@ typedef NS_OPTIONS(NSUInteger, THOPluginItemSupportedFeature) {
 - (BOOL)loadBundle:(NSBundle *)bundle;
 - (void)unloadBundle;
 
+/* Every call into a plugin goes through here. A plugin that throws an
+ exception is logged and disabled: it gets no further calls. Returns NO
+ if the plugin is disabled or threw. */
+- (BOOL)performCall:(void (NS_NOESCAPE ^)(void))call;
+
 - (BOOL)supportsFeature:(THOPluginItemSupportedFeature)feature;
 @end
 

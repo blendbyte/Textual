@@ -40,6 +40,11 @@
 "zjw-bd" = "Continue";
 "qso-2g" = "Cancel";
 "c7s-dq" = "OK";
+"w8p-a1" = "Load the plugin “%@”?";
+"w8p-a2" = "A plugin was added to Textual’s Extensions folder:\n%@\n\nPlugins can do anything Textual can, including reading your messages and passwords. Only load plugins from developers you trust.";
+"w8p-a3" = "This plugin changed since you last decided about it:\n%@\n\nPlugins can do anything Textual can, including reading your messages and passwords. Only load plugins from developers you trust.";
+"w8p-a4" = "Load Plugin";
+"w8p-a5" = "Don’t Load";
 "p4f-i1" = "This file can’t be imported";
 "p4f-i2" = "It isn’t a settings file exported by Textual, or it is damaged. Nothing was changed.";
 "xne-79" = "Select";

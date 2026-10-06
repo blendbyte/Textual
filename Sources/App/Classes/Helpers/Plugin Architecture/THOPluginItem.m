@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSArray<THOPluginOutputSuppressionRule *> *outputSuppressionRules;
 @property (nonatomic, copy, readwrite, nullable) NSString *pluginPreferencesPaneMenuItemTitle;
 @property (nonatomic, strong, readwrite, nullable) NSView *pluginPreferencesPaneView;
+@property (atomic, assign) BOOL disabled;
 @end
 
 @implementation THOPluginItem
@@ -61,6 +62,19 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(bundle != nil);
 
+	@try {
+		return [self _loadBundle:bundle];
+	}
+	@catch (NSException *exception) {
+		LogToConsoleFault("Plugin '%{public}@' threw an exception while loading and was not loaded: %{public}@",
+			bundle.bundleIdentifier, exception.reason);
+
+		return NO;
+	}
+}
+
+- (BOOL)_loadBundle:(NSBundle *)bundle
+{
 	/* Initialize the principal class */
 	Class principalClass = bundle.principalClass;
 
@@ -210,7 +224,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if ([self.primaryClass respondsToSelector:@selector(pluginWillBeUnloadedFromMemory)]) {
-		[self.primaryClass pluginWillBeUnloadedFromMemory];
+		[self performCall:^{
+			[self.primaryClass pluginWillBeUnloadedFromMemory];
+		}];
 	}
 
 	self.primaryClass = nil;
@@ -220,7 +236,34 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)supportsFeature:(THOPluginItemSupportedFeature)feature
 {
+	if (self.disabled) {
+		return NO;
+	}
+
 	return ((self->_supportedFeatures & feature) == feature);
+}
+
+- (BOOL)performCall:(void (NS_NOESCAPE ^)(void))call
+{
+	NSParameterAssert(call != nil);
+
+	if (self.disabled) {
+		return NO;
+	}
+
+	@try {
+		call();
+
+		return YES;
+	}
+	@catch (NSException *exception) {
+		self.disabled = YES;
+
+		LogToConsoleFault("Plugin '%{public}@' threw an exception and was disabled: %{public}@",
+			self.bundle.bundleIdentifier, exception.reason);
+
+		return NO;
+	}
 }
 
 @end

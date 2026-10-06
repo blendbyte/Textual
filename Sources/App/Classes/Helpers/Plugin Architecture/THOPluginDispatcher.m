@@ -78,7 +78,11 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 			continue;
 		}
 
-		BOOL returnedValue = [plugin.primaryClass receivedCommand:command withText:text authoredBy:textAuthor destinedFor:textDestination onClient:client receivedAt:receivedAt referenceMessage:referenceMessage];
+		__block BOOL returnedValue = YES;
+
+		[plugin performCall:^{
+			returnedValue = [plugin.primaryClass receivedCommand:command withText:text authoredBy:textAuthor destinedFor:textDestination onClient:client receivedAt:receivedAt referenceMessage:referenceMessage];
+		}];
 
 		if (returnedValue == NO) {
 			return NO;
@@ -101,7 +105,11 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 			continue;
 		}
 
-		BOOL returnedValue = [plugin.primaryClass receivedText:text authoredBy:textAuthor destinedFor:textDestination asLineType:lineType onClient:client receivedAt:receivedAt wasEncrypted:wasEncrypted];
+		__block BOOL returnedValue = YES;
+
+		[plugin performCall:^{
+			returnedValue = [plugin.primaryClass receivedText:text authoredBy:textAuthor destinedFor:textDestination asLineType:lineType onClient:client receivedAt:receivedAt wasEncrypted:wasEncrypted];
+		}];
 
 		if (returnedValue == NO) {
 			return NO;
@@ -124,7 +132,13 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 			continue;
 		}
 
-		IRCMessage *returnedValue = [plugin.primaryClass interceptServerInput:returnValue for:client];
+		__block IRCMessage *returnedValue = returnValue;
+
+		if ([plugin performCall:^{
+			returnedValue = [plugin.primaryClass interceptServerInput:returnValue for:client];
+		}] == NO) {
+			continue; // A plugin that threw doesn't drop the message
+		}
 
 		if (returnedValue == nil) {
 			return nil;
@@ -152,7 +166,13 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 			continue;
 		}
 
-		id returnedValue = [plugin.primaryClass interceptUserInput:returnValue command:commandString];
+		__block id returnedValue = returnValue;
+
+		if ([plugin performCall:^{
+			returnedValue = [plugin.primaryClass interceptUserInput:returnValue command:commandString];
+		}] == NO) {
+			continue; // A plugin that threw doesn't drop the input
+		}
 
 		if (returnedValue == nil) {
 			return nil;
@@ -186,7 +206,11 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 			continue;
 		}
 
-		NSString *returnedValue = [plugin.primaryClass willRenderMessage:returnValue forViewController:viewController lineType:lineType memberType:memberType];
+		__block NSString *returnedValue = nil;
+
+		[plugin performCall:^{
+			returnedValue = [plugin.primaryClass willRenderMessage:returnValue forViewController:viewController lineType:lineType memberType:memberType];
+		}];
 
 		if (returnedValue.length == 0) {
 			continue;
@@ -221,7 +245,9 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 				continue;
 			}
 
-			[plugin.primaryClass userInputCommandInvokedOnClient:client commandString:uppercaseCommand messageString:messageString];
+			[plugin performCall:^{
+				[plugin.primaryClass userInputCommandInvokedOnClient:client commandString:uppercaseCommand messageString:messageString];
+			}];
 		}
 	});
 }
@@ -238,7 +264,9 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 				continue;
 			}
 
-			[plugin.primaryClass didReceiveJavaScriptPayload:payloadObject fromViewController:viewController];
+			[plugin performCall:^{
+				[plugin.primaryClass didReceiveJavaScriptPayload:payloadObject fromViewController:viewController];
+			}];
 		}
 	});
 }
@@ -267,7 +295,9 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 				continue;
 			}
 
-			[plugin.primaryClass didReceiveServerInput:messageObject onClient:client];
+			[plugin performCall:^{
+				[plugin.primaryClass didReceiveServerInput:messageObject onClient:client];
+			}];
 		}
 	});
 }
@@ -310,7 +340,9 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 				continue;
 			}
 
-			[plugin.primaryClass didPostNewMessage:messageObject forViewController:viewController];
+			[plugin performCall:^{
+				[plugin.primaryClass didPostNewMessage:messageObject forViewController:viewController];
+			}];
 		}
 	});
 }

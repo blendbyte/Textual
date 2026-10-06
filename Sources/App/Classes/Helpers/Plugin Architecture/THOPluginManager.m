@@ -70,8 +70,11 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 {
 	static dispatch_once_t onceToken;
 
+	/* Plugins load on the main thread: their init, pluginLoadedIntoMemory and
+	 preference pane views are user interface code (Caffeine loads a nib), and
+	 a new third-party plugin asks for consent. Launch waits for them anyway. */
 	dispatch_once(&onceToken, ^{
-		XRPerformBlockAsynchronouslyOnQueue([THOPluginDispatcher dispatchQueue], ^{
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
 			[self _loadPlugins];
 		});
 	});
@@ -82,7 +85,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		XRPerformBlockAsynchronouslyOnQueue([THOPluginDispatcher dispatchQueue], ^{
+		XRPerformBlockSynchronouslyOnMainQueue(^{
 			[self _unloadPlugins];
 		});
 	});
@@ -97,10 +100,14 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 	NSMutableArray<NSString *> *loadedBundles = [NSMutableArray array];
 	NSMutableArray<NSBundle *> *obsoleteBundles = [NSMutableArray array];
 
+	/* Bundled plugins first: the first plugin with an identifier wins, so a
+	 bundle in the (writable) Extensions folder can't replace a bundled one */
+	NSString *bundledExtensionsPath = [TPCPathInfo bundledExtensions];
+
 	NSArray *pathsToLoad =
 	[RZFileManager() buildPathArray:
+		bundledExtensionsPath,
 		[TPCPathInfo customExtensions],
-		[TPCPathInfo bundledExtensions],
 		nil];
 
 	for (NSString *path in pathsToLoad) {
@@ -130,7 +137,13 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 		NSString *bundleIdentifier = bundle.bundleIdentifier;
 
-		if (bundleIdentifier == nil || [loadedBundles containsObject:bundleIdentifier]) {
+		if (bundleIdentifier == nil) {
+			continue;
+		}
+
+		if ([loadedBundles containsObject:bundleIdentifier]) {
+			LogToConsoleError("Not loading '%{public}@' at '%{public}@': a plugin with that identifier is already loaded", bundleIdentifier, bundlePath);
+
 			continue;
 		}
 
@@ -193,6 +206,14 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 			continue;
 		}
 
+		/* Third-party plugins run with Textual's privileges: ask once for
+		 each new or changed one */
+		if ([bundlePath hasPrefix:[bundledExtensionsPath stringByAppendingString:@"/"]] == NO &&
+			[self userAllowsThirdPartyBundle:bundle] == NO)
+		{
+			continue;
+		}
+
 		/* Load bundle as a plugin */
 		THOPluginItem *plugin = [THOPluginItem new];
 
@@ -220,6 +241,80 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 		[RZNotificationCenter() postNotificationName:THOPluginManagerFinishedLoadingPluginsNotification object:self];
 	});
+}
+
+#pragma mark -
+#pragma mark Third-Party Consent
+
+/* What the user decided per plugin path: the plugin's hash and whether it may load */
+static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManager -> Third-Party Plugin Decisions";
+
+/* Changes when the plugin's code or Info.plist changes */
+- (nullable NSString *)hashOfBundle:(NSBundle *)bundle
+{
+	NSData *executable = nil;
+
+	if (bundle.executablePath) {
+		executable = [NSData dataWithContentsOfFile:bundle.executablePath];
+	}
+
+	NSData *infoPlist = [NSData dataWithContentsOfFile:[bundle.bundlePath stringByAppendingPathComponent:@"Contents/Info.plist"]];
+
+	if (executable == nil || infoPlist == nil) {
+		return nil;
+	}
+
+	NSMutableData *contents = [executable mutableCopy];
+
+	[contents appendData:infoPlist];
+
+	return contents.sha256;
+}
+
+- (BOOL)userAllowsThirdPartyBundle:(NSBundle *)bundle
+{
+	NSParameterAssert(bundle != nil);
+
+	NSString *bundlePath = bundle.bundlePath;
+
+	NSString *bundleHash = [self hashOfBundle:bundle];
+
+	if (bundleHash == nil) {
+		return NO;
+	}
+
+	NSDictionary *decisions = [RZUserDefaults() dictionaryForKey:_thirdPartyPluginDecisionsDefaultsKey];
+
+	NSDictionary *decision = decisions[bundlePath];
+
+	if ([decision isKindOfClass:[NSDictionary class]] && [decision[@"hash"] isEqual:bundleHash]) {
+		return [decision boolForKey:@"allowed"];
+	}
+
+	NSString *bundleName = bundle.infoDictionary[@"CFBundleName"];
+
+	if ([bundleName isKindOfClass:[NSString class]] == NO || bundleName.length == 0) {
+		bundleName = bundlePath.lastPathComponent;
+	}
+
+	BOOL changed = (decision != nil);
+
+	BOOL allowed = [TDCAlert modalAlertWithMessage:TXTLS(((changed) ? @"Prompts[w8p-a3]" : @"Prompts[w8p-a2]"), bundlePath)
+											 title:TXTLS(@"Prompts[w8p-a1]", bundleName)
+									 defaultButton:TXTLS(@"Prompts[w8p-a4]")
+								   alternateButton:TXTLS(@"Prompts[w8p-a5]")];
+
+	NSMutableDictionary *decisionsMutable = [decisions mutableCopy];
+
+	if (decisionsMutable == nil) {
+		decisionsMutable = [NSMutableDictionary dictionary];
+	}
+
+	decisionsMutable[bundlePath] = @{@"hash" : bundleHash, @"allowed" : @(allowed)};
+
+	[RZUserDefaults() setObject:decisionsMutable forKey:_thirdPartyPluginDecisionsDefaultsKey];
+
+	return allowed;
 }
 
 - (void)_unloadPlugins
