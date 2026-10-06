@@ -424,8 +424,8 @@
 		4C3155DE20EB6CB400448776 /* TVCAutoExpandingTokenField.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151A320EB673E00448776 /* TVCAutoExpandingTokenField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C3155DF20EB6CB400448776 /* TVCBasicTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151A220EB673E00448776 /* TVCBasicTableView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C3155E020EB6CB400448776 /* TVCChannelSelectionViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31519620EB673E00448776 /* TVCChannelSelectionViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4C3155E120EB6CB400448776 /* TVCErrorMessagePopoverControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31517520EB673E00448776 /* TVCErrorMessagePopoverControllerPrivate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4C3155E220EB6CB400448776 /* TVCErrorMessagePopoverPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151A020EB673E00448776 /* TVCErrorMessagePopoverPrivate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4C3155E120EB6CB400448776 /* TVCErrorMessagePopoverControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31517520EB673E00448776 /* TVCErrorMessagePopoverControllerPrivate.h */; };
+		4C3155E220EB6CB400448776 /* TVCErrorMessagePopoverPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151A020EB673E00448776 /* TVCErrorMessagePopoverPrivate.h */; };
 		4C3155E320EB6CB400448776 /* TVCLogController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31525620EB673E00448776 /* TVCLogController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C3155E420EB6CB400448776 /* TVCLogLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31519920EB673E00448776 /* TVCLogLine.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C3155E520EB6CB400448776 /* TVCLogRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31525420EB673E00448776 /* TVCLogRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
