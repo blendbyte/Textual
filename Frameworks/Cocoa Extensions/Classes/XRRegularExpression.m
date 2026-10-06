@@ -101,7 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSMutableArray<NSTextCheckingResult *> *results = [NSMutableArray array];
 
-	CFAbsoluteTime deadline = (CFAbsoluteTimeGetCurrent() + XRRegularExpressionTimeLimit);
+	/* Monotonic: wall-clock changes must not cut a search short */
+	NSTimeInterval deadline = ([NSProcessInfo processInfo].systemUptime + XRRegularExpressionTimeLimit);
 
 	__block BOOL timedOut = NO;
 
@@ -117,7 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 		}
 
-		if (CFAbsoluteTimeGetCurrent() > deadline) {
+		if ([NSProcessInfo processInfo].systemUptime > deadline) {
 			timedOut = YES;
 
 			*stop = YES;

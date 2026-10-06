@@ -90,24 +90,40 @@ extension OpenLink {
 
 		if scheme != "textual" {
 			guard let applicationURL = NSWorkspace.shared.urlForApplication(toOpen: url) else {
-				return false // Nothing can open it
+				NSSound.beep() // Nothing can open it
+
+				return false
 			}
 
 			applicationName = FileManager.default.displayName(atPath: applicationURL.path)
 		}
 
-		var suppressionKey: String? = nil
+		let canRemember = (scheme.isEmpty == false && schemesAlwaysConfirmed.contains(scheme) == false)
 
-		if scheme.isEmpty == false && schemesAlwaysConfirmed.contains(scheme) == false {
-			suppressionKey = "open_link_with_scheme_\(scheme)"
+		let rememberedKey = "TLOpenLink -> Open Links With Scheme -> \(scheme)"
+
+		let defaults = TPCPreferencesUserDefaults.shared()
+
+		if canRemember && defaults.bool(forKey: rememberedKey) {
+			return true
 		}
 
-		return TDCAlert.modalAlert(withMessage: localizedString("Prompts[5oq-vv]", url.absoluteString),
-								   title: localizedString("Prompts[2ul-cl]", applicationName),
-								   defaultButton: localizedString("Prompts[mvh-ms]"),
-								   alternateButton: localizedString("Prompts[99q-gg]"),
-								   suppressionKey: suppressionKey,
-								   suppressionText: nil)
+		var dontAskAgain: ObjCBool = false
+
+		let openLink = TDCAlert.modalAlert(withMessage: localizedString("Prompts[5oq-vv]", url.absoluteString),
+										   title: localizedString("Prompts[2ul-cl]", applicationName),
+										   defaultButton: localizedString("Prompts[mvh-ms]"),
+										   alternateButton: localizedString("Prompts[99q-gg]"),
+										   suppressionKey: nil,
+										   suppressionText: (canRemember ? localizedString("Prompts[68u-z9]") : nil),
+										   suppressionResponse: &dontAskAgain)
+
+		/* Only "open" is remembered: declining with the box ticked asks again next time */
+		if openLink && dontAskAgain.boolValue && canRemember {
+			defaults.set(true, forKey: rememberedKey)
+		}
+
+		return openLink
 	}
 
 	private static func localizedString(_ key: String, _ arguments: CVarArg...) -> String

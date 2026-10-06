@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 "r7x-q1" = "This is not a valid regular expression";
+"r7x-q3" = "These highlight keywords are not valid regular expressions and will never match:\n\n%@\n\nCorrect them in the list of highlight keywords.";
 "r7x-q2" = "“%@” can’t be used as a highlight keyword: it would never match anything. Correct it, or switch highlight matching away from regular expressions.";
 "70s-c6" = "No Log Location Selected";
 "721-ie" = "No Location Selected";

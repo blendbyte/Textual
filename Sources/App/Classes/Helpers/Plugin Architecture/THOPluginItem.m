@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface THOPluginItem ()
 @property (nonatomic, strong, readwrite, nullable) NSBundle *bundle;
-@property (nonatomic, strong, readwrite, nullable) id primaryClass;
+@property (atomic, strong, readwrite, nullable) id primaryClass;
 @property (nonatomic, assign, readwrite) THOPluginItemSupportedFeature supportedFeatures;
 @property (nonatomic, copy, readwrite, nullable) NSArray<NSString *> *supportedUserInputCommands;
 @property (nonatomic, copy, readwrite, nullable) NSArray<NSString *> *supportedServerInputCommands;
@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *pluginPreferencesPaneMenuItemTitle;
 @property (nonatomic, strong, readwrite, nullable) NSView *pluginPreferencesPaneView;
 @property (atomic, assign) BOOL disabled;
+@property (atomic, assign) BOOL unloading;
 @end
 
 @implementation THOPluginItem
@@ -223,6 +224,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* No more calls from the plugin queue from here on */
+	self.unloading = YES;
+
 	if ([self.primaryClass respondsToSelector:@selector(pluginWillBeUnloadedFromMemory)]) {
 		[self performCall:^{
 			[self.primaryClass pluginWillBeUnloadedFromMemory];
@@ -236,7 +240,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)supportsFeature:(THOPluginItemSupportedFeature)feature
 {
-	if (self.disabled) {
+	if (self.disabled || self.unloading) {
 		return NO;
 	}
 

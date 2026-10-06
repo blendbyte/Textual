@@ -159,9 +159,20 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(location != nil);
 
 #ifdef DEBUG
-	/* Textual Dev only (Development/dev input, config, send, eval, reset),
-	 and only from outside Textual: never from a link clicked in a message. */
-	if (event == nil && [location hasPrefix:@"textual://dev-"]) {
+	/* Textual Dev only (Development/dev connect, input, config, send, eval,
+	 reset): never from a link clicked in a message, and only with the token
+	 Development/dev passed at launch, so other apps and web pages can't. */
+	if ([location hasPrefix:@"textual://dev-"]) {
+		if (event == nil || [self developmentURLCarriesToken:location] == NO) {
+			LogToConsoleError("Ignored a Textual Dev action without the launch token");
+
+			return;
+		}
+	}
+
+	if ([location hasPrefix:@"textual://dev-connect?"]) {
+		[self performDevelopmentConnectWithURL:location];
+
 		return;
 	} else if ([location hasPrefix:@"textual://dev-eval?"]) {
 		[self performDevelopmentEvaluationWithURL:location];
@@ -171,7 +182,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[self performDevelopmentSendWithURL:location];
 
 		return;
-	} else if ([location isEqualToString:@"textual://dev-reset"]) {
+	} else if ([location hasPrefix:@"textual://dev-reset?"]) {
 		[self performDevelopmentReset];
 
 		return;
@@ -309,10 +320,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 #ifdef DEBUG
-	/* Textual Dev connects to test servers on this Mac straight away
-	 (Development/dev connect), as a new server each time because the
-	 test servers differ only by port. */
-	if ([self isDevelopmentTestServerAddress:serverAddress]) {
+	/* Development/dev connect: test servers on this Mac are connected to
+	 straight away, as a new server each time (they differ only by port) */
+	if (_developmentConnectRequested && [self isDevelopmentTestServerAddress:serverAddress]) {
 		[self createConnectionToServer:resultValue channelList:channelList connectWhenCreated:YES mergeConnectionIfPossible:NO selectFirstChannelAdded:NO];
 
 		return;
@@ -324,9 +334,52 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #ifdef DEBUG
+static BOOL _developmentConnectRequested = NO;
+
 + (BOOL)isDevelopmentTestServerAddress:(NSString *)serverAddress
 {
-	return [@[@"127.0.0.1", @"localhost", @"::1"] containsObject:serverAddress];
+	return [@[@"127.0.0.1", @"localhost"] containsObject:serverAddress];
+}
+
+/* Development/dev passes a fresh token as a launch argument ("-TextualDevToken");
+ it is read from the arguments only, never from saved preferences */
++ (BOOL)developmentURLCarriesToken:(NSString *)location
+{
+	NSString *launchToken = [[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][@"TextualDevToken"];
+
+	if ([launchToken isKindOfClass:[NSString class]] == NO || launchToken.length < 16) {
+		return NO;
+	}
+
+	for (NSURLQueryItem *item in [NSURLComponents componentsWithString:location].queryItems) {
+		if ([item.name isEqualToString:@"token"]) {
+			return [item.value isEqualToString:launchToken];
+		}
+	}
+
+	return NO;
+}
+
+/* textual://dev-connect?url=<irc or ircs URL to a test server on this Mac> */
++ (void)performDevelopmentConnectWithURL:(NSString *)location
+{
+	NSString *serverURL = nil;
+
+	for (NSURLQueryItem *item in [NSURLComponents componentsWithString:location].queryItems) {
+		if ([item.name isEqualToString:@"url"]) {
+			serverURL = item.value;
+		}
+	}
+
+	if (serverURL.length == 0) {
+		return;
+	}
+
+	_developmentConnectRequested = YES;
+
+	[self parseIRCProtocolURI:serverURL withDescriptor:nil];
+
+	_developmentConnectRequested = NO;
 }
 
 /* textual://dev-input?text=<text>[&channel=<channel>] selects the newest server's
@@ -466,6 +519,14 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *bundleIdentifier = [TPCApplicationInfo applicationBundleIdentifier];
 
 	if ([bundleIdentifier isEqualToString:@"com.textualapp.app.dev"] == NO) {
+		return;
+	}
+
+	/* Only inside Textual Dev's own sandbox container: unsandboxed (e.g. an
+	 unsigned build), these folders would be the user's own Library folders */
+	if ([NSHomeDirectory() hasSuffix:@"/Library/Containers/com.textualapp.app.dev/Data"] == NO) {
+		LogToConsoleError("dev-reset refused: not running in Textual Dev's sandbox container");
+
 		return;
 	}
 
@@ -752,8 +813,8 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 #ifdef DEBUG
-		/* Textual Dev: the test servers on this Mac use self-signed certificates */
-		if ([self isDevelopmentTestServerAddress:serverAddress]) {
+		/* Development/dev connect: the test servers on this Mac use self-signed certificates */
+		if (_developmentConnectRequested && [self isDevelopmentTestServerAddress:serverAddress]) {
 			baseConfig.validateServerCertificateChain = NO;
 		}
 #endif

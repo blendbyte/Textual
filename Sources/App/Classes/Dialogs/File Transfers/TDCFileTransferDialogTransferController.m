@@ -392,6 +392,12 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		self.path = path;
 	}
 
+	/* A new attempt: only a new RESUME/ACCEPT makes it a resume again,
+	 or a retry would continue at an old offset (and corrupt the file) */
+	self.isResume = NO;
+
+	self.processedFilesize = 0;
+
 	if (self.client.isLoggedIn == NO) {
 		[self _closeWithClientDisconnectedError];
 
@@ -725,7 +731,10 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	self.hostPort = hostPort;
 
-	self.processedFilesize = 0;
+	/* A RESUME may have set the position already (reverse DCC) */
+	if (self.isResume == NO) {
+		self.processedFilesize = 0;
+	}
 
 	[self openConnectionToHost];
 }
@@ -753,14 +762,15 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 - (void)sendTransferRequestToClient
 {
 	if (self.isSender) {
-		uint64_t currentFilesize = self.currentFilesize;
+		/* The size that is sent, even if the file changed since it was added */
+		uint64_t totalFilesize = self.totalFilesize;
 
 		if (self.isReversed) {
 			[self buildTransferToken];
 
-			[self.client sendFile:self.peerNickname port:0 filename:self.filename filesize:currentFilesize token:self.transferToken];
+			[self.client sendFile:self.peerNickname port:0 filename:self.filename filesize:totalFilesize token:self.transferToken];
 		} else {
-			[self.client sendFile:self.peerNickname port:self.hostPort filename:self.filename filesize:currentFilesize token:nil];
+			[self.client sendFile:self.peerNickname port:self.hostPort filename:self.filename filesize:totalFilesize token:nil];
 		}
 	} else {
 		if (self.isReversed) {
@@ -1086,6 +1096,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	if (self.isReversed) {
 		[self.readSocket readDataWithTimeout:_readDataTimeout tag:0];
 	} else {
+		[self drainAcknowledgements];
+
 		[self send];
 	}
 }
@@ -1111,6 +1123,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	if (self.isReversed == NO) {
 		[self.readSocket readDataWithTimeout:_readDataTimeout tag:0];
 	} else {
+		[self drainAcknowledgements];
+
 		[self send];
 	}
 }
@@ -1135,9 +1149,22 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	}
 }
 
+/* The receiver acknowledges every chunk. A sender that never reads them
+ lets the receiver's acknowledgements back up until its writes stall. */
+- (void)drainAcknowledgements
+{
+	[self.writeSocket readDataWithTimeout:(-1) tag:0];
+}
+
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-	if (self.isSender != NO || [self isCurrentSocket:sock] == NO) {
+	if ([self isCurrentSocket:sock] == NO) {
+		return;
+	}
+
+	if (self.isSender) {
+		[self drainAcknowledgements];
+
 		return;
 	}
 
@@ -1185,7 +1212,9 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	NSData *ackPacketData = [NSData dataWithBytes:ackPacket length:4];
 
-	[self.readSocket writeData:ackPacketData withTimeout:_sendDataTimeout tag:0];
+	/* No timeout: senders that don't read acknowledgements (Textual before 8
+	 did not) let them back up, which must not fail the transfer */
+	[self.readSocket writeData:ackPacketData withTimeout:(-1) tag:0];
 
 	/* Continue requesting data if the transfer is not complete */
 	if (self.processedFilesize < self.totalFilesize) {
@@ -1254,6 +1283,11 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		}
 
 		if (self.processedFilesize >= self.totalFilesize) {
+			return;
+		}
+
+		/* Closed meanwhile (e.g. the user pressed Stop) */
+		if (self.fileHandle == nil || self.transferStatus != TDCFileTransferDialogTransferStatusSending) {
 			return;
 		}
 

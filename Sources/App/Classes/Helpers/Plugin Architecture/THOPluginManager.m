@@ -97,6 +97,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 	NSMutableArray<THOPluginItem *> *loadedPlugins = [NSMutableArray array];
 	NSMutableArray<NSString *> *bundlesToLoad = [NSMutableArray array];
+	NSMutableSet<NSString *> *bundledBundlePaths = [NSMutableSet set];
 	NSMutableArray<NSString *> *loadedBundles = [NSMutableArray array];
 	NSMutableArray<NSBundle *> *obsoleteBundles = [NSMutableArray array];
 
@@ -125,6 +126,12 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 			NSString *filePath = [path stringByAppendingPathComponent:file];
 
 			[bundlesToLoad addObject:filePath];
+
+			/* Remembered by where it was found, not by comparing path strings
+			 (the bundled folder's path contains "//", scanned paths don't) */
+			if ([path isEqualToString:bundledExtensionsPath]) {
+				[bundledBundlePaths addObject:filePath];
+			}
 		}
 	}
 
@@ -208,7 +215,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 		/* Third-party plugins run with Textual's privileges: ask once for
 		 each new or changed one */
-		if ([bundlePath hasPrefix:[bundledExtensionsPath stringByAppendingString:@"/"]] == NO &&
+		if ([bundledBundlePaths containsObject:bundlePath] == NO &&
 			[self userAllowsThirdPartyBundle:bundle] == NO)
 		{
 			continue;
@@ -249,24 +256,41 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 /* What the user decided per plugin path: the plugin's hash and whether it may load */
 static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManager -> Third-Party Plugin Decisions";
 
-/* Changes when the plugin's code or Info.plist changes */
+/* Changes when any file in the plugin changes (code, nested frameworks,
+ nibs, Info.plist): the relative path and contents of every file */
 - (nullable NSString *)hashOfBundle:(NSBundle *)bundle
 {
-	NSData *executable = nil;
+	NSString *bundlePath = bundle.bundlePath;
 
-	if (bundle.executablePath) {
-		executable = [NSData dataWithContentsOfFile:bundle.executablePath];
+	NSMutableArray<NSString *> *relativePaths = [NSMutableArray array];
+
+	NSDirectoryEnumerator *enumerator = [RZFileManager() enumeratorAtPath:bundlePath];
+
+	for (NSString *relativePath in enumerator) {
+		if ([enumerator.fileAttributes.fileType isEqualToString:NSFileTypeRegular]) {
+			[relativePaths addObject:relativePath];
+		}
 	}
 
-	NSData *infoPlist = [NSData dataWithContentsOfFile:[bundle.bundlePath stringByAppendingPathComponent:@"Contents/Info.plist"]];
-
-	if (executable == nil || infoPlist == nil) {
+	if (relativePaths.count == 0) {
 		return nil;
 	}
 
-	NSMutableData *contents = [executable mutableCopy];
+	[relativePaths sortUsingSelector:@selector(compare:)];
 
-	[contents appendData:infoPlist];
+	NSMutableData *contents = [NSMutableData data];
+
+	for (NSString *relativePath in relativePaths) {
+		NSData *fileContents = [NSData dataWithContentsOfFile:[bundlePath stringByAppendingPathComponent:relativePath]];
+
+		if (fileContents == nil) {
+			return nil;
+		}
+
+		NSString *fileEntry = [NSString stringWithFormat:@"%@\n%@\n", relativePath, fileContents.sha256];
+
+		[contents appendData:[fileEntry dataUsingEncoding:NSUTF8StringEncoding]];
+	}
 
 	return contents.sha256;
 }
@@ -276,6 +300,15 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 	NSParameterAssert(bundle != nil);
 
 	NSString *bundlePath = bundle.bundlePath;
+
+#ifdef DEBUG
+	/* Textual Dev under automated tests: no consent prompt blocking launch */
+	if ([[[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][@"TextualDevSkipThirdPartyPlugins"] boolValue]) {
+		LogToConsole("Skipping third-party plugin at %{public}@ (TextualDevSkipThirdPartyPlugins)", bundlePath);
+
+		return NO;
+	}
+#endif
 
 	NSString *bundleHash = [self hashOfBundle:bundle];
 
@@ -287,8 +320,11 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 
 	NSDictionary *decision = decisions[bundlePath];
 
-	if ([decision isKindOfClass:[NSDictionary class]] && [decision[@"hash"] isEqual:bundleHash]) {
-		return [decision boolForKey:@"allowed"];
+	if ([decision isKindOfClass:[NSDictionary class]] &&
+		[decision[@"hash"] isEqual:bundleHash] &&
+		[decision boolForKey:@"allowed"])
+	{
+		return YES;
 	}
 
 	NSString *bundleName = bundle.infoDictionary[@"CFBundleName"];
@@ -297,12 +333,19 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 		bundleName = bundlePath.lastPathComponent;
 	}
 
-	BOOL changed = (decision != nil);
+	BOOL changed = ([decision isKindOfClass:[NSDictionary class]] && [decision boolForKey:@"allowed"]);
 
 	BOOL allowed = [TDCAlert modalAlertWithMessage:TXTLS(((changed) ? @"Prompts[w8p-a3]" : @"Prompts[w8p-a2]"), bundlePath)
 											 title:TXTLS(@"Prompts[w8p-a1]", bundleName)
 									 defaultButton:TXTLS(@"Prompts[w8p-a4]")
 								   alternateButton:TXTLS(@"Prompts[w8p-a5]")];
+
+	/* Only "Load" is remembered. "Don't Load" holds for this launch: the user
+	 is asked again next time, so the choice can't get stuck (to stop being
+	 asked, the plugin is removed from the Extensions folder). */
+	if (allowed == NO) {
+		return NO;
+	}
 
 	NSMutableDictionary *decisionsMutable = [decisions mutableCopy];
 
@@ -310,11 +353,11 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 		decisionsMutable = [NSMutableDictionary dictionary];
 	}
 
-	decisionsMutable[bundlePath] = @{@"hash" : bundleHash, @"allowed" : @(allowed)};
+	decisionsMutable[bundlePath] = @{@"hash" : bundleHash, @"allowed" : @YES};
 
 	[RZUserDefaults() setObject:decisionsMutable forKey:_thirdPartyPluginDecisionsDefaultsKey];
 
-	return allowed;
+	return YES;
 }
 
 - (void)_unloadPlugins
@@ -658,7 +701,20 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 	}
 
 	/* Find an extension that matches this command */
-	BOOL pluginFound = [self.supportedUserInputCommands containsObject:command];
+	/* Not the list cached at launch: a plugin disabled after an exception
+	 no longer handles its commands (they reach the server instead of
+	 disappearing silently) */
+	BOOL pluginFound = NO;
+
+	for (THOPluginItem *plugin in self.loadedPlugins) {
+		if ([plugin supportsFeature:THOPluginItemSupportedFeatureSubscribedUserInputCommands] &&
+			[plugin.supportedUserInputCommands containsObject:command])
+		{
+			pluginFound = YES;
+
+			break;
+		}
+	}
 
 	if (pluginFound) {
 		if ( isExtension) {

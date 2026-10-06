@@ -23,9 +23,23 @@ ERGO_SHA256_ARM64="1bd97a0917036061e2dcdfc29149c2e252e3bc856282e0956afa2aaaa54dd
 ERGO_SHA256_X86_64="68b388a49034257082ee0292703874630a2c10cfba86c73bb2adc37b515c57a3"
 ERGO_DIR="${DATA}/ergo"
 
+# Textual Dev accepts textual://dev-… actions only with the token it was started with
+TOKEN_FILE="${DATA}/launch-token"
+
 die() { echo "dev: $*" >&2; exit 1; }
 
-app_pid() { pgrep -f "^${APP}/Contents/MacOS/Textual" || true; }
+# For pgrep patterns: the checkout path may contain regular expression characters
+regex_escape() { printf '%s' "$1" | sed 's/[][\\.*^$(){}?+|/]/\\&/g'; }
+
+app_pid() { pgrep -f "^$(regex_escape "${APP}")/Contents/MacOS/Textual" || true; }
+
+# Runs a textual://dev-… action (the URL already has a query) in the running Textual Dev
+open_dev_url() {
+	[ -n "$(app_pid)" ] && [ -f "${TOKEN_FILE}" ] ||
+		die "Textual Dev is not running, or wasn't started with Development/dev start (its actions need the launch token)"
+
+	open -a "${APP}" "$1&token=$(cat "${TOKEN_FILE}")"
+}
 
 check_app() {
 	[ -d "${APP}" ] || die "Textual Dev is not built yet. Run: Development/dev build"
@@ -54,13 +68,21 @@ cmd_start() {
 		return
 	fi
 
-	# Arguments become launch arguments, e.g. "-PreferModernSockets" NO
+	mkdir -p "${DATA}"
+
+	local token
+	token=$(uuidgen)
+
+	(umask 077 && printf '%s' "${token}" > "${TOKEN_FILE}")
+
+	# Further arguments become launch arguments, e.g. "-PreferModernSockets" NO
 	# overrides that preference until the next start.
-	if [ $# -gt 0 ]; then
-		open "${APP}" --args "$@"
-	else
-		open "${APP}"
-	fi
+	open "${APP}" --args -TextualDevToken "${token}" "$@"
+
+	for _ in $(seq 1 20); do
+		[ -n "$(app_pid)" ] && return 0
+		sleep 0.5
+	done
 }
 
 cmd_stop() {
@@ -95,16 +117,12 @@ cmd_reset() {
 
 	# macOS lets only the app itself empty its containers, so Textual Dev
 	# deletes its own data (textual://dev-reset) and quits without saving.
+	cmd_stop
 	cmd_start > /dev/null
-
-	for _ in $(seq 1 20); do
-		[ -n "$(app_pid)" ] && break
-		sleep 0.5
-	done
 
 	sleep 3
 
-	open -a "${APP}" "textual://dev-reset"
+	open_dev_url "textual://dev-reset?confirm=1"
 
 	for _ in $(seq 1 20); do
 		[ -n "$(app_pid)" ] || break
@@ -127,6 +145,12 @@ cmd_logs() {
 ergo_install() {
 	[ -x "${ERGO_DIR}/ergo" ] && return
 
+	# Installed in a separate folder that only becomes ERGO_DIR when complete,
+	# so a failed step doesn't leave a half-installed server behind
+	local staging="${ERGO_DIR}.partial"
+
+	rm -rf "${staging}"
+
 	local arch sha
 	case "$(uname -m)" in
 		arm64) arch="arm64"; sha="${ERGO_SHA256_ARM64}" ;;
@@ -146,16 +170,18 @@ ergo_install() {
 		die "Ergo download does not match its checksum"
 
 	tar -xzf "${download}/${name}.tar.gz" -C "${download}"
-	mkdir -p "${ERGO_DIR}"
-	cp -R "${download}/${name}/." "${ERGO_DIR}/"
+	mkdir -p "${staging}"
+	cp -R "${download}/${name}/." "${staging}/"
 	rm -rf "${download}"
 
-	python3 "${ROOT}/Development/ergo-config.py" "${ERGO_DIR}/default.yaml" "${ERGO_DIR}/ircd.yaml"
+	python3 "${ROOT}/Development/ergo-config.py" "${staging}/default.yaml" "${staging}/ircd.yaml"
 
-	(cd "${ERGO_DIR}" && ./ergo mkcerts --conf ircd.yaml --quiet && ./ergo initdb --conf ircd.yaml --quiet)
+	(cd "${staging}" && ./ergo mkcerts --conf ircd.yaml --quiet && ./ergo initdb --conf ircd.yaml --quiet)
+
+	mv "${staging}" "${ERGO_DIR}"
 }
 
-ergo_pid() { pgrep -f "^${ERGO_DIR}/ergo run" || true; }
+ergo_pid() { pgrep -f "^$(regex_escape "${ERGO_DIR}")/ergo run" || true; }
 
 cmd_server() {
 	case "${1:-start}" in
@@ -191,7 +217,13 @@ cmd_scripted() {
 cmd_connect() {
 	check_app
 
-	open -a "${APP}" "${1:-irc://127.0.0.1:6667/#textual-dev}"
+	[ -n "$(app_pid)" ] || cmd_start > /dev/null
+
+	local url
+	url=$(python3 -c 'import sys, urllib.parse
+print("textual://dev-connect?" + urllib.parse.urlencode({"url": sys.argv[1]}, quote_via=urllib.parse.quote))' "${1:-irc://127.0.0.1:6667/#textual-dev}")
+
+	open_dev_url "${url}"
 }
 
 cmd_input() {
@@ -213,7 +245,7 @@ if sys.argv[2]:
 	query["channel"] = sys.argv[2]
 print("textual://dev-input?" + urllib.parse.urlencode(query, quote_via=urllib.parse.quote))' "$*" "${channel}")
 
-	open -a "${APP}" "${url}"
+	open_dev_url "${url}"
 }
 
 cmd_config() {
@@ -226,7 +258,7 @@ cmd_config() {
 pairs = [tuple(argument.split("=", 1)) for argument in sys.argv[1:]]
 print("textual://dev-config?" + urllib.parse.urlencode(pairs, quote_via=urllib.parse.quote))' "$@")
 
-	open -a "${APP}" "${url}"
+	open_dev_url "${url}"
 }
 
 cmd_send() {
@@ -240,7 +272,7 @@ cmd_send() {
 	url=$(python3 -c 'import sys, urllib.parse
 print("textual://dev-send?" + urllib.parse.urlencode({"nickname": sys.argv[1], "path": sys.argv[2]}, quote_via=urllib.parse.quote))' "$1" "$2")
 
-	open -a "${APP}" "${url}"
+	open_dev_url "${url}"
 }
 
 cmd_eval() {
@@ -252,7 +284,7 @@ cmd_eval() {
 	url=$(python3 -c 'import sys, urllib.parse
 print("textual://dev-eval?" + urllib.parse.urlencode({"script": sys.argv[1]}, quote_via=urllib.parse.quote))' "$1")
 
-	open -a "${APP}" "${url}"
+	open_dev_url "${url}"
 
 	# The result is logged
 	sleep 1
@@ -287,7 +319,8 @@ cmd_help() {
 	  stop                  Quit Textual Dev
 	  reset [--yes]         Delete Textual Dev's settings, logs and scrollback
 	  logs                  Stream the log of Textual Dev and its services
-	  connect [url]         Open an irc:// URL in Textual Dev (default: the local Ergo)
+	  connect [url]         Connect Textual Dev to a test server on this Mac (an irc:// or
+	                        ircs:// URL to 127.0.0.1 or localhost; default: the local Ergo)
 	  input [--channel c] <text>
 	                        Select the newest server (or its channel c) and run text
 	                        there as if typed; '' only selects

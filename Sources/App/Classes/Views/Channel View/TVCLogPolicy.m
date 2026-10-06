@@ -321,8 +321,15 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 		}
 	}
 
-	/* Everything else (clicked links, new windows, other pages) opens in the browser */
 	decisionHandler(WKNavigationActionPolicyCancel);
+
+	/* Clicked links open in the browser. Anything else (a style or frame
+	 redirecting, a form) is only blocked: nothing opens without a click. */
+	if (navigationAction.navigationType != WKNavigationTypeLinkActivated) {
+		LogToConsoleDebug("Blocked navigation of the chat view to %{private}@", actionURL.absoluteString);
+
+		return;
+	}
 
 	if (actionURL && [actionURL.scheme isEqualToString:@"about"] == NO && [actionURL.scheme isEqualToString:@"file"] == NO) {
 		[self openWebpage:actionURL];

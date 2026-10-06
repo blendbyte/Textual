@@ -753,7 +753,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(enumerationBlock != nil);
 
-	for (TDCFileTransferDialogTransferController *fileTransfer in self.fileTransfersController.arrangedObjects) {
+	/* All transfers, not only those the Sending/Receiving tab shows */
+	NSArray<TDCFileTransferDialogTransferController *> *fileTransfers = [self.fileTransfersController.content copy];
+
+	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
 		if (limitScope && limitScopeToSenders != fileTransfer.isSender) {
 			continue;
 		}

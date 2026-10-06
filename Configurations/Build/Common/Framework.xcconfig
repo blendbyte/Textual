@@ -9,6 +9,11 @@ CONFIGURATION_BUILD_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Fram
 
 // Install names stay @rpath/<Name>.framework: Textual 7 plugins load them.
 INSTALL_PATH = @rpath
+
+// The frameworks are embedded in the app. Installing them on their own
+// would add them to the archive next to the app, which makes Xcode treat
+// it as a generic archive that can't be distributed or exported.
+SKIP_INSTALL = YES
 LD_RUNPATH_SEARCH_PATHS = @loader_path/../Frameworks
 
 COPY_PHASE_STRIP = YES

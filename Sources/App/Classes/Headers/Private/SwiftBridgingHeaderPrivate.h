@@ -39,6 +39,7 @@
 
 // TLOpenLink.swift
 #import "TDCAlert.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 

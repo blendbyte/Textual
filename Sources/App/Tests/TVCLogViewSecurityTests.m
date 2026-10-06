@@ -61,14 +61,15 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([TVCLogScriptEventSink valueOfPreferenceReadableByStyles:@"alloc"]);
 }
 
-/* Only these schemes become clickable; javascript: and the like stay text */
-- (void)testOnlySafeSchemesBecomeLinks
+/* Links the scanner finds stay clickable, but never ones that run script or
+ reach local content, even if the user permits any scheme */
+- (void)testScriptAndLocalSchemesNeverBecomeLinks
 {
-	for (NSString *link in @[@"https://example.com", @"HTTP://example.com", @"ircs://irc.libera.chat/#textual", @"mailto:a@example.com"]) {
+	for (NSString *link in @[@"https://example.com", @"HTTP://example.com", @"ircs://irc.libera.chat/#textual", @"mailto:a@example.com", @"ssh://host.example.com", @"webcal://example.com/cal.ics"]) {
 		XCTAssertTrue([TVCLogRenderer isClickableLinkLocation:link], @"%@", link);
 	}
 
-	for (NSString *link in @[@"javascript:alert(1)", @"JavaScript:alert(1)", @"data:text/html,x", @"file:///etc/passwd", @"example.com"]) {
+	for (NSString *link in @[@"javascript:alert(1)", @"JavaScript:alert(1)", @" javascript:alert(1)", @"data:text/html,x", @"file:///etc/passwd", @"example.com"]) {
 		XCTAssertFalse([TVCLogRenderer isClickableLinkLocation:link], @"%@", link);
 	}
 }

@@ -168,6 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _whoCheckInterval			120
 
 #define _CTCPReplyLimit				5 // replies per _CTCPReplyLimitInterval
+#define _CTCPReplyLimitPerSender	2 // replies to one host per _CTCPReplyLimitInterval
 #define _CTCPReplyLimitInterval		10
 
 NSString * const IRCClientConfigurationWasUpdatedNotification = @"IRCClientConfigurationWasUpdatedNotification";
@@ -206,6 +207,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, assign) BOOL nickServVerificationWarningShown;
 @property (nonatomic, assign) NSUInteger CTCPReplyCount;
 @property (nonatomic, assign) NSTimeInterval CTCPReplyCountStarted;
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSNumber *> *CTCPReplyCountBySender;
 @property (nonatomic, assign, readwrite) BOOL serverHasNickServ;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageReceived;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageServerTime;
@@ -5621,6 +5623,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.CTCPReplyCount = 0;
 	self.CTCPReplyCountStarted = 0;
+	self.CTCPReplyCountBySender = nil;
 
 	self.userIsAway = NO;
 	self.userIsIRCop = NO;
@@ -6800,7 +6803,31 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSString *expectedHost = self.nickServHostForVerification;
 
-	if (expectedHost != nil && [sender.address isEqualToStringIgnoringCase:expectedHost]) {
+	/* Trust on first use: with no host configured or built in, the first
+	 NickServ that asks to identify is trusted, and its host is saved as the
+	 server's NickServ Host (visible in Server Properties), so a NickServ
+	 from any other host later is refused. */
+	if (expectedHost == nil) {
+		NSString *senderHost = sender.address;
+
+		if (senderHost.length == 0) {
+			return NO;
+		}
+
+		IRCClientConfigMutable *config = [self.config mutableCopy];
+
+		config.nickServHost = senderHost;
+
+		[self updateConfig:config];
+
+		[worldController() save];
+
+		[self printDebugInformationToConsole:TXTLS(@"IRC[n5v-h3]", sender.hostmask, senderHost)];
+
+		return YES;
+	}
+
+	if ([sender.address isEqualToStringIgnoringCase:expectedHost]) {
 		return YES;
 	}
 
@@ -6808,11 +6835,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	if (self.nickServVerificationWarningShown == NO) {
 		self.nickServVerificationWarningShown = YES;
 
-		if (expectedHost == nil) {
-			[self printDebugInformationToConsole:TXTLS(@"IRC[n5v-h1]", sender.hostmask)];
-		} else {
-			[self printDebugInformationToConsole:TXTLS(@"IRC[n5v-h2]", sender.hostmask, expectedHost)];
-		}
+		[self printDebugInformationToConsole:TXTLS(@"IRC[n5v-h2]", sender.hostmask, expectedHost)];
 	}
 
 	return NO;
@@ -6853,6 +6876,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 				break;
 			}
 
+			/* A notice from the wrong host may be a spoof ahead of the real
+			 NickServ: autojoin keeps waiting for identification then, so
+			 channels aren't joined before it (e.g. before a cloak) */
 			if ([self nickServSenderIsVerified:sender] == NO) {
 				break;
 			}
@@ -7008,9 +7034,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		return;
 	}
 
-	/* A query sent to a channel would make everyone in it reply at once,
-	 so it is not answered. ACTION never reaches this method. */
-	if ([self stringIsChannelName:[m paramAt:0]]) {
+	/* Only queries sent to us are answered. One sent to a channel (also as
+	 @#channel or +#channel, or to a server mask) would make everyone in it
+	 reply at once. ACTION never reaches this method. */
+	if ([self nicknameIsMyself:[m paramAt:0]] == NO) {
 		return;
 	}
 
@@ -7030,7 +7057,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	/* Queries beyond the limit are dropped silently so that a flood
 	 neither fills the console nor delays our own messages. */
-	if ([self CTCPReplyIsWithinLimit] == NO) {
+	if ([self CTCPReplyIsWithinLimitForSender:m.senderAddress] == NO) {
 		return;
 	}
 
@@ -7110,19 +7137,34 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
-- (BOOL)CTCPReplyIsWithinLimit
+/* At most _CTCPReplyLimit replies per interval on this connection, and at
+ most _CTCPReplyLimitPerSender to any one host, so that one sender can't use
+ up the replies for everyone else */
+- (BOOL)CTCPReplyIsWithinLimitForSender:(nullable NSString *)senderAddress
 {
 	NSTimeInterval now = [NSProcessInfo processInfo].systemUptime;
 
-	if ((now - self.CTCPReplyCountStarted) >= _CTCPReplyLimitInterval) {
+	if ((now - self.CTCPReplyCountStarted) >= _CTCPReplyLimitInterval || self.CTCPReplyCountBySender == nil) {
 		self.CTCPReplyCountStarted = now;
 
 		self.CTCPReplyCount = 0;
+
+		self.CTCPReplyCountBySender = [NSMutableDictionary dictionary];
 	}
 
 	if (self.CTCPReplyCount >= _CTCPReplyLimit) {
 		return NO;
 	}
+
+	NSString *senderKey = ((senderAddress) ? senderAddress.lowercaseString : @"");
+
+	NSUInteger senderCount = self.CTCPReplyCountBySender[senderKey].unsignedIntegerValue;
+
+	if (senderCount >= _CTCPReplyLimitPerSender) {
+		return NO;
+	}
+
+	self.CTCPReplyCountBySender[senderKey] = @(senderCount + 1);
 
 	self.CTCPReplyCount += 1;
 
@@ -10451,6 +10493,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 			[self resetSASLNegotiation];
 
+			/* NickServ may ask to identify again */
+			self.isAuthenticatedWithSASL = NO;
+
 			if (printMessage) {
 				[self print:[m sequence:2]
 						 by:nil
@@ -12615,7 +12660,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			{
 				TDCFileTransferDialogTransferController *e = [[self fileTransferController] fileTransferForClient:self peer:sender isSender:NO token:transferToken port:0];
 
-				if (e != nil) {
+				/* Clients reuse tokens (HexChat picks from 1-255), so only an unfinished offer counts */
+				if (e != nil && e.isStopped == NO) {
 					LogToConsoleError("Fatal error: Received reverse DCC request with token '%{public}@' but the token already exists", transferToken);
 
 					goto present_error;

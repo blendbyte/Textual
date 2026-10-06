@@ -1295,9 +1295,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ([TPCPreferences highlightMatchingMethod] == TXNicknameHighlightMatchTypeRegularExpression) {
 		self.highlightNicknameButton.enabled = NO;
+
+		[self warnAboutInvalidRegularExpressionKeywords];
 	} else {
 		self.highlightNicknameButton.enabled = YES;
 	}
+}
+
+/* Keywords saved before switching to regular expressions may not compile:
+ they would never match, so say which */
+- (void)warnAboutInvalidRegularExpressionKeywords
+{
+	NSMutableArray<NSString *> *invalidKeywords = [NSMutableArray array];
+
+	for (NSString *keyword in [TPCPreferences highlightMatchKeywords]) {
+		if ([XRRegularExpression isValidRegex:keyword] == NO) {
+			[invalidKeywords addObject:keyword];
+		}
+	}
+
+	if (invalidKeywords.count == 0) {
+		return;
+	}
+
+	[TDCAlert alertWithMessage:TXTLS(@"TDCPreferencesController[r7x-q3]", [invalidKeywords componentsJoinedByString:@"\n"])
+						 title:TXTLS(@"TDCPreferencesController[r7x-q1]")
+				 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+			   alternateButton:nil];
 }
 
 - (void)editTableView:(NSTableView *)tableView

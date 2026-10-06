@@ -168,10 +168,12 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 
 		__block id returnedValue = returnValue;
 
+		/* If the plugin throws, the input is not sent unprocessed: the plugin
+		 may have been meant to change it (encrypt, redact) */
 		if ([plugin performCall:^{
 			returnedValue = [plugin.primaryClass interceptUserInput:returnValue command:commandString];
 		}] == NO) {
-			continue; // A plugin that threw doesn't drop the input
+			return nil;
 		}
 
 		if (returnedValue == nil) {

@@ -155,10 +155,10 @@ async def scenario_idle(client):
 
 
 async def scenario_nickserv_spoof(client):
-	"""NickServ asks to identify: with no NickServ Host known, from a wrong host, and
-	from the services host. Within 8 seconds of connecting, run
-	"Development/dev config nicknamePassword=test"; when asked, run
-	"Development/dev config nickServHost=services.textual.test"."""
+	"""NickServ asks to identify: first from the services host (trusted on first use
+	and saved as the NickServ Host), then from another host (refused), then from the
+	services host again. Within 8 seconds of connecting, run
+	"Development/dev config nicknamePassword=test"."""
 	await client.collect(8)
 
 	notice = "This nickname is registered. Please choose a different nickname, or identify via /msg NickServ identify <password>."
@@ -167,20 +167,21 @@ async def scenario_nickserv_spoof(client):
 	await client.send(f":NickServ!NickServ@{SERVICES_HOST} NOTICE {client.nickname} :{notice}")
 	await client.collect(3)
 
-	result(len(client.sent(identify)) == 0, "no password sent while this server's NickServ host is unknown")
+	result(len(client.sent(identify)) == 1, f"first NickServ ({SERVICES_HOST}) trusted: password sent")
 
-	print("WAITING: run Development/dev config nickServHost=services.textual.test", flush=True)
-	await client.collect(8)
+	# Textual waits for NickServ's answer before it would identify again
+	await client.send(f":NickServ!NickServ@{SERVICES_HOST} NOTICE {client.nickname} :You are now identified for {client.nickname}.")
+	await client.collect(2)
 
 	await client.send(f":NickServ!NickServ@attacker.test NOTICE {client.nickname} :{notice}")
 	await client.collect(3)
 
-	result(len(client.sent(identify)) == 0, "no password sent to NickServ from attacker.test")
+	result(len(client.sent(identify)) == 1, "no password sent to NickServ from attacker.test")
 
 	await client.send(f":NickServ!NickServ@{SERVICES_HOST} NOTICE {client.nickname} :{notice}")
 	await client.collect(3)
 
-	result(len(client.sent(identify)) == 1, f"password sent once to NickServ from {SERVICES_HOST}")
+	result(len(client.sent(identify)) == 2, f"password sent again to NickServ from {SERVICES_HOST}")
 
 
 async def scenario_long_line(client):
@@ -194,7 +195,8 @@ async def scenario_long_line(client):
 
 
 async def scenario_ctcp_flood(client):
-	"""20 CTCP VERSION queries to the client and one to a channel; at most 5 replies."""
+	"""20 CTCP VERSION queries from one host and one to a channel: at most 2 replies
+	to that host, none to the channel, and another host still gets an answer."""
 	await client.send(f":{client.nickname}!user@client.textual.test JOIN #flood")
 	await client.collect(2)
 
@@ -211,7 +213,12 @@ async def scenario_ctcp_flood(client):
 	await client.collect(15)
 
 	replies = client.sent(lambda line: line.upper().startswith("NOTICE FLOODER ") and "\x01" in line)
-	result(len(replies) <= 5, f"{len(replies)} of 20 private CTCP queries answered (limit 5 per 10 seconds)")
+	result(len(replies) <= 2, f"{len(replies)} of 20 private CTCP queries from one host answered (limit 2 per host per 10 seconds)")
+
+	await client.send(f":friend!f@friend.test PRIVMSG {client.nickname} :\x01VERSION\x01")
+	await client.collect(5)
+
+	result(len(client.sent(lambda line: line.upper().startswith("NOTICE FRIEND ") and "\x01" in line)) == 1, "another host still gets an answer")
 
 
 async def scenario_malformed(client):

@@ -158,7 +158,18 @@ static BOOL _reportsFailures = YES;
 			break;
 	}
 
+	/* One save can write several items: one alert per minute is enough */
+	static CFAbsoluteTime lastAlertTime = 0;
+
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
+
+		if ((now - lastAlertTime) < 60) {
+			return;
+		}
+
+		lastAlertTime = now;
+
 		[TDCAlert alertWithMessage:TXTLS(@"Prompts[k3y-m1]", reason, status)
 							 title:TXTLS(@"Prompts[k3y-t1]", kindName)
 					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
