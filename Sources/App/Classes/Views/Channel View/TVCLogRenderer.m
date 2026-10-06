@@ -101,6 +101,30 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 @implementation TVCLogRenderer
 
++ (BOOL)isClickableLinkLocation:(NSString *)linkLocation
+{
+	NSParameterAssert(linkLocation != nil);
+
+	static NSSet<NSString *> *clickableSchemes = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		clickableSchemes = [NSSet setWithArray:@[@"http", @"https", @"ftp", @"irc", @"ircs", @"mailto", @"textual"]];
+	});
+
+	/* Read textually: NSURL rejects many links that are fine to click */
+	NSRange schemeEnd = [linkLocation rangeOfString:@":"];
+
+	if (schemeEnd.location == NSNotFound) {
+		return NO;
+	}
+
+	NSString *scheme = [linkLocation substringToIndex:schemeEnd.location].lowercaseString;
+
+	return [clickableSchemes containsObject:scheme];
+}
+
 - (instancetype)init
 {
 	if ((self = [super init])) {
@@ -661,10 +685,11 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	NSMutableDictionary<NSString *, id> *templateTokens = [NSMutableDictionary dictionary];
 
-	if ([stringAttributes containsKey:TVCLogRendererFormattingURLAttribute])
-	{
-		AHHyperlinkScannerResult *link = stringAttributes[TVCLogRendererFormattingURLAttribute];
+	AHHyperlinkScannerResult *link = stringAttributes[TVCLogRendererFormattingURLAttribute];
 
+	/* Links with any other scheme (javascript:, data:, …) are shown as text */
+	if (link && [self.class isClickableLinkLocation:link.stringValue])
+	{
 		NSString *linkLocation = link.stringValue;
 
 		if (self->_viewController.inlineMediaEnabledForView) {

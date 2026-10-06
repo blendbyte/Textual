@@ -299,17 +299,56 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 - (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
-	WKNavigationType action = navigationAction.navigationType;
+	NSURL *actionURL = navigationAction.request.URL;
 
-	if (action == WKNavigationTypeLinkActivated) {
-		NSURL *actionURL = navigationAction.request.URL;
+	WKFrameInfo *targetFrame = navigationAction.targetFrame;
 
-		decisionHandler(WKNavigationActionPolicyCancel);
+	/* Clicked links open in the browser, from any frame */
+	if (navigationAction.navigationType != WKNavigationTypeLinkActivated && targetFrame != nil) {
+		/* Subframes (inline media) load what they need; they can't use the bridge */
+		if (targetFrame.isMainFrame == NO) {
+			decisionHandler(WKNavigationActionPolicyAllow);
 
-		[self openWebpage:actionURL];
-	} else {
-		decisionHandler(WKNavigationActionPolicyAllow);
+			return;
+		}
+
+		/* The main frame only ever shows the style's own page */
+		if ([self isStylePageURL:actionURL]) {
+			decisionHandler(WKNavigationActionPolicyAllow);
+
+			return;
+		}
 	}
+
+	/* Everything else (clicked links, new windows, other pages) opens in the browser */
+	decisionHandler(WKNavigationActionPolicyCancel);
+
+	if (actionURL && [actionURL.scheme isEqualToString:@"about"] == NO && [actionURL.scheme isEqualToString:@"file"] == NO) {
+		[self openWebpage:actionURL];
+	}
+}
+
+- (BOOL)isStylePageURL:(nullable NSURL *)url
+{
+	if (url == nil) {
+		return NO;
+	}
+
+	if ([url.absoluteString isEqualToString:@"about:blank"]) {
+		return YES;
+	}
+
+	if (url.isFileURL == NO) {
+		return NO;
+	}
+
+	NSString *stylePath = themeController().temporaryURL.URLByStandardizingPath.path;
+
+	if (stylePath == nil) {
+		return NO;
+	}
+
+	return [url.URLByStandardizingPath.path hasPrefix:[stylePath stringByAppendingString:@"/"]];
 }
 
 - (NSMenu *)webView2:(WKWebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenu:(NSMenu *)defaultMenu

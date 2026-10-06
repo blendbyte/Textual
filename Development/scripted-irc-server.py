@@ -273,6 +273,20 @@ async def scenario_conn_tls(client):
 	result(True, "client reconnected to this TLS port after /CONN")
 
 
+async def scenario_links(client):
+	"""Joins #links and posts links with safe and unsafe schemes, then stays connected
+	(Ctrl-C to stop). Only http(s), ftp, irc(s), mailto and textual may become links."""
+	await client.send(f":{client.nickname}!user@client.textual.test JOIN #links")
+	await client.collect(1)
+
+	for text in ["safe https://example.com/page and ircs://irc.libera.chat/#textual",
+				 "unsafe javascript:alert(document.domain) and data:text/html,hello and file:///etc/hosts"]:
+		await client.send(f":friend!f@friend.test PRIVMSG #links :{text}")
+
+	while await client.collect(3600):
+		pass
+
+
 # MARK: - DCC
 #
 # Start Textual Dev so that it downloads offers automatically and announces 127.0.0.1:
@@ -579,6 +593,7 @@ async def scenario_dcc_reverse_send(client):
 
 SCENARIOS = {
 	"idle": scenario_idle,
+	"links": scenario_links,
 	"nickserv-spoof": scenario_nickserv_spoof,
 	"long-line": scenario_long_line,
 	"ctcp-flood": scenario_ctcp_flood,

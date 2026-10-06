@@ -49,6 +49,8 @@
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TVCMainWindow.h"
+#import "TVCLogController.h"
+#import "TVCLogView.h"
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelConfig.h"
@@ -157,8 +159,12 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(location != nil);
 
 #ifdef DEBUG
-	/* Textual Dev only (Development/dev input, config, send, reset) */
-	if ([location hasPrefix:@"textual://dev-send?"]) {
+	/* Textual Dev only (Development/dev input, config, send, eval, reset) */
+	if ([location hasPrefix:@"textual://dev-eval?"]) {
+		[self performDevelopmentEvaluationWithURL:location];
+
+		return;
+	} else if ([location hasPrefix:@"textual://dev-send?"]) {
 		[self performDevelopmentSendWithURL:location];
 
 		return;
@@ -420,6 +426,31 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[[TXSharedApplication sharedFileTransferDialog] addSenderForClient:client nickname:nickname path:path autoOpen:YES];
+}
+
+/* textual://dev-eval?script=<JavaScript> runs the script in the selected view
+ and logs the result ("dev-eval: …", see Development/dev logs). */
++ (void)performDevelopmentEvaluationWithURL:(NSString *)location
+{
+	NSURLComponents *components = [NSURLComponents componentsWithString:location];
+
+	NSString *script = nil;
+
+	for (NSURLQueryItem *item in components.queryItems) {
+		if ([item.name isEqualToString:@"script"]) {
+			script = item.value;
+		}
+	}
+
+	TVCLogController *viewController = mainWindow().selectedViewController;
+
+	if (viewController == nil || script.length == 0) {
+		return;
+	}
+
+	[viewController.backingView evaluateJavaScript:script completionHandler:^(id _Nullable result) {
+		LogToConsole("dev-eval: %{public}@", ((result) ? [result description] : @"(no result)"));
+	}];
 }
 
 /* textual://dev-reset deletes Textual Dev's own preferences (including the

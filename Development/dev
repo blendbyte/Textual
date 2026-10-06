@@ -243,6 +243,23 @@ print("textual://dev-send?" + urllib.parse.urlencode({"nickname": sys.argv[1], "
 	open -a "${APP}" "${url}"
 }
 
+cmd_eval() {
+	check_app
+
+	[ $# -eq 1 ] || die "eval needs a script, e.g. Development/dev eval 'document.title'"
+
+	local url
+	url=$(python3 -c 'import sys, urllib.parse
+print("textual://dev-eval?" + urllib.parse.urlencode({"script": sys.argv[1]}, quote_via=urllib.parse.quote))' "$1")
+
+	open -a "${APP}" "${url}"
+
+	# The result is logged
+	sleep 1
+	/usr/bin/log show --last 5s --style compact --predicate 'processImagePath CONTAINS "/Build Results/Debug/Textual.app/" AND eventMessage BEGINSWITH "dev-eval: "' |
+		sed -n 's/.*dev-eval: //p' | tail -n 1
+}
+
 cmd_screenshot() {
 	local pid output window
 	pid=$(app_pid)
@@ -276,6 +293,7 @@ cmd_help() {
 	                        there as if typed; '' only selects
 	  config key=value …    Change the newest server's configuration (IRCClientConfig
 	                        names, e.g. nicknamePassword=… nickServHost=…)
+	  eval <script>         Run JavaScript in the selected view and print the result
 	  send <nickname> <file>
 	                        Offer a file Textual Dev saved in ~/Downloads to a user
 	  screenshot [file]     Capture Textual Dev's window
@@ -289,6 +307,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|scripted|connect|input|config|send|screenshot|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|scripted|connect|input|config|send|eval|screenshot|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac

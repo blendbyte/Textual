@@ -5,9 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,18 +34,45 @@
  *
  *********************************************************************** */
 
+#import <XCTest/XCTest.h>
+
+#import "TVCLogRenderer.h"
+#import "TVCLogScriptEventSinkPrivate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogView;
+@interface TVCLogRenderer (Testing)
++ (BOOL)isClickableLinkLocation:(NSString *)linkLocation;
+@end
 
-@interface TVCLogScriptEventSink : NSObject
-- (instancetype)initWithWebView:(nullable TVCLogView *)webView NS_DESIGNATED_INITIALIZER;
+@interface TVCLogViewSecurityTests : XCTestCase
+@end
 
-+ (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView, ...;
-+ (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView withArguments:(va_list)arguments;
+@implementation TVCLogViewSecurityTests
 
-/* The value of a preference that styles may read, or nil if they may not */
-+ (nullable id)valueOfPreferenceReadableByStyles:(NSString *)name;
+/* A style reads only listed preferences; this used to call any class method */
+- (void)testStylesReadOnlyListedPreferences
+{
+	XCTAssertNotNil([TVCLogScriptEventSink valueOfPreferenceReadableByStyles:@"themeName"]);
+	XCTAssertTrue([[TVCLogScriptEventSink valueOfPreferenceReadableByStyles:@"showInlineMedia"] isKindOfClass:[NSNumber class]]);
+
+	XCTAssertNil([TVCLogScriptEventSink valueOfPreferenceReadableByStyles:@"defaultNickname"]);
+	XCTAssertNil([TVCLogScriptEventSink valueOfPreferenceReadableByStyles:@"exportedPreferencesDictionary"]);
+	XCTAssertNil([TVCLogScriptEventSink valueOfPreferenceReadableByStyles:@"alloc"]);
+}
+
+/* Only these schemes become clickable; javascript: and the like stay text */
+- (void)testOnlySafeSchemesBecomeLinks
+{
+	for (NSString *link in @[@"https://example.com", @"HTTP://example.com", @"ircs://irc.libera.chat/#textual", @"mailto:a@example.com"]) {
+		XCTAssertTrue([TVCLogRenderer isClickableLinkLocation:link], @"%@", link);
+	}
+
+	for (NSString *link in @[@"javascript:alert(1)", @"JavaScript:alert(1)", @"data:text/html,x", @"file:///etc/passwd", @"example.com"]) {
+		XCTAssertFalse([TVCLogRenderer isClickableLinkLocation:link], @"%@", link);
+	}
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
