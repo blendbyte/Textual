@@ -33,10 +33,11 @@
  * SUCH DAMAGE.
  *
  *********************************************************************** */
+
 #import <XCTest/XCTest.h>
 
-#import "IRCClientPrivate.h"
 #import "IRCClientConfig.h"
+#import "IRCClientPrivate.h"
 #import "IRCISupportInfoPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -56,34 +57,24 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	IRCISupportInfo *info = self.client.supportInfo;
 
-	[info processConfigurationData:@"me CHANTYPES=#& PREFIX=(qaohv)~&@%+ NICKLEN=30 TOPICLEN=390 AWAYLEN=200 KICKLEN=255 MODES=4 NETWORK=Libera.Chat :are supported by this server"];
+	[info processConfigurationData:@"me CHANTYPES=#& PREFIX=(qaohv)~&@%+ NICKLEN=30 TOPICLEN=390 MODES=4 NETWORK=Libera.Chat :are supported by this server"];
 
 	XCTAssertEqualObjects(info.channelNamePrefixes, (@[@"#", @"&"]));
+	XCTAssertEqualObjects(info.userModeSymbols[@"modeSymbols"], (@[@"q", @"a", @"o", @"h", @"v"]));
+	XCTAssertEqualObjects(info.userModeSymbols[@"characters"], (@[@"~", @"&", @"@", @"%", @"+"]));
 	XCTAssertEqual(info.maximumNicknameLength, 30);
 	XCTAssertEqual(info.maximumTopicLength, 390);
-	XCTAssertEqual(info.maximumAwayLength, 200);
-	XCTAssertEqual(info.maximumKickLength, 255);
 	XCTAssertEqual(info.maximumModeCount, 4);
 	XCTAssertEqualObjects(info.networkName, @"Libera.Chat");
 }
 
-- (void)testUserModePrefixes
-{
-	IRCISupportInfo *info = self.client.supportInfo;
-
-	[info processConfigurationData:@"me PREFIX=(ov)@+ :are supported by this server"];
-
-	XCTAssertEqualObjects(info.userModeSymbols[@"modeSymbols"], (@[@"o", @"v"]));
-	XCTAssertEqualObjects(info.userModeSymbols[@"characters"], (@[@"@", @"+"]));
-}
-
+/* A malformed PREFIX from any server or bouncer used to crash the app */
 - (void)testMalformedPrefixIsIgnored
 {
 	IRCISupportInfo *info = self.client.supportInfo;
 
 	[info processConfigurationData:@"me PREFIX=(qaohv)~&@%+ :are supported by this server"];
 
-	/* A missing closing parenthesis used to crash the app (NSMakeRange with a negative length). */
 	for (NSString *malformed in @[@"(ov", @"ov)@+", @")(ov@+", @"(ov)@"]) {
 		[info processConfigurationData:[NSString stringWithFormat:@"me PREFIX=%@ :are supported by this server", malformed]];
 

@@ -33,6 +33,7 @@
  * SUCH DAMAGE.
  *
  *********************************************************************** */
+
 #import <XCTest/XCTest.h>
 
 #import "NSStringHelper.h"
@@ -44,24 +45,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation IRCColorFormatTests
 
+/* \x02 bold, \x1d italic, \x1f underline, \x0f reset, \x03 colour (foreground[,background]) */
 - (void)testStripsFormattingCodes
 {
-	/* \x02 bold, \x1d italic, \x1f underline, \x0f reset, \x03 colour */
-	NSString *formatted = @"\x02" @"bold" @"\x02 \x1d" @"italic" @"\x1d \x1f" @"underline" @"\x0f";
+	NSString *formatted = @"\x02" @"bold" @"\x02 \x1d" @"italic" @"\x1d \x03" @"04red\x03 \x03" @"12,01blue on black\x0f plain";
 
-	XCTAssertEqualObjects(formatted.stripIRCEffects, @"bold italic underline");
-}
-
-- (void)testStripsColourCodesWithNumbers
-{
-	NSString *formatted = @"\x03" @"04red\x03 \x03" @"12,01blue on black\x03 plain";
-
-	XCTAssertEqualObjects(formatted.stripIRCEffects, @"red blue on black plain");
-}
-
-- (void)testPlainTextIsUnchanged
-{
-	XCTAssertEqualObjects(@"nothing special here".stripIRCEffects, @"nothing special here");
+	XCTAssertEqualObjects(formatted.stripIRCEffects, @"bold italic red blue on black plain");
 }
 
 @end

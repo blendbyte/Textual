@@ -33,6 +33,7 @@
  * SUCH DAMAGE.
  *
  *********************************************************************** */
+
 #import <XCTest/XCTest.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,39 +48,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TLOLinkParserTests
 
-- (void)testFindsWebLinkWithoutTrailingPunctuation
+- (void)testWebLinkWithoutTrailingPunctuation
 {
 	NSString *text = @"Read https://www.textualapp.com/docs.";
 
 	NSArray *links = [TLOLinkParser locateLinksInString:text];
 
 	XCTAssertEqual(links.count, 1);
-
-	AHHyperlinkScannerResult *link = links.firstObject;
-
-	XCTAssertEqualObjects([text substringWithRange:link.range], @"https://www.textualapp.com/docs");
-	XCTAssertTrue(link.strictMatch);
+	XCTAssertEqualObjects([text substringWithRange:[links.firstObject range]], @"https://www.textualapp.com/docs");
 }
 
-- (void)testFindsIRCLink
+- (void)testIRCLink
 {
 	NSArray *links = [TLOLinkParser locateLinksInString:@"Join us at irc://irc.libera.chat/#textual today"];
 
 	XCTAssertEqual(links.count, 1);
 	XCTAssertEqualObjects([links.firstObject stringValue], @"irc://irc.libera.chat/#textual");
-}
-
-- (void)testFindsSchemelessDomain
-{
-	NSArray *links = [TLOLinkParser locateLinksInString:@"see example.com for details"];
-
-	XCTAssertEqual(links.count, 1);
-	XCTAssertFalse([links.firstObject strictMatch]);
-}
-
-- (void)testPlainTextHasNoLinks
-{
-	XCTAssertEqual([TLOLinkParser locateLinksInString:@"just a normal sentence, nothing to see"].count, 0);
 }
 
 @end

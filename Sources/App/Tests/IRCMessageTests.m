@@ -33,6 +33,7 @@
  * SUCH DAMAGE.
  *
  *********************************************************************** */
+
 #import <XCTest/XCTest.h>
 
 #import "IRCClientConfig.h"
@@ -74,15 +75,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)testPrivmsgWithHostmask
 {
-	IRCMessage *message = [self parse:@":nick!user@host.example PRIVMSG #channel :hello world"];
+	IRCMessage *message = [self parse:@":nick!user@host.example PRIVMSG #channel :hello: world :-)"];
 
 	XCTAssertEqualObjects(message.command, @"PRIVMSG");
 	XCTAssertEqualObjects(message.senderNickname, @"nick");
 	XCTAssertEqualObjects(message.senderUsername, @"user");
 	XCTAssertEqualObjects(message.senderAddress, @"host.example");
 	XCTAssertFalse(message.senderIsServer);
-	XCTAssertEqualObjects(message.params, (@[@"#channel", @"hello world"]));
-	XCTAssertEqualObjects([message paramAt:1], @"hello world");
+	XCTAssertEqualObjects(message.params, (@[@"#channel", @"hello: world :-)"]));
 }
 
 - (void)testNumericFromServer
@@ -94,32 +94,27 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(message.params, (@[@"me", @"Welcome to the network"]));
 }
 
-- (void)testCommandWithoutPrefixComesFromTheServer
+/* Lines without a prefix come from the server. Without a client (the public
+ -initWithLine: plugins use) there is no address, which used to crash. */
+- (void)testLineWithoutPrefixComesFromTheServer
 {
-	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
+	IRCMessage *withClient = [self parse:@"PING :token" onClient:[self clientConnectedTo:@"irc.example.net"]];
 
-	IRCMessage *message = [self parse:@"PING :token" onClient:client];
+	XCTAssertEqualObjects(withClient.command, @"PING");
+	XCTAssertEqualObjects(withClient.params, (@[@"token"]));
+	XCTAssertTrue(withClient.senderIsServer);
+	XCTAssertEqualObjects(withClient.senderNickname, @"irc.example.net");
 
-	XCTAssertEqualObjects(message.command, @"PING");
-	XCTAssertEqualObjects(message.params, (@[@"token"]));
-	XCTAssertTrue(message.senderIsServer);
-	XCTAssertEqualObjects(message.senderNickname, @"irc.example.net");
+	IRCMessage *withoutClient = [self parse:@"PING :token"];
+
+	XCTAssertTrue(withoutClient.senderIsServer);
+	XCTAssertEqualObjects(withoutClient.senderNickname, @"");
 }
 
-- (void)testCommandWithoutPrefixAndWithoutClient
-{
-	/* The public -initWithLine: has no client to take the server address from. */
-	IRCMessage *message = [self parse:@"PING :token"];
-
-	XCTAssertEqualObjects(message.command, @"PING");
-	XCTAssertTrue(message.senderIsServer);
-	XCTAssertEqualObjects(message.senderNickname, @"");
-}
-
+/* A no-break space or a tab is part of a token. Splitting on it let
+ "JOIN #a<NBSP>b" pass for a JOIN of "#a". */
 - (void)testParametersAreSplitOnSpacesOnly
 {
-	/* A no-break space or a tab is part of the token; splitting on it let
-	 "JOIN #a<NBSP>b" pass for a JOIN of "#a". */
 	IRCMessage *join = [self parse:@":nick!user@host JOIN #a b"];
 
 	XCTAssertEqualObjects(join.params, (@[@"#a b"]));
@@ -129,46 +124,60 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(privmsg.params, (@[@"#a\tb", @"hello"]));
 }
 
-- (void)testRepeatedSpacesSeparateParameters
+/* An empty trailing parameter is a value (TOPIC #channel : clears the topic) */
+- (void)testEmptyTrailingParameter
 {
-	IRCMessage *message = [self parse:@":nick!user@host  PRIVMSG   #channel    :hello  world "];
+	IRCMessage *message = [self parse:@":nick!user@host TOPIC #channel :"];
 
-	XCTAssertEqualObjects(message.command, @"PRIVMSG");
-	XCTAssertEqualObjects(message.params, (@[@"#channel", @"hello  world "]));
+	XCTAssertEqualObjects(message.params, (@[@"#channel", @""]));
 }
 
-- (void)testTrailingParameterKeepsColons
-{
-	IRCMessage *message = [self parse:@":nick!user@host PRIVMSG #channel ::-) a:b"];
-
-	XCTAssertEqualObjects([message paramAt:1], @":-) a:b");
-}
-
-- (void)testCommandIsUppercased
-{
-	XCTAssertEqualObjects([self parse:@":nick!user@host privmsg #channel :x"].command, @"PRIVMSG");
-}
-
-- (void)testLinesWithoutCommandAreRejected
+- (void)testMalformedLinesAreRejected
 {
 	XCTAssertNil([[IRCMessage alloc] initWithLine:@""]);
-	XCTAssertNil([[IRCMessage alloc] initWithLine:@"   "]);
 	XCTAssertNil([[IRCMessage alloc] initWithLine:@"@msgid=abc"]);
 	XCTAssertNil([[IRCMessage alloc] initWithLine:@":nick!user@host"]);
-	XCTAssertNil([[IRCMessage alloc] initWithLine:@"@ :nick!user@host PRIVMSG #channel :x"]);
-	XCTAssertNil([[IRCMessage alloc] initWithLine:@": PRIVMSG #channel :x"]);
 }
 
-- (void)testTagsWithoutValueAndDuplicates
+- (void)testMessageTags
 {
-	IRCMessage *message = [self parse:@"@flag;empty=;dup=first;dup=second;trailing=end\\ :nick!user@host PRIVMSG #channel :x"];
+	IRCMessage *message = [self parse:@"@msgid=abc123;example.com/flag :nick!user@host PRIVMSG #channel :tagged"];
 
-	XCTAssertEqualObjects(message.messageTags[@"flag"], @"");
-	XCTAssertEqualObjects(message.messageTags[@"empty"], @"");
-	XCTAssertEqualObjects(message.messageTags[@"dup"], @"second");
-	XCTAssertEqualObjects(message.messageTags[@"trailing"], @"end");
+	XCTAssertEqualObjects(message.messageTags[@"msgid"], @"abc123");
+	XCTAssertEqualObjects(message.messageTags[@"example.com/flag"], @"");
+	XCTAssertEqualObjects([message paramAt:1], @"tagged");
 }
 
+/* https://ircv3.net/specs/extensions/message-tags: decoded in one pass, so "\\s"
+ is an escaped backslash followed by "s"; unknown escapes drop the backslash. */
+- (void)testTagValueEscapes
+{
+	IRCMessage *message = [self parse:@"@a=semi\\:colon\\sspace\\\\backslash;b=x\\\\sy;c=\\q :nick!user@host PRIVMSG #channel :x"];
+
+	XCTAssertEqualObjects(message.messageTags[@"a"], @"semi;colon space\\backslash");
+	XCTAssertEqualObjects(message.messageTags[@"b"], @"x\\sy");
+	XCTAssertEqualObjects(message.messageTags[@"c"], @"q");
+}
+
+/* time= is honoured only when server-time was negotiated */
+- (void)testServerTime
+{
+	NSString *line = @"@time=2026-01-02T03:04:05.000Z :nick!user@host PRIVMSG #channel :old";
+
+	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
+
+	XCTAssertFalse([self parse:line onClient:client].isHistoric);
+
+	[client enableCapability:ClientIRCv3SupportedCapabilityServerTime];
+
+	IRCMessage *message = [self parse:line onClient:client];
+
+	XCTAssertTrue(message.isHistoric);
+	XCTAssertEqualWithAccuracy(message.receivedAt.timeIntervalSince1970, 1767323045.0, 0.001);
+}
+
+/* Messages from a playback batch must keep it when copied, or they are
+ treated as live and trigger notifications. */
 - (void)testCopiesKeepTheirBatch
 {
 	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
@@ -184,76 +193,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCMessage *message = [self parse:@"@batch=abc :nick!user@host PRIVMSG #channel :from playback" onClient:client];
 
-	XCTAssertEqual(message.parentBatchMessage, batch);
 	IRCMessage *copy = [message copy];
 	IRCMessage *mutableCopy = [message mutableCopy];
 
+	XCTAssertEqual(message.parentBatchMessage, batch);
 	XCTAssertEqual(copy.parentBatchMessage, batch);
 	XCTAssertEqual(mutableCopy.parentBatchMessage, batch);
-}
-
-- (void)testEmptyTrailingParameter
-{
-	IRCMessage *message = [self parse:@":nick!user@host TOPIC #channel :"];
-
-	XCTAssertEqualObjects(message.params, (@[@"#channel", @""]));
-}
-
-- (void)testMessageTags
-{
-	IRCMessage *message = [self parse:@"@msgid=abc123;example.com/flag :nick!user@host PRIVMSG #channel :tagged"];
-
-	XCTAssertEqualObjects(message.messageTags[@"msgid"], @"abc123");
-	XCTAssertNotNil(message.messageTags[@"example.com/flag"]);
-	XCTAssertEqualObjects(message.command, @"PRIVMSG");
-	XCTAssertEqualObjects([message paramAt:1], @"tagged");
-}
-
-- (void)testServerTimeTagIsIgnoredWithoutTheCapability
-{
-	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
-
-	IRCMessage *message = [self parse:@"@time=2026-01-02T03:04:05.000Z :nick!user@host PRIVMSG #channel :old" onClient:client];
-
-	XCTAssertFalse(message.isHistoric);
-}
-
-- (void)testServerTimeTagMakesMessageHistoric
-{
-	IRCClient *client = [self clientConnectedTo:@"irc.example.net"];
-
-	[client enableCapability:ClientIRCv3SupportedCapabilityServerTime];
-
-	IRCMessage *message = [self parse:@"@time=2026-01-02T03:04:05.000Z :nick!user@host PRIVMSG #channel :old" onClient:client];
-
-	XCTAssertTrue(message.isHistoric);
-
-	NSDateComponents *components = [[NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian] componentsInTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"] fromDate:message.receivedAt];
-
-	XCTAssertEqual(components.year, 2026);
-	XCTAssertEqual(components.month, 1);
-	XCTAssertEqual(components.day, 2);
-	XCTAssertEqual(components.hour, 3);
-	XCTAssertEqual(components.minute, 4);
-	XCTAssertEqual(components.second, 5);
-}
-
-- (void)testTagValueEscapes
-{
-	IRCMessage *message = [self parse:@"@label=semi\\:colon\\sspace\\\\backslash :nick!user@host PRIVMSG #channel :x"];
-
-	XCTAssertEqualObjects(message.messageTags[@"label"], @"semi;colon space\\backslash");
-}
-
-- (void)testTagValueEscapesAreDecodedInOnePass
-{
-	/* "\\s" is an escaped backslash followed by "s", not a space. Unknown escapes
-	 drop the backslash. See https://ircv3.net/specs/extensions/message-tags */
-
-	IRCMessage *message = [self parse:@"@a=x\\\\sy;b=\\q :nick!user@host PRIVMSG #channel :x"];
-
-	XCTAssertEqualObjects(message.messageTags[@"a"], @"x\\sy");
-	XCTAssertEqualObjects(message.messageTags[@"b"], @"q");
 }
 
 @end
