@@ -367,10 +367,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *basePath = pathArray.firstObject;
 
-#if TEXTUAL_BUILT_INSIDE_SANDBOX == 0
-	[self _createDirectoryAtPath:basePath];
-#endif
-
 	return basePath;
 }
 

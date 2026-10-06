@@ -1320,7 +1320,6 @@
 		4C46CCC01580469E00846B64 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4C46CCC11580469E00846B64 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		4C46CCC21580469E00846B64 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		4C48B46320E4D06900CF5F84 /* MergeSwift.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = MergeSwift.sh; path = "Build Scripts/MergeSwift.sh"; sourceTree = "<group>"; };
 		4C4A0D6C1C973E9000064A23 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = "Application Properties/Info.plist"; sourceTree = "<group>"; };
 		4C51327720F76E980033B703 /* TLOLocalization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TLOLocalization.swift; path = ../../../Shared/Library/TLOLocalization.swift; sourceTree = "<group>"; };
 		4C52379215C18F6700414852 /* Style Default Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Style Default Templates"; sourceTree = "<group>"; };
@@ -2808,7 +2807,6 @@
 				5D9B8EB6170A0EB400919CB0 /* BuildFrameworks.sh */,
 				4C761BAE1E155CB100A505B7 /* BuildServices.sh */,
 				4CD6F7BB1CA7747600842597 /* ExportArchive.sh */,
-				4C48B46320E4D06900CF5F84 /* MergeSwift.sh */,
 				4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */,
 				5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */,
 				4C2BEB622C385189008F8F0D /* PostprocessSparkle.sh */,
@@ -3107,7 +3105,6 @@
 				4C52AED515811C2000940619 /* Copy Extensions */,
 				4C761BAF1E155D7400A505B7 /* Build XPC Services */,
 				4C761BA61E155C6E00A505B7 /* Copy XPC Services */,
-				4C48B46620E4D38F00CF5F84 /* Merge Swift Libraries */,
 			);
 			buildRules = (
 			);
@@ -3374,25 +3371,6 @@
 			shellPath = /bin/bash;
 			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/PostprocessSparkle.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/PostprocessSparkle.txt\"\n";
 			showEnvVarsInLog = 0;
-		};
-		4C48B46620E4D38F00CF5F84 /* Merge Swift Libraries */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Merge Swift Libraries";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/MergeSwift.sh\"\n";
 		};
 		4C761BAF1E155D7400A505B7 /* Build XPC Services */ = {
 			isa = PBXShellScriptBuildPhase;

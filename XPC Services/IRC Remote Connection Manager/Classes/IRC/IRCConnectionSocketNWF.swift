@@ -35,7 +35,6 @@
 *
 *********************************************************************** */
 
-#if canImport(Network)
 import Network
 
 @available(macOS 10.14, *)
@@ -633,5 +632,3 @@ fileprivate extension ConnectionError
 		self.init(tlsError: errorCode)
 	}
 }
-
-#endif

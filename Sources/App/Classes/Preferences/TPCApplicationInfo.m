@@ -94,11 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)sandboxEnabled
 {
-#if TEXTUAL_BUILT_INSIDE_SANDBOX == 1
 	return YES;
-#else
-	return NO;
-#endif
 }
 
 + (nullable NSDate *)applicationLaunchDate

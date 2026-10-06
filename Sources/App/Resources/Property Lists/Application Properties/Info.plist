@@ -31,7 +31,7 @@
 	<key>NSMainNibFile</key>
 	<string>TXCMainMenu</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>12.0</string>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSPrincipalClass</key>
 	<string>TXApplication</string>
 	<key>NSContactsUsageDescription</key>

@@ -526,7 +526,6 @@
 		4C14064F1F11942B00C73D53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_ENTITLEMENTS = "${PROJECT_DIR}/Configurations/Sandbox/Release.entitlements";
 				DEVELOPMENT_TEAM = "";
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/RCMProcessPCHPrivate.h";
@@ -539,7 +538,6 @@
 		4C1406501F11942B00C73D53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_ENTITLEMENTS = "${PROJECT_DIR}/Configurations/Sandbox/Release.entitlements";
 				DEVELOPMENT_TEAM = "";
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/RCMProcessPCHPrivate.h";
