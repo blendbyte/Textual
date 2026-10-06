@@ -78,6 +78,7 @@
 		4CA7BE6720C6D4A900C324BF /* NSTabViewHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA7BE6520C6D4A900C324BF /* NSTabViewHelper.m */; };
 		4CAA489B20E46AB500FDE1F5 /* SWDataHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAA489A20E46AB500FDE1F5 /* SWDataHelper.swift */; };
 		4CBDFBE32C3ECCD80003B272 /* NSStringHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBDFBE22C3ECCD80003B272 /* NSStringHelper.m */; };
+		4CBDFBE32C3ECCD80003B2A1 /* XRRegularExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBDFBE22C3ECCD80003B2A1 /* XRRegularExpression.m */; };
 		4CCC38742C27F4D100484AC1 /* NSStringTokenizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCC38732C27F4D100484AC1 /* NSStringTokenizer.m */; };
 		4CCC38752C27F4D100484AC1 /* NSStringTokenizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CCC38722C27F4D100484AC1 /* NSStringTokenizer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4CD09D4220E072BF008BADA5 /* SWStringHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD09D4120E072BF008BADA5 /* SWStringHelper.swift */; };
@@ -227,6 +228,7 @@
 		4CAA489A20E46AB500FDE1F5 /* SWDataHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SWDataHelper.swift; path = Classes/SWDataHelper.swift; sourceTree = "<group>"; };
 		4CB4F5CD1D7442B400AA4BBC /* CocoaExtensionsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CocoaExtensionsPrivate.h; path = Classes/CocoaExtensionsPrivate.h; sourceTree = "<group>"; };
 		4CBDFBE22C3ECCD80003B272 /* NSStringHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSStringHelper.m; sourceTree = "<group>"; };
+		4CBDFBE22C3ECCD80003B2A1 /* XRRegularExpression.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XRRegularExpression.m; sourceTree = "<group>"; };
 		4CCC38722C27F4D100484AC1 /* NSStringTokenizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NSStringTokenizer.h; path = Classes/NSStringTokenizer.h; sourceTree = "<group>"; };
 		4CCC38732C27F4D100484AC1 /* NSStringTokenizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = NSStringTokenizer.m; path = Classes/NSStringTokenizer.m; sourceTree = "<group>"; };
 		4CD09D4120E072BF008BADA5 /* SWStringHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SWStringHelper.swift; path = Classes/SWStringHelper.swift; sourceTree = "<group>"; };
@@ -368,6 +370,7 @@
 			isa = PBXGroup;
 			children = (
 				4CBDFBE22C3ECCD80003B272 /* NSStringHelper.m */,
+				4CBDFBE22C3ECCD80003B2A1 /* XRRegularExpression.m */,
 				4C1144782C289575008CD785 /* NSStringTokenizer.m */,
 			);
 			path = Tests;
@@ -749,6 +752,7 @@
 			files = (
 				4C1144792C289575008CD785 /* NSStringTokenizer.m in Sources */,
 				4CBDFBE32C3ECCD80003B272 /* NSStringHelper.m in Sources */,
+				4CBDFBE32C3ECCD80003B2A1 /* XRRegularExpression.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

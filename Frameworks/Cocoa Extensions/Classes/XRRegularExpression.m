@@ -32,7 +32,106 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Patterns often come from users (highlights, ignores, filters) and are run
+ against text from the network, so: compiled patterns are cached, invalid
+ patterns never match, only the first XRRegularExpressionMaximumInputLength
+ characters are searched, and a search that takes longer than
+ XRRegularExpressionTimeLimit (catastrophic backtracking) counts as no match. */
+#define XRRegularExpressionMaximumInputLength		8192
+#define XRRegularExpressionTimeLimit				0.05
+
 @implementation XRRegularExpression
+
++ (nullable NSRegularExpression *)regularExpressionWithPattern:(NSString *)pattern caseless:(BOOL)caseless
+{
+	static NSCache<NSString *, id> *cache = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		cache = [NSCache new];
+
+		cache.countLimit = 500;
+	});
+
+	NSString *cacheKey = [NSString stringWithFormat:@"%d:%@", caseless, pattern];
+
+	id cachedValue = [cache objectForKey:cacheKey];
+
+	if (cachedValue == nil) {
+		NSRegularExpressionOptions options = ((caseless) ? NSRegularExpressionCaseInsensitive : 0);
+
+		cachedValue = [NSRegularExpression regularExpressionWithPattern:pattern options:options error:NULL];
+
+		if (cachedValue == nil) {
+			cachedValue = [NSNull null]; // Invalid patterns are remembered too
+		}
+
+		[cache setObject:cachedValue forKey:cacheKey];
+	}
+
+	if (cachedValue == [NSNull null]) {
+		return nil;
+	}
+
+	return cachedValue;
+}
+
++ (BOOL)isValidRegex:(NSString *)pattern
+{
+	NSParameterAssert(pattern != nil);
+
+	return ([self regularExpressionWithPattern:pattern caseless:NO] != nil);
+}
+
+/* All matches (or only the first) within the searched part of the string;
+ empty for an invalid pattern or a search that exceeds the time limit. */
++ (NSArray<NSTextCheckingResult *> *)resultsInString:(NSString *)haystack withRegex:(NSString *)needle withoutCase:(BOOL)caseless firstOnly:(BOOL)firstOnly
+{
+	NSParameterAssert(haystack != nil);
+	NSParameterAssert(needle != nil);
+
+	NSRegularExpression *regex = [self regularExpressionWithPattern:needle caseless:caseless];
+
+	if (regex == nil) {
+		return @[];
+	}
+
+	NSRange searchRange = NSMakeRange(0, MIN(haystack.length, XRRegularExpressionMaximumInputLength));
+
+	NSMutableArray<NSTextCheckingResult *> *results = [NSMutableArray array];
+
+	CFAbsoluteTime deadline = (CFAbsoluteTimeGetCurrent() + XRRegularExpressionTimeLimit);
+
+	__block BOOL timedOut = NO;
+
+	/* NSMatchingReportProgress calls the block periodically during a long search */
+	[regex enumerateMatchesInString:haystack options:NSMatchingReportProgress range:searchRange usingBlock:^(NSTextCheckingResult * _Nullable result, NSMatchingFlags flags, BOOL *stop) {
+		if (result) {
+			[results addObject:result];
+
+			if (firstOnly) {
+				*stop = YES;
+
+				return;
+			}
+		}
+
+		if (CFAbsoluteTimeGetCurrent() > deadline) {
+			timedOut = YES;
+
+			*stop = YES;
+		}
+	}];
+
+	if (timedOut) {
+		NSLog(@"Regular expression took too long and was treated as no match: %@", needle);
+
+		return @[];
+	}
+
+	return [results copy];
+}
 
 + (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle
 {
@@ -41,22 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle withoutCase:(BOOL)caseless
 {
-	NSParameterAssert(haystack != nil);
-	NSParameterAssert(needle != nil);
-
-    NSRange strRange = NSMakeRange(0, haystack.length);
-
-	NSRegularExpression *regex;
-
-	if (caseless) {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:NSRegularExpressionCaseInsensitive error:NULL];
-	} else {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:0 error:NULL];
-	}
-
-	NSUInteger numMatches = [regex numberOfMatchesInString:haystack options:0 range:strRange];
-
-	return (numMatches >= 1);
+	return ([self resultsInString:haystack withRegex:needle withoutCase:caseless firstOnly:YES].count > 0);
 }
 
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle
@@ -66,37 +150,37 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle withoutCase:(BOOL)caseless
 {
-	NSParameterAssert(haystack != nil);
-	NSParameterAssert(needle != nil);
+	NSTextCheckingResult *result = [self resultsInString:haystack withRegex:needle withoutCase:caseless firstOnly:YES].firstObject;
 
-    NSRange strRange = NSMakeRange(0, haystack.length);
-
-	NSRegularExpression *regex;
-
-	if (caseless) {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:NSRegularExpressionCaseInsensitive error:NULL];
-	} else {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:0 error:NULL];
+	if (result == nil) {
+		return NSMakeRange(NSNotFound, 0);
 	}
 
-	NSRange resultRange = [regex rangeOfFirstMatchInString:haystack options:0 range:strRange];
-
-	return resultRange;
+	return result.range;
 }
 
 + (NSString *)string:(NSString *)haystack replacedByRegex:(NSString *)needle withString:(NSString *)puppy
 {
-	NSParameterAssert(haystack != nil);
-	NSParameterAssert(needle != nil);
 	NSParameterAssert(puppy != nil);
 
-	NSRange strRange = NSMakeRange(0, haystack.length);
+	NSRegularExpression *regex = [self regularExpressionWithPattern:needle caseless:NO];
 
-	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:needle options:0 error:NULL];
+	NSArray<NSTextCheckingResult *> *results = [self resultsInString:haystack withRegex:needle withoutCase:NO firstOnly:NO];
 
-	NSString *newString = [regex stringByReplacingMatchesInString:haystack options:0 range:strRange withTemplate:puppy];
+	if (regex == nil || results.count == 0) {
+		return haystack;
+	}
 
-	return newString;
+	NSMutableString *newString = [haystack mutableCopy];
+
+	/* Back to front, so that earlier ranges stay valid */
+	for (NSTextCheckingResult *result in results.reverseObjectEnumerator) {
+		NSString *replacement = [regex replacementStringForResult:result inString:haystack offset:0 template:puppy];
+
+		[newString replaceCharactersInRange:result.range withString:replacement];
+	}
+
+	return [newString copy];
 }
 
 + (NSUInteger)totalNumberOfMatchesInString:(NSString *)haystack withRegex:(NSString *)needle
@@ -106,22 +190,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSUInteger)totalNumberOfMatchesInString:(NSString *)haystack withRegex:(NSString *)needle withoutCase:(BOOL)caseless
 {
-	NSParameterAssert(haystack != nil);
-	NSParameterAssert(needle != nil);
-
-    NSRange strRange = NSMakeRange(0, haystack.length);
-	
-	NSRegularExpression *regex;
-	
-	if (caseless) {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:NSRegularExpressionCaseInsensitive error:NULL];
-	} else {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:0 error:NULL];
-	}
-	
-	NSArray *matches = [regex matchesInString:haystack options:0 range:strRange];
-
-	return matches.count;
+	return [self resultsInString:haystack withRegex:needle withoutCase:caseless firstOnly:NO].count;
 }
 
 + (NSArray *)matchesInString:(NSString *)haystack withRegex:(NSString *)needle
@@ -136,20 +205,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSArray *)matchesInString:(NSString *)haystack withRegex:(NSString *)needle withoutCase:(BOOL)caseless substringGroups:(BOOL)substringGroups
 {
-	NSParameterAssert(haystack != nil);
-	NSParameterAssert(needle != nil);
-
-    NSRange strRange = NSMakeRange(0, haystack.length);
-
-	NSRegularExpression *regex;
-
-	if (caseless) {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:NSRegularExpressionCaseInsensitive error:NULL];
-	} else {
-		regex = [NSRegularExpression regularExpressionWithPattern:needle options:0 error:NULL];
-	}
-
-	NSArray *matches = [regex matchesInString:haystack options:0 range:strRange];
+	NSArray<NSTextCheckingResult *> *matches = [self resultsInString:haystack withRegex:needle withoutCase:caseless firstOnly:NO];
 
 	NSMutableArray<NSString *> *realMatches = [NSMutableArray array];
 
@@ -198,7 +254,6 @@ NS_ASSUME_NONNULL_BEGIN
 	
 	return matchesOut.count;
 }
-
 @end
 
 NS_ASSUME_NONNULL_END

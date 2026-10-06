@@ -408,6 +408,14 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 
 - (BOOL)okOrError
 {
+	if ([self okOrErrorForRegularExpressionInTextField:self.filterMatchTextField inSelection:TPI_ChatFilterEditFilterSheetSelectionGeneral] == NO) {
+		return NO;
+	}
+
+	if ([self okOrErrorForRegularExpressionInTextField:self.filterSenderMatchTextField inSelection:TPI_ChatFilterEditFilterSheetSelectionSender] == NO) {
+		return NO;
+	}
+
 	if ([self okOrErrorForTextField:self.filterEventNumericTextField inSelection:TPI_ChatFilterEditFilterSheetSelectionEvents] == NO) {
 		return NO;
 	}
@@ -431,6 +439,29 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[textField showValidationErrorPopover];
 	});
+
+	return NO;
+}
+
+/* A pattern that doesn't compile would never match, so it can't be saved */
+- (BOOL)okOrErrorForRegularExpressionInTextField:(NSTextField *)textField inSelection:(TPI_ChatFilterEditFilterSheetSelection)selection
+{
+	NSString *pattern = textField.stringValue;
+
+	if (textField.enabled == NO || pattern.length == 0 || [XRRegularExpression isValidRegex:pattern]) {
+		return YES;
+	}
+
+	[self navigateToSelection:selection];
+
+	NSAlert *alert = [NSAlert new];
+
+	alert.messageText = TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[r7x-q1]");
+	alert.informativeText = TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[r7x-q2]", pattern);
+
+	[alert beginSheetModalForWindow:self.sheet completionHandler:^(NSModalResponse returnCode) {
+		[self.sheet makeFirstResponder:textField];
+	}];
 
 	return NO;
 }

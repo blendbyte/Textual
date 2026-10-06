@@ -51,6 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle withoutCase:(BOOL)caseless;
 
 + (NSString *)string:(NSString *)haystack replacedByRegex:(NSString *)needle withString:(NSString *)puppy;
+
+/* An invalid pattern never matches (-rangeOfRegex: returns NSNotFound). Only the
+ first 8192 characters are searched, and a search taking longer than 50 ms
+ counts as no match. Use this to check a pattern a user enters. */
++ (BOOL)isValidRegex:(NSString *)pattern;
 @end
 
 NS_ASSUME_NONNULL_END

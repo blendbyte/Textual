@@ -1309,6 +1309,29 @@ NS_ASSUME_NONNULL_BEGIN
 	[tableView editColumn:0 row:rowSelection withEvent:nil select:YES];
 }
 
+/* With regular expression matching, a keyword that doesn't compile would never match */
+- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
+{
+	if (control != self.highlightKeywordsTable ||
+		[TPCPreferences highlightMatchingMethod] != TXNicknameHighlightMatchTypeRegularExpression)
+	{
+		return YES;
+	}
+
+	NSString *pattern = fieldEditor.string;
+
+	if (pattern.length == 0 || [XRRegularExpression isValidRegex:pattern]) {
+		return YES;
+	}
+
+	[TDCAlert alertWithMessage:TXTLS(@"TDCPreferencesController[r7x-q2]", pattern)
+						 title:TXTLS(@"TDCPreferencesController[r7x-q1]")
+				 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+			   alternateButton:nil];
+
+	return NO;
+}
+
 - (void)onAddHighlightKeyword:(id)sender
 {
 	[self.highlightKeywordsArrayController add:nil];
