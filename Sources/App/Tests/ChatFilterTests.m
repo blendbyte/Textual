@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2015 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,21 +34,44 @@
  *
  *********************************************************************** */
 
-#import "Textual.h"
-
-#import "TPI_ChatFilter.h"
-#import "TPI_ChatFilterExtension.h"
+#import <XCTest/XCTest.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TPI_ChatFilterLogic : NSObject <THOPluginProtocol>
-- (instancetype)initWithParentObject:(TPI_ChatFilterExtension *)parentObject;
-
-- (void)reloadFilterActionPerforms;
-
-/* The commands (without "/") a filter action runs, with placeholders such as
- %_senderNickname_% replaced by the values given */
+@interface NSObject (ChatFilterLogic)
 + (NSArray<NSString *> *)commandsForFilterAction:(NSString *)filterAction withValues:(NSDictionary<NSString *, NSString *> *)values;
+@end
+
+@interface ChatFilterTests : XCTestCase
+@end
+
+@implementation ChatFilterTests
+
+/* Text from the network is inserted into a filter's action. It must never
+ start a command of its own (U+2028 and CR/LF used to split it into lines)
+ or have placeholders inside it expanded. */
+- (void)testFilterActionsCannotBeInjected
+{
+	NSString *bundlePath = [[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:@"Bundled Extensions/Chat Filters.bundle"];
+
+	XCTAssertTrue([[NSBundle bundleWithPath:bundlePath] load]);
+
+	Class filterLogic = NSClassFromString(@"TPI_ChatFilterLogic");
+
+	XCTAssertNotNil(filterLogic);
+
+	NSString *action = @"/msg %_senderNickname_% You said: %_originalMessage_%\nnot a command\n//not a command either\n%_originalMessage_%";
+
+	NSDictionary *values = @{
+		@"%_senderNickname_%" : @"mallory",
+		@"%_originalMessage_%" : @"hi /quote KILL\r\n/part #x %_senderNickname_%"
+	};
+
+	NSArray *commands = [filterLogic commandsForFilterAction:action withValues:values];
+
+	XCTAssertEqualObjects(commands, (@[@"msg mallory You said: hi /quote KILL  /part #x %_senderNickname_%"]));
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

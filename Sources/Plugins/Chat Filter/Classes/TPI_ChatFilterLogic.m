@@ -422,60 +422,28 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	#define _maybeReplaceValue(key, value)	\
-		if (value == nil) {		\
-			filterAction = [filterAction stringByReplacingOccurrencesOfString:(key) withString:@""];	\
-		} else {	\
-			filterAction = [filterAction stringByReplacingOccurrencesOfString:(key) withString:(value)];	\
-		}
+	NSMutableDictionary<NSString *, NSString *> *values = [NSMutableDictionary dictionary];
 
-	#define _maybeReplaceParam(paramIndex, paramIndexString)		\
-		if (paramIndex >= paramsCount) {	\
-			filterAction = [filterAction stringByReplacingOccurrencesOfString:@paramIndexString withString:@""];		\
-		} else {	\
-			filterAction = [filterAction stringByReplacingOccurrencesOfString:@paramIndexString withString:params[paramIndex]];		\
-		}
+	values[@"%_channelName_%"] = (textDestination.name ?: @"");
+	values[@"%_localNickname_%"] = (client.userNickname ?: @"");
+	values[@"%_networkName_%"] = (client.networkName ?: @"");
+	values[@"%_originalMessage_%"] = text;
+	values[@"%_senderNickname_%"] = (textAuthor.nickname ?: @"");
+	values[@"%_senderUsername_%"] = (textAuthor.username ?: @"");
+	values[@"%_senderAddress_%"] = (textAuthor.address ?: @"");
+	values[@"%_senderHostmask_%"] = (textAuthor.hostmask ?: @"");
+	values[@"%_serverAddress_%"] = (client.serverAddress ?: @"");
 
-	_maybeReplaceValue(@"%_channelName_%", textDestination.name)
-	_maybeReplaceValue(@"%_localNickname_%", client.userNickname)
-	_maybeReplaceValue(@"%_networkName_%", client.networkName)
-	_maybeReplaceValue(@"%_originalMessage_%", text)
-	_maybeReplaceValue(@"%_senderNickname_%", textAuthor.nickname)
-	_maybeReplaceValue(@"%_senderUsername_%", textAuthor.username)
-	_maybeReplaceValue(@"%_senderAddress_%", textAuthor.address)
-	_maybeReplaceValue(@"%_senderHostmask_%", textAuthor.hostmask)
-	_maybeReplaceValue(@"%_serverAddress_%", client.serverAddress)
+	NSArray<NSString *> *params = referenceMessage.params;
 
-	NSArray *params = referenceMessage.params;
+	for (NSUInteger paramIndex = 0; paramIndex < 10; paramIndex++) {
+		NSString *placeholder = [NSString stringWithFormat:@"%%_Parameter_%lu_%%", paramIndex];
 
-	NSUInteger paramsCount = params.count;
+		values[placeholder] = ((paramIndex < params.count) ? params[paramIndex] : @"");
+	}
 
-	_maybeReplaceParam(0, "%_Parameter_0_%")
-	_maybeReplaceParam(1, "%_Parameter_1_%")
-	_maybeReplaceParam(2, "%_Parameter_2_%")
-	_maybeReplaceParam(3, "%_Parameter_3_%")
-	_maybeReplaceParam(4, "%_Parameter_4_%")
-	_maybeReplaceParam(5, "%_Parameter_5_%")
-	_maybeReplaceParam(6, "%_Parameter_6_%")
-	_maybeReplaceParam(7, "%_Parameter_7_%")
-	_maybeReplaceParam(8, "%_Parameter_8_%")
-	_maybeReplaceParam(9, "%_Parameter_9_%")
-
-#undef _maybeReplaceParam
-
-#undef _maybeReplaceValue
-
-	NSArray *filterActions = [filterAction componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-
-	for (__strong NSString *actionCommand in filterActions) {
-		if (actionCommand.length > 1 &&
-			[actionCommand hasPrefix:@"/"] &&
-			[actionCommand hasPrefix:@"//"] == NO)
-		{
-			actionCommand = [actionCommand substringFromIndex:1];
-
-			[client sendCommand:actionCommand];
-		}
+	for (NSString *actionCommand in [self.class commandsForFilterAction:filterAction withValues:values]) {
+		[client sendCommand:actionCommand];
 	}
 
 	/* Log action to a private message */
@@ -498,6 +466,68 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[client setUnreadStateForChannel:filterActionReportQuery];
 	}
+}
+
+/* The inserted values come from the network. So the action is split into
+ lines first, whether a line is a command is decided by the filter alone,
+ values lose their line breaks (a U+2028 in a message used to start a new
+ command), and placeholders are replaced in one pass (a value containing a
+ placeholder is not expanded). */
++ (NSArray<NSString *> *)commandsForFilterAction:(NSString *)filterAction withValues:(NSDictionary<NSString *, NSString *> *)values
+{
+	NSParameterAssert(filterAction != nil);
+	NSParameterAssert(values != nil);
+
+	NSMutableArray<NSString *> *commands = [NSMutableArray array];
+
+	for (NSString *line in [filterAction componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]) {
+		if (line.length < 2 || [line hasPrefix:@"/"] == NO || [line hasPrefix:@"//"]) {
+			continue;
+		}
+
+		[commands addObject:[self string:[line substringFromIndex:1] byReplacingPlaceholdersWithValues:values]];
+	}
+
+	return [commands copy];
+}
+
++ (NSString *)string:(NSString *)template byReplacingPlaceholdersWithValues:(NSDictionary<NSString *, NSString *> *)values
+{
+	static NSRegularExpression *placeholderPattern = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		placeholderPattern = [NSRegularExpression regularExpressionWithPattern:@"%_[A-Za-z0-9_]+?_%" options:0 error:NULL];
+	});
+
+	NSMutableString *result = [NSMutableString stringWithCapacity:template.length];
+
+	__block NSUInteger position = 0;
+
+	[placeholderPattern enumerateMatchesInString:template options:0 range:NSMakeRange(0, template.length) usingBlock:^(NSTextCheckingResult *match, NSMatchingFlags flags, BOOL *stop) {
+		NSRange matchRange = match.range;
+
+		[result appendString:[template substringWithRange:NSMakeRange(position, (matchRange.location - position))]];
+
+		NSString *placeholder = [template substringWithRange:matchRange];
+
+		NSString *value = values[placeholder];
+
+		if (value == nil) {
+			[result appendString:placeholder]; // Not a placeholder of ours
+		} else {
+			NSArray *valueLines = [value componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+
+			[result appendString:[valueLines componentsJoinedByString:@" "]];
+		}
+
+		position = NSMaxRange(matchRange);
+	}];
+
+	[result appendString:[template substringFromIndex:position]];
+
+	return [result copy];
 }
 
 - (BOOL)isItSafeToPerformActionForFilter:(TPI_ChatFilter *)filter
