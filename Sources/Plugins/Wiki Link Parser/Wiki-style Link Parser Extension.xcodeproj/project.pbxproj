@@ -236,7 +236,7 @@
 				LastUpgradeCheck = 1100;
 				TargetAttributes = {
 					8D57630D048677EA00EA77CD = {
-						DevelopmentTeam = 8482Q6EPL6;
+						DevelopmentTeam = FANJ7JNLP5;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -305,7 +305,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-WikiStyleLinkParser";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.WikiStyleLinkParser;
 				PRODUCT_NAME = WikiStyleLinkParser;
 			};
 			name = Debug;
@@ -314,7 +314,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-WikiStyleLinkParser";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.WikiStyleLinkParser;
 				PRODUCT_NAME = WikiStyleLinkParser;
 			};
 			name = Release;
@@ -344,7 +344,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-WikiStyleLinkParser";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.WikiStyleLinkParser;
 				PRODUCT_NAME = WikiStyleLinkParser;
 			};
 			name = "Release (App Store)";

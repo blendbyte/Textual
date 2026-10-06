@@ -49,7 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 	pid_t ourProcessIdentifier = [[NSProcessInfo processInfo] processIdentifier];
 
 	for (NSRunningApplication *application in RZWorkspace().runningApplications) {
-		if ([application.bundleIdentifier isEqualToString:@"com.codeux.apps.textual"] ||
+		if ([application.bundleIdentifier isEqualToString:@"com.textualapp.app"] ||
+			[application.bundleIdentifier isEqualToString:@"com.codeux.apps.textual"] ||
 			[application.bundleIdentifier isEqualToString:@"com.codeux.apps.textual-mas"] ||
 			[application.bundleIdentifier isEqualToString:@"com.codeux.irc.textual5"])
 		{

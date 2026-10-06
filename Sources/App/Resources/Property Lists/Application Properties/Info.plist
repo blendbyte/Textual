@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>7.2.7</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2010 - 2023 Codeux Software, LLC. All rights reserved.</string>
+	<string>Copyright © 2026 Blendbyte GmbH. Copyright © 2010 - 2020 Codeux Software, LLC. All rights reserved.</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIconFile</key>

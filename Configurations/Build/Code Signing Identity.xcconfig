@@ -1,9 +1,17 @@
+// Code signing used by all projects.
+//
+// Builds are signed with Blendbyte's Apple Development certificate;
+// release archives are exported with Developer ID
+// (Configurations/ExportArchiveConfiguration.plist).
+//
+// To build without Blendbyte's certificates, create
+// Configurations/Build/Signing.local.xcconfig (ignored by git), e.g.:
+//
+//     CODE_SIGN_IDENTITY = -
+//     DEVELOPMENT_TEAM =
 
-// This is the code signing identity used by all projects.
+CODE_SIGN_IDENTITY = Apple Development
+DEVELOPMENT_TEAM = FANJ7JNLP5
+PROVISIONING_PROFILE_SPECIFIER =
 
-CODE_SIGN_IDENTITY = Mac Developer
-
-// Set these values to empty
-
-DEVELOPMENT_TEAM = 8482Q6EPL6
-PROVISIONING_PROFILE_SPECIFIER = 8482Q6EPL6/
+#include? "Signing.local.xcconfig"

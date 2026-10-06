@@ -311,7 +311,7 @@
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					8D57630D048677EA00EA77CD = {
-						DevelopmentTeam = 8482Q6EPL6;
+						DevelopmentTeam = FANJ7JNLP5;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -399,7 +399,7 @@
 					"${inherited}",
 					"\"${TEXTUAL_WORKSPACE_DIR}/Frameworks/Static Libraries/Libraries/**\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-BlowfishEncryption";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.BlowfishEncryption;
 				PRODUCT_NAME = BlowfishEncryption;
 			};
 			name = Debug;
@@ -417,7 +417,7 @@
 					"${inherited}",
 					"\"${TEXTUAL_WORKSPACE_DIR}/Frameworks/Static Libraries/Libraries/**\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-BlowfishEncryption";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.BlowfishEncryption;
 				PRODUCT_NAME = BlowfishEncryption;
 			};
 			name = Release;
@@ -455,7 +455,7 @@
 					"${inherited}",
 					"\"${TEXTUAL_WORKSPACE_DIR}/Frameworks/Static Libraries/Libraries/**\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-BlowfishEncryption";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.BlowfishEncryption;
 				PRODUCT_NAME = BlowfishEncryption;
 			};
 			name = "Release (App Store)";

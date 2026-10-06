@@ -562,7 +562,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				ORGANIZATIONNAME = "Codeux Software, LLC";
+				ORGANIZATIONNAME = "Blendbyte GmbH";
 				TargetAttributes = {
 					4C1406411F11942B00C73D53 = {
 						CreatedOnToolsVersion = 8.0;
@@ -664,7 +664,7 @@
 				CODE_SIGN_ENTITLEMENTS = "${PROJECT_DIR}/Configurations/Sandbox/Release.entitlements";
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/ICLProcessPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-utilities.Textual-InlineContentLoader";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.InlineContentLoader;
 				PRODUCT_NAME = "Inline Content Loader";
 			};
 			name = Debug;
@@ -675,7 +675,7 @@
 				CODE_SIGN_ENTITLEMENTS = "${PROJECT_DIR}/Configurations/Sandbox/Release.entitlements";
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/ICLProcessPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-utilities.Textual-InlineContentLoader";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.InlineContentLoader;
 				PRODUCT_NAME = "Inline Content Loader";
 			};
 			name = Release;

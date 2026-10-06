@@ -3127,11 +3127,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				ORGANIZATIONNAME = "Codeux Software, LLC";
+				ORGANIZATIONNAME = "Blendbyte GmbH";
 				TargetAttributes = {
 					4C1DC5511580420500A47BC9 = {
-						DevelopmentTeam = 8482Q6EPL6;
-						DevelopmentTeamName = "Codeux Software, LLC";
+						DevelopmentTeam = FANJ7JNLP5;
+						DevelopmentTeamName = "Blendbyte GmbH";
 						LastSwiftMigration = 1100;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
@@ -3141,7 +3141,7 @@
 						};
 					};
 					4CCF301015804DCE006FFE21 = {
-						DevelopmentTeam = 8482Q6EPL6;
+						DevelopmentTeam = FANJ7JNLP5;
 					};
 				};
 			};

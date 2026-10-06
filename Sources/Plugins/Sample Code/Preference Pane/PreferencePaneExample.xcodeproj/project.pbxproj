@@ -176,7 +176,7 @@
 				HEADER_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Headers/**\"";
 				INFOPLIST_FILE = "Resources/Property List/Info.plist";
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-PreferencePaneExample";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.PreferencePaneExample;
 				PRODUCT_NAME = PreferencePaneExample;
 				WRAPPER_EXTENSION = bundle;
 			};
@@ -191,7 +191,7 @@
 				FRAMEWORK_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Frameworks/**\"";
 				HEADER_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Headers/**\"";
 				INFOPLIST_FILE = "Resources/Property List/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-PreferencePaneExample";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.PreferencePaneExample;
 				PRODUCT_NAME = PreferencePaneExample;
 				WRAPPER_EXTENSION = bundle;
 			};

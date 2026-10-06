@@ -209,7 +209,7 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					8D57630D048677EA00EA77CD = {
-						DevelopmentTeam = 8482Q6EPL6;
+						DevelopmentTeam = FANJ7JNLP5;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -280,7 +280,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-SystemProfiler";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SystemProfiler;
 				PRODUCT_NAME = "System Info";
 			};
 			name = Debug;
@@ -289,7 +289,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-SystemProfiler";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SystemProfiler;
 				PRODUCT_NAME = "System Info";
 			};
 			name = Release;
@@ -318,7 +318,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.textual-SystemProfiler";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SystemProfiler;
 				PRODUCT_NAME = "System Info";
 			};
 			name = "Release (App Store)";

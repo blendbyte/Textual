@@ -82,7 +82,7 @@ SWIFT_COMPILATION_MODE = wholemodule
 SWIFT_INSTALL_OBJC_HEADER = NO
 SWIFT_OPTIMIZATION_LEVEL = -O
 SWIFT_VERSION = 5.0
-VERSION_INFO_BUILDER = Codeux Software, LLC
+VERSION_INFO_BUILDER = Blendbyte GmbH
 WARNING_CFLAGS = -Wobjc-circular-container -Winfinite-recursion
 
 #include "../Code Signing Identity.xcconfig"

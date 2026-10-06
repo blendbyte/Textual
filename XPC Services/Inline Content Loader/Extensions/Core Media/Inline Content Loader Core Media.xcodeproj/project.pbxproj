@@ -497,7 +497,7 @@
 				BuildIndependentTargetsInParallel = YES;
 				CLASSPREFIX = ICP;
 				LastUpgradeCheck = 1600;
-				ORGANIZATIONNAME = "Codeux Software, LLC";
+				ORGANIZATIONNAME = "Blendbyte GmbH";
 				TargetAttributes = {
 					4CA1FE571FA606890095901F = {
 						CreatedOnToolsVersion = 9.0;
@@ -583,7 +583,7 @@
 			buildSettings = {
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/ICPCoreMediaPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.InlineContentLoader-CoreMedia";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.InlineContentLoader-CoreMedia;
 				PRODUCT_NAME = "Core Media";
 				WRAPPER_EXTENSION = mediaPlugin;
 			};
@@ -594,7 +594,7 @@
 			buildSettings = {
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/ICPCoreMediaPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-extensions.InlineContentLoader-CoreMedia";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.InlineContentLoader-CoreMedia;
 				PRODUCT_NAME = "Core Media";
 				WRAPPER_EXTENSION = mediaPlugin;
 			};

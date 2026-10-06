@@ -89,6 +89,12 @@
 	<key>THOPluginManager List of Forbidden Extensions</key>
 	<array>
 		<string>com.codeux.app-extensions.textual-Caffeine</string>
+		<string>com.codeux.app-extensions.textual-Caffeine-bundled</string>
+		<string>com.codeux.app-extensions.textual-ChatFilterExtension</string>
+		<string>com.codeux.app-extensions.textual-SmileyConverter</string>
+		<string>com.codeux.app-extensions.textual-SystemProfiler</string>
+		<string>com.codeux.app-extensions.textual-UserInsights</string>
+		<string>com.codeux.app-extensions.textual-ZNCAdditions</string>
 	</array>
 	<key>THOPluginManager List of Reserved Commands</key>
 	<array>

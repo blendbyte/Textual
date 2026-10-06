@@ -332,11 +332,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				ORGANIZATIONNAME = "Codeux Software, LLC";
+				ORGANIZATIONNAME = "Blendbyte GmbH";
 				TargetAttributes = {
 					4C442C871E13B3D200B187F4 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 8482Q6EPL6;
+						DevelopmentTeam = FANJ7JNLP5;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -409,7 +409,7 @@
 				CODE_SIGN_ENTITLEMENTS = "${PROJECT_DIR}/Configurations/Sandbox/Release.entitlements";
 				GCC_PREFIX_HEADER = "${SRCROOT}/Classes/Headers/Private/HSLHistoricLogPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-utilities.Textual-ScrollbackHistoryManager";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.ScrollbackHistoryManager;
 				PRODUCT_NAME = "Scrollback History Manager";
 			};
 			name = Debug;
@@ -420,7 +420,7 @@
 				CODE_SIGN_ENTITLEMENTS = "${PROJECT_DIR}/Configurations/Sandbox/Release.entitlements";
 				GCC_PREFIX_HEADER = "${SRCROOT}/Classes/Headers/Private/HSLHistoricLogPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-utilities.Textual-ScrollbackHistoryManager";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.ScrollbackHistoryManager;
 				PRODUCT_NAME = "Scrollback History Manager";
 			};
 			name = Release;

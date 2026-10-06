@@ -432,7 +432,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				ORGANIZATIONNAME = "Codeux Software, LLC";
+				ORGANIZATIONNAME = "Blendbyte GmbH";
 				TargetAttributes = {
 					4C1406411F11942B00C73D53 = {
 						CreatedOnToolsVersion = 8.0;
@@ -531,7 +531,7 @@
 				DEVELOPMENT_TEAM = "";
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/RCMProcessPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-utilities.Textual-IRCConnectionHost";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.IRCConnectionHost;
 				PRODUCT_NAME = "IRC Connection Host";
 			};
 			name = Debug;
@@ -544,7 +544,7 @@
 				DEVELOPMENT_TEAM = "";
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/Classes/Headers/Private/RCMProcessPCHPrivate.h";
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.codeux.app-utilities.Textual-IRCConnectionHost";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.IRCConnectionHost;
 				PRODUCT_NAME = "IRC Connection Host";
 			};
 			name = Release;
