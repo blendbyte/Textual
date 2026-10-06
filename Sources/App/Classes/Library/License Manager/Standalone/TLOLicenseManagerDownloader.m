@@ -46,6 +46,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+
 /* URLs for performing certain actions with license keys. */
 NSString * const TLOLicenseManagerDownloaderLicenseAPIActivationURL						= @"https://licensing.textualapp.com/activateLicense.cs";
 NSString * const TLOLicenseManagerDownloaderLicenseAPISendLostLicenseURL				= @"https://licensing.textualapp.com/sendLostLicense.cs";
@@ -669,11 +671,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 	NSString *applicationVersion = [TPCApplicationInfo applicationVersion].percentEncodedString;
 
-#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 	NSString *authorization = TLOLicenseManagerAuthorizationCode();
-#else
-	NSString *authorization = @"";
-#endif
 
 	NSString *requestBodyString = nil;
 
@@ -793,5 +791,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 }
 
 @end
+
+#endif
 
 NS_ASSUME_NONNULL_END

@@ -36,12 +36,12 @@ class TPI_SwiftPluginExample: NSObject, THOPluginProtocol
 		/* Get message sequence of incoming message. */
 		let messageReceived = inputObject.messageSequence
 
-		let messageParamaters = inputObject.messageParamaters
+		let messageParameters = inputObject.messageParameters
 
 		/* Get channel that message was sent from. */
 		/* The first paramater of the PRIVMSG command is always
 		 the channel the message was targetted to. */
-		let senderChannel = client.findChannel(messageParamaters[0])
+		let senderChannel = client.findChannel(messageParameters[0])
 
 		/* Do not accept private messages. */
 		if (senderChannel?.isChannel != true) {

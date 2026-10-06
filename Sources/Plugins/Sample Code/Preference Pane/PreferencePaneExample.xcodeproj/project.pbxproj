@@ -174,7 +174,7 @@
 				FRAMEWORK_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Frameworks/**\"";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Headers/**\"";
-				INFOPLIST_FILE = "Resources/Property List/Info.plist";
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.PreferencePaneExample;
 				PRODUCT_NAME = PreferencePaneExample;
@@ -190,7 +190,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Frameworks/**\"";
 				HEADER_SEARCH_PATHS = "\"/Applications/Textual.app/Contents/Headers/**\"";
-				INFOPLIST_FILE = "Resources/Property List/Info.plist";
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.PreferencePaneExample;
 				PRODUCT_NAME = PreferencePaneExample;
 				WRAPPER_EXTENSION = bundle;

@@ -42,6 +42,10 @@ jobs:
             configuration: Release
             license-manager: '1'
           - runner: xcode-27
+            scheme: Textual (Debug)
+            configuration: Debug
+            license-manager: '1'
+          - runner: xcode-27
             scheme: Textual (App Store)
             configuration: App Store
 
@@ -76,11 +80,62 @@ jobs:
             build
 
       - name: Verify build products
+        env:
+          CONFIGURATION: ${{ matrix.configuration }}
+          LICENSE_MANAGER: ${{ matrix.license-manager || '0' }}
         run: |
-          app="Build Results/${{ matrix.configuration }}/Textual.app"
-          test -x "$app/Contents/MacOS/Textual"
-          ls "$app/Contents/XPCServices"
-          ls "$app/Contents/Resources/Bundled Extensions"
+          contents="Build Results/$CONFIGURATION/Textual.app/Contents"
+          fail() { echo "::error::$1"; exit 1; }
+
+          test -x "$contents/MacOS/Textual" || fail "Textual binary missing"
+          archs=$(lipo -archs "$contents/MacOS/Textual")
+          [[ " $archs " == *" x86_64 "* && " $archs " == *" arm64 "* ]] || fail "Textual is not universal: $archs"
+
+          for plugin in "Caffeine" "Chat Filters" "Smiley Converter" "System Info" "User Insights" "ZNC Additions"; do
+            test -d "$contents/Resources/Bundled Extensions/$plugin.bundle" || fail "Plugin missing: $plugin"
+          done
+          for service in "IRC Connection Host" "Inline Content Loader" "Scrollback History Manager"; do
+            test -d "$contents/XPCServices/$service.xpc" || fail "XPC service missing: $service"
+          done
+          test -d "$contents/XPCServices/Inline Content Loader.xpc/Contents/Resources/Extensions/Core Media.mediaPlugin" || fail "Core Media plugin missing"
+          for framework in AutoHyperlinks CocoaExtensions EncryptionKit GRMustache; do
+            test -d "$contents/Frameworks/$framework.framework" || fail "Framework missing: $framework"
+          done
+          if [ "$CONFIGURATION" != "App Store" ]; then
+            test -d "$contents/Frameworks/Sparkle.framework" || fail "Sparkle missing"
+          fi
+
+          grep -q "^#define TEXTUAL_BUILT_WITH_LICENSE_MANAGER $LICENSE_MANAGER\$" ".tmp/Build Headers/FeatureFlags.h" ||
+            fail "FeatureFlags.h does not say TEXTUAL_BUILT_WITH_LICENSE_MANAGER $LICENSE_MANAGER"
+          if [ "$LICENSE_MANAGER" = "0" ] && nm "$contents/MacOS/Textual" | grep -q -E 'TDCLicenseManagerDialog|TLOLicenseManager'; then
+            fail "Licence manager code is compiled in although the licence manager is off"
+          fi
+
+      # The samples build against the app like a third-party plugin does:
+      # its public headers, its frameworks and its binary as bundle loader.
+      - name: Build the sample plugins
+        if: matrix.runner == 'xcode-27' && matrix.configuration == 'Release' && matrix.license-manager == '1'
+        run: |
+          app="$PWD/Build Results/Release/Textual.app"
+          for project in "Sources/Plugins/Sample Code/Swift Bot/SwiftPluginExample.xcodeproj" \
+                         "Sources/Plugins/Sample Code/Preference Pane/PreferencePaneExample.xcodeproj"; do
+            xcodebuild \
+              -project "$project" \
+              -configuration Release \
+              -quiet \
+              CODE_SIGN_IDENTITY="-" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              DEVELOPMENT_TEAM="" \
+              PROVISIONING_PROFILE_SPECIFIER="" \
+              BUNDLE_LOADER="$app/Contents/MacOS/Textual" \
+              FRAMEWORK_SEARCH_PATHS="\"$app/Contents/Frameworks\"" \
+              HEADER_SEARCH_PATHS="\"$app/Contents/Headers\"" \
+              SYMROOT="$RUNNER_TEMP/Samples" \
+              OBJROOT="$RUNNER_TEMP/Samples/Intermediates" \
+              build
+          done
+          ls "$RUNNER_TEMP/Samples/Release"
 
       - name: Verify the App Store build has no Sparkle
         if: matrix.configuration == 'App Store'
