@@ -51,7 +51,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Refuse to have more than X number of items incoming at any given time. */
+/* Refuse more than this many unfinished incoming transfers at a time. */
 #define _addReceiverHardLimit			120
 
 @interface TDCFileTransferDialog () <NSMenuItemValidation>
@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) TDCFileTransferDialogSelection navigationSelection;
 @property (nonatomic, strong) TLOTimer *maintenanceTimer;
 @property (nonatomic, copy, nullable) NSURL *downloadDestinationURLPrivate;
+@property (nonatomic, assign) BOOL downloadDestinationURLIsAccessed;
 
 - (IBAction)hideWindow:(id)sender;
 
@@ -131,11 +132,22 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (nullable TDCFileTransferDialogTransferController *)fileTransferMatchingPort:(uint16_t)port
+- (nullable TDCFileTransferDialogTransferController *)fileTransferForClient:(IRCClient *)client peer:(NSString *)nickname isSender:(BOOL)isSender token:(nullable NSString *)transferToken port:(uint16_t)port
 {
+	NSParameterAssert(client != nil);
+	NSParameterAssert(nickname != nil);
+
 	TDCFileTransferDialogTransferController *fileTransfer =
 	[self fileTransferMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *controller) {
-		return (controller.hostPort == port);
+		if (controller.isSender != isSender || [controller isWithClient:client peer:nickname] == NO) {
+			return NO;
+		}
+
+		if (transferToken) {
+			return [transferToken isEqualToString:controller.transferToken];
+		}
+
+		return (controller.transferToken == nil && controller.hostPort == port);
 	}];
 
 	return fileTransfer;
@@ -165,37 +177,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return (fileTransfer != nil);
 }
 
-- (nullable TDCFileTransferDialogTransferController *)fileTransferSenderMatchingToken:(NSString *)transferToken
-{
-	NSParameterAssert(transferToken != nil);
-
-	TDCFileTransferDialogTransferController *fileTransfer =
-	[self fileTransferMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *controller) {
-		return ([transferToken isEqualToString:controller.transferToken] && controller.isSender);
-	}];
-
-	return fileTransfer;
-}
-
-- (nullable TDCFileTransferDialogTransferController *)fileTransferReceiverMatchingToken:(NSString *)transferToken
-{
-	NSParameterAssert(transferToken != nil);
-
-	TDCFileTransferDialogTransferController *fileTransfer =
-	[self fileTransferMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *controller) {
-		return ([transferToken isEqualToString:controller.transferToken] && controller.isSender == NO);
-	}];
-
-	return fileTransfer;
-}
-
 - (void)prepareForApplicationTermination
 {
 	LogToConsoleTerminationProgress("Stopping access to download destination bookmark");
 
-	if (self.downloadDestinationURLPrivate) {
-		[self.downloadDestinationURLPrivate stopAccessingSecurityScopedResource];
-	}
+	[self stopUsingDownloadDestinationURL];
 
 	LogToConsoleTerminationProgress("Closing file transfer window");
 
@@ -217,7 +203,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* A hard limit exists to prevent a bad person continuously sending file transfers 
 	 which appear in the file transfer, exhausting resources. */
-	if ([self receiverCount] > _addReceiverHardLimit) {
+	if ([self unfinishedReceiverCount] >= _addReceiverHardLimit) {
 		LogToConsoleError("Max receiver count of %{public}i exceeded", _addReceiverHardLimit);
 
 		return nil;
@@ -344,18 +330,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case 3003: // Stop Download
 		{
 			for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
-				TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
-
-				if (transferStatus == TDCFileTransferDialogTransferStatusConnecting ||
-					transferStatus == TDCFileTransferDialogTransferStatusReceiving ||
-					transferStatus == TDCFileTransferDialogTransferStatusIsListeningAsSender ||
-					transferStatus == TDCFileTransferDialogTransferStatusIsListeningAsReceiver ||
-					transferStatus == TDCFileTransferDialogTransferStatusSending ||
-					transferStatus == TDCFileTransferDialogTransferStatusMappingListeningPort ||
-					transferStatus == TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress ||
-					transferStatus == TDCFileTransferDialogTransferStatusWaitingForReceiverToAccept ||
-					transferStatus == TDCFileTransferDialogTransferStatusWaitingForResumeAccept)
-				{
+				if (fileTransfer.isStopped == NO) {
 					return YES;
 				}
 			}
@@ -615,7 +590,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.IPAddress = address;
 
-	[self enumerateFileTransferSenders:^(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop) {
+	/* Senders and reverse receivers both wait for the address */
+	[self enumerateFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop) {
 		if (fileTransfer.transferStatus != TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress) {
 			return;
 		}
@@ -628,7 +604,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)internetAddressLookupFailed
 {
-	[self enumerateFileTransferSenders:^(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop) {
+	[self enumerateFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop) {
 		if (fileTransfer.transferStatus != TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress) {
 			return;
 		}
@@ -665,11 +641,21 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Transfer Search
 
-- (NSUInteger)receiverCount
+/* Offers not yet accepted count too; complete and failed ones don't. */
+- (NSUInteger)unfinishedReceiverCount
 {
 	__block NSUInteger receiverCount = 0;
 
 	[self enumerateFileTransferReceivers:^(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop) {
+		TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
+
+		if (transferStatus == TDCFileTransferDialogTransferStatusComplete ||
+			transferStatus == TDCFileTransferDialogTransferStatusFatalError ||
+			transferStatus == TDCFileTransferDialogTransferStatusRecoverableError)
+		{
+			return;
+		}
+
 		receiverCount += 1;
 	}];
 
@@ -679,32 +665,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<TDCFileTransferDialogTransferController *> *)stoppedFileTransfers
 {
 	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *fileTransfer) {
-		TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
-
-		if (transferStatus != TDCFileTransferDialogTransferStatusComplete &&
-			transferStatus != TDCFileTransferDialogTransferStatusStopped &&
-			transferStatus != TDCFileTransferDialogTransferStatusFatalError &&
-			transferStatus != TDCFileTransferDialogTransferStatusRecoverableError)
-		{
-			return NO;
-		}
-
-		return YES;
+		return fileTransfer.isStopped;
 	}];
 }
 
 - (NSArray<TDCFileTransferDialogTransferController *> *)activeFileTransfers
 {
 	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *fileTransfer) {
-		TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
-
-		if (transferStatus != TDCFileTransferDialogTransferStatusReceiving &&
-			transferStatus != TDCFileTransferDialogTransferStatusSending)
-		{
-			return NO;
-		}
-
-		return YES;
+		return fileTransfer.isActive;
 	}];
 }
 
@@ -781,11 +749,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self _enumerateFileTransfers:enumerationBlock limitScope:YES limitScopeToSenders:NO];
 }
 
-- (void)enumerateFileTransferSenders:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop))enumerationBlock
-{
-	[self _enumerateFileTransfers:enumerationBlock limitScope:YES limitScopeToSenders:YES];
-}
-
 - (void)_enumerateFileTransfers:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop))enumerationBlock limitScope:(BOOL)limitScope limitScopeToSenders:(BOOL)limitScopeToSenders
 {
 	NSParameterAssert(enumerationBlock != nil);
@@ -838,7 +801,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	BOOL resolvedBookmarkIsStale = YES;
+	BOOL resolvedBookmarkIsStale = NO;
 
 	NSError *resolvedBookmarkError = nil;
 
@@ -858,19 +821,44 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.downloadDestinationURLPrivate = resolvedBookmark;
 
-	if ([self.downloadDestinationURLPrivate startAccessingSecurityScopedResource] == NO) {
+	self.downloadDestinationURLIsAccessed = [resolvedBookmark startAccessingSecurityScopedResource];
+
+	if (self.downloadDestinationURLIsAccessed == NO) {
 		LogToConsoleError("Failed to access bookmark");
+
+		return;
+	}
+
+	/* A stale bookmark (the folder moved or was renamed) still resolves,
+	 but has to be replaced while it is being accessed. */
+	if (resolvedBookmarkIsStale) {
+		NSData *newBookmark = [resolvedBookmark bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+										 includingResourceValuesForKeys:nil
+														  relativeToURL:nil
+																  error:NULL];
+
+		if (newBookmark) {
+			[RZUserDefaults() setObject:newBookmark forKey:@"File Transfers -> File Transfer Download Folder Bookmark"];
+		}
 	}
 }
 
-- (void)setDownloadDestinationURL:(nullable NSData *)downloadDestinationURL
+- (void)stopUsingDownloadDestinationURL
 {
-	if ( self.downloadDestinationURLPrivate) {
+	if (self.downloadDestinationURLIsAccessed) {
 		[self.downloadDestinationURLPrivate stopAccessingSecurityScopedResource];
-		 self.downloadDestinationURLPrivate = nil;
+
+		self.downloadDestinationURLIsAccessed = NO;
 	}
 
-	[RZUserDefaults() setObject:downloadDestinationURL forKey:@"File Transfers -> File Transfer Download Folder Bookmark"];
+	self.downloadDestinationURLPrivate = nil;
+}
+
+- (void)setDownloadDestinationBookmark:(nullable NSData *)downloadDestinationBookmark
+{
+	[self stopUsingDownloadDestinationURL];
+
+	[RZUserDefaults() setObject:downloadDestinationBookmark forKey:@"File Transfers -> File Transfer Download Folder Bookmark"];
 
 	[self startUsingDownloadDestinationURL];
 }

@@ -950,7 +950,7 @@ NS_ASSUME_NONNULL_BEGIN
 					path.standardizedTildePath, bookmarkError.localizedDescription);
 			}
 
-			[transferController setDownloadDestinationURL:bookmark];
+			[transferController setDownloadDestinationBookmark:bookmark];
 
 			[self updateFileTransferDownloadDestinationFolder];
 		}];
@@ -959,7 +959,7 @@ NS_ASSUME_NONNULL_BEGIN
 	{
 		[self.fileTransferDownloadDestinationButton selectItemAtIndex:0];
 
-		[transferController setDownloadDestinationURL:nil];
+		[transferController setDownloadDestinationBookmark:nil];
 
 		[self updateFileTransferDownloadDestinationFolder];
 	}

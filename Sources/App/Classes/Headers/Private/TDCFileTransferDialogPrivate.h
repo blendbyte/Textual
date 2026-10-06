@@ -98,10 +98,13 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDialogSelection) {
 
 - (BOOL)fileTransferExistsWithToken:(NSString *)transferToken;
 
-- (nullable TDCFileTransferDialogTransferController *)fileTransferMatchingPort:(uint16_t)port;
-
-- (nullable TDCFileTransferDialogTransferController *)fileTransferSenderMatchingToken:(NSString *)transferToken;
-- (nullable TDCFileTransferDialogTransferController *)fileTransferReceiverMatchingToken:(NSString *)transferToken;
+/* The transfer with this peer on this client that a DCC reply refers to:
+ by token when there is one, otherwise by port. */
+- (nullable TDCFileTransferDialogTransferController *)fileTransferForClient:(IRCClient *)client
+																	   peer:(NSString *)nickname
+																   isSender:(BOOL)isSender
+																	  token:(nullable NSString *)transferToken
+																	   port:(uint16_t)port;
 
 - (nullable TDCFileTransferDialogTransferController *)fileTransferWithUniqueIdentifier:(NSString *)identifier;
 @end
@@ -111,9 +114,10 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDialogSelection) {
 @interface TDCFileTransferDialog (TDCFileTransferDialogDownloadDestinationExtension)
 - (nullable NSURL *)downloadDestinationURL;
 
-- (void)setDownloadDestinationURL:(nullable NSData *)downloadDestinationURL;
+- (void)setDownloadDestinationBookmark:(nullable NSData *)downloadDestinationBookmark;
 
 - (void)startUsingDownloadDestinationURL;
+- (void)stopUsingDownloadDestinationURL;
 @end
 
 NS_ASSUME_NONNULL_END

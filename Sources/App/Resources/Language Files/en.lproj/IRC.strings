@@ -59,6 +59,7 @@
 "ags-s8" = "Trying file transfer to %1$@, %2$@ (%3$qi bytes)";
 "snf-45" = "Received file transfer request from %1$@, %2$@ (%3$qi bytes)";
 "y3w-la" = "Textual has received a DCC request from %@ that could not be processed.";
+"f7t-lm" = "The file transfer request from %1$@ (%2$@) was refused: there are too many unfinished incoming transfers. Remove finished or unwanted ones in the File Transfers window.";
 
 /* Version info */
 "vzu-u7" = "%1$@ IRC Client: www.textualapp.com — v%2$@";

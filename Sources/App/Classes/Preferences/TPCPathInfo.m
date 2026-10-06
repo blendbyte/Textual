@@ -537,6 +537,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation TPCPathInfo (TPCPathInfoTranscriptFolderExtension)
 
 static NSURL * _Nullable _transcriptFolderURL = nil;
+static BOOL _transcriptFolderURLIsAccessed = NO;
 
 + (nullable NSString *)transcriptFolder
 {
@@ -550,10 +551,13 @@ static NSURL * _Nullable _transcriptFolderURL = nil;
 
 + (void)setTranscriptFolderURL:(nullable NSData *)transcriptFolderURL
 {
-	if ( _transcriptFolderURL) {
+	if (_transcriptFolderURLIsAccessed) {
 		[_transcriptFolderURL stopAccessingSecurityScopedResource];
-		 _transcriptFolderURL = nil;
+
+		_transcriptFolderURLIsAccessed = NO;
 	}
+
+	_transcriptFolderURL = nil;
 
 	[RZUserDefaults() setObject:transcriptFolderURL forKey:@"LogTranscriptDestinationSecurityBookmark_5"];
 
@@ -585,7 +589,7 @@ static NSURL * _Nullable _transcriptFolderURL = nil;
 		return;
 	}
 
-	BOOL resolvedBookmarkIsStale = YES;
+	BOOL resolvedBookmarkIsStale = NO;
 
 	NSError *resolvedBookmarkError = nil;
 
@@ -595,25 +599,6 @@ static NSURL * _Nullable _transcriptFolderURL = nil;
 						relativeToURL:nil
 				  bookmarkDataIsStale:&resolvedBookmarkIsStale
 								error:&resolvedBookmarkError];
-
-	if (resolvedBookmarkIsStale) {
-		/* "On return, if YES, the bookmark data is stale. 
-		 Your app should create a new bookmark using the 
-		 returned URL and use it in place of any stored 
-		 copies of the existing bookmark." */
-		NSData *newBookmark = [resolvedBookmark bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
-										 includingResourceValuesForKeys:nil
-														  relativeToURL:nil
-																  error:NULL];
-
-		if (newBookmark) {
-			[self setTranscriptFolderURL:newBookmark];
-		} else {
-			[self warnUserAboutStaleTranscriptFolderURL];
-		}
-
-		return;
-	}
 
 	if (resolvedBookmark == nil) {
 		LogToConsoleError("Error creating bookmark for URL: %{public}@",
@@ -626,8 +611,30 @@ static NSURL * _Nullable _transcriptFolderURL = nil;
 
 	_transcriptFolderURL = resolvedBookmark;
 
-	if ([_transcriptFolderURL startAccessingSecurityScopedResource] == NO) {
+	_transcriptFolderURLIsAccessed = [resolvedBookmark startAccessingSecurityScopedResource];
+
+	if (_transcriptFolderURLIsAccessed == NO) {
 		LogToConsoleError("Failed to access bookmark");
+
+		return;
+	}
+
+	/* "On return, if YES, the bookmark data is stale. 
+	 Your app should create a new bookmark using the 
+	 returned URL and use it in place of any stored 
+	 copies of the existing bookmark." The new bookmark
+	 can only be created while the URL is being accessed. */
+	if (resolvedBookmarkIsStale) {
+		NSData *newBookmark = [resolvedBookmark bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+										 includingResourceValuesForKeys:nil
+														  relativeToURL:nil
+																  error:NULL];
+
+		if (newBookmark) {
+			[RZUserDefaults() setObject:newBookmark forKey:@"LogTranscriptDestinationSecurityBookmark_5"];
+		} else {
+			[self warnUserAboutStaleTranscriptFolderURL];
+		}
 	}
 }
 

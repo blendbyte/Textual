@@ -54,7 +54,13 @@ cmd_start() {
 		return
 	fi
 
-	open "${APP}"
+	# Arguments become launch arguments, e.g. "-PreferModernSockets" NO
+	# overrides that preference until the next start.
+	if [ $# -gt 0 ]; then
+		open "${APP}" --args "$@"
+	else
+		open "${APP}"
+	fi
 }
 
 cmd_stop() {
@@ -223,6 +229,20 @@ print("textual://dev-config?" + urllib.parse.urlencode(pairs, quote_via=urllib.p
 	open -a "${APP}" "${url}"
 }
 
+cmd_send() {
+	check_app
+
+	# The sandbox opens only files Textual Dev saved itself (or the user picked):
+	# a file another app created in ~/Downloads blocks the transfer.
+	[ $# -eq 2 ] || die "send needs a nickname and a file Textual Dev saved in ~/Downloads, e.g. Development/dev send alice ~/Downloads/received.txt"
+
+	local url
+	url=$(python3 -c 'import sys, urllib.parse
+print("textual://dev-send?" + urllib.parse.urlencode({"nickname": sys.argv[1], "path": sys.argv[2]}, quote_via=urllib.parse.quote))' "$1" "$2")
+
+	open -a "${APP}" "${url}"
+}
+
 cmd_screenshot() {
 	local pid output window
 	pid=$(app_pid)
@@ -246,7 +266,8 @@ cmd_help() {
 
 	  build                 Build Textual Dev (the Debug build)
 	  run                   Build, quit a running Textual Dev and start it again
-	  start | stop          Start or quit Textual Dev
+	  start [-key value …]  Start Textual Dev, with preferences overridden by launch arguments
+	  stop                  Quit Textual Dev
 	  reset [--yes]         Delete Textual Dev's settings, logs and scrollback
 	  logs                  Stream the log of Textual Dev and its services
 	  connect [url]         Open an irc:// URL in Textual Dev (default: the local Ergo)
@@ -255,6 +276,8 @@ cmd_help() {
 	                        there as if typed; '' only selects
 	  config key=value …    Change the newest server's configuration (IRCClientConfig
 	                        names, e.g. nicknamePassword=… nickServHost=…)
+	  send <nickname> <file>
+	                        Offer a file Textual Dev saved in ~/Downloads to a user
 	  screenshot [file]     Capture Textual Dev's window
 	  server [start|stop|status]
 	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
@@ -266,6 +289,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|scripted|connect|input|config|screenshot|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|scripted|connect|input|config|send|screenshot|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac

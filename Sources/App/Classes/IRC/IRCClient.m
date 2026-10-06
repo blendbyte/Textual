@@ -12537,7 +12537,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	if (isSendRequest)
 	{
 		/* Get normal information */
-		filename = section1.safeFilename;
+		filename = [TDCFileTransferDialogTransferController filenameForOfferedFilename:section1];
 
 		filesize = section4;
 
@@ -12561,7 +12561,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 	else if (isResumeRequest || isAcceptRequest)
 	{
-		filename = section1.safeFilename;
+		filename = [TDCFileTransferDialogTransferController filenameForOfferedFilename:section1];
 
 		filesize = section3;
 
@@ -12603,16 +12603,18 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		goto present_error;
 	}
 
-	/* Process individual commands */
+	/* Process individual commands. A reply only ever matches a transfer
+	 with the same peer on this connection (by token, otherwise by port),
+	 so nobody else can redirect or reposition it. */
 	if (isSendRequest) {
 		/* DCC SEND <filename> <peer-ip> <port> <filesize> [token] */
 
 		if (transferToken) {
-			TDCFileTransferDialogTransferController *e = [[self fileTransferController] fileTransferSenderMatchingToken:transferToken];
-
 			/* 0 port indicates a new request in reverse DCC */
 			if (hostPortInt == 0)
 			{
+				TDCFileTransferDialogTransferController *e = [[self fileTransferController] fileTransferForClient:self peer:sender isSender:NO token:transferToken port:0];
+
 				if (e != nil) {
 					LogToConsoleError("Fatal error: Received reverse DCC request with token '%{public}@' but the token already exists", transferToken);
 
@@ -12628,7 +12630,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 				return;
 			}
-			else if (e)
+
+			/* The reply to our reverse DCC offer */
+			TDCFileTransferDialogTransferController *e = [[self fileTransferController] fileTransferForClient:self peer:sender isSender:YES token:transferToken port:0];
+
+			if (e)
 			{
 				if (e.transferStatus != TDCFileTransferDialogTransferStatusWaitingForReceiverToAccept) {
 					LogToConsoleError("Fatal error: Unexpected request to begin transfer");
@@ -12656,12 +12662,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 	else if (isResumeRequest || isAcceptRequest)
 	{
+		/* RESUME comes from the receiver of our file, ACCEPT from the sender of theirs */
 		TDCFileTransferDialogTransferController *e = nil;
 
-		if (transferToken && hostPortInt == 0) {
-			e = [[self fileTransferController] fileTransferSenderMatchingToken:transferToken];
-		} else if (transferToken == nil && hostPortInt > 0) {
-			e = [[self fileTransferController] fileTransferMatchingPort:hostPortInt];
+		if ((transferToken && hostPortInt == 0) || (transferToken == nil && hostPortInt > 0)) {
+			e = [[self fileTransferController] fileTransferForClient:self peer:sender isSender:isResumeRequest token:transferToken port:hostPortInt];
 		}
 
 		if (e == nil) {
@@ -12710,6 +12715,8 @@ present_error:
 	NSString *addedRequest = [[self fileTransferController] addReceiverForClient:self nickname:nickname address:address port:port filename:filename filesize:totalFilesize token:transferToken];
 
 	if (addedRequest == nil) {
+		[self print:TXTLS(@"IRC[f7t-lm]", nickname, filename) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+
 		return;
 	}
 

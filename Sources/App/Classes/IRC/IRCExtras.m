@@ -40,6 +40,8 @@
 #import "NSStringHelper.h"
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
+#import "TXSharedApplicationPrivate.h"
+#import "TDCFileTransferDialogPrivate.h"
 #import "TDCAlert.h"
 #import "TPCApplicationInfo.h"
 #import "TPCPathInfo.h"
@@ -155,8 +157,12 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(location != nil);
 
 #ifdef DEBUG
-	/* Textual Dev only (Development/dev input, config, reset) */
-	if ([location isEqualToString:@"textual://dev-reset"]) {
+	/* Textual Dev only (Development/dev input, config, send, reset) */
+	if ([location hasPrefix:@"textual://dev-send?"]) {
+		[self performDevelopmentSendWithURL:location];
+
+		return;
+	} else if ([location isEqualToString:@"textual://dev-reset"]) {
 		[self performDevelopmentReset];
 
 		return;
@@ -387,6 +393,33 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[client updateConfig:config];
+}
+
+/* textual://dev-send?nickname=<nickname>&path=<path> offers a file to a user
+ on the newest server, as dropping it on them would. The path must be one
+ the sandbox can read, such as the Downloads folder. */
++ (void)performDevelopmentSendWithURL:(NSString *)location
+{
+	NSURLComponents *components = [NSURLComponents componentsWithString:location];
+
+	NSString *nickname = nil;
+	NSString *path = nil;
+
+	for (NSURLQueryItem *item in components.queryItems) {
+		if ([item.name isEqualToString:@"nickname"]) {
+			nickname = item.value;
+		} else if ([item.name isEqualToString:@"path"]) {
+			path = item.value;
+		}
+	}
+
+	IRCClient *client = worldController().clientList.lastObject;
+
+	if (client == nil || nickname.length == 0 || path.length == 0) {
+		return;
+	}
+
+	[[TXSharedApplication sharedFileTransferDialog] addSenderForClient:client nickname:nickname path:path autoOpen:YES];
 }
 
 /* textual://dev-reset deletes Textual Dev's own preferences (including the

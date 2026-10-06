@@ -67,6 +67,24 @@ NS_ASSUME_NONNULL_BEGIN
 @property (getter=isActingAsClient, readonly) BOOL actingAsClient;
 @property (getter=isActingAsServer, readonly) BOOL actingAsServer;
 
+/* Sending or receiving data */
+@property (readonly) BOOL isActive;
+/* Set up and waiting for the peer: listening, connecting, or waiting for a reply */
+@property (readonly) BOOL isAwaitingPeer;
+/* Not started, stopped, complete or failed */
+@property (readonly) BOOL isStopped;
+
+- (BOOL)isWithClient:(IRCClient *)client peer:(NSString *)nickname;
+
+/* A file name offered by a peer, safe to create in the download folder */
++ (NSString *)filenameForOfferedFilename:(NSString *)filename;
+
+/* Downloads are recorded while incomplete so that only Textual's own partial
+ downloads from the same peer are ever resumed. */
++ (void)recordPartialDownloadAtPath:(NSString *)path clientIdentifier:(NSString *)clientIdentifier peer:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize;
++ (void)forgetPartialDownloadAtPath:(NSString *)path;
++ (BOOL)fileAtPath:(NSString *)path isPartialDownloadForClientIdentifier:(NSString *)clientIdentifier peer:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize;
+
 + (nullable instancetype)receiverForClient:(IRCClient *)client
 								  nickname:(NSString *)nickname
 								   address:(NSString *)hostAddress

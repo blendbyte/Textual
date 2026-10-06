@@ -69,5 +69,6 @@
 "79f-s0" = "Transfer with %@ failed. No space left on device";
 "05g-c8" = "Transfer with %@ failed. File handler threw an exception";
 "s79-3a" = "Transfer with %@ failed: %@";
+"dr5-tq" = "Transfer with %@ failed. They did not respond in time";
 
 "dcm-w7" = "Select the folder in which this file will be saved";

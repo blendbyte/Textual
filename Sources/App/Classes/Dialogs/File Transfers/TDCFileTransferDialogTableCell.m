@@ -112,17 +112,9 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	TDCFileTransferDialogTransferStatus transferStatus = self.transferStatus;
 
-	BOOL transferIsStopped = (transferStatus == TDCFileTransferDialogTransferStatusComplete ||
-							  transferStatus == TDCFileTransferDialogTransferStatusFatalError ||
-							  transferStatus == TDCFileTransferDialogTransferStatusRecoverableError ||
-							  transferStatus == TDCFileTransferDialogTransferStatusStopped ||
-							  transferStatus == TDCFileTransferDialogTransferStatusIsListeningAsSender ||
-							  transferStatus == TDCFileTransferDialogTransferStatusIsListeningAsReceiver ||
-							  transferStatus == TDCFileTransferDialogTransferStatusInitializing ||
-							  transferStatus == TDCFileTransferDialogTransferStatusMappingListeningPort ||
-							  transferStatus == TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress ||
-							  transferStatus == TDCFileTransferDialogTransferStatusWaitingForReceiverToAccept ||
-							  transferStatus == TDCFileTransferDialogTransferStatusWaitingForResumeAccept);
+	/* No progress to show until data moves (connecting has its own indicator) */
+	BOOL transferIsStopped = (self.cellItem.isActive == NO &&
+							  transferStatus != TDCFileTransferDialogTransferStatusConnecting);
 
 	uint64_t processedFilesize = self.processedFilesize;
 

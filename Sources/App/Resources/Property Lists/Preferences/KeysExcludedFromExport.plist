@@ -4,6 +4,8 @@
 <dict>
 	<key>TXRunCount</key>
 	<integer>0</integer>
+	<key>File Transfers -&gt; Partial Downloads</key>
+	<integer>0</integer>
 	<key>TXRunTime</key>
 	<integer>0</integer>
 	<key>TextField</key>

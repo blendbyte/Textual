@@ -36,12 +36,15 @@
  *
  *********************************************************************** */
 
+#include <sys/stat.h>
+
 #import "NSObjectHelperPrivate.h"
 #import "GCDAsyncSocket.h"
 #import "TXGlobalModels.h"
 #import "IRCClientPrivate.h"
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
+#import "TPCPreferencesUserDefaultsPrivate.h"
 #import "TLOEncryptionManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TDCFileTransferDialogTableCellPrivate.h"
@@ -57,7 +60,45 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _connectTimeout			30.0
 #define _sendDataTimeout		30.0
+#define _readDataTimeout		120.0
 #define _resumeAcceptTimeout	10.0
+#define _peerResponseTimeout	600.0 // To accept an offer or connect to the listening port
+
+/* Textual's own unfinished downloads, by path: the file (device and inode)
+ and the transfer it belongs to. */
+static NSString * const _partialDownloadsDefaultsKey = @"File Transfers -> Partial Downloads";
+
+/* Files are only ever looked at with stat(). Reading extended attributes (as
+ -attributesOfItemAtPath: does) of a file another app created can block the
+ sandboxed app indefinitely (seen on macOS 27 with com.apple.macl). */
+static BOOL _statFileAtPath(NSString *path, struct stat *fileInfo)
+{
+	return (stat(path.fileSystemRepresentation, fileInfo) == 0 && S_ISREG(fileInfo->st_mode));
+}
+
+/* Size of a regular file, or 0 if there is none */
+static uint64_t _sizeOfFileAtPath(NSString *path)
+{
+	struct stat fileInfo;
+
+	if (_statFileAtPath(path, &fileInfo) == NO) {
+		return 0;
+	}
+
+	return (uint64_t)fileInfo.st_size;
+}
+
+/* Identifies the file itself, so that a file replaced under the same name doesn't match */
+static NSString * _Nullable _identityOfFileAtPath(NSString *path)
+{
+	struct stat fileInfo;
+
+	if (_statFileAtPath(path, &fileInfo) == NO) {
+		return nil;
+	}
+
+	return [NSString stringWithFormat:@"%lld:%llu", (long long)fileInfo.st_dev, (unsigned long long)fileInfo.st_ino];
+}
 
 @interface TDCFileTransferDialogTransferController ()
 @property (nonatomic, strong, readwrite) IRCClient *client;
@@ -87,6 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) GCDAsyncSocket *listeningServerConnectedClient;
 @property (nonatomic, strong, nullable) GCDAsyncSocket *connectionToRemoteServer;
 @property (nonatomic, strong, nullable) id transferProgressHandler; // Used to prevent system sleep
+@property (atomic, assign) NSUInteger peerResponseTimeoutGeneration; // Changes on close, so older timeouts do nothing
 @property (readonly) uint64_t currentFilesize;
 @property (readonly) TDCFileTransferDialog *transferDialog;
 @property (readonly, nullable) GCDAsyncSocket *readSocket;
@@ -152,13 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 	/* Gather file information */
-	NSDictionary *fileAttributes = [RZFileManager() attributesOfItemAtPath:path error:NULL];
-
-	if (fileAttributes == nil) {
-		return nil;
-	}
-
-	uint64_t totalFilesize = [fileAttributes fileSize];
+	uint64_t totalFilesize = _sizeOfFileAtPath(path);
 
 	if (totalFilesize == 0) {
 		LogToConsoleError("Fatal error: Cannot create sender because filesize == 0");
@@ -234,7 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)failWithNoSpaceLeftOnDevice
 {
-	[self closeWithLocalizedError:TXTLS(@"TDCFileTransferDialog[79f-s0]")];
+	[self closeWithLocalizedError:@"TDCFileTransferDialog[79f-s0]"];
 }
 
 - (void)closeWithLocalizedError:(NSString *)errorLocalization
@@ -405,6 +441,9 @@ NS_ASSUME_NONNULL_BEGIN
 							   delegateQueue:self.serverDispatchQueue
 								 socketQueue:self.serverSocketQueue];
 
+	/* Set before connecting: callbacks are ignored for sockets that aren't current */
+	self.connectionToRemoteServer = connectionToRemoteServer;
+
 	NSError *connectionError = nil;
 
 	BOOL isConnected = NO;
@@ -429,8 +468,6 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	self.connectionToRemoteServer = connectionToRemoteServer;
-
 	[self disableSystemSleep];
 }
 
@@ -444,19 +481,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.transferStatus = TDCFileTransferDialogTransferStatusInitializing;
 
-	self.hostPort = [TPCPreferences fileTransferPortRangeStart];
+	uint16_t portRangeStart = [TPCPreferences fileTransferPortRangeStart];
+	uint16_t portRangeEnd = [TPCPreferences fileTransferPortRangeEnd];
 
-	while ([self tryToOpenConnectionAsServer] == NO) {
-		self.hostPort += 1;
+	/* A wider counter, so that a range ending at 65535 cannot wrap to port 0 */
+	for (uint32_t port = portRangeStart; port <= portRangeEnd; port++) {
+		self.hostPort = (uint16_t)port;
 
-		if (self.hostPort > [TPCPreferences fileTransferPortRangeEnd]) {
-			[self closeWithLocalizedError:@"TDCFileTransferDialog[vxc-sd]"];
+		if ([self tryToOpenConnectionAsServer]) {
+			[self disableSystemSleep];
 
 			return;
 		}
 	}
 
-	[self disableSystemSleep];
+	[self closeWithLocalizedError:@"TDCFileTransferDialog[vxc-sd]"];
 }
 
 - (BOOL)tryToOpenConnectionAsServer
@@ -604,7 +643,39 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	[self startPeerResponseTimeout];
+
 	[self sendTransferRequestToClient];
+}
+
+- (void)startPeerResponseTimeout
+{
+	NSUInteger generation = self.peerResponseTimeoutGeneration;
+
+	__weak TDCFileTransferDialogTransferController *weakSelf = self;
+
+	XRPerformDelayedBlockOnMainQueue(^{
+		[weakSelf peerResponseTimeoutForGeneration:generation];
+	}, _peerResponseTimeout);
+}
+
+- (void)peerResponseTimeoutForGeneration:(NSUInteger)generation
+{
+	/* The transfer was closed or reopened since */
+	if (generation != self.peerResponseTimeoutGeneration) {
+		return;
+	}
+
+	TDCFileTransferDialogTransferStatus transferStatus = self.transferStatus;
+
+	if (transferStatus != TDCFileTransferDialogTransferStatusIsListeningAsSender &&
+		transferStatus != TDCFileTransferDialogTransferStatusIsListeningAsReceiver &&
+		transferStatus != TDCFileTransferDialogTransferStatusWaitingForReceiverToAccept)
+	{
+		return;
+	}
+
+	[self closeWithLocalizedError:@"TDCFileTransferDialog[dr5-tq]"];
 }
 
 - (void)noteIPAddressLookupFailed
@@ -664,7 +735,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSUInteger loopedCount = 0;
 
 	do {
-		NSString *transferToken = [NSString stringWithUnsignedInteger:TXRandomNumber(9999)];
+		/* Unguessable, and within a signed 32-bit integer for other clients */
+		NSString *transferToken = [NSString stringWithUnsignedInteger:(TXRandomNumber(INT32_MAX - 1) + 1)];
 
 		BOOL transferExists = [self.transferDialog fileTransferExistsWithToken:transferToken];
 
@@ -701,11 +773,24 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	uint64_t currentFilesize = self.currentFilesize;
 
-	if (currentFilesize == 0 || currentFilesize > self.totalFilesize) {
-		[self transferResumeRequestTimeout];
+	/* Only resume Textual's own partial download of this file from this peer.
+	 Anything else is saved under a new name, so that a peer can neither append
+	 to nor learn the size of an unrelated file of the same name. */
+	BOOL canResume = (currentFilesize > 0 &&
+					  currentFilesize < self.totalFilesize &&
+					  [self.class fileAtPath:self.filePath
+		isPartialDownloadForClientIdentifier:self.clientId
+										peer:self.peerNickname
+									filename:self.filename
+									filesize:self.totalFilesize]);
+
+	if (canResume == NO) {
+		[self openTransfer];
 
 		return;
 	}
+
+	[self cancelPerformRequestsWithSelector:@selector(transferResumeRequestTimeout)];
 
 	[self performSelectorInCommonModes:@selector(transferResumeRequestTimeout) withObject:nil afterDelay:_resumeAcceptTimeout];
 
@@ -729,6 +814,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)transferResumeRequestTimeout
 {
+	if (self.transferStatus != TDCFileTransferDialogTransferStatusWaitingForResumeAccept) {
+		return;
+	}
+
 	[self openTransfer];
 }
 
@@ -755,17 +844,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* If the controller is already sending or receiving data, then a connection
 	 is already established to the peer which can function without a connection
 	 to IRC. If data is not being transferred then fail immediately. */
-	TDCFileTransferDialogTransferStatus transferStatus = self.transferStatus;
-
-	if (transferStatus != TDCFileTransferDialogTransferStatusConnecting &&
-		transferStatus != TDCFileTransferDialogTransferStatusInitializing &&
-		transferStatus != TDCFileTransferDialogTransferStatusIsListeningAsReceiver &&
-		transferStatus != TDCFileTransferDialogTransferStatusIsListeningAsSender &&
-		transferStatus != TDCFileTransferDialogTransferStatusMappingListeningPort &&
-		transferStatus != TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress &&
-		transferStatus != TDCFileTransferDialogTransferStatusWaitingForReceiverToAccept &&
-		transferStatus != TDCFileTransferDialogTransferStatusWaitingForResumeAccept)
-	{
+	if (self.isAwaitingPeer == NO) {
 		return;
 	}
 
@@ -786,6 +865,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self cancelPerformRequests];
 
+	self.peerResponseTimeoutGeneration += 1;
+
 	if ( self.listeningServer) {
 		[self.listeningServer disconnect];
 		 self.listeningServer = nil;
@@ -801,11 +882,13 @@ NS_ASSUME_NONNULL_BEGIN
 		 self.connectionToRemoteServer = nil;
 	}
 
+	dispatch_queue_t dispatchQueue = self.serverDispatchQueue;
+
 	[self destroyDispatchQueues];
 
 	[self closePortMapping];
 
-	[self closeFileHandle];
+	[self closeFileHandleOnQueue:dispatchQueue];
 
 	if (self.transferStatus != TDCFileTransferDialogTransferStatusComplete &&
 		self.transferStatus != TDCFileTransferDialogTransferStatusFatalError &&
@@ -844,11 +927,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)onMaintenanceTimer
 {
-	NSAssertReturn(self.transferStatus == TDCFileTransferDialogTransferStatusReceiving ||
-				   self.transferStatus == TDCFileTransferDialogTransferStatusSending);
+	/* All transfer state changes happen on the transfer's queue, which
+	 is gone once the transfer is closed. */
+	dispatch_queue_t dispatchQueue = self.serverDispatchQueue;
 
-	XRPerformBlockSynchronouslyOnQueue(self.serverDispatchQueue, ^{
-		@synchronized(self.speedRecords) {
+	if (dispatchQueue == nil) {
+		return;
+	}
+
+	dispatch_async(dispatchQueue, ^{
+		if (self.isActive == NO) {
+			return;
+		}
+
+		@synchronized(self.speedRecordsPrivate) {
 			[self.speedRecordsPrivate addObject:@(self.currentRecord)];
 
 			if (self.speedRecordsPrivate.count > RECORDS_LENGTH) {
@@ -859,9 +951,9 @@ NS_ASSUME_NONNULL_BEGIN
 		self.currentRecord = 0;
 
 		[self reloadStatusInformation];
-	});
 
-	[self send];
+		[self send];
+	});
 }
 
 #pragma mark -
@@ -905,7 +997,15 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.isSender == NO && self.isResume == NO) {
 		[self setNonexistentFilename];
 
+		filePath = self.filePath;
+
 		[RZFileManager() createFileAtPath:filePath contents:[NSData data] attributes:nil];
+
+		[self.class recordPartialDownloadAtPath:filePath
+							   clientIdentifier:self.clientId
+										   peer:self.peerNickname
+									   filename:self.filename
+									   filesize:self.totalFilesize];
 	}
 
 	NSFileHandle *fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:filePath];
@@ -925,23 +1025,41 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
-- (void)closeFileHandle
+- (void)closeFileHandleOnQueue:(nullable dispatch_queue_t)dispatchQueue
 {
-	if (self.fileHandle == nil) {
+	NSFileHandle *fileHandle = self.fileHandle;
+
+	if (fileHandle == nil) {
 		return;
 	}
 
-	[self.fileHandle closeFile];
-
 	self.fileHandle = nil;
+
+	/* A socket callback may be using the file on the transfer's queue right now */
+	if (dispatchQueue) {
+		dispatch_async(dispatchQueue, ^{
+			[fileHandle closeFile];
+		});
+	} else {
+		[fileHandle closeFile];
+	}
 }
 
 #pragma mark -
 #pragma mark Socket Delegate
 
+- (BOOL)isCurrentSocket:(GCDAsyncSocket *)socket
+{
+	return (socket == self.listeningServer ||
+			socket == self.listeningServerConnectedClient ||
+			socket == self.connectionToRemoteServer);
+}
+
+/* Callbacks of a socket that was closed (and maybe replaced by a reopened
+ transfer) can still be queued; they must not touch the current transfer. */
 - (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket
 {
-	if (self.isActingAsServer == NO) {
+	if (self.isActingAsServer == NO || [self isCurrentSocket:sock] == NO) {
 		return;
 	}
 
@@ -966,7 +1084,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (self.isReversed) {
-		[self.readSocket readDataWithTimeout:(-1) tag:0];
+		[self.readSocket readDataWithTimeout:_readDataTimeout tag:0];
 	} else {
 		[self send];
 	}
@@ -974,7 +1092,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
 {
-	if (self.isActingAsClient == NO) {
+	if (self.isActingAsClient == NO || [self isCurrentSocket:sock] == NO) {
 		return;
 	}
 
@@ -991,7 +1109,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (self.isReversed == NO) {
-		[self.readSocket readDataWithTimeout:(-1) tag:0];
+		[self.readSocket readDataWithTimeout:_readDataTimeout tag:0];
 	} else {
 		[self send];
 	}
@@ -999,6 +1117,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)error
 {
+	if ([self isCurrentSocket:sock] == NO) {
+		return;
+	}
+
 	if (self.transferStatus == TDCFileTransferDialogTransferStatusComplete ||
 		self.transferStatus == TDCFileTransferDialogTransferStatusFatalError ||
 		self.transferStatus == TDCFileTransferDialogTransferStatusRecoverableError)
@@ -1015,8 +1137,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-	if (self.isSender != NO) {
+	if (self.isSender != NO || [self isCurrentSocket:sock] == NO) {
 		return;
+	}
+
+	/* Never write more than the peer announced */
+	uint64_t remainingFilesize = (self.totalFilesize - self.processedFilesize);
+
+	if (data.length > remainingFilesize) {
+		data = [data subdataWithRange:NSMakeRange(0, (NSUInteger)remainingFilesize)];
 	}
 
 	/* Update progress */
@@ -1038,7 +1167,7 @@ NS_ASSUME_NONNULL_BEGIN
 				return;
 			}
 
-			[self closeWithLocalizedError:TXTLS(@"TDCFileTransferDialog[05g-c8]")];
+			[self closeWithLocalizedError:@"TDCFileTransferDialog[05g-c8]"];
 
 			return;
 		} // @catch
@@ -1056,16 +1185,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSData *ackPacketData = [NSData dataWithBytes:ackPacket length:4];
 
-	[self.readSocket writeData:ackPacketData withTimeout:(-1) tag:0];
+	[self.readSocket writeData:ackPacketData withTimeout:_sendDataTimeout tag:0];
 
 	/* Continue requesting data if the transfer is not complete */
 	if (self.processedFilesize < self.totalFilesize) {
-		[self.readSocket readDataWithTimeout:(-1) tag:0];
+		[self.readSocket readDataWithTimeout:_readDataTimeout tag:0];
 
 		return;
 	}
 
 	/* Update status and tear down transfer */
+	[self.class forgetPartialDownloadAtPath:self.filePath];
+
 	self.transferStatus = TDCFileTransferDialogTransferStatusComplete;
 
 	[self close];
@@ -1076,7 +1207,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
 {
-	if (self.isSender == NO) {
+	if (self.isSender == NO || [self isCurrentSocket:sock] == NO) {
 		return;
 	}
 
@@ -1126,7 +1257,24 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
-		NSData *dataToWrite = [self.fileHandle readDataOfLength:BUFFER_SIZE];
+		/* Never send more than was announced, even if the file has grown since */
+		NSUInteger lengthToRead = (NSUInteger)MIN(BUFFER_SIZE, (self.totalFilesize - self.processedFilesize));
+
+		NSData *dataToWrite = nil;
+
+		@try {
+			dataToWrite = [self.fileHandle readDataOfLength:lengthToRead];
+		}
+		@catch (NSException *exception) {
+			LogToConsoleError("Caught exception: %{public}@", exception.reason);
+		}
+
+		/* The file can no longer be read, or became shorter */
+		if (dataToWrite.length == 0) {
+			[self closeWithLocalizedError:@"TDCFileTransferDialog[nab-dx]"];
+
+			return;
+		}
 
 		self.currentRecord += dataToWrite.length;
 
@@ -1155,6 +1303,145 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[transferTableCell reloadStatusInformation];
+}
+
+#pragma mark -
+#pragma mark Matching and Status
+
+- (BOOL)isWithClient:(IRCClient *)client peer:(NSString *)nickname
+{
+	NSParameterAssert(client != nil);
+	NSParameterAssert(nickname != nil);
+
+	return (self.client == client && [self.peerNickname isEqualToStringIgnoringCase:nickname]);
+}
+
+- (BOOL)isActive
+{
+	TDCFileTransferDialogTransferStatus transferStatus = self.transferStatus;
+
+	return (transferStatus == TDCFileTransferDialogTransferStatusSending ||
+			transferStatus == TDCFileTransferDialogTransferStatusReceiving);
+}
+
+- (BOOL)isAwaitingPeer
+{
+	switch (self.transferStatus) {
+		case TDCFileTransferDialogTransferStatusInitializing:
+		case TDCFileTransferDialogTransferStatusMappingListeningPort:
+		case TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress:
+		case TDCFileTransferDialogTransferStatusIsListeningAsSender:
+		case TDCFileTransferDialogTransferStatusIsListeningAsReceiver:
+		case TDCFileTransferDialogTransferStatusWaitingForReceiverToAccept:
+		case TDCFileTransferDialogTransferStatusWaitingForResumeAccept:
+		case TDCFileTransferDialogTransferStatusConnecting:
+			return YES;
+		default:
+			return NO;
+	}
+}
+
+- (BOOL)isStopped
+{
+	TDCFileTransferDialogTransferStatus transferStatus = self.transferStatus;
+
+	return (transferStatus == TDCFileTransferDialogTransferStatusStopped ||
+			transferStatus == TDCFileTransferDialogTransferStatusComplete ||
+			transferStatus == TDCFileTransferDialogTransferStatusFatalError ||
+			transferStatus == TDCFileTransferDialogTransferStatusRecoverableError);
+}
+
+#pragma mark -
+#pragma mark Offered Files
+
++ (NSString *)filenameForOfferedFilename:(NSString *)filename
+{
+	NSParameterAssert(filename != nil);
+
+	NSString *safeFilename = filename.safeFilename;
+
+	/* A leading dot would hide the file, or with the home folder as the
+	 download folder, put it in place of a dotfile such as .zshrc */
+	if ([safeFilename hasPrefix:@"."]) {
+		safeFilename = [@"_" stringByAppendingString:safeFilename];
+	}
+
+	return safeFilename;
+}
+
++ (NSString *)partialDownloadTransferWithClientIdentifier:(NSString *)clientIdentifier peer:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize
+{
+	return [NSString stringWithFormat:@"%@\n%@\n%@\n%llu", clientIdentifier, nickname.lowercaseString, filename, totalFilesize];
+}
+
++ (void)recordPartialDownloadAtPath:(NSString *)path clientIdentifier:(NSString *)clientIdentifier peer:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize
+{
+	NSParameterAssert(path != nil);
+
+	NSString *fileIdentity = _identityOfFileAtPath(path);
+
+	if (fileIdentity == nil) {
+		return;
+	}
+
+	@synchronized (_partialDownloadsDefaultsKey) {
+		NSMutableDictionary<NSString *, NSDictionary *> *records = [NSMutableDictionary dictionary];
+
+		/* Drop records of files that are gone or were replaced */
+		[[RZUserDefaults() dictionaryForKey:_partialDownloadsDefaultsKey] enumerateKeysAndObjectsUsingBlock:^(NSString *recordPath, NSDictionary *record, BOOL *stop) {
+			if ([recordPath isKindOfClass:[NSString class]] == NO || [record isKindOfClass:[NSDictionary class]] == NO) {
+				return;
+			}
+
+			if ([record[@"file"] isEqual:_identityOfFileAtPath(recordPath)]) {
+				records[recordPath] = record;
+			}
+		}];
+
+		records[path] = @{
+			@"file" : fileIdentity,
+			@"transfer" : [self partialDownloadTransferWithClientIdentifier:clientIdentifier peer:nickname filename:filename filesize:totalFilesize]
+		};
+
+		[RZUserDefaults() setObject:records forKey:_partialDownloadsDefaultsKey postNotification:NO];
+	}
+}
+
++ (void)forgetPartialDownloadAtPath:(NSString *)path
+{
+	NSParameterAssert(path != nil);
+
+	@synchronized (_partialDownloadsDefaultsKey) {
+		NSMutableDictionary *records = [[RZUserDefaults() dictionaryForKey:_partialDownloadsDefaultsKey] mutableCopy];
+
+		if (records[path] == nil) {
+			return;
+		}
+
+		[records removeObjectForKey:path];
+
+		[RZUserDefaults() setObject:records forKey:_partialDownloadsDefaultsKey postNotification:NO];
+	}
+}
+
++ (BOOL)fileAtPath:(NSString *)path isPartialDownloadForClientIdentifier:(NSString *)clientIdentifier peer:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize
+{
+	NSParameterAssert(path != nil);
+
+	NSDictionary *record = nil;
+
+	@synchronized (_partialDownloadsDefaultsKey) {
+		record = [RZUserDefaults() dictionaryForKey:_partialDownloadsDefaultsKey][path];
+	}
+
+	if ([record isKindOfClass:[NSDictionary class]] == NO) {
+		return NO;
+	}
+
+	NSString *transfer = [self partialDownloadTransferWithClientIdentifier:clientIdentifier peer:nickname filename:filename filesize:totalFilesize];
+
+	return ([record[@"transfer"] isEqual:transfer] &&
+			[record[@"file"] isEqual:_identityOfFileAtPath(path)]);
 }
 
 #pragma mark -
@@ -1234,13 +1521,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return 0;
 	}
 
-	if ([RZFileManager() fileExistsAtPath:filePath] == NO) {
-		return 0;
-	}
-
-	NSDictionary *fileAttributes = [RZFileManager() attributesOfItemAtPath:filePath error:NULL];
-
-	return fileAttributes.fileSize;
+	return _sizeOfFileAtPath(filePath);
 }
 
 - (void)setTransferStatus:(TDCFileTransferDialogTransferStatus)transferStatus
