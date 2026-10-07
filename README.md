@@ -12,7 +12,7 @@
 >
 > To everyone who has contributed to Textual in any form, whether a suggestion, bug report, pull request, financial support, or something else: thank you. Textual exists because of you, and we're glad to keep it going.
 
-<img src="Sources/App/Resources/Images/Application/applicationIcon.iconset/icon_128x128@2x.png" alt="Textual icon" width="128" height="128">
+<img src="App/Resources/Images/Application/applicationIcon.iconset/icon_128x128@2x.png" alt="Textual icon" width="128" height="128">
 
 # Textual
 

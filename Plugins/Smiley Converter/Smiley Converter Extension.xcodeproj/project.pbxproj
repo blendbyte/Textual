@@ -1,0 +1,359 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4C36AADF20F27D8E007CA939 /* BasicLanguage.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C36AADD20F27D8E007CA939 /* BasicLanguage.strings */; };
+		4C36AAE220F27D9A007CA939 /* TPISmileyConverter.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C36AAE020F27D9A007CA939 /* TPISmileyConverter.xib */; };
+		4C46A0C820EC6BA900094EA4 /* TPISmileyConverter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C46A0C620EC6BA900094EA4 /* TPISmileyConverter.m */; };
+		4C46A0D220EC6BB700094EA4 /* conversionTable2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C46A0CA20EC6BB700094EA4 /* conversionTable2.plist */; };
+		4C46A0D320EC6BB700094EA4 /* conversionTable.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C46A0CB20EC6BB700094EA4 /* conversionTable.plist */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		4C1D10E820EBF45200E72D80 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4C1D10E920EBF45200E72D80 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C1D10ED20EBF45200E72D80 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4C1D10FB20EBF45200E72D80 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4C1D10FC20EBF45200E72D80 /* Preserve Symbols.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Preserve Symbols.xcconfig"; sourceTree = "<group>"; };
+		4C1D10FD20EBF45200E72D80 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C1D10FF20EBF45200E72D80 /* Foundation.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Foundation.xcconfig; sourceTree = "<group>"; };
+		4C1D110220EBF45200E72D80 /* Foundation Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Foundation Debug.xcconfig"; sourceTree = "<group>"; };
+		4C1D111020EBF45200E72D80 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4C1D111120EBF45200E72D80 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C1D111520EBF45200E72D80 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4C36AADE20F27D8E007CA939 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BasicLanguage.strings; sourceTree = "<group>"; };
+		4C36AAE120F27D9A007CA939 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TPISmileyConverter.xib; sourceTree = "<group>"; };
+		4C46A0C620EC6BA900094EA4 /* TPISmileyConverter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TPISmileyConverter.m; sourceTree = "<group>"; };
+		4C46A0C720EC6BA900094EA4 /* TPISmileyConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TPISmileyConverter.h; sourceTree = "<group>"; };
+		4C46A0CA20EC6BB700094EA4 /* conversionTable2.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = conversionTable2.plist; sourceTree = "<group>"; };
+		4C46A0CB20EC6BB700094EA4 /* conversionTable.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = conversionTable.plist; sourceTree = "<group>"; };
+		4C46A0CC20EC6BB700094EA4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8D576316048677EA00EA77CD /* Smiley Converter.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Smiley Converter.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C00852D7248C057358A09E3 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C48661BD3EBD58E82363E58 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D576313048677EA00EA77CD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* BragSpam */ = {
+			isa = PBXGroup;
+			children = (
+				4C46A0C520EC6BA900094EA4 /* Classes */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				089C1671FE841209C02AAC07 /* Frameworks */,
+				19C28FB6FE9D52B211CA2CBB /* Products */,
+			);
+			name = BragSpam;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4C69189716E3276C00BDE3A8 /* Configurations */,
+				4C46A0D020EC6BB700094EA4 /* Language Files */,
+				4C46A0C920EC6BB700094EA4 /* Property Lists */,
+				4C46A0CD20EC6BB700094EA4 /* User Interface */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		19C28FB6FE9D52B211CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D576316048677EA00EA77CD /* Smiley Converter.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4C1D10E420EBF45200E72D80 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				4C1D10F820EBF45200E72D80 /* Common */,
+				4C1D110D20EBF45200E72D80 /* Debug */,
+				4C9A83A41CAE775DA68A9147 /* App Store Release */,
+				4C1D10E520EBF45200E72D80 /* Standard Release */,
+			);
+			path = Build;
+			sourceTree = "<group>";
+		};
+		4C1D10E520EBF45200E72D80 /* Standard Release */ = {
+			isa = PBXGroup;
+			children = (
+				4C1D10ED20EBF45200E72D80 /* Enabled Features.xcconfig */,
+				4C1D10E920EBF45200E72D80 /* Textual Extensions.xcconfig */,
+				4C1D10E820EBF45200E72D80 /* Textual.xcconfig */,
+			);
+			path = "Standard Release";
+			sourceTree = "<group>";
+		};
+		4C1D10F820EBF45200E72D80 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				4C1D110220EBF45200E72D80 /* Foundation Debug.xcconfig */,
+				4C1D10FF20EBF45200E72D80 /* Foundation.xcconfig */,
+				4C1D10FC20EBF45200E72D80 /* Preserve Symbols.xcconfig */,
+				4C1D10FD20EBF45200E72D80 /* Textual Extensions.xcconfig */,
+				4C1D10FB20EBF45200E72D80 /* Textual.xcconfig */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		4C1D110D20EBF45200E72D80 /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				4C1D111520EBF45200E72D80 /* Enabled Features.xcconfig */,
+				4C1D111120EBF45200E72D80 /* Textual Extensions.xcconfig */,
+				4C1D111020EBF45200E72D80 /* Textual.xcconfig */,
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		4C46A0C520EC6BA900094EA4 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				4C46A0C720EC6BA900094EA4 /* TPISmileyConverter.h */,
+				4C46A0C620EC6BA900094EA4 /* TPISmileyConverter.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		4C46A0C920EC6BB700094EA4 /* Property Lists */ = {
+			isa = PBXGroup;
+			children = (
+				4C46A0CB20EC6BB700094EA4 /* conversionTable.plist */,
+				4C46A0CA20EC6BB700094EA4 /* conversionTable2.plist */,
+				4C46A0CC20EC6BB700094EA4 /* Info.plist */,
+			);
+			path = "Property Lists";
+			sourceTree = "<group>";
+		};
+		4C46A0CD20EC6BB700094EA4 /* User Interface */ = {
+			isa = PBXGroup;
+			children = (
+				4C36AAE020F27D9A007CA939 /* TPISmileyConverter.xib */,
+			);
+			path = "User Interface";
+			sourceTree = "<group>";
+		};
+		4C46A0D020EC6BB700094EA4 /* Language Files */ = {
+			isa = PBXGroup;
+			children = (
+				4C36AADD20F27D8E007CA939 /* BasicLanguage.strings */,
+			);
+			path = "Language Files";
+			sourceTree = "<group>";
+		};
+		4C69189716E3276C00BDE3A8 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				4C1D10E420EBF45200E72D80 /* Build */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		4C9A83A41CAE775DA68A9147 /* App Store Release */ = {
+			isa = PBXGroup;
+			children = (
+				4C00852D7248C057358A09E3 /* Enabled Features.xcconfig */,
+				4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */,
+				4C48661BD3EBD58E82363E58 /* Textual.xcconfig */,
+			);
+			path = "App Store Release";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D57630D048677EA00EA77CD /* Smiley Converter Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "Smiley Converter Extension" */;
+			buildPhases = (
+				8D57630F048677EA00EA77CD /* Resources */,
+				8D576313048677EA00EA77CD /* Frameworks */,
+				8D576311048677EA00EA77CD /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Smiley Converter Extension";
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = BragSpam;
+			productReference = 8D576316048677EA00EA77CD /* Smiley Converter.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					8D57630D048677EA00EA77CD = {
+						DevelopmentTeam = FANJ7JNLP5;
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 1DEB911E08733D790010E9CD /* Build configuration list for PBXProject "Smiley Converter Extension" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* BragSpam */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D57630D048677EA00EA77CD /* Smiley Converter Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D57630F048677EA00EA77CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C46A0D220EC6BB700094EA4 /* conversionTable2.plist in Resources */,
+				4C46A0D320EC6BB700094EA4 /* conversionTable.plist in Resources */,
+				4C36AADF20F27D8E007CA939 /* BasicLanguage.strings in Resources */,
+				4C36AAE220F27D9A007CA939 /* TPISmileyConverter.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D576311048677EA00EA77CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C46A0C820EC6BA900094EA4 /* TPISmileyConverter.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		4C36AADD20F27D8E007CA939 /* BasicLanguage.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4C36AADE20F27D8E007CA939 /* en */,
+			);
+			name = BasicLanguage.strings;
+			sourceTree = "<group>";
+		};
+		4C36AAE020F27D9A007CA939 /* TPISmileyConverter.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4C36AAE120F27D9A007CA939 /* en */,
+			);
+			name = TPISmileyConverter.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB911B08733D790010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SmileyConverter;
+				PRODUCT_NAME = "Smiley Converter";
+			};
+			name = Debug;
+		};
+		1DEB911C08733D790010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SmileyConverter;
+				PRODUCT_NAME = "Smiley Converter";
+			};
+			name = Release;
+		};
+		1DEB911F08733D790010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C1D111120EBF45200E72D80 /* Textual Extensions.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		1DEB912008733D790010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C1D10E920EBF45200E72D80 /* Textual Extensions.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		4C9580121FA41EA700F18BC8 /* Release (App Store) */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */;
+			buildSettings = {
+			};
+			name = "Release (App Store)";
+		};
+		4C9580131FA41EA700F18BC8 /* Release (App Store) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SmileyConverter;
+				PRODUCT_NAME = "Smiley Converter";
+			};
+			name = "Release (App Store)";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "Smiley Converter Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB911B08733D790010E9CD /* Debug */,
+				1DEB911C08733D790010E9CD /* Release */,
+				4C9580131FA41EA700F18BC8 /* Release (App Store) */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB911E08733D790010E9CD /* Build configuration list for PBXProject "Smiley Converter Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB911F08733D790010E9CD /* Debug */,
+				1DEB912008733D790010E9CD /* Release */,
+				4C9580121FA41EA700F18BC8 /* Release (App Store) */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}

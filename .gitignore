@@ -22,6 +22,6 @@ xcuserdata/
 /Build Results/
 
 # Intermediates of the nested xcodebuild calls in the build scripts
-/Sources/App/build/
-/Sources/Plugins/**/build/
+/App/build/
+/Plugins/**/build/
 

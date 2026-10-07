@@ -3,14 +3,14 @@
 // are specific to extensions for Textual (main application).
 
 // TEXTUAL_WORKSPACE_DIR is replaced by the build script
-TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../../..
+TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../..
 
 CONFIGURATION_BUILD_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Extensions
 
 CODE_SIGN_ENTITLEMENTS = ${TEXTUAL_WORKSPACE_DIR}/Configurations/Sandbox/Inherited.entitlements
 
-HEADER_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/Build Headers/" "${TEXTUAL_WORKSPACE_DIR}/Sources/App/Classes/Headers/**" "${TEXTUAL_WORKSPACE_DIR}/Sources/Shared/Headers/**"
-FRAMEWORK_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Static Libraries/Libraries"
+HEADER_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/Build Headers/" "${TEXTUAL_WORKSPACE_DIR}/App/SDK" "${TEXTUAL_WORKSPACE_DIR}/App/Sources/**"
+FRAMEWORK_SEARCH_PATHS = ${inherited} "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Vendor/Sparkle"
 
 WRAPPER_EXTENSION = bundle
 

@@ -59,7 +59,7 @@ jobs:
       # CI builds are unsigned: the real signing identity is configured in
       # Configurations/Build/Code Signing Identity.xcconfig and is not
       # available on runners. Build settings passed here are inherited by
-      # the nested xcodebuild calls in Sources/App/Build Scripts.
+      # the nested xcodebuild calls in Scripts/.
       - name: Build
         run: |
           xcodebuild \
@@ -135,8 +135,8 @@ jobs:
         if: matrix.runner == 'xcode-27' && matrix.configuration == 'Release' && matrix.license-manager == '1'
         run: |
           app="$PWD/Build Results/Release/Textual.app"
-          for project in "Sources/Plugins/Sample Code/Swift Bot/SwiftPluginExample.xcodeproj" \
-                         "Sources/Plugins/Sample Code/Preference Pane/PreferencePaneExample.xcodeproj"; do
+          for project in "Samples/Swift Bot/SwiftPluginExample.xcodeproj" \
+                         "Samples/Preference Pane/PreferencePaneExample.xcodeproj"; do
             xcodebuild \
               -project "$project" \
               -configuration Release \

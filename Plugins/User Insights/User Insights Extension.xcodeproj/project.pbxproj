@@ -1,0 +1,335 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4C06DE7C20EC45F10055D09A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C06DE7B20EC45F10055D09A /* CoreFoundation.framework */; };
+		4C36AADC20F27CFA007CA939 /* BasicLanguage.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C36AADA20F27CFA007CA939 /* BasicLanguage.strings */; };
+		4C46A09B20EC6B0900094EA4 /* TPIUserInsights.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C46A09920EC6B0900094EA4 /* TPIUserInsights.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		4C06DE7B20EC45F10055D09A /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		4C36AADB20F27CFA007CA939 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BasicLanguage.strings; sourceTree = "<group>"; };
+		4C46A09920EC6B0900094EA4 /* TPIUserInsights.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TPIUserInsights.m; sourceTree = "<group>"; };
+		4C46A09A20EC6B0900094EA4 /* TPIUserInsights.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TPIUserInsights.h; sourceTree = "<group>"; };
+		4C46A09F20EC6B1800094EA4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4CE1433920EBF4F3000E01C9 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4CE1433A20EBF4F3000E01C9 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4CE1433E20EBF4F3000E01C9 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4CE1434C20EBF4F3000E01C9 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4CE1434D20EBF4F3000E01C9 /* Preserve Symbols.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Preserve Symbols.xcconfig"; sourceTree = "<group>"; };
+		4CE1434E20EBF4F3000E01C9 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4CE1435020EBF4F3000E01C9 /* Foundation.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Foundation.xcconfig; sourceTree = "<group>"; };
+		4CE1435320EBF4F3000E01C9 /* Foundation Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Foundation Debug.xcconfig"; sourceTree = "<group>"; };
+		4CE1436120EBF4F3000E01C9 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+		4CE1436220EBF4F3000E01C9 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4CE1436620EBF4F3000E01C9 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		8D576316048677EA00EA77CD /* User Insights.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "User Insights.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C495CBBDBEB320233950D19 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		4CE83ADD28F4DD1367E40FF3 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
+		4C020A1BEC06786970D6D484 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D576313048677EA00EA77CD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C06DE7C20EC45F10055D09A /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* BragSpam */ = {
+			isa = PBXGroup;
+			children = (
+				4C46A09820EC6B0900094EA4 /* Classes */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				089C1671FE841209C02AAC07 /* Frameworks */,
+				19C28FB6FE9D52B211CA2CBB /* Products */,
+			);
+			name = BragSpam;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4C06DE7B20EC45F10055D09A /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4C6918A016E3277A00BDE3A8 /* Configurations */,
+				4C46A09C20EC6B1800094EA4 /* Language Files */,
+				4C46A09E20EC6B1800094EA4 /* Property Lists */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		19C28FB6FE9D52B211CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D576316048677EA00EA77CD /* User Insights.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4C46A09820EC6B0900094EA4 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				4C46A09A20EC6B0900094EA4 /* TPIUserInsights.h */,
+				4C46A09920EC6B0900094EA4 /* TPIUserInsights.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		4C46A09C20EC6B1800094EA4 /* Language Files */ = {
+			isa = PBXGroup;
+			children = (
+				4C36AADA20F27CFA007CA939 /* BasicLanguage.strings */,
+			);
+			path = "Language Files";
+			sourceTree = "<group>";
+		};
+		4C46A09E20EC6B1800094EA4 /* Property Lists */ = {
+			isa = PBXGroup;
+			children = (
+				4C46A09F20EC6B1800094EA4 /* Info.plist */,
+			);
+			path = "Property Lists";
+			sourceTree = "<group>";
+		};
+		4C6918A016E3277A00BDE3A8 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				4CE1433520EBF4F3000E01C9 /* Build */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
+		};
+		4CE1433520EBF4F3000E01C9 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				4CE1434920EBF4F3000E01C9 /* Common */,
+				4CE1435E20EBF4F3000E01C9 /* Debug */,
+				4C701FAAA6014B25BFCD5511 /* App Store Release */,
+				4CE1433620EBF4F3000E01C9 /* Standard Release */,
+			);
+			path = Build;
+			sourceTree = "<group>";
+		};
+		4CE1433620EBF4F3000E01C9 /* Standard Release */ = {
+			isa = PBXGroup;
+			children = (
+				4CE1433E20EBF4F3000E01C9 /* Enabled Features.xcconfig */,
+				4CE1433A20EBF4F3000E01C9 /* Textual Extensions.xcconfig */,
+				4CE1433920EBF4F3000E01C9 /* Textual.xcconfig */,
+			);
+			path = "Standard Release";
+			sourceTree = "<group>";
+		};
+		4CE1434920EBF4F3000E01C9 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				4CE1435320EBF4F3000E01C9 /* Foundation Debug.xcconfig */,
+				4CE1435020EBF4F3000E01C9 /* Foundation.xcconfig */,
+				4CE1434D20EBF4F3000E01C9 /* Preserve Symbols.xcconfig */,
+				4CE1434E20EBF4F3000E01C9 /* Textual Extensions.xcconfig */,
+				4CE1434C20EBF4F3000E01C9 /* Textual.xcconfig */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		4CE1435E20EBF4F3000E01C9 /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				4CE1436620EBF4F3000E01C9 /* Enabled Features.xcconfig */,
+				4CE1436220EBF4F3000E01C9 /* Textual Extensions.xcconfig */,
+				4CE1436120EBF4F3000E01C9 /* Textual.xcconfig */,
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		4C701FAAA6014B25BFCD5511 /* App Store Release */ = {
+			isa = PBXGroup;
+			children = (
+				4C495CBBDBEB320233950D19 /* Enabled Features.xcconfig */,
+				4CE83ADD28F4DD1367E40FF3 /* Textual Extensions.xcconfig */,
+				4C020A1BEC06786970D6D484 /* Textual.xcconfig */,
+			);
+			path = "App Store Release";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D57630D048677EA00EA77CD /* User Insights Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "User Insights Extension" */;
+			buildPhases = (
+				8D57630F048677EA00EA77CD /* Resources */,
+				8D576313048677EA00EA77CD /* Frameworks */,
+				8D576311048677EA00EA77CD /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "User Insights Extension";
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = BragSpam;
+			productReference = 8D576316048677EA00EA77CD /* User Insights.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					8D57630D048677EA00EA77CD = {
+						DevelopmentTeam = FANJ7JNLP5;
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 1DEB911E08733D790010E9CD /* Build configuration list for PBXProject "User Insights Extension" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* BragSpam */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D57630D048677EA00EA77CD /* User Insights Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D57630F048677EA00EA77CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C36AADC20F27CFA007CA939 /* BasicLanguage.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D576311048677EA00EA77CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4C46A09B20EC6B0900094EA4 /* TPIUserInsights.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		4C36AADA20F27CFA007CA939 /* BasicLanguage.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4C36AADB20F27CFA007CA939 /* en */,
+			);
+			name = BasicLanguage.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB911B08733D790010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.UserInsights;
+				PRODUCT_NAME = "User Insights";
+			};
+			name = Debug;
+		};
+		1DEB911C08733D790010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.UserInsights;
+				PRODUCT_NAME = "User Insights";
+			};
+			name = Release;
+		};
+		1DEB911F08733D790010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CE1436220EBF4F3000E01C9 /* Textual Extensions.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		1DEB912008733D790010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CE1433A20EBF4F3000E01C9 /* Textual Extensions.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		4C9580181FA41EE300F18BC8 /* Release (App Store) */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4CE83ADD28F4DD1367E40FF3 /* Textual Extensions.xcconfig */;
+			buildSettings = {
+			};
+			name = "Release (App Store)";
+		};
+		4C9580191FA41EE300F18BC8 /* Release (App Store) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.UserInsights;
+				PRODUCT_NAME = "User Insights";
+			};
+			name = "Release (App Store)";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB911A08733D790010E9CD /* Build configuration list for PBXNativeTarget "User Insights Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB911B08733D790010E9CD /* Debug */,
+				1DEB911C08733D790010E9CD /* Release */,
+				4C9580191FA41EE300F18BC8 /* Release (App Store) */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB911E08733D790010E9CD /* Build configuration list for PBXProject "User Insights Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB911F08733D790010E9CD /* Debug */,
+				1DEB912008733D790010E9CD /* Release */,
+				4C9580181FA41EE300F18BC8 /* Release (App Store) */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}

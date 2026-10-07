@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Sources/App/Textual App.xcodeproj">
+      location = "group:App/Textual.xcodeproj">
    </FileRef>
    <Group
       location = "container:"
@@ -14,26 +14,26 @@
          location = "group:Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Frameworks/GRMustache/GRMustache.xcodeproj">
+         location = "group:Frameworks/Vendor/GRMustache/GRMustache.xcodeproj">
       </FileRef>
    </Group>
    <Group
       location = "container:"
       name = "Extensions">
       <FileRef
-         location = "group:Sources/Plugins/Chat Filter/Chat Filter Extension.xcodeproj">
+         location = "group:Plugins/Chat Filter/Chat Filter Extension.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Sources/Plugins/Smiley Converter/Smiley Converter Extension.xcodeproj">
+         location = "group:Plugins/Smiley Converter/Smiley Converter Extension.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Sources/Plugins/System Profiler/System Profiler Extension.xcodeproj">
+         location = "group:Plugins/System Profiler/System Profiler Extension.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Sources/Plugins/User Insights/User Insights Extension.xcodeproj">
+         location = "group:Plugins/User Insights/User Insights Extension.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Sources/Plugins/ZNC Additions/ZNC Additions Extension.xcodeproj">
+         location = "group:Plugins/ZNC Additions/ZNC Additions Extension.xcodeproj">
       </FileRef>
    </Group>
 </Workspace>

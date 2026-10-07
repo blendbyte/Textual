@@ -49,5 +49,5 @@ analyze() {
 }
 
 for plugin in 'Chat Filter' 'Smiley Converter' 'System Profiler' 'User Insights' 'ZNC Additions'; do
-	analyze "Sources/Plugins/${plugin}" "${plugin} Extension" "plugin-$(echo "${plugin}" | tr ' A-Z' '-a-z')"
+	analyze "Plugins/${plugin}" "${plugin} Extension" "plugin-$(echo "${plugin}" | tr ' A-Z' '-a-z')"
 done
