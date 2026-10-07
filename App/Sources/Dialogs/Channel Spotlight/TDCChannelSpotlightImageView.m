@@ -39,63 +39,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TDCChannelSpotlightPanel
-
-- (instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)style backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag
-{
-	if ((self = [super initWithContentRect:contentRect styleMask:style backing:bufferingType defer:flag])) {
-		[self prepareInitialState];
-	}
-
-	return self;
-}
-
-- (void)prepareInitialState
-{
-	self.styleMask = (self.styleMask | NSWindowStyleMaskFullSizeContentView);
-
-	self.titlebarAppearsTransparent = YES;
-
-	self.titleVisibility = NSWindowTitleHidden;
-
-	[self standardWindowButton:NSWindowCloseButton].hidden = YES;
-	[self standardWindowButton:NSWindowMiniaturizeButton].hidden = YES;
-	[self standardWindowButton:NSWindowZoomButton].hidden = YES;
-}
-
-- (BOOL)isMovable
-{
-	return YES;
-}
-
-- (BOOL)isMovableByWindowBackground
-{
-	return YES;
-}
-
-- (BOOL)canBecomeKeyWindow
-{
-	return YES;
-}
-
-- (BOOL)canBecomeMainWindow
-{
-	return YES;
-}
-
-@end
-
-#pragma mark -
-
-@implementation TDCChannelSpotlightTextField
-
-- (BOOL)mouseDownCanMoveWindow
-{
-	return YES;
-}
-
-@end
-
 #pragma mark -
 
 @implementation TDCChannelSpotlightImageView

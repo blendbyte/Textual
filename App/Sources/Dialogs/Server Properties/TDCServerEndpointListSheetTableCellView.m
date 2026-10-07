@@ -38,7 +38,7 @@
 #import "IRCServer.h"
 #import "NSStringHelper.h"
 #import "TLOLocalization.h"
-#import "TDCServerEndpointListSheetTablePrivate.h"
+#import "TDCServerEndpointListSheetTableCellViewPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

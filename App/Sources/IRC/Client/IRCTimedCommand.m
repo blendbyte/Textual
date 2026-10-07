@@ -40,7 +40,7 @@
 #import "IRCChannel.h"
 #import "NSObjectHelperPrivate.h"
 #import "TLOTimer.h"
-#import "IRCTimerCommandPrivate.h"
+#import "IRCTimedCommandPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

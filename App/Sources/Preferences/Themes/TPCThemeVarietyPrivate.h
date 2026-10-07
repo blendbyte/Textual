@@ -35,17 +35,22 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
-@end
+@interface TPCThemeVariety : NSObject
+@property (nonatomic, copy) NSURL *url;
+@property (nonatomic, weak) TPCTheme *theme;
+@property (nonatomic, assign) BOOL isGlobalVariety;
+@property (nonatomic, assign) TPCThemeAppearanceType appearance;
+@property (nonatomic, copy, nullable) NSURL *cssFile;
+@property (nonatomic, copy, nullable) NSURL *jsFile;
+@property (nonatomic, copy) NSDictionary<NSString *, id> *settings;
+@property (nonatomic, strong, nullable) GRMustacheTemplateRepository *templateRepository;
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithURL:(NSURL *)url NS_DESIGNATED_INITIALIZER;
+
+- (BOOL)_reevaluateFileDuringMonitoringAtURL:(NSURL *)fileURL;
 @end
 
 NS_ASSUME_NONNULL_END

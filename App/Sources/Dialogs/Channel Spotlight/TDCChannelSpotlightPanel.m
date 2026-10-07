@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2020 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,17 +35,54 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "TDCChannelSpotlightControlsPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
-@end
+@implementation TDCChannelSpotlightPanel
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+- (instancetype)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)style backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag
+{
+	if ((self = [super initWithContentRect:contentRect styleMask:style backing:bufferingType defer:flag])) {
+		[self prepareInitialState];
+	}
+
+	return self;
+}
+
+- (void)prepareInitialState
+{
+	self.styleMask = (self.styleMask | NSWindowStyleMaskFullSizeContentView);
+
+	self.titlebarAppearsTransparent = YES;
+
+	self.titleVisibility = NSWindowTitleHidden;
+
+	[self standardWindowButton:NSWindowCloseButton].hidden = YES;
+	[self standardWindowButton:NSWindowMiniaturizeButton].hidden = YES;
+	[self standardWindowButton:NSWindowZoomButton].hidden = YES;
+}
+
+- (BOOL)isMovable
+{
+	return YES;
+}
+
+- (BOOL)isMovableByWindowBackground
+{
+	return YES;
+}
+
+- (BOOL)canBecomeKeyWindow
+{
+	return YES;
+}
+
+- (BOOL)canBecomeMainWindow
+{
+	return YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

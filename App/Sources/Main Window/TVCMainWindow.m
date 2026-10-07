@@ -58,7 +58,7 @@
 #import "TVCServerListAppearancePrivate.h"
 #import "TVCServerListCellPrivate.h"
 #import "TVCMemberListPrivate.h"
-#import "TVCTextFormatterMenuPrivate.h"
+#import "TVCTextViewIRCFormattingMenuPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TPCApplicationInfo.h"
 #import "TPCPreferencesLocal.h"

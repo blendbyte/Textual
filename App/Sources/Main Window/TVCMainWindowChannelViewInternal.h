@@ -35,17 +35,36 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "TVCMainWindowChannelViewPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
+/* Shared by TVCMainWindowChannelView.m and TVCMainWindowChannelViewSubview.m only */
+
+@class TVCMainWindowChannelViewSubviewOverlayView;
+
+@interface TVCMainWindowChannelViewSubview : NSView
+@property (nonatomic, assign) NSUInteger itemIndex;
+@property (nonatomic, assign) BOOL isSelected;
+@property (nonatomic, assign) BOOL overlayVisible;
+@property (nonatomic, assign) BOOL isObservingBackingView;
+@property (readonly) BOOL backingViewIsLoading;
+@property (nonatomic, copy) NSString *uniqueIdentifier;
+@property (nonatomic, strong, nullable) TVCLogView *backingView;
+@property (nonatomic, weak) TVCMainWindowChannelView *parentView;
+@property (nonatomic, strong, nullable) TVCMainWindowChannelViewSubviewOverlayView *overlayView;
+
+- (void)toggleOverlayView;
 @end
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+@interface TVCMainWindowChannelViewSubviewOverlayView : NSView
+@end
+
+@interface TVCMainWindowChannelView ()
+@property (nonatomic, assign) BOOL isMovingDividers;
+@property (nonatomic, assign) NSUInteger itemIndexSelected;
+
+- (void)selectionChangeTo:(NSUInteger)itemIndex;
 @end
 
 NS_ASSUME_NONNULL_END

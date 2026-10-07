@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2020 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,17 +35,35 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "IRCClient.h"
+#import "IRCMessage.h"
+#import "THOPluginItemPrivate.h"
+#import "THOPluginManagerPrivate.h"
+#import "THOPluginProtocolPrivate.h"
+#import "THOPluginDispatcherPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
+NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
+
+#pragma mark -
+
+@implementation THOPluginDidPostNewMessageConcreteObject
 @end
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+#pragma mark -
+
+@implementation THOPluginDidReceiveServerInputConcreteObject
+@end
+
+#pragma mark -
+
+@implementation THOPluginWebViewJavaScriptPayloadConcreteObject
+@end
+
+#pragma mark -
+
+@implementation THOPluginOutputSuppressionRule
 @end
 
 NS_ASSUME_NONNULL_END

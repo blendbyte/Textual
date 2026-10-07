@@ -44,7 +44,7 @@
 #import "TVCMainWindowLoadingScreen.h"
 #import "IRCClient.h"
 #import "IRCWorld.h"
-#import "TVCMainWindowSegmentedControlPrivate.h"
+#import "TVCMainWindowSegmentedControllerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

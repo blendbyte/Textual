@@ -5,6 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
+ * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
  * Copyright (c) 2010 - 2020 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
@@ -35,17 +36,41 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "TVCServerListCellPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
+/* Shared by TVCServerListCell.m and TVCServerListRowCell.m only */
+
+@class TVCServerListCellDrawingContext;
+
+@interface TVCServerListCell ()
+@property (nonatomic, weak) IBOutlet NSTextField *cellTextField;
+@property (nonatomic, weak) IBOutlet NSImageView *messageCountBadgeImageView;
+// Deactivating the constraints will dereference them.
+// We need to maintain a strong reference.
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *cellTextFieldLeftMarginConstraint;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *messageCountBadgeLeadingConstraint;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *messageCountBadgeTrailingConstraint;
+@property (readonly) BOOL isGroupItem;
+@property (readonly) TVCServerList *serverList;
+@property (readonly) __kindof TVCServerListRowCell *rowCell;
+@property (readonly) TVCServerListAppearance *userInterfaceObjects;
+@property (readonly) TVCServerListCellDrawingContext *drawingContext;
+@property (readonly) IRCTreeItem *cellItem;
+
+- (void)defineConstraints;
 @end
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+@interface TVCServerListCellGroupItem ()
+@property (nonatomic, weak, nullable) NSButton *disclosureTriangle;
+@end
+
+@interface TVCServerListRowCell ()
+@property (nonatomic, weak) TVCServerList *serverList;
+@property (nonatomic, weak) __kindof TVCServerListCell *childCell;
+@property (readonly) TVCServerListAppearance *userInterfaceObjects;
+@property (readonly) BOOL isGroupItem;
 @end
 
 NS_ASSUME_NONNULL_END

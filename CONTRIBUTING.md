@@ -55,11 +55,33 @@ Development/dev reset                # delete Textual Dev's data
 ## Conventions
 
 - **Match the surrounding code.** Follow the existing naming, formatting, and comment style of the file you are editing. Most of the app is Objective-C and uses tabs for indentation.
-- **Build the whole workspace.** Before submitting, build all targets, including plugins and services, not just the main app. Code that looks unused may still be called from another target.
+- **Build the whole workspace.** Before submitting, build all targets, including the bundled plugins, not just the main app. Code that looks unused may still be called from another target.
 - **User-visible strings go in `.strings` files**, never inline in code.
 - **Style templates and the JavaScript API are a public contract.** Third-party styles ship their own templates and call into `Textual.*`. Anything removed there must keep working, for example as a no-op shim.
 - **Preference changes must state their migration behavior.** If a pull request adds or changes a preference, say explicitly whether existing users are migrated or left alone.
 - **No new dependencies without discussion.**
+
+### Code layout and naming
+
+- **Where things live:** `App/Sources/` holds the app's code by area (`IRC/`, `Channel View/`, `Main Window/`, `Dialogs/`, `Preferences/`, …), `App/SDK/` exactly the headers plugins may use, `App/Resources/` the bundled resources, `Plugins/` the bundled plugins and `Samples/` the sample plugins.
+- **One class per file, named after the class.** Two exceptions stay together in one file: a class and its mutable variant (`IRCUser` and `IRCUserMutable`), and small private helpers used only by that class (contexts, cells, list entries). Vendored code in `App/Sources/Vendor/` keeps its upstream layout.
+- **Large classes are split into categories** named after what they do, one file each: `IRCClient+Commands.m`, `TXMenuController+Sheets.m`. A class's own `ClassInternal.h` holds what only its files share. Methods implemented in a category are declared in a matching category interface (`@interface IRCClient (Commands)`); clang warns when a method declared in the main `@interface` is implemented in another file.
+- **Headers:** `App/SDK/` headers are public and keep their names, because plugins import them by name. `ClassPrivate.h` is for the rest of the app, `ClassInternal.h` for the class's own files.
+- **Class prefixes:**
+
+| Prefix | Used for | Examples |
+|---|---|---|
+| `TX` | Application core | `TXMasterController`, `TXMenuController`, `TXSharedApplication` |
+| `TVC` | Views and their controllers | `TVCMainWindow`, `TVCLogController`, `TVCServerList` |
+| `TDC` | Dialogs and sheets | `TDCServerPropertiesSheet`, `TDCPreferencesController`, `TDCAlert` |
+| `TPC` | Preferences, themes, paths and resources | `TPCPreferences`, `TPCTheme`, `TPCPathInfo` |
+| `TLO` | Services used across the app | `TLONotificationController`, `TLOLicenseManager`, `TLOFileLogger` |
+| `THO` | Plugin architecture | `THOPluginManager`, `THOPluginDispatcher`, `THOPluginProtocol` |
+| `IRC` | IRC model and protocol | `IRCClient`, `IRCChannel`, `IRCMessage` |
+| `HLS` | Scrollback storage | `HLSHistoricLogManager` |
+| `ICL`, `ICM`, `ICP` | Inline media: loader, modules, module registry | `ICLInlineContentLoader`, `ICMYouTube`, `ICPCoreMedia` |
+| `TPI` | Bundled plugins | `TPI_ChatFilter`, `TPISystemProfiler` |
+| `XR`, `RCM`, `AH` | Cocoa Extensions and Auto Hyperlinks frameworks | `XRPortablePropertyObject`, `AHHyperlinkScanner` |
 
 ## Reporting bugs and requesting features
 

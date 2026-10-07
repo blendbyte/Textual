@@ -40,7 +40,7 @@
 #import "IRCColorFormat.h"
 #import "TLOLocalization.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
-#import "TVCTextFormatterMenuPrivate.h"
+#import "TVCTextViewIRCFormattingMenuPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

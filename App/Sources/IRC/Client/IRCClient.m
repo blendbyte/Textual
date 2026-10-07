@@ -145,7 +145,7 @@
 #import "IRCNumerics.h"
 #import "IRCSendingMessage.h"
 #import "IRCServerPrivate.h"
-#import "IRCTimerCommandPrivate.h"
+#import "IRCTimedCommandPrivate.h"
 #import "IRCTreeItemPrivate.h"
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"

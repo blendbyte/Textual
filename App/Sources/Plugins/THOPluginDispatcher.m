@@ -44,8 +44,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
-
 @interface IRCMessage (IRCMessagePluginExtension)
 - (THOPluginDidReceiveServerInputConcreteObject *)didReceiveServerInputConcreteObject;
 @end
@@ -379,26 +377,6 @@ NSString * const THOPluginProtocolCompatibilityMinimumVersion = @"7.2.4";
 	return messageObject;
 }
 
-@end
-
-#pragma mark -
-
-@implementation THOPluginDidPostNewMessageConcreteObject
-@end
-
-#pragma mark -
-
-@implementation THOPluginDidReceiveServerInputConcreteObject
-@end
-
-#pragma mark -
-
-@implementation THOPluginWebViewJavaScriptPayloadConcreteObject
-@end
-
-#pragma mark -
-
-@implementation THOPluginOutputSuppressionRule
 @end
 
 NS_ASSUME_NONNULL_END

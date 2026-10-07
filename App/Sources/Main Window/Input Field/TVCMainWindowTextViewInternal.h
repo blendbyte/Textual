@@ -35,17 +35,22 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "TVCMainWindowTextViewPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
-@end
+/* Shared by TVCMainWindowTextView.m, TVCMainWindowTextViewBackground.m and TVCMainWindowTextViewContentView.m only */
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+@interface TVCMainWindowTextView ()
+@property (nonatomic, copy) NSAttributedString *placeholderAttributedString;
+@property (nonatomic, weak) IBOutlet NSLayoutConstraint *textViewHeightConstraint;
+@property (nonatomic, weak) IBOutlet NSLayoutConstraint *windowContentViewMinimumHeight;
+@property (nonatomic, weak) IBOutlet TVCMainWindowTextViewBackground *backgroundView;
+@property (nonatomic, weak) IBOutlet TVCMainWindowTextViewContentView *contentView;
+@property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedController *segmentedController;
+@property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedControllerCell *segmentedControllerCell;
+@property (nonatomic, strong) TVCMainWindowTextViewAppearance *userInterfaceObjects;
+@property (readonly) NSArray<NSString *> *defaultSpellingIgnores;
 @end
 
 NS_ASSUME_NONNULL_END

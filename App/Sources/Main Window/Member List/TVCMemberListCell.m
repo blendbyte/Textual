@@ -46,28 +46,9 @@
 #import "TVCMemberListAppearance.h"
 #import "TVCMemberListPrivate.h"
 #import "TVCMemberListUserInfoPopoverPrivate.h"
-#import "TVCMemberListCellPrivate.h"
+#import "TVCMemberListCellInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@class TVCMemberListCellDrawingContext;
-
-@interface TVCMemberListRowCell ()
-@property (nonatomic, weak) TVCMemberList *memberList;
-@property (nonatomic, weak) TVCMemberListCell *childCell;
-@property (readonly) TVCMemberListAppearance *userInterfaceObjects;
-@end
-
-@interface TVCMemberListCell ()
-@property (nonatomic, weak) IBOutlet NSTextField *cellTextField;
-@property (readonly, copy) TVCMemberListCellDrawingContext *drawingContext;
-@property (readonly) TVCMemberList *memberList;
-@property (readonly) TVCMemberListRowCell *rowCell;
-@property (readonly) TVCMemberListAppearance *userInterfaceObjects;
-@property (readonly) IRCChannelUser *cellItem;
-@property (readonly) NSInteger rowIndex;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *markBadgeLeftMarginConstraint;
-@end
 
 @interface TVCMemberListCellDrawingContext : NSObject
 @property (nonatomic, assign) BOOL isInverted;
@@ -603,111 +584,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation TVCMemberListCellDrawingContext
-@end
-
-#pragma mark -
-#pragma mark Row View Cell
-
-@implementation TVCMemberListRowCell
-
-- (instancetype)initWithMemberList:(TVCMemberList *)memberList
-{
-	NSParameterAssert(memberList != nil);
-
-	if ((self = [super initWithFrame:NSZeroRect])) {
-		self.memberList = memberList;
-
-		return self;
-	}
-
-	return nil;
-}
-
-- (void)setSelected:(BOOL)selected
-{
-	super.selected = selected;
-
-	if (selected == NO && self.invalidatingBackgroundForSelection) {
-		return;
-	}
-
-	[self setNeedsDisplayOnChild];
-}
-
-- (void)setNeedsDisplayOnChild
-{
-	self.childCell.needsDisplay = YES;
-}
-
-- (void)drawSelectionInRect:(NSRect)dirtyRect
-{
-	if ([self needsToDrawRect:dirtyRect] == NO) {
-		return;
-	}
-
-	BOOL isWindowActive = self.mainWindow.isActiveForDrawing;
-
-	TVCMemberListAppearance *appearance = self.userInterfaceObjects;
-
-	NSColor *selectionColor = nil;
-
-	if (isWindowActive) {
-		selectionColor = appearance.rowSelectionColorActiveWindow;
-	} else {
-		selectionColor = appearance.rowSelectionColorInactiveWindow;
-	} // isWindowActive
-
-	if (selectionColor) {
-		[selectionColor set];
-
-		NSRect selectionRect = self.bounds;
-
-		NSRectFill(selectionRect);
-	} else {
-		[super drawSelectionInRect:dirtyRect];
-	} // selectionColor
-}
-
-- (void)didAddSubview:(NSView *)subview
-{
-	TVCMemberListCell *childCell = self.childCell;
-
-	[childCell defineConstraints];
-
-	[super didAddSubview:subview];
-}
-
-#pragma mark -
-#pragma mark Cell Information
-
-- (BOOL)isEmphasized
-{
-	TVCMemberListAppearance *appearance = self.userInterfaceObjects;
-
-	NSWindow *window = self.window;
-
-	return (appearance.cellRowEmphasized &&
-			(window == nil || window.isKeyWindow));
-}
-
-- (TVCMemberListCell * _Nullable)childCell
-{
-	if (self->_childCell == nil) {
-		if (self.numberOfColumns == 0) {
-			return nil;
-		}
-
-		self->_childCell = [self viewAtColumn:0];
-	}
-
-	return self->_childCell;
-}
-
-- (TVCMemberListAppearance *)userInterfaceObjects
-{
-	return self.memberList.userInterfaceObjects;
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

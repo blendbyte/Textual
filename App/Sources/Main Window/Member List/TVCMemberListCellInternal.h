@@ -35,17 +35,31 @@
  *
  *********************************************************************** */
 
-#import "NSViewHelperPrivate.h"
-#import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "TVCMemberListCellPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
+/* Shared by TVCMemberListCell.m and TVCMemberListRowCell.m only */
+
+@class TVCMemberListCellDrawingContext;
+
+@interface TVCMemberListCell ()
+@property (nonatomic, weak) IBOutlet NSTextField *cellTextField;
+@property (readonly, copy) TVCMemberListCellDrawingContext *drawingContext;
+@property (readonly) TVCMemberList *memberList;
+@property (readonly) TVCMemberListRowCell *rowCell;
+@property (readonly) TVCMemberListAppearance *userInterfaceObjects;
+@property (readonly) IRCChannelUser *cellItem;
+@property (readonly) NSInteger rowIndex;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *markBadgeLeftMarginConstraint;
+
+- (void)defineConstraints;
 @end
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+@interface TVCMemberListRowCell ()
+@property (nonatomic, weak) TVCMemberList *memberList;
+@property (nonatomic, weak) TVCMemberListCell *childCell;
+@property (readonly) TVCMemberListAppearance *userInterfaceObjects;
 @end
 
 NS_ASSUME_NONNULL_END

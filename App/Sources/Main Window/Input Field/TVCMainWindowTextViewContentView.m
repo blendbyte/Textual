@@ -36,16 +36,75 @@
  *********************************************************************** */
 
 #import "NSViewHelperPrivate.h"
+#import "IRCColorFormat.h"
+#import "TLOLocalization.h"
+#import "TPCResourceManagerPrivate.h"
+#import "TPCPreferencesLocalPrivate.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TVCMainWindow.h"
-#import "TVCMainWindowAppearance.h"
-#import "TVCMainWindowTitlebarAccessoryViewPrivate.h"
+#import "TVCMainWindowSegmentedControllerPrivate.h"
+#import "TVCTextViewWithIRCFormatterPrivate.h"
+#import "TVCMainWindowTextViewAppearancePrivate.h"
+#import "TVCMainWindowTextViewInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation TVCMainWindowTitlebarAccessoryView
+@interface TVCMainWindowTextViewContentView ()
+@property (nonatomic, unsafe_unretained) IBOutlet TVCMainWindowTextView *textView;
+@property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedController *segmentedController;
 @end
 
-@implementation TVCMainWindowTitlebarAccessoryViewController
+#pragma mark -
+#pragma mark Text Field Background Vibrant View
+
+@implementation TVCMainWindowTextViewContentView
+
+- (void)drawRect:(NSRect)dirtyRect
+{
+	if ([self needsToDrawRect:dirtyRect] == NO) {
+		return;
+	}
+
+	TVCMainWindowTextViewAppearance *appearance = self.textView.userInterfaceObjects;
+
+	if (appearance == nil) {
+		return;
+	}
+
+	/* Draw background color */
+	NSColor *backgroundColor = appearance.backgroundViewBackgroundColor;
+
+	[backgroundColor set];
+
+	NSRectFill(dirtyRect);
+
+	/* Draw divider */
+	NSRect contentViewFrame = self.frame;
+
+	contentViewFrame.origin.x = 0.0;
+	contentViewFrame.origin.y = (NSMaxY(contentViewFrame) - 1.0);
+
+	contentViewFrame.size.height = 1.0;
+
+	NSBezierPath *dividerPath = [NSBezierPath bezierPathWithRect:contentViewFrame];
+
+	NSColor *dividerColor = appearance.backgroundViewDividerColor;
+
+	[dividerColor set];
+
+	[dividerPath fill];
+}
+
+- (BOOL)allowsVibrancy
+{
+	return NO;
+}
+
+- (BOOL)isOpaque
+{
+	return YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
