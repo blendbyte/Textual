@@ -1,9 +1,0 @@
-
-#include "../Common/Textual.xcconfig"
-#include "Enabled Features.xcconfig"
-
-TEXTUAL_BUNDLE_IDENTIFIER = com.textualapp.app
-TEXTUAL_GROUP_CONTAINER_IDENTIFIER = FANJ7JNLP5.com.textualapp.app
-TEXTUAL_BUILD_SCHEME_TOKEN = devid
-
-TEXTUAL_EXTENSION_BUILD_SCHEME = Release

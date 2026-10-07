@@ -107,6 +107,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		519535F735958419EE8C5E1B /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		C8C3C53CA8673E1105D98344 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		99BCF066173B83E042D88219 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		D99CF5C3BC31A71968AF25F7 /* AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppStore.xcconfig; sourceTree = "<group>"; };
+		E594DF17B4A8E288D5494D99 /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
 		6E009A5AA431A42E9AD00FE9 /* GRMustacheContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheContext.m; sourceTree = "<group>"; };
 		6E01329B6A0F02490A46B66D /* GRMustacheContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRMustacheContext.h; sourceTree = "<group>"; };
 		6E02CA5296B9B2F2132D281D /* GRMustacheEachFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheEachFilter.m; sourceTree = "<group>"; };
@@ -166,14 +171,11 @@
 		6E8A3026184E6C32D40983EF /* GRMustacheExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheExpression.m; sourceTree = "<group>"; };
 		6E8B869CF0E352F2717AE6C5 /* GRMustacheConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheConfiguration.m; sourceTree = "<group>"; };
 		6E92508EAD21A3C0CF92610C /* GRMustacheURLLibrary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheURLLibrary.m; sourceTree = "<group>"; };
-		6E979796D284FD193BF26B4B /* Framework (App Store).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (App Store).xcconfig"; path = "../../../Configurations/Build/App Store Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
 		6E9A707C8C74533026A00CC2 /* GRMustacheExpressionParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheExpressionParser.m; sourceTree = "<group>"; };
 		6E9B298EEAFB43F337D462E2 /* GRMustacheIdentifierExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheIdentifierExpression.m; sourceTree = "<group>"; };
 		6E9B54D892E3AF5F79D4EEFF /* GRMustacheTemplateRepository.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRMustacheTemplateRepository.h; sourceTree = "<group>"; };
-		6E9B7D7F2172159C860A2AD6 /* Framework (Debug).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Debug).xcconfig"; path = "../../../Configurations/Build/Debug/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
 		6E9B822AAD46403B799F1294 /* GRMustacheTemplateRepository_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRMustacheTemplateRepository_private.h; sourceTree = "<group>"; };
 		6E9D073C2292343DC6C6B78F /* GRMustacheTranslateCharacters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheTranslateCharacters.m; sourceTree = "<group>"; };
-		6E9E5FB77AE59FE587592F05 /* Framework (Release).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Release).xcconfig"; path = "../../../Configurations/Build/Standard Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
 		6EA51531A41C789CA0199A09 /* GRMustacheTemplateParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRMustacheTemplateParser.m; sourceTree = "<group>"; };
 		6EA714FE949B736709196D82 /* GRMustacheExpressionParser_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRMustacheExpressionParser_private.h; sourceTree = "<group>"; };
 		6EA7C0CB3F1DA291A31AED7E /* GRMustacheSectionTag_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRMustacheSectionTag_private.h; sourceTree = "<group>"; };
@@ -349,15 +351,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		6E900F2EBB25870E4D9EB130 /* Build Configuration */ = {
+		6E900F2EBB25870E4D9EB130 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
-				6E9B7D7F2172159C860A2AD6 /* Framework (Debug).xcconfig */,
-				6E9E5FB77AE59FE587592F05 /* Framework (Release).xcconfig */,
-				6E979796D284FD193BF26B4B /* Framework (App Store).xcconfig */,
+				519535F735958419EE8C5E1B /* Base.xcconfig */,
+				C8C3C53CA8673E1105D98344 /* Debug.xcconfig */,
+				99BCF066173B83E042D88219 /* Release.xcconfig */,
+				D99CF5C3BC31A71968AF25F7 /* AppStore.xcconfig */,
+				E594DF17B4A8E288D5494D99 /* Framework.xcconfig */,
 			);
-			name = "Build Configuration";
-			sourceTree = "<group>";
+			name = Configurations;
+			path = ../../../Configurations;
+			sourceTree = SOURCE_ROOT;
 		};
 		6E951C1D621CF945C016F4EB /* Compiling */ = {
 			isa = PBXGroup;
@@ -373,7 +378,7 @@
 		6EA2772EB5676ED2B6911939 /* GRMustache */ = {
 			isa = PBXGroup;
 			children = (
-				6E900F2EBB25870E4D9EB130 /* Build Configuration */,
+				6E900F2EBB25870E4D9EB130 /* Configurations */,
 				6E5CF3154FA5BBC8EF2446A9 /* Classes */,
 				6ED7836E24B5D1D972A77E37 /* Resources */,
 				6E0A6440AAC8D84315F294E1 /* LICENSE.txt */,
@@ -622,13 +627,14 @@
 /* Begin XCBuildConfiguration section */
 		6E03E09CFA6F3B6CA7574DF7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6E9E5FB77AE59FE587592F05 /* Framework (Release).xcconfig */;
+			baseConfigurationReference = 99BCF066173B83E042D88219 /* Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
 		};
 		6E3216126448E62C26E4339F /* App Store */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E594DF17B4A8E288D5494D99 /* Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
 				TEXTUAL_WORKSPACE_DIR = "$(PROJECT_DIR)/../../..";
@@ -642,20 +648,21 @@
 		};
 		6E5B4323C9E7FE9138C2250C /* App Store */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6E979796D284FD193BF26B4B /* Framework (App Store).xcconfig */;
+			baseConfigurationReference = D99CF5C3BC31A71968AF25F7 /* AppStore.xcconfig */;
 			buildSettings = {
 			};
 			name = "App Store";
 		};
 		6E64709C05FD3E8D2FCB9AC2 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6E9B7D7F2172159C860A2AD6 /* Framework (Debug).xcconfig */;
+			baseConfigurationReference = C8C3C53CA8673E1105D98344 /* Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;
 		};
 		6EE4931CEBE8F336DFB9CF52 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E594DF17B4A8E288D5494D99 /* Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
 				TEXTUAL_WORKSPACE_DIR = "$(PROJECT_DIR)/../../..";
@@ -669,6 +676,7 @@
 		};
 		6EE4F48ED8A0F37272F3B8EC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E594DF17B4A8E288D5494D99 /* Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
 				TEXTUAL_WORKSPACE_DIR = "$(PROJECT_DIR)/../../..";

@@ -1,5 +1,6 @@
+// The app target (and its unit tests). Set on the targets, so it overrides
+// the configuration files set on the project.
 
-// Main application
 
 TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/..
 
@@ -25,4 +26,15 @@ REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES = NO
 
 INFOPLIST_FILE = ${TEXTUAL_WORKSPACE_TEMP_DIR}/Info.plist
 
-#include "Preserve Symbols.xcconfig"
+// It is important to preserve symbols and code that is
+// not directly used so that extensions can use them.
+
+DEAD_CODE_STRIPPING = NO
+GCC_SYMBOLS_PRIVATE_EXTERN = NO
+STRIP_STYLE = non-global
+
+CODE_SIGN_ENTITLEMENTS = ${PROJECT_DIR}/Supporting Files/Standard Release.entitlements
+CODE_SIGN_ENTITLEMENTS[config=App Store] = ${PROJECT_DIR}/Supporting Files/App Store.entitlements
+
+// The App Store build neither links nor embeds Sparkle.
+EXCLUDED_SOURCE_FILE_NAMES[config=App Store] = Sparkle.framework

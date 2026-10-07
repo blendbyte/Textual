@@ -5,7 +5,7 @@
 // (Packaging/ExportArchiveConfiguration.plist).
 //
 // To build without Blendbyte's certificates, create
-// Configurations/Build/Signing.local.xcconfig (ignored by git), e.g.:
+// Configurations/Signing.local.xcconfig (ignored by git), e.g.:
 //
 //     CODE_SIGN_IDENTITY = -
 //     DEVELOPMENT_TEAM =

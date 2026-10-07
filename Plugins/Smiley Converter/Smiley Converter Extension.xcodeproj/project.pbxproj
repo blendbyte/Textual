@@ -15,17 +15,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4C1D10E820EBF45200E72D80 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
-		4C1D10E920EBF45200E72D80 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C1D10ED20EBF45200E72D80 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
-		4C1D10FB20EBF45200E72D80 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
-		4C1D10FC20EBF45200E72D80 /* Preserve Symbols.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Preserve Symbols.xcconfig"; sourceTree = "<group>"; };
-		4C1D10FD20EBF45200E72D80 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C1D10FF20EBF45200E72D80 /* Foundation.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Foundation.xcconfig; sourceTree = "<group>"; };
-		4C1D110220EBF45200E72D80 /* Foundation Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Foundation Debug.xcconfig"; sourceTree = "<group>"; };
-		4C1D111020EBF45200E72D80 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
-		4C1D111120EBF45200E72D80 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C1D111520EBF45200E72D80 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
+		278F75D37DD34A196A4EA900 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		39210F8C1D1EF8E28D787D56 /* Warnings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Warnings.xcconfig; sourceTree = "<group>"; };
+		3F356B8659EF6F9883788D9A /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
+		E4E057C10F077ADCA0C9E378 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		FED8421BEB08575D644E79C6 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		717DE9C6AE325A90A24E0734 /* AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppStore.xcconfig; sourceTree = "<group>"; };
+		D6699207FD19273912799518 /* Plugin.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Plugin.xcconfig; sourceTree = "<group>"; };
 		4C36AADE20F27D8E007CA939 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BasicLanguage.strings; sourceTree = "<group>"; };
 		4C36AAE120F27D9A007CA939 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TPISmileyConverter.xib; sourceTree = "<group>"; };
 		4C46A0C620EC6BA900094EA4 /* TPISmileyConverter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TPISmileyConverter.m; sourceTree = "<group>"; };
@@ -34,9 +30,6 @@
 		4C46A0CB20EC6BB700094EA4 /* conversionTable.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = conversionTable.plist; sourceTree = "<group>"; };
 		4C46A0CC20EC6BB700094EA4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D576316048677EA00EA77CD /* Smiley Converter.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Smiley Converter.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4C00852D7248C057358A09E3 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
-		4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C48661BD3EBD58E82363E58 /* Textual.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,49 +80,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4C1D10E420EBF45200E72D80 /* Build */ = {
-			isa = PBXGroup;
-			children = (
-				4C1D10F820EBF45200E72D80 /* Common */,
-				4C1D110D20EBF45200E72D80 /* Debug */,
-				4C9A83A41CAE775DA68A9147 /* App Store Release */,
-				4C1D10E520EBF45200E72D80 /* Standard Release */,
-			);
-			path = Build;
-			sourceTree = "<group>";
-		};
-		4C1D10E520EBF45200E72D80 /* Standard Release */ = {
-			isa = PBXGroup;
-			children = (
-				4C1D10ED20EBF45200E72D80 /* Enabled Features.xcconfig */,
-				4C1D10E920EBF45200E72D80 /* Textual Extensions.xcconfig */,
-				4C1D10E820EBF45200E72D80 /* Textual.xcconfig */,
-			);
-			path = "Standard Release";
-			sourceTree = "<group>";
-		};
-		4C1D10F820EBF45200E72D80 /* Common */ = {
-			isa = PBXGroup;
-			children = (
-				4C1D110220EBF45200E72D80 /* Foundation Debug.xcconfig */,
-				4C1D10FF20EBF45200E72D80 /* Foundation.xcconfig */,
-				4C1D10FC20EBF45200E72D80 /* Preserve Symbols.xcconfig */,
-				4C1D10FD20EBF45200E72D80 /* Textual Extensions.xcconfig */,
-				4C1D10FB20EBF45200E72D80 /* Textual.xcconfig */,
-			);
-			path = Common;
-			sourceTree = "<group>";
-		};
-		4C1D110D20EBF45200E72D80 /* Debug */ = {
-			isa = PBXGroup;
-			children = (
-				4C1D111520EBF45200E72D80 /* Enabled Features.xcconfig */,
-				4C1D111120EBF45200E72D80 /* Textual Extensions.xcconfig */,
-				4C1D111020EBF45200E72D80 /* Textual.xcconfig */,
-			);
-			path = Debug;
-			sourceTree = "<group>";
-		};
 		4C46A0C520EC6BA900094EA4 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -168,21 +118,17 @@
 		4C69189716E3276C00BDE3A8 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
-				4C1D10E420EBF45200E72D80 /* Build */,
+				278F75D37DD34A196A4EA900 /* Base.xcconfig */,
+				39210F8C1D1EF8E28D787D56 /* Warnings.xcconfig */,
+				3F356B8659EF6F9883788D9A /* Signing.xcconfig */,
+				E4E057C10F077ADCA0C9E378 /* Debug.xcconfig */,
+				FED8421BEB08575D644E79C6 /* Release.xcconfig */,
+				717DE9C6AE325A90A24E0734 /* AppStore.xcconfig */,
+				D6699207FD19273912799518 /* Plugin.xcconfig */,
 			);
 			name = Configurations;
 			path = ../../Configurations;
 			sourceTree = SOURCE_ROOT;
-		};
-		4C9A83A41CAE775DA68A9147 /* App Store Release */ = {
-			isa = PBXGroup;
-			children = (
-				4C00852D7248C057358A09E3 /* Enabled Features.xcconfig */,
-				4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */,
-				4C48661BD3EBD58E82363E58 /* Textual.xcconfig */,
-			);
-			path = "App Store Release";
-			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -284,6 +230,7 @@
 /* Begin XCBuildConfiguration section */
 		1DEB911B08733D790010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D6699207FD19273912799518 /* Plugin.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SmileyConverter;
@@ -293,6 +240,7 @@
 		};
 		1DEB911C08733D790010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D6699207FD19273912799518 /* Plugin.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SmileyConverter;
@@ -302,33 +250,34 @@
 		};
 		1DEB911F08733D790010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4C1D111120EBF45200E72D80 /* Textual Extensions.xcconfig */;
+			baseConfigurationReference = E4E057C10F077ADCA0C9E378 /* Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;
 		};
 		1DEB912008733D790010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4C1D10E920EBF45200E72D80 /* Textual Extensions.xcconfig */;
+			baseConfigurationReference = FED8421BEB08575D644E79C6 /* Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
 		};
-		4C9580121FA41EA700F18BC8 /* Release (App Store) */ = {
+		4C9580121FA41EA700F18BC8 /* App Store */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4C91382500F5331D6D567728 /* Textual Extensions.xcconfig */;
+			baseConfigurationReference = 717DE9C6AE325A90A24E0734 /* AppStore.xcconfig */;
 			buildSettings = {
 			};
-			name = "Release (App Store)";
+			name = "App Store";
 		};
-		4C9580131FA41EA700F18BC8 /* Release (App Store) */ = {
+		4C9580131FA41EA700F18BC8 /* App Store */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D6699207FD19273912799518 /* Plugin.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "Resources/Property Lists/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.extensions.SmileyConverter;
 				PRODUCT_NAME = "Smiley Converter";
 			};
-			name = "Release (App Store)";
+			name = "App Store";
 		};
 /* End XCBuildConfiguration section */
 
@@ -338,7 +287,7 @@
 			buildConfigurations = (
 				1DEB911B08733D790010E9CD /* Debug */,
 				1DEB911C08733D790010E9CD /* Release */,
-				4C9580131FA41EA700F18BC8 /* Release (App Store) */,
+				4C9580131FA41EA700F18BC8 /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -348,7 +297,7 @@
 			buildConfigurations = (
 				1DEB911F08733D790010E9CD /* Debug */,
 				1DEB912008733D790010E9CD /* Release */,
-				4C9580121FA41EA700F18BC8 /* Release (App Store) */,
+				4C9580121FA41EA700F18BC8 /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -153,6 +153,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3F7CEA21CD384A3FD79AA375 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		00798E12D37520BDBAC7DF7F /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		95AB548BB868C7D04F981368 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		9ACB4236A041D8E4EEE6DD55 /* AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppStore.xcconfig; sourceTree = "<group>"; };
+		9D25266CF9D278BD04E08A72 /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		4C0C8A511CBB255000A327D3 /* NSURLHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSURLHelper.h; path = Classes/NSURLHelper.h; sourceTree = "<group>"; };
@@ -291,9 +296,6 @@
 		4CFB3E3C1D7EBE9D004198A3 /* NSIndexSetHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSIndexSetHelper.m; path = Classes/NSIndexSetHelper.m; sourceTree = "<group>"; };
 		4CFB742420E480A4001B88CE /* SWErrorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SWErrorHelper.swift; path = Classes/SWErrorHelper.swift; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* CocoaExtensions.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CocoaExtensions.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4CDD442D1BC9FF0618247DF6 /* Framework (Debug).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Debug).xcconfig"; path = "../../Configurations/Build/Debug/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
-		4C0D33B2183D7D368FA12980 /* Framework (Release).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Release).xcconfig"; path = "../../Configurations/Build/Standard Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
-		4CB9F930F773CBB096C68C8C /* Framework (App Store).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (App Store).xcconfig"; path = "../../Configurations/Build/App Store Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -333,7 +335,7 @@
 		0867D691FE84028FC02AAC07 /* BlowfishEncryption */ = {
 			isa = PBXGroup;
 			children = (
-				4CED78DE16E323260012AFDA /* Build Configuration */,
+				4CED78DE16E323260012AFDA /* Configurations */,
 				4C1AD69F12DF617E00B4AD56 /* Classes */,
 				089C1665FE841158C02AAC07 /* Resources */,
 				4C1144772C289575008CD785 /* Tests */,
@@ -571,15 +573,18 @@
 			name = Headers;
 			sourceTree = "<group>";
 		};
-		4CED78DE16E323260012AFDA /* Build Configuration */ = {
+		4CED78DE16E323260012AFDA /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
-				4CDD442D1BC9FF0618247DF6 /* Framework (Debug).xcconfig */,
-				4C0D33B2183D7D368FA12980 /* Framework (Release).xcconfig */,
-				4CB9F930F773CBB096C68C8C /* Framework (App Store).xcconfig */,
+				3F7CEA21CD384A3FD79AA375 /* Base.xcconfig */,
+				00798E12D37520BDBAC7DF7F /* Debug.xcconfig */,
+				95AB548BB868C7D04F981368 /* Release.xcconfig */,
+				9ACB4236A041D8E4EEE6DD55 /* AppStore.xcconfig */,
+				9D25266CF9D278BD04E08A72 /* Framework.xcconfig */,
 			);
-			name = "Build Configuration";
-			sourceTree = "<group>";
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -839,6 +844,7 @@
 /* Begin XCBuildConfiguration section */
 		1DEB91AF08733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9D25266CF9D278BD04E08A72 /* Framework.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_VERSION = A;
 				GCC_PREFIX_HEADER = Classes/CocoaExtensions_Prefix.pch;
@@ -852,6 +858,7 @@
 		};
 		4C3A73D05CF768A0C884BF00 /* App Store */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9D25266CF9D278BD04E08A72 /* Framework.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_VERSION = A;
 				GCC_PREFIX_HEADER = Classes/CocoaExtensions_Prefix.pch;
@@ -865,20 +872,21 @@
 		};
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4C0D33B2183D7D368FA12980 /* Framework (Release).xcconfig */;
+			baseConfigurationReference = 95AB548BB868C7D04F981368 /* Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
 		};
 		4CF4E4E3DE4A0DA503220228 /* App Store */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4CB9F930F773CBB096C68C8C /* Framework (App Store).xcconfig */;
+			baseConfigurationReference = 9ACB4236A041D8E4EEE6DD55 /* AppStore.xcconfig */;
 			buildSettings = {
 			};
 			name = "App Store";
 		};
 		4C11447E2C289575008CD785 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9D25266CF9D278BD04E08A72 /* Framework.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
@@ -892,6 +900,7 @@
 		};
 		4CB52D0A1A356CFF0C00E0BC /* App Store */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9D25266CF9D278BD04E08A72 /* Framework.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
@@ -905,6 +914,7 @@
 		};
 		4C11447F2C289575008CD785 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9D25266CF9D278BD04E08A72 /* Framework.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
@@ -918,13 +928,14 @@
 		};
 		4CF3FD0020E28E5D00A93C98 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4CDD442D1BC9FF0618247DF6 /* Framework (Debug).xcconfig */;
+			baseConfigurationReference = 00798E12D37520BDBAC7DF7F /* Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;
 		};
 		4CF3FD0120E28E5D00A93C98 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9D25266CF9D278BD04E08A72 /* Framework.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_VERSION = A;
 				GCC_PREFIX_HEADER = Classes/CocoaExtensions_Prefix.pch;

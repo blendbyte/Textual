@@ -15,7 +15,7 @@ xcuserdata/
 **/*.xcodeproj/project.xcworkspace/
 
 # Local code signing overrides
-/Configurations/Build/Signing.local.xcconfig
+/Configurations/Signing.local.xcconfig
 
 # Build output
 /.tmp/

@@ -1,7 +1,0 @@
-
-// It is important to preserve symbols and code that is
-// not directly used so that extensions can use them.
-
-DEAD_CODE_STRIPPING = NO
-GCC_SYMBOLS_PRIVATE_EXTERN = NO
-STRIP_STYLE = non-global

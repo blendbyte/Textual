@@ -1,6 +1,6 @@
+// The bundled plugins. Set on their targets; the nested xcodebuild calls in
+// Scripts/BuildExtensions.sh pass the app's location and binary.
 
-// Textual Extensions *.xcconfig file contains settings that
-// are specific to extensions for Textual (main application).
 
 // TEXTUAL_WORKSPACE_DIR is replaced by the build script
 TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../..

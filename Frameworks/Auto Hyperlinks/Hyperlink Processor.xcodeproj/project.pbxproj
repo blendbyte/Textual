@@ -21,6 +21,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		65D2A15F6DFE4AF2C2170E51 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		BA72CD97086C7275DEFBDAC8 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		43E77B1EBFF4F29926E3A732 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		6D33E0A939CFBAAC57DA6BC5 /* AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppStore.xcconfig; sourceTree = "<group>"; };
+		43C57527AE19C1C1DAF97084 /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		4C6F8E131A901D0B000F49FD /* AHHyperlinkScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AHHyperlinkScanner.h; path = Classes/AHHyperlinkScanner.h; sourceTree = "<group>"; };
 		4C6F8E141A901D0B000F49FD /* AHHyperlinkScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AHHyperlinkScanner.m; path = Classes/AHHyperlinkScanner.m; sourceTree = "<group>"; };
@@ -35,9 +40,6 @@
 		4CA41C131AC1A7F500756137 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		4CA41C161AC1A7FC00756137 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* AutoHyperlinks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4CFE95F94C1B5016D7C58128 /* Framework (Debug).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Debug).xcconfig"; path = "../../Configurations/Build/Debug/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
-		4CE1A22FFACF6234726E1E10 /* Framework (Release).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (Release).xcconfig"; path = "../../Configurations/Build/Standard Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
-		4C094F6B3694FD87E848CC97 /* Framework (App Store).xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Framework (App Store).xcconfig"; path = "../../Configurations/Build/App Store Release/Framework.xcconfig"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +64,7 @@
 		0867D691FE84028FC02AAC07 /* AIHyperlinks.framework */ = {
 			isa = PBXGroup;
 			children = (
-				4C6F8E031A901B9F000F49FD /* Build Configuration */,
+				4C6F8E031A901B9F000F49FD /* Configurations */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
@@ -120,15 +122,18 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
-		4C6F8E031A901B9F000F49FD /* Build Configuration */ = {
+		4C6F8E031A901B9F000F49FD /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
-				4CFE95F94C1B5016D7C58128 /* Framework (Debug).xcconfig */,
-				4CE1A22FFACF6234726E1E10 /* Framework (Release).xcconfig */,
-				4C094F6B3694FD87E848CC97 /* Framework (App Store).xcconfig */,
+				65D2A15F6DFE4AF2C2170E51 /* Base.xcconfig */,
+				BA72CD97086C7275DEFBDAC8 /* Debug.xcconfig */,
+				43E77B1EBFF4F29926E3A732 /* Release.xcconfig */,
+				6D33E0A939CFBAAC57DA6BC5 /* AppStore.xcconfig */,
+				43C57527AE19C1C1DAF97084 /* Framework.xcconfig */,
 			);
-			name = "Build Configuration";
-			sourceTree = "<group>";
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = SOURCE_ROOT;
 		};
 		4C6F8E0C1A901C70000F49FD /* Documents */ = {
 			isa = PBXGroup;
@@ -245,6 +250,7 @@
 /* Begin XCBuildConfiguration section */
 		DA8A8085085549EE00F24BB3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 43C57527AE19C1C1DAF97084 /* Framework.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_VERSION = A;
 				GCC_PREFIX_HEADER = Classes/AutoHyperlinks.framework_Prefix.pch;
@@ -257,6 +263,7 @@
 		};
 		4CD5B4A569B39E2C17CE5A14 /* App Store */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 43C57527AE19C1C1DAF97084 /* Framework.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_VERSION = A;
 				GCC_PREFIX_HEADER = Classes/AutoHyperlinks.framework_Prefix.pch;
@@ -269,6 +276,7 @@
 		};
 		4CDC5958FA842BB7391EA6EE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 43C57527AE19C1C1DAF97084 /* Framework.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_VERSION = A;
 				GCC_PREFIX_HEADER = Classes/AutoHyperlinks.framework_Prefix.pch;
@@ -281,21 +289,21 @@
 		};
 		DA8A8089085549EE00F24BB3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4CE1A22FFACF6234726E1E10 /* Framework (Release).xcconfig */;
+			baseConfigurationReference = 43E77B1EBFF4F29926E3A732 /* Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
 		};
 		4C945C8165594AB20B526678 /* App Store */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4C094F6B3694FD87E848CC97 /* Framework (App Store).xcconfig */;
+			baseConfigurationReference = 6D33E0A939CFBAAC57DA6BC5 /* AppStore.xcconfig */;
 			buildSettings = {
 			};
 			name = "App Store";
 		};
 		4CDF147372C274008805B48D /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4CFE95F94C1B5016D7C58128 /* Framework (Debug).xcconfig */;
+			baseConfigurationReference = BA72CD97086C7275DEFBDAC8 /* Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;

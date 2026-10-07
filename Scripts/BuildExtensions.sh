@@ -22,7 +22,7 @@ plugins=(
 for plugin in "${plugins[@]}"; do
     cd "${TEXTUAL_WORKSPACE_DIR}/Plugins/${plugin}"
     xcodebuild -target "$plugin Extension" \
-        -configuration "${TEXTUAL_EXTENSION_BUILD_SCHEME}" \
+        -configuration "${CONFIGURATION}" \
         ARCHS="${ARCHS}" \
         CODE_SIGN_IDENTITY="${CODE_SIGN_IDENTITY}" \
         DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \

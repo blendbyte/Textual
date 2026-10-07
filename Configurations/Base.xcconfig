@@ -1,7 +1,9 @@
+// Base settings for every project built from this repository: the app,
+// the bundled plugins and the frameworks. Debug.xcconfig, Release.xcconfig
+// and AppStore.xcconfig include it and are set on each project; App, Plugin
+// and Framework.xcconfig are set on the targets and override it.
+// Nothing specific to one project belongs here.
 
-// Foundation.xcconfig acts as a base for ALL projects.
-// This configuration should NEVER contain any settings
-// which may be unique to a specific project.
 
 ALWAYS_SEARCH_USER_PATHS = NO
 APPLY_RULES_IN_COPY_FILES = YES
@@ -50,5 +52,31 @@ SWIFT_OPTIMIZATION_LEVEL = -O
 SWIFT_VERSION = 5.0
 VERSION_INFO_BUILDER = Blendbyte GmbH
 
+// Shared by the app and its plugins
+
+
+TEXTUAL_PRODUCT_NAME = Textual
+
+// TEXTUAL_PRODUCT_LOCATION is replaced by the build script
+TEXTUAL_PRODUCT_LOCATION = /Applications/${TEXTUAL_PRODUCT_NAME}.app
+
+// TEXTUAL_PRODUCT_BINARY is replaced by the build script
+TEXTUAL_PRODUCT_BINARY = ${TEXTUAL_PRODUCT_LOCATION}/Contents/MacOS/${TEXTUAL_PRODUCT_NAME}
+
+// TEXTUAL_WORKSPACE_TEMP_DIR should be same for every
+// project so only override TEXTUAL_WORKSPACE_DIR, not this.
+TEXTUAL_WORKSPACE_TEMP_DIR = ${TEXTUAL_WORKSPACE_DIR}/.tmp
+
+SHARED_PRECOMPS_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedPCH
+
+DWARF_DSYM_FOLDER_PATH = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedSymbols
+
+// TEXTUAL_BUILT_AS_UNIVERSAL_BINARY acts an easy way to
+// modify code based on the type of binary being built.
+// As with other feature flags, changing this value only
+// adds or excludes certain chunks of code. It doesn't
+// change the underlying build process.
+TEXTUAL_BUILT_AS_UNIVERSAL_BINARY = 1
+
 #include "Warnings.xcconfig"
-#include "../Code Signing Identity.xcconfig"
+#include "Signing.xcconfig"

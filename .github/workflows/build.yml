@@ -30,15 +30,15 @@ jobs:
       matrix:
         include:
           - runner: xcode-27
-            scheme: Textual (Standard Release)
+            scheme: Textual (Release)
             configuration: Release
             license-manager: '1'
           - runner: xcode-27
-            scheme: Textual (Standard Release)
+            scheme: Textual (Release)
             configuration: Release
             license-manager: '0'
           - runner: macos-26
-            scheme: Textual (Standard Release)
+            scheme: Textual (Release)
             configuration: Release
             license-manager: '1'
           - runner: xcode-27
@@ -57,7 +57,7 @@ jobs:
         run: xcodebuild -version
 
       # CI builds are unsigned: the real signing identity is configured in
-      # Configurations/Build/Code Signing Identity.xcconfig and is not
+      # Configurations/Signing.xcconfig and is not
       # available on runners. Build settings passed here are inherited by
       # the nested xcodebuild calls in Scripts/.
       - name: Build
@@ -182,7 +182,7 @@ jobs:
         run: |
           xcodebuild analyze \
             -workspace Textual.xcworkspace \
-            -scheme "Textual (Standard Release)" \
+            -scheme "Textual (Release)" \
             -configuration Release \
             -destination "generic/platform=macOS" \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \

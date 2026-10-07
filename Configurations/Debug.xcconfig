@@ -1,9 +1,8 @@
+// Debug configuration: Textual Dev.
 
-// Foundation Debug.xcconfig acts as a base for ALL projects.
-// This configuration should NEVER contain any settings
-// which may be unique to a specific project.
+#include "Base.xcconfig"
 
-#include "Foundation.xcconfig"
+
 
 DEPLOYMENT_POSTPROCESSING = NO
 ENABLE_NS_ASSERTIONS = YES
@@ -36,3 +35,14 @@ VERSION_INFO_BUILDER = ${USER}
 // but support for this mode will be removed in a future build.
 //
 ENABLE_DEBUG_DYLIB = NO
+
+// Debug builds are "Textual Dev": their own identifier and group, so they never
+// share a container, preferences or logs with an installed copy of Textual.
+TEXTUAL_BUNDLE_IDENTIFIER = com.textualapp.app.dev
+TEXTUAL_GROUP_CONTAINER_IDENTIFIER = FANJ7JNLP5.com.textualapp.app.dev
+TEXTUAL_BUILD_SCHEME_TOKEN = debug
+
+// Feature flags, written to FeatureFlags.h by Scripts/UpdateFeatureFlags.sh.
+// They only include or leave out code; they add no resources.
+TEXTUAL_BUILT_INSIDE_SANDBOX=1
+TEXTUAL_BUILT_WITH_LICENSE_MANAGER=1
