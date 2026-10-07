@@ -50,7 +50,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define _extrasInstallerExtensionUpdateCheckInterval			345600
 
 NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPluginManagerFinishedLoadingPluginsNotification";
 
@@ -58,6 +57,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 @property (nonatomic, assign, readwrite) BOOL pluginsLoaded;
 @property (nonatomic, copy, readwrite, nullable) NSArray<THOPluginItem *> *loadedPlugins;
 @property (nonatomic, copy, nullable) NSArray<NSBundle *> *obsoleteBundles;
+@property (nonatomic, copy, nullable) NSArray<NSBundle *> *unsupportedBundles;
 @property (nonatomic, assign) THOPluginItemSupportedFeature supportedFeatures;
 @end
 
@@ -100,6 +100,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 	NSMutableSet<NSString *> *bundledBundlePaths = [NSMutableSet set];
 	NSMutableArray<NSString *> *loadedBundles = [NSMutableArray array];
 	NSMutableArray<NSBundle *> *obsoleteBundles = [NSMutableArray array];
+	NSMutableArray<NSBundle *> *unsupportedBundles = [NSMutableArray array];
 
 	/* Bundled plugins first: the first plugin with an identifier wins, so a
 	 bundle in the (writable) Extensions folder can't replace a bundled one */
@@ -160,6 +161,15 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 		 This is not designed as a security measure. */
 		if ([forbiddenPlugins containsObject:bundleIdentifier]) {
 			LogToConsoleFault("Forbidden loading of plugin '%{public}@'", bundleIdentifier);
+
+			continue;
+		}
+
+		/* Extensions for features Textual no longer has (Blowfish, OTR) */
+		if ([self bundleIsUnsupported:bundle]) {
+			LogToConsoleError("Not loading unsupported plugin '%{public}@'", bundleIdentifier);
+
+			[unsupportedBundles addObject:bundle];
 
 			continue;
 		}
@@ -241,10 +251,14 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 	self.obsoleteBundles = obsoleteBundles;
 
+	self.unsupportedBundles = unsupportedBundles;
+
 	self.pluginsLoaded = YES;
 
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[self checkForObsoleteBundlesOrUpdatesAvailable];
+		[self checkForObsoleteBundles];
+
+		[self checkForUnsupportedBundles];
 
 		[RZNotificationCenter() postNotificationName:THOPluginManagerFinishedLoadingPluginsNotification object:self];
 	});
@@ -449,66 +463,35 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 	return [TPCResourceManager arrayFromResources:@"StaticStore" key:@"THOPluginManager List of Forbidden Extensions"];
 }
 
-#pragma mark -
-#pragma mark Extras Installer
-
-- (void)checkForObsoleteBundlesOrUpdatesAvailable
+- (NSArray<NSString *> *)listOfUnsupportedBundles
 {
-	/* This method will perform three actions:
-	 1. It will notify user if they have any 3rd-party obsolete addons.
-		This will prompt them to contact the developer.
-	 2. It will notify user if they have any obsolete extras installer
-		addons that cannot be loaded. This will prompt to open installer.
-	 3. It will notify the user if they have any extras installer addons
-		that have an update available.
-
-	 #3 allows the user to suppress the prompt until a later time.
-	 #2 and #1 are aggressive. The prompt will show each launch until the
-	 addon is updated or deleted.
-
-	 It is possible that multiple prompts will appear on the screen at
-	 once. This will be considered an acceptable behavior for now.
-	 Just make sure non-blocking alerts are used for this purpose. */
-
-	[self checkForObsoleteBundles];
-
-	[self extrasInstallerCheckForUpdates];
+	/* Bundle identifiers of extensions for removed features. Not loaded;
+	 the user is told once and offered to move them to the Trash. */
+	return [TPCResourceManager arrayFromResources:@"StaticStore" key:@"THOPluginManager List of Unsupported Extensions"];
 }
+
+- (BOOL)bundleIsUnsupported:(NSBundle *)bundle
+{
+	NSParameterAssert(bundle != nil);
+
+	NSString *bundleIdentifier = bundle.bundleIdentifier;
+
+	return (bundleIdentifier && [self.listOfUnsupportedBundles containsObject:bundleIdentifier]);
+}
+
+#pragma mark -
+#pragma mark Bundles That Cannot Load
 
 - (void)checkForObsoleteBundles
 {
+	/* Shown each launch until the plugin is updated or removed */
 	NSArray *obsoleteBundles = self.obsoleteBundles;
 
 	if (obsoleteBundles.count == 0) {
 		return;
 	}
 
-	NSMutableArray<NSBundle *> *obsoleteExtras = [NSMutableArray array];
-	NSMutableArray<NSBundle *> *obsoleteThirdParty = [NSMutableArray array];
-
-	NSArray *extrasBundleIdentifiers = self.extrasInstallerBundleIdentifiers;
-
-	for (NSBundle *bundle in self.obsoleteBundles) {
-		NSString *bundleIdentifier = bundle.bundleIdentifier;
-
-		if ([extrasBundleIdentifiers containsObject:bundleIdentifier]) {
-			[obsoleteExtras addObject:bundle];
-		} else {
-			[obsoleteThirdParty addObject:bundle];
-		}
-	}
-
-	if (obsoleteExtras.count > 0) {
-		[self _extrasInstallerInformUserAboutUpdateForBundles:[obsoleteExtras copy] updateOptional:NO];
-	}
-
-	if (obsoleteThirdParty.count == 0) {
-		return;
-	}
-
-	NSArray *thirdPartyBundles = [obsoleteThirdParty copy];
-
-	NSString *bundlesName = [NSBundle formattedDisplayNamesForBundles:thirdPartyBundles];
+	NSString *bundlesName = [NSBundle formattedDisplayNamesForBundles:obsoleteBundles];
 
 	TVCAlert *alert =
 	[TDCAlert alertWithMessage:TXTLS(@"Prompts[45a-df]", THOPluginProtocolCompatibilityMinimumVersion)
@@ -518,147 +501,63 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 				   otherButton:TXTLS(@"Prompts[0ik-o9]")];
 
 	[alert setButtonClickedBlock:^BOOL(TVCAlert *sender, TVCAlertResponseButton buttonClicked) {
-		[NSBundle openInstallationLocationsForBundles:thirdPartyBundles];
+		[NSBundle openInstallationLocationsForBundles:obsoleteBundles];
 
 		return NO;
 	} forButton:TVCAlertResponseButtonThird];
 }
 
-- (void)extrasInstallerCheckForUpdates
+- (void)checkForUnsupportedBundles
 {
-	/* Do not check for updates too often */
-#define _defaultsKey 	@"THOPluginManager -> Extras Installer Last Check for Update Payload"
+	/* Told once per extension, whatever the user answers */
+	static NSString * const reportedDefaultsKey = @"THOPluginManager -> Reported Unsupported Extensions";
 
-	NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+	NSArray<NSString *> *reported = [RZUserDefaults() arrayForKey:reportedDefaultsKey];
 
-	NSString *applicationVersion = [TPCApplicationInfo applicationVersion];
+	NSMutableArray<NSBundle *> *bundles = [NSMutableArray array];
 
-	NSDictionary<NSString *, id> *lastUpdatePayload = [RZUserDefaults() dictionaryForKey:_defaultsKey];
-
-	if (lastUpdatePayload) {
-		NSTimeInterval lastCheckTime = [lastUpdatePayload doubleForKey:@"lastCheck"];
-
-		NSString *lastVersion = [lastUpdatePayload stringForKey:@"lastVersion"];
-
-		if ((currentTime - lastCheckTime) < _extrasInstallerExtensionUpdateCheckInterval &&
-			[lastVersion isEqualToString:applicationVersion])
-		{
-			return;
+	for (NSBundle *bundle in self.unsupportedBundles) {
+		if ([reported containsObject:bundle.bundleIdentifier] == NO) {
+			[bundles addObject:bundle];
 		}
 	}
 
-	/* Record the last time updates were checked for */
-	[RZUserDefaults() setObject:@{
-		@"lastCheck" : @(currentTime),
-		@"lastVersion" : applicationVersion
-	} forKey:_defaultsKey];
-
-	/* Check for updates */
-	[self _extrasInstallerCheckForUpdates];
-
-#undef _defaultsKey
-}
-
-- (void)_extrasInstallerCheckForUpdates
-{
-	/* Perform update check */
-	NSDictionary *latestVersions = self.extrasInstallerLatestBundleVersions;
-
-	NSMutableArray<NSBundle *> *outdatedBundles = [NSMutableArray array];
-
-	for (THOPluginItem *plugin in self.loadedPlugins) {
-		NSBundle *bundle = plugin.bundle;
-
-		NSString *bundleIdentifier = bundle.bundleIdentifier;
-
-		NSString *latestVersion = latestVersions[bundleIdentifier];
-
-		if (latestVersion == nil) {
-			continue;
-		}
-
-		NSDictionary *infoDictionary = bundle.infoDictionary;
-
-		NSString *currentVersion = infoDictionary[@"CFBundleVersion"];
-
-		NSComparisonResult comparisonResult = [currentVersion compare:latestVersion options:NSNumericSearch];
-
-		if (comparisonResult == NSOrderedAscending) {
-			[outdatedBundles addObject:bundle];
-		}
-	}
-
-	if (outdatedBundles.count == 0) {
+	if (bundles.count == 0) {
 		return;
 	}
 
-	[self _extrasInstallerInformUserAboutUpdateForBundles:[outdatedBundles copy] updateOptional:YES];
-}
+	NSMutableArray<NSString *> *reportedMutable = [NSMutableArray arrayWithArray:reported];
 
-- (void)_extrasInstallerInformUserAboutUpdateForBundles:(NSArray<NSBundle *> *)bundles updateOptional:(BOOL)updateOptional
-{
-	NSParameterAssert(bundles != nil);
-
-	/* Append the current version to the suppression key so that updates 
-	 aren't refused forever. Only until the next version of Textual is out. */
-	NSString *suppressionKey = nil;
-
-	if (updateOptional) {
-		suppressionKey =
-		[@"plugin_manager_extension_update_dialog_"
-	  stringByAppendingString:[TPCApplicationInfo applicationVersionShort]];
+	for (NSBundle *bundle in bundles) {
+		[reportedMutable addObject:bundle.bundleIdentifier];
 	}
+
+	[RZUserDefaults() setObject:[reportedMutable copy] forKey:reportedDefaultsKey];
 
 	NSString *bundlesName = [NSBundle formattedDisplayNamesForBundles:bundles];
 
-	NSString *promptTitle = ((updateOptional) ? @"Prompts[9mb-o5]" : @"Prompts[ins-op]");
-	NSString *promptMessage = ((updateOptional) ? @"Prompts[x4w-is]" : @"Prompts[34o-pk]");
-	NSString *promptDefaultButton = ((updateOptional) ? @"Prompts[ece-dd]" : @"Prompts[hd0-bf]");
-	NSString *promptAlternateButton = ((updateOptional) ? @"Prompts[ioq-nf]" : @"Prompts[467-5l]");
-	NSString *promptOtherButton = ((updateOptional) ? nil : TXTLS(@"Prompts[h78-9e]"));
+	[TDCAlert alertWithMessage:TXTLS(@"Prompts[u5x-b2]")
+						 title:TXTLS(@"Prompts[u5x-b1]", bundlesName)
+				 defaultButton:TXTLS(@"Prompts[u5x-b3]")
+			   alternateButton:TXTLS(@"Prompts[u5x-b4]")
+			   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id _Nullable underlyingAlert) {
+				   if (buttonClicked != TDCAlertResponseDefault) {
+					   return;
+				   }
 
-	TVCAlert *alert =
-	[TDCAlert alertWithMessage:TXTLS(promptMessage)
-						 title:TXTLS(promptTitle, bundlesName)
-				 defaultButton:TXTLS(promptDefaultButton)
-			   alternateButton:TXTLS(promptAlternateButton)
-				   otherButton:promptOtherButton
-				suppressionKey:suppressionKey
-			   suppressionText:nil
-			   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id  _Nullable underlyingAlert) {
-				   if (buttonClicked == TDCAlertResponseAlternate) {
-					   [self extrasInstallerLaunchInstaller];
+				   for (NSBundle *bundle in bundles) {
+					   NSError *trashError = nil;
+
+					   if ([RZFileManager() trashItemAtURL:bundle.bundleURL resultingItemURL:NULL error:&trashError] == NO) {
+						   LogToConsoleError("Failed to move '%{public}@' to the Trash: %{public}@",
+							   bundle.bundlePath, trashError.localizedDescription);
+					   }
 				   }
 			   }];
-
-	[alert setButtonClickedBlock:^BOOL(TVCAlert *sender, TVCAlertResponseButton buttonClicked) {
-		[NSBundle openInstallationLocationsForBundles:bundles];
-
-		return NO;
-	} forButton:TVCAlertResponseButtonThird];
-}
-
-- (NSArray<NSString *> *)extrasInstallerBundleIdentifiers
-{
-	return self.extrasInstallerLatestBundleVersions.allKeys;
-}
-
-- (NSDictionary<NSString *, NSString *> *)extrasInstallerLatestBundleVersions
-{
-	/* List of extra bundles and their latest version number. */
-	return [TPCResourceManager dictionaryFromResources:@"StaticStore" key:@"THOPluginManager Extras Installer Latest Extension Versions"];
-}
-
-- (NSArray<NSString *> *)extrasInstallerReservedCommands
-{
-	/* List of scripts that are available as downloadable
-	 content from the www.codeux.com website. */
-	return [TPCResourceManager arrayFromResources:@"StaticStore" key:@"THOPluginManager List of Reserved Commands"];
 }
 
 - (void)findHandlerForOutgoingCommand:(NSString *)command
 								 path:(NSString * _Nullable *)path
-						   isReserved:(BOOL *)isReserved
 							 isScript:(BOOL *)isScript
 						  isExtension:(BOOL *)isExtension
 {
@@ -667,10 +566,6 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 	/* Reset context pointers */
 	if ( path) {
 		*path = nil;
-	}
-
-	if ( isReserved) {
-		*isReserved = NO;
 	}
 
 	if ( isScript) {
@@ -723,42 +618,6 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 
 		return;
 	}
-
-	/* Find a reserved command */
-	NSArray *reservedCommands = self.extrasInstallerReservedCommands;
-
-	if ( isReserved) {
-		*isReserved = [reservedCommands containsObject:command];
-	}
-}
-
-- (void)extrasInstallerAskUserIfTheyWantToInstallCommand:(NSString *)command
-{
-	NSParameterAssert(command != nil);
-
-	BOOL download = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[bpb-vv]")
-											  title:TXTLS(@"Prompts[o9p-4n]", command)
-									  defaultButton:TXTLS(@"Prompts[6lr-02]")
-									alternateButton:TXTLS(@"Prompts[qso-2g]")
-									 suppressionKey:@"plugin_manager_reserved_command_dialog"
-									suppressionText:nil];
-
-	if (download) {
-		[self extrasInstallerLaunchInstaller];
-	}
-}
-
-- (void)extrasInstallerLaunchInstaller
-{
-	NSURL *extrasURL = [RZMainBundle() URLForResource:@"Textual-Extras" withExtension:@"pkg"];
-
-	NSURL *installerURL =
-	[RZWorkspace() URLForApplicationWithBundleIdentifier:@"com.apple.installer"];
-
-	[RZWorkspace() openURLs:@[extrasURL]
-	   withApplicationAtURL:installerURL
-			  configuration:[NSWorkspaceOpenConfiguration new]
-		  completionHandler:nil];;
 }
 
 #pragma mark -

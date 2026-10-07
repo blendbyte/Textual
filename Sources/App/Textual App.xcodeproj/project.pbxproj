@@ -595,7 +595,6 @@
 		4CAB27602537F71B009B1F07 /* IRCChannelMemberList.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CAB275D2537F71B009B1F07 /* IRCChannelMemberList.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4CAB2767253863BF009B1F07 /* IRCChannelMemberListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CAB2764253863BF009B1F07 /* IRCChannelMemberListController.m */; };
 		4CAB276D253863D9009B1F07 /* IRCChannelMemberListControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CAB276A253863D9009B1F07 /* IRCChannelMemberListControllerPrivate.h */; };
-		4CAC9D7B1F2B076100AD5F12 /* Textual-Extras.pkg in Resources */ = {isa = PBXBuildFile; fileRef = 4C2F0C701F2AF3860017D3B7 /* Textual-Extras.pkg */; };
 		4CB638CD2D45A06C002B2CC3 /* FeatureFlags.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CB638CB2D45A06C002B2CC3 /* FeatureFlags.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4CB873DE22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CB873DB22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m */; };
 		4CCD93FF1CA7291300335381 /* JavaScript in Resources */ = {isa = PBXBuildFile; fileRef = 4CCD93FC1CA7291300335381 /* JavaScript */; };
@@ -844,7 +843,6 @@
 		4C2BEB622C385189008F8F0D /* PostprocessSparkle.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = PostprocessSparkle.sh; path = "Build Scripts/PostprocessSparkle.sh"; sourceTree = "<group>"; };
 		4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromContainer.plist; sourceTree = "<group>"; };
 		4C2E92202C1E4463003BB92D /* Caffeine.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Caffeine.bundle; path = "../../../.tmp/SharedBuildProducts-Extensions/Caffeine.bundle"; sourceTree = "<group>"; };
-		4C2F0C701F2AF3860017D3B7 /* Textual-Extras.pkg */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Textual-Extras.pkg"; path = "Scripting/Script Files/Textual Extras Installer/Packages/Textual-Extras.pkg"; sourceTree = "<group>"; };
 		4C2F42042C3F4218000D962D /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		4C31511420EB673E00448776 /* TPCApplicationInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCApplicationInfo.m; sourceTree = "<group>"; };
 		4C31511520EB673E00448776 /* TPCPreferencesLocal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCPreferencesLocal.m; sourceTree = "<group>"; };
@@ -2782,7 +2780,6 @@
 		4C69E3571B65C266002782D4 /* Installers */ = {
 			isa = PBXGroup;
 			children = (
-				4C2F0C701F2AF3860017D3B7 /* Textual-Extras.pkg */,
 			);
 			name = Installers;
 			sourceTree = "<group>";
@@ -3296,7 +3293,6 @@
 				4CEFEDB222B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings in Resources */,
 				4C06E2EE20EC4FF00055D09A /* BasicLanguage.strings in Resources */,
 				4C06E08320EC4A540055D09A /* FormattingColor_4.png in Resources */,
-				4CAC9D7B1F2B076100AD5F12 /* Textual-Extras.pkg in Resources */,
 				4C06E0D120EC4A5B0055D09A /* channelRoomStatusIconLightInactive@2x.tif in Resources */,
 				4C06E21020EC4AC50055D09A /* TVCMemberListAppearance.plist in Resources */,
 				4C06E07B20EC4A540055D09A /* FormattingColor_10.png in Resources */,

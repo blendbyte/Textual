@@ -223,13 +223,6 @@
 		<key>arguments</key>
 		<string>&lt;message&gt;</string>
 	</dict>
-	<key>getscripts</key>
-	<dict>
-		<key>developerModeOnly</key>
-		<false/>
-		<key>indexValue</key>
-		<integer>5098</integer>
-	</dict>
 	<key>gline</key>
 	<dict>
 		<key>developerModeOnly</key>

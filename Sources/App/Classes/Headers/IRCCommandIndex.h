@@ -65,7 +65,6 @@ typedef NS_ENUM(NSUInteger, IRCLocalCommand) {
 	IRCLocalCommandDeop = 5020,
 	IRCLocalCommandDevoice = 5021,
 	IRCLocalCommandEcho = 5022,
-	IRCLocalCommandGetscripts = 5098,
 	IRCLocalCommandGline = 5023,
 	IRCLocalCommandGlobops = 5024,
 	IRCLocalCommandGoto = 5099,

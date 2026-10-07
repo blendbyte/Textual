@@ -101,31 +101,12 @@
 		<string>com.codeux.app-extensions.textual-UserInsights</string>
 		<string>com.codeux.app-extensions.textual-ZNCAdditions</string>
 	</array>
-	<key>THOPluginManager List of Reserved Commands</key>
+	<key>THOPluginManager List of Unsupported Extensions</key>
 	<array>
-		<string>apps</string>
-		<string>banhammer</string>
-		<string>ffuu</string>
-		<string>flip</string>
-		<string>hermes</string>
-		<string>music</string>
-		<string>np</string>
-		<string>o_p</string>
-		<string>page</string>
-		<string>qt</string>
-		<string>radium</string>
-		<string>shell</string>
-		<string>slap</string>
-		<string>spotify</string>
-		<string>vlc</string>
+		<!-- Removed with Off-the-Record Messaging and Blowfish (plan 2.1, 2.3) -->
+		<string>com.codeux.app-extensions.textual-BlowfishEncryption</string>
+		<string>com.codeux.app-extensions.textual-WikiStyleLinkParser</string>
 	</array>
-	<key>THOPluginManager Extras Installer Latest Extension Versions</key>
-	<dict>
-		<key>com.codeux.app-extensions.textual-BlowfishEncryption</key>
-		<string>1.0.18</string>
-		<key>com.codeux.app-extensions.textual-WikiStyleLinkParser</key>
-		<string>1.0.9</string>
-	</dict>
 	<key>Spelling Ignores</key>
 	<array>
 		<string>deop</string>

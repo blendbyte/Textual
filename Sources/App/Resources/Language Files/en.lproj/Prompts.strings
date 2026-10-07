@@ -61,7 +61,6 @@
 "u09-hg" = "Trust";
 "tlp-8e" = "Delete";
 "71s-kb" = "Open";
-"ece-dd" = "Remind Me Later";
 
 "68u-z9" = "Do not show this message again";
 
@@ -101,18 +100,14 @@ Do you want to add these channels to that connection or would you rather create 
 "xkj-nw" = "Turn On";
 "x3e-ur" = "Open System Settings";
 
-"9mb-o5" = "An update is available for these addons: %@";
-"x4w-is" = "Would you like to open the “Textual Extras” installer to perform an update?";
-"ioq-nf" = "Open Installer";
 
-"ins-op" = "An update is required for these addons: %@";
-"34o-pk" = "These addons will not be available for use until they are updated.
 
-Would you like to open the “Textual Extras” installer to perform an update?";
-"hd0-bf" = "Remind Me Next Launch";
-"467-5l" = "Open Installer";
-"h78-9e" = "View Files";
-
+"u5x-b1" = "Textual 8 can't use these extensions: %@";
+"u5x-b2" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so these extensions won't be loaded. You can move them to the Trash or keep them.";
+"u5x-b6" = "Textual 8 can't use the extension “%@”";
+"u5x-b5" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so this extension can't be installed.";
+"u5x-b3" = "Move to Trash";
+"u5x-b4" = "Keep";
 "af6-45" = "The version of Textual that you are using is no longer compatible with these addons: %@";
 "45a-df" = "Please contact the developer of each addon to receive information on updating.
 
@@ -120,9 +115,6 @@ If you are the developer of one of these addons: In the Info.plist file of your 
 "324-5d" = "Remind Me Next Launch";
 "0ik-o9" = "View Files";
 
-"o9p-4n" = "The “Textual Extras” package must be installed to perform the command “%@”";
-"bpb-vv" = "Would you like to open the installer?";
-"6lr-02" = "Open Installer";
 
 "2ul-cl" = "You have clicked on a link that will open the application “%@”";
 "5oq-vv" = "Are you sure you want to open “%@” with this application?";

@@ -3306,12 +3306,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 			break;
 		}
-		case IRCLocalCommandGetscripts: // Command: GETSCRIPTS
-		{
-			[sharedPluginManager() extrasInstallerLaunchInstaller];
-
-			break;
-		}
 		case IRCLocalCommandGline: // Command: GLINE
 		case IRCLocalCommandGzline: // Command: GZLINE
 		case IRCLocalCommandShun:  // Command: SHUN
@@ -4747,13 +4741,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			BOOL pluginFound = NO;
 			BOOL scriptFound = NO;
 
-			BOOL commandIsReserved = NO;
-
-			[sharedPluginManager() findHandlerForOutgoingCommand:lowercaseCommand path:&addonPath isReserved:&commandIsReserved isScript:&scriptFound isExtension:&pluginFound];
-
-			if (commandIsReserved) {
-				[sharedPluginManager() extrasInstallerAskUserIfTheyWantToInstallCommand:lowercaseCommand];
-			}
+			[sharedPluginManager() findHandlerForOutgoingCommand:lowercaseCommand path:&addonPath isScript:&scriptFound isExtension:&pluginFound];
 
 			/* Perform script or plugin. */
 			if (pluginFound && scriptFound)

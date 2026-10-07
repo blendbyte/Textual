@@ -39,6 +39,8 @@
 #import "TPCApplicationInfo.h"
 #import "TPCPathInfo.h"
 #import "TLOLocalization.h"
+#import "THOPluginManagerPrivate.h"
+#import "TXSharedApplicationPrivate.h"
 #import "TPCResourceManagerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -299,6 +301,17 @@ NSString * const TPCResourceManagerScriptDocumentTypeExtensionWithoutPeriod		= @
 	NSParameterAssert(url != nil);
 
 	NSString *filename = url.lastPathComponent;
+
+	NSBundle *bundle = [NSBundle bundleWithURL:url];
+
+	if (bundle && [sharedPluginManager() bundleIsUnsupported:bundle]) {
+		[TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[u5x-b5]")
+								  title:TXTLS(@"Prompts[u5x-b6]", filename.stringByDeletingPathExtension)
+						  defaultButton:TXTLS(@"Prompts[c7s-dq]")
+						alternateButton:nil];
+
+		return;
+	}
 
 	BOOL performInstall = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[6tj-yp]")
 													title:TXTLS(@"Prompts[xfl-8e]", filename)

@@ -61,17 +61,16 @@ TEXTUAL_EXTERN NSNotificationName const THOPluginManagerFinishedLoadingPluginsNo
 
 @property (readonly, copy) NSArray<THOPluginOutputSuppressionRule *> *pluginOutputSuppressionRules;
 
+/* YES for extensions of removed features (Blowfish, Wiki-style Link Parser) */
+- (BOOL)bundleIsUnsupported:(NSBundle *)bundle;
+
 /* Returns YES if at least one loaded plugin supports the feature */
 - (BOOL)supportsFeature:(THOPluginItemSupportedFeature)feature;
 
 - (void)findHandlerForOutgoingCommand:(NSString *)command
 								 path:(NSString * _Nullable * _Nullable)path
-						   isReserved:(BOOL *)isReserved
 							 isScript:(BOOL *)isScript
 						  isExtension:(BOOL *)isExtension;
-
-- (void)extrasInstallerAskUserIfTheyWantToInstallCommand:(NSString *)command;
-- (void)extrasInstallerLaunchInstaller;
 @end
 
 NS_ASSUME_NONNULL_END

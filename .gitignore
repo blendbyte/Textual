@@ -26,7 +26,3 @@ xcuserdata/
 /Sources/Plugins/**/build/
 /XPC Services/**/build/
 
-# Extras installer staging
-/Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Installation Files/Extensions/*
-/Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Packages/MACAPPSTORE/*
-/Sources/App/Resources/Scripting/Script Files/Textual Extras Installer/Packages/STANDALONE/*
