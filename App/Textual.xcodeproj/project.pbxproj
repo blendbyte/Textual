@@ -664,6 +664,11 @@
 		4C7197437633829B62CF0E60 /* TXMenuController+Sheets.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C9599FE2CD33B1FD4A231EA /* TXMenuController+Sheets.m */; };
 		4C0A68CCF372401770EC1366 /* TXMenuController+Window.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C42B4C144D20A5E8AD3FE18 /* TXMenuController+Window.m */; };
 		4C3C99CA3E3189637C360A4C /* TXMenuControllerMainWindowProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C68793517D42B5BB6866C0C /* TXMenuControllerMainWindowProxy.m */; };
+		4CE3775E1BA2C1645CAF75E2 /* TVCMainWindow+ChannelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CB0048C04883193A17DEABB /* TVCMainWindow+ChannelView.m */; };
+		4C8DF41CAB53C8100228579C /* TVCMainWindow+Input.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC47131B1DC97629ECE4F9E /* TVCMainWindow+Input.m */; };
+		4C354E44932B89AC998E79FD /* TVCMainWindow+Navigation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7CBE12E2F153237CB13267 /* TVCMainWindow+Navigation.m */; };
+		4CC097D50C964EFC2E5B24C3 /* TVCMainWindow+ServerList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C90345C8C204BEFCCE46D16 /* TVCMainWindow+ServerList.m */; };
+		4C12F488384281C9EDF192E8 /* TVCMainWindow+TitleAndWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA1B9D80B29C1727141605A /* TVCMainWindow+TitleAndWindow.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1481,6 +1486,12 @@
 		4C42B4C144D20A5E8AD3FE18 /* TXMenuController+Window.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+Window.m"; sourceTree = "<group>"; };
 		4C68793517D42B5BB6866C0C /* TXMenuControllerMainWindowProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TXMenuControllerMainWindowProxy.m; sourceTree = "<group>"; };
 		4CB10FD43940128CB030D689 /* TXMenuControllerInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXMenuControllerInternal.h; sourceTree = "<group>"; };
+		4CB0048C04883193A17DEABB /* TVCMainWindow+ChannelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+ChannelView.m"; sourceTree = "<group>"; };
+		4CC47131B1DC97629ECE4F9E /* TVCMainWindow+Input.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+Input.m"; sourceTree = "<group>"; };
+		4C7CBE12E2F153237CB13267 /* TVCMainWindow+Navigation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+Navigation.m"; sourceTree = "<group>"; };
+		4C90345C8C204BEFCCE46D16 /* TVCMainWindow+ServerList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+ServerList.m"; sourceTree = "<group>"; };
+		4CA1B9D80B29C1727141605A /* TVCMainWindow+TitleAndWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+TitleAndWindow.m"; sourceTree = "<group>"; };
+		4CFAD622839BDBE258123EFF /* TVCMainWindowInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowInternal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2161,11 +2172,17 @@
 				4C3152A320EB673E00448776 /* TVCBasicTableView.m */,
 				4C3152B520EB673E00448776 /* TVCContentNavigationOutlineView.m */,
 				4C31521F20EB673E00448776 /* TVCContentNavigationOutlineViewPrivate.h */,
+				4CB0048C04883193A17DEABB /* TVCMainWindow+ChannelView.m */,
+				4CC47131B1DC97629ECE4F9E /* TVCMainWindow+Input.m */,
+				4C7CBE12E2F153237CB13267 /* TVCMainWindow+Navigation.m */,
+				4C90345C8C204BEFCCE46D16 /* TVCMainWindow+ServerList.m */,
+				4CA1B9D80B29C1727141605A /* TVCMainWindow+TitleAndWindow.m */,
 				4C3152D120EB673E00448776 /* TVCMainWindow.m */,
 				4C3152D520EB673E00448776 /* TVCMainWindowAppearance.m */,
 				4C31520020EB673E00448776 /* TVCMainWindowAppearancePrivate.h */,
 				4C3152D820EB673E00448776 /* TVCMainWindowChannelView.m */,
 				4C3151C820EB673E00448776 /* TVCMainWindowChannelViewPrivate.h */,
+				4CFAD622839BDBE258123EFF /* TVCMainWindowInternal.h */,
 				4C3152D220EB673E00448776 /* TVCMainWindowLoadingScreen.m */,
 				4C3151F420EB673E00448776 /* TVCMainWindowLoadingScreenPrivate.h */,
 				4C31523820EB673E00448776 /* TVCMainWindowPrivate.h */,
@@ -3490,6 +3507,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CE3775E1BA2C1645CAF75E2 /* TVCMainWindow+ChannelView.m in Sources */,
+				4C8DF41CAB53C8100228579C /* TVCMainWindow+Input.m in Sources */,
+				4C354E44932B89AC998E79FD /* TVCMainWindow+Navigation.m in Sources */,
+				4CC097D50C964EFC2E5B24C3 /* TVCMainWindow+ServerList.m in Sources */,
+				4C12F488384281C9EDF192E8 /* TVCMainWindow+TitleAndWindow.m in Sources */,
 				4C5C538983AACF279B5E4DB4 /* TXMenuController+App.m in Sources */,
 				4C2A3E6FA64FB2AA171C6395 /* TXMenuController+Edit.m in Sources */,
 				4CF2822F48BF6CAA57B12C77 /* TXMenuController+Members.m in Sources */,

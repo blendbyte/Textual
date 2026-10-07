@@ -80,35 +80,43 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 - (BOOL)reloadingTheme;
 
-- (BOOL)reloadLoadingScreen;
+- (void)maybeToggleFullscreenAfterLaunch;
 
-- (void)updateTitle;
-- (void)updateTitleFor:(IRCTreeItem *)item;
+- (void)updateAlphaValueToReflectPreferences;
 
+- (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
+@end
+
+@interface TVCMainWindow (ServerListPrivate)
 - (void)reloadTree;
 - (void)reloadTreeItem:(IRCTreeItem *)item;
 
 - (void)adjustSelection;
 
-- (void)maybeToggleFullscreenAfterLaunch;
-
-- (void)updateAlphaValueToReflectPreferences;
-
-- (void)updateChannelViewBoxContentViewSelection;
-- (void)updateChannelViewArrangement;
-
-- (void)redirectKeyDown:(NSEvent *)e;
-
-- (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
-
 - (void)selectItemInSelectedItems:(IRCTreeItem *)selectedItem;
 - (void)selectItemInSelectedItems:(IRCTreeItem *)selectedItem refreshChannelView:(BOOL)refreshChannelView;
 
 - (void)shiftSelection:(nullable IRCTreeItem *)oldItem toItem:(nullable IRCTreeItem *)newItem options:(TVCMainWindowShiftSelectionFlags)selectionOptions;
+@end
+
+@interface TVCMainWindow (ChannelViewPrivate)
+- (void)updateChannelViewBoxContentViewSelection;
+- (void)updateChannelViewArrangement;
 
 - (void)channelViewSelectionChangeTo:(IRCTreeItem *)selectedItem;
 
 - (void)updateDrawingForUserInUserList:(IRCUser *)user;
+@end
+
+@interface TVCMainWindow (InputPrivate)
+- (void)redirectKeyDown:(NSEvent *)e;
+@end
+
+@interface TVCMainWindow (TitleAndWindowPrivate)
+- (BOOL)reloadLoadingScreen;
+
+- (void)updateTitle;
+- (void)updateTitleFor:(IRCTreeItem *)item;
 @end
 
 NS_ASSUME_NONNULL_END

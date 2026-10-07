@@ -88,41 +88,6 @@ TEXTUAL_EXTERN NSString * const TVCServerListDragType;
 
 @property (readonly, nullable) IRCTreeItem *previouslySelectedItem;
 
-- (void)select:(nullable IRCTreeItem *)item;
-- (void)selectPreviousItem;
-- (void)deselect:(IRCTreeItem *)item;
-- (void)deselectGroup:(IRCTreeItem *)item;
-
-- (BOOL)isItemVisible:(IRCTreeItem *)item;
-- (BOOL)isItemSelected:(IRCTreeItem *)item;
-- (BOOL)isItemInSelectedGroup:(IRCTreeItem *)item;
-
-- (void)expandClient:(IRCClient *)client;
-
-/* Redraws a server and its channels in the server list, e.g. after
- changing whether channels are active */
-- (void)reloadTreeGroup:(IRCTreeItem *)item;
-
-- (nullable IRCChannel *)selectedChannelOn:(IRCClient *)client;
-
-- (void)navigateServerEntries:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType;
-- (void)navigateChannelEntries:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType;
-- (void)navigateToNextEntry:(BOOL)isMovingDown;
-
-- (void)selectNextServer:(NSEvent *)e;
-- (void)selectNextChannel:(NSEvent *)e;
-- (void)selectNextWindow:(NSEvent *)e;
-- (void)selectPreviousServer:(NSEvent *)e;
-- (void)selectPreviousChannel:(NSEvent *)e;
-- (void)selectPreviousWindow:(NSEvent *)e;
-- (void)selectNextActiveServer:(NSEvent *)e;
-- (void)selectNextUnreadChannel:(NSEvent *)e;
-- (void)selectNextActiveChannel:(NSEvent *)e;
-- (void)selectPreviousSelection:(NSEvent *)e;
-- (void)selectPreviousActiveServer:(NSEvent *)e;
-- (void)selectPreviousUnreadChannel:(NSEvent *)e;
-- (void)selectPreviousActiveChannel:(NSEvent *)e;
-
 @property (getter=isUsingDarkAppearance, readonly) BOOL usingDarkAppearance;
 
 @property (readonly) double textSizeMultiplier;
@@ -145,6 +110,47 @@ TEXTUAL_EXTERN NSString * const TVCServerListDragType;
 @property (getter=isServerListVisible, readonly) BOOL serverListVisible;
 
 - (NSRect)defaultWindowFrame;
+@end
+
+@interface TVCMainWindow (ServerList)
+- (void)select:(nullable IRCTreeItem *)item;
+- (void)selectPreviousItem;
+- (void)deselect:(IRCTreeItem *)item;
+- (void)deselectGroup:(IRCTreeItem *)item;
+
+- (void)expandClient:(IRCClient *)client;
+
+/* Redraws a server and its channels in the server list, e.g. after
+ changing whether channels are active */
+- (void)reloadTreeGroup:(IRCTreeItem *)item;
+
+- (nullable IRCChannel *)selectedChannelOn:(IRCClient *)client;
+@end
+
+@interface TVCMainWindow (ChannelView)
+- (BOOL)isItemVisible:(IRCTreeItem *)item;
+- (BOOL)isItemSelected:(IRCTreeItem *)item;
+- (BOOL)isItemInSelectedGroup:(IRCTreeItem *)item;
+@end
+
+@interface TVCMainWindow (Navigation)
+- (void)navigateServerEntries:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType;
+- (void)navigateChannelEntries:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType;
+- (void)navigateToNextEntry:(BOOL)isMovingDown;
+
+- (void)selectNextServer:(NSEvent *)e;
+- (void)selectNextChannel:(NSEvent *)e;
+- (void)selectNextWindow:(NSEvent *)e;
+- (void)selectPreviousServer:(NSEvent *)e;
+- (void)selectPreviousChannel:(NSEvent *)e;
+- (void)selectPreviousWindow:(NSEvent *)e;
+- (void)selectNextActiveServer:(NSEvent *)e;
+- (void)selectNextUnreadChannel:(NSEvent *)e;
+- (void)selectNextActiveChannel:(NSEvent *)e;
+- (void)selectPreviousSelection:(NSEvent *)e;
+- (void)selectPreviousActiveServer:(NSEvent *)e;
+- (void)selectPreviousUnreadChannel:(NSEvent *)e;
+- (void)selectPreviousActiveChannel:(NSEvent *)e;
 @end
 
 NS_ASSUME_NONNULL_END
