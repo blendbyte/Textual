@@ -7,12 +7,16 @@
 # installed copy of Textual. For testing, it connects to IRC servers on
 # this Mac only (see "server" and "scripted" below).
 #
+# "vm-bundle" packs Textual Dev, Ergo, the scripted server and a standalone
+# Python into a folder shared with a test VM; there, TextualTest/vm-dev runs
+# the same commands (except build and screenshot) against copies in the VM.
+#
 # Run "Development/dev help" for the commands.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="${ROOT}/Build Results/Debug/Textual.app"
+APP="${TEXTUAL_DEV_APP:-${ROOT}/Build Results/Debug/Textual.app}"
 DATA="${ROOT}/.tmp/dev"
 
 BUNDLE_ID="com.textualapp.app.dev"
@@ -22,6 +26,15 @@ ERGO_VERSION="2.19.1"
 ERGO_SHA256_ARM64="1bd97a0917036061e2dcdfc29149c2e252e3bc856282e0956afa2aaaa54dd787"
 ERGO_SHA256_X86_64="68b388a49034257082ee0292703874630a2c10cfba86c73bb2adc37b515c57a3"
 ERGO_DIR="${DATA}/ergo"
+
+# Standalone Python for the VM, which has no developer tools (python-build-standalone)
+PYTHON_RELEASE="20261003"
+PYTHON_VERSION="3.13.16"
+PYTHON_SHA256_ARM64="d8975d7df4f08f7b1c7aafcdfacbddcec3d366415f2c1a72b2466b6850815933"
+PYTHON_SHA256_X86_64="8e9cb087305bfb8969f68a905f79f41469d4aa5220c1aa71ada7fc9953bdba0f"
+
+# Folder shared with the test VM (VMPal shares ~/Downloads)
+VM_SHARE="${TEXTUAL_VM_SHARE:-${HOME}/Downloads/textual-vm}"
 
 # Textual Dev accepts textual://dev-… actions only with the token it was started with
 TOKEN_FILE="${DATA}/launch-token"
@@ -214,6 +227,115 @@ cmd_scripted() {
 	exec python3 "${ROOT}/Development/scripted-irc-server.py" "$@"
 }
 
+python_download() {
+	local arch sha
+	case "$(uname -m)" in
+		arm64) arch="aarch64"; sha="${PYTHON_SHA256_ARM64}" ;;
+		*) arch="x86_64"; sha="${PYTHON_SHA256_X86_64}" ;;
+	esac
+
+	local name="cpython-${PYTHON_VERSION}+${PYTHON_RELEASE}-${arch}-apple-darwin-install_only.tar.gz"
+	local archive="${DATA}/${name}"
+
+	if [ ! -f "${archive}" ]; then
+		echo "Downloading Python ${PYTHON_VERSION} for the VM…" >&2
+		curl -fsSL -o "${archive}.partial" \
+			"https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_RELEASE}/${name//+/%2B}"
+		echo "${sha}  ${archive}.partial" | shasum -a 256 -c --quiet - || { rm -f "${archive}.partial"; die "Python checksum mismatch"; }
+		mv "${archive}.partial" "${archive}"
+	fi
+
+	printf '%s' "${archive}"
+}
+
+cmd_vm-bundle() {
+	check_app
+	ergo_install
+	mkdir -p "${DATA}"
+
+	local python_archive
+	python_archive=$(python_download)
+
+	local staging
+	staging=$(mktemp -d)
+	# Expanded now: the trap runs after this function's locals are gone
+	trap "rm -rf '${staging}'" EXIT
+
+	local bundle="${staging}/TextualTest"
+	mkdir -p "${bundle}/Development" "${bundle}/.tmp/dev"
+
+	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/ergo-config.py" "${bundle}/Development/"
+	# Without the database and lock of the Ergo running here; vm-dev creates its own
+	rsync -a --exclude ircd.db --exclude ircd.lock "${ERGO_DIR}/" "${bundle}/.tmp/dev/ergo/"
+	tar -xzf "${python_archive}" -C "${bundle}"
+	ditto "${APP}" "${bundle}/Textual.app"
+
+	cat > "${bundle}/vm-dev" <<-'GUEST'
+	#!/bin/sh
+	# Development/dev inside the test VM: Textual Dev, Ergo and the scripted
+	# server from this folder, with the bundled Python. The servers run as
+	# launchd jobs, so they outlive the command that started them (an agent's
+	# remote command ends every process it started when it returns).
+	here="$(cd "$(dirname "$0")" && pwd)"
+	export PATH="${here}/python/bin:${PATH}"
+	export TEXTUAL_DEV_APP="${here}/Textual.app"
+	data="${here}/.tmp/dev"
+	ergo="${data}/ergo"
+	domain="gui/$(id -u)"
+	[ -f "${ergo}/ircd.db" ] || (cd "${ergo}" && ./ergo initdb --conf ircd.yaml --quiet)
+
+	# job <name> <working directory> <program> [arguments…]
+	job() {
+		name="$1" directory="$2"; shift 2
+		label="com.textualapp.app.dev.vm.${name}"
+		plist="${data}/${label}.plist"
+		launchctl bootout "${domain}/${label}" 2> /dev/null
+		rm -f "${plist}"
+		plutil -create xml1 "${plist}"
+		plutil -insert Label -string "${label}" "${plist}"
+		plutil -insert WorkingDirectory -string "${directory}" "${plist}"
+		plutil -insert RunAtLoad -bool true "${plist}"
+		plutil -insert StandardOutPath -string "${data}/${name}.log" "${plist}"
+		plutil -insert StandardErrorPath -string "${data}/${name}.log" "${plist}"
+		plutil -insert EnvironmentVariables -json "{\"PATH\": \"${PATH}\"}" "${plist}"
+		plutil -insert ProgramArguments -json '[]' "${plist}"
+		for argument in "$@"; do
+			plutil -insert ProgramArguments -string "${argument}" -append "${plist}"
+		done
+		: > "${data}/${name}.log"
+		launchctl bootstrap "${domain}" "${plist}"
+	}
+
+	case "$1" in
+		server)
+			case "${2:-start}" in
+				start) job ergo "${ergo}" "${ergo}/ergo" run --conf ircd.yaml; sleep 1; exec "${here}/Development/dev" server status ;;
+				stop) launchctl bootout "${domain}/com.textualapp.app.dev.vm.ergo" 2> /dev/null; exit 0 ;;
+			esac ;;
+		scripted)
+			shift
+			case "${1:-}" in
+				stop) launchctl bootout "${domain}/com.textualapp.app.dev.vm.scripted" 2> /dev/null; exit 0 ;;
+				log) exec cat "${data}/scripted.log" ;;
+				""|--list|--help|-h) ;;
+				*) job scripted "${here}" "${here}/python/bin/python3" -u "${here}/Development/scripted-irc-server.py" "$@"; sleep 1; exec cat "${data}/scripted.log" ;;
+			esac
+			set -- scripted "$@" ;;
+	esac
+
+	exec "${here}/Development/dev" "$@"
+	GUEST
+	chmod +x "${bundle}/vm-dev"
+
+	mkdir -p "${VM_SHARE}"
+	tar -czf "${VM_SHARE}/TextualTest.tar.gz.partial" -C "${staging}" TextualTest
+	mv "${VM_SHARE}/TextualTest.tar.gz.partial" "${VM_SHARE}/TextualTest.tar.gz"
+
+	echo "Bundle: ${VM_SHARE}/TextualTest.tar.gz"
+	echo "In the VM: tar -xzf <share>/textual-vm/TextualTest.tar.gz -C ~ && ~/TextualTest/vm-dev server start"
+	echo "(vm-dev scripted <scenario> runs in the background; vm-dev scripted log / stop)"
+}
+
 cmd_connect() {
 	check_app
 
@@ -333,6 +455,8 @@ cmd_help() {
 	  server [start|stop|status]
 	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
 	  scripted <scenario>   Scripted server for edge cases (scripted --help)
+	  vm-bundle             Pack Textual Dev and the test servers for a test VM, into
+	                        \$TEXTUAL_VM_SHARE (default ~/Downloads/textual-vm)
 	EOF
 }
 
@@ -340,6 +464,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|scripted|connect|input|config|send|eval|screenshot|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|scripted|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac
