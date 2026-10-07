@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Runs the static analyzer on the XPC services and the bundled plugins.
+# Runs the static analyzer on the bundled plugins.
 #
 # The app's build scripts build them with nested xcodebuild calls, which an
 # "xcodebuild analyze" of the app only builds, never analyzes. Run this after
-# the app has been built or analyzed (it needs the app's binary, the shared
-# headers in .tmp and the built services).
+# the app has been built or analyzed (it needs the app's binary and the
+# shared headers in .tmp).
 #
 # Usage: analyze-nested.sh <app bundle> <folder for the result bundles>
 
@@ -47,14 +47,6 @@ analyze() {
 			-resultBundlePath "${results}/${name}.xcresult" \
 			"${common_settings[@]}" "$@")
 }
-
-analyze "XPC Services/Inline Content Loader" "Inline Content Loader" "inline-content-loader"
-
-loader="${workspace}/.tmp/SharedBuildProducts-XPCServices/Inline Content Loader.xpc"
-
-analyze "XPC Services/Inline Content Loader/Extensions/Core Media" "Inline Content Loader Core Media" "core-media" \
-	ICL_PRODUCT_LOCATION="${loader}" \
-	ICL_PRODUCT_BINARY="${loader}/Contents/MacOS/Inline Content Loader"
 
 for plugin in 'Chat Filter' 'Smiley Converter' 'System Profiler' 'User Insights' 'ZNC Additions'; do
 	analyze "Sources/Plugins/${plugin}" "${plugin} Extension" "plugin-$(echo "${plugin}" | tr ' A-Z' '-a-z')"

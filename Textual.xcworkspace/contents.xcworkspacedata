@@ -36,14 +36,4 @@
          location = "group:Sources/Plugins/ZNC Additions/ZNC Additions Extension.xcodeproj">
       </FileRef>
    </Group>
-   <Group
-      location = "container:"
-      name = "XPC Services">
-      <FileRef
-         location = "group:XPC Services/Inline Content Loader/Inline Content Loader.xcodeproj">
-      </FileRef>
-      <FileRef
-         location = "group:XPC Services/Inline Content Loader/Extensions/Core Media/Inline Content Loader Core Media.xcodeproj">
-      </FileRef>
-   </Group>
 </Workspace>

@@ -97,10 +97,8 @@ jobs:
           for plugin in "Chat Filters" "Smiley Converter" "System Info" "User Insights" "ZNC Additions"; do
             test -d "$contents/Resources/Bundled Extensions/$plugin.bundle" || fail "Plugin missing: $plugin"
           done
-          for service in "Inline Content Loader"; do
-            test -d "$contents/XPCServices/$service.xpc" || fail "XPC service missing: $service"
-          done
-          test -d "$contents/XPCServices/Inline Content Loader.xpc/Contents/Resources/Extensions/Core Media.mediaPlugin" || fail "Core Media plugin missing"
+          test ! -e "$contents/XPCServices" || fail "Unexpected XPC services: $(ls "$contents/XPCServices")"
+          test -f "$contents/Resources/Inline Media/ICMInlineImage.mustache" || fail "Inline media resources missing"
           for framework in AutoHyperlinks CocoaExtensions GRMustache; do
             test -d "$contents/Frameworks/$framework.framework" || fail "Framework missing: $framework"
           done
@@ -196,9 +194,9 @@ jobs:
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER=""
 
-      # The app's build scripts build the XPC services and plugins with nested
-      # xcodebuild calls, which the analysis above builds but doesn't analyze.
-      - name: Analyze services and plugins
+      # The app's build scripts build the plugins with nested xcodebuild
+      # calls, which the analysis above builds but doesn't analyze.
+      - name: Analyze plugins
         run: .github/scripts/analyze-nested.sh "$GITHUB_WORKSPACE/Build Results/Release/Textual.app" "$RUNNER_TEMP/nested-analysis"
 
       # Only the analyzer's own findings; compiler warnings are counted by

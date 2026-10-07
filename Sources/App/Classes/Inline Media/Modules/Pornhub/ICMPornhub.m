@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,107 @@
  *
  *********************************************************************** */
 
+#import "ICLHelpers.h"
+#import "ICMPornhub.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@implementation ICMPornhub
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+- (void)_performActionForVideo:(NSString *)videoIdentifier
+{
+	NSParameterAssert(videoIdentifier != nil);
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+	ICLPayloadMutable *payload = self.payload;
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+	NSDictionary *templateAttributes =
+	@{
+	  @"uniqueIdentifier" : payload.uniqueIdentifier,
+	  @"videoIdentifier" : videoIdentifier
+	};
 
-- (void)prepareForApplicationTermination;
+	NSError *templateRenderError = nil;
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
+	NSString *html = [self.template renderObject:templateAttributes error:&templateRenderError];
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+	payload.html = html;
+
+	[self finalizeWithError:templateRenderError];
+}
+
+#pragma mark -
+#pragma mark Action Block
+
++ (nullable ICLInlineContentModuleActionBlock)actionBlockForURL:(NSURL *)url
+{
+	NSParameterAssert(url != nil);
+
+	NSString *videoIdentifier = [self _videoIdentifierForURL:url];
+
+	if (videoIdentifier == nil) {
+		return nil;
+	}
+
+	return [^(ICLInlineContentModule *module) {
+		__weak ICMPornhub *moduleTyped = (id)module;
+
+		[moduleTyped _performActionForVideo:videoIdentifier];
+	} copy];
+}
+
++ (nullable NSString *)_videoIdentifierForURL:(NSURL *)url
+{
+	NSString *urlPath = url.path.percentEncodedURLPath;
+
+	if ([urlPath hasPrefix:@"/view_video.php"] == NO) {
+		return nil;
+	}
+
+	NSString *urlQuery = url.query.percentEncodedURLQuery;
+
+	NSDictionary *queryItems = urlQuery.URLQueryItems;
+
+	NSString *videoIdentifier = queryItems[@"viewkey"];
+
+	if (videoIdentifier.isAlphabeticNumericOnly == NO) {
+		return nil;
+	}
+
+	return videoIdentifier;
+}
+
++ (nullable NSArray<NSString *> *)domains
+{
+	static NSArray<NSString *> *domains = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		domains =
+		@[
+		  @"pornhub.com",
+		  @"www.pornhub.com",
+		  @"pornhubpremium.com",
+		  @"www.pornhubpremium.com"
+		];
+	});
+
+	return domains;
+}
+
+#pragma mark -
+#pragma mark Utilities
+
+- (nullable NSURL *)templateURL
+{
+	return ICLResourceURL(@"ICMPornhub", @"mustache");
+}
+
++ (BOOL)contentNotSafeForWork
+{
+	return YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

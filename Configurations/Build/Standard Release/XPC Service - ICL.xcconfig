@@ -1,5 +1,0 @@
-
-#include "XPC Services.xcconfig"
-#include "../Common/XPC Service - ICL.xcconfig"
-
-ICL_EXTENSION_BUILD_SCHEME = Release

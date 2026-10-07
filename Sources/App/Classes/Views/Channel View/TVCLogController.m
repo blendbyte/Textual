@@ -40,7 +40,7 @@
 #import "TXGlobalModels.h"
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
-#import "ICLPayloadLocalPrivate.h"
+#import "ICLPayloadPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannel.h"
@@ -935,6 +935,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		if ([linksMatched containsObject:link.stringValue]) {
 			continue;
 		}
+
+		[linksMatched addObject:link.stringValue];
 
 		[linksToProcess addObject:link];
 	}

@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,30 +37,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
-
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
-
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
-
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
-
-- (void)prepareForApplicationTermination;
-
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
-
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+/* The inline media modules, in the order they are tried. Textual 7 loaded
+ these from a plugin (Core Media.mediaPlugin); they are now part of the app
+ and third-party modules are no longer loaded. */
+@interface ICPCoreMedia : NSObject
+@property (readonly, copy, class) NSArray<Class> *modules;
 @end
 
 NS_ASSUME_NONNULL_END

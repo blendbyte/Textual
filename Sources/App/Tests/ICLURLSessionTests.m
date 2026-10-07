@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,32 +34,74 @@
  *
  *********************************************************************** */
 
+#import <XCTest/XCTest.h>
+
+#import "ICLURLSessionPrivate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@interface ICLURLSessionTests : XCTestCase
+@end
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+@implementation ICLURLSessionTests
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+/* Inline media must never request an address on the user's network (R1.7),
+ whichever way the address is written */
+- (void)testLocalAddressesAreRefused
+{
+	for (NSString *address in @[
+		 @"http://127.0.0.1/a.png",
+		 @"http://127.1/a.png",
+		 @"http://2130706433/a.png",
+		 @"http://0x7f.1/a.png",
+		 @"http://0.0.0.0/a.png",
+		 @"http://10.1.2.3/a.png",
+		 @"http://100.64.0.1/a.png",
+		 @"http://169.254.169.254/latest/meta-data",
+		 @"http://172.16.0.1/a.png",
+		 @"http://172.31.255.255/a.png",
+		 @"http://192.168.1.1/a.png",
+		 @"http://224.0.0.1/a.png",
+		 @"http://255.255.255.255/a.png",
+		 @"http://[::1]/a.png",
+		 @"http://[::]/a.png",
+		 @"http://[fe80::1]/a.png",
+		 @"http://[fd00::1]/a.png",
+		 @"http://[::ffff:192.168.1.1]/a.png",
+		 @"http://[64:ff9b::a00:1]/a.png",
+		 @"http://localhost/a.png",
+		 @"http://LOCALHOST./a.png",
+		 @"http://router/a.png",
+		 @"http://printer.local/a.png",
+		 @"http://app.localhost/a.png",
+		 @"http://nas.home.arpa/a.png",
+		 @"file:///etc/passwd",
+		 @"ftp://example.com/a.png",
+		 @"http:///a.png"])
+	{
+		NSURL *url = [NSURL URLWithString:address];
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+		XCTAssertNotNil(url, @"%@", address);
 
-- (void)prepareForApplicationTermination;
+		XCTAssertFalse([ICLURLSession URLIsAllowed:url], @"%@", address);
+	}
+}
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
+- (void)testPublicAddressesAreAllowed
+{
+	for (NSString *address in @[
+		 @"https://example.com/a.png",
+		 @"HTTPS://EXAMPLE.COM/A.PNG",
+		 @"http://8.8.8.8/a.png",
+		 @"http://172.32.0.1/a.png",
+		 @"http://100.128.0.1/a.png",
+		 @"http://[2606:4700:4700::1111]/a.png",
+		 @"http://[64:ff9b::808:808]/a.png"])
+	{
+		XCTAssertTrue([ICLURLSession URLIsAllowed:[NSURL URLWithString:address]], @"%@", address);
+	}
+}
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
 @end
 
 NS_ASSUME_NONNULL_END

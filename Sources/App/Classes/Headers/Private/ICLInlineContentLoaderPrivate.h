@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,31 @@
  *
  *********************************************************************** */
 
+#import "ICLMediaType.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@class ICLInlineContentModule;
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+/* Runs the inline media modules inside the app (Textual 7 ran them in an
+ XPC service). Everything happens on the main thread: modules are started
+ there and the shared URL session delivers its callbacks there. Results go
+ to TVCLogControllerInlineMediaService. */
+@interface ICLInlineContentLoader : NSObject
++ (ICLInlineContentLoader *)sharedLoader;
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+- (void)processURL:(NSURL *)url
+withUniqueIdentifier:(NSString *)uniqueIdentifier
+	  atLineNumber:(NSString *)lineNumber
+			 index:(NSUInteger)index
+			inView:(NSString *)viewIdentifier;
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
-
+/* Cancels the requests in progress and refuses new ones */
 - (void)prepareForApplicationTermination;
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
-
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+- (void)_finalizeModule:(ICLInlineContentModule *)module withError:(nullable NSError *)error;
+- (void)_cancelModule:(ICLInlineContentModule *)module;
+- (void)_deferModule:(ICLInlineContentModule *)module asType:(ICLMediaType)type performCheck:(BOOL)performCheck;
 @end
 
 NS_ASSUME_NONNULL_END

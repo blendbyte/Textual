@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,30 +36,27 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+/* One URL session for every inline media request (the media assessor,
+ the JSON lookups, and later the link cards). Ephemeral: no cookies, no
+ cache, no credentials. Requests time out after 20 seconds, at most 5
+ redirects are followed, and every address, including each redirect, is
+ refused if it points at the local network (R1.7): loopback, private,
+ link-local, unique local, multicast, .local and single-label names, and
+ host names that resolve to any of these. Callbacks and completion blocks
+ run on the main thread. Clicking a refused link still opens it. */
+@interface ICLURLSession : NSObject
+@property (readonly, class) NSURLSession *sharedSession;
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+/* YES for an HTTP(S) URL whose host is not a local address or name.
+ Does not resolve the host name. */
++ (BOOL)URLIsAllowed:(NSURL *)url;
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+/* +URLIsAllowed: and, for host names, a lookup of their addresses */
++ (void)checkURL:(NSURL *)url completionBlock:(void (^)(BOOL allowed))completionBlock;
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
-
-- (void)prepareForApplicationTermination;
-
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
-
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+/* GET with a response size limit. data is nil when the address is refused,
+ the request fails, the status is not 200 or the body exceeds maximumLength. */
++ (void)requestDataFromURL:(NSURL *)url maximumLength:(NSUInteger)maximumLength completionBlock:(void (^)(NSData * _Nullable data))completionBlock;
 @end
 
 NS_ASSUME_NONNULL_END

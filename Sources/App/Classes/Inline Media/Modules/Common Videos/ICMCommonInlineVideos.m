@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,85 @@
  *
  *********************************************************************** */
 
+#import "ICLHelpers.h"
+#import "ICMCommonInlineVideos.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@interface ICMCommonInlineVideos ()
+@property (readonly, copy, class) NSArray<NSString *> *validFileExtensions;
+@end
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+@implementation ICMCommonInlineVideos
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
++ (nullable ICLInlineContentModuleActionBlock)actionBlockForURL:(NSURL *)url
+{
+	NSString *address = [self _finalAddressForURL:url];
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+	if (address == nil) {
+		return nil;
+	}
 
-- (void)prepareForApplicationTermination;
+	return [super actionBlockForAddress:address];
+}
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
++ (nullable NSString *)_finalAddressForURL:(NSURL *)url
+{
+	NSString *urlHost = url.host;
+	NSString *urlPath = url.path.percentEncodedURLPath;
+	NSString *urlPathExtension = urlPath.pathExtension.lowercaseString;
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+	BOOL hasFileExtension = [self.validFileExtensions containsObject:urlPathExtension];
+
+	if (hasFileExtension) {
+		if ([urlHost isDomain:@"video.nest.com"]) {
+			/* Processed below */
+		} else {
+			return url.absoluteString;
+		}
+	}
+
+	if ([urlHost isDomain:@"video.nest.com"])
+	{
+		if ([urlPath hasPrefix:@"/clip/"] == NO) {
+			return nil;
+		}
+
+		NSString *filename = urlPath.lastPathComponent;
+
+		NSString *filenameWithoutExtension = filename.stringByDeletingPathExtension;
+
+		if (filenameWithoutExtension.alphabeticNumericOnly) {
+			return [NSString stringWithFormat:@"http://clips.dropcam.com/%@", filename];
+		}
+	}
+
+	return nil;
+}
+
++ (NSArray<NSString *> *)validFileExtensions
+{
+	static NSArray<NSString *> *cachedValue = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		cachedValue =
+		@[@"mp4",
+		  @"mov",
+		  @"m4v",
+		  @"3gp",
+		  @"3g2"];
+	});
+
+	return cachedValue;
+}
+
++ (BOOL)contentIsFile
+{
+	return YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

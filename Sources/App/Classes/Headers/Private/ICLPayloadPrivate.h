@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,21 @@
  *
  *********************************************************************** */
 
+#import "ICLPayload.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@interface ICLPayload (ICLPayloadPrivate)
+- (instancetype)initWithURL:(NSURL *)url
+	   withUniqueIdentifier:(NSString *)uniqueIdentifier
+			   atLineNumber:(NSString *)lineNumber
+					  index:(NSUInteger)index
+					 inView:(NSString *)viewIdentifier;
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+- (instancetype)initWithDeferredPayload:(ICLPayload *)payload;
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
-
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
-
-- (void)prepareForApplicationTermination;
-
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
-
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+/* The payload as passed to _InlineMediaLoader.processPayload() */
+@property (copy, readonly) NSDictionary<NSString *, id> *javaScriptObject;
 @end
 
 NS_ASSUME_NONNULL_END

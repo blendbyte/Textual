@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,57 @@
  *
  *********************************************************************** */
 
+#import "ICMAssessedMedia.h"
+#import "ICMCommonInlineImages.h"
+#import "ICMCommonInlineVideos.h"
+#import "ICMDailymotion.h"
+#import "ICMGyazo.h"
+#import "ICMImgurGifv.h"
+#import "ICMPornhub.h"
+#import "ICMStreamable.h"
+#import "ICMTweet.h"
+#import "ICMVimeo.h"
+#import "ICMXkcd.h"
+#import "ICMYouTube.h"
+#import "ICPCoreMediaPrivate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@implementation ICPCoreMedia
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
++ (NSArray<Class> *)modules
+{
+	static NSArray<Class> *modules = nil;
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+	static dispatch_once_t onceToken;
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+	dispatch_once(&onceToken, ^{
+		/* Twitch (clips and live) was removed: its embeds require a
+		 parent= domain and Textual loads the chat view from file://. */
+		modules =
+		@[
+			[ICMDailymotion class],
+			[ICMGyazo class],
+			[ICMImgurGifv class],
+			[ICMPornhub class],
+			[ICMStreamable class],
+			[ICMTweet class],
+			[ICMVimeo class],
+			[ICMXkcd class],
+			[ICMYouTube class],
 
-- (void)prepareForApplicationTermination;
+			[ICMCommonInlineVideos class],
+			[ICMCommonInlineImages class],
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
+			/* This module should ALWAYS be the last
+			 in line because it matches any URL. */
+			[ICMAssessedMedia class]
+		];
+	});
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+	return modules;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

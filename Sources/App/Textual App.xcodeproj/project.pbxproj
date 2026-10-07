@@ -144,10 +144,6 @@
 		4C06E33E20EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D720EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings */; };
 		4C06E34220EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D920EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings */; };
 		4C06E3B620EC51380055D09A /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */; };
-		4C06E3CA20EC51380055D09A /* ICLPayloadInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E37220EC51370055D09A /* ICLPayloadInternal.h */; };
-		4C06E3D620EC51380055D09A /* ICLPayload.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E37520EC51370055D09A /* ICLPayload.h */; };
-		4C06E3FA20EC51380055D09A /* ICLInlineContentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E38020EC51370055D09A /* ICLInlineContentProtocol.h */; };
-		4C06E41820EC52D60055D09A /* ICLPayloadLocalPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E41520EC52D50055D09A /* ICLPayloadLocalPrivate.h */; };
 		4C06E47320EC541C0055D09A /* AutoHyperlinks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C06E47520EC541C0055D09A /* CocoaExtensions.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C06E47920EC541C0055D09A /* GRMustache.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CC4A7371F8A1404008FF15F /* GRMustache.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -282,9 +278,7 @@
 		4C06E6B920EC55B90055D09A /* TPCPreferencesUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E28920EC4F000055D09A /* TPCPreferencesUserDefaults.m */; };
 		4C06E6BA20EC55B90055D09A /* TPCPreferencesUserDefaultsLocal.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31511920EB673E00448776 /* TPCPreferencesUserDefaultsLocal.m */; };
 		4C06E6BC20EC55B90055D09A /* TPCResourceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31511820EB673E00448776 /* TPCResourceManager.m */; };
-		4C06E6BD20EC55B90055D09A /* ICLPayloadLocal.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E34E20EC50D40055D09A /* ICLPayloadLocal.m */; };
 		4C06E6BF20EC55B90055D09A /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E36320EC51370055D09A /* GCDAsyncSocket.m */; settings = {COMPILER_FLAGS = "-Wno-implicit-retain-self"; }; };
-		4C06E6C220EC55B90055D09A /* ICLPayload.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E38B20EC51370055D09A /* ICLPayload.m */; };
 		4C06E6C420EC55B90055D09A /* TVCChannelSelectionOutlineCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152AE20EB673E00448776 /* TVCChannelSelectionOutlineCellView.m */; };
 		4C06E6C520EC55B90055D09A /* TVCChannelSelectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152AF20EB673E00448776 /* TVCChannelSelectionViewController.m */; };
 		4C06E6C620EC55B90055D09A /* HLSHistoricLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152C220EB673E00448776 /* HLSHistoricLogManager.m */; };
@@ -328,7 +322,6 @@
 		4C06E6EF20EC55B90055D09A /* TVCContentNavigationOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152B520EB673E00448776 /* TVCContentNavigationOutlineView.m */; };
 		4C06E6F020EC55B90055D09A /* TVCDockIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152C520EB673E00448776 /* TVCDockIcon.m */; };
 		4C0A31152C374A5B0081EF1F /* KeysExcludedFromMigrate.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */; };
-		4C171681254A58C2004BE8AE /* Inline Content Loader.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 4C171669254A589D004BE8AE /* Inline Content Loader.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */; };
 		4C2BEB642C3866DF008F8F0D /* KeysExcludedFromContainer.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */; };
 		4C2F42062C3F4218000D962D /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2F42042C3F4218000D962D /* UserNotifications.framework */; };
@@ -611,6 +604,42 @@
 		4C32F2F0C8E5B567191A7F9B /* IRCConnectionTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */; };
 		4C766EC602CF8DBE08B09AAB /* IRCConnectionSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */; };
 		4C7380A292871C0CFE284130 /* IRCConnectionSocketNWF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */; };
+		4C089149ACB2ECE6EAD0FC4F /* ICLHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7A0118381FEF1688C409E8 /* ICLHelpers.m */; };
+		4CC8CABA1119CD8EE8C4CC0D /* ICLInlineContentLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C67F83C1490F0916EA47C93 /* ICLInlineContentLoader.m */; };
+		4C85C9BD5581B849ABA6BD6D /* ICLInlineContentModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2C9C53015C34937E305569 /* ICLInlineContentModule.m */; };
+		4C5D609A13BAC30E0A1F5DED /* ICLMediaAssessment.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBF90627CED963F448802B0 /* ICLMediaAssessment.m */; };
+		4CF7732D0F5EFB6D6D2B1DA4 /* ICLMediaAssessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1EB1E873F2BD8255853E2A /* ICLMediaAssessor.m */; };
+		4C348BA32A19CF37839DF90F /* ICLPayload.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C76D92C615E42A35336F97F /* ICLPayload.m */; };
+		4C4F5343473CA19CA4619F05 /* ICLURLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C72D08DEC2DBD9290660F94 /* ICLURLSession.m */; };
+		4CDEB669EB4A0FE82D19751D /* ICPCoreMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C96F0E8CB0AAB2801285C79 /* ICPCoreMedia.m */; };
+		4C84AA1C38E0C57C911973F8 /* ICMAssessedMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C00B576CC9A61B6A0FDAD79 /* ICMAssessedMedia.m */; };
+		4CD2B222C19C70F272D00BFD /* ICMCommonInlineImages.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C18A25932EB1EB261EAA2FA /* ICMCommonInlineImages.m */; };
+		4C05502EEC02BDE06CBFD1B2 /* ICMCommonInlineVideos.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD3FBC6AA3F21DA7684CFF /* ICMCommonInlineVideos.m */; };
+		4C0F3D08A76F1B319FC1BA04 /* ICMDailymotion.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE67423BB267BA07605E197 /* ICMDailymotion.m */; };
+		4C393DC4CC49ADA712A27C1A /* ICMGyazo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C6702992F6B99C3F06B9D /* ICMGyazo.m */; };
+		4CA06DF7B436103B77377CFD /* ICMImgurGifv.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C12019EE303B756900ABB5D /* ICMImgurGifv.m */; };
+		4C08DB2D6B08B7A7626C08BB /* ICMPornhub.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C9ABD12C25AEFCC50535329 /* ICMPornhub.m */; };
+		4CE1A54953EAFB8BCA43FAF4 /* ICMInlineHTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFF01EE542F4AD537AE0715 /* ICMInlineHTML.m */; };
+		4CE4FA966B02F0469946B6C6 /* ICMInlineImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04D45C7182C9433368C14B /* ICMInlineImage.m */; };
+		4C45B3D666CB1892FDBD5318 /* ICMInlineVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBCE092DEC024410CA7AB3D /* ICMInlineVideo.m */; };
+		4CA473AEA07E0018554D0EB9 /* ICMStreamable.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C40FD631E9A43320E8EC0F7 /* ICMStreamable.m */; };
+		4CDB659A13FAD16D598C77C5 /* ICMTweet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDEBACB78A8C1B96B908D36 /* ICMTweet.m */; };
+		4C501C177D228089690899F9 /* ICMVimeo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CF20C7B0B9F1A8070BCF0C7 /* ICMVimeo.m */; };
+		4CC4BA95ECE5BAA046E19A9A /* ICMXkcd.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5FF01CAFCA24781E2C1665 /* ICMXkcd.m */; };
+		4C280DD92753C13004D3359C /* ICMYouTube.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC3904DD1A65CA428D82125 /* ICMYouTube.m */; };
+		4C4A16D495876F0C70BC6E28 /* ICLHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C361D5F1E05A17D6BD5CFC1 /* ICLHelpers.h */; };
+		4C526AEC69B5FEEFA1387397 /* ICLInlineContentLoaderPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CACBCD3EE64B37925BB59CD /* ICLInlineContentLoaderPrivate.h */; };
+		4C93880C3CB5E54726759DF0 /* ICLInlineContentModule.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CA4A7B8B40F8B0A2E65729A /* ICLInlineContentModule.h */; };
+		4CD8C36F9A530E8758B35A03 /* ICLInlineContentModulePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C0774E00A3A6338804D5B62 /* ICLInlineContentModulePrivate.h */; };
+		4C0B4F6880F918357C86B9B4 /* ICLMediaAssessment.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C1EFCFA21B5D52613E31B34 /* ICLMediaAssessment.h */; };
+		4C79C536AF1D2AC15EECDFA5 /* ICLMediaAssessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C2EC1E5C7D00F272E52E45B /* ICLMediaAssessor.h */; };
+		4C958DEDFE140E0466301A3E /* ICLMediaType.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C67BD0A3C097279ADC7F700 /* ICLMediaType.h */; };
+		4C853886460B1BEDE6C89318 /* ICLPayload.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C0F3BCFF692A2BF865F34A8 /* ICLPayload.h */; };
+		4C12936420E038BE9AFCDF77 /* ICLPayloadPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CFEA4853AD80610A340C1E6 /* ICLPayloadPrivate.h */; };
+		4C817D9727619F192634D823 /* ICLURLSessionPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C7A27C4B22D0F5DA12A5D29 /* ICLURLSessionPrivate.h */; };
+		4C7C6207E489D71A9E064179 /* ICPCoreMediaPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C01D5F0230FF4DA88B8CB19 /* ICPCoreMediaPrivate.h */; };
+		4C272AF654968393F0B03C9A /* Inline Media in Resources */ = {isa = PBXBuildFile; fileRef = 4C61C76C523B53681C98EBFA /* Inline Media */; };
+		4C7FE9B965386EBECD77C5E2 /* ICLURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -693,17 +722,6 @@
 				4C9A1D9E1836E6D700C14835 /* ZNC Additions.bundle in Copy Extensions */,
 			);
 			name = "Copy Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4C761BA61E155C6E00A505B7 /* Copy XPC Services */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
-			dstSubfolderSpec = 16;
-			files = (
-				4C171681254A58C2004BE8AE /* Inline Content Loader.xpc in Copy XPC Services */,
-			);
-			name = "Copy XPC Services";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4C9E534415B4C171000E84A9 /* Copy Acknowledgements */ = {
@@ -810,17 +828,10 @@
 		4C06E2D620EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCAddressBookSheet.strings; sourceTree = "<group>"; };
 		4C06E2D820EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCLicenseUpgradeEligibilitySheet.strings; sourceTree = "<group>"; };
 		4C06E2DA20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCChannelModifyTopicSheet.strings; sourceTree = "<group>"; };
-		4C06E34E20EC50D40055D09A /* ICLPayloadLocal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICLPayloadLocal.m; sourceTree = "<group>"; };
 		4C06E36320EC51370055D09A /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
 		4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
-		4C06E37220EC51370055D09A /* ICLPayloadInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLPayloadInternal.h; sourceTree = "<group>"; };
-		4C06E37520EC51370055D09A /* ICLPayload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLPayload.h; sourceTree = "<group>"; };
-		4C06E38020EC51370055D09A /* ICLInlineContentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLInlineContentProtocol.h; sourceTree = "<group>"; };
-		4C06E38B20EC51370055D09A /* ICLPayload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICLPayload.m; sourceTree = "<group>"; };
-		4C06E41520EC52D50055D09A /* ICLPayloadLocalPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLPayloadLocalPrivate.h; sourceTree = "<group>"; };
 		4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromMigrate.plist; sourceTree = "<group>"; };
 		4C10C00D1F37E59B0004C624 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
-		4C171669254A589D004BE8AE /* Inline Content Loader.xpc */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.xpc-service"; name = "Inline Content Loader.xpc"; path = "../../../.tmp/SharedBuildProducts-XPCServices/Inline Content Loader.xpc"; sourceTree = "<group>"; };
 		4C17305322B4A94000DC5836 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesUserStyleSheet.xib; sourceTree = "<group>"; };
 		4C1DC5521580420500A47BC9 /* Textual.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Textual.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C24DC751A93C9CE0098D1BE /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = "../../Frameworks/Static Libraries/Libraries/Sparkle.framework"; sourceTree = SOURCE_ROOT; };
@@ -1286,26 +1297,17 @@
 		4C3154B720EB685700448776 /* Textual App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Textual App.xcconfig"; sourceTree = "<group>"; };
 		4C3154B820EB685700448776 /* Textual.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 		4C3154B920EB685700448776 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C3154BA20EB685700448776 /* XPC Service - ICL.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL.xcconfig"; sourceTree = "<group>"; };
-		4C3154BB20EB685700448776 /* XPC Services.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Services.xcconfig"; sourceTree = "<group>"; };
-		4C3154BC20EB685700448776 /* XPC Service - ICL Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL Extensions.xcconfig"; sourceTree = "<group>"; };
 		4C3154BD20EB685700448776 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
 		4C3154CA20EB685700448776 /* Textual App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Textual App.xcconfig"; sourceTree = "<group>"; };
 		4C3154CB20EB685700448776 /* Textual.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 		4C3154CC20EB685700448776 /* Preserve Symbols.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Preserve Symbols.xcconfig"; sourceTree = "<group>"; };
 		4C3154CD20EB685700448776 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C3154CE20EB685700448776 /* XPC Service - ICL.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL.xcconfig"; sourceTree = "<group>"; };
 		4C3154CF20EB685700448776 /* Foundation.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Foundation.xcconfig; sourceTree = "<group>"; };
-		4C3154D020EB685700448776 /* XPC Services.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Services.xcconfig"; sourceTree = "<group>"; };
-		4C3154D120EB685700448776 /* XPC Service - ICL Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL Extensions.xcconfig"; sourceTree = "<group>"; };
 		4C3154D220EB685700448776 /* Foundation Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Foundation Debug.xcconfig"; sourceTree = "<group>"; };
 		4C3154D320EB685700448776 /* Code Signing Identity.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Code Signing Identity.xcconfig"; sourceTree = "<group>"; };
 		4C3154DF20EB685700448776 /* Textual App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Textual App.xcconfig"; sourceTree = "<group>"; };
 		4C3154E020EB685700448776 /* Textual.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Textual.xcconfig; sourceTree = "<group>"; };
 		4C3154E120EB685700448776 /* Textual Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Textual Extensions.xcconfig"; sourceTree = "<group>"; };
-		4C3154E220EB685700448776 /* XPC Service - ICL.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL.xcconfig"; sourceTree = "<group>"; };
-		4C3154E320EB685700448776 /* XPC Services.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Services.xcconfig"; sourceTree = "<group>"; };
-		4C3154E420EB685700448776 /* XPC Service - ICL Extensions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "XPC Service - ICL Extensions.xcconfig"; sourceTree = "<group>"; };
 		4C3154E520EB685700448776 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
 		4C3154E720EB68A900448776 /* Standard Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Standard Release.entitlements"; sourceTree = "<group>"; };
 		4C315EE72C36581A001A16B4 /* KeysExcludedFromExport.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromExport.plist; sourceTree = "<group>"; };
@@ -1322,7 +1324,6 @@
 		4C5274E020F8D78700B18F9D /* IRCConnectionErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IRCConnectionErrors.h; path = ../../../Shared/Headers/IRCConnectionErrors.h; sourceTree = "<group>"; };
 		4C5274E520F8D7CD00B18F9D /* IRCConnectionErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IRCConnectionErrors.m; path = ../../../Shared/IRC/IRCConnectionErrors.m; sourceTree = "<group>"; };
 		4C58B570186011AC00834882 /* Acknowledgements.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = Acknowledgements.pdf; path = ../../Acknowledgements.pdf; sourceTree = SOURCE_ROOT; };
-		4C761BAE1E155CB100A505B7 /* BuildServices.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = BuildServices.sh; path = "Build Scripts/BuildServices.sh"; sourceTree = "<group>"; };
 		4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = UpdateFeatureFlags.sh; path = "Build Scripts/UpdateFeatureFlags.sh"; sourceTree = "<group>"; };
 		4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = "Chat Filters.bundle"; path = "../../.tmp/SharedBuildProducts-Extensions/Chat Filters.bundle"; sourceTree = SOURCE_ROOT; };
 		4C8878032C33706E0016DB98 /* TPCSandboxMigration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCSandboxMigration.m; sourceTree = "<group>"; };
@@ -1379,6 +1380,57 @@
 		4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionSocket.swift; sourceTree = "<group>"; };
 		4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionSocketNWF.swift; sourceTree = "<group>"; };
 		4C0E3113CD372843D4140EAF /* IRCConnectionTransportPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCConnectionTransportPrivate.h; sourceTree = "<group>"; };
+		4C7A0118381FEF1688C409E8 /* ICLHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLHelpers.m; sourceTree = "<group>"; };
+		4C67F83C1490F0916EA47C93 /* ICLInlineContentLoader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLInlineContentLoader.m; sourceTree = "<group>"; };
+		4C2C9C53015C34937E305569 /* ICLInlineContentModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLInlineContentModule.m; sourceTree = "<group>"; };
+		4CBF90627CED963F448802B0 /* ICLMediaAssessment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLMediaAssessment.m; sourceTree = "<group>"; };
+		4C1EB1E873F2BD8255853E2A /* ICLMediaAssessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLMediaAssessor.m; sourceTree = "<group>"; };
+		4C76D92C615E42A35336F97F /* ICLPayload.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLPayload.m; sourceTree = "<group>"; };
+		4C72D08DEC2DBD9290660F94 /* ICLURLSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLURLSession.m; sourceTree = "<group>"; };
+		4C96F0E8CB0AAB2801285C79 /* ICPCoreMedia.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICPCoreMedia.m; sourceTree = "<group>"; };
+		4C827C6117D480FF1C9FA2DC /* ICMAssessedMedia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMAssessedMedia.h; sourceTree = "<group>"; };
+		4C00B576CC9A61B6A0FDAD79 /* ICMAssessedMedia.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMAssessedMedia.m; sourceTree = "<group>"; };
+		4C9FE75801B06DEF73E7DC48 /* ICMCommonInlineImages.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMCommonInlineImages.h; sourceTree = "<group>"; };
+		4C18A25932EB1EB261EAA2FA /* ICMCommonInlineImages.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMCommonInlineImages.m; sourceTree = "<group>"; };
+		4CD45EA47B3C12F27A638A5E /* ICMCommonInlineVideos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMCommonInlineVideos.h; sourceTree = "<group>"; };
+		4CDD3FBC6AA3F21DA7684CFF /* ICMCommonInlineVideos.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMCommonInlineVideos.m; sourceTree = "<group>"; };
+		4CB1C80E045D2B7DDDA361E3 /* ICMDailymotion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMDailymotion.h; sourceTree = "<group>"; };
+		4CE67423BB267BA07605E197 /* ICMDailymotion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMDailymotion.m; sourceTree = "<group>"; };
+		4CCDCC1B1BA75E306C4DF86F /* ICMGyazo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMGyazo.h; sourceTree = "<group>"; };
+		4C6C6702992F6B99C3F06B9D /* ICMGyazo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMGyazo.m; sourceTree = "<group>"; };
+		4C5330E282610D940E98866A /* ICMImgurGifv.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMImgurGifv.h; sourceTree = "<group>"; };
+		4C12019EE303B756900ABB5D /* ICMImgurGifv.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMImgurGifv.m; sourceTree = "<group>"; };
+		4C1EA082A4B748C2E381E7B6 /* ICMPornhub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMPornhub.h; sourceTree = "<group>"; };
+		4C9ABD12C25AEFCC50535329 /* ICMPornhub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMPornhub.m; sourceTree = "<group>"; };
+		4C55AA11FB04B6C6C33CEEB3 /* ICMInlineHTML.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMInlineHTML.h; sourceTree = "<group>"; };
+		4CFF01EE542F4AD537AE0715 /* ICMInlineHTML.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMInlineHTML.m; sourceTree = "<group>"; };
+		4CD880CED5FB3E78B5557596 /* ICMInlineImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMInlineImage.h; sourceTree = "<group>"; };
+		4C04D45C7182C9433368C14B /* ICMInlineImage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMInlineImage.m; sourceTree = "<group>"; };
+		4CBA57B47CCDD2CBACA8D78F /* ICMInlineVideo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMInlineVideo.h; sourceTree = "<group>"; };
+		4CBCE092DEC024410CA7AB3D /* ICMInlineVideo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMInlineVideo.m; sourceTree = "<group>"; };
+		4C0E72C42D1E3B4676AFB3D5 /* ICMStreamable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMStreamable.h; sourceTree = "<group>"; };
+		4C40FD631E9A43320E8EC0F7 /* ICMStreamable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMStreamable.m; sourceTree = "<group>"; };
+		4CA8B5834DF8DB53A0FD904B /* ICMTweet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMTweet.h; sourceTree = "<group>"; };
+		4CDEBACB78A8C1B96B908D36 /* ICMTweet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMTweet.m; sourceTree = "<group>"; };
+		4CBE9CAC270B1A53D59D922A /* ICMVimeo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMVimeo.h; sourceTree = "<group>"; };
+		4CF20C7B0B9F1A8070BCF0C7 /* ICMVimeo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMVimeo.m; sourceTree = "<group>"; };
+		4C64EBC649AE39569603B521 /* ICMXkcd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMXkcd.h; sourceTree = "<group>"; };
+		4C5FF01CAFCA24781E2C1665 /* ICMXkcd.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMXkcd.m; sourceTree = "<group>"; };
+		4C9173B00DC2A98F99611D32 /* ICMYouTube.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMYouTube.h; sourceTree = "<group>"; };
+		4CC3904DD1A65CA428D82125 /* ICMYouTube.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMYouTube.m; sourceTree = "<group>"; };
+		4C361D5F1E05A17D6BD5CFC1 /* ICLHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLHelpers.h; sourceTree = "<group>"; };
+		4CACBCD3EE64B37925BB59CD /* ICLInlineContentLoaderPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLInlineContentLoaderPrivate.h; sourceTree = "<group>"; };
+		4CA4A7B8B40F8B0A2E65729A /* ICLInlineContentModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLInlineContentModule.h; sourceTree = "<group>"; };
+		4C0774E00A3A6338804D5B62 /* ICLInlineContentModulePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLInlineContentModulePrivate.h; sourceTree = "<group>"; };
+		4C1EFCFA21B5D52613E31B34 /* ICLMediaAssessment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLMediaAssessment.h; sourceTree = "<group>"; };
+		4C2EC1E5C7D00F272E52E45B /* ICLMediaAssessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLMediaAssessor.h; sourceTree = "<group>"; };
+		4C67BD0A3C097279ADC7F700 /* ICLMediaType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLMediaType.h; sourceTree = "<group>"; };
+		4C0F3BCFF692A2BF865F34A8 /* ICLPayload.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLPayload.h; sourceTree = "<group>"; };
+		4CFEA4853AD80610A340C1E6 /* ICLPayloadPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLPayloadPrivate.h; sourceTree = "<group>"; };
+		4C7A27C4B22D0F5DA12A5D29 /* ICLURLSessionPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICLURLSessionPrivate.h; sourceTree = "<group>"; };
+		4C01D5F0230FF4DA88B8CB19 /* ICPCoreMediaPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICPCoreMediaPrivate.h; sourceTree = "<group>"; };
+		4C61C76C523B53681C98EBFA /* Inline Media */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Inline Media"; sourceTree = "<group>"; };
+		4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLURLSessionTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1494,20 +1546,11 @@
 			path = "Language Files";
 			sourceTree = "<group>";
 		};
-		4C06E34D20EC50D40055D09A /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				4C06E34E20EC50D40055D09A /* ICLPayloadLocal.m */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
 		4C06E35A20EC51370055D09A /* Shared */ = {
 			isa = PBXGroup;
 			children = (
 				4C06E36920EC51370055D09A /* Headers */,
 				4C06E36020EC51370055D09A /* Library */,
-				4C06E38A20EC51370055D09A /* Services */,
 			);
 			name = Shared;
 			path = ../Shared;
@@ -1540,10 +1583,7 @@
 		4C06E36920EC51370055D09A /* Headers */ = {
 			isa = PBXGroup;
 			children = (
-				4C06E37520EC51370055D09A /* ICLPayload.h */,
 				4C06E36A20EC51370055D09A /* External Libraries */,
-				4C06E37120EC51370055D09A /* Internal */,
-				4C06E37E20EC51370055D09A /* Services */,
 			);
 			path = Headers;
 			sourceTree = "<group>";
@@ -1554,30 +1594,6 @@
 				4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */,
 			);
 			path = "External Libraries";
-			sourceTree = "<group>";
-		};
-		4C06E37120EC51370055D09A /* Internal */ = {
-			isa = PBXGroup;
-			children = (
-				4C06E37220EC51370055D09A /* ICLPayloadInternal.h */,
-			);
-			path = Internal;
-			sourceTree = "<group>";
-		};
-		4C06E37E20EC51370055D09A /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				4C06E38020EC51370055D09A /* ICLInlineContentProtocol.h */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		4C06E38A20EC51370055D09A /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				4C06E38B20EC51370055D09A /* ICLPayload.m */,
-			);
-			path = Services;
 			sourceTree = "<group>";
 		};
 		4C1DC5471580420500A47BC9 = {
@@ -1616,11 +1632,11 @@
 				4C31526220EB673E00448776 /* Dialogs */,
 				4C31516020EB673E00448776 /* Headers */,
 				4C3152D920EB673E00448776 /* Helpers */,
+				4CFEBE83670F30FD8ACED87A /* Inline Media */,
 				4C31512220EB673E00448776 /* IRC */,
 				4C31514520EB673E00448776 /* Library */,
 				4C31514320EB673E00448776 /* Others */,
 				4C31511320EB673E00448776 /* Preferences */,
-				4C06E34D20EC50D40055D09A /* Services */,
 				4C06E35A20EC51370055D09A /* Shared */,
 				4C3152A220EB673E00448776 /* Views */,
 			);
@@ -1920,7 +1936,17 @@
 		4C3151AB20EB673E00448776 /* Private */ = {
 			isa = PBXGroup;
 			children = (
-				4C06E41520EC52D50055D09A /* ICLPayloadLocalPrivate.h */,
+				4C361D5F1E05A17D6BD5CFC1 /* ICLHelpers.h */,
+				4CACBCD3EE64B37925BB59CD /* ICLInlineContentLoaderPrivate.h */,
+				4CA4A7B8B40F8B0A2E65729A /* ICLInlineContentModule.h */,
+				4C0774E00A3A6338804D5B62 /* ICLInlineContentModulePrivate.h */,
+				4C1EFCFA21B5D52613E31B34 /* ICLMediaAssessment.h */,
+				4C2EC1E5C7D00F272E52E45B /* ICLMediaAssessor.h */,
+				4C67BD0A3C097279ADC7F700 /* ICLMediaType.h */,
+				4C0F3BCFF692A2BF865F34A8 /* ICLPayload.h */,
+				4CFEA4853AD80610A340C1E6 /* ICLPayloadPrivate.h */,
+				4C7A27C4B22D0F5DA12A5D29 /* ICLURLSessionPrivate.h */,
+				4C01D5F0230FF4DA88B8CB19 /* ICPCoreMediaPrivate.h */,
 				4C3151E020EB673E00448776 /* IRCAddressBookMatchCachePrivate.h */,
 				4C3151EA20EB673E00448776 /* IRCAddressBookUserTrackingPrivate.h */,
 				4C31522120EB673E00448776 /* IRCChannelConfigPrivate.h */,
@@ -2351,6 +2377,7 @@
 				4CCBC4742BEB09645E9C6ACE /* Data Models */,
 				4C46CCA21580437400846B64 /* Documentation */,
 				4C31531720EB676400448776 /* Images */,
+				4C61C76C523B53681C98EBFA /* Inline Media */,
 				4C06E2A620EC4FF00055D09A /* Language Files */,
 				4C3152ED20EB676400448776 /* License Manager */,
 				4C31539B20EB676400448776 /* Property Lists */,
@@ -2569,7 +2596,6 @@
 			isa = PBXGroup;
 			children = (
 				4C46CCA6158043BB00846B64 /* Extensions */,
-				4C9A933B1FA659D1003C3DB5 /* XPC Services */,
 			);
 			name = Addons;
 			sourceTree = "<group>";
@@ -2604,9 +2630,6 @@
 				4C3154B720EB685700448776 /* Textual App.xcconfig */,
 				4C3154B920EB685700448776 /* Textual Extensions.xcconfig */,
 				4C3154B820EB685700448776 /* Textual.xcconfig */,
-				4C3154BC20EB685700448776 /* XPC Service - ICL Extensions.xcconfig */,
-				4C3154BA20EB685700448776 /* XPC Service - ICL.xcconfig */,
-				4C3154BB20EB685700448776 /* XPC Services.xcconfig */,
 			);
 			path = "Standard Release";
 			sourceTree = "<group>";
@@ -2620,9 +2643,6 @@
 				4C3154CA20EB685700448776 /* Textual App.xcconfig */,
 				4C3154CD20EB685700448776 /* Textual Extensions.xcconfig */,
 				4C3154CB20EB685700448776 /* Textual.xcconfig */,
-				4C3154D120EB685700448776 /* XPC Service - ICL Extensions.xcconfig */,
-				4C3154CE20EB685700448776 /* XPC Service - ICL.xcconfig */,
-				4C3154D020EB685700448776 /* XPC Services.xcconfig */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -2634,9 +2654,6 @@
 				4C3154DF20EB685700448776 /* Textual App.xcconfig */,
 				4C3154E120EB685700448776 /* Textual Extensions.xcconfig */,
 				4C3154E020EB685700448776 /* Textual.xcconfig */,
-				4C3154E420EB685700448776 /* XPC Service - ICL Extensions.xcconfig */,
-				4C3154E220EB685700448776 /* XPC Service - ICL.xcconfig */,
-				4C3154E320EB685700448776 /* XPC Services.xcconfig */,
 			);
 			path = Debug;
 			sourceTree = "<group>";
@@ -2731,22 +2748,6 @@
 			path = "Resources/Property Lists";
 			sourceTree = SOURCE_ROOT;
 		};
-		4C9A933B1FA659D1003C3DB5 /* XPC Services */ = {
-			isa = PBXGroup;
-			children = (
-				4C9A933C1FA659D9003C3DB5 /* Binaries */,
-			);
-			name = "XPC Services";
-			sourceTree = "<group>";
-		};
-		4C9A933C1FA659D9003C3DB5 /* Binaries */ = {
-			isa = PBXGroup;
-			children = (
-				4C171669254A589D004BE8AE /* Inline Content Loader.xpc */,
-			);
-			name = Binaries;
-			sourceTree = "<group>";
-		};
 		4CCC6B46158E8C1B003A102B /* Build Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -2763,7 +2764,6 @@
 			isa = PBXGroup;
 			children = (
 				5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */,
-				4C761BAE1E155CB100A505B7 /* BuildServices.sh */,
 				4CD6F7BB1CA7747600842597 /* ExportArchive.sh */,
 				4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */,
 				5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */,
@@ -2810,6 +2810,7 @@
 		4C225D0159F244226F0FB986 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */,
 				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
@@ -2834,6 +2835,163 @@
 			path = "Data Models";
 			sourceTree = "<group>";
 		};
+		4C43C5B914E4434A31B6674C /* Assessed Media */ = {
+			isa = PBXGroup;
+			children = (
+				4C827C6117D480FF1C9FA2DC /* ICMAssessedMedia.h */,
+				4C00B576CC9A61B6A0FDAD79 /* ICMAssessedMedia.m */,
+			);
+			path = "Assessed Media";
+			sourceTree = "<group>";
+		};
+		4C8F40E2FE2F36970D9117F4 /* Common Images */ = {
+			isa = PBXGroup;
+			children = (
+				4C9FE75801B06DEF73E7DC48 /* ICMCommonInlineImages.h */,
+				4C18A25932EB1EB261EAA2FA /* ICMCommonInlineImages.m */,
+			);
+			path = "Common Images";
+			sourceTree = "<group>";
+		};
+		4C21705E73DB9CEC3F32EA1E /* Common Videos */ = {
+			isa = PBXGroup;
+			children = (
+				4CD45EA47B3C12F27A638A5E /* ICMCommonInlineVideos.h */,
+				4CDD3FBC6AA3F21DA7684CFF /* ICMCommonInlineVideos.m */,
+			);
+			path = "Common Videos";
+			sourceTree = "<group>";
+		};
+		4C1117B24ADAE5BC18B7ABDE /* Dailymotion */ = {
+			isa = PBXGroup;
+			children = (
+				4CB1C80E045D2B7DDDA361E3 /* ICMDailymotion.h */,
+				4CE67423BB267BA07605E197 /* ICMDailymotion.m */,
+			);
+			path = Dailymotion;
+			sourceTree = "<group>";
+		};
+		4C839389F5D37397B43CAB99 /* Gyazo */ = {
+			isa = PBXGroup;
+			children = (
+				4CCDCC1B1BA75E306C4DF86F /* ICMGyazo.h */,
+				4C6C6702992F6B99C3F06B9D /* ICMGyazo.m */,
+			);
+			path = Gyazo;
+			sourceTree = "<group>";
+		};
+		4CA85A51334096DDBD5D53B2 /* Imgur .gifv */ = {
+			isa = PBXGroup;
+			children = (
+				4C5330E282610D940E98866A /* ICMImgurGifv.h */,
+				4C12019EE303B756900ABB5D /* ICMImgurGifv.m */,
+			);
+			path = "Imgur .gifv";
+			sourceTree = "<group>";
+		};
+		4CB87610CE680564D7E396AA /* Pornhub */ = {
+			isa = PBXGroup;
+			children = (
+				4C1EA082A4B748C2E381E7B6 /* ICMPornhub.h */,
+				4C9ABD12C25AEFCC50535329 /* ICMPornhub.m */,
+			);
+			path = Pornhub;
+			sourceTree = "<group>";
+		};
+		4C2566AD17C8F550DD5B6ACD /* Root Classes */ = {
+			isa = PBXGroup;
+			children = (
+				4C55AA11FB04B6C6C33CEEB3 /* ICMInlineHTML.h */,
+				4CFF01EE542F4AD537AE0715 /* ICMInlineHTML.m */,
+				4CD880CED5FB3E78B5557596 /* ICMInlineImage.h */,
+				4C04D45C7182C9433368C14B /* ICMInlineImage.m */,
+				4CBA57B47CCDD2CBACA8D78F /* ICMInlineVideo.h */,
+				4CBCE092DEC024410CA7AB3D /* ICMInlineVideo.m */,
+			);
+			path = "Root Classes";
+			sourceTree = "<group>";
+		};
+		4C1A63DA03DF56538C29FFE9 /* Streamable */ = {
+			isa = PBXGroup;
+			children = (
+				4C0E72C42D1E3B4676AFB3D5 /* ICMStreamable.h */,
+				4C40FD631E9A43320E8EC0F7 /* ICMStreamable.m */,
+			);
+			path = Streamable;
+			sourceTree = "<group>";
+		};
+		4C71886B28E2D9DC41262273 /* Twitter */ = {
+			isa = PBXGroup;
+			children = (
+				4CA8B5834DF8DB53A0FD904B /* ICMTweet.h */,
+				4CDEBACB78A8C1B96B908D36 /* ICMTweet.m */,
+			);
+			path = Twitter;
+			sourceTree = "<group>";
+		};
+		4CA35DAA6029FCC8EEA7F348 /* Vimeo */ = {
+			isa = PBXGroup;
+			children = (
+				4CBE9CAC270B1A53D59D922A /* ICMVimeo.h */,
+				4CF20C7B0B9F1A8070BCF0C7 /* ICMVimeo.m */,
+			);
+			path = Vimeo;
+			sourceTree = "<group>";
+		};
+		4CE1725BDADD1B0A6566784B /* xkcd */ = {
+			isa = PBXGroup;
+			children = (
+				4C64EBC649AE39569603B521 /* ICMXkcd.h */,
+				4C5FF01CAFCA24781E2C1665 /* ICMXkcd.m */,
+			);
+			path = xkcd;
+			sourceTree = "<group>";
+		};
+		4C7F43ECF653B2A89FA83637 /* YouTube */ = {
+			isa = PBXGroup;
+			children = (
+				4C9173B00DC2A98F99611D32 /* ICMYouTube.h */,
+				4CC3904DD1A65CA428D82125 /* ICMYouTube.m */,
+			);
+			path = YouTube;
+			sourceTree = "<group>";
+		};
+		4C3BD9DAC3969B0264C61043 /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+				4C43C5B914E4434A31B6674C /* Assessed Media */,
+				4C8F40E2FE2F36970D9117F4 /* Common Images */,
+				4C21705E73DB9CEC3F32EA1E /* Common Videos */,
+				4C1117B24ADAE5BC18B7ABDE /* Dailymotion */,
+				4C839389F5D37397B43CAB99 /* Gyazo */,
+				4CA85A51334096DDBD5D53B2 /* Imgur .gifv */,
+				4CB87610CE680564D7E396AA /* Pornhub */,
+				4C2566AD17C8F550DD5B6ACD /* Root Classes */,
+				4C1A63DA03DF56538C29FFE9 /* Streamable */,
+				4C71886B28E2D9DC41262273 /* Twitter */,
+				4CA35DAA6029FCC8EEA7F348 /* Vimeo */,
+				4CE1725BDADD1B0A6566784B /* xkcd */,
+				4C7F43ECF653B2A89FA83637 /* YouTube */,
+			);
+			path = Modules;
+			sourceTree = "<group>";
+		};
+		4CFEBE83670F30FD8ACED87A /* Inline Media */ = {
+			isa = PBXGroup;
+			children = (
+				4C7A0118381FEF1688C409E8 /* ICLHelpers.m */,
+				4C67F83C1490F0916EA47C93 /* ICLInlineContentLoader.m */,
+				4C2C9C53015C34937E305569 /* ICLInlineContentModule.m */,
+				4CBF90627CED963F448802B0 /* ICLMediaAssessment.m */,
+				4C1EB1E873F2BD8255853E2A /* ICLMediaAssessor.m */,
+				4C76D92C615E42A35336F97F /* ICLPayload.m */,
+				4C72D08DEC2DBD9290660F94 /* ICLURLSession.m */,
+				4C96F0E8CB0AAB2801285C79 /* ICPCoreMedia.m */,
+				4C3BD9DAC3969B0264C61043 /* Modules */,
+			);
+			path = "Inline Media";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2852,7 +3010,6 @@
 				4C3156E720EB6D0500448776 /* IRCAddressBookUserTrackingPrivate.h in Headers */,
 				4C3158C020EB6D1000448776 /* IRCUserInternal.h in Headers */,
 				4C31571D20EB6D0500448776 /* TDCLicenseManagerMigrateAppStoreSheetPrivate.h in Headers */,
-				4C06E3FA20EC51380055D09A /* ICLInlineContentProtocol.h in Headers */,
 				4C31572D20EB6D0500448776 /* TDCSharedProtocolDefinitionsPrivate.h in Headers */,
 				4C3155AF20EB6CB400448776 /* IRCHighlightLogEntry.h in Headers */,
 				4C06E26D20EC4C560055D09A /* NSObjectHelperPrivate.h in Headers */,
@@ -2904,7 +3061,6 @@
 				4C31571720EB6D0500448776 /* TDCHighlightEntrySheetPrivate.h in Headers */,
 				4C31575620EB6D0500448776 /* TVCLogScriptEventSinkPrivate.h in Headers */,
 				4C3158C520EB6D1000448776 /* IRCPrefixInternal.h in Headers */,
-				4C06E3CA20EC51380055D09A /* ICLPayloadInternal.h in Headers */,
 				4C31575B20EB6D0500448776 /* TVCMainWindowChannelViewPrivate.h in Headers */,
 				4C31573220EB6D0500448776 /* THOPluginManagerPrivate.h in Headers */,
 				4C3155D720EB6CB400448776 /* TPCPreferencesUserDefaultsLocal.h in Headers */,
@@ -3008,7 +3164,6 @@
 				4C3155BF20EB6CB400448776 /* NSViewHelper.h in Headers */,
 				4C31576220EB6D0500448776 /* TVCMainWindowTextViewPrivate.h in Headers */,
 				4C31572620EB6D0500448776 /* TDCProgressIndicatorSheetPrivate.h in Headers */,
-				4C06E3D620EC51380055D09A /* ICLPayload.h in Headers */,
 				4C8F3FD82C31AF7700118AAF /* THOPluginManager.h in Headers */,
 				4C31575120EB6D0500448776 /* TVCLogControllerInlineMediaServicePrivate.h in Headers */,
 				4C31572320EB6D0500448776 /* TDCNicknameColorSheetPrivate.h in Headers */,
@@ -3051,7 +3206,6 @@
 				4C3155B620EB6CB400448776 /* IRCPrefix.h in Headers */,
 				4C31575020EB6D0500448776 /* HLSHistoricLogManagerPrivate.h in Headers */,
 				4CAB276D253863D9009B1F07 /* IRCChannelMemberListControllerPrivate.h in Headers */,
-				4C06E41820EC52D60055D09A /* ICLPayloadLocalPrivate.h in Headers */,
 				4C3155D620EB6CB400448776 /* TPCPreferencesReload.h in Headers */,
 				4C3155C920EB6CB400448776 /* TLONotificationController.h in Headers */,
 				4C31572820EB6D0500448776 /* TDCServerChannelListDialogPrivate.h in Headers */,
@@ -3095,6 +3249,17 @@
 				4C31570E20EB6D0500448776 /* TDCChannelPropertiesSheetPrivate.h in Headers */,
 				4C31570420EB6D0500448776 /* TDCAddressBookSheetPrivate.h in Headers */,
 				4C31575220EB6D0500448776 /* TVCLogControllerOperationQueuePrivate.h in Headers */,
+				4C4A16D495876F0C70BC6E28 /* ICLHelpers.h */,
+				4C526AEC69B5FEEFA1387397 /* ICLInlineContentLoaderPrivate.h */,
+				4C93880C3CB5E54726759DF0 /* ICLInlineContentModule.h */,
+				4CD8C36F9A530E8758B35A03 /* ICLInlineContentModulePrivate.h */,
+				4C0B4F6880F918357C86B9B4 /* ICLMediaAssessment.h */,
+				4C79C536AF1D2AC15EECDFA5 /* ICLMediaAssessor.h */,
+				4C958DEDFE140E0466301A3E /* ICLMediaType.h */,
+				4C853886460B1BEDE6C89318 /* ICLPayload.h */,
+				4C12936420E038BE9AFCDF77 /* ICLPayloadPrivate.h */,
+				4C817D9727619F192634D823 /* ICLURLSessionPrivate.h */,
+				4C7C6207E489D71A9E064179 /* ICPCoreMediaPrivate.h */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3116,8 +3281,6 @@
 				4C2BEB612C384E16008F8F0D /* Postprocess Sparkle */,
 				4C01BA101581104D007E2DAF /* Build Extensions */,
 				4C52AED515811C2000940619 /* Copy Extensions */,
-				4C761BAF1E155D7400A505B7 /* Build XPC Services */,
-				4C761BA61E155C6E00A505B7 /* Copy XPC Services */,
 			);
 			buildRules = (
 			);
@@ -3366,6 +3529,7 @@
 				4C06E20420EC4AC50055D09A /* TVCMainWindow.xib in Resources */,
 				4C06DFEF20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif in Resources */,
 				4C06DFF020EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif in Resources */,
+				4C272AF654968393F0B03C9A /* Inline Media */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3439,22 +3603,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/PostprocessSparkle.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/PostprocessSparkle.txt\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4C761BAF1E155D7400A505B7 /* Build XPC Services */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Build XPC Services";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildServices.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildServices.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -3592,9 +3740,7 @@
 				4C06E6B920EC55B90055D09A /* TPCPreferencesUserDefaults.m in Sources */,
 				4C06E6BA20EC55B90055D09A /* TPCPreferencesUserDefaultsLocal.m in Sources */,
 				4C06E6BC20EC55B90055D09A /* TPCResourceManager.m in Sources */,
-				4C06E6BD20EC55B90055D09A /* ICLPayloadLocal.m in Sources */,
 				4C06E6BF20EC55B90055D09A /* GCDAsyncSocket.m in Sources */,
-				4C06E6C220EC55B90055D09A /* ICLPayload.m in Sources */,
 				4C06E6C420EC55B90055D09A /* TVCChannelSelectionOutlineCellView.m in Sources */,
 				4C8F3FDC2C31B15B00118AAF /* THOPluginItemLogging.m in Sources */,
 				4C06E6C520EC55B90055D09A /* TVCChannelSelectionViewController.m in Sources */,
@@ -3640,6 +3786,29 @@
 				4C06E6EF20EC55B90055D09A /* TVCContentNavigationOutlineView.m in Sources */,
 				4CB873DE22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m in Sources */,
 				4C06E6F020EC55B90055D09A /* TVCDockIcon.m in Sources */,
+				4C089149ACB2ECE6EAD0FC4F /* ICLHelpers.m */,
+				4CC8CABA1119CD8EE8C4CC0D /* ICLInlineContentLoader.m */,
+				4C85C9BD5581B849ABA6BD6D /* ICLInlineContentModule.m */,
+				4C5D609A13BAC30E0A1F5DED /* ICLMediaAssessment.m */,
+				4CF7732D0F5EFB6D6D2B1DA4 /* ICLMediaAssessor.m */,
+				4C348BA32A19CF37839DF90F /* ICLPayload.m */,
+				4C4F5343473CA19CA4619F05 /* ICLURLSession.m */,
+				4CDEB669EB4A0FE82D19751D /* ICPCoreMedia.m */,
+				4C84AA1C38E0C57C911973F8 /* ICMAssessedMedia.m */,
+				4CD2B222C19C70F272D00BFD /* ICMCommonInlineImages.m */,
+				4C05502EEC02BDE06CBFD1B2 /* ICMCommonInlineVideos.m */,
+				4C0F3D08A76F1B319FC1BA04 /* ICMDailymotion.m */,
+				4C393DC4CC49ADA712A27C1A /* ICMGyazo.m */,
+				4CA06DF7B436103B77377CFD /* ICMImgurGifv.m */,
+				4C08DB2D6B08B7A7626C08BB /* ICMPornhub.m */,
+				4CE1A54953EAFB8BCA43FAF4 /* ICMInlineHTML.m */,
+				4CE4FA966B02F0469946B6C6 /* ICMInlineImage.m */,
+				4C45B3D666CB1892FDBD5318 /* ICMInlineVideo.m */,
+				4CA473AEA07E0018554D0EB9 /* ICMStreamable.m */,
+				4CDB659A13FAD16D598C77C5 /* ICMTweet.m */,
+				4C501C177D228089690899F9 /* ICMVimeo.m */,
+				4CC4BA95ECE5BAA046E19A9A /* ICMXkcd.m */,
+				4C280DD92753C13004D3359C /* ICMYouTube.m */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3647,6 +3816,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C7FE9B965386EBECD77C5E2 /* ICLURLSessionTests.m in Sources */,
 				4CD29A7005E9204039D14F04 /* IRCColorFormatTests.m in Sources */,
 				4CB88F3501E8522FE1EEFA73 /* IRCISupportInfoTests.m in Sources */,
 				4CB88F3501E8522FE1EEFA7A /* IRCClientNickServTests.m in Sources */,

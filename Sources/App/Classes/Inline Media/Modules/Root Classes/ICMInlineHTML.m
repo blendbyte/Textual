@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,108 @@
  *
  *********************************************************************** */
 
+#import "ICLHelpers.h"
+#import "ICMInlineHTML.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@implementation ICMInlineHTML
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+- (void)performActionForHTML:(NSString *)unescapedHTML
+{
+	NSParameterAssert(unescapedHTML != nil);
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+	ICLPayloadMutable *payload = self.payload;
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+	NSDictionary *templateAttributes =
+	@{
+		@"classAttribute" : payload.classAttribute,
+		@"unescapedHTML" : unescapedHTML,
+		@"uniqueIdentifier" : payload.uniqueIdentifier
+	};
 
-- (void)prepareForApplicationTermination;
+	NSError *templateRenderError = nil;
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
+	NSString *html = [self.template renderObject:templateAttributes error:&templateRenderError];
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+	payload.html = html;
+
+	[self finalizeWithError:templateRenderError];
+}
+
+- (void)notifyUnableToPresentHTML
+{
+	[self cancel];
+}
+
+#pragma mark -
+#pragma mark Action Block
+
++ (ICLInlineContentModuleActionBlock)actionBlockForHTML:(NSString *)html
+{
+	NSParameterAssert(html != nil);
+
+	return [^(ICLInlineContentModule *module) {
+		__weak ICMInlineHTML *moduleTyped = (id)module;
+
+		[moduleTyped performActionForHTML:html];
+	} copy];
+}
+
+@end
+
+#pragma mark -
+#pragma mark Foundation
+
+@implementation ICMInlineHTMLFoundation
+
+- (nullable NSArray<NSURL *> *)styleResources
+{
+	static NSArray<NSURL *> *styleResources = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		styleResources =
+		@[
+		  ICLResourceURL(@"ICMInlineHTML", @"css")
+		];
+	});
+
+	return styleResources;
+}
+
+- (nullable NSArray<NSURL *> *)scriptResources
+{
+	static NSArray<NSURL *> *scriptResources = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		scriptResources =
+		@[
+		  ICLResourceURL(@"ICMInlineHTML", @"js")
+		];
+	});
+
+	return scriptResources;
+}
+
+- (nullable NSURL *)templateURL
+{
+	return ICLResourceURL(@"ICMInlineHTML", @"mustache");
+}
+
+- (nullable NSString *)entrypoint
+{
+	return @"_ICMInlineHTML";
+}
+
++ (BOOL)contentUntrusted
+{
+	return YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,30 +37,35 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+/* A module's template, style or script in the app's "Inline Media" folder */
+FOUNDATION_EXPORT NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension);
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+@interface ICLHelpers : NSObject
+/* nil unless the address is an HTTP(S) URL with a host.
+ Addresses that begin with "//" are treated as HTTPS. */
++ (nullable NSURL *)URLWithString:(NSString *)address;
+@end
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+/* Requests go through the shared inline media session (ICLURLSession):
+ local addresses are refused and responses are capped at 1 MB.
+ Completion blocks are called on the main thread. */
+@interface ICLHelpers (JSON)
++ (void)requestJSONDataFromURL:(NSURL *)url completionBlock:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable data))completionBlock;
++ (void)requestJSONDataFromAddress:(NSString *)address completionBlock:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable data))completionBlock;
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
++ (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromURL:(NSURL *)url completionBlock:(void (^)(id _Nullable object))completionBlock;
++ (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromAddress:(NSString *)address completionBlock:(void (^)(id _Nullable object))completionBlock;
+@end
 
-- (void)prepareForApplicationTermination;
+@interface ICLHelpers (Errors)
+@property (copy, readonly, class) NSError *genericValidationFailedError;
+@end
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
-
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+@interface NSString (ICLHelpers)
+/* Given "youtube.com" as input, returns if string is
+ equal to "youtube.com" or has suffix ".youtube.com" */
+- (BOOL)isDomain:(NSString *)domain;
+- (BOOL)isDomainOrSubdomain:(NSString *)domain;
 @end
 
 NS_ASSUME_NONNULL_END

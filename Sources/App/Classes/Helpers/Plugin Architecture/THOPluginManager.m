@@ -260,6 +260,8 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 		[self checkForUnsupportedBundles];
 
+		[self checkForInlineMediaModules];
+
 		[RZNotificationCenter() postNotificationName:THOPluginManagerFinishedLoadingPluginsNotification object:self];
 	});
 }
@@ -536,8 +538,81 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 
 	NSString *bundlesName = [NSBundle formattedDisplayNamesForBundles:bundles];
 
-	[TDCAlert alertWithMessage:TXTLS(@"Prompts[u5x-b2]")
-						 title:TXTLS(@"Prompts[u5x-b1]", bundlesName)
+	[self _offerToTrashBundles:bundles withTitle:TXTLS(@"Prompts[u5x-b1]", bundlesName) message:TXTLS(@"Prompts[u5x-b2]")];
+}
+
+- (void)checkForInlineMediaModules
+{
+	/* Textual 7 loaded inline media modules (.mediaPlugin) from this folder
+	 into its inline media service. Textual 8 has its modules built in and
+	 loads no others. Told once per module, whatever the user answers. */
+	static NSString * const reportedDefaultsKey = @"THOPluginManager -> Reported Inline Media Modules";
+
+	NSURL *sourceURL = [TPCPathInfo groupContainerApplicationSupportURL];
+
+	if (sourceURL == nil) {
+		return;
+	}
+
+	NSURL *modulesURL = [sourceURL URLByAppendingPathComponent:@"Inline Media Modules" isDirectory:YES];
+
+	NSArray<NSURL *> *files =
+	[RZFileManager() contentsOfDirectoryAtURL:modulesURL
+				   includingPropertiesForKeys:nil
+									  options:NSDirectoryEnumerationSkipsHiddenFiles
+										error:NULL];
+
+	NSArray<NSString *> *reported = [RZUserDefaults() arrayForKey:reportedDefaultsKey];
+
+	NSMutableArray<NSString *> *reportedMutable = [NSMutableArray arrayWithArray:reported];
+
+	NSMutableArray<NSBundle *> *bundles = [NSMutableArray array];
+
+	for (NSURL *file in files) {
+		if ([file.pathExtension isEqualToString:@"mediaPlugin"] == NO) {
+			continue;
+		}
+
+		NSBundle *bundle = [NSBundle bundleWithURL:file];
+
+		if (bundle == nil) {
+			continue;
+		}
+
+		NSString *reportedKey = bundle.bundleIdentifier;
+
+		if (reportedKey == nil) {
+			reportedKey = file.lastPathComponent;
+		}
+
+		if ([reportedMutable containsObject:reportedKey]) {
+			continue;
+		}
+
+		[reportedMutable addObject:reportedKey];
+
+		[bundles addObject:bundle];
+	}
+
+	if (bundles.count == 0) {
+		return;
+	}
+
+	[RZUserDefaults() setObject:[reportedMutable copy] forKey:reportedDefaultsKey];
+
+	NSString *bundlesName = [NSBundle formattedDisplayNamesForBundles:bundles];
+
+	[self _offerToTrashBundles:bundles withTitle:TXTLS(@"Prompts[u5x-b7]", bundlesName) message:TXTLS(@"Prompts[u5x-b8]")];
+}
+
+- (void)_offerToTrashBundles:(NSArray<NSBundle *> *)bundles withTitle:(NSString *)title message:(NSString *)message
+{
+	NSParameterAssert(bundles != nil);
+	NSParameterAssert(title != nil);
+	NSParameterAssert(message != nil);
+
+	[TDCAlert alertWithMessage:message
+						 title:title
 				 defaultButton:TXTLS(@"Prompts[u5x-b3]")
 			   alternateButton:TXTLS(@"Prompts[u5x-b4]")
 			   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id _Nullable underlyingAlert) {

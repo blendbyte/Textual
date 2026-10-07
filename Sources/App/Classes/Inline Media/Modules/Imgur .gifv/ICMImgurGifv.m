@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,95 @@
  *
  *********************************************************************** */
 
+#import "ICMImgurGifv.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@interface ICMImgurGifv ()
+@property (readonly, copy, class) NSArray<NSString *> *validFileExtensions;
+@end
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+@implementation ICMImgurGifv
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
++ (nullable ICLInlineContentModuleActionBlock)actionBlockForURL:(NSURL *)url
+{
+	NSString *address = [self _finalAddressForURL:url];
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+	if (address == nil) {
+		return nil;
+	}
 
-- (void)prepareForApplicationTermination;
+	return [super actionBlockForAddress:address];
+}
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
++ (nullable NSString *)_finalAddressForURL:(NSURL *)url
+{
+	NSString *urlPath = url.path.percentEncodedURLPath;
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+	if (urlPath.length <= 1) {
+		return nil;
+	}
+
+	urlPath = [urlPath substringFromIndex:1]; // "/"
+
+	NSString *fileExtension = urlPath.pathExtension.lowercaseString;
+
+	if ([self.validFileExtensions containsObject:fileExtension] == NO) {
+		return nil;
+	}
+
+	NSString *videoIdentifier = urlPath.stringByDeletingPathExtension;
+
+	if (videoIdentifier.isAlphabeticNumericOnly == NO) {
+		return nil;
+	}
+
+	return [NSString stringWithFormat:@"https://i.imgur.com/%@.mp4", videoIdentifier];
+}
+
++ (nullable NSArray<NSString *> *)domains
+{
+	static NSArray<NSString *> *domains = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		domains =
+		@[
+		  @"i.imgur.com"
+		];
+	});
+
+	return domains;
+}
+
++ (NSArray<NSString *> *)validFileExtensions
+{
+	static NSArray<NSString *> *cachedValue = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		cachedValue =
+		@[@"mp4",
+		  @"gif",
+		  @"gifv",
+		  @"webp"];
+	});
+
+	return cachedValue;
+}
+
++ (BOOL)contentIsFile
+{
+	return YES;
+}
+
+- (void)finalizePreflight
+{
+	self.payload.classAttribute = @"inlineImgurGifv";
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

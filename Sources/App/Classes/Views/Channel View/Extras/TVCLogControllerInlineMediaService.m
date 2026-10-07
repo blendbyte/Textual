@@ -35,8 +35,6 @@
  *
  *********************************************************************** */
 
-#import "ICLInlineContentProtocol.h"
-#import "ICLPayload.h"
 #import "TXMasterController.h"
 #import "IRCClient.h"
 #import "IRCClientConfig.h"
@@ -44,18 +42,14 @@
 #import "IRCTreeItem.h"
 #import "IRCWorld.h"
 #import "TLOLocalization.h"
-#import "TPCPathInfoPrivate.h"
-#import "TPCPreferencesUserDefaults.h"
 #import "TDCPreferencesControllerPrivate.h"
 #import "TVCAlert.h"
 #import "TVCLogControllerPrivate.h"
+#import "ICLPayload.h"
+#import "ICLInlineContentLoaderPrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface TVCLogControllerInlineMediaService ()
-@property (nonatomic, strong) NSXPCConnection *serviceConnection;
-@end
 
 @implementation TVCLogControllerInlineMediaService
 
@@ -72,138 +66,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return sharedSelf;
 }
 
-#pragma mark -
-#pragma mark Construction
-
-- (void)warmProcessIfNeeded
-{
-	if (self.serviceConnection != nil) {
-		return;
-	}
-
-	LogToConsoleDebug("Warming process...");
-
-	[self connectToService];
-}
-
-- (void)invalidateProcess
-{
-	if (self.serviceConnection == nil) {
-		return;
-	}
-
-	LogToConsoleDebug("Invalidating process...");
-
-	[self.serviceConnection invalidate];
-}
-
-- (void)connectToService
-{
-	NSXPCConnection *serviceConnection = [[NSXPCConnection alloc] initWithServiceName:@"com.textualapp.app.InlineContentLoader"];
-
-	NSXPCInterface *remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ICLInlineContentServerProtocol)];
-
-	[remoteObjectInterface setClasses:[NSSet setWithObjects:[NSArray class], [NSURL class], nil]
-						  forSelector:@selector(warmServiceByLoadingPluginsAtLocations:)
-						argumentIndex:0
-							  ofReply:NO];
-
-	serviceConnection.remoteObjectInterface = remoteObjectInterface;
-
-	NSXPCInterface *exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ICLInlineContentClientProtocol)];
-
-	serviceConnection.exportedInterface = exportedInterface;
-
-	serviceConnection.exportedObject = self;
-
-	serviceConnection.interruptionHandler = ^{
-		[self interruptionHandler];
-
-		LogToConsole("Interruption handler called");
-	};
-
-	serviceConnection.invalidationHandler = ^{
-		[self invalidationHandler];
-
-		LogToConsole("Invalidation handler called");
-	};
-
-	[serviceConnection resume];
-
-	self.serviceConnection = serviceConnection;
-
-	[self registerDefaults];
-	[self registerPlugins];
-}
-
-- (void)interruptionHandler
-{
-	[self invalidateProcess];
-}
-
-- (void)invalidationHandler
-{
-	self.serviceConnection = nil;
-}
-
 - (void)prepareForApplicationTermination
 {
-	LogToConsoleTerminationProgress("Invalidating media service process");
+	LogToConsoleTerminationProgress("Cancelling inline media requests");
 
-	[self invalidateProcess];
-}
-
-- (void)registerDefaults
-{
-	/* We pass the registered defaults for the app to the XPC
-	 service because it accesses preferences within that domain. */
-	/* The registered defaults aren't changed after launch which
-	 means this is a one off deal, but we should use notifications
-	 if that ever changes in the future. */
-
-	NSDictionary *defaults = [RZUserDefaults() registeredDefaults];
-
-	[[self remoteObjectProxy] warmServiceByRegisteringDefaults:defaults];
-}
-
-- (void)registerPlugins
-{
-	NSArray *pluginLocations = @[
-		 [self _applicationSupportInlineMediaPluginsURL]
-	];
-
-	[[self remoteObjectProxy] warmServiceByLoadingPluginsAtLocations:pluginLocations];
-}
-
-- (NSURL *)_applicationSupportInlineMediaPluginsURL
-{
-	NSURL *sourceURL = [TPCPathInfo groupContainerApplicationSupportURL];
-
-	NSURL *baseRL = [sourceURL URLByAppendingPathComponent:@"/Inline Media Modules/"];
-
-	[TPCPathInfo _createDirectoryAtURL:baseRL];
-
-	return baseRL;
-}
-
-#pragma mark -
-#pragma mark Private API
-
-- (id <ICLInlineContentServerProtocol>)remoteObjectProxy
-{
-	return [self remoteObjectProxyWithErrorHandler:nil];
-}
-
-- (id <ICLInlineContentServerProtocol>)remoteObjectProxyWithErrorHandler:(void (^ _Nullable)(NSError *error))handler
-{
-	return [self.serviceConnection remoteObjectProxyWithErrorHandler:^(NSError *error) {
-		LogToConsoleError("Error occurred while communicating with service: %{public}@",
-			error.localizedDescription);
-
-		if (handler) {
-			handler(error);
-		}
-	}];
+	[[ICLInlineContentLoader sharedLoader] prepareForApplicationTermination];
 }
 
 #pragma mark -
@@ -236,18 +103,16 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(lineNumber != nil);
 	NSParameterAssert(item != nil);
 
-	[self warmProcessIfNeeded];
+	NSString *viewIdentifier = item.uniqueIdentifier;
 
-	[[self remoteObjectProxy] processURL:url withUniqueIdentifier:uniqueIdentifier atLineNumber:lineNumber index:index inView:item.uniqueIdentifier];
-}
-
-- (void)reloadService
-{
-	[self invalidateProcess];
+	/* The loader and its modules run on the main thread */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[[ICLInlineContentLoader sharedLoader] processURL:url withUniqueIdentifier:uniqueIdentifier atLineNumber:lineNumber index:index inView:viewIdentifier];
+	});
 }
 
 #pragma mark -
-#pragma mark Private API (Client)
+#pragma mark Results
 
 - (void)processingPayloadSucceeded:(ICLPayload *)payload
 {

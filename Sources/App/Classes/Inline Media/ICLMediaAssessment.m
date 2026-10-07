@@ -5,7 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2017, 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +35,119 @@
  *
  *********************************************************************** */
 
+#import "NSObjectHelperPrivate.h"
+#import "ICLMediaAssessment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload, IRCTreeItem;
+@interface ICLMediaAssessment ()
+{
+@protected
+	NSURL *_url;
+	ICLMediaType _type;
+	NSString *_contentType;
+	unsigned long long _contentLength;
+}
 
-#define TVCLogControllerInlineMediaSharedInstance()				[TVCLogControllerInlineMediaService sharedInstance]
+@end
 
-@interface TVCLogControllerInlineMediaService : NSObject
-+ (TVCLogControllerInlineMediaService *)sharedInstance;
+@implementation ICLMediaAssessment
 
-- (void)processAddress:(NSString *)address
-  withUniqueIdentifier:(NSString *)uniqueIdentifier
-		  atLineNumber:(NSString *)lineNumber
-				 index:(NSUInteger)index
-			   forItem:(IRCTreeItem *)item;
+- (instancetype)init
+{
+	[self doesNotRecognizeSelector:_cmd];
 
-- (void)prepareForApplicationTermination;
+	return nil;
+}
 
-/* Called by ICLInlineContentLoader on the main thread */
-- (void)processingPayloadSucceeded:(ICLPayload *)payload;
-- (void)processingPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
+- (instancetype)initWithURL:(NSURL *)url asType:(ICLMediaType)type
+{
+	NSParameterAssert(url != nil);
 
-/* This will present a modal alert asking user for permission
- to enable inline media so that they are aware of the risk of
- IP address leaks. Completion block returns YES on permission
- granted. NO in all other cases. */
-+ (void)askPermissionToEnableInlineMediaWithCompletionBlock:(void (NS_NOESCAPE ^)(BOOL granted))completionBlock;
+	if ((self = [super init])) {
+		self->_url = [url copy];
+
+		self->_type = type;
+
+		[self populateDefaultsPostflight];
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (void)populateDefaultsPostflight
+{
+	SetVariableIfNil(self->_contentType, @"application/binary");
+}
+
+- (void)initializedClassHealthCheck
+{
+	NSParameterAssert(self->_url != nil);
+	NSParameterAssert(self->_contentType != nil);
+}
+
+- (id)copyAsMutable:(BOOL)mutableCopy uniquing:(BOOL)uniquing
+{
+	ICLMediaAssessment *object = [self allocForCopyAsMutable:mutableCopy];
+
+	object->_url = self->_url;
+
+	object->_type = self->_type;
+
+	object->_contentType = self->_contentType;
+	object->_contentLength = self->_contentLength;
+
+	return [object initOnCopy];
+}
+
+- (__kindof XRPortablePropertyObject *)mutableClass
+{
+	return [ICLMediaAssessmentMutable self];
+}
+
+@end
+
+#pragma mark -
+
+@implementation ICLMediaAssessmentMutable
+
+@dynamic type;
+@dynamic contentType;
+@dynamic contentLength;
+
++ (BOOL)isMutable
+{
+	return YES;
+}
+
+- (__kindof XRPortablePropertyObject *)immutableClass
+{
+	return [ICLMediaAssessment self];
+}
+
+- (void)setType:(ICLMediaType)type
+{
+	if (self->_type != type) {
+		self->_type = type;
+	}
+}
+
+- (void)setContentType:(NSString *)contentType
+{
+	if (self->_contentType != contentType) {
+		self->_contentType = [contentType copy];
+	}
+}
+
+- (void)setContentLength:(unsigned long long)contentLength
+{
+	if (self->_contentLength != contentLength) {
+		self->_contentLength = contentLength;
+	}
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
