@@ -94,7 +94,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientDidDisconnectNotification;
 
 TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification;
 
-@interface IRCClient : IRCTreeItem <IRCConnectionDelegate>
+@interface IRCClient : IRCTreeItem
 @property (readonly, copy) IRCClientConfig *config;
 @property (readonly, copy, nullable) IRCServer *server; // Where is being connected to. Use -serverAddress for server address connected to.
 @property (readonly) IRCISupportInfo *supportInfo;
@@ -132,6 +132,102 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 
 - (instancetype)init NS_UNAVAILABLE;
 
+@property (readonly) ClientIRCv3SupportedCapability capacities;
+@property (readonly, copy) NSString *enabledCapacitiesStringValue;
+
+- (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet parameterString:(NSString *)parameterString;
+- (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet parameterString:(NSString *)parameterString characterSet:(NSCharacterSet *)characterList;
+
+- (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet modeParameters:(NSArray<NSString *> *)modeParameters;
+
+- (void)closeDialogs;
+
+#pragma mark -
+
+@property (readonly) NSUInteger numberOfUsers;
+
+@property (readonly, copy) NSArray<IRCUser *> *userList;
+
+@property (readonly, nullable) IRCUser *myself;
+
+#pragma mark -
+
+- (nullable IRCChannel *)findChannel:(NSString *)withName;
+- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName;
+- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isPrivateMessage:(BOOL)isPrivateMessage;
+
+/* A utility window is a private message that is never sent to the server:
+ a place for a plugin to log its own messages (Chat Filter's "Filter Actions") */
+- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isUtility:(BOOL)isUtility;
+
+- (nullable NSData *)convertToCommonEncoding:(NSString *)string;
+- (nullable NSString *)convertFromCommonEncoding:(NSData *)data;
+
+- (BOOL)nicknameIsMyself:(NSString *)nickname;
+
+- (BOOL)stringIsNickname:(NSString *)string;
+- (BOOL)stringIsChannelName:(NSString *)string;
+
+- (BOOL)outputRuleMatchedInMessage:(NSString *)message inChannel:(nullable IRCChannel *)channel;
+
+#pragma mark -
+
+- (void)setUnreadStateForChannel:(IRCChannel *)channel;
+- (void)setUnreadStateForChannel:(IRCChannel *)channel isHighlight:(BOOL)isHighlight;
+
+- (void)setHighlightStateForChannel:(IRCChannel *)channel;
+
+#pragma mark -
+
+- (void)clearCachedHighlights;
+
+/* -config may not always reflect the current state of the client.
+ * This is because its too costly to mutate it for stuff that changes
+ * many times a second. The client instead saves a copy of its
+ * configuration periodically. This method will force it to perform
+ * a save if you need to rely on most recent version. */
+- (void)updateStoredConfiguration;
+@end
+
+@interface IRCClient (ZNC)
+- (BOOL)nicknameIsZNCUser:(NSString *)nickname;
+- (BOOL)nickname:(NSString *)nickname isZNCUser:(NSString *)zncNickname;
+- (nullable NSString *)nicknameAsZNCUser:(NSString *)nickname; // Returns nil if not connected to ZNC
+
+- (void)sendCommand:(NSString *)command toZNCModuleNamed:(NSString *)module;
+@end
+
+@interface IRCClient (Users)
+- (BOOL)userExists:(NSString *)nickname;
+
+- (nullable IRCUser *)findUser:(NSString *)nickname;
+- (IRCUser *)findUserOrCreate:(NSString *)nickname;
+
+- (void)addUser:(IRCUser *)user;
+
+- (void)removeUser:(IRCUser *)user;
+- (void)removeUserWithNickname:(NSString *)nickname;
+
+- (NSArray<IRCAddressBookEntry *> *)findIgnoresForHostmask:(NSString *)hostmask;
+@end
+
+@interface IRCClient (Sending)
+- (void)sendCTCPQuery:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text;
+- (void)sendCTCPReply:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text;
+- (void)sendCTCPPing:(NSString *)nickname;
+
+- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel;
+- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText TEXTUAL_DEPRECATED("Textual no longer encrypts messages. Use -sendText:asCommand:toChannel: instead");
+
+- (void)sendLine:(NSString *)string;
+- (void)send:(NSString *)string, ...;
+
+- (void)sendPrivmsg:(NSString *)message toChannel:(IRCChannel *)channel; // Invoke -sendText: with proper values
+- (void)sendAction:(NSString *)message toChannel:(IRCChannel *)channel;
+- (void)sendNotice:(NSString *)message toChannel:(IRCChannel *)channel;
+@end
+
+@interface IRCClient (Commands)
 - (void)connect;
 - (void)connect:(IRCClientConnectMode)connectMode;
 - (void)connect:(IRCClientConnectMode)connectMode bypassProxy:(BOOL)bypassProxy;
@@ -140,13 +236,6 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 - (void)quitWithComment:(NSString *)comment;
 
 - (void)cancelReconnect;
-
-@property (readonly) ClientIRCv3SupportedCapability capacities;
-@property (readonly, copy) NSString *enabledCapacitiesStringValue;
-
-- (BOOL)isCapabilitySupported:(NSString *)capabilityString;
-
-- (BOOL)isCapabilityEnabled:(ClientIRCv3SupportedCapability)capability;
 
 - (void)joinChannel:(IRCChannel *)channel;
 - (void)joinChannel:(IRCChannel *)channel password:(nullable NSString *)password;
@@ -163,10 +252,6 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 - (void)changeNickname:(NSString *)newNickname;
 
 - (void)kick:(NSString *)nickname inChannel:(IRCChannel *)channel;
-
-- (void)sendCTCPQuery:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text;
-- (void)sendCTCPReply:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text;
-- (void)sendCTCPPing:(NSString *)nickname;
 
 - (void)sendWhois:(NSString *)nickname;
 
@@ -205,93 +290,17 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 
 - (void)requestChannelList;
 
-- (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet parameterString:(NSString *)parameterString;
-- (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet parameterString:(NSString *)parameterString characterSet:(NSCharacterSet *)characterList;
-
-- (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet modeParameters:(NSArray<NSString *> *)modeParameters;
-
-- (void)createChannelListDialog;
-- (void)createChannelInviteExceptionListSheet;
-- (void)createChannelBanExceptionListSheet;
-- (void)createChannelBanListSheet;
-- (void)createChannelQuietListSheet;
-
 - (void)presentCertificateTrustInformation;
+@end
 
-- (void)closeDialogs;
-
-#pragma mark -
-
-- (BOOL)userExists:(NSString *)nickname;
-
-- (nullable IRCUser *)findUser:(NSString *)nickname;
-- (IRCUser *)findUserOrCreate:(NSString *)nickname;
-
-@property (readonly) NSUInteger numberOfUsers;
-
-@property (readonly, copy) NSArray<IRCUser *> *userList;
-
-- (void)addUser:(IRCUser *)user;
-
-- (void)removeUser:(IRCUser *)user;
-- (void)removeUserWithNickname:(NSString *)nickname;
-
-@property (readonly, nullable) IRCUser *myself;
-
-- (NSArray<IRCAddressBookEntry *> *)findIgnoresForHostmask:(NSString *)hostmask;
-
-#pragma mark -
-
-- (nullable IRCChannel *)findChannel:(NSString *)withName;
-- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName;
-- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isPrivateMessage:(BOOL)isPrivateMessage;
-
-/* A utility window is a private message that is never sent to the server:
- a place for a plugin to log its own messages (Chat Filter's "Filter Actions") */
-- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isUtility:(BOOL)isUtility;
-
-- (nullable NSData *)convertToCommonEncoding:(NSString *)string;
-- (nullable NSString *)convertFromCommonEncoding:(NSData *)data;
-
-- (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel;
-- (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel withFormat:(nullable NSString *)format;
-
-- (BOOL)nicknameIsZNCUser:(NSString *)nickname;
-- (BOOL)nickname:(NSString *)nickname isZNCUser:(NSString *)zncNickname;
-- (nullable NSString *)nicknameAsZNCUser:(NSString *)nickname; // Returns nil if not connected to ZNC
-
-- (BOOL)nicknameIsMyself:(NSString *)nickname;
-
-- (BOOL)stringIsNickname:(NSString *)string;
-- (BOOL)stringIsChannelName:(NSString *)string;
-
-- (BOOL)outputRuleMatchedInMessage:(NSString *)message inChannel:(nullable IRCChannel *)channel;
-
-#pragma mark -
-
-- (void)setUnreadStateForChannel:(IRCChannel *)channel;
-- (void)setUnreadStateForChannel:(IRCChannel *)channel isHighlight:(BOOL)isHighlight;
-
-- (void)setHighlightStateForChannel:(IRCChannel *)channel;
-
-#pragma mark -
-
+@interface IRCClient (LocalCommands)
 - (void)sendCommand:(id)string;
 - (void)sendCommand:(id)string completeTarget:(BOOL)completeTarget target:(nullable NSString *)targetChannelName;
+@end
 
-- (void)sendCommand:(NSString *)command toZNCModuleNamed:(NSString *)module;
-
-- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel;
-- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText TEXTUAL_DEPRECATED("Textual no longer encrypts messages. Use -sendText:asCommand:toChannel: instead");
-
-- (void)sendLine:(NSString *)string;
-- (void)send:(NSString *)string, ...;
-
-- (void)sendPrivmsg:(NSString *)message toChannel:(IRCChannel *)channel; // Invoke -sendText: with proper values
-- (void)sendAction:(NSString *)message toChannel:(IRCChannel *)channel;
-- (void)sendNotice:(NSString *)message toChannel:(IRCChannel *)channel;
-
-#pragma mark -
+@interface IRCClient (Logging)
+- (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel;
+- (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel withFormat:(nullable NSString *)format;
 
 // nil channel prints the message to the server console
 // referenceMessage.command is used if command == nil
@@ -319,19 +328,25 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 - (void)printDebugInformation:(NSString *)message;
 - (void)printDebugInformation:(NSString *)message asCommand:(NSString *)command;
 
-- (void)printDebugInformation:(NSString *)message inChannel:(IRCChannel *)channel;
-- (void)printDebugInformation:(NSString *)message inChannel:(IRCChannel *)channel asCommand:(NSString *)command;
+- (void)printDebugInformation:(NSString *)message inChannel:(nullable IRCChannel *)channel;
+- (void)printDebugInformation:(NSString *)message inChannel:(nullable IRCChannel *)channel asCommand:(NSString *)command;
+@end
 
-#pragma mark -
+@interface IRCClient (Connection) <IRCConnectionDelegate>
+@end
 
-- (void)clearCachedHighlights;
+@interface IRCClient (Capabilities)
+- (BOOL)isCapabilitySupported:(NSString *)capabilityString;
 
-/* -config may not always reflect the current state of the client.
- * This is because its too costly to mutate it for stuff that changes
- * many times a second. The client instead saves a copy of its
- * configuration periodically. This method will force it to perform
- * a save if you need to rely on most recent version. */
-- (void)updateStoredConfiguration;
+- (BOOL)isCapabilityEnabled:(ClientIRCv3SupportedCapability)capability;
+@end
+
+@interface IRCClient (Dialogs)
+- (void)createChannelListDialog;
+- (void)createChannelInviteExceptionListSheet;
+- (void)createChannelBanExceptionListSheet;
+- (void)createChannelBanListSheet;
+- (void)createChannelQuietListSheet;
 @end
 
 NS_ASSUME_NONNULL_END

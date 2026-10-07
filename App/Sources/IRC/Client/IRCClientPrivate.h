@@ -84,49 +84,66 @@ enum {
 
 - (void)cacheHighlightInChannel:(IRCChannel *)channel withLogLine:(TVCLogLine *)logLine;
 
+- (void)noteReachabilityChanged:(BOOL)reachable;
+
+- (IRCAddressBookUserTrackingContainer *)trackedUsers;
+@end
+
+@interface IRCClient (NotificationsPrivate)
+- (void)postEventToViewController:(NSString *)eventToken;
+- (void)postEventToViewController:(NSString *)eventToken forChannel:(IRCChannel *)channel;
+
+- (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
+@end
+
+@interface IRCClient (UsersPrivate)
+- (IRCUserMutable *)mutableCopyOfUserWithNickname:(NSString *)nickname;
+
+- (void)modifyUser:(IRCUser *)user withBlock:(void (NS_NOESCAPE ^)(IRCUserMutable *userMutable))block;
+- (void)modifyUserUserWithNickname:(NSString *)nickname withBlock:(void (NS_NOESCAPE ^)(IRCUserMutable *userMutable))block;
+@end
+
+@interface IRCClient (SendingPrivate)
 - (void)inputText:(id)string destination:(IRCTreeItem *)destination;
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command destination:(IRCTreeItem *)destination;
+@end
 
+@interface IRCClient (CommandsPrivate)
+- (void)autoConnectWithDelay:(NSUInteger)delay afterWakeUp:(BOOL)afterWakeUp;
+@end
+
+@interface IRCClient (LoggingPrivate)
+- (void)reopenLogFileIfNeeded;
+- (void)closeLogFile;
+
+- (void)print:(NSString *)messageBody by:(nullable NSString *)nickname inChannel:(nullable IRCChannel *)channel asType:(TVCLogLineType)lineType command:(NSString *)command escapeMessage:(BOOL)escapeMessage;
+
+- (void)logFileRecordSessionChanged:(BOOL)toNewSession inChannel:(nullable IRCChannel *)channel;
+@end
+
+@interface IRCClient (ReceiveCommandsPrivate)
+- (id)queuedBatchMessageWithToken:(NSString *)batchToken;
+
++ (nullable NSString *)knownNickServHostForServerAddress:(nullable NSString *)serverAddress;
+@end
+
+@interface IRCClient (CapabilitiesPrivate)
 - (void)enableCapability:(ClientIRCv3SupportedCapability)capability;
 - (void)disableCapability:(ClientIRCv3SupportedCapability)capability;
+@end
 
-- (void)noteReachabilityChanged:(BOOL)reachable;
-
-- (void)autoConnectWithDelay:(NSUInteger)delay afterWakeUp:(BOOL)afterWakeUp;
-
-- (void)postEventToViewController:(NSString *)eventToken;
-- (void)postEventToViewController:(NSString *)eventToken forChannel:(IRCChannel *)channel;
-
+@interface IRCClient (DCCPrivate)
 - (void)sendFile:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken;
 - (void)sendFileResume:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken;
 - (void)sendFileResumeAccept:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken;
 
 - (void)notifyFileTransfer:(TXNotificationType)type nickname:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize requestIdentifier:(NSString *)identifier;
+@end
 
-- (IRCAddressBookUserTrackingContainer *)trackedUsers;
-
-- (IRCUserMutable *)mutableCopyOfUserWithNickname:(NSString *)nickname;
-
-- (void)modifyUser:(IRCUser *)user withBlock:(void (NS_NOESCAPE ^)(IRCUserMutable *userMutable))block;
-- (void)modifyUserUserWithNickname:(NSString *)nickname withBlock:(void (NS_NOESCAPE ^)(IRCUserMutable *userMutable))block;
-
-- (void)reopenLogFileIfNeeded;
-- (void)closeLogFile;
-
-
-- (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
-
-- (id)queuedBatchMessageWithToken:(NSString *)batchToken;
-
-+ (nullable NSString *)knownNickServHostForServerAddress:(nullable NSString *)serverAddress;
-
-- (void)print:(NSString *)messageBody by:(nullable NSString *)nickname inChannel:(nullable IRCChannel *)channel asType:(TVCLogLineType)lineType command:(NSString *)command escapeMessage:(BOOL)escapeMessage;
-
+@interface IRCClient (TimedCommandsPrivate)
 - (void)onTimedCommand:(IRCTimedCommand *)timedCommand;
-
-- (void)logFileRecordSessionChanged:(BOOL)toNewSession inChannel:(nullable IRCChannel *)channel;
 @end
 
 NS_ASSUME_NONNULL_END

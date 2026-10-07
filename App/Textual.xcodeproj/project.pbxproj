@@ -640,6 +640,23 @@
 		4C7C6207E489D71A9E064179 /* ICPCoreMediaPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C01D5F0230FF4DA88B8CB19 /* ICPCoreMediaPrivate.h */; };
 		4C272AF654968393F0B03C9A /* Inline Media in Resources */ = {isa = PBXBuildFile; fileRef = 4C61C76C523B53681C98EBFA /* Inline Media */; };
 		4C7FE9B965386EBECD77C5E2 /* ICLURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */; };
+		4C1543E32BFFEDB3E369496E /* IRCClient+Autojoin.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C16C2D3DDA811CB9D266CE0 /* IRCClient+Autojoin.m */; };
+		4C232289EC81F046541986EB /* IRCClient+Capabilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5A01FEB8157E08FA3D5EA7 /* IRCClient+Capabilities.m */; };
+		4C47A0DBFC15922E2C66A683 /* IRCClient+Commands.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2A2A3745512014FDF1D7D2 /* IRCClient+Commands.m */; };
+		4CFE66403C12E0460BE63397 /* IRCClient+Connection.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE3C7FD301B0A23E676DCDB /* IRCClient+Connection.m */; };
+		4C147CF76755EE65F9968056 /* IRCClient+DCC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE674DD25A2D5BB4C4B3148 /* IRCClient+DCC.m */; };
+		4C22A369CAA361AA45326A28 /* IRCClient+Dialogs.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CAE2EF09C84E9BAF84B0F36 /* IRCClient+Dialogs.m */; };
+		4CD46A0D7EE26060A10C3CD6 /* IRCClient+LocalCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBE463C51C0505BFA546FC3 /* IRCClient+LocalCommands.m */; };
+		4C51948837887EF31CC77FD8 /* IRCClient+Logging.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6825E2F8692444C9454926 /* IRCClient+Logging.m */; };
+		4CFA99AFBF846E69A4D25559 /* IRCClient+Notifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C36EF0454FCB2F6048C3F85 /* IRCClient+Notifications.m */; };
+		4C1599D03F4FD33E9BBFE271 /* IRCClient+Numerics.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD61A48B42935899BFFC4F2 /* IRCClient+Numerics.m */; };
+		4C170F5A42787FE68A75DAB0 /* IRCClient+ReceiveCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3792973380352609EB156F /* IRCClient+ReceiveCommands.m */; };
+		4C21064104CB22F6B9CB6D76 /* IRCClient+Scripts.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7117F365FF940AAF5C6E38 /* IRCClient+Scripts.m */; };
+		4CEA8D3DAF0A319324689FAD /* IRCClient+Sending.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA17C786A4284B8DC4A8561 /* IRCClient+Sending.m */; };
+		4C0DD5E7DFFEA38162B7268E /* IRCClient+TimedCommands.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C01C22E7F90ADA6C7447A97 /* IRCClient+TimedCommands.m */; };
+		4C3E38EF023ED09A33D7EB38 /* IRCClient+Users.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC09B56304AD18920BFA48C /* IRCClient+Users.m */; };
+		4C6F1B13D9A19F721E8D49E7 /* IRCClient+UserTracking.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */; };
+		4CF0F5F094B96BD5F6D0798D /* IRCClient+ZNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1431,6 +1448,24 @@
 		4C01D5F0230FF4DA88B8CB19 /* ICPCoreMediaPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICPCoreMediaPrivate.h; sourceTree = "<group>"; };
 		4C61C76C523B53681C98EBFA /* Inline Media */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Inline Media"; sourceTree = "<group>"; };
 		4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLURLSessionTests.m; sourceTree = "<group>"; };
+		4C16C2D3DDA811CB9D266CE0 /* IRCClient+Autojoin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Autojoin.m"; sourceTree = "<group>"; };
+		4C5A01FEB8157E08FA3D5EA7 /* IRCClient+Capabilities.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Capabilities.m"; sourceTree = "<group>"; };
+		4C2A2A3745512014FDF1D7D2 /* IRCClient+Commands.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Commands.m"; sourceTree = "<group>"; };
+		4CE3C7FD301B0A23E676DCDB /* IRCClient+Connection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Connection.m"; sourceTree = "<group>"; };
+		4CE674DD25A2D5BB4C4B3148 /* IRCClient+DCC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+DCC.m"; sourceTree = "<group>"; };
+		4CAE2EF09C84E9BAF84B0F36 /* IRCClient+Dialogs.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Dialogs.m"; sourceTree = "<group>"; };
+		4CBE463C51C0505BFA546FC3 /* IRCClient+LocalCommands.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+LocalCommands.m"; sourceTree = "<group>"; };
+		4C6825E2F8692444C9454926 /* IRCClient+Logging.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Logging.m"; sourceTree = "<group>"; };
+		4C36EF0454FCB2F6048C3F85 /* IRCClient+Notifications.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Notifications.m"; sourceTree = "<group>"; };
+		4CD61A48B42935899BFFC4F2 /* IRCClient+Numerics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Numerics.m"; sourceTree = "<group>"; };
+		4C3792973380352609EB156F /* IRCClient+ReceiveCommands.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+ReceiveCommands.m"; sourceTree = "<group>"; };
+		4C7117F365FF940AAF5C6E38 /* IRCClient+Scripts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Scripts.m"; sourceTree = "<group>"; };
+		4CA17C786A4284B8DC4A8561 /* IRCClient+Sending.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Sending.m"; sourceTree = "<group>"; };
+		4C01C22E7F90ADA6C7447A97 /* IRCClient+TimedCommands.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+TimedCommands.m"; sourceTree = "<group>"; };
+		4CC09B56304AD18920BFA48C /* IRCClient+Users.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Users.m"; sourceTree = "<group>"; };
+		4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+UserTracking.m"; sourceTree = "<group>"; };
+		4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+ZNC.m"; sourceTree = "<group>"; };
+		4C7B0328BA27D76D63EE7755 /* IRCClientInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCClientInternal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1865,10 +1900,28 @@
 		4CCBF5F06DD11AF5D8E0EC07 /* Client */ = {
 			isa = PBXGroup;
 			children = (
+				4C16C2D3DDA811CB9D266CE0 /* IRCClient+Autojoin.m */,
+				4C5A01FEB8157E08FA3D5EA7 /* IRCClient+Capabilities.m */,
+				4C2A2A3745512014FDF1D7D2 /* IRCClient+Commands.m */,
+				4CE3C7FD301B0A23E676DCDB /* IRCClient+Connection.m */,
+				4CE674DD25A2D5BB4C4B3148 /* IRCClient+DCC.m */,
+				4CAE2EF09C84E9BAF84B0F36 /* IRCClient+Dialogs.m */,
+				4CBE463C51C0505BFA546FC3 /* IRCClient+LocalCommands.m */,
+				4C6825E2F8692444C9454926 /* IRCClient+Logging.m */,
+				4C36EF0454FCB2F6048C3F85 /* IRCClient+Notifications.m */,
+				4CD61A48B42935899BFFC4F2 /* IRCClient+Numerics.m */,
+				4C3792973380352609EB156F /* IRCClient+ReceiveCommands.m */,
+				4C7117F365FF940AAF5C6E38 /* IRCClient+Scripts.m */,
+				4CA17C786A4284B8DC4A8561 /* IRCClient+Sending.m */,
+				4C01C22E7F90ADA6C7447A97 /* IRCClient+TimedCommands.m */,
+				4CC09B56304AD18920BFA48C /* IRCClient+Users.m */,
+				4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */,
+				4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */,
 				4C31513B20EB673E00448776 /* IRCClient.m */,
 				4C31513C20EB673E00448776 /* IRCClientConfig.m */,
 				4C31518D20EB673E00448776 /* IRCClientConfigInternal.h */,
 				4C3151C720EB673E00448776 /* IRCClientConfigPrivate.h */,
+				4C7B0328BA27D76D63EE7755 /* IRCClientInternal.h */,
 				4C31520B20EB673E00448776 /* IRCClientPrivate.h */,
 				4C31513820EB673E00448776 /* IRCClientRequestedCommands.m */,
 				4C31523F20EB673E00448776 /* IRCClientRequestedCommandsPrivate.h */,
@@ -3414,6 +3467,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C1543E32BFFEDB3E369496E /* IRCClient+Autojoin.m in Sources */,
+				4C232289EC81F046541986EB /* IRCClient+Capabilities.m in Sources */,
+				4C47A0DBFC15922E2C66A683 /* IRCClient+Commands.m in Sources */,
+				4CFE66403C12E0460BE63397 /* IRCClient+Connection.m in Sources */,
+				4C147CF76755EE65F9968056 /* IRCClient+DCC.m in Sources */,
+				4C22A369CAA361AA45326A28 /* IRCClient+Dialogs.m in Sources */,
+				4CD46A0D7EE26060A10C3CD6 /* IRCClient+LocalCommands.m in Sources */,
+				4C51948837887EF31CC77FD8 /* IRCClient+Logging.m in Sources */,
+				4CFA99AFBF846E69A4D25559 /* IRCClient+Notifications.m in Sources */,
+				4C1599D03F4FD33E9BBFE271 /* IRCClient+Numerics.m in Sources */,
+				4C170F5A42787FE68A75DAB0 /* IRCClient+ReceiveCommands.m in Sources */,
+				4C21064104CB22F6B9CB6D76 /* IRCClient+Scripts.m in Sources */,
+				4CEA8D3DAF0A319324689FAD /* IRCClient+Sending.m in Sources */,
+				4C0DD5E7DFFEA38162B7268E /* IRCClient+TimedCommands.m in Sources */,
+				4C3E38EF023ED09A33D7EB38 /* IRCClient+Users.m in Sources */,
+				4C6F1B13D9A19F721E8D49E7 /* IRCClient+UserTracking.m in Sources */,
+				4CF0F5F094B96BD5F6D0798D /* IRCClient+ZNC.m in Sources */,
 				4C9C2DCF311FD2AE36EE722D /* HistoricLogFileStorageModel.xcdatamodeld in Sources */,
 				4C06E63820EC55B90055D09A /* TXAppearance.m in Sources */,
 				4C06E63920EC55B90055D09A /* TXApplication.m in Sources */,
