@@ -1,0 +1,12 @@
+// The version of Textual. Included by App.xcconfig.
+//
+// MARKETING_VERSION is CFBundleShortVersionString, the version users see.
+// Styles look up their template versions by it (TPCThemeSettings).
+//
+// CURRENT_PROJECT_VERSION is CFBundleVersion, the build number that Sparkle
+// and the App Store compare. It is a plain integer that only ever goes up:
+// the release script increments it and commits the change for every
+// release, so development builds carry the number of the last release.
+
+MARKETING_VERSION = 7.2.7
+CURRENT_PROJECT_VERSION = 8000

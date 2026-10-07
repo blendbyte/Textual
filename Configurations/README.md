@@ -14,6 +14,7 @@ projects.
 | `Release.xcconfig` | projects, Release | Identifiers and feature flags of the direct download |
 | `AppStore.xcconfig` | projects, App Store | Identifiers and feature flags of the App Store build |
 | `App.xcconfig` | app and test targets | The app; App Store entitlements and no Sparkle under `[config=App Store]` |
+| `Version.xcconfig` | (included by `App`) | `MARKETING_VERSION` (the version users see) and `CURRENT_PROJECT_VERSION` (the build number, raised by one for every release) |
 | `Plugin.xcconfig` | plugin targets | The bundled plugins |
 | `Framework.xcconfig` | framework targets | Auto Hyperlinks, Cocoa Extensions, GRMustache |
 

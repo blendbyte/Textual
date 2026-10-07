@@ -1,6 +1,7 @@
 // The app target (and its unit tests). Set on the targets, so it overrides
 // the configuration files set on the project.
 
+#include "Version.xcconfig"
 
 TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/..
 
@@ -23,7 +24,21 @@ SWIFT_OBJC_BRIDGING_HEADER = ${PROJECT_DIR}/Supporting Files/SwiftBridgingHeader
 
 REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES = NO
 
-INFOPLIST_FILE = ${TEXTUAL_GENERATED_DIR}/Info.plist
+INFOPLIST_FILE = ${PROJECT_DIR}/Supporting Files/Info.plist
+
+// Info.plist is run through the preprocessor so that builds without Sparkle
+// (Debug, App Store) carry none of its SU* settings.
+INFOPLIST_PREPROCESS = YES
+INFOPLIST_PREPROCESSOR_DEFINITIONS = TEXTUAL_BUILT_WITH_SPARKLE_ENABLED=$(TEXTUAL_BUILT_WITH_SPARKLE_ENABLED:default=0)
+// Traditional mode, so the // in URLs doesn't start a comment
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional
+
+// Debug builds show as "Textual Dev" so they can't be mistaken for an
+// installed copy of Textual (they also have their own identifier).
+TEXTUAL_BUNDLE_NAME = ${PRODUCT_NAME}
+TEXTUAL_BUNDLE_NAME[config=Debug] = Textual Dev
+TEXTUAL_BUNDLE_DISPLAY_NAME = Textual IRC Client
+TEXTUAL_BUNDLE_DISPLAY_NAME[config=Debug] = Textual Dev
 
 // It is important to preserve symbols and code that is
 // not directly used so that extensions can use them.

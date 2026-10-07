@@ -806,6 +806,7 @@
 		F90859A0BCA5EC1D2BF11DB5 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		E024E675D1584ECB04F61641 /* AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AppStore.xcconfig; sourceTree = "<group>"; };
 		7B8782983A41A0FA73B21552 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
+		3A9DB13D20BACE1E29109487 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		2D75A1AA0A8CBC7C36A7D76B /* Plugin.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Plugin.xcconfig; sourceTree = "<group>"; };
 		464D7EB2DFFFEC2E2F93C1EE /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
 		4C06E13A20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCServerPropertiesSheet.xib; sourceTree = "<group>"; };
@@ -1391,7 +1392,7 @@
 		4CF4D6B619837C1700FB5AF0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaExtensions.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/UpdateVersionInfo.sh; sourceTree = SOURCE_ROOT; };
+		5D9B8EB8170A0EB400919CB0 /* GenerateBuildHeaders.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/GenerateBuildHeaders.sh; sourceTree = SOURCE_ROOT; };
 		5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/BuildExtensions.sh; sourceTree = SOURCE_ROOT; };
 		4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = wrapper.pb-project; path = "../Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj"; sourceTree = SOURCE_ROOT; };
 		4C4DA33541C640BC6941FC38 /* Cocoa Extensions.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = wrapper.pb-project; path = "../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj"; sourceTree = SOURCE_ROOT; };
@@ -2878,6 +2879,7 @@
 				F90859A0BCA5EC1D2BF11DB5 /* Release.xcconfig */,
 				E024E675D1584ECB04F61641 /* AppStore.xcconfig */,
 				7B8782983A41A0FA73B21552 /* App.xcconfig */,
+				3A9DB13D20BACE1E29109487 /* Version.xcconfig */,
 				2D75A1AA0A8CBC7C36A7D76B /* Plugin.xcconfig */,
 				464D7EB2DFFFEC2E2F93C1EE /* Framework.xcconfig */,
 			);
@@ -2914,7 +2916,7 @@
 				4CD6F7BB1CA7747600842597 /* ExportArchive.sh */,
 				4C2BEB622C385189008F8F0D /* PostprocessSparkle.sh */,
 				4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */,
-				5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */,
+				5D9B8EB8170A0EB400919CB0 /* GenerateBuildHeaders.sh */,
 			);
 			name = Scripts;
 			sourceTree = "<group>";
@@ -3208,7 +3210,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4C1DC5701580420500A47BC9 /* Build configuration list for PBXNativeTarget "Textual" */;
 			buildPhases = (
-				4C125F6A31D0B70824CEED24 /* Generate Info.plist and Build Headers */,
+				4C125F6A31D0B70824CEED24 /* Generate Build Headers */,
 				4C1DC5501580420500A47BC9 /* Resources */,
 				4CEA6AA42C36F8E700A36551 /* Copy Preference Resources */,
 				4C9E534415B4C171000E84A9 /* Copy Acknowledgements */,
@@ -3502,7 +3504,7 @@
 			shellScript = "\nset -o pipefail\nmkdir -p \"${TARGET_TEMP_DIR}/Script Logs\"\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/BuildExtensions.sh\" | tee \"${TARGET_TEMP_DIR}/Script Logs/BuildExtensions.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
-		4C125F6A31D0B70824CEED24 /* Generate Info.plist and Build Headers */ = {
+		4C125F6A31D0B70824CEED24 /* Generate Build Headers */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -3511,21 +3513,19 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(PROJECT_DIR)/Supporting Files/Info.plist",
-				"$(TEXTUAL_WORKSPACE_DIR)/Scripts/UpdateVersionInfo.sh",
+				"$(TEXTUAL_WORKSPACE_DIR)/Scripts/GenerateBuildHeaders.sh",
 				"$(TEXTUAL_WORKSPACE_DIR)/Scripts/UpdateFeatureFlags.sh",
 			);
-			name = "Generate Info.plist and Build Headers";
+			name = "Generate Build Headers";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(TEXTUAL_GENERATED_DIR)/Info.plist",
 				"$(TEXTUAL_GENERATED_DIR)/Build Headers/BuildConfig.h",
 				"$(TEXTUAL_GENERATED_DIR)/Build Headers/FeatureFlags.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/UpdateVersionInfo.sh\"\n";
+			shellScript = "\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/GenerateBuildHeaders.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4C2BEB612C384E16008F8F0D /* Postprocess Sparkle */ = {

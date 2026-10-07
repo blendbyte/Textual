@@ -103,6 +103,10 @@ jobs:
             /usr/libexec/PlistBuddy -c "Print NSPrincipalClass" "$bundle/Contents/Info.plist" > /dev/null || fail "$plugin has no principal class"
           done
           test ! -e "$contents/XPCServices" || fail "Unexpected XPC services: $(ls "$contents/XPCServices")"
+          info=$(/usr/libexec/PlistBuddy -c Print "$contents/Info.plist")
+          [[ "$info" != *'$('* && "$info" != *'${'* && "$info" != *"#if"* ]] || fail "Info.plist has unexpanded settings or preprocessor lines"
+          version=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$contents/Info.plist")
+          [[ "$version" =~ ^[0-9]+$ ]] || fail "CFBundleVersion is not a build number: $version"
           test -f "$contents/Resources/Inline Media/ICMInlineImage.mustache" || fail "Inline media resources missing"
           for framework in AutoHyperlinks CocoaExtensions GRMustache; do
             test -d "$contents/Frameworks/$framework.framework" || fail "Framework missing: $framework"

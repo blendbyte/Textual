@@ -11,17 +11,17 @@
 	<key>CFBundleSignature</key>
 	<string>TXTL</string>
 	<key>CFBundleDisplayName</key>
-	<string>Textual IRC Client</string>
+	<string>$(TEXTUAL_BUNDLE_DISPLAY_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>${PRODUCT_BUNDLE_IDENTIFIER}</string>
 	<key>CFBundleName</key>
-	<string>${PRODUCT_NAME}</string>
+	<string>$(TEXTUAL_BUNDLE_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleVersion</key>
-	<string>7.2.7</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>7.2.7</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Blendbyte GmbH. Copyright © 2010 - 2020 Codeux Software, LLC. All rights reserved.</string>
 	<key>CFBundleExecutable</key>
@@ -101,6 +101,7 @@
 			</array>
 		</dict>
 	</array>
+#if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED
 	<key>SUAllowsAutomaticUpdates</key>
 	<true/>
 	<key>SUBundleName</key>
@@ -115,5 +116,6 @@
 	<string>https://updates.textualapp.com/sparkle/feeds/v7/feed-one-merged.xml</string>
 	<key>SUScheduledCheckInterval</key>
 	<string>345600</string>
+#endif
 </dict>
 </plist>
