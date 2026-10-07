@@ -3491,6 +3491,11 @@
 			);
 			name = "Build Extensions";
 			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/Chat Filters.bundle",
+				"$(BUILT_PRODUCTS_DIR)/Smiley Converter.bundle",
+				"$(BUILT_PRODUCTS_DIR)/System Info.bundle",
+				"$(BUILT_PRODUCTS_DIR)/User Insights.bundle",
+				"$(BUILT_PRODUCTS_DIR)/ZNC Additions.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;

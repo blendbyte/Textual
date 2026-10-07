@@ -1,7 +1,7 @@
-// The bundled plugins. Set on their targets. The nested xcodebuild calls in
-// Scripts/BuildExtensions.sh pass the app's location and binary and build
-// into the app's products folder, where the frameworks and the generated
-// headers are.
+// The bundled plugins. Set on their targets. Scripts/BuildExtensions.sh
+// builds them after the app is linked (the "Bundled Extensions" scheme),
+// passes the app's location and binary, and builds them into the app's
+// products folder, where the frameworks and the generated headers are.
 
 // TEXTUAL_WORKSPACE_DIR is replaced by the build script
 TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../..

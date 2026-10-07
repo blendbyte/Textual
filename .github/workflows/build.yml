@@ -59,7 +59,7 @@ jobs:
       # CI builds are unsigned: the real signing identity is configured in
       # Configurations/Signing.xcconfig and is not available on runners.
       # Build settings passed here are inherited by the nested xcodebuild
-      # calls in Scripts/.
+      # call in Scripts/BuildExtensions.sh.
       - name: Build
         run: |
           xcodebuild \
@@ -95,7 +95,12 @@ jobs:
           [[ " $archs " == *" x86_64 "* && " $archs " == *" arm64 "* ]] || fail "Textual is not universal: $archs"
 
           for plugin in "Chat Filters" "Smiley Converter" "System Info" "User Insights" "ZNC Additions"; do
-            test -d "$contents/Resources/Bundled Extensions/$plugin.bundle" || fail "Plugin missing: $plugin"
+            bundle="$contents/Resources/Bundled Extensions/$plugin.bundle"
+            test -d "$bundle" || fail "Plugin missing: $plugin"
+            binary="$bundle/Contents/MacOS/$(/usr/libexec/PlistBuddy -c "Print CFBundleExecutable" "$bundle/Contents/Info.plist")"
+            plugin_archs=$(lipo -archs "$binary") || fail "Plugin binary missing: $plugin"
+            [[ "$plugin_archs" == "$archs" ]] || fail "$plugin is built for $plugin_archs, Textual for $archs"
+            /usr/libexec/PlistBuddy -c "Print NSPrincipalClass" "$bundle/Contents/Info.plist" > /dev/null || fail "$plugin has no principal class"
           done
           test ! -e "$contents/XPCServices" || fail "Unexpected XPC services: $(ls "$contents/XPCServices")"
           test -f "$contents/Resources/Inline Media/ICMInlineImage.mustache" || fail "Inline media resources missing"
@@ -194,8 +199,8 @@ jobs:
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER=""
 
-      # The app's build scripts build the plugins with nested xcodebuild
-      # calls, which the analysis above builds but doesn't analyze.
+      # The app's build scripts build the plugins with a nested xcodebuild
+      # call, which the analysis above builds but doesn't analyze.
       - name: Analyze plugins
         run: .github/scripts/analyze-nested.sh "$RUNNER_TEMP/DerivedData/Build/Products/Release/Textual.app" "$RUNNER_TEMP/nested-analysis"
 
