@@ -176,8 +176,6 @@
 	<integer>0</integer>
 	<key>PreferModernCiphers</key>
 	<integer>0</integer>
-	<key>PreferModernSockets</key>
-	<integer>0</integer>
 	<key>Private Extension Store -&gt; Caffeine Extension -&gt; Prevent Sleep</key>
 	<integer>0</integer>
 	<key>OnlySpeakNotificationsForSelection</key>

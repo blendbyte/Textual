@@ -37,30 +37,13 @@
 
 import Network
 
-@available(macOS 10.14, *)
 final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 {
 	fileprivate var readInBuffer: Data?
 
 	fileprivate var connection: NWConnection?
 
-	fileprivate var socketDelegateQueue: DispatchQueue?
-
 	fileprivate var trustRef: SecTrust?
-
-	// MARK: - Grand Central Dispatch
-
-	fileprivate func destroyDispatchQueues()
-	{
-		socketDelegateQueue = nil
-	}
-
-	fileprivate func createDispatchQueues()
-	{
-		let socketDelegateQueueName = "Textual.ConnectionSocket.socketDelegateQueue.\(uniqueIdentifier)"
-
-		socketDelegateQueue = DispatchQueue(label: socketDelegateQueueName)
-	}
 
 	// MARK: - Open/Close Socket
 
@@ -74,7 +57,16 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 			parameters = .tcp
 		}
 
-		parameters.preferNoProxies = (config.proxyType == .none)
+		if let proxy = constructedProxyConfiguration {
+			let privacyContext = NWParameters.PrivacyContext(description: "Textual IRC connection")
+
+			privacyContext.proxyConfigurations = [proxy.configuration]
+
+			parameters.setPrivacyContext(privacyContext)
+		} else {
+			/* "Automatic" uses the proxies configured in System Settings */
+			parameters.preferNoProxies = (config.proxyType == .none)
+		}
 
 		if let internetProtocol = parameters.defaultProtocolStack.internetProtocol as? NWProtocolIP.Options {
 			switch config.addressType {
@@ -88,6 +80,55 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		}
 
 		return parameters
+	}
+
+	/// The proxy this connection must go through, or nil for none and
+	/// "Automatic" (system settings). SOCKS4 is no longer supported and is
+	/// tried as SOCKS5.
+	fileprivate var constructedProxyConfiguration: (configuration: ProxyConfiguration, address: String, port: UInt16)?
+	{
+		var address: String
+		var port: UInt16
+
+		switch config.proxyType {
+			case .tor:
+				address = torProxyTypeAddress
+				port = torProxyTypePort
+			case .socks4, .socks5, .HTTP, .HTTPS:
+				guard let proxyAddress = config.proxyAddress, proxyAddress.isEmpty == false, config.proxyPort > 0 else {
+					return nil
+				}
+
+				address = proxyAddress
+				port = config.proxyPort
+			default:
+				return nil
+		}
+
+		let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(address), port: NWEndpoint.Port(integerLiteral: port))
+
+		var proxy: ProxyConfiguration
+
+		switch config.proxyType {
+			case .HTTP:
+				proxy = ProxyConfiguration(httpCONNECTProxy: endpoint, tlsOptions: nil)
+			case .HTTPS:
+				proxy = ProxyConfiguration(httpCONNECTProxy: endpoint, tlsOptions: NWProtocolTLS.Options())
+			default:
+				proxy = ProxyConfiguration(socksv5Proxy: endpoint)
+		}
+
+		/* Never fall back to a direct connection when the proxy fails */
+		proxy.allowFailover = false
+
+		if (config.proxyType != .tor),
+		   let username = config.proxyUsername, username.isEmpty == false,
+		   let password = config.proxyPassword
+		{
+			proxy.applyCredential(username: username, password: password)
+		}
+
+		return (proxy, address, port)
 	}
 
 	fileprivate var constructedTLSOptions: NWProtocolTLS.Options
@@ -112,7 +153,7 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 		sec_protocol_options_set_verify_block(secOptions, { [weak self] (_, trust, completionBlock) in
 			self?.tlsVerifySecProtocol(trust, response: completionBlock)
-		}, socketDelegateQueue!)
+		}, queue)
 
 		return tlsOptions
 	}
@@ -122,8 +163,6 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		if (disconnected == false || disconnecting) {
 			return
 		}
-
-		createDispatchQueues()
 
 		let serverAddress = config.serverAddress
 		let serverPort = config.serverPort
@@ -136,6 +175,10 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 		self.connection = connection
 
+		if let proxy = constructedProxyConfiguration {
+			delegate?.connection(self, willConnectToProxy: proxy.address, on: proxy.port)
+		}
+
 		delegate?.connection(self, willConnectTo: serverAddress, on: serverPort)
 
 		connect()
@@ -145,7 +188,7 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 	{
 		connecting = true
 
-		connection?.start(queue: socketDelegateQueue!)
+		connection?.start(queue: queue)
 	}
 
 	func close()
@@ -170,7 +213,9 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 		connection = nil
 
-		destroyDispatchQueues()
+		readInBuffer = nil
+
+		trustRef = nil
 	}
 
 	// MARK: - Socket Read & Write
@@ -262,8 +307,11 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 			return
 		}
 
-		/* We only allow one write a time */
+		/* One write at a time: the transport only writes when the previous
+		 one finished, so this never drops a line */
 		if (sending) {
+			Logging.defaultSubsystem?.fault("Write while another write is in progress")
+
 			return
 		}
 
@@ -278,6 +326,11 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	fileprivate var connectedHost: String?
 	{
+		/* Through a proxy, the remote endpoint is the proxy, not the server */
+		if (constructedProxyConfiguration != nil) {
+			return nil
+		}
+
 		guard let endpoint = connection?.currentPath?.remoteEndpoint else {
 			return nil
 		}
@@ -360,21 +413,22 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 			return
 		}
 
-		if (contentContext?.isFinal == true && isComplete) {
+		/* The last bytes can arrive together with the end of the stream */
+		if let content = content, content.isEmpty == false {
+			readIn(content)
+		}
+
+		/* The server closed its side (FIN): nothing more will arrive,
+		 so this is a disconnect */
+		if (isComplete) {
 			EOFReceived = true
 
 			delegate?.connectionClosedReadStream(self)
 
-			return
-		}
-
-		if (content == nil) {
-			close(with: "Unexpected condition: There is no data when there is no error")
+			close()
 
 			return
 		}
-
-		readIn(content!)
 
 		read()
 	}
@@ -416,7 +470,8 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	final func tlsVerifySecProtocol(_ trust: sec_trust_t, response: @escaping sec_protocol_verify_complete_t)
 	{
-		let trustRef = sec_trust_copy_ref(trust).takeUnretainedValue()
+		/* sec_trust_copy_ref returns a retained (+1) reference */
+		let trustRef = sec_trust_copy_ref(trust).takeRetainedValue()
 
 		self.trustRef = trustRef
 
@@ -615,7 +670,7 @@ fileprivate extension ConnectionError
 				errorReason = "Unknown"
 		}
 
-		let errorMessage = LocalizedString("DNS Error: %@ (%ld)", errorReason, errorCode, table: "ConnectionErrors")
+		let errorMessage = LocalizedString("DNS Error: %@ (%ld)", errorReason, errorCode, table: "CommonErrors")
 
 		let nsError = NSError(domain: "NWErrorDomainDNS",
 							  code: errorCode,
@@ -636,7 +691,7 @@ fileprivate extension ConnectionError
 			errorReason = "Unknown"
 		}
 
-		let errorMessage = LocalizedString("POSIX Error: %@ (%ld)", errorReason, errorCode, table: "ConnectionErrors")
+		let errorMessage = LocalizedString("POSIX Error: %@ (%ld)", errorReason, errorCode, table: "CommonErrors")
 
 		let nsError = NSError(domain: "NWErrorDomainPOSIX",
 							  code: errorCode,

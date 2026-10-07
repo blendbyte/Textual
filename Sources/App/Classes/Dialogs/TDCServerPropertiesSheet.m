@@ -433,8 +433,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.proxyAddressTextField.validationBlock = ^NSString *(NSString *currentValue) {
 		NSInteger proxyType = self.proxyTypeButton.selectedTag;
 
-		if (proxyType == IRCConnectionProxyTypeSocks4 ||
-			proxyType == IRCConnectionProxyTypeSocks5 ||
+		if (proxyType == IRCConnectionProxyTypeSocks5 ||
 			proxyType == IRCConnectionProxyTypeHTTP ||
 			proxyType == IRCConnectionProxyTypeHTTPS)
 		{
@@ -460,8 +459,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.proxyPortTextField.validationBlock = ^NSString *(NSString *currentValue) {
 		NSInteger proxyType = self.proxyTypeButton.selectedTag;
 
-		if (proxyType == IRCConnectionProxyTypeSocks4 ||
-			proxyType == IRCConnectionProxyTypeSocks5 ||
+		if (proxyType == IRCConnectionProxyTypeSocks5 ||
 			proxyType == IRCConnectionProxyTypeHTTP ||
 			proxyType == IRCConnectionProxyTypeHTTPS)
 		{
@@ -1399,10 +1397,8 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL isSystemSocksProxyEnabled = (proxyType == IRCConnectionProxyTypeAutomatic);
 	BOOL isTorBrowserProxyEnabled = (proxyType == IRCConnectionProxyTypeTor);
 
-	BOOL supportsAuthentication = (proxyType == IRCConnectionProxyTypeSocks5);
-
 	BOOL httpsEnabled = (proxyType == IRCConnectionProxyTypeHTTP || proxyType == IRCConnectionProxyTypeHTTPS);
-	BOOL socksEnabled = (proxyType == IRCConnectionProxyTypeSocks4 || proxyType == IRCConnectionProxyTypeSocks5);
+	BOOL socksEnabled = (proxyType == IRCConnectionProxyTypeSocks5);
 
 	BOOL enabled = (httpsEnabled || socksEnabled);
 
@@ -1413,8 +1409,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.proxyAddressTextField.enabled = enabled;
 	self.proxyPortTextField.enabled = enabled;
 
-	self.proxyUsernameTextField.enabled = (socksEnabled && supportsAuthentication);
-	self.proxyPasswordTextField.enabled = (socksEnabled && supportsAuthentication);
+	/* SOCKS5 and HTTP(S) CONNECT proxies can both ask for a username and password */
+	self.proxyUsernameTextField.enabled = enabled;
+	self.proxyPasswordTextField.enabled = enabled;
 
 	[self.proxyAddressTextField performValidation];
 	[self.proxyPortTextField performValidation];

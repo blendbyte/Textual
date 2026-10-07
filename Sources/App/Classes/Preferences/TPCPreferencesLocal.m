@@ -468,7 +468,7 @@ NSUInteger const TPCPreferencesDictionaryVersion = 602;
 
 + (BOOL)preferModernSockets
 {
-	return [RZUserDefaults() boolForKey:@"PreferModernSockets"];
+	return YES;
 }
 
 #pragma mark -

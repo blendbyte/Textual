@@ -13,7 +13,6 @@ TEXTUAL_PRODUCT_BINARY="${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}"
 
 services=(
     'Inline Content Loader'
-    'IRC Remote Connection Manager'
 )
 
 for service in "${services[@]}"; do

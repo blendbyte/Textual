@@ -35,14 +35,21 @@
 *
 *********************************************************************** */
 
-@objc(IRCConnection)
-final class Connection: NSObject, ConnectionSocketDelegate
+import Foundation
+
+/// One IRC connection: the send queue, flood control and the socket.
+/// Everything runs on `queue`, the connection's only queue; the delegate
+/// (IRCConnection) is called on the main queue, in order.
+@objc(IRCConnectionTransport)
+public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 {
 	fileprivate let config: IRCConnectionConfig
 
+	fileprivate let queue: DispatchQueue
+
 	fileprivate let socket: ConnectionSocket & ConnectionSocketProtocol
 
-	fileprivate let serviceConnection: NSXPCConnection
+	fileprivate weak var delegate: IRCConnectionTransportDelegate?
 
 	fileprivate var sendQueue: [Data] = []
 
@@ -50,20 +57,21 @@ final class Connection: NSObject, ConnectionSocketDelegate
 	{
 		return TLOTimer(actionBlock: { [weak self] _ in
 			self?.onFloodControlTimer()
-		}, on: DispatchQueue.global(qos: .default))
+		}, on: queue)
 	}()
 
 	fileprivate var floodControlCurrentMessageCount = 0
 	fileprivate var floodControlEnforced = false
 
-	fileprivate var workerQueue: DispatchQueue?
+	/// Gives up on a connection (including the TLS handshake) that isn't
+	/// ready after this long; paused while the user decides on a certificate
+	fileprivate let connectTimeout: TimeInterval = 30
 
-	fileprivate var disconnectingManually = false
+	fileprivate var connectTimeoutWorkItem: DispatchWorkItem?
 
 	enum ConnectionError : Error
 	{
 		/// socketError are errors returned by the connection library.
-		/// For example: GCDAsyncSocket, Network.framework, etc.
 		case socket(error: Error)
 
 		// otherError are errors returned by ConnectionSocket instances.
@@ -80,32 +88,38 @@ final class Connection: NSObject, ConnectionSocketDelegate
 
 	// MARK: - Initialization
 
-	@objc(initWithConfig:onConnection:)
-	init (with config: IRCConnectionConfig, on connection: NSXPCConnection)
+	@objc(initWithConfig:delegate:)
+	public init (with config: IRCConnectionConfig, delegate: IRCConnectionTransportDelegate)
 	{
 		self.config = config
 
-		socket = ConnectionSocket.socket(with: config)
+		self.delegate = delegate
 
-		serviceConnection = connection
+		let socket = ConnectionSocketNWF(with: config)
+
+		queue = DispatchQueue(label: "Textual.IRCConnection.\(socket.uniqueIdentifier)")
+
+		socket.queue = queue
+
+		self.socket = socket
 
 		super.init()
 
 		socket.delegate = self
 	}
 
-	// MARK: - Grand Central Dispatch
+	// MARK: - Delegate
 
-	fileprivate func destroyWorkerDispatchQueue()
+	/// Calls the delegate on the main queue
+	fileprivate func notifyDelegate(_ block: @escaping (IRCConnectionTransportDelegate) -> Void)
 	{
-		workerQueue = nil
-	}
+		DispatchQueue.main.async { [weak self] in
+			guard let delegate = self?.delegate else {
+				return
+			}
 
-	fileprivate func createWorkerDispatchQueue()
-	{
-		let workerQueueName = "Textual.IRCConnection.workerQueue.\(socket.uniqueIdentifier)"
-
-		workerQueue = DispatchQueue(label: workerQueueName)
+			block(delegate)
+		}
 	}
 
 	// MARK: - Open/Close
@@ -113,122 +127,109 @@ final class Connection: NSObject, ConnectionSocketDelegate
 	@objc
 	final func open()
 	{
-		Logging.defaultSubsystem?.debug("Opening connection \(self.socket.uniqueIdentifier, privacy: .public)...")
+		queue.async {
+			Logging.defaultSubsystem?.debug("Opening connection \(self.socket.uniqueIdentifier, privacy: .public)...")
 
-		if (socket.disconnected == false) {
-			Logging.defaultSubsystem?.error("Already connected")
+			if (self.socket.disconnected == false) {
+				Logging.defaultSubsystem?.error("Already connected")
 
-			return
+				return
+			}
+
+			self.startFloodControlTimer()
+
+			self.startConnectTimeout()
+
+			self.socket.open()
 		}
-
-		createWorkerDispatchQueue()
-
-		startFloodControlTimer()
-
-		disconnectingManually = true
-
-		socket.open()
 	}
 
 	@objc
 	final func close()
 	{
-		Logging.defaultSubsystem?.debug("Closing connection \(self.socket.uniqueIdentifier, privacy: .public)...")
+		queue.async {
+			Logging.defaultSubsystem?.debug("Closing connection \(self.socket.uniqueIdentifier, privacy: .public)...")
 
-		if (socket.disconnected) {
-			Logging.defaultSubsystem?.error("Not connected")
+			if (self.socket.disconnected) {
+				Logging.defaultSubsystem?.error("Not connected")
 
-			return
+				return
+			}
+
+			self.socket.close()
 		}
+	}
 
+	/// Called on every disconnect, requested or not
+	fileprivate func resetState()
+	{
 		floodControlEnforced = false
 
-		clearSendQueue()
+		floodControlCurrentMessageCount = 0
+
+		sendQueue.removeAll()
 
 		stopFloodControlTimer()
 
-		disconnectingManually = true
-
-		socket.close()
+		cancelConnectTimeout()
 	}
 
-	final func resetState()
+	// MARK: - Connect Timeout
+
+	fileprivate func startConnectTimeout()
 	{
-		/* Method invoked when a disconnect occurs. */
-		/* disconnectingManually prevents us doing redundant work. */
-		if (disconnectingManually) {
-			disconnectingManually = false
-		} else {
-			floodControlEnforced = false
+		cancelConnectTimeout()
 
-			clearSendQueue()
+		let workItem = DispatchWorkItem { [weak self] in
+			guard let self = self else {
+				return
+			}
 
-			stopFloodControlTimer()
+			if (self.socket.connected) {
+				return
+			}
+
+			Logging.defaultSubsystem?.error("Connection \(self.socket.uniqueIdentifier, privacy: .public) timed out")
+
+			self.socket.close(with: ConnectionError(otherError: LocalizedString("Connection timed out", table: "CommonErrors")))
 		}
 
-		destroyWorkerDispatchQueue()
+		connectTimeoutWorkItem = workItem
+
+		queue.asyncAfter(deadline: .now() + connectTimeout, execute: workItem)
+	}
+
+	fileprivate func cancelConnectTimeout()
+	{
+		connectTimeoutWorkItem?.cancel()
+
+		connectTimeoutWorkItem = nil
 	}
 
 	// MARK: - Send Queue
 
-	fileprivate var sendQueueCount: Int
-	{
-		var sendQueueCount = 0
-
-		workerQueue?.sync {
-			sendQueueCount = sendQueue.count
-		}
-
-		return sendQueueCount
-	}
-
-	fileprivate func nextEntryInSendQueue() -> Data?
-	{
-		var nextEntry: Data?
-
-		workerQueue?.sync {
-			nextEntry = sendQueue.first
-		}
-
-		return nextEntry
-	}
-
-	fileprivate func sendQueue(add data: Data)
-	{
-		workerQueue?.sync {
-			sendQueue.append(data)
-		}
-	}
-
-	fileprivate func sendQueue(remove data: Data)
-	{
-		workerQueue?.sync {
-			if let index = sendQueue.firstIndex(of: data) {
-				sendQueue.remove(at: index)
-			}
-		}
-	}
-
 	@objc
 	final func clearSendQueue()
 	{
-		workerQueue?.sync {
-			sendQueue.removeAll()
+		queue.async {
+			self.sendQueue.removeAll()
 		}
 	}
 
+	/// Writes the next line if the socket is free and flood control allows it.
+	/// Priority lines (PONG) are at the head of the queue and ignore the limit.
 	@discardableResult
-	fileprivate func tryToSend() -> Bool
+	fileprivate func tryToSend(ignoringFloodControl: Bool = false) -> Bool
 	{
-		if (socket.sending) {
+		if (socket.sending || socket.connected == false) {
 			return false
 		}
 
-		if (sendQueueCount == 0) {
+		guard let line = sendQueue.first else {
 			return false
 		}
 
-		if (floodControlEnforced) {
+		if (floodControlEnforced && ignoringFloodControl == false) {
 			if (floodControlCurrentMessageCount >= config.floodControlMaximumMessages) {
 				return false
 			}
@@ -236,47 +237,33 @@ final class Connection: NSObject, ConnectionSocketDelegate
 
 		floodControlCurrentMessageCount += 1
 
-		sendNextLine()
+		sendQueue.removeFirst()
+
+		socket.write(line)
 
 		return true
 	}
 
-	fileprivate func sendNextLine()
+	@objc(sendData:priority:)
+	final func send(_ data: Data, priority: Bool)
 	{
-		guard let line = nextEntryInSendQueue() else {
-			return
+		queue.async {
+			if (self.socket.disconnected) {
+				Logging.defaultSubsystem?.error("Cannot send data while disconnected")
+
+				return
+			}
+
+			if (priority) {
+				self.sendQueue.insert(data, at: 0)
+
+				self.tryToSend(ignoringFloodControl: true)
+			} else {
+				self.sendQueue.append(data)
+
+				self.tryToSend()
+			}
 		}
-
-		send(line, removeFromQueue: true)
-	}
-
-	@objc(sendData:bypassQueue:)
-	final func send(_ data: Data, bypassQueue: Bool = false)
-	{
-		if (socket.disconnected) {
-			Logging.defaultSubsystem?.error("Cannot send data while disconnected")
-
-			return
-		}
-
-		if (bypassQueue) {
-			send(data, removeFromQueue: false)
-
-			return
-		}
-
-		sendQueue(add: data)
-
-		tryToSend()
-	}
-
-	fileprivate func send(_ data: Data, removeFromQueue: Bool = false)
-	{
-		if (removeFromQueue) {
-			sendQueue(remove: data)
-		}
-
-		socket.write(data)
 	}
 
 	// MARK: - Flood Control
@@ -284,7 +271,9 @@ final class Connection: NSObject, ConnectionSocketDelegate
 	@objc
 	final func enforceFloodControl()
 	{
-		floodControlEnforced = true
+		queue.async {
+			self.floodControlEnforced = true
+		}
 	}
 
 	fileprivate func startFloodControlTimer()
@@ -311,29 +300,33 @@ final class Connection: NSObject, ConnectionSocketDelegate
 	{
 		floodControlCurrentMessageCount = 0
 
-		while (tryToSend()) {
+		tryToSend()
+	}
 
+	// MARK: - Secure Connection Information
+
+	/// Called on the main queue; reads the TLS state on the connection's queue
+	@objc(exportSecureConnectionInformation:)
+	final func exportSecureConnectionInformation(to receiver: @escaping IRCConnectionSecureInformationBlock)
+	{
+		var information: (String?, tls_protocol_version_t, tls_ciphersuite_t, [Data])?
+
+		queue.sync {
+			information = socket.secureConnectionInformation
 		}
+
+		guard let (policyName, protocolType, cipherSuite, certificateChain) = information else {
+			return
+		}
+
+		receiver(policyName, protocolType, cipherSuite, certificateChain)
 	}
 
-	// MARK: - Socket Proxy
-
-	@objc(exportSecureConnectionInformation:error:)
-	final func exportSecureConnectionInformation(to receiver: RCMSecureConnectionInformationCompletionBlock) throws
-	{
-		try socket.exportSecureConnectionInformation(to: receiver)
-	}
-
-	// MARK: - Socket Delegate
-
-	final var remoteObjectProxy: RCMConnectionManagerClientProtocol
-	{
-		return serviceConnection.remoteObjectProxy as! RCMConnectionManagerClientProtocol
-	}
+	// MARK: - Socket Delegate (called on the connection's queue)
 
 	final func connection(_ connection: ConnectionSocket, willConnectToProxy address: String, on port: UInt16)
 	{
-		remoteObjectProxy.ircConnectionWillConnect(toProxy: address, port: port)
+		notifyDelegate { $0.ircConnectionWillConnect(toProxy: address, port: port) }
 	}
 
 	final func connection(_ connection: ConnectionSocket, willConnectTo address: String, on port: UInt16)
@@ -343,51 +336,73 @@ final class Connection: NSObject, ConnectionSocketDelegate
 
 	final func connection(_ connection: ConnectionSocket, didConnectTo address: String?)
 	{
-		remoteObjectProxy.ircConnectionDidConnect(toHost: address)
+		cancelConnectTimeout()
+
+		notifyDelegate { $0.ircConnectionDidConnect(toHost: address) }
+
+		/* Lines queued before the connection was ready */
+		tryToSend()
 	}
 
 	final func connection(_ connection: ConnectionSocket, securedWith protocol: tls_protocol_version_t, cipherSuite: tls_ciphersuite_t)
 	{
-		remoteObjectProxy.ircConnectionDidSecureConnection(withProtocolType: `protocol`, cipherSuite: cipherSuite)
+		notifyDelegate { $0.ircConnectionDidSecureConnection(withProtocolType: `protocol`, cipherSuite: cipherSuite) }
 	}
 
 	final func connection(_ connection: ConnectionSocket, requiresTrust response: @escaping (Bool) -> Void)
 	{
-		remoteObjectProxy.ircConnectionRequestInsecureCertificateTrust(response)
+		/* The user may take longer than the timeout to decide */
+		cancelConnectTimeout()
+
+		let queue = self.queue
+
+		notifyDelegate { [weak self] delegate in
+			delegate.ircConnectionRequestInsecureCertificateTrust { trusted in
+				response(trusted)
+
+				if (trusted) {
+					queue.async {
+						self?.startConnectTimeout()
+					}
+				}
+			}
+		}
 	}
 
 	final func connectionClosedReadStream(_ connection: ConnectionSocket)
 	{
-		remoteObjectProxy.ircConnectionDidCloseReadStream()
+		notifyDelegate { $0.ircConnectionDidCloseReadStream() }
 	}
 
 	final func connectionDisconnected(_ connection: ConnectionSocket)
 	{
 		resetState()
 
-		remoteObjectProxy.ircConnectionDidDisconnectWithError(nil)
+		notifyDelegate { $0.ircConnectionDidDisconnectWithError(nil) }
 	}
 
 	final func connection(_ connection: ConnectionSocket, disconnectedWith error: ConnectionError)
 	{
 		resetState()
 
-		remoteObjectProxy.ircConnectionDidDisconnectWithError(error as NSError)
+		let nsError = error as NSError
+
+		notifyDelegate { $0.ircConnectionDidDisconnectWithError(nsError) }
 	}
 
 	final func connection(_ connection: ConnectionSocket, received data: Data)
 	{
-		remoteObjectProxy.ircConnectionDidReceive(data)
+		notifyDelegate { $0.ircConnectionDidReceive(data) }
 	}
 
 	final func connection(_ connection: ConnectionSocket, willSend data: Data)
 	{
-		remoteObjectProxy.ircConnectionWillSend(data)
+		notifyDelegate { $0.ircConnectionWillSend(data) }
 	}
 
 	final func connectionDidSend(_ connection: ConnectionSocket)
 	{
-		remoteObjectProxy.ircConnectionDidSendData()
+		notifyDelegate { $0.ircConnectionDidSendData() }
 
 		tryToSend()
 	}
@@ -395,7 +410,7 @@ final class Connection: NSObject, ConnectionSocketDelegate
 
 // MARK: - Extensions
 
-typealias ConnectionError = Connection.ConnectionError
+typealias ConnectionError = ConnectionTransport.ConnectionError
 
 extension ConnectionError: CustomNSError
 {
@@ -453,19 +468,5 @@ extension ConnectionError: LocalizedError
 				 .unableToSecure(let message):
 				return message
 		}
-	}
-}
-
-fileprivate extension ConnectionSocket
-{
-	static func socket(with config: IRCConnectionConfig) -> ConnectionSocket & ConnectionSocketProtocol
-	{
-		if #available(macOS 10.14, *) {
-			if (config.connectionPrefersModernSockets) {
-				return ConnectionSocketNWF(with: config)
-			}
-		}
-
-		return ConnectionSocketClassic(with: config)
 	}
 }

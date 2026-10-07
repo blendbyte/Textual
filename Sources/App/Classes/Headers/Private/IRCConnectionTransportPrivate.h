@@ -5,6 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
+ * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
  * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
@@ -35,91 +36,56 @@
  *
  *********************************************************************** */
 
-#import "GCDAsyncSocketExtensions.h"
+#import <Security/Security.h>
+
+#import <CocoaExtensions/CocoaExtensions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation GCDAsyncSocket (GCDsyncSocketExtensions)
+typedef void (^IRCConnectionSecureInformationBlock)(NSString * _Nullable policyName,
+													tls_protocol_version_t protocolType,
+													tls_ciphersuite_t cipherSuite,
+													NSArray<NSData *> *certificateChain);
 
-+ (instancetype)socketWithDelegate:(id)aDelegate delegateQueue:(dispatch_queue_t)dq socketQueue:(dispatch_queue_t)sq
-{
-	return [[self alloc] initWithDelegate:aDelegate delegateQueue:dq socketQueue:sq];
-}
+/* The connection transport (IRCConnectionTransport.swift) does all socket work
+ on its own serial queue and reports to its delegate on the main queue, in the
+ order things happened. */
+@protocol IRCConnectionTransportDelegate <NSObject>
+@required
+- (void)ircConnectionWillConnectToProxy:(NSString *)proxyHost port:(uint16_t)proxyPort;
 
-- (tls_protocol_version_t)tlsNegotiatedProtocol
-{
-	__block SSLProtocol protocol;
+/* host is nil when connected through a proxy */
+- (void)ircConnectionDidConnectToHost:(nullable NSString *)host;
+- (void)ircConnectionDidSecureConnectionWithProtocolType:(tls_protocol_version_t)protocolType
+											 cipherSuite:(tls_ciphersuite_t)cipherSuite;
+- (void)ircConnectionDidCloseReadStream;
+- (void)ircConnectionDidDisconnectWithError:(nullable NSError *)disconnectError;
+- (void)ircConnectionDidReceiveData:(NSData *)data;
 
-	dispatch_block_t block = ^{
-TEXTUAL_IGNORE_DEPRECATION_BEGIN
-		OSStatus status = SSLGetNegotiatedProtocolVersion(self.sslContext, &protocol);
-TEXTUAL_IGNORE_DEPRECATION_END
+/* trustBlock must be called exactly once, on any queue */
+- (void)ircConnectionRequestInsecureCertificateTrust:(RCMTrustResponse)trustBlock;
+- (void)ircConnectionWillSendData:(NSData *)data;
+- (void)ircConnectionDidSendData;
+@end
 
-#pragma unused(status)
-	};
+@class IRCConnectionConfig;
 
-	[self performBlock:block];
+/* Implemented in IRCConnectionTransport.swift */
+@interface IRCConnectionTransport : NSObject
+- (instancetype)initWithConfig:(IRCConnectionConfig *)config delegate:(id <IRCConnectionTransportDelegate>)delegate;
 
-	return [RCMSecureTransport protocolTypeFromDeprecated:protocol];
-}
+- (void)open;
+- (void)close;
 
-- (tls_ciphersuite_t)tlsNegotiatedCipherSuite
-{
-	__block SSLCipherSuite cipher;
+/* data must end in CRLF. Priority lines (PONG) go first and ignore flood control. */
+- (void)sendData:(NSData *)data priority:(BOOL)priority;
 
-	dispatch_block_t block = ^{
-TEXTUAL_IGNORE_DEPRECATION_BEGIN
-		OSStatus status = SSLGetNegotiatedCipher(self.sslContext, &cipher);
-TEXTUAL_IGNORE_DEPRECATION_END
+- (void)clearSendQueue;
 
-#pragma unused(status)
-	};
+- (void)enforceFloodControl;
 
-	[self performBlock:block];
-
-	/* This can be easily cast because they refer to the same code points. */
-	return (tls_ciphersuite_t)cipher;
-}
-
-- (SecTrustRef)tlsTrustRef
-{
-	__block SecTrustRef trust;
-
-	dispatch_block_t block = ^{
-TEXTUAL_IGNORE_DEPRECATION_BEGIN
-		OSStatus status = SSLCopyPeerTrust(self.sslContext, &trust);
-TEXTUAL_IGNORE_DEPRECATION_END
-
-#pragma unused(status)
-	};
-
-	[self performBlock:block];
-
-	return trust;
-}
-
-- (nullable NSArray<NSData *> *)tlsCertificateChainData
-{
-	SecTrustRef trustRef = self.tlsTrustRef;
-
-	if (trustRef == NULL) {
-		return nil;
-	}
-
-	return [RCMSecureTransport certificatesInTrust:trustRef];
-}
-
-- (nullable NSString *)tlsPolicyName
-{
-	SecTrustRef trustRef = self.tlsTrustRef;
-
-	if (trustRef == NULL) {
-		return nil;
-	}
-
-	return [RCMSecureTransport policyNameInTrust:trustRef];
-}
-
+/* Main queue only; the receiver is called before this returns, if at all */
+- (void)exportSecureConnectionInformation:(IRCConnectionSecureInformationBlock)receiver;
 @end
 
 NS_ASSUME_NONNULL_END

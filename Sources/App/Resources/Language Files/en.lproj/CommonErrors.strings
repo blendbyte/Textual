@@ -42,3 +42,8 @@
 "gas-v8" = "Cannot contain more than one line.";
 "2cb-af" = "Maximum length is %ld characters.";
 "qi9-i8" = "Minimum length is %ld characters.";
+
+/* IRC connection errors (IRCConnectionSocketNWF.swift, IRCConnectionTransport.swift) */
+"DNS Error: %@ (%ld)" = "DNS Error: %1$@ (%2$ld)";
+"POSIX Error: %@ (%ld)" = "POSIX Error: %1$@ (%2$ld)";
+"Connection timed out" = "The server didn’t respond within 30 seconds";

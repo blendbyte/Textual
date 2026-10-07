@@ -600,6 +600,69 @@ async def scenario_dcc_reverse_send(client):
 	remove_downloads(name)
 
 
+async def scenario_fin(client):
+	"""Send a few channel lines and an ERROR, then close the connection at once
+	(FIN right behind the data). Textual Dev must show every line, including the
+	ERROR, and then treat the connection as closed instead of hanging."""
+	await client.collect(2)
+
+	channel = "#fin"
+
+	await client.send(f":{client.nickname}!user@client.textual.test JOIN {channel}")
+
+	for number in range(1, 6):
+		await client.send(f":friend!f@friend.test PRIVMSG {channel} :line {number} before the server closes")
+
+	await client.send("ERROR :Closing Link: scripted test server is closing the connection")
+
+	result(True, "sent 5 lines and an ERROR, then closed; check #fin shows all of them and the server shows as disconnected")
+
+
+async def scenario_pong_priority(client):
+	"""After registering, send 30 lines at once, e.g. Development/dev input
+	--channel '#flood' "$(seq -f 'line %g' 30)". When the third PRIVMSG arrives,
+	the server PINGs; with flood control on, the PONG must arrive within 2 seconds,
+	ahead of the PRIVMSGs still queued."""
+	await client.send(f":{client.nickname}!user@client.textual.test JOIN #flood")
+
+	privmsgs = 0
+	ping_sent_at = None
+	end = time.monotonic() + 120
+
+	while time.monotonic() < end:
+		try:
+			line = await asyncio.wait_for(client.read_line(), 1)
+		except asyncio.TimeoutError:
+			continue
+
+		if line is None:
+			result(False, "connection closed")
+			return
+
+		upper = line.upper()
+
+		if upper.startswith("PRIVMSG"):
+			privmsgs += 1
+
+			if privmsgs == 3 and ping_sent_at is None:
+				ping_sent_at = time.monotonic()
+				await client.send("PING :priority-check")
+		elif upper.startswith("PONG") and "priority-check" in line:
+			delay = time.monotonic() - ping_sent_at
+			result(delay < 2, f"PONG after {delay:.2f} s, with {privmsgs} PRIVMSGs received so far")
+			return
+		elif upper.startswith("PING"):
+			await client.send(f":{SERVER} PONG {SERVER} {line[5:]}")
+
+	result(False, "no PONG within two minutes")
+
+
+async def scenario_silent(client):
+	"""Accept the connection and never answer (not even a TLS handshake): connect
+	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
+	pass
+
+
 SCENARIOS = {
 	"idle": scenario_idle,
 	"links": scenario_links,
@@ -615,6 +678,9 @@ SCENARIOS = {
 	"dcc-resume-foreign": scenario_dcc_resume_foreign,
 	"dcc-resume-own": scenario_dcc_resume_own,
 	"dcc-reverse-send": scenario_dcc_reverse_send,
+	"fin": scenario_fin,
+	"pong-priority": scenario_pong_priority,
+	"silent": scenario_silent,
 }
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
@@ -657,6 +723,13 @@ async def main():
 			Events.reconnected_with_tls = use_tls
 			Events.reconnected.set()
 			writer.close()
+			return
+
+		if arguments.scenario == "silent":
+			log("<<", "connection accepted; staying silent for two minutes")
+			await asyncio.sleep(120)
+			writer.close()
+			finished.set()
 			return
 
 		client = Client(reader, writer)

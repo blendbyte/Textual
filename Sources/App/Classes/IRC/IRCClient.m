@@ -82,7 +82,6 @@
 
 #import "NSObjectHelperPrivate.h"
 #import "NSStringHelper.h"
-#import "GCDAsyncSocketExtensions.h"
 #import "TPCApplicationInfo.h"
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocalPrivate.h"
@@ -5561,12 +5560,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	IRCConnectionProxyType proxyType = self.socket.config.proxyType;
 
-	if (proxyType == IRCConnectionProxyTypeSocks4) {
-		[self printDebugInformationToConsole:TXTLS(@"IRC[p7h-un]", proxyHost, proxyPort)];
-	} else if (proxyType == IRCConnectionProxyTypeSocks5) {
-		[self printDebugInformationToConsole:TXTLS(@"IRC[ni5-cy]", proxyHost, proxyPort)];
-	} else if (proxyType == IRCConnectionProxyTypeHTTP) {
+	if (proxyType == IRCConnectionProxyTypeHTTP || proxyType == IRCConnectionProxyTypeHTTPS) {
 		[self printDebugInformationToConsole:TXTLS(@"IRC[oby-av]", proxyHost, proxyPort)];
+	} else {
+		[self printDebugInformationToConsole:TXTLS(@"IRC[ni5-cy]", proxyHost, proxyPort)];
 	}
 }
 
@@ -5693,9 +5690,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self printDebugInformationToConsole:TXTLS(@"IRC[5h5-sl]")];
 }
 
-/* This delegate call is not invoked on the main thread
- which means if it is modified to interact with UI,
- then it must invoke on the main thread eventually. */
+/* Called on the main queue, one line at a time, in order: parsing depends
+ on state the previous lines changed (capabilities, batches, ISUPPORT) */
 - (void)ircConnection:(IRCConnection *)sender didReceiveData:(NSString *)data
 {
 	NSParameterAssert(sender == self.socket);
@@ -11340,12 +11336,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	IRCConnectionProxyType proxyType = self.config.proxyType;
 
-	/* Network.framework cannot use a custom proxy so we can only either use none
-	 or allow it to automatically configure the connection using the system proxy. */
-	socketConfig.connectionPrefersModernSockets = ([TPCPreferences preferModernSockets] &&
-												   (proxyType == IRCConnectionProxyTypeNone ||
-													proxyType == IRCConnectionProxyTypeAutomatic));
-
 	socketConfig.cipherSuites = self.config.cipherSuites;
 
 	socketConfig.connectionPrefersSecuredConnection = connectionPrefersSecuredConnection;
@@ -11356,8 +11346,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	if (bypassProxy == NO) {
 		socketConfig.proxyType = proxyType;
 
-		if (socketConfig.proxyType == IRCConnectionProxyTypeSocks4 ||
-			socketConfig.proxyType == IRCConnectionProxyTypeSocks5 ||
+		if (socketConfig.proxyType == IRCConnectionProxyTypeSocks5 ||
 			socketConfig.proxyType == IRCConnectionProxyTypeHTTP ||
 			socketConfig.proxyType == IRCConnectionProxyTypeHTTPS)
 		{

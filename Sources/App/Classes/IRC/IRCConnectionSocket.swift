@@ -43,7 +43,11 @@ class ConnectionSocket: NSObject
 {
 	weak var delegate: ConnectionSocketDelegate?
 
-	final private(set) var config: IRCConnectionConfig
+	/// The connection's only queue, owned by ConnectionTransport; every
+	/// method and callback of a socket runs on it
+	var queue: DispatchQueue!
+
+	final let config: IRCConnectionConfig
 
 	final let uniqueIdentifier: String
 
@@ -100,20 +104,22 @@ class ConnectionSocket: NSObject
 			return
 		}
 
+		if (SecTrustEvaluateWithError(trust, nil)) {
+			response(true)
+
+			return
+		}
+
+		/* Failures the user may accept (self-signed, expired, wrong
+		 name) ask; everything else is refused */
 		var evaluationResult: SecTrustResultType = .invalid
 
-		let evaluationStatus = SecTrustEvaluate(trust, &evaluationResult)
+		if (SecTrustGetTrustResult(trust, &evaluationResult) == errSecSuccess &&
+			evaluationResult == .recoverableTrustFailure)
+		{
+			delegate?.connection(self, requiresTrust: response)
 
-		if (evaluationStatus == errSecSuccess) {
-			if (evaluationResult == .unspecified || evaluationResult == .proceed) {
-				response(true)
-
-				return
-			} else if (evaluationResult == .recoverableTrustFailure) {
-				delegate?.connection(self, requiresTrust: response)
-
-				return
-			}
+			return
 		}
 
 		response(false)
@@ -161,31 +167,6 @@ class ConnectionSocket: NSObject
 		/* ====================================== */
 
 		return (identity: identityRef!, certificate: certificateRef)
-	}
-
-	final func changeProxy(to type: IRCConnectionProxyType = .none, at host: String? = nil, on port: UInt16 = 0, username: String? = nil, password: String? = nil)
-	{
-		let mutableConfig: IRCConnectionConfigMutable = config.mutableCopy() as! IRCConnectionConfigMutable
-
-		mutableConfig.proxyAddress = host
-		mutableConfig.proxyPort = port
-
-		mutableConfig.proxyType = type
-
-		mutableConfig.proxyUsername = username
-		mutableConfig.proxyPassword = password
-
-		config = mutableConfig
-	}
-
-	final func changeProxyToTor()
-	{
-		changeProxy(to: .socks5, at: torProxyTypeAddress, on: torProxyTypePort)
-	}
-
-	final func changeProxyToNone()
-	{
-		changeProxy()
 	}
 }
 
@@ -261,10 +242,6 @@ protocol ConnectionSocketProtocol
 	/// Logic for reading data from socket (receiving)
 	func readIn(_ data: Data)
 
-	/// Logic for providing upstream with information
-	/// about the secured connection including policy name,
-	/// protocol version, cipher suite, and certificates.
-	func exportSecureConnectionInformation(to receiver: RCMSecureConnectionInformationCompletionBlock) throws
 
 	/// TLS Information
 	var tlsNegotiatedProtocol: tls_protocol_version_t? { get }
@@ -293,7 +270,9 @@ extension ConnectionSocketProtocol where Self: ConnectionSocket
 		close()
 	}
 
-	func exportSecureConnectionInformation(to receiver: RCMSecureConnectionInformationCompletionBlock) throws
+	/// Policy name, protocol version, cipher suite and certificates
+	/// of the secured connection, for the certificate panels
+	var secureConnectionInformation: (String?, tls_protocol_version_t, tls_ciphersuite_t, [Data])
 	{
 		let policyName = tlsPolicyName
 
@@ -303,6 +282,6 @@ extension ConnectionSocketProtocol where Self: ConnectionSocket
 
 		let certificateChain = tlsCertificateChainData ?? []
 
-		receiver(policyName, protocolType, cipherSuite, certificateChain)
+		return (policyName, protocolType, cipherSuite, certificateChain)
 	}
 }

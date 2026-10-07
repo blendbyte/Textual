@@ -190,8 +190,6 @@
 	<true/>
 	<key>PreferModernCiphers</key>
 	<false/>
-	<key>PreferModernSockets</key>
-	<true/>
 	<key>OnlySpeakNotificationsForSelection</key>
 	<true/>
 	<key>OpenClickedLinksInBackgroundBrowser</key>

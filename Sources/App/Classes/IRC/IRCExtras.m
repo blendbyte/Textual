@@ -336,9 +336,15 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef DEBUG
 static BOOL _developmentConnectRequested = NO;
 
+/* This Mac, or a name under the reserved .test domain (RFC 2606, never
+ resolved on the internet), which the test proxy maps to a local server */
 + (BOOL)isDevelopmentTestServerAddress:(NSString *)serverAddress
 {
-	return [@[@"127.0.0.1", @"localhost"] containsObject:serverAddress];
+	if ([@[@"127.0.0.1", @"localhost"] containsObject:serverAddress]) {
+		return YES;
+	}
+
+	return [serverAddress.lowercaseString hasSuffix:@".test"];
 }
 
 /* Development/dev passes a fresh token as a launch argument ("-TextualDevToken");
@@ -429,7 +435,7 @@ static BOOL _developmentConnectRequested = NO;
 
 /* textual://dev-config?<key>=<value>[&…] changes the newest server's configuration
  as Server Properties would. Keys are IRCClientConfig property names; switches
- take 1 or 0. */
+ take 1 or 0. connect=1 then (re)connects the server with the new settings. */
 + (void)performDevelopmentConfigurationWithURL:(NSString *)location
 {
 	IRCClient *client = worldController().clientList.lastObject;
@@ -442,7 +448,15 @@ static BOOL _developmentConnectRequested = NO;
 
 	NSURLComponents *components = [NSURLComponents componentsWithString:location];
 
+	BOOL connect = NO;
+
 	for (NSURLQueryItem *item in components.queryItems) {
+		if ([item.name isEqualToString:@"connect"]) {
+			connect = [item.value isEqualToString:@"1"];
+
+			continue;
+		}
+
 		NSString *setterName = [NSString stringWithFormat:@"set%@%@:", [item.name substringToIndex:1].uppercaseString, [item.name substringFromIndex:1]];
 
 		if ([config respondsToSelector:NSSelectorFromString(setterName)] == NO) {
@@ -451,10 +465,31 @@ static BOOL _developmentConnectRequested = NO;
 			continue;
 		}
 
-		[config setValue:item.value forKey:item.name];
+		/* Numbers as NSNumber: KVC can't set integer properties from strings */
+		id value = item.value;
+
+		if (value && [value rangeOfString:@"^[0-9]+$" options:NSRegularExpressionSearch].location != NSNotFound) {
+			value = @([value longLongValue]);
+		}
+
+		[config setValue:value forKey:item.name];
 	}
 
 	[client updateConfig:config];
+
+	if (connect == NO) {
+		return;
+	}
+
+	if (client.isConnected || client.isConnecting) {
+		[client quit];
+
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			[client connect];
+		});
+	} else {
+		[client connect];
+	}
 }
 
 /* textual://dev-send?nickname=<nickname>&path=<path> offers a file to a user

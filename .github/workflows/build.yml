@@ -97,7 +97,7 @@ jobs:
           for plugin in "Caffeine" "Chat Filters" "Smiley Converter" "System Info" "User Insights" "ZNC Additions"; do
             test -d "$contents/Resources/Bundled Extensions/$plugin.bundle" || fail "Plugin missing: $plugin"
           done
-          for service in "IRC Connection Host" "Inline Content Loader"; do
+          for service in "Inline Content Loader"; do
             test -d "$contents/XPCServices/$service.xpc" || fail "XPC service missing: $service"
           done
           test -d "$contents/XPCServices/Inline Content Loader.xpc/Contents/Resources/Extensions/Core Media.mediaPlugin" || fail "Core Media plugin missing"

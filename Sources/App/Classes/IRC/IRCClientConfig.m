@@ -340,6 +340,11 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignUnsignedIntegerTo:&self->_primaryEncoding forKey:@"primaryEncoding"];
 	[defaultsMutable assignUnsignedIntegerTo:&self->_proxyType forKey:@"proxyType"];
 
+	/* SOCKS4 was removed in Textual 8; most SOCKS servers also speak SOCKS5 */
+	if (self->_proxyType == IRCConnectionProxyTypeSocks4) {
+		self->_proxyType = IRCConnectionProxyTypeSocks5;
+	}
+
 	[defaultsMutable assignUnsignedShortTo:&self->_proxyPort forKey:@"proxyPort"];
 	[defaultsMutable assignUnsignedShortTo:&self->_serverPort forKey:@"serverPort"];
 
@@ -482,6 +487,10 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[defaultsMutable assignUnsignedIntegerTo:&self->_primaryEncoding forKey:@"characterEncodingDefault"];
 	[defaultsMutable assignUnsignedIntegerTo:&self->_fallbackEncoding forKey:@"characterEncodingFallback"];
 	[defaultsMutable assignUnsignedIntegerTo:&self->_proxyType forKey:@"proxyServerType"];
+
+	if (self->_proxyType == IRCConnectionProxyTypeSocks4) {
+		self->_proxyType = IRCConnectionProxyTypeSocks5;
+	}
 
 	[defaultsMutable assignUnsignedShortTo:&self->_proxyPort forKey:@"proxyServerPort"];
 

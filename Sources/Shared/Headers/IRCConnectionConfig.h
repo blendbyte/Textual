@@ -50,7 +50,7 @@ TEXTUAL_EXTERN uint16_t const IRCConnectionDefaultProxyPort;
 typedef NS_ENUM(NSUInteger, IRCConnectionProxyType) {
 	IRCConnectionProxyTypeNone = 0,
 	IRCConnectionProxyTypeAutomatic = 1,
-	IRCConnectionProxyTypeSocks4 = 4,
+	IRCConnectionProxyTypeSocks4 = 4, // No longer supported: treated as SOCKS5
 	IRCConnectionProxyTypeSocks5 = 5,
 	IRCConnectionProxyTypeHTTP = 6,
 	IRCConnectionProxyTypeHTTPS = 7,
@@ -71,7 +71,7 @@ typedef NS_ENUM(NSUInteger, IRCConnectionAddressType)
 
 @interface IRCConnectionConfig : XRPortablePropertyObject
 @property (readonly) BOOL connectionPrefersModernCiphersOnly;
-@property (readonly) BOOL connectionPrefersModernSockets;
+@property (readonly) BOOL connectionPrefersModernSockets; // Ignored: always Network.framework
 @property (readonly) BOOL connectionPrefersSecuredConnection;
 @property (readonly) BOOL connectionShouldValidateCertificateChain;
 @property (readonly) IRCConnectionAddressType addressType;

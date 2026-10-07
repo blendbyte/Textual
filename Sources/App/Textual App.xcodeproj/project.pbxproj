@@ -143,11 +143,9 @@
 		4C06E33A20EC4FF00055D09A /* TDCAddressBookSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D520EC4FF00055D09A /* TDCAddressBookSheet.strings */; };
 		4C06E33E20EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D720EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings */; };
 		4C06E34220EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D920EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings */; };
-		4C06E3B220EC51380055D09A /* GCDAsyncSocketExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E36B20EC51370055D09A /* GCDAsyncSocketExtensions.h */; };
 		4C06E3B620EC51380055D09A /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */; };
 		4C06E3CA20EC51380055D09A /* ICLPayloadInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E37220EC51370055D09A /* ICLPayloadInternal.h */; };
 		4C06E3D620EC51380055D09A /* ICLPayload.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E37520EC51370055D09A /* ICLPayload.h */; };
-		4C06E3F620EC51380055D09A /* RCMConnectionManagerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E37F20EC51370055D09A /* RCMConnectionManagerProtocol.h */; };
 		4C06E3FA20EC51380055D09A /* ICLInlineContentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E38020EC51370055D09A /* ICLInlineContentProtocol.h */; };
 		4C06E41820EC52D60055D09A /* ICLPayloadLocalPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E41520EC52D50055D09A /* ICLPayloadLocalPrivate.h */; };
 		4C06E47320EC541C0055D09A /* AutoHyperlinks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -286,7 +284,6 @@
 		4C06E6BC20EC55B90055D09A /* TPCResourceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31511820EB673E00448776 /* TPCResourceManager.m */; };
 		4C06E6BD20EC55B90055D09A /* ICLPayloadLocal.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E34E20EC50D40055D09A /* ICLPayloadLocal.m */; };
 		4C06E6BF20EC55B90055D09A /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E36320EC51370055D09A /* GCDAsyncSocket.m */; settings = {COMPILER_FLAGS = "-Wno-implicit-retain-self"; }; };
-		4C06E6C020EC55B90055D09A /* GCDAsyncSocketExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E36520EC51370055D09A /* GCDAsyncSocketExtensions.m */; };
 		4C06E6C220EC55B90055D09A /* ICLPayload.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E38B20EC51370055D09A /* ICLPayload.m */; };
 		4C06E6C420EC55B90055D09A /* TVCChannelSelectionOutlineCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152AE20EB673E00448776 /* TVCChannelSelectionOutlineCellView.m */; };
 		4C06E6C520EC55B90055D09A /* TVCChannelSelectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152AF20EB673E00448776 /* TVCChannelSelectionViewController.m */; };
@@ -332,7 +329,6 @@
 		4C06E6F020EC55B90055D09A /* TVCDockIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152C520EB673E00448776 /* TVCDockIcon.m */; };
 		4C0A31152C374A5B0081EF1F /* KeysExcludedFromMigrate.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */; };
 		4C171681254A58C2004BE8AE /* Inline Content Loader.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 4C171669254A589D004BE8AE /* Inline Content Loader.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		4C171682254A58C2004BE8AE /* IRC Connection Host.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 4C171668254A589D004BE8AE /* IRC Connection Host.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */; };
 		4C2BEB642C3866DF008F8F0D /* KeysExcludedFromContainer.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */; };
 		4C2E92212C1E446E003BB92D /* Caffeine.bundle in Copy Extensions */ = {isa = PBXBuildFile; fileRef = 4C2E92202C1E4463003BB92D /* Caffeine.bundle */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -613,6 +609,9 @@
 		4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1560075456941B0D119C32 /* TLOLinkParserTests.m */; };
 		4CC5003E4997F22C192B99CB /* TestHostTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */; };
 		4C9C2DCF311FD2AE36EE722D /* HistoricLogFileStorageModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4CE59F136760C3C11FA8F04C /* HistoricLogFileStorageModel.xcdatamodeld */; };
+		4C32F2F0C8E5B567191A7F9B /* IRCConnectionTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */; };
+		4C766EC602CF8DBE08B09AAB /* IRCConnectionSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */; };
+		4C7380A292871C0CFE284130 /* IRCConnectionSocketNWF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -705,7 +704,6 @@
 			dstSubfolderSpec = 16;
 			files = (
 				4C171681254A58C2004BE8AE /* Inline Content Loader.xpc in Copy XPC Services */,
-				4C171682254A58C2004BE8AE /* IRC Connection Host.xpc in Copy XPC Services */,
 			);
 			name = "Copy XPC Services";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -816,18 +814,14 @@
 		4C06E2DA20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCChannelModifyTopicSheet.strings; sourceTree = "<group>"; };
 		4C06E34E20EC50D40055D09A /* ICLPayloadLocal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICLPayloadLocal.m; sourceTree = "<group>"; };
 		4C06E36320EC51370055D09A /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
-		4C06E36520EC51370055D09A /* GCDAsyncSocketExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocketExtensions.m; sourceTree = "<group>"; };
-		4C06E36B20EC51370055D09A /* GCDAsyncSocketExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocketExtensions.h; sourceTree = "<group>"; };
 		4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
 		4C06E37220EC51370055D09A /* ICLPayloadInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLPayloadInternal.h; sourceTree = "<group>"; };
 		4C06E37520EC51370055D09A /* ICLPayload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLPayload.h; sourceTree = "<group>"; };
-		4C06E37F20EC51370055D09A /* RCMConnectionManagerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCMConnectionManagerProtocol.h; sourceTree = "<group>"; };
 		4C06E38020EC51370055D09A /* ICLInlineContentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLInlineContentProtocol.h; sourceTree = "<group>"; };
 		4C06E38B20EC51370055D09A /* ICLPayload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICLPayload.m; sourceTree = "<group>"; };
 		4C06E41520EC52D50055D09A /* ICLPayloadLocalPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICLPayloadLocalPrivate.h; sourceTree = "<group>"; };
 		4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromMigrate.plist; sourceTree = "<group>"; };
 		4C10C00D1F37E59B0004C624 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
-		4C171668254A589D004BE8AE /* IRC Connection Host.xpc */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.xpc-service"; name = "IRC Connection Host.xpc"; path = "../../../.tmp/SharedBuildProducts-XPCServices/IRC Connection Host.xpc"; sourceTree = "<group>"; };
 		4C171669254A589D004BE8AE /* Inline Content Loader.xpc */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.xpc-service"; name = "Inline Content Loader.xpc"; path = "../../../.tmp/SharedBuildProducts-XPCServices/Inline Content Loader.xpc"; sourceTree = "<group>"; };
 		4C17305322B4A94000DC5836 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesUserStyleSheet.xib; sourceTree = "<group>"; };
 		4C1DC5521580420500A47BC9 /* Textual.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Textual.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1384,6 +1378,10 @@
 		4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestHostTests.m; sourceTree = "<group>"; };
 		4C8803E3A0CD13DCD451BED0 /* LogControllerStorageModel (model 3).xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LogControllerStorageModel (model 3).xcdatamodel"; sourceTree = "<group>"; };
 		4C420DBD76594913913C9BC6 /* LogControllerStorageModel (model 4).xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "LogControllerStorageModel (model 4).xcdatamodel"; sourceTree = "<group>"; };
+		4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionTransport.swift; sourceTree = "<group>"; };
+		4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionSocket.swift; sourceTree = "<group>"; };
+		4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionSocketNWF.swift; sourceTree = "<group>"; };
+		4C0E3113CD372843D4140EAF /* IRCConnectionTransportPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCConnectionTransportPrivate.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1538,7 +1536,6 @@
 			isa = PBXGroup;
 			children = (
 				4C06E36320EC51370055D09A /* GCDAsyncSocket.m */,
-				4C06E36520EC51370055D09A /* GCDAsyncSocketExtensions.m */,
 			);
 			path = Sockets;
 			sourceTree = "<group>";
@@ -1558,7 +1555,6 @@
 			isa = PBXGroup;
 			children = (
 				4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */,
-				4C06E36B20EC51370055D09A /* GCDAsyncSocketExtensions.h */,
 			);
 			path = "External Libraries";
 			sourceTree = "<group>";
@@ -1574,7 +1570,6 @@
 		4C06E37E20EC51370055D09A /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				4C06E37F20EC51370055D09A /* RCMConnectionManagerProtocol.h */,
 				4C06E38020EC51370055D09A /* ICLInlineContentProtocol.h */,
 			);
 			path = Services;
@@ -1678,6 +1673,9 @@
 				4C31513820EB673E00448776 /* IRCClientRequestedCommands.m */,
 				4C31513720EB673E00448776 /* IRCCommandIndex.m */,
 				4C31512E20EB673E00448776 /* IRCConnection.m */,
+				4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */,
+				4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */,
+				4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */,
 				4C06E29C20EC4F880055D09A /* IRCConnectionConfig.m */,
 				4C5274E520F8D7CD00B18F9D /* IRCConnectionErrors.m */,
 				4C31513120EB673E00448776 /* IRCExtras.m */,
@@ -1940,6 +1938,7 @@
 				4C3151B120EB673E00448776 /* IRCColorFormatPrivate.h */,
 				4C3151AE20EB673E00448776 /* IRCCommandIndexPrivate.h */,
 				4C31522020EB673E00448776 /* IRCConnectionPrivate.h */,
+				4C0E3113CD372843D4140EAF /* IRCConnectionTransportPrivate.h */,
 				4C3151F620EB673E00448776 /* IRCExtrasPrivate.h */,
 				4C3151B220EB673E00448776 /* IRCHighlightLogEntryPrivate.h */,
 				4C3151ED20EB673E00448776 /* IRCISupportInfoPrivate.h */,
@@ -2748,7 +2747,6 @@
 			isa = PBXGroup;
 			children = (
 				4C171669254A589D004BE8AE /* Inline Content Loader.xpc */,
-				4C171668254A589D004BE8AE /* IRC Connection Host.xpc */,
 			);
 			name = Binaries;
 			sourceTree = "<group>";
@@ -2884,7 +2882,6 @@
 				4C3158CA20EB6D1000448776 /* IRCModeInfoInternal.h in Headers */,
 				4C3156EF20EB6D0500448776 /* IRCColorFormatPrivate.h in Headers */,
 				4C31571E20EB6D0500448776 /* TDCLicenseManagerRecoverLostLicenseSheetPrivate.h in Headers */,
-				4C06E3B220EC51380055D09A /* GCDAsyncSocketExtensions.h in Headers */,
 				4C31574020EB6D0500448776 /* TPCApplicationInfoPrivate.h in Headers */,
 				4C31576F20EB6D0500448776 /* TXAppearancePrivate.h in Headers */,
 				4C3155AD20EB6CB400448776 /* IRCCommandIndex.h in Headers */,
@@ -3002,7 +2999,6 @@
 				4C31573E20EB6D0500448776 /* TLOSpeechSynthesizerPrivate.h in Headers */,
 				4C06E24A20EC4B970055D09A /* IRCConnectionConfig.h in Headers */,
 				4C3155CC20EB6CB400448776 /* TLOLinkParser.h in Headers */,
-				4C06E3F620EC51380055D09A /* RCMConnectionManagerProtocol.h in Headers */,
 				4C3156EC20EB6D0500448776 /* IRCClientConfigPrivate.h in Headers */,
 				4C31577220EB6D0500448776 /* TXMasterControllerPrivate.h in Headers */,
 				4C31576020EB6D0500448776 /* TVCMainWindowSplitViewPrivate.h in Headers */,
@@ -3590,6 +3586,9 @@
 				4C06E6B320EC55B90055D09A /* TPCApplicationInfo.m in Sources */,
 				4C06E6B420EC55B90055D09A /* TPCPathInfo.m in Sources */,
 				4C469E3E20EC5BDB00094EA4 /* TLOpenLink.swift in Sources */,
+				4C32F2F0C8E5B567191A7F9B /* IRCConnectionTransport.swift in Sources */,
+				4C766EC602CF8DBE08B09AAB /* IRCConnectionSocket.swift in Sources */,
+				4C7380A292871C0CFE284130 /* IRCConnectionSocketNWF.swift in Sources */,
 				4C06E6B520EC55B90055D09A /* TPCPreferences.m in Sources */,
 				4C06E6B620EC55B90055D09A /* TPCPreferencesLocal.m in Sources */,
 				4C06E6B720EC55B90055D09A /* TPCPreferencesImportExport.m in Sources */,
@@ -3599,7 +3598,6 @@
 				4C06E6BC20EC55B90055D09A /* TPCResourceManager.m in Sources */,
 				4C06E6BD20EC55B90055D09A /* ICLPayloadLocal.m in Sources */,
 				4C06E6BF20EC55B90055D09A /* GCDAsyncSocket.m in Sources */,
-				4C06E6C020EC55B90055D09A /* GCDAsyncSocketExtensions.m in Sources */,
 				4C06E6C220EC55B90055D09A /* ICLPayload.m in Sources */,
 				4C06E6C420EC55B90055D09A /* TVCChannelSelectionOutlineCellView.m in Sources */,
 				4C8F3FDC2C31B15B00118AAF /* THOPluginItemLogging.m in Sources */,

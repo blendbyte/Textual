@@ -227,6 +227,10 @@ cmd_scripted() {
 	exec python3 "${ROOT}/Development/scripted-irc-server.py" "$@"
 }
 
+cmd_proxy() {
+	exec python3 "${ROOT}/Development/test-proxy.py" "$@"
+}
+
 python_download() {
 	local arch sha
 	case "$(uname -m)" in
@@ -264,7 +268,7 @@ cmd_vm-bundle() {
 	local bundle="${staging}/TextualTest"
 	mkdir -p "${bundle}/Development" "${bundle}/.tmp/dev"
 
-	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/ergo-config.py" "${bundle}/Development/"
+	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/test-proxy.py" "${ROOT}/Development/ergo-config.py" "${bundle}/Development/"
 	# Without the database and lock of the Ergo running here; vm-dev creates its own
 	rsync -a --exclude ircd.db --exclude ircd.lock "${ERGO_DIR}/" "${bundle}/.tmp/dev/ergo/"
 	tar -xzf "${python_archive}" -C "${bundle}"
@@ -321,6 +325,15 @@ cmd_vm-bundle() {
 				*) job scripted "${here}" "${here}/python/bin/python3" -u "${here}/Development/scripted-irc-server.py" "$@"; sleep 1; exec cat "${data}/scripted.log" ;;
 			esac
 			set -- scripted "$@" ;;
+		proxy)
+			shift
+			case "${1:-}" in
+				stop) launchctl bootout "${domain}/com.textualapp.app.dev.vm.proxy" 2> /dev/null; exit 0 ;;
+				log) exec cat "${data}/proxy.log" ;;
+				""|--help|-h) ;;
+				*) job proxy "${here}" "${here}/python/bin/python3" -u "${here}/Development/test-proxy.py" "$@"; sleep 1; exec cat "${data}/proxy.log" ;;
+			esac
+			set -- proxy "$@" ;;
 	esac
 
 	exec "${here}/Development/dev" "$@"
@@ -333,7 +346,7 @@ cmd_vm-bundle() {
 
 	echo "Bundle: ${VM_SHARE}/TextualTest.tar.gz"
 	echo "In the VM: tar -xzf <share>/textual-vm/TextualTest.tar.gz -C ~ && ~/TextualTest/vm-dev server start"
-	echo "(vm-dev scripted <scenario> runs in the background; vm-dev scripted log / stop)"
+	echo "(vm-dev scripted <scenario> and vm-dev proxy … run in the background; … log / … stop)"
 }
 
 cmd_connect() {
@@ -442,12 +455,14 @@ cmd_help() {
 	  reset [--yes]         Delete Textual Dev's settings, logs and scrollback
 	  logs                  Stream the log of Textual Dev and its services
 	  connect [url]         Connect Textual Dev to a test server on this Mac (an irc:// or
-	                        ircs:// URL to 127.0.0.1 or localhost; default: the local Ergo)
+	                        ircs:// URL to 127.0.0.1, localhost or a *.test name mapped by
+	                        "proxy --map"; default: the local Ergo)
 	  input [--channel c] <text>
 	                        Select the newest server (or its channel c) and run text
 	                        there as if typed; '' only selects
 	  config key=value …    Change the newest server's configuration (IRCClientConfig
-	                        names, e.g. nicknamePassword=… nickServHost=…)
+	                        names, e.g. nicknamePassword=… nickServHost=…); connect=1
+	                        (re)connects it with the new settings
 	  eval <script>         Run JavaScript in the selected view and print the result
 	  send <nickname> <file>
 	                        Offer a file Textual Dev saved in ~/Downloads to a user
@@ -455,6 +470,8 @@ cmd_help() {
 	  server [start|stop|status]
 	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
 	  scripted <scenario>   Scripted server for edge cases (scripted --help)
+	  proxy socks5|http [--port n] [--auth user:password]
+	                        Test proxy on 127.0.0.1 that logs what it is asked to connect to
 	  vm-bundle             Pack Textual Dev and the test servers for a test VM, into
 	                        \$TEXTUAL_VM_SHARE (default ~/Downloads/textual-vm)
 	EOF
@@ -464,6 +481,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|scripted|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|scripted|proxy|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac

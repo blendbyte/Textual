@@ -43,9 +43,6 @@
       location = "container:"
       name = "XPC Services">
       <FileRef
-         location = "group:XPC Services/IRC Remote Connection Manager/IRC Remote Connection Manager.xcodeproj">
-      </FileRef>
-      <FileRef
          location = "group:XPC Services/Inline Content Loader/Inline Content Loader.xcodeproj">
       </FileRef>
       <FileRef

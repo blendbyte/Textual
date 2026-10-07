@@ -183,7 +183,7 @@ typedef NS_ENUM(NSUInteger, TXPreferredAppearance) {
 + (BOOL)disconnectOnSleep;
 
 + (BOOL)preferModernCiphers;
-+ (BOOL)preferModernSockets;
++ (BOOL)preferModernSockets TEXTUAL_DEPRECATED("Always YES: Textual only uses Network.framework");
 
 + (BOOL)autoAddScrollbackMark;
 + (BOOL)showDateChanges;

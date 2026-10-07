@@ -4758,16 +4758,6 @@ You should therefore not rely solely on this preference.</string>
                         </binding>
                     </connections>
                 </button>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b9a-MV-ff4">
-                    <rect key="frame" x="175" y="157" width="164" height="18"/>
-                    <buttonCell key="cell" type="check" title="Prefer modern sockets" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mEq-pf-DPP">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="G2Q-fc-ddg" name="value" keyPath="values.PreferModernSockets" id="b4l-BF-WXC"/>
-                    </connections>
-                </button>
                 <stackView distribution="fill" orientation="horizontal" alignment="firstBaseline" spacing="10" horizontalStackHuggingPriority="250" verticalStackHuggingPriority="250" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="84h-O7-xuk">
                     <rect key="frame" x="147" y="119" width="376" height="19"/>
                     <subviews>
@@ -4784,7 +4774,8 @@ You should therefore not rely solely on this preference.</string>
                             <constraints>
                                 <constraint firstAttribute="height" constant="19" id="FM9-g5-NsI"/>
                                 <constraint firstAttribute="width" constant="100" id="TjQ-Vb-9kU"/>
-                            </constraints>
+                                <constraint firstItem="84h-O7-xuk" firstAttribute="top" secondItem="Xl2-g8-NiZ" secondAttribute="bottom" constant="20" id="T8w-k2-L1c"/>
+            </constraints>
                             <comboBoxCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" completes="NO" numberOfVisibleItems="5" id="8gE-fC-w0O">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -4909,13 +4900,10 @@ You should therefore not rely solely on this preference.</string>
                 <constraint firstItem="p75-KN-Sms" firstAttribute="top" secondItem="wM2-5T-Kcv" secondAttribute="bottom" constant="14" id="N4f-uj-Iz9"/>
                 <constraint firstItem="f8P-S1-YSA" firstAttribute="top" secondItem="84h-O7-xuk" secondAttribute="bottom" constant="20" id="O4J-YF-RNM"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="r5x-9F-a6i" secondAttribute="trailing" constant="20" id="R9Q-hl-OIQ"/>
-                <constraint firstItem="b9a-MV-ff4" firstAttribute="leading" secondItem="Xl2-g8-NiZ" secondAttribute="leading" id="U90-po-07Z"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="wM2-5T-Kcv" secondAttribute="trailing" constant="20" id="ZFf-wU-k9n"/>
                 <constraint firstItem="eAs-xY-p50" firstAttribute="leading" secondItem="dAH-Sl-d77" secondAttribute="leading" constant="180" id="aKK-Ts-ebc"/>
                 <constraint firstItem="V0L-wf-MX5" firstAttribute="centerX" secondItem="dAH-Sl-d77" secondAttribute="centerX" id="b3i-fV-DOR"/>
                 <constraint firstItem="p75-KN-Sms" firstAttribute="leading" secondItem="wM2-5T-Kcv" secondAttribute="leading" id="e4k-oI-brN"/>
-                <constraint firstItem="b9a-MV-ff4" firstAttribute="top" secondItem="Xl2-g8-NiZ" secondAttribute="bottom" constant="14" id="gmW-wv-0i4"/>
-                <constraint firstItem="84h-O7-xuk" firstAttribute="top" secondItem="b9a-MV-ff4" secondAttribute="bottom" constant="20" id="hSG-4J-THF"/>
                 <constraint firstItem="eAs-xY-p50" firstAttribute="centerX" secondItem="dAH-Sl-d77" secondAttribute="centerX" id="hdQ-gY-9vm"/>
                 <constraint firstItem="84h-O7-xuk" firstAttribute="centerX" secondItem="dAH-Sl-d77" secondAttribute="centerX" id="iXb-YZ-e1Y"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="p75-KN-Sms" secondAttribute="trailing" constant="20" id="sfB-ps-xYd"/>
@@ -4924,7 +4912,6 @@ You should therefore not rely solely on this preference.</string>
                 <constraint firstItem="wM2-5T-Kcv" firstAttribute="top" secondItem="r5x-9F-a6i" secondAttribute="bottom" constant="14" id="yJy-do-LTO"/>
                 <constraint firstItem="r5x-9F-a6i" firstAttribute="top" secondItem="1g9-Qk-YQN" secondAttribute="bottom" constant="14" id="T8w-k2-L1a"/>
                 <constraint firstItem="r5x-9F-a6i" firstAttribute="leading" secondItem="1g9-Qk-YQN" secondAttribute="leading" id="T8w-k2-L1b"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="b9a-MV-ff4" secondAttribute="trailing" constant="20" id="zLm-GZ-r0m"/>
             </constraints>
             <point key="canvasLocation" x="318" y="395"/>
         </customView>

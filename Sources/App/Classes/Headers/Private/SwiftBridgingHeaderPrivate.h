@@ -45,3 +45,9 @@
 
 // TLOLinkParser.swift
 #import "TVCLogLine.h"
+
+// IRCConnectionTransport.swift, IRCConnectionSocket(NWF).swift
+#import "IRCConnectionConfig.h"
+#import "IRCConnectionErrors.h"
+#import "IRCConnectionTransportPrivate.h"
+#import "TLOTimer.h"
