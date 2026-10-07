@@ -19,7 +19,6 @@ CLANG_ENABLE_OBJC_ARC = YES
 CLANG_USE_OPTIMIZATION_PROFILE = NO
 CODE_SIGN_ENTITLEMENTS =
 COMBINE_HIDPI_IMAGES = YES
-CONFIGURATION_BUILD_DIR = $(PROJECT_DIR)/Build Results/$(CONFIGURATION)
 COPY_PHASE_STRIP = NO
 DEAD_CODE_STRIPPING = YES
 DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
@@ -63,13 +62,11 @@ TEXTUAL_PRODUCT_LOCATION = /Applications/${TEXTUAL_PRODUCT_NAME}.app
 // TEXTUAL_PRODUCT_BINARY is replaced by the build script
 TEXTUAL_PRODUCT_BINARY = ${TEXTUAL_PRODUCT_LOCATION}/Contents/MacOS/${TEXTUAL_PRODUCT_NAME}
 
-// TEXTUAL_WORKSPACE_TEMP_DIR should be same for every
-// project so only override TEXTUAL_WORKSPACE_DIR, not this.
-TEXTUAL_WORKSPACE_TEMP_DIR = ${TEXTUAL_WORKSPACE_DIR}/.tmp
-
-SHARED_PRECOMPS_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedPCH
-
-DWARF_DSYM_FOLDER_PATH = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedSymbols
+// Files generated for the app and the plugins (Info.plist, BuildConfig.h,
+// FeatureFlags.h). Everything the build writes stays in the build folder:
+// products, generated files and debug symbols all go to the products
+// folder of the configuration, where the nested plugin builds write too.
+TEXTUAL_GENERATED_DIR = ${BUILT_PRODUCTS_DIR}/Textual Generated
 
 // TEXTUAL_BUILT_AS_UNIVERSAL_BINARY acts an easy way to
 // modify code based on the type of binary being built.

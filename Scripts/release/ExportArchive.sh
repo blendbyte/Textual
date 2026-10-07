@@ -2,7 +2,7 @@
 
 set -e
 
-WORKING_PATH="${TEXTUAL_WORKSPACE_TEMP_DIR}/ArchiveTan"
+WORKING_PATH="${TARGET_TEMP_DIR}/ArchiveTan"
 
 mkdir -p "${WORKING_PATH}"
 
@@ -50,9 +50,7 @@ WORKING_ZIP_FILE_SIZE=$(stat -f%z "${WORKING_ZIP_PATH}")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-# Call `git` after `cd` into working path to make
-# sure we are in a directory of a git repository.
-GIT_COMMIT_HASH=`git rev-parse --short HEAD`
+GIT_COMMIT_HASH=`git -C "${TEXTUAL_WORKSPACE_DIR}" rev-parse --short HEAD`
 
 EXPORT_PATH_NAME="Textual-${GIT_COMMIT_HASH}"
 EXPORT_PATH="${HOME}/Desktop/${EXPORT_PATH_NAME}"
@@ -162,7 +160,7 @@ echo "<section class=\"main\">
 
 		<ul>" > ./buildLog.txt
 
-git log --since='48 hours ago' --pretty=format:'			<li>%s</li>' >> ./buildLog.txt
+git -C "${TEXTUAL_WORKSPACE_DIR}" log --since='48 hours ago' --pretty=format:'			<li>%s</li>' >> ./buildLog.txt
 
 echo "
 		</ul>
@@ -176,11 +174,13 @@ mv "./buildLog.txt" "${EXPORT_PATH}"
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
+# The debug symbols of the app, its frameworks and the plugins, which are
+# all built into the products folder
 cd "${DWARF_DSYM_FOLDER_PATH}"
 
 DYSM_EXPORT_PATH="${ARCHSPEC_PATH}/Debug symbols.zip"
 
-zip -y -r -X "${DYSM_EXPORT_PATH}" *
+zip -y -r -X "${DYSM_EXPORT_PATH}" *.dSYM
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 

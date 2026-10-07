@@ -19,7 +19,8 @@ SERVER = "scripted.textual.test"
 SERVICES_HOST = "services.textual.test"
 
 # The local Ergo server's self-signed certificate (Development/dev server start)
-CERTIFICATE_DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".tmp", "dev", "ergo")
+# Ergo's certificate, from the data folder of Development/dev
+CERTIFICATE_DIRECTORY = os.path.join(os.environ.get("TEXTUAL_DEV_DATA") or os.path.expanduser("~/Library/Application Support/Textual Development"), "ergo")
 
 # Textual Dev saves into ~/Downloads unless a download folder is set
 DOWNLOADS = os.path.expanduser("~/Downloads")

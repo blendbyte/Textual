@@ -16,12 +16,3 @@ xcuserdata/
 
 # Local code signing overrides
 /Configurations/Signing.local.xcconfig
-
-# Build output
-/.tmp/
-/Build Results/
-
-# Intermediates of the nested xcodebuild calls in the build scripts
-/App/build/
-/Plugins/**/build/
-

@@ -4,8 +4,8 @@
 #
 # The app's build scripts build them with nested xcodebuild calls, which an
 # "xcodebuild analyze" of the app only builds, never analyzes. Run this after
-# the app has been built or analyzed (it needs the app's binary and the
-# shared headers in .tmp).
+# the app has been built or analyzed: it needs the app's binary, and the
+# frameworks and generated headers in the app's products folder.
 #
 # Usage: analyze-nested.sh <app bundle> <folder for the result bundles>
 
@@ -16,6 +16,7 @@ results="$2"
 
 workspace="$(cd "$(dirname "$0")/../.." && pwd)"
 binary="${app}/Contents/MacOS/Textual"
+products="$(cd "$(dirname "${app}")" && pwd)"
 
 [ -x "${binary}" ] || { echo "No app binary at ${binary}" >&2; exit 1; }
 
@@ -31,6 +32,9 @@ common_settings=(
 	CODE_SIGNING_ALLOWED=NO
 	DEVELOPMENT_TEAM=""
 	PROVISIONING_PROFILE_SPECIFIER=""
+	SYMROOT="${results}/Build"
+	OBJROOT="${results}/Build"
+	CONFIGURATION_BUILD_DIR="${products}"
 	TEXTUAL_WORKSPACE_DIR="${workspace}"
 	TEXTUAL_PRODUCT_LOCATION="${app}"
 	TEXTUAL_PRODUCT_BINARY="${binary}"

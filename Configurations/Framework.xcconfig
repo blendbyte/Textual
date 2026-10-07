@@ -1,11 +1,6 @@
-// Frameworks built from this repository (Auto Hyperlinks, Cocoa Extensions).
-// Settings on top of Foundation.xcconfig that differ from the app.
-
-TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../..
-
-// The XPC services and plugins are built by separate xcodebuild calls
-// and look for the frameworks here.
-CONFIGURATION_BUILD_DIR = ${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks
+// Frameworks built from this repository (Auto Hyperlinks, Cocoa Extensions,
+// GRMustache). Set on their targets: what differs from the app. They build
+// into the products folder, where the app and the plugins find them.
 
 // Install names stay @rpath/<Name>.framework: Textual 7 plugins load them.
 INSTALL_PATH = @rpath

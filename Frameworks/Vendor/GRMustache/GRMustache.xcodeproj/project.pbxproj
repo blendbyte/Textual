@@ -637,7 +637,6 @@
 			baseConfigurationReference = E594DF17B4A8E288D5494D99 /* Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
-				TEXTUAL_WORKSPACE_DIR = "$(PROJECT_DIR)/../../..";
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = Resources/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.groue.GRMustache;
@@ -665,7 +664,6 @@
 			baseConfigurationReference = E594DF17B4A8E288D5494D99 /* Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
-				TEXTUAL_WORKSPACE_DIR = "$(PROJECT_DIR)/../../..";
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = Resources/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.groue.GRMustache;
@@ -679,7 +677,6 @@
 			baseConfigurationReference = E594DF17B4A8E288D5494D99 /* Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
-				TEXTUAL_WORKSPACE_DIR = "$(PROJECT_DIR)/../../..";
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = Resources/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.groue.GRMustache;

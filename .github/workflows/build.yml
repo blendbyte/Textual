@@ -57,9 +57,9 @@ jobs:
         run: xcodebuild -version
 
       # CI builds are unsigned: the real signing identity is configured in
-      # Configurations/Signing.xcconfig and is not
-      # available on runners. Build settings passed here are inherited by
-      # the nested xcodebuild calls in Scripts/.
+      # Configurations/Signing.xcconfig and is not available on runners.
+      # Build settings passed here are inherited by the nested xcodebuild
+      # calls in Scripts/.
       - name: Build
         run: |
           xcodebuild \
@@ -87,7 +87,7 @@ jobs:
           CONFIGURATION: ${{ matrix.configuration }}
           LICENSE_MANAGER: ${{ matrix.license-manager || '0' }}
         run: |
-          contents="Build Results/$CONFIGURATION/Textual.app/Contents"
+          contents="$RUNNER_TEMP/DerivedData/Build/Products/$CONFIGURATION/Textual.app/Contents"
           fail() { echo "::error::$1"; exit 1; }
 
           test -x "$contents/MacOS/Textual" || fail "Textual binary missing"
@@ -106,7 +106,7 @@ jobs:
             test -d "$contents/Frameworks/Sparkle.framework" || fail "Sparkle missing"
           fi
 
-          grep -q "^#define TEXTUAL_BUILT_WITH_LICENSE_MANAGER $LICENSE_MANAGER\$" ".tmp/Build Headers/FeatureFlags.h" ||
+          grep -q "^#define TEXTUAL_BUILT_WITH_LICENSE_MANAGER $LICENSE_MANAGER\$" "$contents/Headers/FeatureFlags.h" ||
             fail "FeatureFlags.h does not say TEXTUAL_BUILT_WITH_LICENSE_MANAGER $LICENSE_MANAGER"
           if [ "$LICENSE_MANAGER" = "0" ] && nm "$contents/MacOS/Textual" | grep -q -E 'TDCLicenseManagerDialog|TLOLicenseManager'; then
             fail "Licence manager code is compiled in although the licence manager is off"
@@ -134,7 +134,7 @@ jobs:
       - name: Build the sample plugins
         if: matrix.runner == 'xcode-27' && matrix.configuration == 'Release' && matrix.license-manager == '1'
         run: |
-          app="$PWD/Build Results/Release/Textual.app"
+          app="$RUNNER_TEMP/DerivedData/Build/Products/Release/Textual.app"
           for project in "Samples/Swift Bot/SwiftPluginExample.xcodeproj" \
                          "Samples/Preference Pane/PreferencePaneExample.xcodeproj"; do
             xcodebuild \
@@ -158,7 +158,7 @@ jobs:
       - name: Verify the App Store build has no Sparkle
         if: matrix.configuration == 'App Store'
         run: |
-          app="Build Results/App Store/Textual.app"
+          app="$RUNNER_TEMP/DerivedData/Build/Products/App Store/Textual.app"
           if test -e "$app/Contents/Frameworks/Sparkle.framework"; then
             echo "::error::Sparkle.framework is embedded"; exit 1
           fi
@@ -197,7 +197,7 @@ jobs:
       # The app's build scripts build the plugins with nested xcodebuild
       # calls, which the analysis above builds but doesn't analyze.
       - name: Analyze plugins
-        run: .github/scripts/analyze-nested.sh "$GITHUB_WORKSPACE/Build Results/Release/Textual.app" "$RUNNER_TEMP/nested-analysis"
+        run: .github/scripts/analyze-nested.sh "$RUNNER_TEMP/DerivedData/Build/Products/Release/Textual.app" "$RUNNER_TEMP/nested-analysis"
 
       # Only the analyzer's own findings; compiler warnings are counted by
       # the build job.

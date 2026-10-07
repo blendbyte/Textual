@@ -4,8 +4,8 @@
 
 TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/..
 
-HEADER_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_TEMP_DIR}/Build Headers/"
-FRAMEWORK_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Vendor/Sparkle"
+HEADER_SEARCH_PATHS = "${TEXTUAL_GENERATED_DIR}/Build Headers/"
+FRAMEWORK_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Vendor/Sparkle"
 
 PRODUCT_BUNDLE_IDENTIFIER = ${TEXTUAL_BUNDLE_IDENTIFIER}
 
@@ -15,7 +15,6 @@ WRAPPER_EXTENSION = app
 
 PRODUCT_MODULE_NAME = Textual
 
-CONFIGURATION_BUILD_DIR = $(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)
 
 GCC_PREFIX_HEADER = ${PROJECT_DIR}/Supporting Files/TextualPrivate.h
 
@@ -24,7 +23,7 @@ SWIFT_OBJC_BRIDGING_HEADER = ${PROJECT_DIR}/Supporting Files/SwiftBridgingHeader
 
 REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES = NO
 
-INFOPLIST_FILE = ${TEXTUAL_WORKSPACE_TEMP_DIR}/Info.plist
+INFOPLIST_FILE = ${TEXTUAL_GENERATED_DIR}/Info.plist
 
 // It is important to preserve symbols and code that is
 // not directly used so that extensions can use them.

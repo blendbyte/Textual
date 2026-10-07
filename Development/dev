@@ -16,8 +16,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="${TEXTUAL_DEV_APP:-${ROOT}/Build Results/Debug/Textual.app}"
-DATA="${ROOT}/.tmp/dev"
+
+# The tools' own data (Ergo, the launch token, screenshots), outside the checkout
+DATA="${TEXTUAL_DEV_DATA:-${HOME}/Library/Application Support/Textual Development}"
 
 BUNDLE_ID="com.textualapp.app.dev"
 GROUP_ID="FANJ7JNLP5.com.textualapp.app.dev"
@@ -40,6 +41,29 @@ VM_SHARE="${TEXTUAL_VM_SHARE:-${HOME}/Downloads/textual-vm}"
 TOKEN_FILE="${DATA}/launch-token"
 
 die() { echo "dev: $*" >&2; exit 1; }
+
+# Textual Dev where Xcode builds it (DerivedData). Asking xcodebuild takes a
+# few seconds, so the answer is remembered for each checkout.
+app_location() {
+	local cache
+	cache="${DATA}/app-location-$(printf '%s' "${ROOT}" | shasum | cut -c1-12)"
+
+	if [ -f "${cache}" ] && [ -d "$(cat "${cache}")" ]; then
+		cat "${cache}"
+		return
+	fi
+
+	local products
+	products=$(xcodebuild -workspace "${ROOT}/Textual.xcworkspace" -scheme "Textual (Debug)" -configuration Debug -showBuildSettings 2> /dev/null |
+		sed -n 's/^ *BUILT_PRODUCTS_DIR = //p' | head -n 1)
+
+	[ -n "${products}" ] || die "Can't find where Xcode builds Textual Dev"
+
+	mkdir -p "${DATA}"
+	printf '%s' "${products}/Textual.app" | tee "${cache}"
+}
+
+APP="${TEXTUAL_DEV_APP:-$(app_location)}"
 
 # For pgrep patterns: the checkout path may contain regular expression characters
 regex_escape() { printf '%s' "$1" | sed 's/[][\\.*^$(){}?+|/]/\\&/g'; }
@@ -266,11 +290,11 @@ cmd_vm-bundle() {
 	trap "rm -rf '${staging}'" EXIT
 
 	local bundle="${staging}/TextualTest"
-	mkdir -p "${bundle}/Development" "${bundle}/.tmp/dev"
+	mkdir -p "${bundle}/Development" "${bundle}/data"
 
 	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/test-proxy.py" "${ROOT}/Development/ergo-config.py" "${bundle}/Development/"
 	# Without the database and lock of the Ergo running here; vm-dev creates its own
-	rsync -a --exclude ircd.db --exclude ircd.lock "${ERGO_DIR}/" "${bundle}/.tmp/dev/ergo/"
+	rsync -a --exclude ircd.db --exclude ircd.lock "${ERGO_DIR}/" "${bundle}/data/ergo/"
 	tar -xzf "${python_archive}" -C "${bundle}"
 	ditto "${APP}" "${bundle}/Textual.app"
 
@@ -283,7 +307,8 @@ cmd_vm-bundle() {
 	here="$(cd "$(dirname "$0")" && pwd)"
 	export PATH="${here}/python/bin:${PATH}"
 	export TEXTUAL_DEV_APP="${here}/Textual.app"
-	data="${here}/.tmp/dev"
+	export TEXTUAL_DEV_DATA="${here}/data"
+	data="${TEXTUAL_DEV_DATA}"
 	ergo="${data}/ergo"
 	domain="gui/$(id -u)"
 	[ -f "${ergo}/ircd.db" ] || (cd "${ergo}" && ./ergo initdb --conf ircd.yaml --quiet)
@@ -301,7 +326,7 @@ cmd_vm-bundle() {
 		plutil -insert RunAtLoad -bool true "${plist}"
 		plutil -insert StandardOutPath -string "${data}/${name}.log" "${plist}"
 		plutil -insert StandardErrorPath -string "${data}/${name}.log" "${plist}"
-		plutil -insert EnvironmentVariables -json "{\"PATH\": \"${PATH}\"}" "${plist}"
+		plutil -insert EnvironmentVariables -json "{\"PATH\": \"${PATH}\", \"TEXTUAL_DEV_DATA\": \"${data}\"}" "${plist}"
 		plutil -insert ProgramArguments -json '[]' "${plist}"
 		for argument in "$@"; do
 			plutil -insert ProgramArguments -string "${argument}" -append "${plist}"
@@ -474,6 +499,10 @@ cmd_help() {
 	                        Test proxy on 127.0.0.1 that logs what it is asked to connect to
 	  vm-bundle             Pack Textual Dev and the test servers for a test VM, into
 	                        \$TEXTUAL_VM_SHARE (default ~/Downloads/textual-vm)
+
+	Textual Dev is the app Xcode builds into DerivedData (\$TEXTUAL_DEV_APP overrides it).
+	Ergo, the launch token and screenshots are kept in \$TEXTUAL_DEV_DATA
+	(default ~/Library/Application Support/Textual Development).
 	EOF
 }
 

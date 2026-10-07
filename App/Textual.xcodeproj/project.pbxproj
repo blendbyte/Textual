@@ -1364,33 +1364,33 @@
 		4C5274E520F8D7CD00B18F9D /* IRCConnectionErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IRCConnectionErrors.m; sourceTree = "<group>"; };
 		4C58B570186011AC00834882 /* Acknowledgements.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = ../Acknowledgements.pdf; sourceTree = SOURCE_ROOT; };
 		4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/UpdateFeatureFlags.sh; sourceTree = SOURCE_ROOT; };
-		4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "../.tmp/SharedBuildProducts-Extensions/Chat Filters.bundle"; sourceTree = SOURCE_ROOT; };
+		4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "Chat Filters.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C8878032C33706E0016DB98 /* TPCSandboxMigration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCSandboxMigration.m; sourceTree = "<group>"; };
 		4C8878062C3371470016DB98 /* TPCSandboxMigrationPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCSandboxMigrationPrivate.h; sourceTree = "<group>"; };
 		4C8F3FD62C31AF6E00118AAF /* THOPluginManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = THOPluginManager.h; sourceTree = "<group>"; };
 		4C8F3FDB2C31B15200118AAF /* THOPluginItemLogging.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = THOPluginItemLogging.m; sourceTree = "<group>"; };
-		4C956893194A8862003D97FD /* Smiley Converter.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "../.tmp/SharedBuildProducts-Extensions/Smiley Converter.bundle"; sourceTree = SOURCE_ROOT; };
-		4C9A1D921836E6A100C14835 /* User Insights.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "../.tmp/SharedBuildProducts-Extensions/User Insights.bundle"; sourceTree = SOURCE_ROOT; };
-		4C9A1D931836E6A100C14835 /* System Info.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "../.tmp/SharedBuildProducts-Extensions/System Info.bundle"; sourceTree = SOURCE_ROOT; };
-		4C9A1D941836E6A100C14835 /* ZNC Additions.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "../.tmp/SharedBuildProducts-Extensions/ZNC Additions.bundle"; sourceTree = SOURCE_ROOT; };
+		4C956893194A8862003D97FD /* Smiley Converter.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "Smiley Converter.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C9A1D921836E6A100C14835 /* User Insights.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "User Insights.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C9A1D931836E6A100C14835 /* System Info.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "System Info.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C9A1D941836E6A100C14835 /* ZNC Additions.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "ZNC Additions.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CA8EC621B63C2970087BF72 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		4CAB27502537EE43009B1F07 /* IRCChannelMemberList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IRCChannelMemberList.m; sourceTree = "<group>"; };
 		4CAB27562537EE66009B1F07 /* IRCChannelMemberListPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRCChannelMemberListPrivate.h; sourceTree = "<group>"; };
 		4CAB275D2537F71B009B1F07 /* IRCChannelMemberList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRCChannelMemberList.h; sourceTree = "<group>"; };
 		4CAB2764253863BF009B1F07 /* IRCChannelMemberListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IRCChannelMemberListController.m; sourceTree = "<group>"; };
 		4CAB276A253863D9009B1F07 /* IRCChannelMemberListControllerPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRCChannelMemberListControllerPrivate.h; sourceTree = "<group>"; };
-		4CB638CB2D45A06C002B2CC3 /* FeatureFlags.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "../.tmp/Build Headers/FeatureFlags.h"; sourceTree = SOURCE_ROOT; };
+		4CB638CB2D45A06C002B2CC3 /* FeatureFlags.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Textual Generated/Build Headers/FeatureFlags.h"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CB873D622B4A497005AB046 /* TDCPreferencesUserStyleSheetPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDCPreferencesUserStyleSheetPrivate.h; sourceTree = "<group>"; };
 		4CB873DB22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesUserStyleSheet.m; sourceTree = "<group>"; };
-		4CC4A7371F8A1404008FF15F /* GRMustache.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ../.tmp/SharedBuildProducts-Frameworks/GRMustache.framework; sourceTree = SOURCE_ROOT; };
-		4CC70202171E1CB400BDFAE0 /* BuildConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "../.tmp/Build Headers/BuildConfig.h"; sourceTree = SOURCE_ROOT; };
+		4CC4A7371F8A1404008FF15F /* GRMustache.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = GRMustache.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CC70202171E1CB400BDFAE0 /* BuildConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Textual Generated/Build Headers/BuildConfig.h"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CCD93FC1CA7291300335381 /* JavaScript */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JavaScript; sourceTree = "<group>"; };
 		4CCE521A18C7BE0600D49601 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		4CD6F7BB1CA7747600842597 /* ExportArchive.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = ../Scripts/release/ExportArchive.sh; sourceTree = SOURCE_ROOT; };
 		4CEFEDAF22B4B6E8002CEE19 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCPreferencesUserStyleSheet.strings; sourceTree = "<group>"; };
 		4CF4D6B619837C1700FB5AF0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ../.tmp/SharedBuildProducts-Frameworks/AutoHyperlinks.framework; sourceTree = SOURCE_ROOT; };
-		4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ../.tmp/SharedBuildProducts-Frameworks/CocoaExtensions.framework; sourceTree = SOURCE_ROOT; };
+		4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaExtensions.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/UpdateVersionInfo.sh; sourceTree = SOURCE_ROOT; };
 		5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/BuildExtensions.sh; sourceTree = SOURCE_ROOT; };
 		4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = wrapper.pb-project; path = "../Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj"; sourceTree = SOURCE_ROOT; };
@@ -3494,7 +3494,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/BuildExtensions.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildExtensions.txt\"\n";
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TARGET_TEMP_DIR}/Script Logs\"\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/BuildExtensions.sh\" | tee \"${TARGET_TEMP_DIR}/Script Logs/BuildExtensions.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4C125F6A31D0B70824CEED24 /* Generate Info.plist and Build Headers */ = {
@@ -3514,9 +3514,9 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(TEXTUAL_WORKSPACE_TEMP_DIR)/Info.plist",
-				"$(TEXTUAL_WORKSPACE_TEMP_DIR)/Build Headers/BuildConfig.h",
-				"$(TEXTUAL_WORKSPACE_TEMP_DIR)/Build Headers/FeatureFlags.h",
+				"$(TEXTUAL_GENERATED_DIR)/Info.plist",
+				"$(TEXTUAL_GENERATED_DIR)/Build Headers/BuildConfig.h",
+				"$(TEXTUAL_GENERATED_DIR)/Build Headers/FeatureFlags.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -3540,7 +3540,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/PostprocessSparkle.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/PostprocessSparkle.txt\"\n";
+			shellScript = "\nset -o pipefail\nmkdir -p \"${TARGET_TEMP_DIR}/Script Logs\"\n\"${TEXTUAL_WORKSPACE_DIR}/Scripts/PostprocessSparkle.sh\" | tee \"${TARGET_TEMP_DIR}/Script Logs/PostprocessSparkle.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -4343,7 +4343,7 @@
 				PRODUCT_MODULE_NAME = TextualTests;
 				PRODUCT_NAME = TextualTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				TEST_HOST = "$(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)/Textual.app/Contents/MacOS/Textual";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Textual.app/Contents/MacOS/Textual";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
@@ -4365,7 +4365,7 @@
 				PRODUCT_MODULE_NAME = TextualTests;
 				PRODUCT_NAME = TextualTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				TEST_HOST = "$(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)/Textual.app/Contents/MacOS/Textual";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Textual.app/Contents/MacOS/Textual";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;
@@ -4387,7 +4387,7 @@
 				PRODUCT_MODULE_NAME = TextualTests;
 				PRODUCT_NAME = TextualTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				TEST_HOST = "$(TEXTUAL_WORKSPACE_DIR)/Build Results/$(CONFIGURATION)/Textual.app/Contents/MacOS/Textual";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Textual.app/Contents/MacOS/Textual";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = "App Store";

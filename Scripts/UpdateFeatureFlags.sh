@@ -2,7 +2,7 @@
 
 set -e
 
-cd "${TEXTUAL_WORKSPACE_TEMP_DIR}/Build Headers/"
+cd "${TEXTUAL_GENERATED_DIR}/Build Headers/"
 
 echo "
 /* ANY CHANGES TO THIS FILE WILL NOT BE SAVED AND WILL NOT BE COMMITTED */

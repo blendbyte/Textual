@@ -2,14 +2,13 @@
 
 set -e
 
-mkdir -p "${TEXTUAL_WORKSPACE_TEMP_DIR}"
+mkdir -p "${TEXTUAL_GENERATED_DIR}"
 
-cd "${TEXTUAL_WORKSPACE_TEMP_DIR}/"
+cd "${TEXTUAL_GENERATED_DIR}/"
 
-# Generate the Info.plist used by the build in the .tmp folder. It is
-# regenerated from the source on every build because .tmp is shared by
-# all build configurations, and only replaced when its contents change
-# so that unchanged builds do not reprocess it.
+# Generate the Info.plist used by the build. It is regenerated from the
+# source on every build (the version comes from git), and only replaced
+# when its contents change so that unchanged builds do not reprocess it.
 
 infoPlistSource="${PROJECT_DIR}/Supporting Files/Info.plist"
 
