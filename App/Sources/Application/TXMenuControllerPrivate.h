@@ -46,24 +46,34 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TXMenuController ()
 @property (nonatomic, copy, nullable) NSString *pointedNickname; // Takes priority if sender of an action returns nil userInfo value
 
-- (void)populateNavigationChannelList;
+- (IBAction)emptyAction:(id)sender TEXTUAL_DEPRECATED("Do not target this method");
+@end
 
-- (IBAction)performNavigationAction:(id)sender;
-
-- (IBAction)openHelpMenuItem:(id)sender;
-
+@interface TXMenuController (ServerChannelPrivate)
 - (IBAction)joinChannelClicked:(id)sender;
+@end
 
-- (void)memberChangeColor:(NSString *)nickname;
-
+@interface TXMenuController (MembersPrivate)
 - (void)memberInChannelViewDoubleClicked:(id)sender;
 - (void)memberInMemberListDoubleClicked:(id)sender;
 
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files to:(NSString *)nickname;
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row;
 - (void)memberSendDroppedFilesToSelectedChannel:(NSArray<NSString *> *)files; // Only works if -selectedChannel is a private message
+@end
 
-- (void)showServerPropertiesSheetForClient:(IRCClient *)client withSelection:(TDCServerPropertiesSheetSelection)selection context:(nullable id)context;
+@interface TXMenuController (WindowPrivate)
+- (void)populateNavigationChannelList;
+
+- (IBAction)performNavigationAction:(id)sender;
+
+- (void)navigateToTreeItemAtURL:(NSURL *)url;
+- (void)navigateToTreeItemWithIdentifier:(NSString *)identifier;
+- (void)navigateToTreeItem:(IRCTreeItem *)item;
+@end
+
+@interface TXMenuController (AppPrivate)
+- (IBAction)openHelpMenuItem:(id)sender;
 
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 - (void)manageLicense:(id)sender activateLicenseKeyWithURL:(NSURL *)licenseKeyURL;
@@ -74,12 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)toggleMuteOnNotificationsShortcutOn:(BOOL)toggleOn;
 - (void)toggleMuteOnNotificationSoundsShortcutOn:(BOOL)toggleOn;
+@end
 
-- (void)navigateToTreeItemAtURL:(NSURL *)url;
-- (void)navigateToTreeItemWithIdentifier:(NSString *)identifier;
-- (void)navigateToTreeItem:(IRCTreeItem *)item;
+@interface TXMenuController (SheetsPrivate)
+- (void)memberChangeColor:(NSString *)nickname;
 
-- (IBAction)emptyAction:(id)sender TEXTUAL_DEPRECATED("Do not target this method");
+- (void)showServerPropertiesSheetForClient:(IRCClient *)client withSelection:(TDCServerPropertiesSheetSelection)selection context:(nullable id)context;
 @end
 
 @interface TXMenuControllerMainWindowProxy : NSObject

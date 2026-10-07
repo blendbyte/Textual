@@ -657,6 +657,13 @@
 		4C3E38EF023ED09A33D7EB38 /* IRCClient+Users.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC09B56304AD18920BFA48C /* IRCClient+Users.m */; };
 		4C6F1B13D9A19F721E8D49E7 /* IRCClient+UserTracking.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */; };
 		4CF0F5F094B96BD5F6D0798D /* IRCClient+ZNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */; };
+		4C5C538983AACF279B5E4DB4 /* TXMenuController+App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD54006C6E560E700F8BB0E /* TXMenuController+App.m */; };
+		4C2A3E6FA64FB2AA171C6395 /* TXMenuController+Edit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2C36E104979603AE00C563 /* TXMenuController+Edit.m */; };
+		4CF2822F48BF6CAA57B12C77 /* TXMenuController+Members.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CABF77627D27EB46C79789E /* TXMenuController+Members.m */; };
+		4CE08B47243D5C20ADDC33D0 /* TXMenuController+ServerChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC8CB985D22E5EAEC691565 /* TXMenuController+ServerChannel.m */; };
+		4C7197437633829B62CF0E60 /* TXMenuController+Sheets.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C9599FE2CD33B1FD4A231EA /* TXMenuController+Sheets.m */; };
+		4C0A68CCF372401770EC1366 /* TXMenuController+Window.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C42B4C144D20A5E8AD3FE18 /* TXMenuController+Window.m */; };
+		4C3C99CA3E3189637C360A4C /* TXMenuControllerMainWindowProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C68793517D42B5BB6866C0C /* TXMenuControllerMainWindowProxy.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1466,6 +1473,14 @@
 		4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+UserTracking.m"; sourceTree = "<group>"; };
 		4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+ZNC.m"; sourceTree = "<group>"; };
 		4C7B0328BA27D76D63EE7755 /* IRCClientInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCClientInternal.h; sourceTree = "<group>"; };
+		4CD54006C6E560E700F8BB0E /* TXMenuController+App.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+App.m"; sourceTree = "<group>"; };
+		4C2C36E104979603AE00C563 /* TXMenuController+Edit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+Edit.m"; sourceTree = "<group>"; };
+		4CABF77627D27EB46C79789E /* TXMenuController+Members.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+Members.m"; sourceTree = "<group>"; };
+		4CC8CB985D22E5EAEC691565 /* TXMenuController+ServerChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+ServerChannel.m"; sourceTree = "<group>"; };
+		4C9599FE2CD33B1FD4A231EA /* TXMenuController+Sheets.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+Sheets.m"; sourceTree = "<group>"; };
+		4C42B4C144D20A5E8AD3FE18 /* TXMenuController+Window.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+Window.m"; sourceTree = "<group>"; };
+		4C68793517D42B5BB6866C0C /* TXMenuControllerMainWindowProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TXMenuControllerMainWindowProxy.m; sourceTree = "<group>"; };
+		4CB10FD43940128CB030D689 /* TXMenuControllerInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXMenuControllerInternal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1576,7 +1591,15 @@
 				4C31523220EB673E00448776 /* TXGlobalModelsPrivate.h */,
 				4C31529F20EB673E00448776 /* TXMasterController.m */,
 				4C31520420EB673E00448776 /* TXMasterControllerPrivate.h */,
+				4CD54006C6E560E700F8BB0E /* TXMenuController+App.m */,
+				4C2C36E104979603AE00C563 /* TXMenuController+Edit.m */,
+				4CABF77627D27EB46C79789E /* TXMenuController+Members.m */,
+				4CC8CB985D22E5EAEC691565 /* TXMenuController+ServerChannel.m */,
+				4C9599FE2CD33B1FD4A231EA /* TXMenuController+Sheets.m */,
+				4C42B4C144D20A5E8AD3FE18 /* TXMenuController+Window.m */,
 				4C3152A120EB673E00448776 /* TXMenuController.m */,
+				4CB10FD43940128CB030D689 /* TXMenuControllerInternal.h */,
+				4C68793517D42B5BB6866C0C /* TXMenuControllerMainWindowProxy.m */,
 				4C3151DE20EB673E00448776 /* TXMenuControllerPrivate.h */,
 				4C31529D20EB673E00448776 /* TXSharedApplication.m */,
 				4C3151C620EB673E00448776 /* TXSharedApplicationPrivate.h */,
@@ -3467,6 +3490,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C5C538983AACF279B5E4DB4 /* TXMenuController+App.m in Sources */,
+				4C2A3E6FA64FB2AA171C6395 /* TXMenuController+Edit.m in Sources */,
+				4CF2822F48BF6CAA57B12C77 /* TXMenuController+Members.m in Sources */,
+				4CE08B47243D5C20ADDC33D0 /* TXMenuController+ServerChannel.m in Sources */,
+				4C7197437633829B62CF0E60 /* TXMenuController+Sheets.m in Sources */,
+				4C0A68CCF372401770EC1366 /* TXMenuController+Window.m in Sources */,
+				4C3C99CA3E3189637C360A4C /* TXMenuControllerMainWindowProxy.m in Sources */,
 				4C1543E32BFFEDB3E369496E /* IRCClient+Autojoin.m in Sources */,
 				4C232289EC81F046541986EB /* IRCClient+Capabilities.m in Sources */,
 				4C47A0DBFC15922E2C66A683 /* IRCClient+Commands.m in Sources */,

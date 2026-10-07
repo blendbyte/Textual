@@ -346,20 +346,30 @@ enum
 
 @property (readonly, weak) IRCClient *selectedClient;
 @property (readonly, weak) IRCChannel *selectedChannel;
+@end
 
-- (NSArray<IRCChannelUser *> *)selectedMembers:(id)sender;
-- (NSArray<NSString *> *)selectedMembersNicknames:(id)sender;
-- (void)deselectMembers:(id)sender;
-
+@interface TXMenuController (Edit)
 - (IBAction)copy:(id)sender;
 - (IBAction)paste:(id)sender;
 
 - (IBAction)print:(id)sender;
 
-- (IBAction)closeWindow:(id)sender;
+- (IBAction)clearScrollback:(id)sender;
 
-- (IBAction)contactSupport:(id)sender;
+- (IBAction)decreaseLogFontSize:(id)sender;
+- (IBAction)increaseLogFontSize:(id)sender;
 
+- (IBAction)gotoScrollbackMarker:(id)sender;
+- (IBAction)markScrollback:(id)sender;
+- (IBAction)showFindPrompt:(id)sender;
+
+- (IBAction)lookUpInDictionary:(id)sender;
+- (IBAction)searchGoogle:(id)sender;
+- (IBAction)copyLogAsHtml:(id)sender;
+- (IBAction)openWebInspector:(id)sender TEXTUAL_DEPRECATED("Does nothing. Use Inspect Element in the chat view's context menu");
+@end
+
+@interface TXMenuController (ServerChannel)
 - (IBAction)addChannel:(id)sender;
 - (IBAction)deleteChannel:(id)sender;
 
@@ -373,27 +383,29 @@ enum
 - (IBAction)connect:(id)sender;
 - (IBAction)connectBypassingProxy:(id)sender;
 
-- (IBAction)connectToTextualHelpChannel:(id)sender;
-- (IBAction)connectToTextualTestingChannel:(id)sender;
-
 - (IBAction)disconnect:(id)sender;
 - (IBAction)cancelReconnection:(id)sender;
 
-- (IBAction)clearScrollback:(id)sender;
+- (IBAction)openChannelLogs:(id)sender;
+- (IBAction)openLogLocation:(id)sender;
+- (IBAction)showChannelBanExceptionList:(id)sender;
+- (IBAction)showChannelBanList:(id)sender;
+- (IBAction)showChannelInviteExceptionList:(id)sender;
+- (IBAction)showChannelQuietList:(id)sender;
+- (IBAction)showServerChannelList:(id)sender;
 
-- (IBAction)markAllAsRead:(id)sender;
+- (IBAction)toggleChannelInviteMode:(id)sender;
+- (IBAction)toggleChannelModerationMode:(id)sender;
 
-- (IBAction)decreaseLogFontSize:(id)sender;
-- (IBAction)increaseLogFontSize:(id)sender;
+- (IBAction)copyUniqueIdentifier:(id)sender;
 
-- (IBAction)jumpToCurrentSession:(id)sender;
-- (IBAction)jumpToPresent:(id)sender;
+- (IBAction)copyUrl:(id)sender;
+@end
 
-- (IBAction)gotoScrollbackMarker:(id)sender;
-- (IBAction)markScrollback:(id)sender;
-
-- (IBAction)exportPreferences:(id)sender;
-- (IBAction)importPreferences:(id)sender;
+@interface TXMenuController (Members)
+- (NSArray<IRCChannelUser *> *)selectedMembers:(id)sender;
+- (NSArray<NSString *> *)selectedMembersNicknames:(id)sender;
+- (void)deselectMembers:(id)sender;
 
 - (IBAction)memberAddIgnore:(id)sender;
 - (IBAction)memberModifyIgnore:(id)sender;
@@ -418,8 +430,6 @@ enum
 - (IBAction)memberSendCTCPVersion:(id)sender;
 
 - (IBAction)memberSendFileRequest:(id)sender;
-
-- (IBAction)memberSendInvite:(id)sender;
 - (IBAction)memberSendWhois:(id)sender;
 
 - (IBAction)memberBanFromServer:(id)sender;
@@ -427,51 +437,42 @@ enum
 - (IBAction)memberShunOnServer:(id)sender;
 
 - (IBAction)memberStartPrivateMessage:(id)sender;
+- (IBAction)showFileTransfersWindow:(id)sender;
+- (IBAction)showSetVhostPrompt:(id)sender;
+@end
+
+@interface TXMenuController (Window)
+- (IBAction)closeWindow:(id)sender;
+
+- (IBAction)markAllAsRead:(id)sender;
+
+- (IBAction)jumpToCurrentSession:(id)sender;
+- (IBAction)jumpToPresent:(id)sender;
 
 - (IBAction)onNextHighlight:(id)sender;
 - (IBAction)onPreviousHighlight:(id)sender;
 
-- (IBAction)openStandaloneStoreWebpage:(id)sender;;
-
-- (IBAction)openChannelLogs:(id)sender;
-- (IBAction)openLogLocation:(id)sender;
-
 - (IBAction)centerMainWindow:(id)sender;
 - (IBAction)resetMainWindowFrame:(id)sender;
-
-- (IBAction)openAcknowledgements:(id)sender;
-
-- (IBAction)showAboutWindow:(id)sender;
-- (IBAction)showAddressBook:(id)sender;
-- (IBAction)showChannelBanExceptionList:(id)sender;
-- (IBAction)showChannelBanList:(id)sender;
-- (IBAction)showChannelInviteExceptionList:(id)sender;
-- (IBAction)showChannelQuietList:(id)sender;
-- (IBAction)showChannelModifyModesSheet:(id)sender;
-- (IBAction)showChannelModifyTopicSheet:(id)sender;
-- (IBAction)showChannelPropertiesSheet:(id)sender;
-- (IBAction)showChannelSpotlightWindow:(id)sender;
-- (IBAction)showFileTransfersWindow:(id)sender;
-- (IBAction)showFindPrompt:(id)sender;
-- (IBAction)showHiddenPreferences:(id)sender;
-- (IBAction)showIgnoreList:(id)sender;
 - (IBAction)showMainWindow:(id)sender;
-- (IBAction)showNotificationPreferences:(id)sender;
-- (IBAction)showPreferencesWindow:(id)sender;
-- (IBAction)showServerChangeNicknameSheet:(id)sender;
-- (IBAction)showServerChannelList:(id)sender;
-- (IBAction)showServerHighlightList:(id)sender;
-- (IBAction)showServerPropertiesSheet:(id)sender;
-- (IBAction)showSetVhostPrompt:(id)sender;
-- (IBAction)showStylePreferences:(id)sender;
-- (IBAction)showWelcomeSheet:(id)sender;
 
 - (IBAction)sortChannelListNames:(id)sender;
 
-- (IBAction)toggleChannelInviteMode:(id)sender;
-- (IBAction)toggleChannelModerationMode:(id)sender;
-
 - (IBAction)toggleFullscreen:(id)sender;
+@end
+
+@interface TXMenuController (App)
+- (IBAction)contactSupport:(id)sender;
+
+- (IBAction)connectToTextualHelpChannel:(id)sender;
+- (IBAction)connectToTextualTestingChannel:(id)sender;
+
+- (IBAction)exportPreferences:(id)sender;
+- (IBAction)importPreferences:(id)sender;
+
+- (IBAction)openStandaloneStoreWebpage:(id)sender;;
+
+- (IBAction)openAcknowledgements:(id)sender;
 
 - (IBAction)toggleMainWindowAppearance:(id)sender;
 - (IBAction)resetMainWindowAppearance:(id)sender;
@@ -485,20 +486,31 @@ enum
 - (IBAction)toggleMuteOnNotificationSounds:(id)sender;
 
 - (IBAction)manageLicense:(id)sender;
-
-- (IBAction)copyUniqueIdentifier:(id)sender;
-
-- (IBAction)copyUrl:(id)sender;
-
-- (IBAction)lookUpInDictionary:(id)sender;
-- (IBAction)searchGoogle:(id)sender;
-- (IBAction)copyLogAsHtml:(id)sender;
 - (IBAction)forceReloadTheme:(id)sender;
-- (IBAction)openWebInspector:(id)sender TEXTUAL_DEPRECATED("Does nothing. Use Inspect Element in the chat view's context menu");
 
 - (IBAction)checkForUpdates:(id)sender;
 
 - (IBAction)resetDoNotAskMePopupWarnings:(id)sender;
+@end
+
+@interface TXMenuController (Sheets)
+- (IBAction)memberSendInvite:(id)sender;
+
+- (IBAction)showAboutWindow:(id)sender;
+- (IBAction)showAddressBook:(id)sender;
+- (IBAction)showChannelModifyModesSheet:(id)sender;
+- (IBAction)showChannelModifyTopicSheet:(id)sender;
+- (IBAction)showChannelPropertiesSheet:(id)sender;
+- (IBAction)showChannelSpotlightWindow:(id)sender;
+- (IBAction)showHiddenPreferences:(id)sender;
+- (IBAction)showIgnoreList:(id)sender;
+- (IBAction)showNotificationPreferences:(id)sender;
+- (IBAction)showPreferencesWindow:(id)sender;
+- (IBAction)showServerChangeNicknameSheet:(id)sender;
+- (IBAction)showServerHighlightList:(id)sender;
+- (IBAction)showServerPropertiesSheet:(id)sender;
+- (IBAction)showStylePreferences:(id)sender;
+- (IBAction)showWelcomeSheet:(id)sender;
 @end
 
 NS_ASSUME_NONNULL_END
