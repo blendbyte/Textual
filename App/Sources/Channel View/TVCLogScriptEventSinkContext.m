@@ -6,7 +6,7 @@
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
  * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2010 - 2020 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,18 +36,34 @@
  *
  *********************************************************************** */
 
+#import "TVCLogControllerPrivate.h"
+#import "TVCLogViewPrivate.h"
+#import "TVCLogScriptEventSinkInternal.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogView;
+@implementation TVCLogScriptEventSinkContext
 
-@interface TVCLogScriptEventSink : NSObject
-+ (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView, ...;
-+ (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView withArguments:(va_list)arguments;
-@end
+- (TVCLogController *)viewController
+{
+	return self.webView.viewController;
+}
 
-@interface TVCLogScriptEventSink (StylesPrivate)
-/* The value of a preference that styles may read, or nil if they may not */
-+ (nullable id)valueOfPreferenceReadableByStyles:(NSString *)name;
+- (TVCLogPolicy *)webViewPolicy
+{
+	return self.webView.webViewPolicy;
+}
+
+- (IRCClient *)associatedClient
+{
+	return self.viewController.associatedClient;
+}
+
+- (nullable IRCChannel *)associatedChannel
+{
+	return self.viewController.associatedChannel;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

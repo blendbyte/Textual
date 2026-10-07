@@ -6,7 +6,7 @@
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
  * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2010 - 2020 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,18 +36,44 @@
  *
  *********************************************************************** */
 
+#import "TVCLogScriptEventSinkPrivate.h"
+
+@class IRCChannel, IRCClient, TVCLogController, TVCLogPolicy, TVCLogView;
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogView;
+/* Shared by TVCLogScriptEventSink.m, its category files and the context class only */
 
-@interface TVCLogScriptEventSink : NSObject
-+ (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView, ...;
-+ (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView withArguments:(va_list)arguments;
+@interface TVCLogScriptEventSinkContext : NSObject
+@property (nonatomic, weak) TVCLogView *webView;
+@property (readonly) TVCLogPolicy *webViewPolicy;
+@property (readonly) TVCLogController *viewController;
+@property (readonly) IRCClient *associatedClient;
+@property (readonly, nullable) IRCChannel *associatedChannel;
+@property (nonatomic, copy) NSString *caller;
+@property (nonatomic, copy, nullable) NSArray *arguments;
+@property (nonatomic, copy, nullable) void (^completionBlock)(id _Nullable returnValue);
 @end
 
-@interface TVCLogScriptEventSink (StylesPrivate)
-/* The value of a preference that styles may read, or nil if they may not */
-+ (nullable id)valueOfPreferenceReadableByStyles:(NSString *)name;
+@interface TVCLogScriptEventSink ()
++ (nullable id)objectValueToCommon:(id)object;
++ (NSString *)standardizeLineNumber:(NSString *)lineNumber;
++ (NSArray<NSString *> *)standardizeLineNumbers:(NSArray<NSString *> *)lineNumbers;
++ (void)throwJavaScriptException:(NSString *)message forCaller:(nullable NSString *)caller inWebView:(TVCLogView *)webView, ...;
+- (void)processInputData:(id)inputData forCaller:(NSString *)caller inWebView:(id)webView withSelector:(SEL)selector;
+- (void)processInputData:(id)inputData forCaller:(NSString *)caller inWebView:(id)webView withSelector:(SEL)selector minimumArgumentCount:(NSUInteger)minimumArgumentCount withValidation:(BOOL (NS_NOESCAPE ^ _Nullable)(NSUInteger argumentIndex, id argument))validateArgumentBlock;
+@end
+
+@interface TVCLogScriptEventSink (QueriesInternal)
+@end
+
+@interface TVCLogScriptEventSink (RenderingInternal)
+@end
+
+@interface TVCLogScriptEventSink (ActionsInternal)
+@end
+
+@interface TVCLogScriptEventSink (StylesInternal)
 @end
 
 NS_ASSUME_NONNULL_END

@@ -669,6 +669,11 @@
 		4C354E44932B89AC998E79FD /* TVCMainWindow+Navigation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7CBE12E2F153237CB13267 /* TVCMainWindow+Navigation.m */; };
 		4CC097D50C964EFC2E5B24C3 /* TVCMainWindow+ServerList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C90345C8C204BEFCCE46D16 /* TVCMainWindow+ServerList.m */; };
 		4C12F488384281C9EDF192E8 /* TVCMainWindow+TitleAndWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA1B9D80B29C1727141605A /* TVCMainWindow+TitleAndWindow.m */; };
+		4C2CA7393183FB51B0F0C0E7 /* TVCLogScriptEventSink+Actions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CAA3123A804C2FFB5C906CA /* TVCLogScriptEventSink+Actions.m */; };
+		4C3B4788761BB2B531150DD0 /* TVCLogScriptEventSink+Queries.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C13BB90B6FE1102AB9230C7 /* TVCLogScriptEventSink+Queries.m */; };
+		4CB6DA20AFF4C9F4BCADF9A9 /* TVCLogScriptEventSink+Rendering.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C76A5ED007AF8A49E24182D /* TVCLogScriptEventSink+Rendering.m */; };
+		4C2205C61432734D38349EA1 /* TVCLogScriptEventSink+Styles.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C441DCB97FA7367AE098E61 /* TVCLogScriptEventSink+Styles.m */; };
+		4C524FAC8413A9AC4E4A6D3D /* TVCLogScriptEventSinkContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA189FE687A38980FADAF0E /* TVCLogScriptEventSinkContext.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1492,6 +1497,12 @@
 		4C90345C8C204BEFCCE46D16 /* TVCMainWindow+ServerList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+ServerList.m"; sourceTree = "<group>"; };
 		4CA1B9D80B29C1727141605A /* TVCMainWindow+TitleAndWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+TitleAndWindow.m"; sourceTree = "<group>"; };
 		4CFAD622839BDBE258123EFF /* TVCMainWindowInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowInternal.h; sourceTree = "<group>"; };
+		4CAA3123A804C2FFB5C906CA /* TVCLogScriptEventSink+Actions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCLogScriptEventSink+Actions.m"; sourceTree = "<group>"; };
+		4C13BB90B6FE1102AB9230C7 /* TVCLogScriptEventSink+Queries.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCLogScriptEventSink+Queries.m"; sourceTree = "<group>"; };
+		4C76A5ED007AF8A49E24182D /* TVCLogScriptEventSink+Rendering.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCLogScriptEventSink+Rendering.m"; sourceTree = "<group>"; };
+		4C441DCB97FA7367AE098E61 /* TVCLogScriptEventSink+Styles.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCLogScriptEventSink+Styles.m"; sourceTree = "<group>"; };
+		4CA189FE687A38980FADAF0E /* TVCLogScriptEventSinkContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogScriptEventSinkContext.m; sourceTree = "<group>"; };
+		4C65D46647CE07C7DF2E24A9 /* TVCLogScriptEventSinkInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogScriptEventSinkInternal.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1634,7 +1645,13 @@
 				4C3152B820EB673E00448776 /* TVCLogPolicy.m */,
 				4C3151DD20EB673E00448776 /* TVCLogPolicyPrivate.h */,
 				4C3152BB20EB673E00448776 /* TVCLogRenderer.m */,
+				4CAA3123A804C2FFB5C906CA /* TVCLogScriptEventSink+Actions.m */,
+				4C13BB90B6FE1102AB9230C7 /* TVCLogScriptEventSink+Queries.m */,
+				4C76A5ED007AF8A49E24182D /* TVCLogScriptEventSink+Rendering.m */,
+				4C441DCB97FA7367AE098E61 /* TVCLogScriptEventSink+Styles.m */,
 				4C3152B720EB673E00448776 /* TVCLogScriptEventSink.m */,
+				4CA189FE687A38980FADAF0E /* TVCLogScriptEventSinkContext.m */,
+				4C65D46647CE07C7DF2E24A9 /* TVCLogScriptEventSinkInternal.h */,
 				4C3151B020EB673E00448776 /* TVCLogScriptEventSinkPrivate.h */,
 				4C3152BD20EB673E00448776 /* TVCLogView.m */,
 				4C3151F020EB673E00448776 /* TVCLogViewInternalWK2.h */,
@@ -3507,6 +3524,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C2CA7393183FB51B0F0C0E7 /* TVCLogScriptEventSink+Actions.m in Sources */,
+				4C3B4788761BB2B531150DD0 /* TVCLogScriptEventSink+Queries.m in Sources */,
+				4CB6DA20AFF4C9F4BCADF9A9 /* TVCLogScriptEventSink+Rendering.m in Sources */,
+				4C2205C61432734D38349EA1 /* TVCLogScriptEventSink+Styles.m in Sources */,
+				4C524FAC8413A9AC4E4A6D3D /* TVCLogScriptEventSinkContext.m in Sources */,
 				4CE3775E1BA2C1645CAF75E2 /* TVCMainWindow+ChannelView.m in Sources */,
 				4C8DF41CAB53C8100228579C /* TVCMainWindow+Input.m in Sources */,
 				4C354E44932B89AC998E79FD /* TVCMainWindow+Navigation.m in Sources */,
