@@ -95,6 +95,8 @@
 	<array>
 		<string>com.codeux.app-extensions.textual-Caffeine</string>
 		<string>com.codeux.app-extensions.textual-Caffeine-bundled</string>
+		<!-- Built into Textual 8 ("Keep the Mac awake while connected to a server") -->
+		<string>com.textualapp.app.extensions.Caffeine</string>
 		<string>com.codeux.app-extensions.textual-ChatFilterExtension</string>
 		<string>com.codeux.app-extensions.textual-SmileyConverter</string>
 		<string>com.codeux.app-extensions.textual-SystemProfiler</string>

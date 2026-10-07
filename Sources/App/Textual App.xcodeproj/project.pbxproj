@@ -331,7 +331,6 @@
 		4C171681254A58C2004BE8AE /* Inline Content Loader.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 4C171669254A589D004BE8AE /* Inline Content Loader.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */; };
 		4C2BEB642C3866DF008F8F0D /* KeysExcludedFromContainer.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */; };
-		4C2E92212C1E446E003BB92D /* Caffeine.bundle in Copy Extensions */ = {isa = PBXBuildFile; fileRef = 4C2E92202C1E4463003BB92D /* Caffeine.bundle */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4C2F42062C3F4218000D962D /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2F42042C3F4218000D962D /* UserNotifications.framework */; };
 		4C3155A320EB6CB400448776 /* IRC.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31524120EB673E00448776 /* IRC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C3155A420EB6CB400448776 /* IRCAddressBook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151A720EB673E00448776 /* IRCAddressBook.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -687,7 +686,6 @@
 			dstPath = "Bundled Extensions";
 			dstSubfolderSpec = 7;
 			files = (
-				4C2E92212C1E446E003BB92D /* Caffeine.bundle in Copy Extensions */,
 				4C83B9121BA9BED500BD7718 /* Chat Filters.bundle in Copy Extensions */,
 				4C9A1D9C1836E6D300C14835 /* User Insights.bundle in Copy Extensions */,
 				4C9A1D9D1836E6D500C14835 /* System Info.bundle in Copy Extensions */,
@@ -828,7 +826,6 @@
 		4C24DC751A93C9CE0098D1BE /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = "../../Frameworks/Static Libraries/Libraries/Sparkle.framework"; sourceTree = SOURCE_ROOT; };
 		4C2BEB622C385189008F8F0D /* PostprocessSparkle.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = PostprocessSparkle.sh; path = "Build Scripts/PostprocessSparkle.sh"; sourceTree = "<group>"; };
 		4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromContainer.plist; sourceTree = "<group>"; };
-		4C2E92202C1E4463003BB92D /* Caffeine.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Caffeine.bundle; path = "../../../.tmp/SharedBuildProducts-Extensions/Caffeine.bundle"; sourceTree = "<group>"; };
 		4C2F42042C3F4218000D962D /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		4C31511420EB673E00448776 /* TPCApplicationInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCApplicationInfo.m; sourceTree = "<group>"; };
 		4C31511520EB673E00448776 /* TPCPreferencesLocal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCPreferencesLocal.m; sourceTree = "<group>"; };
@@ -2686,7 +2683,6 @@
 		4C46CCA7158043C000846B64 /* Binaries */ = {
 			isa = PBXGroup;
 			children = (
-				4C2E92202C1E4463003BB92D /* Caffeine.bundle */,
 				4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */,
 				4C956893194A8862003D97FD /* Smiley Converter.bundle */,
 				4C9A1D931836E6A100C14835 /* System Info.bundle */,

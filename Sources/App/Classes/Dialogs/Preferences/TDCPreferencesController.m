@@ -562,6 +562,16 @@ NS_ASSUME_NONNULL_BEGIN
 	[TPCPreferences setHighlightCurrentNickname:value];
 }
 
+- (BOOL)preventSleepWhileConnected
+{
+	return [TPCPreferences preventSleepWhileConnected];
+}
+
+- (void)setPreventSleepWhileConnected:(BOOL)preventSleepWhileConnected
+{
+	[TPCPreferences setPreventSleepWhileConnected:preventSleepWhileConnected];
+}
+
 - (BOOL)appNapEnabled
 {
 	return [TPCPreferences appNapEnabled];

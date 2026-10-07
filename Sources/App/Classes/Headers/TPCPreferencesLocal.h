@@ -123,6 +123,10 @@ typedef NS_ENUM(NSUInteger, TXPreferredAppearance) {
 @interface TPCPreferences (TPCPreferencesLocal)
 + (BOOL)appNapEnabled;
 
+/* While connected to a server, keep the Mac from sleeping when idle
+ (Textual 7's Caffeine extension) */
++ (BOOL)preventSleepWhileConnected;
+
 + (BOOL)developerModeEnabled;
 
 + (nullable NSString *)masqueradeCTCPVersion;

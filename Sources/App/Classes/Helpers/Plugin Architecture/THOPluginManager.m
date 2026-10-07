@@ -71,7 +71,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 	static dispatch_once_t onceToken;
 
 	/* Plugins load on the main thread: their init, pluginLoadedIntoMemory and
-	 preference pane views are user interface code (Caffeine loads a nib), and
+	 preference pane views are user interface code (a plugin may load a nib), and
 	 a new third-party plugin asks for consent. Launch waits for them anyway. */
 	dispatch_once(&onceToken, ^{
 		XRPerformBlockAsynchronouslyOnMainQueue(^{

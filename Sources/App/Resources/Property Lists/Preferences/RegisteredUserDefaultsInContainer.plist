@@ -40,6 +40,8 @@
 	<true/>
 	<key>ConfirmApplicationQuit</key>
 	<true/>
+	<key>PreventSleepWhileConnected</key>
+	<false/>
 	<key>ControlEnterSendsMessage</key>
 	<false/>
 	<key>ConversationTrackingIncludesUserModeSymbol</key>

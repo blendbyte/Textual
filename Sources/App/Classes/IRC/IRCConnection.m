@@ -38,6 +38,7 @@
 
 #import "NSObjectHelperPrivate.h"
 #import "TLOLocalization.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "IRCClient.h"
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionErrors.h"
@@ -105,18 +106,49 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Activity
 
 /* While connected: no App Nap (timers keep firing, so pings are answered
- on time) but the Mac may still idle-sleep; no sudden termination. */
+ on time) and no sudden termination. The Mac may still sleep when idle,
+ unless "Keep the Mac awake while connected to a server" is on. */
 - (void)beginConnectionActivity
 {
 	if (self.connectionActivity) {
 		return;
 	}
 
-	self.connectionActivity =
-	[[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityUserInitiatedAllowingIdleSystemSleep
-												   reason:@"Connected to an IRC server"];
+	[self _beginActivityToken];
 
 	[[NSProcessInfo processInfo] disableSuddenTermination];
+
+	[RZNotificationCenter() addObserver:self
+							   selector:@selector(preventSleepPreferenceChanged:)
+								   name:TPCPreferencesPreventSleepWhileConnectedChangedNotification
+								 object:nil];
+}
+
+- (void)_beginActivityToken
+{
+	NSActivityOptions options = NSActivityUserInitiatedAllowingIdleSystemSleep;
+
+	if ([TPCPreferences preventSleepWhileConnected]) {
+		options = NSActivityUserInitiated;
+	}
+
+	self.connectionActivity =
+	[[NSProcessInfo processInfo] beginActivityWithOptions:options
+												   reason:@"Connected to an IRC server"];
+}
+
+- (void)preventSleepPreferenceChanged:(NSNotification *)notification
+{
+	if (self.connectionActivity == nil) {
+		return;
+	}
+
+	/* The new token is taken before the old one ends, so there is no gap */
+	id <NSObject> previousActivity = self.connectionActivity;
+
+	[self _beginActivityToken];
+
+	[[NSProcessInfo processInfo] endActivity:previousActivity];
 }
 
 - (void)endConnectionActivity
@@ -124,6 +156,10 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.connectionActivity == nil) {
 		return;
 	}
+
+	[RZNotificationCenter() removeObserver:self
+									  name:TPCPreferencesPreventSleepWhileConnectedChangedNotification
+									object:nil];
 
 	[[NSProcessInfo processInfo] endActivity:self.connectionActivity];
 

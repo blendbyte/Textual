@@ -40,10 +40,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+TEXTUAL_EXTERN NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotification;
+
 @interface TPCPreferences (TPCPreferencesLocalPrivate)
 + (void)initPreferences;
 
 + (void)setAppNapEnabled:(BOOL)appNapEnabled;
+
+/* Posts TPCPreferencesPreventSleepWhileConnectedChangedNotification */
++ (void)setPreventSleepWhileConnected:(BOOL)preventSleepWhileConnected;
 
 + (void)setDeveloperModeEnabled:(BOOL)developerModeEnabled;
 

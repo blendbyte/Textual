@@ -94,7 +94,7 @@ jobs:
           archs=$(lipo -archs "$contents/MacOS/Textual")
           [[ " $archs " == *" x86_64 "* && " $archs " == *" arm64 "* ]] || fail "Textual is not universal: $archs"
 
-          for plugin in "Caffeine" "Chat Filters" "Smiley Converter" "System Info" "User Insights" "ZNC Additions"; do
+          for plugin in "Chat Filters" "Smiley Converter" "System Info" "User Insights" "ZNC Additions"; do
             test -d "$contents/Resources/Bundled Extensions/$plugin.bundle" || fail "Plugin missing: $plugin"
           done
           for service in "Inline Content Loader"; do

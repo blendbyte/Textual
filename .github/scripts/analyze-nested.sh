@@ -56,6 +56,6 @@ analyze "XPC Services/Inline Content Loader/Extensions/Core Media" "Inline Conte
 	ICL_PRODUCT_LOCATION="${loader}" \
 	ICL_PRODUCT_BINARY="${loader}/Contents/MacOS/Inline Content Loader"
 
-for plugin in 'Caffeine' 'Chat Filter' 'Smiley Converter' 'System Profiler' 'User Insights' 'ZNC Additions'; do
+for plugin in 'Chat Filter' 'Smiley Converter' 'System Profiler' 'User Insights' 'ZNC Additions'; do
 	analyze "Sources/Plugins/${plugin}" "${plugin} Extension" "plugin-$(echo "${plugin}" | tr ' A-Z' '-a-z')"
 done

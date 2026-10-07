@@ -60,6 +60,8 @@ NSString * const TPCPreferencesThemeFontNameMissingLocallyDefaultsKey = @"Theme 
 
 NSUInteger const TPCPreferencesDictionaryVersion = 602;
 
+NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotification = @"TPCPreferencesPreventSleepWhileConnectedChangedNotification";
+
 @implementation TPCPreferences (TPCPreferencesLocal)
 
 #pragma mark -
@@ -477,6 +479,18 @@ NSUInteger const TPCPreferencesDictionaryVersion = 602;
 + (BOOL)appNapEnabled
 {
 	return ([[NSUserDefaults standardUserDefaults] boolForKey:@"NSAppSleepDisabled"] == NO);
+}
+
++ (BOOL)preventSleepWhileConnected
+{
+	return [RZUserDefaults() boolForKey:@"PreventSleepWhileConnected"];
+}
+
++ (void)setPreventSleepWhileConnected:(BOOL)preventSleepWhileConnected
+{
+	[RZUserDefaults() setBool:preventSleepWhileConnected forKey:@"PreventSleepWhileConnected"];
+
+	[RZNotificationCenter() postNotificationName:TPCPreferencesPreventSleepWhileConnectedChangedNotification object:nil];
 }
 
 + (void)setAppNapEnabled:(BOOL)appNapEnabled
@@ -1205,6 +1219,21 @@ static NSArray<NSString *> *_matchKeywords = nil;
 
 }
 
+/* Textual 7's Caffeine extension became a built-in preference (8.0) */
++ (void)_migrateCaffeinePreference
+{
+	NSString *extensionKey = @"Private Extension Store -> Caffeine Extension -> Prevent Sleep";
+
+	if ([RZUserDefaults() objectForKey:extensionKey] == nil) {
+		return;
+	}
+
+	/* Runs once: the extension's key is removed afterwards */
+	[RZUserDefaults() setBool:[RZUserDefaults() boolForKey:extensionKey] forKey:@"PreventSleepWhileConnected"];
+
+	[RZUserDefaults() removeObjectForKey:extensionKey];
+}
+
 + (void)_migrateAppearanceToVersion7011 /* 7.0.11 turned into 7.1.0 */
 {
 
@@ -1339,6 +1368,8 @@ static NSArray<NSString *> *_matchKeywords = nil;
 	[self _migrateAppearanceToVersion7011];
 
 	[self _migrateNicknameColorOverridesToVersion722];
+
+	[self _migrateCaffeinePreference];
 
 	[TPCPathInfo startUsingTranscriptFolderURL];
 

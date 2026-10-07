@@ -250,6 +250,16 @@
                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.ConfirmApplicationQuit" id="8NN-qN-fRd"/>
                     </connections>
                 </button>
+                <button translatesAutoresizingMaskIntoConstraints="NO" id="Pv3-Sl-P01">
+                    <rect key="frame" x="40" y="120" width="320" height="18"/>
+                    <buttonCell key="cell" type="check" title="Keep the Mac awake while connected to a server" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Pv3-Sl-P02">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <binding destination="-2" name="value" keyPath="self.preventSleepWhileConnected" id="Pv3-Sl-P03"/>
+                    </connections>
+                </button>
                 <box verticalHuggingPriority="750" alphaValue="0.5" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="GlR-W9-ZJo">
                     <rect key="frame" x="40" y="132" width="590" height="5"/>
                 </box>
@@ -354,7 +364,10 @@
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="bKt-Ac-1I2" secondAttribute="trailing" constant="20" id="hPW-7n-PiW"/>
                 <constraint firstAttribute="height" priority="550" id="qUa-FR-bK6"/>
                 <constraint firstItem="lAf-Xj-H1K" firstAttribute="top" secondItem="GlR-W9-ZJo" secondAttribute="bottom" constant="18" id="sh8-NW-aa2"/>
-                <constraint firstItem="GlR-W9-ZJo" firstAttribute="top" secondItem="bKt-Ac-1I2" secondAttribute="bottom" constant="18" id="whZ-Hz-BUA"/>
+                <constraint firstItem="GlR-W9-ZJo" firstAttribute="top" secondItem="Pv3-Sl-P01" secondAttribute="bottom" constant="18" id="whZ-Hz-BUA"/>
+                <constraint firstItem="Pv3-Sl-P01" firstAttribute="top" secondItem="bKt-Ac-1I2" secondAttribute="bottom" constant="14" id="Pv3-Sl-P04"/>
+                <constraint firstItem="Pv3-Sl-P01" firstAttribute="leading" secondItem="bKt-Ac-1I2" secondAttribute="leading" id="Pv3-Sl-P05"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Pv3-Sl-P01" secondAttribute="trailing" constant="20" id="Pv3-Sl-P06"/>
                 <constraint firstItem="bKt-Ac-1I2" firstAttribute="leading" secondItem="Eyz-5p-IkU" secondAttribute="leading" constant="42" id="xOx-Fd-rV8"/>
             </constraints>
             <point key="canvasLocation" x="329" y="-8134.5"/>

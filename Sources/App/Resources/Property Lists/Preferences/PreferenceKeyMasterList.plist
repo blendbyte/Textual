@@ -42,6 +42,8 @@
 	<integer>0</integer>
 	<key>ConfirmApplicationQuit</key>
 	<integer>0</integer>
+	<key>PreventSleepWhileConnected</key>
+	<integer>0</integer>
 	<key>ControlEnterSendsMessage</key>
 	<integer>0</integer>
 	<key>ConversationTrackingIncludesUserModeSymbol</key>
