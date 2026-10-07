@@ -100,14 +100,10 @@ _Textual.viewBodyDidLoad = function() /* PRIVATE */
 	 the background color of the style. We then request an animation frame that calls
 	 app.finishedLayingOutView, instructing Textual that it can destroy the overlay view. */
 
-	if (app.isWebKit2()) {
-		_Textual._viewBodyDidLoadAnimationFrame =
-		window.requestAnimationFrame(function() {
-			_Textual._viewBodyDidLoad();
-		});
-	} else {
+	_Textual._viewBodyDidLoadAnimationFrame =
+	window.requestAnimationFrame(function() {
 		_Textual._viewBodyDidLoad();
-	}
+	});
 };
 
 _Textual._viewBodyDidLoad = function() /* PRIVATE */

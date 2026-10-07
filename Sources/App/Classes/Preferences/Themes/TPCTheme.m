@@ -1397,12 +1397,7 @@ static inline BOOL _reevaluateFileDuringSetOrUnset(NSURL *fileURL, NSURL * __str
 		return NO;
 	}
 
-	BOOL removeValue = ( objectValue == nil ||
-						[objectValue isKindOfClass:[NSNull class]] ||
-
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-						[objectValue isKindOfClass:[WebUndefined class]]);
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
+	BOOL removeValue = (objectValue == nil || [objectValue isKindOfClass:[NSNull class]]);
 
 	NSDictionary *styleSettings = [RZUserDefaults() dictionaryForKey:storeKey];
 

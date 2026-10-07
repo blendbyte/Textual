@@ -52,10 +52,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /* Specific menu items are gathered and inserted at specific locations */
-#define _WebKit1MenuItemTagInspectElement			2024
-#define _WebKit1MenuItemTagLookupInDictionary		WebMenuItemTagLookUpInDictionary
-#define _WebKit1MenuItemTagSearchWithGoogle			WebMenuItemTagSearchWeb
-
 #define _WebKit2MenuItemTagInspectElement			57
 #define _WebKit2MenuItemTagLookupInDictionary		22
 #define _WebKit2MenuItemTagSearchWithGoogle			21
@@ -65,8 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSMenuItem *> *)constructContextMenuItemsForWebView:(TVCLogView *)webView defaultMenuItems:(NSArray<NSMenuItem *> *)defaultMenuItems
 {
 	TVCLogController *viewController = webView.viewController;
-
-	BOOL isWebKit2 = webView.isUsingWebKit2;
 
 	NSMutableArray<NSMenuItem *> *menuItems = [NSMutableArray array];
 
@@ -131,23 +125,15 @@ NS_ASSUME_NONNULL_BEGIN
 		NSMenuItem *lookupInDictionaryItem = nil;
 		NSMenuItem *searchWithGoogleItem = nil;
 
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
 		for (NSMenuItem *item in defaultMenuItems) {
-			if ((item.tag == _WebKit1MenuItemTagLookupInDictionary && isWebKit2 == NO) ||
-				(item.tag == _WebKit2MenuItemTagLookupInDictionary && isWebKit2))
-			{
+			if (item.tag == _WebKit2MenuItemTagLookupInDictionary) {
 				lookupInDictionaryItem = [item copy];
-			} else if ((item.tag == _WebKit1MenuItemTagInspectElement && isWebKit2 == NO) ||
-					   (item.tag == _WebKit2MenuItemTagInspectElement && isWebKit2))
-			{
+			} else if (item.tag == _WebKit2MenuItemTagInspectElement) {
 				inspectElementItem = [item copy];
-			} else if ((item.tag == _WebKit1MenuItemTagSearchWithGoogle && isWebKit2 == NO) ||
-					   (item.tag == _WebKit2MenuItemTagSearchWithGoogle && isWebKit2))
-			{
+			} else if (item.tag == _WebKit2MenuItemTagSearchWithGoogle) {
 				searchWithGoogleItem = [item copy];
 			}
 		}
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 		for (NSMenuItem *item in menu.itemArray) {
 			NSMenuItem *newItem = [item copy];
@@ -182,14 +168,7 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 									target:menuController()
 									action:@selector(forceReloadTheme:)]];
 
-			if (inspectElementItem == nil) {
-				if (isWebKit2) {
-					[menuItems addObject:
-					 [NSMenuItem menuItemWithTitle:TXTLS(@"BasicLanguage[tfj-m9]")
-											target:menuController()
-											action:@selector(openWebInspector:)]];
-				}
-			} else {
+			if (inspectElementItem) {
 				[menuItems addObject:inspectElementItem];
 			}
 		}
@@ -213,10 +192,6 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 - (void)displayContextMenuInWebView:(TVCLogView *)webView
 {
-	if (webView.isUsingWebKit2 == NO) {
-		return;
-	}
-
 	NSMenu *contextMenu = [self constructContextMenuForWebView:webView withDefaultMenuItems:@[]];
 
 	NSView *webViewBacking = webView.webView;
@@ -243,49 +218,6 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 #pragma mark -
 #pragma mark WebKit Delegate
-
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-
-- (NSArray<NSMenuItem *> *)webView1:(WebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenuItems:(NSArray *)defaultMenuItems
-{
-	return [self constructContextMenuItemsForWebView:logView defaultMenuItems:defaultMenuItems];
-}
-
-- (void)webView1:(WebView *)webView logView:(TVCLogView *)logView resource:(id)identifier didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge fromDataSource:(WebDataSource *)dataSource
-{
-	[challenge.sender cancelAuthenticationChallenge:challenge];
-}
-
-- (NSUInteger)webView1:(WebView *)webView logView:(TVCLogView *)logView dragDestinationActionMaskForDraggingInfo:(id<NSDraggingInfo>)draggingInfo
-{
-	NSPasteboard *pboard = [draggingInfo draggingPasteboard];
-
-	if ([pboard.types containsObject:NSFilenamesPboardType]) {
-		return WebDragDestinationActionAny;
-	}
-
-	return WebDragDestinationActionNone;
-}
-
-- (void)webView1:(WebView *)webView logView:(TVCLogView *)logView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
-{
-	NSInteger action = [actionInformation integerForKey:WebActionNavigationTypeKey];
-
-	if (action == WebNavigationTypeLinkClicked) {
-		[listener ignore];
-
-		NSURL *actionURL = actionInformation[WebActionOriginalURLKey];
-
-		[self openWebpage:actionURL];
-	} else {
-		[listener use];
-	}
-}
-
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
-
-#pragma mark -
-#pragma mark WebKit2 Delegate
 
 - (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nonnull))completionHandler
 {

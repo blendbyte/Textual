@@ -1317,35 +1317,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)openWebInspector:(id)sender
 {
-	/*
-	 When WebKit2 first announced, there was no way for an
-	 app to take an NSMenu, modify it, and return the result
-	 when a context menu is presented.
-
-	 WebKit1 had a delegate method for that named:
-	 -webView:contextMenuItemsForElement:defaultMenuItems:
-
-	 WebKit2 added this delegate method, in private, but it
-	 was not available until the next update of macOS.
-
-	 'Til then, we had to fake "Inspect Element" because we
-	 did not have access to the default implementation that
-	 is available through the delegate method.
-
-	 Apple now flags the function names that were used to do that.
-
-	 This will break "Inspect Element" on one version of macOS.
-	 Which one I don't even recall.
-	 But it is worth it to make the review process smoother.
-
-	 Sorry.
-*/
-
-	(void)
-	[TDCAlert alertWithMessage:TXTLS(@"Prompts[kig-m1]")
-						 title:TXTLS(@"Prompts[ujw-64]")
-				 defaultButton:TXTLS(@"Prompts[c7s-dq]")
-			   alternateButton:nil];
+	/* "Inspect Element" in the chat view's context menu (Developer Mode)
+	 opens the inspector; there is no public API to open it from here. */
 }
 
 - (void)markScrollback:(id)sender

@@ -37,9 +37,6 @@
 
 #import "WKWebViewPrivate.h"
 
-#include <objc/message.h>
-#include <objc/runtime.h>
-
 #import "IRCChannel.h"
 #import "TPCPreferencesLocal.h"
 #import "TVCLogController.h"
@@ -50,22 +47,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define _maximumProcessCount			8
-#define _maximumViewInstances			50
-
 @interface TVCLogViewInternalWK2 ()
 @property (nonatomic, assign) BOOL t_observingLoadingProperty;
 @end
 
 @implementation TVCLogViewInternalWK2
 
-static WKProcessPool *_sharedProcessPool = nil;
 static WKUserContentController *_sharedUserContentController = nil;
 static WKWebViewConfiguration *_sharedWebViewConfiguration = nil;
 static TVCLogPolicy *_sharedWebPolicy = nil;
 static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
-static BOOL _safeToUseWebKit2 = YES;
-static NSUInteger _numberOfViews = 0;
 
 #pragma mark -
 #pragma mark Factory
@@ -75,11 +66,7 @@ static NSUInteger _numberOfViews = 0;
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		[self constructProcessPool];
-
 		_sharedWebViewConfiguration = [WKWebViewConfiguration new];
-
-		_sharedWebViewConfiguration.processPool = _sharedProcessPool;
 
 		_sharedWebViewConfiguration._allowUniversalAccessFromFileURLs = YES;
 
@@ -88,7 +75,7 @@ static NSUInteger _numberOfViews = 0;
 		preferences._allowFileAccessFromFileURLs = YES;
 		preferences._developerExtrasEnabled = YES;
 
-		_sharedWebViewScriptSink = [[TVCLogScriptEventSink alloc] initWithWebView:nil];
+		_sharedWebViewScriptSink = [TVCLogScriptEventSink new];
 
 		_sharedUserContentController = [WKUserContentController new];
 
@@ -138,51 +125,12 @@ static NSUInteger _numberOfViews = 0;
 	});
 }
 
-+ (void)constructProcessPool
-{
-	/* What we are doing here is very dirty which means it is probably a good idea
-	 that we go above and beyond for error checking incase this stuff is changed. */
-	WKProcessPool *sharedProcessPool = [WKProcessPool alloc];
-
-	if ([TPCPreferences webKit2ProcessPoolSizeLimited] == NO) {
-		goto create_normal_pool;
-	}
-
-	if ([sharedProcessPool respondsToSelector:@selector(_initWithConfiguration:)] == NO) {
-		goto create_normal_pool;
-	}
-
-	Class processPoolConfigurationClass = objc_getClass("_WKProcessPoolConfiguration");
-
-	if (processPoolConfigurationClass) {
-		id processPoolConfiguration = [processPoolConfigurationClass new];
-
-		if (processPoolConfiguration == nil) {
-			goto create_normal_pool;
-		} else if ([processPoolConfiguration respondsToSelector:@selector(setMaximumProcessCount:)] == NO) {
-			goto create_normal_pool;
-		}
-
-		[processPoolConfiguration setMaximumProcessCount:_maximumProcessCount];
-
-		_sharedProcessPool = [sharedProcessPool _initWithConfiguration:processPoolConfiguration];
-
-		return;
-	}
-
-create_normal_pool:
-	_sharedProcessPool = [sharedProcessPool init];
-}
-
 - (instancetype)initWithHostView:(TVCLogView *)hostView
 {
 	[self.class _t_initialize];
 
 	if ((self = [self initWithFrame:NSZeroRect configuration:_sharedWebViewConfiguration])) {
 		[self constructWebViewWithHostView:hostView];
-
-		// It's not critical that this is thread safe
-		_numberOfViews += 1;
 
 		return self;
 	}
@@ -212,8 +160,6 @@ create_normal_pool:
 
 - (void)dealloc
 {
-	_numberOfViews -= 1;
-
 	self.navigationDelegate = nil;
 
 	self.UIDelegate = nil;
@@ -222,20 +168,6 @@ create_normal_pool:
 - (TVCLogPolicy *)webViewPolicy
 {
 	return _sharedWebPolicy;
-}
-
-+ (BOOL)t_safeToUse
-{
-	/* June 2024: WebKit2 was enabled by default for beta update users.
-	 One user who is in 200+ channels managed to enter WK2 into an endless
-	 termination loop. Probably resource exhaustion. I am still investigating
-	 the underlying cause of that. But given the extremes of the situation,
-	 this temporary fix may just end up being a permanent one. */
-	if (_numberOfViews > _maximumViewInstances) {
-		return NO;
-	}
-
-	return _safeToUseWebKit2;
 }
 
 #pragma mark -
@@ -407,133 +339,39 @@ create_normal_pool:
 {
 	NSParameterAssert(code != nil);
 
-	[self evaluateJavaScript:code completionHandler:^(id result, NSError *error) {
+	[self evaluateJavaScript:code completionHandler:^(id _Nullable result, NSError * _Nullable error) {
 		if (error) {
 			[self logEvaluateJavaScriptError:error];
 		}
 
-		if (result) {
-			if ([result isKindOfClass:[NSNull class]] ||
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-				[result isKindOfClass:[WebUndefined class]])
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
-			{
-				if (completionHandler) {
-					completionHandler(nil);
-				}
-
-				return;
-			}
-		}
-
 		if (completionHandler) {
-			completionHandler(result);
+			completionHandler([result isKindOfClass:[NSNull class]] ? nil : result);
 		}
 	}];
 }
 
 #pragma mark -
-#pragma mark Scroll View
-
-- (void)enableOffScreenUpdates
-{
-
-}
-
-- (void)disableOffScreenUpdates
-{
-
-}
-
-- (void)redrawViewIfNeeded
-{
-
-}
-
-- (void)redrawView
-{
-
-}
-
-- (void)resetScrollerPosition
-{
-
-}
-
-- (void)resetScrollerPositionTo:(BOOL)scrolledToBottom
-{
-
-}
-
-- (void)saveScrollerPosition
-{
-
-}
-
-- (void)restoreScrollerPosition
-{
-
-}
-
-- (void)setAutomaticScrollingEnabled:(BOOL)automaticScrollingEnabled
-{
-
-}
-
-#pragma mark -
 #pragma mark Web View Delegate
-
-- (void)_webView:(WKWebView *)webView webContentProcessDidTerminateWithReason:(_WKProcessTerminationReason)reason
-{
-	NSParameterAssert(webView == self);
-
-	switch (reason) {
-		case _WKProcessTerminationReasonExceededMemoryLimit:
-			LogToConsoleError("WebView [%{public}@] terminated due to memory limit", self.description);
-
-			break;
-		case _WKProcessTerminationReasonExceededCPULimit:
-			LogToConsoleError("WebView [%{public}@] terminated due to CPU limit", self.description);
-
-			break;
-		case _WKProcessTerminationReasonRequestedByClient:
-			LogToConsoleDebug("WebView [%{public}@] terminated by client", self.description);
-
-			break;
-		case _WKProcessTerminationReasonCrash:
-			LogToConsoleError("WebView [%{public}@] terminated due to crash", self.description);
-
-			break;
-		default:
-			LogToConsoleError("WebView [%{public}@] terminated by other means: %{public}ld", self.description, reason);
-
-			break;
-	}
-
-	if (reason == _WKProcessTerminationReasonRequestedByClient) {
-		return;
-	}
-
-	LogToConsoleError("A WebKit process terminated for a reason not understood. Disabling WebKit2 until relaunch.");
-	LogStackTrace();
-
-	_safeToUseWebKit2 = NO;
-
-	[self webViewClosedUnexpectedly];
-}
 
 - (void)_webViewWebProcessDidBecomeUnresponsive:(WKWebView *)webView
 {
 	NSParameterAssert(webView == self);
 
-	LogToConsoleError("WebView [%{public}@] terminated due to unresponsive", self.description);
+	LogToConsoleError("WebView [%{public}@] became unresponsive", self.description);
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView
 {
 	NSParameterAssert(webView == self);
 
-	LogToConsoleDebug("WebView [%{public}@] terminated", self.description);
+	LogToConsoleError("WebView [%{public}@] content process terminated; reloading", self.description);
+
+	self.t_viewIsLoading = NO;
+	self.t_viewIsNavigating = NO;
+
+	[self stopObservingLoadingProperty];
+
+	[self webViewClosedUnexpectedly];
 }
 
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString *, id> *)change context:(nullable void *)context

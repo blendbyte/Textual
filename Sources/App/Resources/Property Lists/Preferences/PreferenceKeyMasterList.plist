@@ -362,13 +362,9 @@
 	<integer>0</integer>
 	<key>UserListDoubleClickAction</key>
 	<integer>0</integer>
-	<key>UsesWebKit2WhenAvailable</key>
-	<integer>0</integer>
 	<key>WebViewDoNotUsesCustomScrollers</key>
 	<integer>0</integer>
 	<key>WebViewPreviewLinks</key>
-	<integer>0</integer>
-	<key>WebViewProcessPoolSizeIsLimited</key>
 	<integer>0</integer>
 	<key>Window -&gt; Main Window Is Fullscreen&apos;d</key>
 	<integer>0</integer>

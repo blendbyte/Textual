@@ -45,16 +45,13 @@
 #import "TVCLogControllerPrivate.h"
 #import "TVCLogScriptEventSinkPrivate.h"
 #import "TVCLogViewPrivate.h"
-#import "TVCLogViewInternalWK1.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMainWindowPrivate.h"
-#import "WebScriptObjectHelperPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogView ()
-@property (nonatomic, strong) id webViewBacking;
-@property (nonatomic, readwrite, assign) BOOL isUsingWebKit2;
+@property (nonatomic, strong) TVCLogViewInternalWK2 *webViewBacking;
 @property (nonatomic, getter=isLayingOutView, readwrite) BOOL layingOutView;
 @end
 
@@ -91,24 +88,21 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 + (BOOL)webKit2Enabled
 {
-	if ([TVCLogViewInternalWK2 t_safeToUse] == NO) {
-		return NO;
-	}
+	return YES;
+}
 
-	return [TPCPreferences webKit2Enabled];
+- (BOOL)isUsingWebKit2
+{
+	return YES;
 }
 
 - (void)constructWebView
 {
-	BOOL isUsingWebKit2 = [self.class webKit2Enabled];
+	self.webViewBacking = [[TVCLogViewInternalWK2 alloc] initWithHostView:self];
 
-	self.isUsingWebKit2 = isUsingWebKit2;
-
-	if (isUsingWebKit2) {
-		self.webViewBacking = [[TVCLogViewInternalWK2 alloc] initWithHostView:self];
-	} else {
-		self.webViewBacking = [[TVCLogViewInternalWK1 alloc] initWithHostView:self];
-	}
+	/* Nothing to show until the document has loaded and laid out,
+	 which may wait until the view becomes visible (deferred loads) */
+	self.layingOutView = YES;
 }
 
 - (void)copyContentString
@@ -205,7 +199,6 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 + (void)emptyCaches
 {
-	[TVCLogViewInternalWK1 emptyCaches];
 	[TVCLogViewInternalWK2 emptyCaches];
 }
 
@@ -237,16 +230,6 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 	NSParameterAssert(string != nil);
 	NSParameterAssert(baseURL != nil);
 
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-	if (self.isUsingWebKit2 == NO) {
-		WebFrame *webViewFrame = [self.webViewBacking mainFrame];
-
-		[webViewFrame loadHTMLString:string baseURL:baseURL];
-
-		return;
-	}
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
-
 	[self recreateTemporaryCopyOfThemeIfNecessary];
 
 	WKWebView *webView = self.webViewBacking;
@@ -269,19 +252,7 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 - (void)stopLoading
 {
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-	if (self.isUsingWebKit2 == NO) {
-		WebFrame *webViewFrame = [self.webViewBacking mainFrame];
-
-		[webViewFrame stopLoading];
-
-		return;
-	}
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
-
-	WKWebView *webView = self.webViewBacking;
-
-	[webView stopLoading];
+	[self.webViewBacking stopLoading];
 }
 
 - (void)findString:(NSString *)searchString movingForward:(BOOL)movingForward
@@ -289,69 +260,6 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 	NSParameterAssert(searchString != nil);
 
 	[self.webViewBacking findString:searchString movingForward:movingForward];
-}
-
-- (void)enableOffScreenUpdates
-{
-//	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[(id)self.webView enableOffScreenUpdates];
-//	});
-}
-
-- (void)disableOffScreenUpdates
-{
-//	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[(id)self.webView disableOffScreenUpdates];
-//	});
-}
-
-- (void)redrawViewIfNeeded
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[(id)self.webView redrawViewIfNeeded];
-	});
-}
-
-- (void)redrawView
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[(id)self.webView redrawView];
-	});
-}
-
-- (void)resetScrollerPosition
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[(id)self.webView resetScrollerPosition];
-	});
-}
-
-- (void)resetScrollerPositionTo:(BOOL)scrolledToBottom
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[(id)self.webView resetScrollerPositionTo:scrolledToBottom];
-	});
-}
-
-- (void)saveScrollerPosition
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[(id)self.webView saveScrollerPosition];
-	});
-}
-
-- (void)restoreScrollerPosition
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[(id)self.webView restoreScrollerPosition];
-	});
-}
-
-- (void)setAutomaticScrollingEnabled:(BOOL)automaticScrollingEnabled
-{
-//	XRPerformBlockAsynchronouslyOnMainQueue(^{
-	[(id)self.webView setAutomaticScrollingEnabled:automaticScrollingEnabled];
-//	});
 }
 
 @end
@@ -369,15 +277,9 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 {
 	NSParameterAssert(code != nil);
 
-	dispatch_block_t blockToPerform = ^{
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self.webViewBacking _t_evaluateJavaScript:code completionHandler:completionHandler];
-	};
-
-//	if (self.isUsingWebKit2) {
-//		blockToPerform();
-//	} else {
-		XRPerformBlockAsynchronouslyOnMainQueue(blockToPerform);
-//	}
+	});
 }
 
 + (NSString *)descriptionOfJavaScriptResult:(id)scriptResult
@@ -681,22 +583,6 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 	return [compiledScript copy];
 }
-
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-- (id)webScriptObjectToCommon:(WebScriptObject *)object
-{
-	NSParameterAssert(object != nil);
-
-	NSAssert((self.isUsingWebKit2 == NO),
-		@"Cannot use feature when WebKit2 is in use");
-
-	WebFrame *webViewFrame = [self.webViewBacking mainFrame];
-
-	JSGlobalContextRef jsContextRef = webViewFrame.globalContext;
-
-	return [object toCommonInContext:jsContextRef];
-}
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 @end
 

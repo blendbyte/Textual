@@ -671,19 +671,14 @@ NSUInteger const TPCPreferencesDictionaryVersion = 602;
 	return [RZUserDefaults() boolForKey:@"AutomaticallyReloadCustomThemesWhenTheyChange"];
 }
 
-+ (void)setWebKit2Enabled:(BOOL)webKit2Enabled
-{
-	[RZUserDefaults() setBool:webKit2Enabled forKey:@"UsesWebKit2WhenAvailable"];
-}
-
 + (BOOL)webKit2Enabled
 {
-	return [RZUserDefaults() boolForKey:@"UsesWebKit2WhenAvailable"];
+	return YES;
 }
 
 + (BOOL)webKit2ProcessPoolSizeLimited
 {
-	return [RZUserDefaults() boolForKey:@"WebViewProcessPoolSizeIsLimited"];
+	return NO;
 }
 
 + (BOOL)webKit2PreviewLinks

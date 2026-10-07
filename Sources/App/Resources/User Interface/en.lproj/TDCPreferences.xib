@@ -4710,29 +4710,9 @@ You should therefore not rely solely on this preference.</string>
                         <binding destination="-2" name="value" keyPath="self.appNapEnabled" id="kVr-7F-VmC"/>
                     </connections>
                 </button>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Bh-Ce-CLv">
-                    <rect key="frame" x="175" y="337" width="122" height="18"/>
-                    <buttonCell key="cell" type="check" title="Enable WebKit2" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="W5w-EG-kiD">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="G2Q-fc-ddg" name="value" keyPath="values.UsesWebKit2WhenAvailable" id="Xds-VT-o1A"/>
-                    </connections>
-                </button>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="adq-18-C3D">
-                    <rect key="frame" x="175" y="307" width="318" height="18"/>
-                    <buttonCell key="cell" type="check" title="Limit number of processes spawned by WebKit2" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="HKB-82-0XP">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="G2Q-fc-ddg" name="value" keyPath="values.WebViewProcessPoolSizeIsLimited" id="rPc-UM-cTW"/>
-                    </connections>
-                </button>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="r5x-9F-a6i">
                     <rect key="frame" x="175" y="277" width="218" height="18"/>
-                    <buttonCell key="cell" type="check" title="Enable link previews in WebKit2" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="d67-Dk-gJt">
+                    <buttonCell key="cell" type="check" title="Enable link previews" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="d67-Dk-gJt">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -4919,15 +4899,12 @@ You should therefore not rely solely on this preference.</string>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="V0L-wf-MX5" secondAttribute="bottom" constant="30" id="0Fr-aZ-e5g"/>
                 <constraint firstItem="1g9-Qk-YQN" firstAttribute="leading" secondItem="dAH-Sl-d77" secondAttribute="leading" constant="177" id="1CJ-7V-YNV"/>
-                <constraint firstItem="2Bh-Ce-CLv" firstAttribute="leading" secondItem="1g9-Qk-YQN" secondAttribute="leading" id="5rh-fw-QlF"/>
                 <constraint firstItem="wM2-5T-Kcv" firstAttribute="leading" secondItem="r5x-9F-a6i" secondAttribute="leading" id="6Dq-GT-HFz"/>
                 <constraint firstItem="V0L-wf-MX5" firstAttribute="top" secondItem="f8P-S1-YSA" secondAttribute="bottom" constant="30" id="6vT-lm-ST7"/>
                 <constraint firstItem="Xl2-g8-NiZ" firstAttribute="top" secondItem="p75-KN-Sms" secondAttribute="bottom" constant="14" id="7Ne-Xm-P3m"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Xl2-g8-NiZ" secondAttribute="trailing" constant="20" id="8Bm-6k-qGz"/>
                 <constraint firstItem="Xl2-g8-NiZ" firstAttribute="leading" secondItem="p75-KN-Sms" secondAttribute="leading" id="8T5-Jf-1tN"/>
-                <constraint firstItem="r5x-9F-a6i" firstAttribute="top" secondItem="adq-18-C3D" secondAttribute="bottom" constant="14" id="FCc-GZ-gYS"/>
                 <constraint firstItem="1g9-Qk-YQN" firstAttribute="top" secondItem="eAs-xY-p50" secondAttribute="bottom" constant="20" id="HMb-sy-AN0"/>
-                <constraint firstItem="adq-18-C3D" firstAttribute="top" secondItem="2Bh-Ce-CLv" secondAttribute="bottom" constant="14" id="J1W-A9-0fe"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="1g9-Qk-YQN" secondAttribute="trailing" constant="20" id="Lb5-wb-qfE"/>
                 <constraint firstItem="p75-KN-Sms" firstAttribute="top" secondItem="wM2-5T-Kcv" secondAttribute="bottom" constant="14" id="N4f-uj-Iz9"/>
                 <constraint firstItem="f8P-S1-YSA" firstAttribute="top" secondItem="84h-O7-xuk" secondAttribute="bottom" constant="20" id="O4J-YF-RNM"/>
@@ -4935,11 +4912,7 @@ You should therefore not rely solely on this preference.</string>
                 <constraint firstItem="b9a-MV-ff4" firstAttribute="leading" secondItem="Xl2-g8-NiZ" secondAttribute="leading" id="U90-po-07Z"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="wM2-5T-Kcv" secondAttribute="trailing" constant="20" id="ZFf-wU-k9n"/>
                 <constraint firstItem="eAs-xY-p50" firstAttribute="leading" secondItem="dAH-Sl-d77" secondAttribute="leading" constant="180" id="aKK-Ts-ebc"/>
-                <constraint firstItem="2Bh-Ce-CLv" firstAttribute="top" secondItem="1g9-Qk-YQN" secondAttribute="bottom" constant="14" id="aLP-1I-qPp"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="2Bh-Ce-CLv" secondAttribute="trailing" constant="20" id="aSY-hh-GGq"/>
-                <constraint firstItem="r5x-9F-a6i" firstAttribute="leading" secondItem="adq-18-C3D" secondAttribute="leading" id="aqP-MD-gGa"/>
                 <constraint firstItem="V0L-wf-MX5" firstAttribute="centerX" secondItem="dAH-Sl-d77" secondAttribute="centerX" id="b3i-fV-DOR"/>
-                <constraint firstItem="adq-18-C3D" firstAttribute="leading" secondItem="2Bh-Ce-CLv" secondAttribute="leading" id="bde-YN-Yv0"/>
                 <constraint firstItem="p75-KN-Sms" firstAttribute="leading" secondItem="wM2-5T-Kcv" secondAttribute="leading" id="e4k-oI-brN"/>
                 <constraint firstItem="b9a-MV-ff4" firstAttribute="top" secondItem="Xl2-g8-NiZ" secondAttribute="bottom" constant="14" id="gmW-wv-0i4"/>
                 <constraint firstItem="84h-O7-xuk" firstAttribute="top" secondItem="b9a-MV-ff4" secondAttribute="bottom" constant="20" id="hSG-4J-THF"/>
@@ -4948,8 +4921,9 @@ You should therefore not rely solely on this preference.</string>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="p75-KN-Sms" secondAttribute="trailing" constant="20" id="sfB-ps-xYd"/>
                 <constraint firstItem="eAs-xY-p50" firstAttribute="top" secondItem="dAH-Sl-d77" secondAttribute="top" constant="30" id="sp6-Xk-TNz"/>
                 <constraint firstItem="f8P-S1-YSA" firstAttribute="centerX" secondItem="dAH-Sl-d77" secondAttribute="centerX" id="vVU-lv-eZ3"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="adq-18-C3D" secondAttribute="trailing" constant="20" id="w0h-VN-UgA"/>
                 <constraint firstItem="wM2-5T-Kcv" firstAttribute="top" secondItem="r5x-9F-a6i" secondAttribute="bottom" constant="14" id="yJy-do-LTO"/>
+                <constraint firstItem="r5x-9F-a6i" firstAttribute="top" secondItem="1g9-Qk-YQN" secondAttribute="bottom" constant="14" id="T8w-k2-L1a"/>
+                <constraint firstItem="r5x-9F-a6i" firstAttribute="leading" secondItem="1g9-Qk-YQN" secondAttribute="leading" id="T8w-k2-L1b"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="b9a-MV-ff4" secondAttribute="trailing" constant="20" id="zLm-GZ-r0m"/>
             </constraints>
             <point key="canvasLocation" x="318" y="395"/>

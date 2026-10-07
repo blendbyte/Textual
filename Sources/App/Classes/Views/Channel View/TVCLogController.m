@@ -102,7 +102,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval viewLoadedTimestamp;
 @property (readonly) TVCLogControllerPrintingOperationQueue *printingQueue;
 @property (readonly, copy) NSURL *baseURL;
+@property (nonatomic, assign) BOOL documentLoadHoldsSlot;
 @end
+
+/* Loading every view's document at once (one web view per server and
+ channel) starves WebKit: with about 100 views, some loads never finish.
+ Visible views load right away; the others queue and load a few at a time.
+ A slot is given back when the view finishes loading or after a timeout. */
+#define _maximumConcurrentDeferredDocumentLoads		8
+#define _deferredDocumentLoadSlotTimeout			8.0
+
+static NSMutableArray<TVCLogController *> *_deferredDocumentLoads = nil;
+static NSUInteger _deferredDocumentLoadsInFlight = 0;
 
 NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogControllerViewFinishedLoadingNotification";
 
@@ -172,6 +183,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	self.loaded = NO;
 
+	[self cancelDeferredDocumentLoad];
+
 	[self.backingView stopLoading]; // allow view to teardown
 	self.backingView = nil;
 
@@ -206,28 +219,102 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)setUp
 {
-	[self buildBackingView];
-
-	[self loadInitialDocument];
-}
-
-- (void)buildBackingView
-{
 	self.backingView = [[TVCLogView alloc] initWithViewController:self];
-}
 
-- (void)rebuildBackingView
-{
-	[self buildBackingView];
-
-	if (self.visible) {
-		[self.attachedWindow updateChannelViewBoxContentViewSelection];
-	}
+	[self scheduleInitialDocumentLoad];
 }
 
 - (void)loadInitialDocument
 {
 	[self loadAlternateHTML:[self initialDocument]];
+}
+
+#pragma mark -
+#pragma mark Deferred Document Loads
+
+- (void)scheduleInitialDocumentLoad
+{
+	if (self.terminating) {
+		return;
+	}
+
+	/* A reload gives back the slot of the load it replaces */
+	[self releaseDeferredDocumentLoadSlot];
+
+	if (self.visible) {
+		[_deferredDocumentLoads removeObjectIdenticalTo:self];
+
+		[self loadInitialDocument];
+
+		return;
+	}
+
+	if (_deferredDocumentLoads == nil) {
+		_deferredDocumentLoads = [NSMutableArray array];
+	}
+
+	if ([_deferredDocumentLoads indexOfObjectIdenticalTo:self] == NSNotFound) {
+		[_deferredDocumentLoads addObject:self];
+	}
+
+	[self.class dequeueDeferredDocumentLoads];
+}
+
+- (void)prioritizeDeferredDocumentLoad
+{
+	if ([_deferredDocumentLoads indexOfObjectIdenticalTo:self] == NSNotFound) {
+		return;
+	}
+
+	[_deferredDocumentLoads removeObjectIdenticalTo:self];
+
+	[self loadInitialDocument];
+}
+
+- (void)cancelDeferredDocumentLoad
+{
+	[_deferredDocumentLoads removeObjectIdenticalTo:self];
+
+	[self releaseDeferredDocumentLoadSlot];
+}
+
++ (void)dequeueDeferredDocumentLoads
+{
+	while (_deferredDocumentLoadsInFlight < _maximumConcurrentDeferredDocumentLoads &&
+		   _deferredDocumentLoads.count > 0)
+	{
+		TVCLogController *viewController = _deferredDocumentLoads[0];
+
+		[_deferredDocumentLoads removeObjectAtIndex:0];
+
+		if (viewController.terminating) {
+			continue;
+		}
+
+		viewController.documentLoadHoldsSlot = YES;
+
+		_deferredDocumentLoadsInFlight += 1;
+
+		[viewController performSelectorInCommonModes:@selector(releaseDeferredDocumentLoadSlot)
+										  afterDelay:_deferredDocumentLoadSlotTimeout];
+
+		[viewController loadInitialDocument];
+	}
+}
+
+- (void)releaseDeferredDocumentLoadSlot
+{
+	[self cancelPerformRequestsWithSelector:@selector(releaseDeferredDocumentLoadSlot)];
+
+	if (self.documentLoadHoldsSlot == NO) {
+		return;
+	}
+
+	self.documentLoadHoldsSlot = NO;
+
+	_deferredDocumentLoadsInFlight -= 1;
+
+	[self.class dequeueDeferredDocumentLoads];
 }
 
 - (void)loadAlternateHTML:(NSString *)newHTML
@@ -412,8 +499,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 												  resultInfo:NULL];
 
 		[self _evaluateFunction:@"Textual.setTopicBarValue" withArguments:@[topicString, topicTemplate]];
-
-		[self.backingView redrawView];
 	};
 
 	_enqueueBlockStandalone(operationBlock)
@@ -600,8 +685,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		self.historyLoadedForFirstTime = YES;
 
 		[self notifyViewFinishedLoadingHistory];
-
-		[self.backingView redrawViewIfNeeded];
 	};
 
 	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
@@ -717,15 +800,11 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)notifyDidBecomeVisible /* When the view is switched to */
 {
+	[self prioritizeDeferredDocumentLoad];
+
 	[self _evaluateFunction:@"_Textual.notifyDidBecomeVisible" withArguments:nil];
 
 	[self maybeReloadHistory];
-
-	[self.backingView restoreScrollerPosition];
-
-	[self.backingView enableOffScreenUpdates];
-
-	[self.backingView redrawViewIfNeeded];
 }
 
 - (void)notifySelectionChanged
@@ -736,10 +815,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)notifyDidBecomeHidden
 {
 	[self _evaluateFunction:@"_Textual.notifyDidBecomeHidden" withArguments:nil];
-
-	[self.backingView saveScrollerPosition];
-
-	[self.backingView disableOffScreenUpdates];
 }
 
 - (void)notifyViewFinishedLoadingHistory
@@ -769,17 +844,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)notifyJumpToLine:(NSString *)lineNumber successful:(BOOL)successful scrolledToBottom:(BOOL)scrolledToBottom
 {
 	NSParameterAssert(lineNumber != nil);
-
-	/* The Objective-C based automatic scroller relies on notifications of
-	 bounds and frame changes to know when a WebView scrolls. If the WebView
-	 is offscreen, then we have no way to know when a jump occurs because
-	 these notifications are not received. To workaround this, the JavaScript
-	 passes the scrolledToBottom argument. The Objective-C automatic scroller
-	 can then be passed this argument to know whether to perform automatic
-	 scrolling when the view becomes visible. */
-	if (successful) {
-		[self.backingView resetScrollerPositionTo:scrolledToBottom];
-	}
 
 	void (^callbackHandler)(BOOL) = [self.jumpToLineCallbacks objectForKey:lineNumber];
 
@@ -1005,11 +1069,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	self.historyLoaded = NO;
 
-	if (self.backingView.isUsingWebKit2 != [TVCLogView webKit2Enabled]) {
-		[self rebuildBackingView];
-	}
-
-	[self loadInitialDocument];
+	[self scheduleInitialDocumentLoad];
 }
 
 - (void)clear
@@ -1268,9 +1328,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			/* Log this log line */
 			[TVCLogControllerHistoricLogSharedInstance() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
 
-			/* Redraw view if needed */
-			[self.backingView redrawViewIfNeeded];
-
 			/* Using information provided by conversation tracking we can update 
 			 our internal array of favored nicknames for nick completion. */
 			if (logLine.memberType == TVCLogLineMemberTypeLocalUser) {
@@ -1522,9 +1579,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	BOOL usesCustomScrollers = [TPCPreferences themeChannelViewUsesCustomScrollers];
 
-	BOOL usingWebKit2 = self.backingView.isUsingWebKit2;
-
-	return (onlyShowDuringScrolling == NO && usesCustomScrollers && usingWebKit2);
+	return (onlyShowDuringScrolling == NO && usesCustomScrollers);
 }
 
 - (NSString *)initialDocument
@@ -1680,6 +1735,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	[self reloadHistory];
 
+	[self releaseDeferredDocumentLoadSlot];
+
 	[RZNotificationCenter() postNotificationName:TVCLogControllerViewFinishedLoadingNotification object:self];
 
 	[self.printingQueue updateReadinessState:self];
@@ -1687,7 +1744,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)logViewWebViewClosedUnexpectedly
 {
-	[self clearBackingView];
+	/* Reload and replay the scrollback: the saved history is kept */
+	[self clearWithReset:NO];
 }
 
 - (void)logViewWebViewKeyDown:(NSEvent *)e

@@ -74,27 +74,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)loadHTMLString:(NSString *)string baseURL:(NSURL *)baseURL;
 
 - (void)findString:(NSString *)searchString movingForward:(BOOL)movingForward;
-
-- (void)redrawViewIfNeeded;
-- (void)redrawView;
-
-- (void)resetScrollerPosition;
-- (void)resetScrollerPositionTo:(BOOL)scrolledToBottom;
-- (void)saveScrollerPosition;
-- (void)restoreScrollerPosition;
-
-- (void)enableOffScreenUpdates;
-- (void)disableOffScreenUpdates;
-
-- (void)setAutomaticScrollingEnabled:(BOOL)automaticScrollingEnabled;
 @end
 
 @interface TVCLogView (TVCLogViewJavaScriptHandlerPrivate)
 - (NSString *)compiledFunctionCall:(NSString *)function withArguments:(nullable NSArray *)arguments;
-
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-- (id)webScriptObjectToCommon:(WebScriptObject *)object;
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 @end
 
 NS_ASSUME_NONNULL_END

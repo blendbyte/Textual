@@ -233,8 +233,8 @@ typedef NS_ENUM(NSUInteger, TXPreferredAppearance) {
 
 + (TXHostmaskBanFormat)banFormat;
 
-+ (BOOL)webKit2Enabled;
-+ (BOOL)webKit2ProcessPoolSizeLimited;
++ (BOOL)webKit2Enabled TEXTUAL_DEPRECATED("Always YES");
++ (BOOL)webKit2ProcessPoolSizeLimited TEXTUAL_DEPRECATED("Always NO");
 + (BOOL)webKit2PreviewLinks;
 
 + (NSString *)themeName;

@@ -494,7 +494,7 @@ enum
 - (IBAction)searchGoogle:(id)sender;
 - (IBAction)copyLogAsHtml:(id)sender;
 - (IBAction)forceReloadTheme:(id)sender;
-- (IBAction)openWebInspector:(id)sender;
+- (IBAction)openWebInspector:(id)sender TEXTUAL_DEPRECATED("Does nothing. Use Inspect Element in the chat view's context menu");
 
 - (IBAction)checkForUpdates:(id)sender;
 

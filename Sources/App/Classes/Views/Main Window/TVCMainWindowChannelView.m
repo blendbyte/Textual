@@ -408,7 +408,9 @@ NSComparisonResult sortSubviews(TVCMainWindowChannelViewSubview *firstView,
 		return;
 	}
 
-	if (self.backingViewIsLoading) {
+	/* Observe even when not loading: deferred and repeated loads (theme
+	 reloads, crash recovery) change layingOutView later */
+	if (self.isObservingBackingView == NO) {
 		self.isObservingBackingView = YES;
 
 		[backingView addObserver:self forKeyPath:@"layingOutView" options:NSKeyValueObservingOptionNew context:NULL];

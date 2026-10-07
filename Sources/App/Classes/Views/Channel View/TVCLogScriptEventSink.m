@@ -39,7 +39,6 @@
 #include <objc/message.h>
 
 #import "GTMEncodeHTML.h"
-#import "WebScriptObjectHelperPrivate.h"
 #import "NSObjectHelperPrivate.h"
 #import "TXMasterController.h"
 #import "TPCPreferencesLocal.h"
@@ -57,15 +56,10 @@
 #import "TVCLogPolicyPrivate.h"
 #import "TVCLogRenderer.h"
 #import "TVCLogViewPrivate.h"
-#import "TVCLogViewInternalWK1.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCLogScriptEventSinkPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface TVCLogScriptEventSink ()
-@property (nonatomic, weak) TVCLogView *webView;
-@end
 
 @interface TVCLogScriptEventSinkContext : NSObject
 @property (nonatomic, weak) TVCLogView *webView;
@@ -80,27 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCLogScriptEventSink
 
-- (instancetype)init
-{
-	return [self initWithWebView:nil];
-}
-
-- (instancetype)initWithWebView:(nullable TVCLogView *)webView
-{
-	if ((self = [super init])) {
-		self.webView = webView;
-
-		return self;
-	}
-
-	return nil;
-}
-
-+ (BOOL)isSelectorExcludedFromWebScript:(SEL)selector
++ (BOOL)isSelectorExcludedFromScripts:(SEL)selector
 {
 	if (selector == @selector(init) ||
-		selector == @selector(initWithWebView:) ||
-		selector == @selector(webView) ||
 		selector == @selector(webViewPolicy) ||
 		selector == @selector(associatedClient) ||
 		selector == @selector(associatedChannel) ||
@@ -119,65 +95,9 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO;
 }
 
-+ (nullable NSString *)webScriptNameForSelector:(SEL)sel
-{
-	return nil;
-}
-
-- (id)invokeUndefinedMethodFromWebScript:(NSString *)name withArguments:(NSArray *)arguments
-{
-	SEL handlerSelector = NSSelectorFromString([name stringByAppendingString:@":inWebView:"]);
-
-	if ([self respondsToSelector:handlerSelector] == NO) {
-		return @(NO);
-	}
-
-	id argument = nil;
-
-	if (arguments && arguments.count > 0) {
-		argument = arguments[0];
-
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-		if ([argument isKindOfClass:[WebScriptObject class]]) {
-			argument = [self.webView webScriptObjectToCommon:argument];
-		}
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
-	}
-
-	NSMethodSignature *signature = [self methodSignatureForSelector:handlerSelector];
-
-	NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-
-	[invocation setTarget:self];
-
-	[invocation setSelector:handlerSelector];
-	[invocation setArgument:&argument atIndex:2];
-
-	TVCLogView *webView = self.webView;
-	[invocation setArgument:&webView atIndex:3];
-
-	[invocation invoke];
-
-	return @(YES);
-}
-
-+ (BOOL)isKeyExcludedFromWebScript:(const char *)name
-{
-	return YES;
-}
-
-+ (nullable NSString *)webScriptNameForKey:(const char *)name
-{
-	return nil;
-}
-
 + (nullable id)objectValueToCommon:(id)object
 {
-	if ([object isKindOfClass:[NSNull class]] ||
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-		[object isKindOfClass:[WebUndefined class]])
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
-	{
+	if ([object isKindOfClass:[NSNull class]]) {
 		return nil;
 	}
 
@@ -233,7 +153,7 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 		return;
 	}
 
-	if ([self.class isSelectorExcludedFromWebScript:handlerSelector]) {
+	if ([self.class isSelectorExcludedFromScripts:handlerSelector]) {
 		return;
 	}
 
@@ -277,9 +197,7 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 	if ([webView isKindOfClass:[TVCLogView class]]) {
 		intWebView = webView;
-	} else if ([webView isKindOfClass:[TVCLogViewInternalWK1 class]] ||
-			   [webView isKindOfClass:[TVCLogViewInternalWK2 class]])
-	{
+	} else if ([webView isKindOfClass:[TVCLogViewInternalWK2 class]]) {
 		intWebView = [webView t_parentView];
 	} else {
 		return;
@@ -350,10 +268,7 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 			values = inputData;
 		}
 	}
-	else if ([inputData isKindOfClass:[NSNull class]] ||
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
-			 [inputData isKindOfClass:[WebUndefined class]])
-TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
+	else if ([inputData isKindOfClass:[NSNull class]])
 	{
 		if (minimumArgumentCount > 0) {
 			values = @[[NSNull null]];
@@ -845,18 +760,6 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 				 forCaller:@"app.serverIsConnected()"
 				 inWebView:webView
 			  withSelector:@selector(_serverIsConnected:)];
-}
-
-- (void)setAutomaticScrollingEnabled:(id)inputData inWebView:(id)webView
-{
-	[self processInputData:inputData
-				 forCaller:@"app.setAutomaticScrollingEnabled()"
-				 inWebView:webView
-			  withSelector:@selector(_setAutomaticScrollingEnabled:)
-	  minimumArgumentCount:1
-			withValidation:^BOOL(NSUInteger argumentIndex, id argument) {
-				return ([argument isKindOfClass:[NSNumber class]]);
-			}];
 }
 
 - (void)setChannelName:(id)inputData inWebView:(id)webView
@@ -1499,15 +1402,6 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 - (void)_serverIsConnected:(TVCLogScriptEventSinkContext *)context
 {
 	context.completionBlock( @(context.associatedClient.isLoggedIn) );
-}
-
-- (void)_setAutomaticScrollingEnabled:(TVCLogScriptEventSinkContext *)context
-{
-	NSArray *arguments = context.arguments;
-
-	BOOL enabled = [[self.class objectValueToCommon:arguments[0]] boolValue];
-
-	[context.webView setAutomaticScrollingEnabled:enabled];
 }
 
 - (void)_setChannelName:(TVCLogScriptEventSinkContext *)context

@@ -110,7 +110,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setTextFieldDataDetectors:(BOOL)value;
 + (void)setTextFieldTextReplacement:(BOOL)value;
 
-+ (void)setWebKit2Enabled:(BOOL)webKit2Enabled;
 @end
 
 NS_ASSUME_NONNULL_END

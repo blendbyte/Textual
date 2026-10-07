@@ -196,8 +196,6 @@ Information encrypted using: %2$@";
 "2jq-t5" = "%1$@ with the cipher suite: %2$@";
 "8ou-pu" = "%1$@ with the cipher suite: %2$@ (deprecated)";
 
-"ujw-64" = "The “Inspect Element” feature of WebKit2 cannot be accessed on this version of macOS.";
-"kig-m1" = "Disable WebKit2 or upgrade to a newer version of macOS.";
 
 "ios-na" = "Textual has copied the following content to a new location your Mac:";
 "qy4-5o" = "Caches, custom addons, custom styles, encryption keys, preferences, and scrollback history.

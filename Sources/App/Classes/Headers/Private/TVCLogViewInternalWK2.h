@@ -40,13 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class TVCLogPolicy, TVCLogView;
 
 @interface TVCLogViewInternalWK2 : WKWebView
-/* This flag will be YES unless a WebKit2 processes terminates for
- an unexpected reason such as a crash or memory exhaustion.
- In those cases, this property will become NO.
- The rest of Textual will give it priority over any other user
- preference asking for asking access to WebKit2. */
-@property (readonly, class) BOOL t_safeToUse;
-
 @property (nonatomic, weak) TVCLogView *t_parentView;
 @property (nonatomic, assign) BOOL t_viewIsLoading;
 @property (nonatomic, assign) BOOL t_viewIsNavigating;
