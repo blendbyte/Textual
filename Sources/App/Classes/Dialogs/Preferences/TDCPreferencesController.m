@@ -50,7 +50,6 @@
 #import "IRCClient.h"
 #import "IRCConnectionConfig.h"
 #import "IRCWorld.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TVCMainWindowPrivate.h"
@@ -100,7 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define _toolbarItemIndexLogLocation				108007
 #define _toolbarItemIndexDefaultIdentity			108008
 #define _toolbarItemIndexDefaultIRCopMessages		108009
-#define _toolbarItemIndexOffRecordMessaging			108010
 #define _toolbarItemIndexHiddenPreferences			108011 // unused
 
 #define _addonsToolbarInstalledAddonsMenuItemIndex		109000
@@ -139,10 +137,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSView *contentViewLogLocation;
 @property (nonatomic, strong) IBOutlet NSView *contentViewDefaultIdentity;
 @property (nonatomic, strong) IBOutlet NSView *contentViewDefaultIRCopMessages;
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-@property (nonatomic, strong) IBOutlet NSView *contentViewOffRecordMessaging;
-#endif
 
 @property (nonatomic, strong) IBOutlet NSView *contentViewHiddenPreferences;
 @property (nonatomic, weak) IBOutlet NSButton *checkForUpdatesDontCheck;
@@ -196,11 +190,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)onResetUserListModeColorsToDefaults:(id)sender;
 - (IBAction)onSelectNewFont:(id)sender;
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (IBAction)offRecordMessagingPolicyChanged:(id)sender;
-- (IBAction)offRecordMessagingOpenOfficialWebsite:(id)sender;
-- (IBAction)offRecordMessagingOpenHelpDocument:(id)sender;
-#endif
 @end
 
 @implementation TDCPreferencesController
@@ -381,7 +370,6 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 	switch ([sender tag]) {
-
 		_de(_toolbarItemIndexGeneral, self.contentViewGeneral, _toolbarItemIndexGeneral)
 
 		_de(_toolbarItemIndexHighlights, self.contentViewHighlights, _toolbarItemIndexHighlights)
@@ -402,10 +390,6 @@ NS_ASSUME_NONNULL_BEGIN
 		_de(_toolbarItemIndexLogLocation, self.contentViewLogLocation, _toolbarItemIndexAdvanced);
 		_de(_toolbarItemIndexDefaultIdentity, self.contentViewDefaultIdentity, _toolbarItemIndexAdvanced)
 		_de(_toolbarItemIndexDefaultIRCopMessages, self.contentViewDefaultIRCopMessages, _toolbarItemIndexAdvanced)
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-		_de(_toolbarItemIndexOffRecordMessaging, self.contentViewOffRecordMessaging, _toolbarItemIndexAdvanced)
-#endif
 
 		_de(_addonsToolbarInstalledAddonsMenuItemIndex, self.contentViewInstalledAddons, _toolbarItemIndexAddons)
 
@@ -563,114 +547,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[TPCPreferences setFileTransferPortRangeEnd:value.integerValue];
 }
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (void)setTextEncryptionIsOpportunistic:(BOOL)textEncryptionIsOpportunistic
-{
-	[TPCPreferences setTextEncryptionIsOpportunistic:textEncryptionIsOpportunistic];
-}
-
-- (BOOL)textEncryptionIsOpportunistic
-{
-	if ([TPCPreferences textEncryptionIsEnabled] == NO) {
-		return NO;
-	}
-
-	if ([TPCPreferences textEncryptionIsRequired]) {
-		return YES;
-	}
-
-	return [TPCPreferences textEncryptionIsOpportunistic];
-}
-
-- (BOOL)textEncryptionIsOpportunisticPreferenceEnabled
-{
-	return ([TPCPreferences textEncryptionIsEnabled] &&
-			[TPCPreferences textEncryptionIsRequired] == NO);
-}
-
-- (void)setTextEncryptionIsRequired:(BOOL)textEncryptionIsRequired
-{
-	[TPCPreferences setTextEncryptionIsRequired:textEncryptionIsRequired];
-
-	[self willChangeValueForKey:@"textEncryptionIsOpportunistic"];
-	[self didChangeValueForKey:@"textEncryptionIsOpportunistic"];
-}
-
-- (BOOL)textEncryptionIsRequired
-{
-	if ([TPCPreferences textEncryptionIsEnabled] == NO) {
-		return NO;
-	}
-
-	return [TPCPreferences textEncryptionIsRequired];
-}
-
-- (BOOL)textEncryptionIsRequiredPreferenceEnabled
-{
-	return [TPCPreferences textEncryptionIsEnabled];
-}
-
-- (void)setTextEncryptionIsEnabled:(BOOL)textEncryptionIsEnabled
-{
-	[TPCPreferences setTextEncryptionIsEnabled:textEncryptionIsEnabled];
-
-	[self willChangeValueForKey:@"textEncryptionIsOpportunistic"];
-	[self willChangeValueForKey:@"textEncryptionIsOpportunisticPreferenceEnabled"];
-	[self willChangeValueForKey:@"textEncryptionIsRequired"];
-	[self willChangeValueForKey:@"textEncryptionIsRequiredPreferenceEnabled"];
-
-	[self didChangeValueForKey:@"textEncryptionIsOpportunistic"];
-	[self didChangeValueForKey:@"textEncryptionIsOpportunisticPreferenceEnabled"];
-	[self didChangeValueForKey:@"textEncryptionIsRequired"];
-	[self didChangeValueForKey:@"textEncryptionIsRequiredPreferenceEnabled"];
-}
-
-- (BOOL)textEncryptionIsEnabled
-{
-	return [TPCPreferences textEncryptionIsEnabled];
-}
-#else
-- (void)setTextEncryptionIsOpportunistic:(BOOL)textEncryptionIsOpportunistic
-{
-
-}
-
-- (BOOL)textEncryptionIsOpportunistic
-{
-
-}
-
-- (BOOL)textEncryptionIsOpportunisticPreferenceEnabled
-{
-
-}
-
-- (void)setTextEncryptionIsRequired:(BOOL)textEncryptionIsRequired
-{
-
-}
-
-- (BOOL)textEncryptionIsRequired
-{
-
-}
-
-- (BOOL)textEncryptionIsRequiredPreferenceEnabled
-{
-
-}
-
-- (void)setTextEncryptionIsEnabled:(BOOL)textEncryptionIsEnabled
-{
-
-}
-
-- (BOOL)textEncryptionIsEnabled
-{
-
-}
-#endif
 
 - (BOOL)highlightCurrentNickname
 {
@@ -1270,23 +1146,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self onChangedTheme:nil];
 }
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (void)offRecordMessagingPolicyChanged:(id)sender
-{
-	[TPCPreferences performReloadAction:TPCPreferencesReloadActionEncryptionPolicy];
-}
-
-- (void)offRecordMessagingOpenOfficialWebsite:(id)sender
-{
-	[TLOpenLink openWithString:@"https://otr.cypherpunks.ca/"];
-}
-
-- (void)offRecordMessagingOpenHelpDocument:(id)sender
-{
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Off-the-Record-Messaging.kb"];
-}
-#endif
 
 - (void)onChangedHighlightType:(id)sender
 {

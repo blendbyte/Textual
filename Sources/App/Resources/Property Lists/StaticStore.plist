@@ -33,29 +33,6 @@
 		<string>identify yourself</string>
 		<string>type /msg NickServ IDENTIFY password</string>
 	</array>
-	<key>IRCClient List of Nicknames that Encryption Forbids</key>
-	<dict>
-		<key>UnderNet</key>
-		<array>
-			<string>c</string>
-			<string>w</string>
-			<string>x</string>
-			<string>x@channels.undernet.org</string>
-		</array>
-		<key>-default-</key>
-		<array>
-			<string>authserv</string>
-			<string>botserv</string>
-			<string>chanserv</string>
-			<string>hostserv</string>
-			<string>memoserv</string>
-			<string>nickserv</string>
-			<string>operserv</string>
-			<string>rootserv</string>
-			<string>statserv</string>
-			<string>userserv</string>
-		</array>
-	</dict>
 	<key>THOPluginManager List of Forbidden Commands</key>
 	<array>
 		<string>connect</string>
@@ -128,20 +105,15 @@
 	<array>
 		<string>apps</string>
 		<string>banhammer</string>
-		<string>delkey</string>
 		<string>ffuu</string>
 		<string>flip</string>
 		<string>hermes</string>
-		<string>key</string>
-		<string>keyx</string>
 		<string>music</string>
 		<string>np</string>
 		<string>o_p</string>
 		<string>page</string>
 		<string>qt</string>
 		<string>radium</string>
-		<string>setkey</string>
-		<string>setkeymode</string>
 		<string>shell</string>
 		<string>slap</string>
 		<string>spotify</string>

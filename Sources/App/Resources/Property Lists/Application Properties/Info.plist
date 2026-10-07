@@ -6,6 +6,8 @@
 	<string>public.app-category.social-networking</string>
 	<key>LSRequiresNativeExecution</key>
 	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleSignature</key>
 	<string>TXTL</string>
 	<key>CFBundleDisplayName</key>

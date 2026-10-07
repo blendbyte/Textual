@@ -32,8 +32,6 @@
 	<integer>0</integer>
 	<key>AutomaticallyReloadCustomThemesWhenTheyChange</key>
 	<integer>0</integer>
-	<key>Blowfish Encryption Extension -&gt; Enable Service</key>
-	<integer>0</integer>
 	<key>ChannelNavigationIsServerSpecific</key>
 	<integer>0</integer>
 	<key>ChannelOperatorDefaultLocalization -&gt; Kick Reason</key>
@@ -181,14 +179,6 @@
 	<key>PreferModernSockets</key>
 	<integer>0</integer>
 	<key>Private Extension Store -&gt; Caffeine Extension -&gt; Prevent Sleep</key>
-	<integer>0</integer>
-	<key>Private Extension Store -&gt; Blowfish Encryption Extension -&gt; Encryption Mode of Operation -&gt; </key>
-	<integer>1</integer>
-	<key>Off-the-Record Messaging -&gt; Automatically Enable Service</key>
-	<integer>0</integer>
-	<key>Off-the-Record Messaging -&gt; Enable Encryption</key>
-	<integer>0</integer>
-	<key>Off-the-Record Messaging -&gt; Require Encryption</key>
 	<integer>0</integer>
 	<key>OnlySpeakNotificationsForSelection</key>
 	<integer>0</integer>
@@ -379,10 +369,6 @@
 	<key>WebViewPreviewLinks</key>
 	<integer>0</integer>
 	<key>WebViewProcessPoolSizeIsLimited</key>
-	<integer>0</integer>
-	<key>Wiki-style Link Parser Extension -&gt; Service Enabled</key>
-	<integer>0</integer>
-	<key>Wiki-style Link Parser Extension -&gt; Link Prefixes</key>
 	<integer>0</integer>
 	<key>Window -&gt; Main Window Is Fullscreen&apos;d</key>
 	<integer>0</integer>

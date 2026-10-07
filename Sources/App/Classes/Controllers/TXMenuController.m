@@ -54,7 +54,6 @@
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowSplitView.h"
 #import "TVCMainWindowTextView.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
@@ -106,10 +105,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite) IBOutlet NSMenu *channelViewGeneralMenu;
 @property (nonatomic, strong, readwrite) IBOutlet NSMenu *channelViewURLMenu;
 @property (nonatomic, strong, readwrite) IBOutlet NSMenu *dockMenu;
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-@property (nonatomic, strong, readwrite) IBOutlet NSMenu *encryptionManagerStatusMenu;
-#endif
 
 @property (nonatomic, weak, readwrite) IBOutlet NSMenu *mainMenuNavigationChannelListMenu;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenu *mainMenuChannelMenu;
@@ -912,33 +907,6 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u.isLoggedIn && c.isUtility == NO);
 		}
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-		case MTOTRStatusButtonStartPrivateConversation:
-		case MTOTRStatusButtonRefreshPrivateConversation:
-		case MTOTRStatusButtonEndPrivateConversation:
-		case MTOTRStatusButtonAuthenticateChatPartner:
-		case MTOTRStatusButtonViewListOfFingerprints:
-		{
-			/* Even if we are not logged in, we still ask the encryption manager
-			 to validate the menu item first so that it can hide specific menu items.
-			 After it has done that, then we can disable if not logged in. */
-			if ([TPCPreferences textEncryptionIsEnabled] == NO) {
-				return NO;
-			}
-
-			if (u.isLoggedIn == NO) {
-				return NO;
-			}
-
-			BOOL valid = [sharedEncryptionManager()
-						  validateMenuItem:menuItem
-						  withStateOf:[u encryptionAccountNameForUser:c.name]
-						  from:[u encryptionAccountNameForLocalUser]];
-
-			return valid;
-		}
-#endif
-
 		case MTWKGeneralSearchWithGoogle: // "Search With Google"
 		{
 			TVCLogView *webView = self.selectedViewControllerBackingView;
@@ -1282,7 +1250,6 @@ NS_ASSUME_NONNULL_BEGIN
 		[webView findString:self.currentSearchPhrase movingForward:NO];
 	}
 }
-
 
 #pragma mark -
 #pragma mark Edit
@@ -2446,7 +2413,6 @@ NS_ASSUME_NONNULL_BEGIN
 	   @(MTMMHelpPrivacyPolicy) 					: @"https://help.codeux.com/textual/Privacy-Policy.kb",
 	   @(MTMMHelpFrequentlyAskedQuestions) 			: @"https://help.codeux.com/textual/Frequently-Asked-Questions.kb",
 	   @(MTMMHelpKBMenuKnowledgeBaseHome) 			: @"https://help.codeux.com/textual/home.kb",
-	   @(MTMMHelpKBMenuChatEncryption) 				: @"https://help.codeux.com/textual/Off-the-Record-Messaging.kb",
 	   @(MTMMHelpKBMenuCommandReference) 			: @"https://help.codeux.com/textual/Command-Reference.kb",
 	   @(MTMMHelpKBMenuFeatureRequests) 			: @"https://help.codeux.com/textual/Support.kb",
 	   @(MTMMHelpKBMenuKeyboardShortcuts) 			: @"https://help.codeux.com/textual/Keyboard-Shortcuts.kb",
@@ -2728,77 +2694,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[TPCPreferencesImportExport exportInWindow:mainWindow()];
 }
-
-#pragma mark -
-#pragma mark Off-the-Record Messaging
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-#define _encryptionNotEnabled		([TPCPreferences textEncryptionIsEnabled] == NO)
-
-- (void)encryptionStartPrivateConversation:(id)sender
-{
-	IRCClient *u = self.selectedClient;
-	IRCChannel *c = self.selectedChannel;
-
-	if (_encryptionNotEnabled || u == nil || c == nil || u.isLoggedIn == NO || c.isPrivateMessage == NO) {
-		return;
-	}
-
-	[sharedEncryptionManager() beginConversationWith:[u encryptionAccountNameForUser:c.name]
-												from:[u encryptionAccountNameForLocalUser]];
-}
-
-- (void)encryptionRefreshPrivateConversation:(id)sender
-{
-	IRCClient *u = self.selectedClient;
-	IRCChannel *c = self.selectedChannel;
-
-	if (_encryptionNotEnabled || u == nil || c == nil || u.isLoggedIn == NO || c.isPrivateMessage == NO) {
-		return;
-	}
-
-	[sharedEncryptionManager() refreshConversationWith:[u encryptionAccountNameForUser:c.name]
-												  from:[u encryptionAccountNameForLocalUser]];
-}
-
-- (void)encryptionEndPrivateConversation:(id)sender
-{
-	IRCClient *u = self.selectedClient;
-	IRCChannel *c = self.selectedChannel;
-
-	if (_encryptionNotEnabled || u == nil || c == nil || u.isLoggedIn == NO || c.isPrivateMessage == NO) {
-		return;
-	}
-
-	[sharedEncryptionManager() endConversationWith:[u encryptionAccountNameForUser:c.name]
-											  from:[u encryptionAccountNameForLocalUser]];
-}
-
-- (void)encryptionAuthenticateChatPartner:(id)sender
-{
-	IRCClient *u = self.selectedClient;
-	IRCChannel *c = self.selectedChannel;
-
-	if (_encryptionNotEnabled || u == nil || c == nil || u.isLoggedIn == NO || c.isPrivateMessage == NO) {
-		return;
-	}
-
-	[sharedEncryptionManager() authenticateUser:[u encryptionAccountNameForUser:c.name]
-										   from:[u encryptionAccountNameForLocalUser]];
-}
-
-- (void)encryptionListFingerprints:(id)sender
-{
-	[sharedEncryptionManager() presentListOfFingerprints];
-}
-
-- (void)encryptionWhatIsThisInformation:(id)sender
-{
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Off-the-Record-Messaging.kb" inBackground:NO];
-}
-
-#undef _encryptionNotEnabled
-#endif
 
 #pragma mark -
 #pragma mark Notifications

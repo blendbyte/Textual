@@ -60,10 +60,7 @@ Textual bundles or links against the following third-party components:
 | [AutoHyperlinks Framework](https://github.com/Codeux-Software/AutoHyperlinks) | BSD 3-Clause | (c) 2005-2011 The Adium Team, (c) 2011 Codeux Software, LLC |
 | [CocoaAsyncSocket](https://github.com/robbiehanson/CocoaAsyncSocket) (`GCDAsyncSocket`) | Public Domain | Originally by Robbie Hanson; maintained by Deusty LLC |
 | [Colloquy](https://github.com/Colloquy/colloquy) (Chat Core) | BSD-style | (c) 2000-2012 the Colloquy IRC Client |
-| [LibreSSL](https://www.libressl.org) | OpenSSL and SSLeay licenses | (c) 1998-2011 The OpenSSL Project, (c) 1995-1998 Eric Young |
 | [Sparkle](https://github.com/sparkle-project/Sparkle) | MIT | (c) 2006-2017 Andy Matuschak and contributors |
-| [libotr](https://otr.cypherpunks.ca), [libgcrypt](https://gnupg.org/software/libgcrypt/), [libgpg-error](https://gnupg.org/software/libgpg-error/), [OTRKit](https://github.com/ChatSecure/OTRKit) (via Encryption Kit) | LGPL 2.1 | Respective authors |
-| Blowfish Encryption extension (`*Base*` classes) | GPLv2 | (c) 2005-2013 Mathias Karlsson |
 
 The "Cocoa Extensions" internal framework also carries a small number of third-party snippets from Apple, Dave Dribin, Satoshi Nakagawa, and the Chromium developers; see the framework's `ACKNOWLEDGEMENT.txt`. Bundled styles include their own copyright and license files. The application icon was created by Brandon Rodriguez, and parts of the image assets are (c) 2015 Reda Lemeden.
 

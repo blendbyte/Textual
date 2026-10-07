@@ -47,12 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)setDeveloperModeEnabled:(BOOL)developerModeEnabled;
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-+ (void)setTextEncryptionIsOpportunistic:(BOOL)textEncryptionIsOpportunistic;
-+ (void)setTextEncryptionIsRequired:(BOOL)textEncryptionIsRequired;
-+ (void)setTextEncryptionIsEnabled:(BOOL)textEncryptionIsEnabled;
-#endif
-
 + (void)setLogToDisk:(BOOL)logToDisk;
 
 + (void)setOnlySpeakEventsForSelection:(BOOL)onlySpeakEventsForSelection;

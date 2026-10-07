@@ -69,7 +69,6 @@
 #import "TXMasterControllerPrivate.h"
 #import "TXMenuControllerPrivate.h"
 #import "THOPluginDispatcherPrivate.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOKeyEventHandler.h"
 #import "TLOInputHistoryPrivate.h"
 #import "TLOLocalization.h"
@@ -1871,62 +1870,25 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 	}
 }
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (void)titlebarAccessoryViewLockButtonClicked:(id)sender
-{
-	NSMenu *statusMenu = menuController().encryptionManagerStatusMenu;
-
-	[statusMenu popUpMenuPositioningItem:nil
-							  atLocation:self.titlebarAccessoryViewLockButton.frame.origin
-								  inView:self.titlebarAccessoryViewLockButton];
-}
-#endif
-
 - (void)updateAccessoryViewLockButton
 {
 	IRCClient *u = self.selectedClient;
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	IRCChannel *c = self.selectedChannel;
+	self.titlebarAccessoryViewLockButton.action = @selector(presentCertificateTrustInformation:);
 
-	BOOL updateEncryption = (c.isPrivateMessage && [u encryptionAllowedForTarget:c.name]);
+	[self.titlebarAccessoryViewLockButton disableDrawingCustomBackgroundColor];
 
-	if (updateEncryption) {
-		self.titlebarAccessoryViewLockButton.action = @selector(titlebarAccessoryViewLockButtonClicked:);
+	[self.titlebarAccessoryViewLockButton positionImageOverContent];
 
-		[self.titlebarAccessoryViewLockButton enableDrawingCustomBackgroundColor];
+	self.titlebarAccessoryViewLockButton.title = @"";
 
-		[self.titlebarAccessoryViewLockButton positionImageOnLeftSide];
-
-		[sharedEncryptionManager() updateLockIconButton:self.titlebarAccessoryViewLockButton
-											withStateOf:[u encryptionAccountNameForUser:c.name]
-												   from:[u encryptionAccountNameForLocalUser]];
+	if (u.isSecured) {
+		[self.titlebarAccessoryViewLockButton setIconAsLocked];
 
 		self.titlebarAccessoryView.hidden = NO;
+	} else {
+		self.titlebarAccessoryView.hidden = YES;
 	}
-	else
-	{
-#endif
-
-		self.titlebarAccessoryViewLockButton.action = @selector(presentCertificateTrustInformation:);
-
-		[self.titlebarAccessoryViewLockButton disableDrawingCustomBackgroundColor];
-
-		[self.titlebarAccessoryViewLockButton positionImageOverContent];
-
-		self.titlebarAccessoryViewLockButton.title = @"";
-
-		if (u.isSecured) {
-			[self.titlebarAccessoryViewLockButton setIconAsLocked];
-
-			self.titlebarAccessoryView.hidden = NO;
-		} else {
-			self.titlebarAccessoryView.hidden = YES;
-		}
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	}
-#endif
 
 	if (self.titlebarAccessoryView.hidden == NO) {
 		[self.titlebarAccessoryViewLockButton sizeToFit];

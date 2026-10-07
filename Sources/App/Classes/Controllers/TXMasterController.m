@@ -41,7 +41,6 @@
 #import "NSObjectHelperPrivate.h"
 #import "OELReachability.h"
 #import "TDCAlert.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOSpeechSynthesizerPrivate.h"
@@ -438,7 +437,6 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL condition2 = (TVCLogControllerHistoricLogSharedInstance().isSaving == NO &&
 							self.terminateHistoricLogSaveFinished);
 
-
 	LogToConsoleTerminationProgress("Conditions: %{BOOL}d %{BOOL}d", condition1, condition2);
 
 	return (condition1 && condition2);
@@ -479,10 +477,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[[TXSharedApplication sharedSpeechSynthesizer] setIsStopped:YES];
 
 	[TVCLogControllerInlineMediaSharedInstance() prepareForApplicationTermination];
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	[sharedEncryptionManager() prepareForApplicationTermination];
-#endif
 
 	[self.menuController prepareForApplicationTermination];
 

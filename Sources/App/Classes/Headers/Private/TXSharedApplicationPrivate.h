@@ -52,18 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
 @class TVCLogControllerPrintingOperationQueue;
 @class TXWindowController;
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-@class TLOEncryptionManager;
-#endif
-
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 @class TDCLicenseManagerDialog;
 #endif
 
 @interface TXSharedApplication ()
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-+ (TLOEncryptionManager *)sharedEncryptionManager;
-#endif
 
 + (OELReachability *)sharedNetworkReachabilityNotifier;
 + (TLONotificationController *)sharedNotificationController;

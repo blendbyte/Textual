@@ -23,7 +23,6 @@
                 <outlet property="channelViewGeneralMenu" destination="374" id="jud-oP-p2n"/>
                 <outlet property="channelViewURLMenu" destination="426" id="abE-mI-Ckx"/>
                 <outlet property="dockMenu" destination="Q9Y-E0-gAT" id="930-9r-xqt"/>
-                <outlet property="encryptionManagerStatusMenu" destination="edI-1l-81o" id="fSt-o4-bUU"/>
                 <outlet property="mainMenuChannelMenu" destination="1s1-yL-ZHT" id="yR9-do-srs"/>
                 <outlet property="mainMenuChannelMenuItem" destination="276" id="ZFA-Nr-7nd"/>
                 <outlet property="mainMenuNavigationChannelListMenu" destination="89a-J1-2zg" id="8Ju-VI-XQI"/>
@@ -124,53 +123,6 @@
                 <outlet property="delegate" destination="267" id="2RV-vm-dLp"/>
             </connections>
             <point key="canvasLocation" x="95" y="-617"/>
-        </menu>
-        <menu id="edI-1l-81o" userLabel="Encryption Manager Status Menu">
-            <items>
-                <menuItem title="What is this?" tag="1500" id="fdJ-Px-D0q">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="encryptionWhatIsThisInformation:" target="267" id="kzN-uE-GOs"/>
-                    </connections>
-                </menuItem>
-                <menuItem isSeparatorItem="YES" tag="1501" id="Rqm-1P-8cE"/>
-                <menuItem title="Start Private Conversation" tag="1502" id="wTZ-NT-MgD">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="encryptionStartPrivateConversation:" target="267" id="uqX-jS-WxC"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Refresh Private Conversation" tag="1503" id="SJp-pz-WvU">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="encryptionRefreshPrivateConversation:" target="267" id="lS1-ZG-dAN"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="End Private Conversation" tag="1504" id="bJT-Nc-UwZ">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="encryptionEndPrivateConversation:" target="267" id="bPL-Ih-3je"/>
-                    </connections>
-                </menuItem>
-                <menuItem isSeparatorItem="YES" tag="1505" id="vgt-gi-rFQ"/>
-                <menuItem title="Authenticate Chat Partner" tag="1506" id="9eO-kw-9HG">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="encryptionAuthenticateChatPartner:" target="267" id="F1j-kX-1Dw"/>
-                    </connections>
-                </menuItem>
-                <menuItem isSeparatorItem="YES" tag="1507" id="seh-5B-FFy"/>
-                <menuItem title="View List of Fingerprints" tag="1508" id="aii-WP-szA">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="encryptionListFingerprints:" target="267" id="8Ai-8r-XNy"/>
-                    </connections>
-                </menuItem>
-            </items>
-            <connections>
-                <outlet property="delegate" destination="267" id="WYt-sp-mVt"/>
-            </connections>
-            <point key="canvasLocation" x="-452" y="-306"/>
         </menu>
         <menu id="963" userLabel="Join Channel Menu">
             <items>
@@ -1007,12 +959,6 @@ CQ
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" tag="9050001" id="VTu-dA-PTE"/>
-                                        <menuItem title="Chat Encryption" tag="9050004" id="w1H-u0-OYW">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="Ttg-Hf-X1o"/>
-                                            </connections>
-                                        </menuItem>
                                         <menuItem title="Command Reference" tag="9050005" id="1667">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>

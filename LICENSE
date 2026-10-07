@@ -69,12 +69,6 @@ Textual bundles or links against third-party components that are distributed
 under their own licenses. These licenses apply to those components only and
 are not superseded by the license above. Notable examples:
 
-   * The Blowfish Encryption extension contains code licensed under the
-     GNU General Public License, version 2. See
-     "Sources/Plugins/Blowfish Encryption/LICENSE-GPLv2.txt".
-   * The Encryption Kit framework links libotr, libgcrypt, libgpg-error,
-     and OTRKit, which are licensed under the GNU Lesser General Public
-     License.
    * Bundled styles include their own copyright and license files.
 
 See the "Third-party software" section of README.md and Acknowledgements.pdf

@@ -750,15 +750,6 @@
 		<key>arguments</key>
 		<string>&lt;channel&gt; [topic]</string>
 	</dict>
-	<key>ume</key>
-	<dict>
-		<key>developerModeOnly</key>
-		<false/>
-		<key>indexValue</key>
-		<integer>5089</integer>
-		<key>arguments</key>
-		<string>&lt;target&gt; &lt;message&gt;</string>
-	</dict>
 	<key>umode</key>
 	<dict>
 		<key>developerModeOnly</key>
@@ -767,15 +758,6 @@
 		<integer>5071</integer>
 		<key>arguments</key>
 		<string>[flags] [arguments]</string>
-	</dict>
-	<key>umsg</key>
-	<dict>
-		<key>developerModeOnly</key>
-		<false/>
-		<key>indexValue</key>
-		<integer>5088</integer>
-		<key>arguments</key>
-		<string>&lt;target&gt; &lt;message&gt;</string>
 	</dict>
 	<key>unban</key>
 	<dict>
@@ -801,15 +783,6 @@
 		<false/>
 		<key>indexValue</key>
 		<integer>5075</integer>
-	</dict>
-	<key>unotice</key>
-	<dict>
-		<key>developerModeOnly</key>
-		<false/>
-		<key>indexValue</key>
-		<integer>5090</integer>
-		<key>arguments</key>
-		<string>&lt;target&gt; &lt;message&gt;</string>
 	</dict>
 	<key>unquiet</key>
 	<dict>

@@ -11,9 +11,6 @@
          location = "group:Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:Frameworks/Encryption Kit/Encryption Kit.xcodeproj">
-      </FileRef>
-      <FileRef
          location = "group:Frameworks/Auto Hyperlinks/Hyperlink Processor.xcodeproj">
       </FileRef>
       <FileRef

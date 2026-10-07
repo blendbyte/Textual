@@ -159,12 +159,6 @@ typedef NS_ENUM(NSUInteger, TXPreferredAppearance) {
 + (NSString *)IRCopDefaultGlineMessage;
 + (NSString *)IRCopDefaultShunMessage;
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-+ (BOOL)textEncryptionIsOpportunistic;
-+ (BOOL)textEncryptionIsRequired;
-+ (BOOL)textEncryptionIsEnabled;
-#endif
-
 + (BOOL)enableEchoMessageCapability;
 
 + (BOOL)giveFocusOnMessageCommand;

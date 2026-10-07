@@ -45,7 +45,6 @@
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
 #import "TPCPreferencesUserDefaultsPrivate.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TDCFileTransferDialogTableCellPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
@@ -177,21 +176,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	NSParameterAssert(path != nil);
 
 	NSString *filename = path.lastPathComponent;
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	if ([TPCPreferences textEncryptionIsEnabled]) {
-		/* Ask whether we should be allowed to add the file. */
-		BOOL allowWithOTR = [sharedEncryptionManager()
-							 safeToTransferFile:filename
-											 to:[client encryptionAccountNameForUser:nickname]
-										   from:[client encryptionAccountNameForLocalUser]
-						 isIncomingFileTransfer:NO];
-
-		if (allowWithOTR == NO) {
-			return nil; // This operation is not allowed...
-		}
-	}
-#endif
 
 	/* Gather file information */
 	uint64_t totalFilesize = _sizeOfFileAtPath(path);
@@ -351,25 +335,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	self.transferProgressHandler = nil;
 }
 
-- (BOOL)receiveUnencryptedFile
-{
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	if ([TPCPreferences textEncryptionIsEnabled]) {
-		BOOL allowWithOTR = [sharedEncryptionManager()
-							 safeToTransferFile:self.filename
-											 to:[self.client encryptionAccountNameForUser:self.peerNickname]
-										   from:[self.client encryptionAccountNameForLocalUser]
-						 isIncomingFileTransfer:YES];
-
-		if (allowWithOTR == NO) {
-			return NO; // This operation is not allowed...
-		}
-	}
-#endif
-
-	return YES;
-}
-
 - (void)open
 {
 	[self openWithPath:nil];
@@ -407,10 +372,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	if (self.isSender) {
 		[self openTransfer];
 	} else {
-		if ([self receiveUnencryptedFile] == NO) {
-			return;
-		}
-
 		[self sendTransferResumeRequestToClient];
 	}
 }

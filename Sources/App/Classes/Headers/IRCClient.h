@@ -39,7 +39,6 @@
 #import "IRCCommandIndex.h"
 #import "IRCConnection.h"
 #import "IRCTreeItem.h"
-#import "TLOEncryptionManager.h"
 #import "TVCLogController.h"
 #import "TVCLogLine.h"
 
@@ -278,7 +277,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 - (void)sendCommand:(NSString *)command toZNCModuleNamed:(NSString *)module;
 
 - (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel;
-- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText;
+- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText TEXTUAL_DEPRECATED("Textual no longer encrypts messages. Use -sendText:asCommand:toChannel: instead");
 
 - (void)sendLine:(NSString *)string;
 - (void)send:(NSString *)string, ...;
@@ -286,22 +285,6 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 - (void)sendPrivmsg:(NSString *)message toChannel:(IRCChannel *)channel; // Invoke -sendText: with proper values
 - (void)sendAction:(NSString *)message toChannel:(IRCChannel *)channel;
 - (void)sendNotice:(NSString *)message toChannel:(IRCChannel *)channel;
-
-#pragma mark -
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (NSUInteger)lengthOfEncryptedMessageDirectedAt:(NSString *)messageTo thatFitsWithinBounds:(NSUInteger)maximumLength;
-
-- (BOOL)encryptionAllowedForTarget:(NSString *)target;
-
-- (void)encryptMessage:(NSString *)messageBody directedAt:(NSString *)messageTo encodingCallback:(TLOEncryptionManagerEncodingDecodingCallbackBlock)encodingCallback injectionCallback:(TLOEncryptionManagerInjectCallbackBlock)injectionCallback;
-- (void)decryptMessage:(NSString *)messageBody from:(NSString *)messageFrom target:(NSString *)target decodingCallback:(TLOEncryptionManagerEncodingDecodingCallbackBlock)decodingCallback;
-
-@property (nonatomic, readonly, copy) NSString * _Nonnull encryptionAccountNameForLocalUser;
-- (NSString *)encryptionAccountNameForUser:(NSString *)nickname;
-
-- (void)encryptionAuthenticateUser:(NSString *)nickname;
-#endif
 
 #pragma mark -
 

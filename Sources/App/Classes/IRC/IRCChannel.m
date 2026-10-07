@@ -49,7 +49,6 @@
 #import "TDCSharedProtocolDefinitionsPrivate.h"
 #import "TDCSheetBase.h"
 #import "TPCPreferencesLocal.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOFileLoggerPrivate.h"
 #import "TLOInputHistoryPrivate.h"
 #import "TLOLocalization.h"
@@ -319,48 +318,6 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 	}
 }
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (OTRKitMessageState)encryptionState
-{
-	if ([TPCPreferences textEncryptionIsEnabled] == NO) {
-		return OTRKitMessageStatePlaintext;
-	}
-
-	if (self.isPrivateMessage == NO) {
-		return OTRKitMessageStatePlaintext;
-	}
-
-	IRCClient *client = self.associatedClient;
-
-	return [sharedEncryptionManager() messageStateFor:[client encryptionAccountNameForUser:self.name]
-												 from:[client encryptionAccountNameForLocalUser]];
-}
-
-- (BOOL)encryptionStateIsEncrypted
-{
-	return ([self encryptionState] == OTRKitMessageStateEncrypted);
-}
-
-- (void)noteEncryptionStateDidChange
-{
-	self.viewController.encrypted = self.encryptionStateIsEncrypted;
-
-	[mainWindow() updateTitleFor:self];
-}
-
-- (void)closeOpenEncryptionSessions
-{
-	if (self.encryptionStateIsEncrypted == NO) {
-		return;
-	}
-
-	IRCClient *client = self.associatedClient;
-
-	[sharedEncryptionManager() endConversationWith:[client encryptionAccountNameForUser:self.name]
-											  from:[client encryptionAccountNameForLocalUser]];
-}
-#endif
-
 #pragma mark -
 #pragma mark Channel Status
 
@@ -456,12 +413,6 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 
 - (void)deactivate
 {
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	if (self.isPrivateMessage) {
-		[self closeOpenEncryptionSessions];
-	}
-#endif
-
 	self.statusChangedByAction = YES;
 
 	[self resetStatus:IRCChannelStatusParted];

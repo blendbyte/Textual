@@ -115,15 +115,6 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
 	text-align: center;
 }
 
-.encryptionLock img {
-	float: right;
-	margin: 0;
-	padding: 0;
-	height: 11px;
-	margin-top: 2px;
-	padding-left: 10px;
-}
-
 /* @end */
 
 /* @group Time */
@@ -343,18 +334,11 @@ div.line[data-line-type="action"] .sender:after {
 
 div.line[data-line-type="invite"],
 div.line[data-line-type="debug"],
-div.line[data-line-type="dcc-file-transfer"],
-div.line[data-line-type="off-the-record-encryption-status"] {
+div.line[data-line-type="dcc-file-transfer"] {
 	color: #C5C8C6; /* Tomorrow Night: Foreground */
 	z-index: 190;
 	background: rgba(214, 214, 214, 0.25); /* Tomorrow: Selection 25% */
 	position: relative;
-}
-
-/* off-the-record-encryption-status Message Event */
-div.line[data-line-type="off-the-record-encryption-status"] .message {
-	color: #C82829;
-	font-weight: 700;
 }
 
 /* @end */

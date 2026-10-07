@@ -437,14 +437,6 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 	/* Calculate maximum length */
 	NSUInteger maximumLength = TXMaximumIRCBodyLength;
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	NSUInteger encryptionEstimate = [client lengthOfEncryptedMessageDirectedAt:channelName thatFitsWithinBounds:(maximumLength - minimumLength)];
-
-	if (encryptionEstimate > 0) {
-		maximumLength = encryptionEstimate;
-	}
-#endif
-
 	/* Perform truncation */
 	NSString *string = self.string;
 

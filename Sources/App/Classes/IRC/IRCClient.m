@@ -93,7 +93,6 @@
 #import "THOPluginDispatcherPrivate.h"
 #import "THOPluginManagerPrivate.h"
 #import "THOPluginProtocol.h"
-#import "TLOEncryptionManagerPrivate.h"
 #import "TLOFileLoggerPrivate.h"
 #import "TLOInputHistoryPrivate.h"
 #import "TLOLocalization.h"
@@ -889,20 +888,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	return self.config.nickname;
 }
 
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (NSString *)encryptionAccountNameForLocalUser
-{
-	return [sharedEncryptionManager() accountNameForUser:self.userNickname onClient:self];
-}
-
-- (NSString *)encryptionAccountNameForUser:(NSString *)nickname
-{
-	NSParameterAssert(nickname != nil);
-
-	return [sharedEncryptionManager() accountNameForUser:nickname onClient:self];
-}
-#endif
-
 - (TDCFileTransferDialog *)fileTransferController
 {
 	return [TXSharedApplication sharedFileTransferDialog];
@@ -1467,156 +1452,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 
 	return NO;
-}
-
-#pragma mark -
-#pragma mark Encryption and Decryption
-
-- (NSDictionary<NSString *, NSString *> *)listOfNicknamesToDisallowEncryption
-{
-	return [TPCResourceManager dictionaryFromResources:@"StaticStore" key:@"IRCClient List of Nicknames that Encryption Forbids"];
-}
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (BOOL)encryptionAllowedForTarget:(NSString *)target
-{
-	return [self encryptionAllowedForTarget:target lenient:NO];
-}
-
-- (BOOL)encryptionAllowedForTarget:(NSString *)target lenient:(BOOL)lenient
-{
-	NSParameterAssert(target != nil);
-
-	/* Encryption is disabled */
-	if ([TPCPreferences textEncryptionIsEnabled] == NO) {
-		return NO;
-	}
-
-	/* General rules */
-	if ([self stringIsNickname:target] == NO) { // Do not allow channel names
-		return NO;
-	} else if ([self nicknameIsMyself:target] && lenient == NO) { // Do not allow the local user
-		return NO;
-	} else if ([self nicknameIsZNCUser:target] && lenient == NO) { // Do not allow a ZNC private user
-		return NO;
-	}
-
-	/* Build context information for lookup */
-	NSDictionary *exceptionRules = [self listOfNicknamesToDisallowEncryption];
-
-	NSString *lowercaseNickname = target.lowercaseString;
-
-	/* Check network specific rules (such as "X" on UnderNet) */
-	NSString *networkName = self.supportInfo.networkName;
-
-	if (networkName) {
-		NSArray *networkSpecificData = [exceptionRules arrayForKey:networkName];
-
-		if ([networkSpecificData containsObject:lowercaseNickname]) {
-			return NO;
-		}
-	}
-
-	/* Look up rules for all networks */
-	NSArray *defaultsData = exceptionRules[@"-default-"];
-
-	if ([defaultsData containsObject:lowercaseNickname]) {
-		return NO;
-	}
-
-	/* Allow the nickname through when there are no rules */
-	return YES;
-}
-#endif
-
-- (NSUInteger)lengthOfEncryptedMessageDirectedAt:(NSString *)messageTo thatFitsWithinBounds:(NSUInteger)maximumLength
-{
-	return 0;
-}
-
-- (void)encryptMessage:(NSString *)messageBody directedAt:(NSString *)messageTo encodingCallback:(TLOEncryptionManagerEncodingDecodingCallbackBlock)encodingCallback injectionCallback:(TLOEncryptionManagerInjectCallbackBlock)injectionCallback
-{
-	NSParameterAssert(messageBody != nil);
-	NSParameterAssert(messageTo != nil);
-	NSParameterAssert(encodingCallback != nil);
-	NSParameterAssert(injectionCallback != nil);
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	/* Check if we are accepting encryption from this user */
-	if (messageBody.length == 0 || [self encryptionAllowedForTarget:messageTo] == NO) {
-#endif
-		if (encodingCallback) {
-			encodingCallback(messageBody, NO);
-		}
-
-		if (injectionCallback) {
-			injectionCallback(messageBody);
-		}
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-		return;
-	}
-
-	/* Continue with normal encryption operations */
-	[sharedEncryptionManager() encryptMessage:messageBody
-										 from:[self encryptionAccountNameForLocalUser]
-										   to:[self encryptionAccountNameForUser:messageTo]
-							 encodingCallback:encodingCallback
-							injectionCallback:injectionCallback];
-#endif
-}
-
-- (void)decryptMessage:(NSString *)messageBody from:(NSString *)messageFrom target:(NSString *)target decodingCallback:(TLOEncryptionManagerEncodingDecodingCallbackBlock)decodingCallback
-{
-	NSParameterAssert(messageBody != nil);
-	NSParameterAssert(messageFrom != nil);
-	NSParameterAssert(target != nil);
-	NSParameterAssert(decodingCallback != nil);
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	/* Check if we are accepting encryption from this user */
-	if (messageBody.length == 0 || [self encryptionAllowedForTarget:target lenient:YES] == NO) {
-#endif
-		if (decodingCallback) {
-			decodingCallback(messageBody, NO);
-		}
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-		return;
-	}
-
-	/* Continue with normal encryption operations */
-	[sharedEncryptionManager() decryptMessage:messageBody
-										 from:[self encryptionAccountNameForUser:messageFrom]
-										   to:[self encryptionAccountNameForLocalUser]
-							 decodingCallback:decodingCallback];
-#endif
-}
-
-- (void)encryptionAuthenticateUser:(NSString *)nickname
-{
-	NSParameterAssert(nickname != nil);
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	/* Encryption is disabled */
-	if ([TPCPreferences textEncryptionIsEnabled] == NO) {
-		return;
-	}
-
-	/* General rules */
-	if ([self stringIsNickname:nickname] == NO) {
-		return;
-	}
-
-	if ([self nicknameIsMyself:nickname]) {
-		return;
-	}
-
-	/* Authenticate user */
-	[sharedEncryptionManager() authenticateUser:[self encryptionAccountNameForUser:nickname]
-										   from:[self encryptionAccountNameForLocalUser]];
-#endif
-
 }
 
 #pragma mark -
@@ -2813,12 +2648,12 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
-- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel
+- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText
 {
-	[self sendText:string asCommand:command toChannel:channel withEncryption:YES];
+	[self sendText:string asCommand:command toChannel:channel];
 }
 
-- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText
+- (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(string != nil);
 	NSParameterAssert(channel != nil);
@@ -2860,44 +2695,22 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		while (lineMutable.length > 0)
 		{
-			NSString *unencryptedMessage = [lineMutable stringFormattedForChannel:channel.name onClient:self withLineType:lineType];
+			NSString *message = [lineMutable stringFormattedForChannel:channel.name onClient:self withLineType:lineType];
 
-			TLOEncryptionManagerEncodingDecodingCallbackBlock encryptionBlock = ^(NSString *originalString, BOOL wasEncrypted) {
-				if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] && wasEncrypted == NO) {
-					return;
-				}
-
-				[self print:originalString
+			if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
+				[self print:message
 						 by:self.userNickname
 				  inChannel:channel
 					 asType:lineType
 					command:commandToSend
-				 receivedAt:[NSDate date]
-				isEncrypted:wasEncrypted];
-			};
-
-			TLOEncryptionManagerInjectCallbackBlock injectionBlock = ^(NSString *encodedString) {
-				NSString *sendMessage = encodedString;
-
-				if (lineType == TVCLogLineTypeAction) {
-					sendMessage = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, sendMessage, 0x01];
-				}
-
-				[self send:commandToSend, channel.name, sendMessage, nil];
-			};
-
-			if (encryptText == NO) {
-				encryptionBlock(unencryptedMessage, NO);
-
-				injectionBlock(unencryptedMessage);
-
-				continue;
+				 receivedAt:[NSDate date]];
 			}
 
-			[self encryptMessage:unencryptedMessage
-					  directedAt:channel.name
-				encodingCallback:encryptionBlock
-			   injectionCallback:injectionBlock];
+			if (lineType == TVCLogLineTypeAction) {
+				message = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, message, 0x01];
+			}
+
+			[self send:commandToSend, channel.name, message, nil];
 		}
 	}
 
@@ -4745,9 +4558,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		case IRCLocalCommandOnotice: // Command: ONOTICE
 		case IRCLocalCommandSme: // Command: SME
 		case IRCLocalCommandSmsg: // Command: SMSG
-		case IRCLocalCommandUme: // Command: UME
-		case IRCLocalCommandUmsg: // Command: UMSG
-		case IRCLocalCommandUnotice: // Command: UNOTICE
 		{
 			/* Where would se send data to? */
 			if (self.isLoggedIn == NO) {
@@ -4761,7 +4571,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 			BOOL isOperatorMessage = NO;
 			BOOL isSecretMessage = NO;
-			BOOL isUnencryptedMessage = NO;
 
 			NSString *commandToSend = nil;
 
@@ -4769,8 +4578,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 			if (commandNumeric == IRCLocalCommandMsg ||
 				commandNumeric == IRCLocalCommandOmsg ||
-				commandNumeric == IRCLocalCommandSmsg ||
-				commandNumeric == IRCLocalCommandUmsg)
+				commandNumeric == IRCLocalCommandSmsg)
 			{
 				commandToSend = @"PRIVMSG";
 
@@ -4778,29 +4586,24 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 				isOperatorMessage = (commandNumeric == IRCLocalCommandOmsg);
 				isSecretMessage = (commandNumeric == IRCLocalCommandSmsg);
-				isUnencryptedMessage = (commandNumeric == IRCLocalCommandUmsg);
 			}
 			else if (commandNumeric == IRCLocalCommandMe ||
-					 commandNumeric == IRCLocalCommandSme ||
-					 commandNumeric == IRCLocalCommandUme)
+					 commandNumeric == IRCLocalCommandSme)
 			{
 				commandToSend = @"PRIVMSG";
 
 				lineType = TVCLogLineTypeAction;
 
 				isSecretMessage = (commandNumeric == IRCLocalCommandSme);
-				isUnencryptedMessage = (commandNumeric == IRCLocalCommandUme);
 			}
 			else if (commandNumeric == IRCLocalCommandNotice || // Command: NOTICE
-					 commandNumeric == IRCLocalCommandOnotice || // Command: ONOTICE
-					 commandNumeric == IRCLocalCommandUnotice)   // Command: UNOTICE
+					 commandNumeric == IRCLocalCommandOnotice)   // Command: ONOTICE
 			{
 				commandToSend = @"NOTICE";
 
 				lineType = TVCLogLineTypeNotice;
 
 				isOperatorMessage = (commandNumeric == IRCLocalCommandOnotice);
-				isUnencryptedMessage = (commandNumeric == IRCLocalCommandUnotice);
 			}
 
 			if (isOperatorMessage) {
@@ -4858,7 +4661,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 				2. Try to find channel that already exists which matches
 				   the destination. If a channel does not exist, then we 
 				   create one depending on whether this is a secret message.
-				3. The message is then encrypted and sent off.
+				3. The message is then sent off.
 			 */
 			NSArray *destinations = [targetChannelName componentsSeparatedByString:@","];
 
@@ -4910,48 +4713,22 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 				while (lineMutable.length > 0)
 				{
-					NSString *unencryptedMessage = [lineMutable stringFormattedForChannel:destinationName onClient:self withLineType:lineType];
+					NSString *message = [lineMutable stringFormattedForChannel:destinationName onClient:self withLineType:lineType];
 
-					TLOEncryptionManagerEncodingDecodingCallbackBlock encryptionBlock = ^(NSString *originalString, BOOL wasEncrypted) {
-						if (destination == nil) {
-							return;
-						}
-
-						if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] && wasEncrypted == NO) {
-							return;
-						}
-
-						[self print:originalString
+					if (destination && [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
+						[self print:message
 								 by:self.userNickname
 						  inChannel:destination
 							 asType:lineType
 							command:command
-						 receivedAt:[NSDate date]
-						isEncrypted:wasEncrypted];
-					};
-
-					TLOEncryptionManagerInjectCallbackBlock injectionBlock = ^(NSString *encodedString) {
-						NSString *sendMessage = encodedString;
-
-						if (lineType == TVCLogLineTypeAction) {
-							sendMessage = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, sendMessage, 0x01];
-						}
-
-						[self send:commandToSend, destinationName, sendMessage, nil];
-					};
-
-					if (destination == nil || isUnencryptedMessage) {
-						encryptionBlock(unencryptedMessage, NO);
-
-						injectionBlock(unencryptedMessage);
-
-						continue;
+						 receivedAt:[NSDate date]];
 					}
 
-					[self encryptMessage:unencryptedMessage
-							  directedAt:destination.name
-						encodingCallback:encryptionBlock
-					   injectionCallback:injectionBlock];
+					if (lineType == TVCLogLineTypeAction) {
+						message = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, message, 0x01];
+					}
+
+					[self send:commandToSend, destinationName, message, nil];
 				}
 			} // destination for()
 
@@ -6383,22 +6160,13 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		}
 	}
 
-	/* Even though OTR doesn't allow channel decryption, we still wrap everything
-	 in a decryption block because Blowfish plugin may swizzle the logic.
-	 That plugin does support channel decryption. */
-	BOOL performDecryption = YES;
-
-	TLOEncryptionManagerEncodingDecodingCallbackBlock decryptionBlock = nil;
-
 	/* Public message (directed at channel) */
 	if ([self stringIsChannelName:target]) {
 		if (ignoreInfo.ignorePublicMessages) {
 			return;
 		}
 
-		decryptionBlock = ^(NSString *originalString, BOOL wasEncrypted) {
-			[self _receiveText_Public:m lineType:lineType target:target text:originalString wasEncrypted:wasEncrypted];
-		};
+		[self _receiveText_Public:m lineType:lineType target:target text:text];
 	}
 
 	/* Private message (from user) */
@@ -6407,32 +6175,16 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			return;
 		}
 
-		decryptionBlock = ^(NSString *originalString, BOOL wasEncrypted) {
-			[self _receiveText_Private:m lineType:lineType target:target text:originalString wasEncrypted:wasEncrypted];
-		};
+		[self _receiveText_Private:m lineType:lineType target:target text:text];
 	}
 
 	/* Private message (from server) */
 	else {
-		/* It is not possible to hold an OTR conversation with a server. */
-		performDecryption = NO;
-
-		decryptionBlock = ^(NSString *originalString, BOOL wasEncrypted) {
-			[self _receiveText_PrivateServer:m lineType:lineType target:target text:originalString wasEncrypted:wasEncrypted];
-		};
-	}
-
-	/* Perform decryption */
-	if (performDecryption) {
-		NSString *sender = m.senderNickname;
-
-		[self decryptMessage:text from:sender target:target decodingCallback:decryptionBlock];
-	} else {
-		decryptionBlock(text, NO);
+		[self _receiveText_PrivateServer:m lineType:lineType target:target text:text];
 	}
 }
 
-- (void)_receiveText_Public:(IRCMessage *)m lineType:(TVCLogLineType)lineType target:(NSString *)target text:(NSString *)text wasEncrypted:(BOOL)wasEncrypted
+- (void)_receiveText_Public:(IRCMessage *)m lineType:(TVCLogLineType)lineType target:(NSString *)target text:(NSString *)text
 {
 	NSParameterAssert(m != nil);
 	NSParameterAssert(target != nil);
@@ -6510,7 +6262,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 											  asLineType:lineType
 												onClient:self
 											  receivedAt:m.receivedAt
-											wasEncrypted:wasEncrypted];
+											wasEncrypted:NO];
 	}
 
 	/* Print message */
@@ -6521,7 +6273,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			 asType:lineType
 			command:m.command
 		 receivedAt:m.receivedAt
-		isEncrypted:wasEncrypted
+		isEncrypted:NO
    referenceMessage:m
 	completionBlock:printCompletionBlock];
 	}
@@ -6548,7 +6300,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
-- (void)_receiveText_Private:(IRCMessage *)m lineType:(TVCLogLineType)lineType target:(NSString *)target text:(NSString *)text wasEncrypted:(BOOL)wasEncrypted
+- (void)_receiveText_Private:(IRCMessage *)m lineType:(TVCLogLineType)lineType target:(NSString *)target text:(NSString *)text
 {
 	NSParameterAssert(m != nil);
 	NSParameterAssert(target != nil);
@@ -6689,7 +6441,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 											  asLineType:lineType
 												onClient:self
 											  receivedAt:m.receivedAt
-											wasEncrypted:wasEncrypted];
+											wasEncrypted:NO];
 	}
 
 	/* Print message */
@@ -6700,7 +6452,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			 asType:lineType
 			command:m.command
 		 receivedAt:m.receivedAt
-		isEncrypted:wasEncrypted
+		isEncrypted:NO
    referenceMessage:m
 	completionBlock:printCompletionBlock];
 	}
@@ -6932,7 +6684,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
-- (void)_receiveText_PrivateServer:(IRCMessage *)m lineType:(TVCLogLineType)lineType target:(NSString *)target text:(NSString *)text wasEncrypted:(BOOL)wasEncrypted
+- (void)_receiveText_PrivateServer:(IRCMessage *)m lineType:(TVCLogLineType)lineType target:(NSString *)target text:(NSString *)text
 {
 	NSParameterAssert(m != nil);
 	NSParameterAssert(target != nil);
@@ -6963,7 +6715,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 											  asLineType:lineType
 												onClient:self
 											  receivedAt:m.receivedAt
-											wasEncrypted:wasEncrypted];
+											wasEncrypted:NO];
 	}
 
 	if (printMessage) {
@@ -6973,7 +6725,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			 asType:lineType
 			command:m.command
 		 receivedAt:m.receivedAt
-		isEncrypted:wasEncrypted];
+		isEncrypted:NO];
 	}
 
 	/* Disconnect and reconnect if message is believed to be from an irssi proxy */

@@ -52,8 +52,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: recursive
 
       - name: Show Xcode version
         run: xcodebuild -version
@@ -103,7 +101,7 @@ jobs:
             test -d "$contents/XPCServices/$service.xpc" || fail "XPC service missing: $service"
           done
           test -d "$contents/XPCServices/Inline Content Loader.xpc/Contents/Resources/Extensions/Core Media.mediaPlugin" || fail "Core Media plugin missing"
-          for framework in AutoHyperlinks CocoaExtensions EncryptionKit GRMustache; do
+          for framework in AutoHyperlinks CocoaExtensions GRMustache; do
             test -d "$contents/Frameworks/$framework.framework" || fail "Framework missing: $framework"
           done
           if [ "$CONFIGURATION" != "App Store" ]; then
@@ -181,8 +179,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: recursive
 
       - name: Analyze
         run: |

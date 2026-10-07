@@ -122,21 +122,6 @@ body[dir=ltr] .time {
   text-align: right;
 }
 
-/* Encryption Lock */
-.encryptionLock {
-}
-
-.encryptionLock img {
-  z-index: 100;
-  position:absolute;
-  top:0;
-  left: 5px;
-  bottom:0;
-  margin:auto;
-  height: 12px;
-  width: auto;
-}
-
 /* Links */
 
 a {
@@ -349,18 +334,6 @@ body div[data-line-type="privmsg"] .message {
   color: #f2f2f2;
 }
 
-body div[data-line-type="privmsg"][data-encrypted="true"] {
-  background: repeating-linear-gradient(-45deg, rgba(79, 79, 79, 0.1), rgba(79, 79, 79, 0.1) 20px, rgba(68, 89, 63, 0.3) 20px, rgba(68, 89, 63, 0.3) 40px) !important;
-}
-
-body div[data-line-type="privmsg"][data-encrypted="failed"] {
-  background: repeating-linear-gradient(-45deg, rgba(45, 6, 6, 0.2), rgba(45, 6, 6, 0.2) 20px, rgba(104, 15, 15, 0.2) 20px, rgba(104, 15, 15, 0.2) 40px) !important;
-}
-
-body div[data-line-type="privmsg"][data-highlight=true][data-encrypted="true"] {
-  background: repeating-linear-gradient(-45deg, #30473a, #30473a 20px, rgba(68, 89, 63, 0.3) 20px, rgba(68, 89, 63, 0.3) 40px) !important;
-}
-
 body div[data-line-type=privmsg][data-line-type=myself] .message {
   color: #f2f2f2;
 }
@@ -398,8 +371,7 @@ body div.line[data-line-type=action][data-highlight=true] .message {
 /* DEBUG/INVITE */
 body div.line[data-line-type=invite],
 body div.line[data-line-type=debug],
-body div.line[data-line-type=dcc-file-transfer],
-body div.line[data-line-type=off-the-record-encryption-status] {
+body div.line[data-line-type=dcc-file-transfer] {
   color: #f2f2f2;
   z-index: 190;
   background: #2f2f2f;
@@ -412,16 +384,9 @@ body div.line[data-line-type=off-the-record-encryption-status] {
 body div.line[data-line-type=ctcp] .message,
 body div.line[data-line-type=invite] .message,
 body div.line[data-line-type=debug] .message,
-body div.line[data-line-type=dcc-file-transfer] .message,
-body div.line[data-line-type=off-the-record-encryption-status] .message {
+body div.line[data-line-type=dcc-file-transfer] .message {
   text-indent: 0;
   padding-left: 145px !important;
-}
-
-/* off-the-record-encryption-status Message Event */
-body div.line[data-line-type=off-the-record-encryption-status]  .message {
-  color: #ff0000;
-  font-weight: 700;
 }
 
 /* Message of the Day (MOTD) */

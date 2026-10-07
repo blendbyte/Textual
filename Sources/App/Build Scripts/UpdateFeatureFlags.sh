@@ -8,6 +8,8 @@ echo "
 /* ANY CHANGES TO THIS FILE WILL NOT BE SAVED AND WILL NOT BE COMMITTED */
 " > _FeatureFlags.h
 
+# TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION is always 0 (Off-the-Record Messaging
+# was removed). It stays defined for plugins that still test it.
 featureNames=("TEXTUAL_BUILT_INSIDE_SANDBOX"
 			"TEXTUAL_BUILT_WITH_SPARKLE_ENABLED"
 			"TEXTUAL_BUILT_WITH_LICENSE_MANAGER"

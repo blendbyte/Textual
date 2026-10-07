@@ -300,15 +300,6 @@ appPrivate.loadInlineMedia = function(address, uniqueIdentifier, lineNumber, ind
 	}
 };
 
-appPrivate.encryptionAuthenticateUser = function()
-{
-	if (app.isWebKit2()) {
-		window.webkit.messageHandlers.encryptionAuthenticateUser.postMessage(null);
-	} else {
-		TextualScriptSink.encryptionAuthenticateUser();
-	}
-};
-
 /* ************************************************** */
 /*                   Public                           */
 /* ************************************************** */

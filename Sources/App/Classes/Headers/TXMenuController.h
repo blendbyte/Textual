@@ -222,7 +222,6 @@ enum
 	/* Highest: 9050016 */
 	MTMMHelpKBMenuKnowledgeBaseHome = 9050000, // "Knowledge Base Home"
 	MTMMHelpKBMenuKnowledgeBaseHomeSeparator = 9050001, // "-"
-	MTMMHelpKBMenuChatEncryption = 9050004, // "Chat Encryption"
 	MTMMHelpKBMenuCommandReference = 9050005, // "Command Reference"
 	MTMMHelpKBMenuFeatureRequests = 9050006, // "Feature Requests"
 	MTMMHelpKBMenuKeyboardShortcuts = 9050007, // "Keyboard Shortcuts"
@@ -274,17 +273,6 @@ enum
 
 	/* Empty server list menu */
 	MTMainWindowServerListAddServer = 1400, // "Add Server…"
-
-	/* Off-the-Record Messaging status button */
-	MTOTRStatusButtonWhatIsThis = 1500, // "What is this?"
-	MTOTRStatusButtonWhatIsThisSeparator = 1501, // "-"
-	MTOTRStatusButtonStartPrivateConversation = 1502, // "Start Private Conversation"
-	MTOTRStatusButtonRefreshPrivateConversation = 1503, // "Refresh Private Conversation"
-	MTOTRStatusButtonEndPrivateConversation = 1504, // "End Private Conversation"
-	MTOTRStatusButtonEndPrivateConversationSeparator = 1505, // "-"
-	MTOTRStatusButtonAuthenticateChatPartner = 1506, // "Authenticate Chat Partner"
-	MTOTRStatusButtonAuthenticateChatPartnerSeparator = 1507, // "-"
-	MTOTRStatusButtonViewListOfFingerprints = 1508, // "View List of Fingerprints"
 
 	/* User context menu */
 	MTUserControlsLowestTag = 1600,
@@ -342,10 +330,6 @@ enum
 @property (readonly, strong) NSMenu *channelViewURLMenu;
 
 @property (readonly, strong) NSMenu *dockMenu;
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-@property (readonly,strong) NSMenu *encryptionManagerStatusMenu;
-#endif
 
 @property (readonly, weak) NSMenu *mainMenuNavigationChannelListMenu;
 @property (readonly, weak) NSMenu *mainMenuChannelMenu;
@@ -501,15 +485,6 @@ enum
 - (IBAction)toggleMuteOnNotificationSounds:(id)sender;
 
 - (IBAction)manageLicense:(id)sender;
-
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-- (IBAction)encryptionWhatIsThisInformation:(id)sender;
-- (IBAction)encryptionStartPrivateConversation:(id)sender;
-- (IBAction)encryptionRefreshPrivateConversation:(id)sender;
-- (IBAction)encryptionEndPrivateConversation:(id)sender;
-- (IBAction)encryptionAuthenticateChatPartner:(id)sender;
-- (IBAction)encryptionListFingerprints:(id)sender;
-#endif
 
 - (IBAction)copyUniqueIdentifier:(id)sender;
 

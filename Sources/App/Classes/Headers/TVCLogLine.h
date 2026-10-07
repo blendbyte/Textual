@@ -64,7 +64,7 @@ typedef NS_ENUM(NSUInteger, TVCLogLineType) {
 	TVCLogLineTypeMode,
 	TVCLogLineTypeNick,
 	TVCLogLineTypeNotice,
-	TVCLogLineTypeOffTheRecordEncryptionStatus,
+	TVCLogLineTypeOffTheRecordEncryptionStatus, // Unused (Off-the-Record Messaging was removed); kept so that later values do not change
 	TVCLogLineTypePart,
 	TVCLogLineTypePrivateMessage,
 	TVCLogLineTypePrivateMessageNoHighlight,

@@ -35,6 +35,9 @@
  *
  *********************************************************************** */
 
+/* Textual no longer encrypts messages. These types are kept so that
+ plugins built against older versions of Textual still compile. */
+
 typedef void (^TLOEncryptionManagerEncodingDecodingCallbackBlock)(NSString *originalString, BOOL wasEncrypted);
 
 typedef void (^TLOEncryptionManagerInjectCallbackBlock)(NSString *encodedString);

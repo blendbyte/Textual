@@ -6,20 +6,6 @@
 	objectVersion = 54;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		4CCF301015804DCE006FFE21 /* Build Frameworks */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = 4CCF301115804DCE006FFE21 /* Build configuration list for PBXAggregateTarget "Build Frameworks" */;
-			buildPhases = (
-				4CCF301715804DD1006FFE21 /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = "Build Frameworks";
-			productName = "Build Frameworks";
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */; };
 		4C06DF3420EC49A60055D09A /* IRCCommandIndexRemoteData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */; };
@@ -47,10 +33,6 @@
 		4C06E04E20EC4A2F0055D09A /* applicationIcon.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535920EB676400448776 /* applicationIcon.iconset */; };
 		4C06E04F20EC4A2F0055D09A /* applicationIconBirthday.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535A20EB676400448776 /* applicationIconBirthday.icns */; };
 		4C06E05320EC4A3D0055D09A /* Copyright Information for Images.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535620EB676400448776 /* Copyright Information for Images.txt */; };
-		4C06E05A20EC4A4C0055D09A /* encryptionLockIconLight@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535020EB676400448776 /* encryptionLockIconLight@2x.tif */; };
-		4C06E05B20EC4A4C0055D09A /* encryptionLockIconDark.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535120EB676400448776 /* encryptionLockIconDark.tif */; };
-		4C06E05C20EC4A4C0055D09A /* encryptionLockIconDark@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535220EB676400448776 /* encryptionLockIconDark@2x.tif */; };
-		4C06E05D20EC4A4C0055D09A /* encryptionLockIconLight.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535320EB676400448776 /* encryptionLockIconLight.tif */; };
 		4C06E07820EC4A540055D09A /* FormattingColor_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533D20EB676400448776 /* FormattingColor_8.png */; };
 		4C06E07920EC4A540055D09A /* FormattingColor_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533E20EB676400448776 /* FormattingColor_9.png */; };
 		4C06E07A20EC4A540055D09A /* FormattingColor_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533F20EB676400448776 /* FormattingColor_11.png */; };
@@ -139,7 +121,6 @@
 		4C06E28220EC4E870055D09A /* TPCPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E27620EC4E860055D09A /* TPCPreferences.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C06E28620EC4E870055D09A /* TLOLocalization.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E27720EC4E860055D09A /* TLOLocalization.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C06E2DE20EC4FF00055D09A /* Prompts.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2A720EC4FF00055D09A /* Prompts.strings */; };
-		4C06E2E220EC4FF00055D09A /* OffTheRecord.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2A920EC4FF00055D09A /* OffTheRecord.strings */; };
 		4C06E2E620EC4FF00055D09A /* CommonErrors.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2AB20EC4FF00055D09A /* CommonErrors.strings */; };
 		4C06E2EE20EC4FF00055D09A /* BasicLanguage.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2AF20EC4FF00055D09A /* BasicLanguage.strings */; };
 		4C06E2F220EC4FF00055D09A /* Accessibility.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2B120EC4FF00055D09A /* Accessibility.strings */; };
@@ -173,12 +154,10 @@
 		4C06E41820EC52D60055D09A /* ICLPayloadLocalPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E41520EC52D50055D09A /* ICLPayloadLocalPrivate.h */; };
 		4C06E47320EC541C0055D09A /* AutoHyperlinks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C06E47520EC541C0055D09A /* CocoaExtensions.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		4C06E47720EC541C0055D09A /* EncryptionKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4C8F2F5D1AAE6467007821CC /* EncryptionKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4C06E47920EC541C0055D09A /* GRMustache.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CC4A7371F8A1404008FF15F /* GRMustache.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		4C06E47F20EC541C0055D09A /* Sparkle.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4C24DC751A93C9CE0098D1BE /* Sparkle.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4C06E48120EC54260055D09A /* AutoHyperlinks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */; };
 		4C06E48220EC54260055D09A /* CocoaExtensions.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */; };
-		4C06E48320EC54260055D09A /* EncryptionKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C8F2F5D1AAE6467007821CC /* EncryptionKit.framework */; };
 		4C06E48420EC54260055D09A /* GRMustache.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CC4A7371F8A1404008FF15F /* GRMustache.framework */; };
 		4C06E48720EC54260055D09A /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C24DC751A93C9CE0098D1BE /* Sparkle.framework */; };
 		4C06E48820EC542C0055D09A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CCE521A18C7BE0600D49601 /* AudioToolbox.framework */; };
@@ -283,7 +262,6 @@
 		4C06E69C20EC55B90055D09A /* TLOLicenseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514E20EB673E00448776 /* TLOLicenseManager.m */; };
 		4C06E69D20EC55B90055D09A /* TLOLicenseManagerDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */; };
 		4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */; };
-		4C06E6A020EC55B90055D09A /* TLOEncryptionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515320EB673E00448776 /* TLOEncryptionManager.m */; };
 		4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515B20EB673E00448776 /* TLOFileLogger.m */; };
 		4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514920EB673E00448776 /* TLONotificationController.m */; };
 		4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E00448776 /* TLOInputHistory.m */; };
@@ -520,7 +498,6 @@
 		4C31573120EB6D0500448776 /* THOPluginItemPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31521920EB673E00448776 /* THOPluginItemPrivate.h */; };
 		4C31573220EB6D0500448776 /* THOPluginManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151CF20EB673E00448776 /* THOPluginManagerPrivate.h */; };
 		4C31573320EB6D0500448776 /* THOPluginProtocolPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151B320EB673E00448776 /* THOPluginProtocolPrivate.h */; };
-		4C31573520EB6D0500448776 /* TLOEncryptionManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520120EB673E00448776 /* TLOEncryptionManagerPrivate.h */; };
 		4C31573620EB6D0500448776 /* TLOFileLoggerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */; };
 		4C31573720EB6D0500448776 /* TLONotificationControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151AF20EB673E00448776 /* TLONotificationControllerPrivate.h */; };
 		4C31573820EB6D0500448776 /* TLOInputHistoryPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */; };
@@ -649,13 +626,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		4CBB842C16F0DA1D004E3ED6 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4C1DC5491580420500A47BC9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4CCF301015804DCE006FFE21;
-			remoteInfo = "Build Frameworks";
-		};
 		4CFC800881F1BF194DA21EA2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */;
@@ -716,7 +686,6 @@
 			files = (
 				4C06E47320EC541C0055D09A /* AutoHyperlinks.framework in Embed Frameworks */,
 				4C06E47520EC541C0055D09A /* CocoaExtensions.framework in Embed Frameworks */,
-				4C06E47720EC541C0055D09A /* EncryptionKit.framework in Embed Frameworks */,
 				4C06E47920EC541C0055D09A /* GRMustache.framework in Embed Frameworks */,
 				4C06E47F20EC541C0055D09A /* Sparkle.framework in Embed Frameworks */,
 			);
@@ -834,7 +803,6 @@
 		4C06E29C20EC4F880055D09A /* IRCConnectionConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IRCConnectionConfig.m; path = ../Shared/IRC/IRCConnectionConfig.m; sourceTree = SOURCE_ROOT; };
 		4C06E2A120EC4FA50055D09A /* NSObjectHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSObjectHelper.m; path = "../Shared/Helpers/Cocoa (Objective-C)/NSObjectHelper.m"; sourceTree = SOURCE_ROOT; };
 		4C06E2A820EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Prompts.strings; sourceTree = "<group>"; };
-		4C06E2AA20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/OffTheRecord.strings; sourceTree = "<group>"; };
 		4C06E2AC20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/CommonErrors.strings; sourceTree = "<group>"; };
 		4C06E2B020EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BasicLanguage.strings; sourceTree = "<group>"; };
 		4C06E2B220EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Accessibility.strings; sourceTree = "<group>"; };
@@ -930,7 +898,6 @@
 		4C31514E20EB673E00448776 /* TLOLicenseManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManager.m; sourceTree = "<group>"; };
 		4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManagerLastGen.m; sourceTree = "<group>"; };
 		4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManagerDownloader.m; sourceTree = "<group>"; };
-		4C31515320EB673E00448776 /* TLOEncryptionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOEncryptionManager.m; sourceTree = "<group>"; };
 		4C31515420EB673E00448776 /* TLOInputHistory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOInputHistory.m; sourceTree = "<group>"; };
 		4C31515520EB673E00448776 /* TLOLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLOLinkParser.swift; sourceTree = "<group>"; };
 		4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOInternetAddressLookup.m; sourceTree = "<group>"; };
@@ -1086,7 +1053,6 @@
 		4C3151FD20EB673E00448776 /* TDCLicenseManagerMigrateAppStoreSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLicenseManagerMigrateAppStoreSheetPrivate.h; sourceTree = "<group>"; };
 		4C3151FF20EB673E00448776 /* IRCUserNicknameColorStyleGeneratorPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCUserNicknameColorStyleGeneratorPrivate.h; sourceTree = "<group>"; };
 		4C31520020EB673E00448776 /* TVCMainWindowAppearancePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowAppearancePrivate.h; sourceTree = "<group>"; };
-		4C31520120EB673E00448776 /* TLOEncryptionManagerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOEncryptionManagerPrivate.h; sourceTree = "<group>"; };
 		4C31520220EB673E00448776 /* IRCChannelPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCChannelPrivate.h; sourceTree = "<group>"; };
 		4C31520320EB673E00448776 /* TLOSpokenNotificationPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOSpokenNotificationPrivate.h; sourceTree = "<group>"; };
 		4C31520420EB673E00448776 /* TXMasterControllerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXMasterControllerPrivate.h; sourceTree = "<group>"; };
@@ -1321,10 +1287,6 @@
 		4C31534C20EB676400448776 /* FormattingColor_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_0.png; sourceTree = "<group>"; };
 		4C31534D20EB676400448776 /* FormattingColor_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_2.png; sourceTree = "<group>"; };
 		4C31534E20EB676400448776 /* FormattingColor_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_3.png; sourceTree = "<group>"; };
-		4C31535020EB676400448776 /* encryptionLockIconLight@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "encryptionLockIconLight@2x.tif"; sourceTree = "<group>"; };
-		4C31535120EB676400448776 /* encryptionLockIconDark.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = encryptionLockIconDark.tif; sourceTree = "<group>"; };
-		4C31535220EB676400448776 /* encryptionLockIconDark@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "encryptionLockIconDark@2x.tif"; sourceTree = "<group>"; };
-		4C31535320EB676400448776 /* encryptionLockIconLight.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = encryptionLockIconLight.tif; sourceTree = "<group>"; };
 		4C31535620EB676400448776 /* Copyright Information for Images.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Copyright Information for Images.txt"; sourceTree = "<group>"; };
 		4C31535920EB676400448776 /* applicationIcon.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = applicationIcon.iconset; sourceTree = "<group>"; };
 		4C31535A20EB676400448776 /* applicationIconBirthday.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = applicationIconBirthday.icns; sourceTree = "<group>"; };
@@ -1396,7 +1358,6 @@
 		4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = "Chat Filters.bundle"; path = "../../.tmp/SharedBuildProducts-Extensions/Chat Filters.bundle"; sourceTree = SOURCE_ROOT; };
 		4C8878032C33706E0016DB98 /* TPCSandboxMigration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCSandboxMigration.m; sourceTree = "<group>"; };
 		4C8878062C3371470016DB98 /* TPCSandboxMigrationPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCSandboxMigrationPrivate.h; sourceTree = "<group>"; };
-		4C8F2F5D1AAE6467007821CC /* EncryptionKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EncryptionKit.framework; path = "../../.tmp/SharedBuildProducts-Frameworks/EncryptionKit.framework"; sourceTree = SOURCE_ROOT; };
 		4C8F3FD62C31AF6E00118AAF /* THOPluginManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = THOPluginManager.h; sourceTree = "<group>"; };
 		4C8F3FDB2C31B15200118AAF /* THOPluginItemLogging.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = THOPluginItemLogging.m; sourceTree = "<group>"; };
 		4C956893194A8862003D97FD /* Smiley Converter.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = "Smiley Converter.bundle"; path = "../../.tmp/SharedBuildProducts-Extensions/Smiley Converter.bundle"; sourceTree = SOURCE_ROOT; };
@@ -1421,7 +1382,6 @@
 		4CF4D6B619837C1700FB5AF0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AutoHyperlinks.framework; path = "../../.tmp/SharedBuildProducts-Frameworks/AutoHyperlinks.framework"; sourceTree = SOURCE_ROOT; };
 		4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaExtensions.framework; path = "../../.tmp/SharedBuildProducts-Frameworks/CocoaExtensions.framework"; sourceTree = SOURCE_ROOT; };
-		5D9B8EB6170A0EB400919CB0 /* BuildFrameworks.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = BuildFrameworks.sh; path = "Build Scripts/BuildFrameworks.sh"; sourceTree = "<group>"; };
 		5D9B8EB8170A0EB400919CB0 /* UpdateVersionInfo.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = UpdateVersionInfo.sh; path = "Build Scripts/UpdateVersionInfo.sh"; sourceTree = "<group>"; };
 		5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = BuildExtensions.sh; path = "Build Scripts/BuildExtensions.sh"; sourceTree = "<group>"; };
 		4C448F45376261BA75EFE988 /* Enabled Features.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Enabled Features.xcconfig"; sourceTree = "<group>"; };
@@ -1462,7 +1422,6 @@
 				4C06E49320EC542C0055D09A /* WebKit.framework in Frameworks */,
 				4C06E48120EC54260055D09A /* AutoHyperlinks.framework in Frameworks */,
 				4C06E48220EC54260055D09A /* CocoaExtensions.framework in Frameworks */,
-				4C06E48320EC54260055D09A /* EncryptionKit.framework in Frameworks */,
 				4C06E48420EC54260055D09A /* GRMustache.framework in Frameworks */,
 				4C06E48720EC54260055D09A /* Sparkle.framework in Frameworks */,
 			);
@@ -1537,7 +1496,6 @@
 				4C06E2AB20EC4FF00055D09A /* CommonErrors.strings */,
 				4C06E2C120EC4FF00055D09A /* IRC.strings */,
 				4C06E2C920EC4FF00055D09A /* Notifications.strings */,
-				4C06E2A920EC4FF00055D09A /* OffTheRecord.strings */,
 				4C06E2A720EC4FF00055D09A /* Prompts.strings */,
 				4C06E2BD20EC4FF00055D09A /* TDCAboutDialog.strings */,
 				4C06E2D520EC4FF00055D09A /* TDCAddressBookSheet.strings */,
@@ -1822,7 +1780,6 @@
 				4C31515E20EB673E00448776 /* Color Formatting */,
 				4C31514620EB673E00448776 /* External Libraries */,
 				4C31514C20EB673E00448776 /* License Manager */,
-				4C31515320EB673E00448776 /* TLOEncryptionManager.m */,
 				4C31515B20EB673E00448776 /* TLOFileLogger.m */,
 				4C31515420EB673E00448776 /* TLOInputHistory.m */,
 				4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */,
@@ -2096,7 +2053,6 @@
 				4C31521920EB673E00448776 /* THOPluginItemPrivate.h */,
 				4C3151CF20EB673E00448776 /* THOPluginManagerPrivate.h */,
 				4C3151B320EB673E00448776 /* THOPluginProtocolPrivate.h */,
-				4C31520120EB673E00448776 /* TLOEncryptionManagerPrivate.h */,
 				4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */,
 				4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */,
 				4C3151DA20EB673E004487A2 /* TLOKeychainPrivate.h */,
@@ -2507,7 +2463,6 @@
 				4C31535720EB676400448776 /* Application */,
 				4C31535620EB676400448776 /* Copyright Information for Images.txt */,
 				4C31535C20EB676400448776 /* Dock Icon Badges */,
-				4C31534F20EB676400448776 /* Encryption Badges */,
 				4C31533C20EB676400448776 /* IRC Formatting Colors */,
 				4C31531820EB676400448776 /* Preferences */,
 				4C31532920EB676400448776 /* Status Badges */,
@@ -2577,17 +2532,6 @@
 				4C31534B20EB676400448776 /* FormattingColor_Rainbow@2x.tif */,
 			);
 			path = "IRC Formatting Colors";
-			sourceTree = "<group>";
-		};
-		4C31534F20EB676400448776 /* Encryption Badges */ = {
-			isa = PBXGroup;
-			children = (
-				4C31535120EB676400448776 /* encryptionLockIconDark.tif */,
-				4C31535220EB676400448776 /* encryptionLockIconDark@2x.tif */,
-				4C31535320EB676400448776 /* encryptionLockIconLight.tif */,
-				4C31535020EB676400448776 /* encryptionLockIconLight@2x.tif */,
-			);
-			path = "Encryption Badges";
 			sourceTree = "<group>";
 		};
 		4C31535720EB676400448776 /* Application */ = {
@@ -2843,7 +2787,6 @@
 			children = (
 				4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */,
 				4CF76A391A91153A0088BF9A /* CocoaExtensions.framework */,
-				4C8F2F5D1AAE6467007821CC /* EncryptionKit.framework */,
 				4CC4A7371F8A1404008FF15F /* GRMustache.framework */,
 				4C24DC751A93C9CE0098D1BE /* Sparkle.framework */,
 				4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */,
@@ -2904,7 +2847,6 @@
 			isa = PBXGroup;
 			children = (
 				5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */,
-				5D9B8EB6170A0EB400919CB0 /* BuildFrameworks.sh */,
 				4C761BAE1E155CB100A505B7 /* BuildServices.sh */,
 				4CD6F7BB1CA7747600842597 /* ExportArchive.sh */,
 				4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */,
@@ -3156,7 +3098,6 @@
 				4C3158C620EB6D1000448776 /* IRCChannelConfigInternal.h in Headers */,
 				4C3155E120EB6CB400448776 /* TVCErrorMessagePopoverControllerPrivate.h in Headers */,
 				4C31571220EB6D0500448776 /* TDCChannelSpotlightSearchResultPrivate.h in Headers */,
-				4C31573520EB6D0500448776 /* TLOEncryptionManagerPrivate.h in Headers */,
 				4C3156E420EB6D0500448776 /* WebScriptObjectHelperPrivate.h in Headers */,
 				4C31576420EB6D0500448776 /* TVCMemberListAppearancePrivate.h in Headers */,
 				4C3155D820EB6CB400448776 /* TPCResourceManager.h in Headers */,
@@ -3267,7 +3208,6 @@
 				4CAA9942E87CD9EE86E50BAF /* PBXTargetDependency */,
 				4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */,
 				4C485D8CDEB765B5D34DDB5D /* PBXTargetDependency */,
-				4CBB842D16F0DA1D004E3ED6 /* PBXTargetDependency */,
 			);
 			name = Textual;
 			productName = Textual;
@@ -3313,9 +3253,6 @@
 							};
 						};
 					};
-					4CCF301015804DCE006FFE21 = {
-						DevelopmentTeam = FANJ7JNLP5;
-					};
 				};
 			};
 			buildConfigurationList = 4C1DC54C1580420500A47BC9 /* Build configuration list for PBXProject "Textual App" */;
@@ -3347,7 +3284,6 @@
 			targets = (
 				4C1DC5511580420500A47BC9 /* Textual */,
 				4C0AB86D285F2B3A545A784A /* TextualTests */,
-				4CCF301015804DCE006FFE21 /* Build Frameworks */,
 			);
 		};
 /* End PBXProject section */
@@ -3443,7 +3379,6 @@
 				4C06E0C820EC4A5B0055D09A /* channelRoomStatusIconDarkActive@2x.tif in Resources */,
 				4C06E30620EC4FF00055D09A /* TDCChannelInviteSheet.strings in Resources */,
 				4C06E22820EC4AC50055D09A /* TVCMainWindowAppearance.plist in Resources */,
-				4C06E05D20EC4A4C0055D09A /* encryptionLockIconLight.tif in Resources */,
 				4C06E11A20EC4A630055D09A /* TPWTB_Advanced.png in Resources */,
 				4C06E08620EC4A540055D09A /* FormattingColor_Rainbow@2x.tif in Resources */,
 				4C06E19420EC4AC40055D09A /* TDCServerHighlightListSheet.xib in Resources */,
@@ -3453,7 +3388,6 @@
 				4C06E23020EC4AC50055D09A /* TVCServerListAppearance.plist in Resources */,
 				4C06E30A20EC4FF00055D09A /* TDCAboutDialog.strings in Resources */,
 				4C06E0C920EC4A5B0055D09A /* channelRoomStatusIconLightInactive.tif in Resources */,
-				4C06E2E220EC4FF00055D09A /* OffTheRecord.strings in Resources */,
 				4C06DFEB20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconActive.tif in Resources */,
 				4C06E2E620EC4FF00055D09A /* CommonErrors.strings in Resources */,
 				4C06E30E20EC4FF00055D09A /* TDCServerPropertiesSheet.strings in Resources */,
@@ -3479,7 +3413,6 @@
 				4C06E2DE20EC4FF00055D09A /* Prompts.strings in Resources */,
 				4C06E33A20EC4FF00055D09A /* TDCAddressBookSheet.strings in Resources */,
 				4C06E1B020EC4AC40055D09A /* TDCChannelPropertiesSheet.xib in Resources */,
-				4C06E05C20EC4A4C0055D09A /* encryptionLockIconDark@2x.tif in Resources */,
 				4C06E1F820EC4AC50055D09A /* TDCChannelModifyTopicSheet.xib in Resources */,
 				4C06E1F420EC4AC50055D09A /* TDCServerChangeNicknameSheet.xib in Resources */,
 				4C06E07E20EC4A540055D09A /* FormattingColor_13.png in Resources */,
@@ -3488,8 +3421,6 @@
 				4C06E1E820EC4AC50055D09A /* TDCAddressBookSheet.xib in Resources */,
 				4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */,
 				4C06E0CF20EC4A5B0055D09A /* channelRoomStatusIconDarkInactive.tif in Resources */,
-				4C06E05A20EC4A4C0055D09A /* encryptionLockIconLight@2x.tif in Resources */,
-				4C06E05B20EC4A4C0055D09A /* encryptionLockIconDark.tif in Resources */,
 				4C06E31E20EC4FF00055D09A /* TVCMainWindow.strings in Resources */,
 				4C06E08920EC4A540055D09A /* FormattingColor_3.png in Resources */,
 				4C06DFE820EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif in Resources */,
@@ -3610,20 +3541,6 @@
 			shellScript = "\nset -o pipefail\nmkdir -p \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs\"\n\"${PROJECT_DIR}/Build Scripts/BuildServices.sh\" | tee \"${TEXTUAL_WORKSPACE_TEMP_DIR}/Script-Logs/BuildServices.txt\"\n";
 			showEnvVarsInLog = 0;
 		};
-		4CCF301715804DD1006FFE21 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\nexec \"${PROJECT_DIR}/Build Scripts/BuildFrameworks.sh\"\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -3730,7 +3647,6 @@
 				4C06E69C20EC55B90055D09A /* TLOLicenseManager.m in Sources */,
 				4C06E69D20EC55B90055D09A /* TLOLicenseManagerDownloader.m in Sources */,
 				4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */,
-				4C06E6A020EC55B90055D09A /* TLOEncryptionManager.m in Sources */,
 				4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */,
 				4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */,
 				4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */,
@@ -3834,11 +3750,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		4CBB842D16F0DA1D004E3ED6 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4CCF301015804DCE006FFE21 /* Build Frameworks */;
-			targetProxy = 4CBB842C16F0DA1D004E3ED6 /* PBXContainerItemProxy */;
-		};
 		4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = AutoHyperlinks.framework;
@@ -4110,14 +4021,6 @@
 			name = Prompts.strings;
 			sourceTree = "<group>";
 		};
-		4C06E2A920EC4FF00055D09A /* OffTheRecord.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E2AA20EC4FF00055D09A /* en */,
-			);
-			name = OffTheRecord.strings;
-			sourceTree = "<group>";
-		};
 		4C06E2AB20EC4FF00055D09A /* CommonErrors.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -4352,27 +4255,6 @@
 			};
 			name = "App Store";
 		};
-		4CCF301215804DCE006FFE21 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		4CCF301315804DCE006FFE21 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		4C97519712A289AF05E60B7E /* App Store */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = "App Store";
-		};
 		4C9DBE62F7E156BB1AFDEF23 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4455,16 +4337,6 @@
 				4C1DC5711580420500A47BC9 /* Debug */,
 				4C1DC5721580420500A47BC9 /* Release */,
 				4CD3C28CD1AFBBA6DB8FFF58 /* App Store */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		4CCF301115804DCE006FFE21 /* Build configuration list for PBXAggregateTarget "Build Frameworks" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4CCF301215804DCE006FFE21 /* Debug */,
-				4CCF301315804DCE006FFE21 /* Release */,
-				4C97519712A289AF05E60B7E /* App Store */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

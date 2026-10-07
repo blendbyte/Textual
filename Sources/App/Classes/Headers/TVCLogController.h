@@ -45,7 +45,7 @@ TEXTUAL_EXTERN NSNotificationName const TVCLogControllerViewFinishedLoadingNotif
 
 @interface TVCLogController : NSObject
 @property (readonly) TVCLogView *backingView;
-@property (readonly, getter=viewIsEncrypted) BOOL encrypted;
+@property (readonly, getter=viewIsEncrypted) BOOL encrypted TEXTUAL_DEPRECATED("Textual no longer encrypts messages. Always NO");
 @property (readonly, getter=viewIsLoaded) BOOL loaded;
 @property (readonly, getter=viewIsSelected) BOOL selected;
 @property (readonly, getter=viewIsVisible) BOOL visible;

@@ -99,7 +99,6 @@ static NSUInteger _numberOfViews = 0;
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"channelNameDoubleClicked"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"displayContextMenu"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"copySelectionWhenPermitted"];
-		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"encryptionAuthenticateUser"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"inlineMediaEnabledForView"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"loadInlineMedia"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"localUserHostmask"];

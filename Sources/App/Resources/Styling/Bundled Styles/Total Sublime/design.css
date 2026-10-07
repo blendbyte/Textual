@@ -118,17 +118,6 @@ body[dir="rtl"] .time {
 	display: inline-block;
 }
 
-/* Encryption Lock */
-
-.encryptionLock img {
-	float: right;
-	margin: 0;
-	padding: 0;
-	height: 11px;
-	margin-top: 2px;
-	padding-left: 10px;
-}
-
 /* Links */
 
 a {
@@ -381,8 +370,7 @@ body[dir="rtl"] div.line[data-line-type="action"] .sender:after {
 
 div.line[data-line-type="invite"],
 div.line[data-line-type="debug"],
-div.line[data-line-type="dcc-file-transfer"],
-div.line[data-line-type="off-the-record-encryption-status"] {
+div.line[data-line-type="dcc-file-transfer"] {
 	color: #777;
   	z-index: 190;
 	background: #222;
@@ -390,12 +378,6 @@ div.line[data-line-type="off-the-record-encryption-status"] {
  	padding: 2px 5px 2px 5px;
 	border-top: 1px solid #444;
 	border-bottom: 1px solid #444;
-}
-
-/* off-the-record-encryption-status Message Event */
-div.line[data-line-type="off-the-record-encryption-status"] .message {
-	color: #ff0000;
-	font-weight: 700;
 }
 
 /* Message of the Day (MOTD) */

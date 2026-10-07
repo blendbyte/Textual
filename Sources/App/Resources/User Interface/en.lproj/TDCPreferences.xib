@@ -31,7 +31,6 @@
                 <outlet property="contentViewInterface" destination="2Th-u8-aIC" id="Gix-Hj-gcJ"/>
                 <outlet property="contentViewLogLocation" destination="DPg-Nu-HcZ" id="PDq-j6-Ndz"/>
                 <outlet property="contentViewNotifications" destination="09H-hp-iIC" id="ElI-u9-xUk"/>
-                <outlet property="contentViewOffRecordMessaging" destination="ZYk-23-zvA" id="mIu-XC-Dt6"/>
                 <outlet property="contentViewStyle" destination="oeR-nv-slx" id="lWc-qc-sGt"/>
                 <outlet property="excludeKeywordsArrayController" destination="4313" id="7351"/>
                 <outlet property="excludeKeywordsTable" destination="Vqz-0J-ajG" id="Zh5-qx-YFn"/>
@@ -179,26 +178,6 @@
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="onPrefPaneSelected:" target="-2" id="1Tt-jt-zZs"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="Y0B-GY-ayZ">
-                                            <connections>
-                                                <binding destination="G2Q-fc-ddg" name="hidden" keyPath="values.System -&gt; Built with Off-the-Record Messaging Support" id="NtP-3I-5El">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Off-the-Record Messaging" tag="108010" id="Abd-Fd-gqU">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="onPrefPaneSelected:" target="-2" id="TBI-ND-xPg"/>
-                                                <binding destination="G2Q-fc-ddg" name="hidden" keyPath="values.System -&gt; Built with Off-the-Record Messaging Support" id="2he-Tf-7Pa">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                                    </dictionary>
-                                                </binding>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -4676,123 +4655,6 @@ You should therefore not rely solely on this preference.</string>
                 <constraint firstItem="9GL-Fm-FRS" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="qvB-sf-fih" secondAttribute="trailing" id="zmI-2S-wVA"/>
             </constraints>
             <point key="canvasLocation" x="329" y="-858"/>
-        </customView>
-        <customView translatesAutoresizingMaskIntoConstraints="NO" id="ZYk-23-zvA" userLabel="Off-the-Record Messaging">
-            <rect key="frame" x="0.0" y="0.0" width="670" height="327"/>
-            <userGuides>
-                <userLayoutGuide location="373" affinity="minY"/>
-            </userGuides>
-            <subviews>
-                <box verticalHuggingPriority="750" alphaValue="0.5" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="lVR-sX-Fvg">
-                    <rect key="frame" x="40" y="130" width="590" height="5"/>
-                </box>
-                <button translatesAutoresizingMaskIntoConstraints="NO" id="c2f-dF-OoT">
-                    <rect key="frame" x="108" y="67" width="245" height="18"/>
-                    <buttonCell key="cell" type="check" title="Do not send unencrypted messages" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="m4s-Bh-UhF">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="offRecordMessagingPolicyChanged:" target="-2" id="VDz-Hf-aGA"/>
-                        <binding destination="-2" name="value" keyPath="self.textEncryptionIsRequired" id="GxY-st-TFJ"/>
-                        <binding destination="-2" name="enabled" keyPath="self.textEncryptionIsRequiredPreferenceEnabled" id="sD8-2L-tLT"/>
-                    </connections>
-                </button>
-                <button translatesAutoresizingMaskIntoConstraints="NO" id="318-ie-koO">
-                    <rect key="frame" x="108" y="97" width="452" height="18"/>
-                    <buttonCell key="cell" type="check" title="Automatically start an Off-the-Record conversation whenever possible" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="vuQ-Sk-fPF">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="offRecordMessagingPolicyChanged:" target="-2" id="dHa-Df-hCq"/>
-                        <binding destination="-2" name="value" keyPath="self.textEncryptionIsOpportunistic" id="vV4-Wd-SzN"/>
-                        <binding destination="-2" name="enabled" keyPath="self.textEncryptionIsOpportunisticPreferenceEnabled" id="Xsf-ZT-s4O"/>
-                    </connections>
-                </button>
-                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kwB-LQ-B19">
-                    <rect key="frame" x="126" y="30" width="345" height="30"/>
-                    <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="Do not allow messages to be sent unless an Off-the-Record conversation is active." id="Pzt-74-0SL">
-                        <font key="font" metaFont="cellTitle"/>
-                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <accessibilityConnection property="link" destination="c2f-dF-OoT" id="Qq7-Bw-LEp"/>
-                    </connections>
-                </textField>
-                <button translatesAutoresizingMaskIntoConstraints="NO" id="lYh-JG-BN5">
-                    <rect key="frame" x="108" y="280" width="233" height="18"/>
-                    <buttonCell key="cell" type="check" title="Enable Off-the-Record Messaging" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="Ebq-y2-sIl">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="offRecordMessagingPolicyChanged:" target="-2" id="Off-Gl-wab"/>
-                        <binding destination="-2" name="value" keyPath="self.textEncryptionIsEnabled" id="6xO-cN-Iea"/>
-                    </connections>
-                </button>
-                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yGO-On-ZvN">
-                    <rect key="frame" x="126" y="213" width="437" height="60"/>
-                    <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" id="dGa-dE-wl9">
-                        <font key="font" metaFont="cellTitle"/>
-                        <string key="title">Off-the-Record Messaging (OTR) increases the privacy of private messages by encrypting their contents so that only you and your chat partner can see what is written. It also provides a means to verify, with certainty, that the person you are communicating with are who they claim to be.</string>
-                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <accessibilityConnection property="link" destination="lYh-JG-BN5" id="D3l-cP-SuS"/>
-                    </connections>
-                </textField>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="u4s-fg-bNo">
-                    <rect key="frame" x="121" y="174" width="234" height="32"/>
-                    <buttonCell key="cell" type="push" title="Learn more from Official Website" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="45H-rX-vfm">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="offRecordMessagingOpenOfficialWebsite:" target="-2" id="Rln-xV-DfK"/>
-                    </connections>
-                </button>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="guD-BE-Zzc">
-                    <rect key="frame" x="121" y="144" width="281" height="32"/>
-                    <buttonCell key="cell" type="push" title="Learn more about how it works in Textual" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8KP-Mk-tom">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="offRecordMessagingOpenHelpDocument:" target="-2" id="N6j-be-YVx"/>
-                    </connections>
-                </button>
-            </subviews>
-            <constraints>
-                <constraint firstItem="yGO-On-ZvN" firstAttribute="leading" secondItem="lYh-JG-BN5" secondAttribute="leading" constant="18" id="1dF-VB-Zu9"/>
-                <constraint firstItem="kwB-LQ-B19" firstAttribute="leading" secondItem="c2f-dF-OoT" secondAttribute="leading" constant="18" id="6mp-U9-7u9"/>
-                <constraint firstItem="kwB-LQ-B19" firstAttribute="top" secondItem="c2f-dF-OoT" secondAttribute="bottom" constant="8" symbolic="YES" id="7iI-bo-lEf"/>
-                <constraint firstItem="lVR-sX-Fvg" firstAttribute="top" secondItem="guD-BE-Zzc" secondAttribute="bottom" constant="18" id="BjB-po-Xmg"/>
-                <constraint firstItem="lYh-JG-BN5" firstAttribute="top" secondItem="ZYk-23-zvA" secondAttribute="top" constant="30" id="Bs8-VT-PLv"/>
-                <constraint firstItem="lVR-sX-Fvg" firstAttribute="leading" secondItem="ZYk-23-zvA" secondAttribute="leading" constant="40" id="EKG-ZG-0TJ"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="kwB-LQ-B19" secondAttribute="trailing" constant="20" id="Evq-cT-4c7"/>
-                <constraint firstItem="318-ie-koO" firstAttribute="top" secondItem="lVR-sX-Fvg" secondAttribute="bottom" constant="18" id="Eyl-rW-vkH"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yGO-On-ZvN" secondAttribute="trailing" constant="20" id="IwK-MZ-nUH"/>
-                <constraint firstItem="guD-BE-Zzc" firstAttribute="leading" secondItem="u4s-fg-bNo" secondAttribute="leading" id="KGA-1N-c4N"/>
-                <constraint firstItem="u4s-fg-bNo" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="yGO-On-ZvN" secondAttribute="trailing" id="LIn-vf-16E"/>
-                <constraint firstItem="c2f-dF-OoT" firstAttribute="top" secondItem="318-ie-koO" secondAttribute="bottom" constant="14" id="N3o-wf-4q0"/>
-                <constraint firstItem="guD-BE-Zzc" firstAttribute="top" secondItem="u4s-fg-bNo" secondAttribute="bottom" constant="10" id="PMx-JX-Bu0"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="318-ie-koO" secondAttribute="trailing" constant="20" id="QrJ-aH-ugh"/>
-                <constraint firstItem="lYh-JG-BN5" firstAttribute="leading" secondItem="ZYk-23-zvA" secondAttribute="leading" constant="110" id="Stq-SX-6sM"/>
-                <constraint firstItem="guD-BE-Zzc" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="yGO-On-ZvN" secondAttribute="trailing" id="Z2a-8k-AL1"/>
-                <constraint firstAttribute="bottom" secondItem="kwB-LQ-B19" secondAttribute="bottom" constant="30" id="eeQ-Ja-LDM"/>
-                <constraint firstItem="318-ie-koO" firstAttribute="leading" secondItem="c2f-dF-OoT" secondAttribute="leading" id="gLD-YE-ihs"/>
-                <constraint firstItem="318-ie-koO" firstAttribute="leading" secondItem="ZYk-23-zvA" secondAttribute="leading" constant="110" id="iIb-sE-07M"/>
-                <constraint firstItem="yGO-On-ZvN" firstAttribute="top" secondItem="lYh-JG-BN5" secondAttribute="bottom" constant="8" symbolic="YES" id="ix3-hc-LpM"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="c2f-dF-OoT" secondAttribute="trailing" constant="20" id="jJg-oA-7Xh"/>
-                <constraint firstItem="u4s-fg-bNo" firstAttribute="top" secondItem="yGO-On-ZvN" secondAttribute="bottom" constant="12" id="qNw-S5-dAz"/>
-                <constraint firstItem="lVR-sX-Fvg" firstAttribute="centerX" secondItem="ZYk-23-zvA" secondAttribute="centerX" id="s4o-ck-4fB"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="lYh-JG-BN5" secondAttribute="trailing" constant="20" id="vSL-I5-Epi"/>
-                <constraint firstItem="u4s-fg-bNo" firstAttribute="leading" secondItem="yGO-On-ZvN" secondAttribute="leading" id="yHN-6v-ep2"/>
-            </constraints>
-            <point key="canvasLocation" x="329" y="-416"/>
         </customView>
         <arrayController alwaysUsesMultipleValuesMarker="YES" id="4310" userLabel="Keywords">
             <declaredKeys>

@@ -161,10 +161,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)prepareInitialState
 {
-#if TEXTUAL_BUILT_WITH_ADVANCED_ENCRYPTION == 1
-	self.encrypted = self.associatedChannel.encryptionStateIsEncrypted;
-#endif
-
 	self.highlightedLineNumbers	= [NSMutableArray new];
 
 	self.jumpToLineCallbacks = [NSCache new];
@@ -274,8 +270,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		/* 1 */ [TPCPreferences reloadScrollbackOnLaunch] == NO ||
 		/* 2 */  channel.isUtility ||
 		/* 3 */ (channel.isPrivateMessage &&
-				 [TPCPreferences rememberServerListQueryStates] == NO) ||
-		/* 4 */ self.encrypted)
+				 [TPCPreferences rememberServerListQueryStates] == NO))
 	{
 		[self historicLogResetChannel];
 	}
@@ -557,11 +552,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	IRCChannel *channel = self.associatedChannel;
 
 	if (
-		/* 1 */ self.encrypted ||
-		/* 2 */ (firstTimeLoadingHistory &&
+		/* 1 */ (firstTimeLoadingHistory &&
 				 [TPCPreferences reloadScrollbackOnLaunch] == NO) ||
-		/* 3 */  channel.isUtility ||
-		/* 4 */ (firstTimeLoadingHistory &&
+		/* 2 */  channel.isUtility ||
+		/* 3 */ (firstTimeLoadingHistory &&
 				 channel.isPrivateMessage &&
 				 [TPCPreferences rememberServerListQueryStates] == NO))
 	{
@@ -1272,15 +1266,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			}
 
 			/* Log this log line */
-			/* If the channel is encrypted, then we refuse to write to
-			 the actual historic log so there is no trace of the chatter
-			 on the disk in the form of an unencrypted cache file. */
-			/* Doing it this way does break the ability to reload chatter
-			 in the view as well as playback on restart, but the added
-			 security can be seen as a bonus. */
-			if (self.encrypted == NO) {
-				[TVCLogControllerHistoricLogSharedInstance() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
-			}
+			[TVCLogControllerHistoricLogSharedInstance() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
 
 			/* Redraw view if needed */
 			[self.backingView redrawViewIfNeeded];
