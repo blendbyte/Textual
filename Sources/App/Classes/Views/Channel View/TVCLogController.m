@@ -57,7 +57,7 @@
 #import "TVCLogViewPrivate.h"
 #import "TVCLogLine.h"
 #import "TVCLogRenderer.h"
-#import "TVCLogControllerHistoricLogFilePrivate.h"
+#import "HLSHistoricLogManagerPrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCLogControllerOperationQueuePrivate.h"
 #import "TVCMainWindowPrivate.h"
@@ -332,13 +332,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)historicLogForgetChannel
 {
 	/* Delete any trace of the channel, including context */
-	[TVCLogControllerHistoricLogSharedInstance() forgetItem:self.associatedItem];
+	[sharedHistoricLog() forgetItem:self.associatedItem];
 }
 
 - (void)historicLogResetChannel
 {
 	/* Delete log for channel but keep context */
-	[TVCLogControllerHistoricLogSharedInstance() resetDataForItem:self.associatedItem];
+	[sharedHistoricLog() resetDataForItem:self.associatedItem];
 }
 
 - (void)closeHistoricLog
@@ -690,7 +690,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
 		NSDate *limitToDate = [NSDate dateWithTimeIntervalSince1970:self.viewLoadedTimestamp];
 
-		[TVCLogControllerHistoricLogSharedInstance()
+		[sharedHistoricLog()
 		 fetchEntriesForItem:self.associatedItem
 				   ascending:NO
 				  fetchLimit:100
@@ -1119,14 +1119,14 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		};
 
 		if (after == NO) {
-			[TVCLogControllerHistoricLogSharedInstance()
+			[sharedHistoricLog()
 			 fetchEntriesForItem:self.associatedItem
 		  beforeUniqueIdentifier:lineNumber
 					  fetchLimit:maximumNumberOfLines
 					 limitToDate:nil
 			 withCompletionBlock:historicLogCompletionBlock];
 		} else {
-			[TVCLogControllerHistoricLogSharedInstance()
+			[sharedHistoricLog()
 			 fetchEntriesForItem:self.associatedItem
 		   afterUniqueIdentifier:lineNumber
 					  fetchLimit:maximumNumberOfLines
@@ -1153,7 +1153,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			[self _renderLogLinesAfterLineNumberPostFlight:entries completionBlock:completionBlock];
 		};
 
-		[TVCLogControllerHistoricLogSharedInstance()
+		[sharedHistoricLog()
 			 fetchEntriesForItem:self.associatedItem
 		   afterUniqueIdentifier:lineNumberAfter
 		  beforeUniqueIdentifier:lineNumberBefore
@@ -1178,7 +1178,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			[self _renderLogLinesAfterLineNumberPostFlight:entries completionBlock:completionBlock];
 		};
 
-		[TVCLogControllerHistoricLogSharedInstance()
+		[sharedHistoricLog()
 			 fetchEntriesForItem:self.associatedItem
 			withUniqueIdentifier:lineNumber
 				beforeFetchLimit:numberOfLinesBefore
@@ -1326,7 +1326,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			}
 
 			/* Log this log line */
-			[TVCLogControllerHistoricLogSharedInstance() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
+			[sharedHistoricLog() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
 
 			/* Using information provided by conversation tracking we can update 
 			 our internal array of favored nicknames for nick completion. */

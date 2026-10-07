@@ -152,7 +152,7 @@ cmd_reset() {
 
 cmd_logs() {
 	log stream --style compact --level debug \
-		--predicate "processImagePath CONTAINS \"/Build Results/Debug/Textual.app/\""
+		--predicate "processImagePath BEGINSWITH \"${APP}/\""
 }
 
 ergo_install() {
@@ -410,7 +410,7 @@ print("textual://dev-eval?" + urllib.parse.urlencode({"script": sys.argv[1]}, qu
 
 	# The result is logged
 	sleep 1
-	/usr/bin/log show --last 5s --style compact --predicate 'processImagePath CONTAINS "/Build Results/Debug/Textual.app/" AND eventMessage BEGINSWITH "dev-eval: "' |
+	/usr/bin/log show --last 5s --style compact --predicate "processImagePath BEGINSWITH \"${APP}/\" AND eventMessage BEGINSWITH \"dev-eval: \"" |
 		sed -n 's/.*dev-eval: //p' | tail -n 1
 }
 

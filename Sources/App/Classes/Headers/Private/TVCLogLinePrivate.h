@@ -39,16 +39,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogLineXPC, IRCTreeItem;
-
 @interface TVCLogLine ()
 @property (readonly) BOOL fromCurrentSession;
 
 - (NSString *)renderedBodyForTranscriptLog;
 - (NSString *)renderedBodyForTranscriptLogInChannel:(nullable IRCChannel *)channel;
 
-+ (TVCLogLine *)logLineFromXPCObject:(TVCLogLineXPC *)xpcObject;
-- (TVCLogLineXPC *)xpcObjectForTreeItem:(IRCTreeItem *)treeItem;
+/* nil if the data is not an archived log line */
++ (nullable TVCLogLine *)logLineWithData:(NSData *)data uniqueIdentifier:(nullable NSString *)uniqueIdentifier;
+- (nullable NSData *)archivedData;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24000" systemVersion="" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="LogLine2" representedClassName="NSManagedObject" versionHashModifier="indexed" syncable="YES">
+        <attribute name="entryCreationDate" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="entryIdentifier" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="logLineData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="logLineUniqueIdentifier" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="logLineViewIdentifier" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sessionIdentifier" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <fetchIndex name="byViewAndEntryIdentifier">
+            <fetchIndexElement property="logLineViewIdentifier" type="Binary" order="ascending"/>
+            <fetchIndexElement property="entryIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byViewAndUniqueIdentifier">
+            <fetchIndexElement property="logLineViewIdentifier" type="Binary" order="ascending"/>
+            <fetchIndexElement property="logLineUniqueIdentifier" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <fetchRequest name="GenericConditional" entity="LogLine2" predicateString="logLineViewIdentifier == $view_id AND entryIdentifier &gt;= $entry_id_lowest AND entryIdentifier &lt;= $entry_id_highest AND entryCreationDate &lt; $creation_date" fetchBatchSize="100" includePropertyValues="YES" includesPendingChanges="YES" resultType="1"/>
+    <fetchRequest name="Truncate" entity="LogLine2" predicateString="logLineViewIdentifier == $view_id AND entryIdentifier &lt;= $entry_id_lowest" includePropertyValues="YES" includesPendingChanges="YES"/>
+    <fetchRequest name="UniqueIdToEntryId" entity="LogLine2" predicateString="logLineViewIdentifier == $view_id AND logLineUniqueIdentifier == $unique_id" fetchLimit="1" includePropertyValues="YES" includesPendingChanges="YES"/>
+    <elements>
+        <element name="LogLine2" positionX="0" positionY="0" width="128" height="135"/>
+    </elements>
+</model>

@@ -47,7 +47,7 @@
 #import "TLOInputHistoryPrivate.h"
 #import "TVCDockIconPrivate.h"
 #import "TVCLogControllerPrivate.h"
-#import "TVCLogControllerHistoricLogFilePrivate.h"
+#import "HLSHistoricLogManagerPrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowTextViewPrivate.h"
 #import "TVCServerListPrivate.h"
@@ -353,7 +353,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Scrollback limit */
 	if ((reloadAction & TPCPreferencesReloadActionScrollbackSaveLimit) == TPCPreferencesReloadActionScrollbackSaveLimit) {
-		[TVCLogControllerHistoricLogSharedInstance() resetMaximumLineCount];
+		[sharedHistoricLog() resetMaximumLineCount];
 	}
 
 	if ((reloadAction & TPCPreferencesReloadActionScrollbackVisibleLimit) == TPCPreferencesReloadActionScrollbackSaveLimit) {

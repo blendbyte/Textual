@@ -2,11 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>com.apple.security.app-sandbox</key>
-	<true/>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>$(TEXTUAL_GROUP_CONTAINER_IDENTIFIER)</string>
-	</array>
+	<key>_XCCurrentVersionName</key>
+	<string>LogControllerStorageModel (model 4).xcdatamodel</string>
 </dict>
 </plist>

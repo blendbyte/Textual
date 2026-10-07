@@ -1,1 +1,0 @@
-../../../../XPC Services/Historic Log File Manager/Classes/Headers/Private/HLSHistoricLogProtocol.h

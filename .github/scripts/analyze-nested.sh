@@ -48,7 +48,6 @@ analyze() {
 			"${common_settings[@]}" "$@")
 }
 
-analyze "XPC Services/Historic Log File Manager" "Historic Log File Manager" "historic-log"
 analyze "XPC Services/IRC Remote Connection Manager" "IRC Remote Connection Manager" "irc-connection"
 analyze "XPC Services/Inline Content Loader" "Inline Content Loader" "inline-content-loader"
 

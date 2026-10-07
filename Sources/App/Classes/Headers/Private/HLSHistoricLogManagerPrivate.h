@@ -39,10 +39,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCTreeItem, TVCLogLine;
 
-#define TVCLogControllerHistoricLogSharedInstance()				[TVCLogControllerHistoricLogFile sharedInstance]
+#define sharedHistoricLog()			[HLSHistoricLogManager sharedInstance]
 
-@interface TVCLogControllerHistoricLogFile : NSObject
-+ (TVCLogControllerHistoricLogFile *)sharedInstance;
+/* The scrollback history ("historic log"): every printed line, kept per
+ view in a Core Data store so views can be reloaded (theme changes, crash
+ recovery, launch). All work runs on one private queue, in the order it
+ was asked for, after the store has opened. Completion blocks are called
+ on a background queue. */
+@interface HLSHistoricLogManager : NSObject
++ (HLSHistoricLogManager *)sharedInstance;
 
 - (void)writeNewEntryWithLogLine:(TVCLogLine *)logLine forItem:(IRCTreeItem *)item;
 
@@ -52,38 +57,40 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) BOOL isSaving;
 
+- (void)prepareForApplicationTermination;
+
 - (void)forgetItem:(IRCTreeItem *)item;
 - (void)resetDataForItem:(IRCTreeItem *)item;
 
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 				  ascending:(BOOL)ascending
-				 fetchLimit:(NSUInteger)fetchLimit
+				 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap
 				limitToDate:(nullable NSDate *)limitToDate
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 	   withUniqueIdentifier:(NSString *)uniqueId
-		   beforeFetchLimit:(NSUInteger)fetchLimitBefore
-			afterFetchLimit:(NSUInteger)fetchLimitAfter
+		   beforeFetchLimit:(NSUInteger)fetchLimitBefore // 0 == only uniqueId
+			afterFetchLimit:(NSUInteger)fetchLimitAfter // 0 == only uniqueId
 				limitToDate:(nullable NSDate *)limitToDate
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 	 beforeUniqueIdentifier:(NSString *)uniqueId
-				 fetchLimit:(NSUInteger)fetchLimit
+				 fetchLimit:(NSUInteger)fetchLimit // required (> 0)
 				limitToDate:(nullable NSDate *)limitToDate
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 	  afterUniqueIdentifier:(NSString *)uniqueId
-				 fetchLimit:(NSUInteger)fetchLimit
+				 fetchLimit:(NSUInteger)fetchLimit // required (> 0)
 				limitToDate:(nullable NSDate *)limitToDate
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 	  afterUniqueIdentifier:(NSString *)uniqueIdAfter
 	 beforeUniqueIdentifier:(NSString *)uniqueIdBefore
-				 fetchLimit:(NSUInteger)fetchLimit
+				 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 @end
 

@@ -51,8 +51,5 @@
       <FileRef
          location = "group:XPC Services/Inline Content Loader/Extensions/Core Media/Inline Content Loader Core Media.xcodeproj">
       </FileRef>
-      <FileRef
-         location = "group:XPC Services/Historic Log File Manager/Historic Log File Manager.xcodeproj">
-      </FileRef>
    </Group>
 </Workspace>

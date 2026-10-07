@@ -47,7 +47,6 @@
 #import "TPCTheme.h"
 #import "TLOFileLoggerPrivate.h"
 #import "TVCLogLineInternal.h"
-#import "TVCLogLineXPCPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -89,21 +88,29 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return nil;
 }
 
-+ (TVCLogLine *)logLineFromXPCObject:(TVCLogLineXPC *)xpcObject
++ (nullable TVCLogLine *)logLineWithData:(NSData *)data uniqueIdentifier:(nullable NSString *)uniqueIdentifier
 {
-	NSParameterAssert(xpcObject != nil);
+	NSParameterAssert(data != nil);
 
-	/* In earlier versions of the historic log database, the unique identifier was
-	 not stored in the archived data of the log line. We need a unique identifier now,
-	 which the database automatically creates if none is present, but it does it without
-	 unarchiving the data because the process does not have this class. It therefore just
-	 attaches the unique identifier to the XPC object. We can then write it out here. */
-	/* We check if the object's unique identifier is nil before setting the database's
-	 value because the value may have already been unarchived if it is present. */
-	TVCLogLine *object = [NSKeyedUnarchiver unarchiveObjectWithData:xpcObject.data];
+	/* Lines from early versions of the historic log don't carry their unique
+	 identifier in the archive; the database row has it */
+	TVCLogLine *object = nil;
+
+	/* Unarchiving damaged data raises */
+	@try {
+		object = [[TVCLogLine alloc] initWithData:data];
+	} @catch (NSException *exception) {
+		LogToConsoleError("Failed to unarchive a log line: %{public}@", exception.reason);
+
+		return nil;
+	}
+
+	if (object == nil || [object isKindOfClass:[TVCLogLine class]] == NO) {
+		return nil;
+	}
 
 	if (object->_uniqueIdentifier == nil) {
-		object->_uniqueIdentifier = [xpcObject.uniqueIdentifier copy];
+		object->_uniqueIdentifier = [uniqueIdentifier copy];
 	}
 
 	return [object copy];
@@ -206,19 +213,9 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return YES;
 }
 
-- (TVCLogLineXPC *)xpcObjectForTreeItem:(IRCTreeItem *)treeItem
+- (nullable NSData *)archivedData
 {
-	NSParameterAssert(treeItem != nil);
-
-	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self];
-
-	TVCLogLineXPC *xpcObject =
-	[[TVCLogLineXPC alloc] initWithLogLineData:data
-							  uniqueIdentifier:self.uniqueIdentifier
-								viewIdentifier:treeItem.uniqueIdentifier
-							 sessionIdentifier:self.sessionIdentifier];
-
-	 return xpcObject;
+	return [NSKeyedArchiver archivedDataWithRootObject:self];
 }
 
 + (NSString *)newUniqueIdentifier

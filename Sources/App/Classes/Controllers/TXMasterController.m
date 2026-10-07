@@ -46,7 +46,7 @@
 #import "TLOSpeechSynthesizerPrivate.h"
 #import "THOPluginManagerPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
-#import "TVCLogControllerHistoricLogFilePrivate.h"
+#import "HLSHistoricLogManagerPrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCLogControllerOperationQueuePrivate.h"
 #import "TVCMainWindowPrivate.h"
@@ -434,7 +434,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL condition1 = (self.terminatingClientCount == 0);
 
 	/* Core Data is saving */
-	BOOL condition2 = (TVCLogControllerHistoricLogSharedInstance().isSaving == NO &&
+	BOOL condition2 = (sharedHistoricLog().isSaving == NO &&
 							self.terminateHistoricLogSaveFinished);
 
 	LogToConsoleTerminationProgress("Conditions: %{BOOL}d %{BOOL}d", condition1, condition2);
@@ -510,7 +510,7 @@ NS_ASSUME_NONNULL_BEGIN
 			 view controllers had the chance to perform any
 			 changes they want to historic log. */
 			if (self.terminatingClientCount == 0) {
-				[TVCLogControllerHistoricLogSharedInstance() prepareForApplicationTermination];
+				[sharedHistoricLog() prepareForApplicationTermination];
 
 				self.terminateHistoricLogSaveFinished = YES;
 			}

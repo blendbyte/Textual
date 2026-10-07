@@ -12,7 +12,6 @@ TEXTUAL_PRODUCT_LOCATION="${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}"
 TEXTUAL_PRODUCT_BINARY="${TARGET_BUILD_DIR}/${EXECUTABLE_PATH}"
 
 services=(
-    'Historic Log File Manager'
     'Inline Content Loader'
     'IRC Remote Connection Manager'
 )
