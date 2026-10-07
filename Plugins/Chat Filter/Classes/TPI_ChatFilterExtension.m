@@ -39,7 +39,6 @@
 #import "TPI_ChatFilterEditFilterSheet.h"
 #import "TPI_ChatFilterLogic.h"
 
-#import "THOPluginProtocolPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -87,7 +87,6 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 - (void)reloadTree;
 - (void)reloadTreeItem:(IRCTreeItem *)item;
-- (void)reloadTreeGroup:(IRCTreeItem *)item;
 
 - (void)adjustSelection;
 

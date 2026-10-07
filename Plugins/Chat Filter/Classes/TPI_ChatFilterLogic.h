@@ -47,6 +47,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadFilterActionPerforms;
 
+/* Textual calls this on any plugin that implements it, for every message
+ received (an informal hook, not part of THOPluginProtocol) */
+- (BOOL)receivedCommand:(NSString *)command withText:(nullable NSString *)text authoredBy:(IRCPrefix *)textAuthor destinedFor:(nullable IRCChannel *)textDestination onClient:(IRCClient *)client receivedAt:(NSDate *)receivedAt referenceMessage:(nullable IRCMessage *)referenceMessage;
+
 /* The commands (without "/") a filter action runs, with placeholders such as
  %_senderNickname_% replaced by the values given */
 + (NSArray<NSString *> *)commandsForFilterAction:(NSString *)filterAction withValues:(NSDictionary<NSString *, NSString *> *)values;

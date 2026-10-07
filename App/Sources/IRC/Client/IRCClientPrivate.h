@@ -49,7 +49,7 @@ enum {
 	ClientIRCv3SupportedCapabilitySASLExternal			= 1 << 24, // YES if SASL=external CAP is supported
 	ClientIRCv3SupportedCapabilityZNCServerTime			= 1 << 25, // YES if the ZNC vendor specific CAP supported
 	ClientIRCv3SupportedCapabilityZNCServerTimeISO		= 1 << 26, // YES if the ZNC vendor specific CAP supported
-	ClientIRCv3SupportedCapabilityZNCPlaybackModule		= 1 << 27, // YES if the ZNC vendor specific CAP supported
+	/* 1 << 27 is ClientIRCv3SupportedCapabilityZNCPlaybackModule (IRCClient.h) */
 	ClientIRCv3SupportedCapabilityPlanioPlayback		= 1 << 28  // YES if the plan.io vendor specific CAP supported.
 };
 
@@ -115,7 +115,6 @@ enum {
 - (void)reopenLogFileIfNeeded;
 - (void)closeLogFile;
 
-- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isUtility:(BOOL)isUtility;
 
 - (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
 

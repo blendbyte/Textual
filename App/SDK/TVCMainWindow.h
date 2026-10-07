@@ -99,6 +99,10 @@ TEXTUAL_EXTERN NSString * const TVCServerListDragType;
 
 - (void)expandClient:(IRCClient *)client;
 
+/* Redraws a server and its channels in the server list, e.g. after
+ changing whether channels are active */
+- (void)reloadTreeGroup:(IRCTreeItem *)item;
+
 - (nullable IRCChannel *)selectedChannelOn:(IRCClient *)client;
 
 - (void)navigateServerEntries:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType;

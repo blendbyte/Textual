@@ -37,7 +37,6 @@
 
 #import "TPI_ChatFilterLogic.h"
 
-#import "IRCClientPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

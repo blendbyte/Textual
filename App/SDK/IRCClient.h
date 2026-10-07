@@ -77,7 +77,8 @@ typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityWatchCommand			= 1 << 12, // YES if the WATCH command is supported
 	ClientIRCv3SupportedCapabilityZNCCertInfoModule		= 1 << 13, // YES if the ZNC vendor specific CAP supported
 	ClientIRCv3SupportedCapabilityZNCSelfMessage		= 1 << 14, // YES if the ZNC vendor specific CAP supported
-	ClientIRCv3SupportedCapabilityChangeHost			= 1 << 15  // YES if the CHGHOST CAP supported
+	ClientIRCv3SupportedCapabilityChangeHost			= 1 << 15, // YES if the CHGHOST CAP supported
+	ClientIRCv3SupportedCapabilityZNCPlaybackModule		= 1 << 27  // YES if the ZNC vendor specific CAP supported
 };
 
 TEXTUAL_EXTERN NSNotificationName const IRCClientConfigurationWasUpdatedNotification;
@@ -244,6 +245,10 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 - (nullable IRCChannel *)findChannel:(NSString *)withName;
 - (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName;
 - (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isPrivateMessage:(BOOL)isPrivateMessage;
+
+/* A utility window is a private message that is never sent to the server:
+ a place for a plugin to log its own messages (Chat Filter's "Filter Actions") */
+- (nullable IRCChannel *)findChannelOrCreate:(NSString *)withName isUtility:(BOOL)isUtility;
 
 - (nullable NSData *)convertToCommonEncoding:(NSString *)string;
 - (nullable NSString *)convertFromCommonEncoding:(NSData *)data;

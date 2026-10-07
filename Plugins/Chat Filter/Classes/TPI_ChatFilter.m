@@ -38,7 +38,6 @@
 #import "TPI_ChatFilter.h"
 #import "TPI_ChatFilterInternal.h"
 
-#import "NSObjectHelperPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

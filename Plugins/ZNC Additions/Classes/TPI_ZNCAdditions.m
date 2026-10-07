@@ -39,8 +39,6 @@
 
 #import "TPI_ZNCAdditions.h"
 
-#import "IRCClientPrivate.h"
-#import "TVCMainWindowPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
