@@ -216,7 +216,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.cachedHighlights = @[];
 
-	self.capabilitiesPending = [NSMutableArray array];
+	self.capabilityNegotiator = [IRCCapabilityNegotiator new];
+
+	self.capabilityNegotiator.delegate = self;
 
 	self.channelListPrivate = [NSMutableArray array];
 

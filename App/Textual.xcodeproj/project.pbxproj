@@ -623,6 +623,8 @@
 		4C645DF1C0CB836A8D75372B /* TDCChannelSpotlightImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C542C8E03D5367309AD7E1E /* TDCChannelSpotlightImageView.m */; };
 		4CD58E100E86FC7ED02E10AE /* TPCLegacyImport.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9BF5AB1EC9904F8DA940A /* TPCLegacyImport.m */; };
 		4C5C98C3316CF4A4FBD6DCBC /* TDCLegacyImportAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD22A2FECF2D9FC82A38BDF /* TDCLegacyImportAssistant.m */; };
+		4C52FD1C6BA2D648909E786E /* IRCCapabilityNegotiator.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD36165258A42DBACB328CB /* IRCCapabilityNegotiator.m */; };
+		4C6E5E26CAC8042A68B61EBD /* IRCCapabilityNegotiatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1398,6 +1400,9 @@
 		4C869260B7548770E0FA1F65 /* TPCLegacyImportPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCLegacyImportPrivate.h; sourceTree = "<group>"; };
 		4CD22A2FECF2D9FC82A38BDF /* TDCLegacyImportAssistant.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLegacyImportAssistant.m; sourceTree = "<group>"; };
 		4C835A5B0452CDB46013A7CC /* TDCLegacyImportAssistantPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLegacyImportAssistantPrivate.h; sourceTree = "<group>"; };
+		4CD36165258A42DBACB328CB /* IRCCapabilityNegotiator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCCapabilityNegotiator.m; sourceTree = "<group>"; };
+		4CEC027D8CA59E5622636592 /* IRCCapabilityNegotiatorPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCCapabilityNegotiatorPrivate.h; sourceTree = "<group>"; };
+		4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCCapabilityNegotiatorTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1850,6 +1855,8 @@
 		4CCBF5F06DD11AF5D8E0EC07 /* Client */ = {
 			isa = PBXGroup;
 			children = (
+				4CD36165258A42DBACB328CB /* IRCCapabilityNegotiator.m */,
+				4CEC027D8CA59E5622636592 /* IRCCapabilityNegotiatorPrivate.h */,
 				4C16C2D3DDA811CB9D266CE0 /* IRCClient+Autojoin.m */,
 				4C5A01FEB8157E08FA3D5EA7 /* IRCClient+Capabilities.m */,
 				4C2A2A3745512014FDF1D7D2 /* IRCClient+Commands.m */,
@@ -2574,6 +2581,7 @@
 			children = (
 				4CCEEF3CE8E84E1B5AE9AC3D /* ChatFilterTests.m */,
 				4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */,
+				4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
 				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */,
@@ -3214,6 +3222,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C52FD1C6BA2D648909E786E /* IRCCapabilityNegotiator.m in Sources */,
 				4C5C98C3316CF4A4FBD6DCBC /* TDCLegacyImportAssistant.m in Sources */,
 				4CD58E100E86FC7ED02E10AE /* TPCLegacyImport.m in Sources */,
 				4C4AB961850998E1583E5DB8 /* TDCChannelSpotlightTextField.m in Sources */,
@@ -3464,6 +3473,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C6E5E26CAC8042A68B61EBD /* IRCCapabilityNegotiatorTests.m in Sources */,
 				4C7FE9B965386EBECD77C5E2 /* ICLURLSessionTests.m in Sources */,
 				4CD29A7005E9204039D14F04 /* IRCColorFormatTests.m in Sources */,
 				4CB88F3501E8522FE1EEFA73 /* IRCISupportInfoTests.m in Sources */,

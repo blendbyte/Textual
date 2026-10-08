@@ -36,7 +36,10 @@
  *
  *********************************************************************** */
 
+#include <stdatomic.h>
+
 #import "IRCClientPrivate.h"
+#import "IRCCapabilityNegotiatorPrivate.h"
 
 @class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessageContainer;
 @class TLOFileLogger, TLOTimer;
@@ -65,6 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protected
 	/* Declared here so the categories can change it directly */
 	ClientIRCv3SupportedCapability _capabilities;
+
+	/* Capabilities being negotiated and the SASL state (any thread) */
+	_Atomic(NSUInteger) _capabilitiesPending;
 }
 
 // Properties that are public in IRCClient.h
@@ -114,7 +120,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) TLOTimer *reconnectTimer;
 @property (nonatomic, strong) TLOTimer *retryTimer;
 @property (nonatomic, strong) TLOTimer *whoTimer;
-@property (nonatomic, assign) BOOL capabilityNegotiationIsPaused;
 @property (nonatomic, assign) BOOL invokingISONCommandForFirstTime;
 @property (nonatomic, assign) BOOL isTerminating; // Is being destroyed
 @property (nonatomic, assign) BOOL inWhoisResponse;
@@ -124,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL timeoutWarningShownToUser;
 @property (nonatomic, assign) BOOL zncBouncerIsSendingCertificateInfo;
 @property (nonatomic, assign) BOOL zncBouncerIsPlayingBackHistory;
-@property (nonatomic, strong) NSMutableArray<NSNumber *> *capabilitiesPending;
+@property (nonatomic, strong) IRCCapabilityNegotiator *capabilityNegotiator;
 @property (nonatomic, assign) NSUInteger connectDelay;
 @property (nonatomic, assign) NSUInteger lastServerSelected;
 @property (nonatomic, assign) NSUInteger lastWhoRequestChannelListIndex;
@@ -250,13 +255,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveChangeHost:(IRCMessage *)m;
 @end
 
-@interface IRCClient (CapabilitiesInternal)
+@interface IRCClient (CapabilitiesInternal) <IRCCapabilityNegotiatorDelegate>
+- (void)resetCapabilities;
 - (void)disablePendingCapability:(ClientIRCv3SupportedCapability)capability;
 - (BOOL)isPendingCapabilityEnabled:(ClientIRCv3SupportedCapability)capability;
 - (void)resetSASLNegotiation;
 - (void)resumeCapabilityNegotiation;
 - (void)receiveCapabilityOrAuthenticationRequest:(IRCMessage *)m;
-- (NSString *)enabledCapabilitiesStringValue;
 @end
 
 @interface IRCClient (NumericsInternal)

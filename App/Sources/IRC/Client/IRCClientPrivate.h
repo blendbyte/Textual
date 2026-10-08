@@ -49,7 +49,7 @@ enum {
 	ClientIRCv3SupportedCapabilitySASLExternal			= 1 << 24, // YES if SASL=external CAP is supported
 	ClientIRCv3SupportedCapabilityZNCServerTime			= 1 << 25, // YES if the ZNC vendor specific CAP supported
 	ClientIRCv3SupportedCapabilityZNCServerTimeISO		= 1 << 26, // YES if the ZNC vendor specific CAP supported
-	/* 1 << 27 is ClientIRCv3SupportedCapabilityZNCPlaybackModule (IRCClient.h) */
+	/* 1 << 27 is ClientIRCv3SupportedCapabilityZNCPlaybackModule (IRCClient.h, which has the bit allocation table) */
 	ClientIRCv3SupportedCapabilityPlanioPlayback		= 1 << 28  // YES if the plan.io vendor specific CAP supported.
 };
 

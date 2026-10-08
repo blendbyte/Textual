@@ -61,6 +61,14 @@ typedef NS_ENUM(NSUInteger, IRCClientDisconnectMode) {
 	IRCClientDisconnectModeServerRedirect
 };
 
+/* Bit allocation, public and private (IRCClientPrivate.h) together:
+   0–15  public, below
+  16–21  free
+  22–26  private: SASL (generic, PLAIN, EXTERNAL), ZNC server-time variants
+  27     public: ZNC playback
+  28     private: plan.io playback
+  29–30  free
+  31+    new values, written as 1ULL << n (1 << 31 overflows an int) */
 typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityAwayNotify			= 1 << 0, // YES if away-notify CAP supported
 	ClientIRCv3SupportedCapabilityBatch					= 1 << 1, // YES if batch CAP supported
@@ -132,8 +140,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (readonly) ClientIRCv3SupportedCapability capacities;
-@property (readonly, copy) NSString *enabledCapacitiesStringValue;
+@property (readonly) ClientIRCv3SupportedCapability capabilities;
 
 - (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet parameterString:(NSString *)parameterString;
 - (NSArray<NSString *> *)compileListOfModeChangesForModeSymbol:(NSString *)modeSymbol modeIsSet:(BOOL)modeIsSet parameterString:(NSString *)parameterString characterSet:(NSCharacterSet *)characterList;
@@ -336,6 +343,11 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 @end
 
 @interface IRCClient (Capabilities)
+@property (readonly, copy) NSString *enabledCapabilitiesStringValue; // e.g. "away-notify, batch, sasl"
+
+@property (readonly) ClientIRCv3SupportedCapability capacities TEXTUAL_DEPRECATED("Use capabilities instead");
+@property (readonly, copy) NSString *enabledCapacitiesStringValue TEXTUAL_DEPRECATED("Use enabledCapabilitiesStringValue instead");
+
 - (BOOL)isCapabilitySupported:(NSString *)capabilityString;
 
 - (BOOL)isCapabilityEnabled:(ClientIRCv3SupportedCapability)capability;

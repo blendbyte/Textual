@@ -177,12 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.lastMessageReceived = 0;
 
-	self.capabilities = 0;
-	self.capabilityNegotiationIsPaused = NO;
-
-	@synchronized (self.capabilitiesPending) {
-		[self.capabilitiesPending removeAllObjects];
-	}
+	[self resetCapabilities];
 
 	@synchronized (self.userListPrivate) {
 		[self.userListPrivate removeAllObjects];

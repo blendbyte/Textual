@@ -40,7 +40,7 @@
 		<key>indexValue</key>
 		<integer>1004</integer>
 		<key>outgoingColonIndex</key>
-		<integer>999</integer>
+		<integer>-1</integer>
 	</dict>
 	<key>certinfo</key>
 	<dict>

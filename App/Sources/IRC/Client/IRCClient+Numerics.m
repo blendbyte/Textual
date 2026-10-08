@@ -156,6 +156,9 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Manage properties */
 	self.isLoggedIn = YES;
 
+	/* Registration is complete: capability negotiation no longer ends it */
+	[self.capabilityNegotiator registrationCompleted];
+
 	self.supportInfo.serverAddress = m.senderHostmask;
 
 	self.invokingISONCommandForFirstTime = YES;

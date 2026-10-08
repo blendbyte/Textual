@@ -76,6 +76,11 @@ class Client:
 			elif command == "USER":
 				user_received = True
 
+		await self.welcome()
+
+		return True
+
+	async def welcome(self):
 		for line in [
 			f":{SERVER} 001 {self.nickname} :Welcome to the scripted test server",
 			f":{SERVER} 002 {self.nickname} :Your host is {SERVER}",
@@ -85,8 +90,6 @@ class Client:
 			f":{SERVER} 422 {self.nickname} :MOTD File is missing",
 		]:
 			await self.send(line)
-
-		return True
 
 	async def collect(self, seconds):
 		"""Answer PINGs and JOINs and record what the client sends for a while."""
@@ -658,6 +661,98 @@ async def scenario_pong_priority(client):
 	result(False, "no PONG within two minutes")
 
 
+async def scenario_cap_ls(client):
+	"""Negotiate capabilities like a CAP 302 server: a two-line LS that offers
+	sasl, SASL PLAIN, then CAP NEW after registration. Give the server a NickServ
+	password first (Development/dev config nicknamePassword=secret connect=1).
+	Textual Dev must send one REQ after the last LS line, CAP END only once SASL
+	is done, and nothing but a REQ for the NEW capability after registration."""
+	problems = []
+	seen = set()
+
+	async def next_line(seconds=5):
+		try:
+			return await asyncio.wait_for(client.read_line(), seconds)
+		except asyncio.TimeoutError:
+			return None
+
+	while not {"CAP", "NICK", "USER"} <= seen:
+		line = await next_line()
+		if line is None:
+			result(False, "no CAP LS, NICK and USER")
+			return
+		command, _, rest = line.partition(" ")
+		seen.add(command.upper())
+		if command.upper() == "NICK":
+			client.nickname = rest.lstrip(":")
+
+	await client.send(f":{SERVER} CAP * LS * :multi-prefix batch sasl=PLAIN,EXTERNAL")
+
+	early = await next_line(1.5)
+	if early is not None:
+		problems.append(f"sent before the last LS line: {early}")
+
+	await client.send(f":{SERVER} CAP * LS :server-time away-notify draft/unknown")
+
+	request = early if early and early.upper().startswith("CAP REQ") else await next_line()
+	if request is None or not request.upper().startswith("CAP REQ"):
+		result(False, f"expected CAP REQ, got {request}")
+		return
+	wanted = request.split(":", 1)[1].split()
+	for capability in ["multi-prefix", "batch", "sasl", "server-time", "away-notify"]:
+		if capability not in wanted:
+			problems.append(f"{capability} not requested")
+	if "draft/unknown" in wanted:
+		problems.append("requested an unknown capability")
+
+	await client.send(f":{SERVER} CAP {client.nickname} ACK :{' '.join(wanted)}")
+
+	line = await next_line()
+	if line != "AUTHENTICATE PLAIN":
+		result(False, f"expected AUTHENTICATE PLAIN, got {line}")
+		return
+
+	await client.send("AUTHENTICATE +")
+
+	line = await next_line()
+	if line is None or not line.startswith("AUTHENTICATE "):
+		result(False, f"expected the SASL credentials, got {line}")
+		return
+
+	stray = await next_line(1.5)
+	if stray is not None:
+		problems.append(f"sent before SASL finished: {stray}")
+
+	await client.send(f":{SERVER} 900 {client.nickname} {client.nickname}!user@client.textual.test {client.nickname} :You are now logged in as {client.nickname}")
+	await client.send(f":{SERVER} 903 {client.nickname} :SASL authentication successful")
+
+	line = await next_line()
+	if line != "CAP END":
+		result(False, f"expected CAP END after SASL, got {line}; {problems}")
+		return
+
+	await client.welcome()
+	await client.collect(2)
+
+	await client.send(f":{SERVER} CAP {client.nickname} NEW :chghost")
+
+	start = len(client.received)
+	await client.collect(2)
+	after = client.received[start:]
+
+	if "CAP REQ :chghost" not in after and "CAP REQ chghost" not in after:
+		problems.append(f"no REQ for the NEW capability: {after}")
+
+	await client.send(f":{SERVER} CAP {client.nickname} ACK :chghost")
+
+	start = len(client.received)
+	await client.collect(2)
+	if any(line.upper().startswith("CAP END") for line in client.received[start:]):
+		problems.append("CAP END after registration")
+
+	result(not problems, "; ".join(problems) or "one REQ after the last LS line, END after SASL, NEW requested after registration without END")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -682,7 +777,11 @@ SCENARIOS = {
 	"fin": scenario_fin,
 	"pong-priority": scenario_pong_priority,
 	"silent": scenario_silent,
+	"cap-ls": scenario_cap_ls,
 }
+
+# Scenarios that register the client themselves
+OWN_REGISTRATION_SCENARIOS = {"cap-ls"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 
@@ -735,7 +834,9 @@ async def main():
 
 		client = Client(reader, writer)
 
-		if await client.register():
+		if arguments.scenario in OWN_REGISTRATION_SCENARIOS:
+			await scenario(client)
+		elif await client.register():
 			await scenario(client)
 
 		writer.close()
