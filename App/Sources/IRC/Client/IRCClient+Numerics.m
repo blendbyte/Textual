@@ -255,6 +255,26 @@ NS_ASSUME_NONNULL_BEGIN
 		printMessage = [self postReceivedMessage:m];
 	}
 
+	if ([self _receiveRegistrationNumericReply:m print:printMessage] ||
+		[self _receiveWhoisNumericReply:m print:printMessage] ||
+		[self _receiveChannelNumericReply:m print:printMessage] ||
+		[self _receiveListNumericReply:m print:printMessage] ||
+		[self _receiveTrackingNumericReply:m print:printMessage] ||
+		[self _receiveSASLNumericReply:m print:printMessage])
+	{
+		return;
+	}
+
+	/* Not handled above */
+	[self _receiveUnhandledNumericReply:m print:printMessage];
+}
+
+/* Registration and the connection: welcome, server information, MOTD,
+ own modes and away state. Returns NO for other numerics. */
+- (BOOL)_receiveRegistrationNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
 	switch (numeric) {
 		case RPL_WELCOME:
 		{
@@ -278,7 +298,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_ISUPPORT:
 		{
-			NSAssertReturn([m paramsCount] >= 3);
+			NSAssertReturnR([m paramsCount] >= 3, YES);
 
 			NSMutableArray *params = [m.params mutableCopy];
 
@@ -303,7 +323,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_REDIR:
 		{
-			NSAssertReturn([m paramsCount] == 4);
+			NSAssertReturnR([m paramsCount] == 4, YES);
 
 			NSString *serverAddress = [m paramAt:1];
 			NSString *serverPort = [m paramAt:2];
@@ -318,7 +338,7 @@ NS_ASSUME_NONNULL_BEGIN
 			{
 				[self disconnect];
 
-				return;
+				return YES;
 			}
 
 			/* A redirect never drops TLS: a server (or anyone tampering with the
@@ -363,7 +383,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_LOCALUSERS:
 		case RPL_GLOBALUSERS:
 		{
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *message = nil;
 
@@ -390,7 +410,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_ENDOFMOTD:
 		case ERR_NOMOTD:
 		{
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			if ([TPCPreferences displayServerMOTD] == NO) {
 				break;
@@ -406,7 +426,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_UMODEIS:
 		{
-			NSAssertReturn([m paramsCount] > 1);
+			NSAssertReturnR([m paramsCount] > 1, YES);
 
 			NSString *nickname = [m paramAt:0];
 
@@ -429,9 +449,68 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		case RPL_UNAWAY:
+		case RPL_NOWAWAY:
+		{
+			BOOL away = (numeric == RPL_NOWAWAY);
+
+			self.userIsAway = away;
+			
+			[mainWindow() updateTitle];
+
+			if (printMessage) {
+				[self printReply:m];
+			}
+
+			/* Update our own status. This has to only be done with away-notify CAP enabled.
+			 Old, WHO based information requests will still show our own status. */
+			IRCUser *myself = self.myself;
+
+			if (myself == nil) {
+				break;
+			}
+
+			[self modifyUser:myself asAway:away];
+
+			break;
+		}
+		case RPL_YOUREOPER:
+		{
+			if (self.userIsIRCop == NO) {
+				self.userIsIRCop = YES;
+			} else {
+				break;
+			}
+
+			if (printMessage) {
+				[self print:TXTLS(@"IRC[6bh-br]", m.senderNickname)
+						 by:nil
+				  inChannel:nil
+					 asType:TVCLogLineTypeDebug
+					command:m.command
+				 receivedAt:m.receivedAt];
+			}
+
+			break;
+		}
+		default:
+		{
+			return NO;
+		}
+	} // switch()
+
+	return YES;
+}
+
+/* WHOIS and WHOWAS. Returns NO for other numerics. */
+- (BOOL)_receiveWhoisNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
+	switch (numeric) {
 		case RPL_AWAY:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
 			NSString *awayNickname = [m paramAt:1];
 			NSString *awayComment = [m paramAt:2];
@@ -467,31 +546,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
-		case RPL_UNAWAY:
-		case RPL_NOWAWAY:
-		{
-			BOOL away = (numeric == RPL_NOWAWAY);
-
-			self.userIsAway = away;
-			
-			[mainWindow() updateTitle];
-
-			if (printMessage) {
-				[self printReply:m];
-			}
-
-			/* Update our own status. This has to only be done with away-notify CAP enabled.
-			 Old, WHO based information requests will still show our own status. */
-			IRCUser *myself = self.myself;
-
-			if (myself == nil) {
-				break;
-			}
-
-			[self modifyUser:myself asAway:away];
-
-			break;
-		}
 		case RPL_CHANNELSMSG:
 		case RPL_WHOISBOT:
 		case RPL_WHOISHELPOP:
@@ -503,7 +557,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_WHOISSECURE:
 		case RPL_WHOISSPECIAL:
 		{
-			NSAssertReturn([m paramsCount] > 2);
+			NSAssertReturnR([m paramsCount] > 2, YES);
 
 			if (printMessage) {
 				[self printReply:m inChannel:[mainWindow() selectedChannelOn:self]];
@@ -513,9 +567,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_WHOISACTUALLY:
 		{
-			NSAssertReturn([m paramsCount] == 5);
+			NSAssertReturnR([m paramsCount] == 5, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *hostmask = [m paramAt:2];
@@ -541,7 +595,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_WHOISUSER:
 		case RPL_WHOWASUSER:
 		{
-			NSAssertReturn([m paramsCount] >= 6);
+			NSAssertReturnR([m paramsCount] >= 6, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *username = [m paramAt:2];
@@ -587,9 +641,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_WHOISSERVER:
 		{
-			NSAssertReturn([m paramsCount] == 4);
+			NSAssertReturnR([m paramsCount] == 4, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *serverAddress = [m paramAt:2];
@@ -620,9 +674,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_WHOISIDLE:
 		{
-			NSAssertReturn([m paramsCount] == 5);
+			NSAssertReturnR([m paramsCount] == 5, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *idleTime = [m paramAt:2];
@@ -647,9 +701,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_WHOISCHANNELS:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *channels = [m paramAt:2];
@@ -667,9 +721,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_WHOISACCOUNT:
 		{
-			NSAssertReturn([m paramsCount] == 4);
+			NSAssertReturnR([m paramsCount] == 4, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *message = [NSString stringWithFormat:@"%@ %@ %@", [m paramAt:1], [m sequence:3], [m paramAt:2]];
 
@@ -702,16 +756,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		default:
+		{
+			return NO;
+		}
+	} // switch()
+
+	return YES;
+}
+
+/* Channel state: modes, topic, invites, WHO and NAMES. Returns NO for
+ other numerics. */
+- (BOOL)_receiveChannelNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
+	switch (numeric) {
 		case RPL_CHANNELMODEIS:
 		{
-			NSAssertReturn([m paramsCount] > 2);
+			NSAssertReturnR([m paramsCount] > 2, YES);
 
 			NSString *channelName = [m paramAt:1];
 
 			NSString *modeString = [m sequence:2];
 
 			if ([modeString isEqualToString:@"+"]) {
-				return;
+				return YES;
 			}
 
 			IRCChannel *channel = [self findChannel:channelName];
@@ -751,7 +821,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_TOPIC:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
 			NSString *channelName = [m paramAt:1];
 			NSString *topic = [m paramAt:2];
@@ -779,7 +849,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_TOPICWHOTIME:
 		{
-			NSAssertReturn([m paramsCount] == 4);
+			NSAssertReturnR([m paramsCount] == 4, YES);
 
 			NSString *channelName = [m paramAt:1];
 
@@ -792,7 +862,7 @@ NS_ASSUME_NONNULL_BEGIN
 			printMessage = [self postReceivedMessage:m withText:nil destinedFor:channel];
 
 			if (printMessage == NO) {
-				return;
+				return YES;
 			}
 
 			NSString *topicSetter = [m paramAt:2];
@@ -821,9 +891,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_INVITING:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *channelName = [m paramAt:2];
@@ -843,99 +913,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
-		case RPL_ISON:
-		{
-			/* Present reply to the user if we have destination */
-			BOOL visibleIsonRequest = self.requestedCommands.visibleIsonRequest;
-
-			[self.requestedCommands recordIsonRequestClosed];
-
-			if (visibleIsonRequest) {
-				if (printMessage) {
-					[self printReplyToHiddenCommandResponsesQuery:m];
-				}
-
-				/* It is important that we don't process logic for visible
-				 requests because if user does ISON for people that aren't
-				 on the tracked list and the logic below sees the response
-				 missing those, then it will think everyone tracked went offline. */
-				break;
-			}
-
-			/* If the ISON records were not requested by the user, then
-			 treat the results as user tracking information. */
-			NSString *onlineNicknamesString = m.sequence;
-
-			NSArray *onlineNicknames = [onlineNicknamesString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-
-			/* Start going over the list of tracked nicknames */
-			NSDictionary *trackedUsers = self.trackedUsers.trackedUsers;
-
-			[trackedUsers enumerateKeysAndObjectsUsingBlock:^(NSString *trackedUser, NSNumber *trackingStatusInt, BOOL *stop) {
-				IRCAddressBookUserTrackingStatus trackingStatus =
-				IRCAddressBookUserTrackingStatusUnknown;
-
-				/* Was the user on during the last check? */
-				BOOL ison = trackingStatusInt.boolValue;
-
-				if (ison) {
-					/* If the user was on before, but is not in the list of ISON
-					 users in this reply, then they are considered gone. Log that. */
-					if ([onlineNicknames containsObjectIgnoringCase:trackedUser] == NO) {
-						if (self.invokingISONCommandForFirstTime == NO) {
-							trackingStatus = IRCAddressBookUserTrackingStatusSignedOff;
-						}
-					}
-				} else {
-					/* If they were not on but now are, then log that too. */
-					if ([onlineNicknames containsObjectIgnoringCase:trackedUser]) {
-						if (self.invokingISONCommandForFirstTime) {
-							trackingStatus = IRCAddressBookUserTrackingStatusAvailable;
-						} else {
-							trackingStatus = IRCAddressBookUserTrackingStatusSignedOn;
-						}
-					}
-				}
-
-				/* If something changed (non-nil localization string), then scan 
-				 the list of address book entries to report the result. */
-				if (trackingStatus != IRCAddressBookUserTrackingStatusUnknown) {
-					[self statusOfTrackedNickname:trackedUser changedTo:trackingStatus notify:YES];
-				}
-			}]; // for
-
-			if (self.invokingISONCommandForFirstTime) { // Reset internal property
-				self.invokingISONCommandForFirstTime = NO;
-			}
-
-			/* Update private messages */
-			for (IRCChannel *channel in self.channelList) {
-				if (channel.privateMessage == NO) {
-					continue;
-				}
-
-				if (channel.isActive) {
-					/* If the user is no longer on, deactivate the private message */
-					if ([onlineNicknames containsObjectIgnoringCase:channel.name] == NO) {
-						[channel deactivate];
-
-						[mainWindow() reloadTreeItem:channel];
-					}
-				} else {
-					/* Activate the private message if the user is back online */
-					if ([onlineNicknames containsObjectIgnoringCase:channel.name]) {
-						[channel activate];
-
-						[mainWindow() reloadTreeItem:channel];
-					}
-				}
-			}
-
-			break;
-		}
 		case RPL_WHOREPLY:
 		{
-			NSAssertReturn([m paramsCount] > 6);
+			NSAssertReturnR([m paramsCount] > 6, YES);
 
 			/* Present reply to the user if we have destination */
 			if (self.requestedCommands.visibleWhoRequest) {
@@ -1097,7 +1077,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_NAMEREPLY:
 		{
-			NSAssertReturn([m paramsCount] > 3);
+			NSAssertReturnR([m paramsCount] > 3, YES);
 
 			/* Present reply to the user if we have destination */
 			if (printMessage) {
@@ -1187,7 +1167,7 @@ NS_ASSUME_NONNULL_BEGIN
 					 then we do not continue unless its us. We are added to the
 					 channel when the JOIN is received, but we still need modes. */
 
-					return;
+					return YES;
 				}
 
 				/* Create channel user */
@@ -1201,7 +1181,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_ENDOFNAMES:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
 			/* Present reply to the user if we have destination */
 			if (printMessage) {
@@ -1241,6 +1221,46 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		case RPL_CHANNEL_URL:
+		{
+			NSAssertReturnR([m paramsCount] == 3, YES);
+
+			NSAssertReturnR(printMessage, YES);
+
+			NSString *channelName = [m paramAt:1];
+			NSString *website = [m paramAt:2];
+
+			IRCChannel *channel = [self findChannel:channelName];
+
+			if (channel == nil) {
+				return YES;
+			}
+
+			[self print:TXTLS(@"IRC[8tq-g6]", website)
+					 by:nil
+			  inChannel:channel
+				 asType:TVCLogLineTypeWebsite
+				command:m.command
+			 receivedAt:m.receivedAt];
+
+			break;
+		}
+		default:
+		{
+			return NO;
+		}
+	} // switch()
+
+	return YES;
+}
+
+/* The channel list and ban, invite, exception and quiet lists. Returns NO
+ for other numerics. */
+- (BOOL)_receiveListNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
+	switch (numeric) {
 		case RPL_LISTSTART:
 		{
 			TDCServerChannelListDialog *channelListDialog = [self channelListDialog];
@@ -1255,7 +1275,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_LIST:
 		{
-			NSAssertReturn([m paramsCount] > 2);
+			NSAssertReturnR([m paramsCount] > 2, YES);
 
 			NSString *channel = [m paramAt:1];
 			NSString *userCount = [m paramAt:2];
@@ -1288,7 +1308,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_EXCEPTLIST:
 		case RPL_QUIETLIST:
 		{
-			NSAssertReturn([m paramsCount] > 2);
+			NSAssertReturnR([m paramsCount] > 2, YES);
 
 			NSUInteger paramsOffset = 0;
 
@@ -1324,11 +1344,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 				[listSheet addEntry:entryMask setBy:entryAuthor creationDate:entryCreationDate];
 
-				return;
+				return YES;
 			}
 
 			if (printMessage == NO) {
-				return;
+				return YES;
 			}
 
 			NSString *localization = nil;
@@ -1385,51 +1405,119 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
-		case RPL_YOUREOPER:
+		default:
 		{
-			if (self.userIsIRCop == NO) {
-				self.userIsIRCop = YES;
-			} else {
+			return NO;
+		}
+	} // switch()
+
+	return YES;
+}
+
+/* User tracking: ISON, WATCH, MONITOR and caller ID (+g). Returns NO for
+ other numerics. */
+- (BOOL)_receiveTrackingNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
+	switch (numeric) {
+		case RPL_ISON:
+		{
+			/* Present reply to the user if we have destination */
+			BOOL visibleIsonRequest = self.requestedCommands.visibleIsonRequest;
+
+			[self.requestedCommands recordIsonRequestClosed];
+
+			if (visibleIsonRequest) {
+				if (printMessage) {
+					[self printReplyToHiddenCommandResponsesQuery:m];
+				}
+
+				/* It is important that we don't process logic for visible
+				 requests because if user does ISON for people that aren't
+				 on the tracked list and the logic below sees the response
+				 missing those, then it will think everyone tracked went offline. */
 				break;
 			}
 
-			if (printMessage) {
-				[self print:TXTLS(@"IRC[6bh-br]", m.senderNickname)
-						 by:nil
-				  inChannel:nil
-					 asType:TVCLogLineTypeDebug
-					command:m.command
-				 receivedAt:m.receivedAt];
+			/* If the ISON records were not requested by the user, then
+			 treat the results as user tracking information. */
+			NSString *onlineNicknamesString = m.sequence;
+
+			NSArray *onlineNicknames = [onlineNicknamesString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+			/* Start going over the list of tracked nicknames */
+			NSDictionary *trackedUsers = self.trackedUsers.trackedUsers;
+
+			[trackedUsers enumerateKeysAndObjectsUsingBlock:^(NSString *trackedUser, NSNumber *trackingStatusInt, BOOL *stop) {
+				IRCAddressBookUserTrackingStatus trackingStatus =
+				IRCAddressBookUserTrackingStatusUnknown;
+
+				/* Was the user on during the last check? */
+				BOOL ison = trackingStatusInt.boolValue;
+
+				if (ison) {
+					/* If the user was on before, but is not in the list of ISON
+					 users in this reply, then they are considered gone. Log that. */
+					if ([onlineNicknames containsObjectIgnoringCase:trackedUser] == NO) {
+						if (self.invokingISONCommandForFirstTime == NO) {
+							trackingStatus = IRCAddressBookUserTrackingStatusSignedOff;
+						}
+					}
+				} else {
+					/* If they were not on but now are, then log that too. */
+					if ([onlineNicknames containsObjectIgnoringCase:trackedUser]) {
+						if (self.invokingISONCommandForFirstTime) {
+							trackingStatus = IRCAddressBookUserTrackingStatusAvailable;
+						} else {
+							trackingStatus = IRCAddressBookUserTrackingStatusSignedOn;
+						}
+					}
+				}
+
+				/* If something changed (non-nil localization string), then scan 
+				 the list of address book entries to report the result. */
+				if (trackingStatus != IRCAddressBookUserTrackingStatusUnknown) {
+					[self statusOfTrackedNickname:trackedUser changedTo:trackingStatus notify:YES];
+				}
+			}]; // for
+
+			if (self.invokingISONCommandForFirstTime) { // Reset internal property
+				self.invokingISONCommandForFirstTime = NO;
 			}
 
-			break;
-		}
-		case RPL_CHANNEL_URL:
-		{
-			NSAssertReturn([m paramsCount] == 3);
+			/* Update private messages */
+			for (IRCChannel *channel in self.channelList) {
+				if (channel.privateMessage == NO) {
+					continue;
+				}
 
-			NSAssertReturn(printMessage);
+				if (channel.isActive) {
+					/* If the user is no longer on, deactivate the private message */
+					if ([onlineNicknames containsObjectIgnoringCase:channel.name] == NO) {
+						[channel deactivate];
 
-			NSString *channelName = [m paramAt:1];
-			NSString *website = [m paramAt:2];
+						[mainWindow() reloadTreeItem:channel];
+					}
+				} else {
+					/* Activate the private message if the user is back online */
+					if ([onlineNicknames containsObjectIgnoringCase:channel.name]) {
+						[channel activate];
 
-			IRCChannel *channel = [self findChannel:channelName];
-
-			if (channel == nil) {
-				return;
+						[mainWindow() reloadTreeItem:channel];
+					}
+				}
 			}
-
-			[self print:TXTLS(@"IRC[8tq-g6]", website)
-					 by:nil
-			  inChannel:channel
-				 asType:TVCLogLineTypeWebsite
-				command:m.command
-			 receivedAt:m.receivedAt];
 
 			break;
 		}
 		case RPL_WATCHSTAT:
 		case RPL_WATCHLIST:
+		case RPL_WATCHOFF:
+//		case RPL_CLEARWATCH: /* Not implemented by any IRCd */
+		case RPL_ENDOFWATCHLIST:
+		case RPL_MONLIST:
+		case RPL_ENDOFMONLIST:
 		{
 			if (printMessage) {
 				[self printReplyToHiddenCommandResponsesQuery:m];
@@ -1440,89 +1528,12 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_REAWAY:
 		case RPL_GONEAWAY:
 		case RPL_NOTAWAY:
-		{
-			NSAssertReturn([m paramsCount] > 4);
-
-			/* Present reply to the user if we have destination */
-			if (printMessage) {
-				[self printReplyToHiddenCommandResponsesQuery:m];
-			}
-
-			/* Process reply */
-			NSString *nickname = [m paramAt:1];
-
-			IRCAddressBookEntry *addressBookEntry =	[self findUserTrackingAddressBookEntryForNickname:nickname];
-
-			if (addressBookEntry == nil) {
-				break;
-			}
-
-			switch (numeric) {
-				case RPL_REAWAY:
-				case RPL_GONEAWAY: // is away
-				{
-					[self modifyUserWithNickname:nickname asAway:YES];
-
-					break;
-				}
-				case RPL_NOTAWAY: // is no longer away
-				{
-					[self modifyUserWithNickname:nickname asAway:NO];
-
-					break;
-				}
-				default:
-				{
-					break;
-				}
-			} // switch()
-
-			break;
-		}
 		case RPL_LOGON:
 		case RPL_LOGOFF:
-		{
-			NSAssertReturn([m paramsCount] > 4);
-
-			/* Present reply to the user if we have destination */
-			if (printMessage) {
-				[self printReplyToHiddenCommandResponsesQuery:m];
-			}
-
-			 /* Process reply */
-			NSString *nickname = [m paramAt:1];
-
-			IRCAddressBookEntry *addressBookEntry =	[self findUserTrackingAddressBookEntryForNickname:nickname];
-
-			if (addressBookEntry == nil) {
-				break;
-			}
-
-			switch (numeric) {
-				case RPL_LOGON: // logged online
-				{
-					[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
-
-					break;
-				}
-				case RPL_LOGOFF: // logged offline
-				{
-					[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
-
-					break;
-				}
-				default:
-				{
-					break;
-				}
-			} // switch()
-
-			break;
-		}
 		case RPL_NOWON:
 		case RPL_NOWOFF:
 		{
-			NSAssertReturn([m paramsCount] > 4);
+			NSAssertReturnR([m paramsCount] > 4, YES);
 
 			/* Present reply to the user if we have destination */
 			if (printMessage) {
@@ -1530,44 +1541,12 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			/* Process reply */
-			NSString *nickname = [m paramAt:1];
-
-			IRCAddressBookEntry *addressBookEntry =	[self findUserTrackingAddressBookEntryForNickname:nickname];
-
-			if (addressBookEntry == nil) {
-				break;
-			}
-
-			switch (numeric) {
-				case RPL_NOWON: // is online
-				{
-					[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusAvailable notify:NO];
-					
-					break;
-				}
-				case RPL_NOWOFF: // is offline
-				{
-					[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusNotAvailable notify:NO];
-					
-					break;
-				}
-				default:
-				{
-					break;
-				}
-			} // switch()
-
-			break;
-		}
-		case RPL_WATCHOFF:
-		{
-			if (printMessage) {
-				[self printReplyToHiddenCommandResponsesQuery:m];
-			}
+			[self _trackedNickname:[m paramAt:1] changedWithNumeric:numeric];
 
 			break;
 		}
 		case ERR_TOOMANYWATCH:
+		case ERR_MONLISTFULL:
 		{
 			/* This message is always printed because Textual does not
 			 make an effort to check the maximum allowance for this
@@ -1579,27 +1558,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
-//		case RPL_CLEARWATCH: /* Not implemented by any IRCd */
-		case RPL_ENDOFWATCHLIST:
-		{
-			if (printMessage) {
-				[self printReplyToHiddenCommandResponsesQuery:m];
-			}
-
-			break;
-		}
-		case RPL_MONLIST:
-		{
-			if (printMessage) {
-				[self printReplyToHiddenCommandResponsesQuery:m];
-			}
-
-			break;
-		}
 		case RPL_MONONLINE:
 		case RPL_MONOFFLINE:
 		{
-			NSAssertReturn([m paramsCount] == 2);
+			NSAssertReturnR([m paramsCount] == 2, YES);
 
 			/* Present reply to the user if we have destination */
 			if (printMessage) {
@@ -1618,34 +1580,7 @@ NS_ASSUME_NONNULL_BEGIN
 					nickname = changedUser;
 				}
 
-				IRCAddressBookEntry *addressBookEntry =	[self findUserTrackingAddressBookEntryForNickname:nickname];
-
-				if (addressBookEntry == nil) {
-					continue;
-				}
-
-				if (numeric == RPL_MONONLINE) { // logged online
-					[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
-				} else {
-					[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
-				}
-			}
-
-			break;
-		}
-		case ERR_MONLISTFULL:
-		{
-			/* See ERR_TOOMANYWATCH for reason we always print this. */
-			if (printMessage) {
-				[self printErrorReply:m];
-			}
-
-			break;
-		}
-		case RPL_ENDOFMONLIST:
-		{
-			if (printMessage) {
-				[self printReplyToHiddenCommandResponsesQuery:m];
+				[self _trackedNickname:nickname changedWithNumeric:numeric];
 			}
 
 			break;
@@ -1658,9 +1593,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_TARGNOTIFY:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 
@@ -1670,9 +1605,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_UMODEGMSG:
 		{
-			NSAssertReturn([m paramsCount] == 4);
+			NSAssertReturnR([m paramsCount] == 4, YES);
 
-			NSAssertReturn(printMessage);
+			NSAssertReturnR(printMessage, YES);
 
 			NSString *nickname = [m paramAt:1];
 			NSString *hostmask = [m paramAt:2];
@@ -1693,9 +1628,81 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		default:
+		{
+			return NO;
+		}
+	} // switch()
+
+	return YES;
+}
+
+/* A WATCH or MONITOR reply about one user: update the user if they are
+ on the tracked list (the address book) */
+- (void)_trackedNickname:(NSString *)nickname changedWithNumeric:(NSInteger)numeric
+{
+	IRCAddressBookEntry *addressBookEntry =	[self findUserTrackingAddressBookEntryForNickname:nickname];
+
+	if (addressBookEntry == nil) {
+		return;
+	}
+
+	switch (numeric) {
+		case RPL_REAWAY:
+		case RPL_GONEAWAY: // is away
+		{
+			[self modifyUserWithNickname:nickname asAway:YES];
+
+			break;
+		}
+		case RPL_NOTAWAY: // is no longer away
+		{
+			[self modifyUserWithNickname:nickname asAway:NO];
+
+			break;
+		}
+		case RPL_LOGON: // logged online
+		case RPL_MONONLINE:
+		{
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
+
+			break;
+		}
+		case RPL_LOGOFF: // logged offline
+		case RPL_MONOFFLINE:
+		{
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
+
+			break;
+		}
+		case RPL_NOWON: // is online
+		{
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusAvailable notify:NO];
+
+			break;
+		}
+		case RPL_NOWOFF: // is offline
+		{
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusNotAvailable notify:NO];
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	} // switch()
+}
+
+/* SASL authentication. Returns NO for other numerics. */
+- (BOOL)_receiveSASLNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
+	switch (numeric) {
 		case RPL_LOGGEDIN:
 		{
-			NSAssertReturn([m paramsCount] == 4);
+			NSAssertReturnR([m paramsCount] == 4, YES);
 
 			[self enableCapability:ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL];
 
@@ -1712,7 +1719,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_LOGGEDOUT:
 		{
-			NSAssertReturn([m paramsCount] == 3);
+			NSAssertReturnR([m paramsCount] == 3, YES);
 
 			[self resetSASLNegotiation];
 
@@ -1760,30 +1767,37 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		default:
 		{
-			/* We will handle custom WHOIS responses here because there
-			 are so many that it is impossible to cover them all above. */
-			/* For those that we don't handle, give a plugin a chance first. */
-			NSString *numericString = [NSString stringWithUnsignedInteger:numeric];
-
-			if ([sharedPluginManager().supportedServerInputCommands containsObject:numericString]) {
-				break;
-			}
-
-			if (printMessage) {
-				/* Output custom WHOIS response to proper target */
-				if (self.inWhoisResponse && m.paramsCount > 2) {
-					[self printUnknownReply:m inChannel:[mainWindow() selectedChannelOn:self]];
-
-					break;
-				}
-
-				/* Output unknown result */
-				[self printUnknownReply:m];
-			}
-
-			break;
+			return NO;
 		}
 	} // switch()
+
+	return YES;
+}
+
+/* We will handle custom WHOIS responses here because there are so many
+ that it is impossible to cover them all in -_receiveWhoisNumericReply:. */
+- (void)_receiveUnhandledNumericReply:(IRCMessage *)m print:(BOOL)printMessage
+{
+	NSInteger numeric = m.commandNumeric;
+
+	/* For those that we don't handle, give a plugin a chance first. */
+	NSString *numericString = [NSString stringWithUnsignedInteger:numeric];
+
+	if ([sharedPluginManager().supportedServerInputCommands containsObject:numericString]) {
+		return;
+	}
+
+	if (printMessage) {
+		/* Output custom WHOIS response to proper target */
+		if (self.inWhoisResponse && m.paramsCount > 2) {
+			[self printUnknownReply:m inChannel:[mainWindow() selectedChannelOn:self]];
+
+			return;
+		}
+
+		/* Output unknown result */
+		[self printUnknownReply:m];
+	}
 }
 
 - (void)receiveErrorNumericReply:(IRCMessage *)m
