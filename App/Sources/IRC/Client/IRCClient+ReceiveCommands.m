@@ -293,11 +293,16 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	if ([self chatHistoryShouldSkipMessage:m inChannel:channel]) {
+		return;
+	}
+
 	NSString *sender = m.senderNickname;
 
 	BOOL isSelfMessage = NO;
 
-	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage]) {
+	/* Backfilled history includes our own lines */
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] || [self isChatHistoryMessage:m]) {
 		isSelfMessage = [self nicknameIsMyself:sender];
 	}
 
@@ -416,7 +421,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] ||
 		[self isCapabilityEnabled:ClientIRCv3SupportedCapabilityZNCSelfMessage] ||
-		self.isConnectedToZNC)
+		self.isConnectedToZNC ||
+		[self isChatHistoryMessage:m]) // backfilled history includes our own lines
 	{
 		isSelfMessage = [self nicknameIsMyself:sender];
 	}
@@ -528,6 +534,10 @@ NS_ASSUME_NONNULL_BEGIN
 		};
 	}
 
+	if (query && [self chatHistoryShouldSkipMessage:m inChannel:query]) {
+		return;
+	}
+
 	/* Ask for permission to print message */
 	BOOL printMessage = YES;
 
@@ -559,8 +569,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* Update query status */
-	if (query.isActive == NO) {
+	/* Update query status (a message, unlike a notice, always has a query) */
+	if (query != nil && query.isActive == NO) {
 		[query activate];
 
 		[mainWindow() reloadTreeItem:query];
@@ -1173,6 +1183,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		if (channel.isActive == NO && channel.isChannel) {
 			[channel activate];
+
+			[self requestChatHistoryForChannel:channel];
 		} else {
 			return;
 		}
@@ -2068,6 +2080,11 @@ NS_ASSUME_NONNULL_BEGIN
 			[self performSelectorInCommonModes:@selector(flushUnclosedBatchWithToken:) withObject:batchToken afterDelay:_batchFlushTimeout];
 		}
 
+		/* An answer to a CHATHISTORY request: BATCH +token chathistory target */
+		if ([batchType isEqualToString:@"chathistory"] || [batchType isEqualToString:@"draft/chathistory"]) {
+			[self chatHistoryBatchOpenedForTarget:[m paramAt:2]];
+		}
+
 		/* Set vendor specific flags based on BATCH command values */
 		if ([batchType isEqualToString:@"znc.in/playback"]) {
 			self.zncBouncerIsPlayingBackHistory = self.isConnectedToZNC;
@@ -2123,6 +2140,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(m != nil);
 
 	NSAssertReturn([m paramsCount] >= 3);
+
+	if ([self chatHistoryHidesStandardReply:m]) {
+		return;
+	}
 
 	/* In a channel the context names, otherwise in the console */
 	IRCChannel *channel = nil;

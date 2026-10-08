@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IRCClient *client;
 @property (nonatomic, copy) NSArray<NSDictionary *> *cachedConfiguration;
 @property (nonatomic, assign, readwrite) NSUInteger maximumAwayLength;
+@property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) NSUInteger maximumChannelNameLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKeyLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKickLength;
@@ -108,6 +109,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.networkNameFormatted = nil;
 
 	self.caseMapping = IRCISupportInfoCaseMappingRFC1459;
+
+	self.chatHistoryLimit = 0;
 
 	self.channelNamePrefixes = @[@"#"];
 
@@ -177,6 +180,12 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
 				self.caseMapping = [self.class caseMappingNamed:segmentValue];
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHATHISTORY"]) {
+				NSInteger chatHistoryLimit = segmentValue.integerValue;
+
+				if (chatHistoryLimit > 0) {
+					self.chatHistoryLimit = chatHistoryLimit;
+				}
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHANMODES"]) {
 				[self parseChannelModes:segmentValue];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHANNELLEN"]) {

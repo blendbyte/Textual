@@ -45,6 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface IRCChannel () <IRCChannelMemberListPrivatePrototype>
 @property (atomic, strong, nullable) IRCChannelHighlightKeywords *highlightKeywords; // built by IRCClient (Logging)
+
+/* draft/chathistory, for this run of the app only (IRCClient+ChatHistory) */
+@property (nonatomic, copy, nullable) NSString *chatHistoryAnchorMessageId; // newest message seen
+@property (nonatomic, copy, nullable) NSDate *chatHistoryAnchorTime;
+@property (nonatomic, strong, nullable) NSMutableOrderedSet<NSString *> *chatHistoryRecentMessageIds;
 @property (nonatomic, assign, readwrite) IRCChannelStatus status;
 @property (nonatomic, assign) BOOL sentInitialWhoRequest;
 @property (nonatomic, assign) BOOL channelModesReceived;

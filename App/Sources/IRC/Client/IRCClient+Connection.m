@@ -221,6 +221,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self clearTrackedUsers];
 
+	[self.chatHistoryPendingTargets removeAllObjects];
+
+	self.chatHistoryDisconnectTime = [NSDate date];
+
 	if (isTerminating == NO) {
 		/* -prepareForApplicationTermination in TVCLogController will cancel
 		 all operations for this client for us during termination. */

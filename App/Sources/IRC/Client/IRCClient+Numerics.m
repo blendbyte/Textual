@@ -196,6 +196,9 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Request playback since the last seen message when previously connected */
 	[self requestPlayback];
 
+	/* draft/chathistory: missed private messages (channels ask once joined) */
+	[self requestChatHistoryForQueries];
+
 	/* Activate existing queries */
 	for (IRCChannel *c in self.channelList) {
 		if (c.privateMessage) {

@@ -228,6 +228,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.channelListPrivate = [NSMutableArray array];
 
+	self.chatHistoryPendingTargets = [NSMutableSet set];
+
 	self.timedCommands = [NSMutableDictionary dictionary];
 
 	self.knownUsers = [[IRCUserList alloc] initWithClient:self];

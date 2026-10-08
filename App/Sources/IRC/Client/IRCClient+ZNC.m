@@ -212,6 +212,11 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(message != nil);
 
+	/* Backfilled history (draft/chathistory) updates unread and highlight counts but doesn't notify */
+	if ([self isChatHistoryMessage:message]) {
+		return NO;
+	}
+
 	if (self.isConnectedToZNC == NO) {
 		return YES;
 	}

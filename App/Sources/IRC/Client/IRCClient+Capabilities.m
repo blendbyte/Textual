@@ -172,6 +172,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "away-notify",			ClientIRCv3SupportedCapabilityAwayNotify,			ClientIRCv3SupportedCapabilityAwayNotify },
 	{ "batch",					ClientIRCv3SupportedCapabilityBatch,				ClientIRCv3SupportedCapabilityBatch },
 	{ "chghost",				ClientIRCv3SupportedCapabilityChangeHost,			ClientIRCv3SupportedCapabilityChangeHost },
+	{ "draft/chathistory",		ClientIRCv3SupportedCapabilityChatHistory,			ClientIRCv3SupportedCapabilityChatHistory },
 	{ "echo-message",			ClientIRCv3SupportedCapabilityEchoMessage,			ClientIRCv3SupportedCapabilityEchoMessage },
 	{ "extended-join",			ClientIRCv3SupportedCapabilityExtendedJoin,			ClientIRCv3SupportedCapabilityExtendedJoin },
 	{ "identify-ctcp",			ClientIRCv3SupportedCapabilityIdentifyCTCP,			ClientIRCv3SupportedCapabilityIdentifyCTCP },
@@ -326,6 +327,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityAwayNotify, @"away-notify");
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
+	appendValue(ClientIRCv3SupportedCapabilityChatHistory, @"draft/chathistory");
 	appendValue(ClientIRCv3SupportedCapabilityEchoMessage, @"echo-message");
 	appendValue(ClientIRCv3SupportedCapabilityExtendedJoin, @"extended-join");
 	appendValue(ClientIRCv3SupportedCapabilityIdentifyCTCP, @"identify-ctcp");

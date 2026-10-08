@@ -145,6 +145,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger autojoinDelayedWarningCount;
 @property (nonatomic, copy, nullable) NSString *tryingNicknameSentNickname;
 @property (nonatomic, strong) NSMutableArray<IRCChannel *> *channelListPrivate;
+@property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
+@property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last connection ended
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate
 @property (nonatomic, assign) IRCISupportInfoCaseMapping channelMapCaseMapping;
 @property (nonatomic, strong, nullable) NSMutableArray<IRCChannel *> *channelsToAutojoin;
@@ -264,6 +266,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveCertInfo:(IRCMessage *)m;
 - (void)receiveChangeHost:(IRCMessage *)m;
 - (void)processStrictTransportSecurityValue:(nullable NSString *)value;
+
+/* draft/chathistory gap-fill (IRCClient+ChatHistory.m) */
+- (BOOL)isChatHistoryMessage:(IRCMessage *)m;
+- (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel;
+- (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel fromHistory:(BOOL)fromHistory;
+- (nullable NSString *)chatHistoryRequestForChannel:(IRCChannel *)channel;
+- (void)requestChatHistoryForChannel:(IRCChannel *)channel;
+- (void)requestChatHistoryForQueries;
+- (BOOL)chatHistoryHidesStandardReply:(IRCMessage *)m;
+- (void)chatHistoryBatchOpenedForTarget:(nullable NSString *)target;
 - (void)receiveStandardReply:(IRCMessage *)m;
 - (NSString *)standardReplyText:(IRCMessage *)m;
 - (void)receiveAccount:(IRCMessage *)m;
