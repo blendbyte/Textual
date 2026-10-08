@@ -16,3 +16,4 @@ xcuserdata/
 
 # Local code signing overrides
 /Configurations/Signing.local.xcconfig
+__pycache__/
