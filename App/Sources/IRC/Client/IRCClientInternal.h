@@ -133,6 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL zncBouncerIsSendingCertificateInfo;
 @property (nonatomic, assign) BOOL zncBouncerIsPlayingBackHistory;
 @property (nonatomic, strong) IRCCapabilityNegotiator *capabilityNegotiator;
+@property (nonatomic, copy, nullable) dispatch_block_t terminationCallback; // run on disconnect instead of disconnectCallback; only termination sets it
 @property (nonatomic, strong) NSMutableArray<NSString *> *isonReplyNicknames; // online nicknames of a hidden ISON request so far
 @property (nonatomic, assign) NSUInteger connectDelay;
 @property (nonatomic, assign) NSUInteger lastServerSelected;

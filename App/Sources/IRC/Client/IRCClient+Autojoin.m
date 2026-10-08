@@ -453,13 +453,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCClient *weakSelf = self;
-
-		self.disconnectCallback = ^{
-			[weakSelf connect:IRCClientConnectModeRetry];
-		};
-
-		[self disconnect];
+		[self disconnectThen:^(IRCClient *client) {
+			[client connect:IRCClientConnectModeRetry];
+		}];
 	});
 }
 

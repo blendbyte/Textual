@@ -515,13 +515,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (self.isConnecting || self.isConnected) {
-		__weak IRCClient *weakSelf = self;
-
-		self.disconnectCallback = ^{
-			[weakSelf connect];
-		};
-
-		[self quit];
+		[self quitThen:^(IRCClient *client) {
+			[client connect];
+		}];
 
 		return;
 	}

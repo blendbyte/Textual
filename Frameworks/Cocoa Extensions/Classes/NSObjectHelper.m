@@ -108,6 +108,13 @@ NS_ASSUME_NONNULL_BEGIN
 	[self performSelector:aSelector withObject:anArgument afterDelay:delay inModes:@[NSRunLoopCommonModes]];
 }
 
+- (void)cs_reschedulePerformSelectorInCommonModes:(SEL)aSelector withObject:(nullable id)anArgument afterDelay:(NSTimeInterval)delay
+{
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:aSelector object:anArgument];
+
+	[self performSelector:aSelector withObject:anArgument afterDelay:delay inModes:@[NSRunLoopCommonModes]];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

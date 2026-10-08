@@ -828,15 +828,11 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Disconnect and reconnect if message is believed to be from an irssi proxy */
 	/* If we do not do this, the internal state of the client becomes fucked all around */
 	if ([sender hasSuffix:@".proxy"] && [text isEqualToString:@"Connected to server"]) {
-		__weak IRCClient *weakSelf = self;
+		[self disconnectThen:^(IRCClient *client) {
+			[client printDebugInformationToConsole:TXTLS(@"IRC[5i4-qq]")];
 
-		self.disconnectCallback = ^{
-			[weakSelf printDebugInformationToConsole:TXTLS(@"IRC[5i4-qq]")];
-
-			[weakSelf connect:IRCClientConnectModeReconnect];
-		};
-
-		[self disconnect];
+			[client connect:IRCClientConnectModeReconnect];
+		}];
 	}
 }
 
@@ -1377,9 +1373,7 @@ NS_ASSUME_NONNULL_BEGIN
 			if ([TPCPreferences rejoinOnKick] && channel.errorOnLastJoinAttempt == NO) {
 				[self printDebugInformation:TXTLS(@"IRC[zzj-2h]") inChannel:channel];
 
-				[self cancelPerformRequestsWithSelector:@selector(joinKickedChannel:) object:channel];
-
-				[self performSelectorInCommonModes:@selector(joinKickedChannel:) withObject:channel afterDelay:3.0];
+				[self cs_reschedulePerformSelectorInCommonModes:@selector(joinKickedChannel:) withObject:channel afterDelay:3.0];
 			}
 		}
 		else // myself
@@ -1917,11 +1911,9 @@ NS_ASSUME_NONNULL_BEGIN
 	if (([message hasPrefix:@"Closing Link:"] && [message hasSuffix:@"(Excess Flood)"]) ||
 		([message hasPrefix:@"Closing Link:"] && [message hasSuffix:@"(Max SendQ exceeded)"]))
 	{
-		__weak IRCClient *weakSelf = self;
-
-		self.disconnectCallback = ^{
-			[weakSelf cancelReconnect];
-		};
+		[self afterDisconnectPerform:^(IRCClient *client) {
+			[client cancelReconnect];
+		}];
 	}
 
 	[self printError:message asCommand:m.command];

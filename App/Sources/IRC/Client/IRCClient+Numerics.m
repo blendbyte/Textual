@@ -224,14 +224,14 @@ NS_ASSUME_NONNULL_BEGIN
 		 this is the best patch. At least for right now. */
 
 		if (self.isConnectedToZNC) {
-			[self performSelectorInCommonModes:@selector(performAutoJoin) withObject:nil afterDelay:3.0];
+			[self cs_reschedulePerformSelectorInCommonModes:@selector(performAutoJoin) withObject:nil afterDelay:3.0];
 		} else {
 			[self startAutojoinDelayedWarningTimer];
 		}
 	}
 
 	/* We need time for the server to send its configuration */
-	[self performSelectorInCommonModes:@selector(populateISONTrackedUsersList) withObject:nil afterDelay:10.0];
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(populateISONTrackedUsersList) withObject:nil afterDelay:10.0];
 }
 
 - (void)receiveNumericReply:(IRCMessage *)m
@@ -355,13 +355,9 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			/* Perform reconnect to specified locations */
-			__weak IRCClient *weakSelf = self;
-
-			self.disconnectCallback = ^{
-				[weakSelf connect];
-			};
-
-			[self disconnect];
+			[self disconnectThen:^(IRCClient *client) {
+				[client connect];
+			}];
 
 			/* -disconnect would destroy this so we set them after... */
 			self.temporaryServerAddressOverride = serverAddress;

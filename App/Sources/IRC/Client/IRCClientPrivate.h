@@ -111,6 +111,12 @@ enum {
 @end
 
 @interface IRCClient (CommandsPrivate)
+/* Run the block with this client once it has disconnected (it replaces any
+ block set before); a deleted client runs nothing */
+- (void)afterDisconnectPerform:(void (^)(IRCClient *client))block;
+- (void)disconnectThen:(void (^)(IRCClient *client))block;
+- (void)quitThen:(void (^)(IRCClient *client))block;
+
 - (void)autoConnectWithDelay:(NSUInteger)delay afterWakeUp:(BOOL)afterWakeUp;
 @end
 

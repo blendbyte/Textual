@@ -309,7 +309,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	SEL performConnect = (afterWakeUp ? @selector(autoConnectAfterWakeUpPerformConnect) : @selector(autoConnectPerformConnect));
 
-	[self performSelectorInCommonModes:performConnect withObject:nil afterDelay:delay];
+	[self cs_reschedulePerformSelectorInCommonModes:performConnect withObject:nil afterDelay:delay];
 }
 
 - (void)autoConnectPerformConnect
@@ -330,6 +330,35 @@ NS_ASSUME_NONNULL_BEGIN
 	self.reconnectEnabledBecauseOfSleepMode = YES;
 
 	[self connect:IRCClientConnectModeReconnect];
+}
+
+- (void)afterDisconnectPerform:(void (^)(IRCClient *client))block
+{
+	NSParameterAssert(block != nil);
+
+	__weak IRCClient *weakSelf = self;
+
+	self.disconnectCallback = ^{
+		IRCClient *client = weakSelf;
+
+		if (client) {
+			block(client);
+		}
+	};
+}
+
+- (void)disconnectThen:(void (^)(IRCClient *client))block
+{
+	[self afterDisconnectPerform:block];
+
+	[self disconnect];
+}
+
+- (void)quitThen:(void (^)(IRCClient *client))block
+{
+	[self afterDisconnectPerform:block];
+
+	[self quit];
 }
 
 - (void)disconnect
@@ -397,7 +426,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* We give it two seconds before forcefully breaking so that the graceful
 	 quit with the quit message above can be performed. */
-	[self performSelectorInCommonModes:@selector(disconnect) withObject:nil afterDelay:2.0];
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(disconnect) withObject:nil afterDelay:2.0];
 }
 
 - (void)cancelReconnect

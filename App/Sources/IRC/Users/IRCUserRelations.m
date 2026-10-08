@@ -41,18 +41,25 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface IRCUserRelations ()
-@property (nonatomic, strong, nullable) NSMutableDictionary<IRCChannel *, IRCChannelUser *> *relationsPrivate;
+@property (nonatomic, strong) NSMutableDictionary<IRCChannel *, IRCChannelUser *> *relationsPrivate;
 @end
 
 @implementation IRCUserRelations
 
+/* Allocated once and never replaced: @synchronized on a nil object
+ doesn't lock, so lazily created storage raced on first use */
+- (instancetype)init
+{
+	if ((self = [super init])) {
+		self.relationsPrivate = [NSMutableDictionary dictionary];
+	}
+
+	return self;
+}
+
 - (NSDictionary<IRCChannel *, IRCChannelUser *> *)relations
 {
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return @{};
-		}
-
 		return [self.relationsPrivate copy];
 	}
 }
@@ -60,10 +67,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<IRCChannel *> *)relatedChannels
 {
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return @[];
-		}
-
 		return self.relationsPrivate.allKeys;
 	}
 }
@@ -71,10 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<IRCChannelUser *> *)relatedUsers
 {
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return @[];
-		}
-
 		return self.relationsPrivate.allValues;
 	}
 }
@@ -82,10 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)enumerateRelations:(void (NS_NOESCAPE ^)(IRCChannel *channel, IRCChannelUser *member, BOOL *stop))block
 {
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return;
-		}
-
 		[self.relationsPrivate enumerateKeysAndObjectsUsingBlock:block];
 	}
 }
@@ -93,10 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)numberOfRelations
 {
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return 0;
-		}
-
 		return self.relationsPrivate.count;
 	}
 }
@@ -111,10 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			self.relationsPrivate = [NSMutableDictionary dictionary];
-		}
-
 		/* IRCChannel does not really support copying. It returns self.
 		 The protocol is declared here in a cast, instead of in the
 		 header for IRCChannel, so plugin author's don't make a mistake. */
@@ -131,15 +118,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return;
-		}
-
 		[self.relationsPrivate removeObjectForKey:channel];
 
-		if (self.relationsPrivate.count == 0) {
-			self.relationsPrivate = nil;
-		}
 	}
 }
 
@@ -152,10 +132,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	@synchronized (self.relationsPrivate) {
-		if (self.relationsPrivate == nil) {
-			return nil;
-		}
-
 		return self.relationsPrivate[channel];
 	}
 }

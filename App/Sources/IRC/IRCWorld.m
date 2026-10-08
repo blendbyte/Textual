@@ -75,6 +75,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 @property (nonatomic, assign) BOOL preferencesDidChangeTimerIsActive;
 @property (nonatomic, assign) CFAbsoluteTime savePeriodicallyLastSave;
 @property (nonatomic, copy) NSDate *lastDateHasChangedDate;
+@property (nonatomic, strong, nullable) NSTimer *midnightTimer;
 @end
 
 @implementation IRCWorld
@@ -195,7 +196,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	if (self.preferencesDidChangeTimerIsActive == NO) {
 		self.preferencesDidChangeTimerIsActive = YES;
 
-		[self performSelectorInCommonModes:@selector(informAllViewsUserDefaultsDidChange) withObject:nil afterDelay:1.0];
+		[self cs_reschedulePerformSelectorInCommonModes:@selector(informAllViewsUserDefaultsDidChange) withObject:nil afterDelay:1.0];
 	}
 }
 
@@ -377,6 +378,12 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 						 repeats:NO];
 
 	midnightTimer.tolerance = 0.0;
+
+	/* Rescheduled on every system clock change: without invalidating the
+	 previous timer, each change left another one behind */
+	[self.midnightTimer invalidate];
+
+	self.midnightTimer = midnightTimer;
 
 	/* Schedule the timer on the run loop which will retain reference. */
 	[RZMainRunLoop() addTimer:midnightTimer forMode:NSDefaultRunLoopMode];
@@ -665,13 +672,9 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	if (client.isConnecting || client.isConnected) {
 		__weak IRCWorld *weakSelf = self;
 
-		__weak IRCClient *weakClient = client;
-
-		client.disconnectCallback = ^{
-			[weakSelf destroyClient:weakClient];
-		};
-
-		[client quit];
+		[client quitThen:^(IRCClient *disconnectedClient) {
+			[weakSelf destroyClient:disconnectedClient];
+		}];
 
 		return;
 	}

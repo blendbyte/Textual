@@ -242,44 +242,48 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.lastServerSelected = NSNotFound;
 
+/* Weak: the timers are owned by the client, so a strong reference kept
+	 a deleted client alive */
+	__weak IRCClient *weakSelf = self;
+
 	self.autojoinTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onAutojoinTimer];
+		[weakSelf onAutojoinTimer];
 	}];
 
 	self.autojoinNextJoinTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onAutojoinNextJoinTimer];
+		[weakSelf onAutojoinNextJoinTimer];
 	}];
 
 	self.autojoinDelayedWarningTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onAutojoinDelayedWarningTimer];
+		[weakSelf onAutojoinDelayedWarningTimer];
 	}];
 
 	self.isonTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onISONTimer];
+		[weakSelf onISONTimer];
 	}];
 
 	self.reconnectTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onReconnectTimer];
+		[weakSelf onReconnectTimer];
 	}];
 
 	self.retryTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onRetryTimer];
+		[weakSelf onRetryTimer];
 	}];
 
 	self.pongTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onPongTimer];
+		[weakSelf onPongTimer];
 	}];
 
 	self.whoTimer =
 	[TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
-		[self onWhoTimer];
+		[weakSelf onWhoTimer];
 	}];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(willDestroyChannel:) name:IRCWorldWillDestroyChannelNotification object:nil];
@@ -580,7 +584,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		__weak IRCClient *weakSelf = self;
 
-		self.disconnectCallback = ^{
+		self.terminationCallback = ^{
 			[weakSelf prepareForApplicationTerminationPostflight];
 		};
 

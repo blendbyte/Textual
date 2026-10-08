@@ -51,6 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performSelectorInCommonModes:(SEL)aSelector afterDelay:(NSTimeInterval)delay;
 - (void)performSelectorInCommonModes:(SEL)aSelector withObject:(nullable id)anArgument afterDelay:(NSTimeInterval)delay;
 
+/* Like -performSelectorInCommonModes:withObject:afterDelay:, but a request
+ for the same selector and argument that is still pending is cancelled
+ first, so repeated calls don't stack up */
+- (void)cs_reschedulePerformSelectorInCommonModes:(SEL)aSelector withObject:(nullable id)anArgument afterDelay:(NSTimeInterval)delay;
+
 // ---
 
 + (void)performBlockOnMainThread:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay;

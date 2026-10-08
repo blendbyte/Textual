@@ -417,9 +417,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self changeStateOffWithError:disconnectError];
 
-	if (self.disconnectCallback) {
-		self.disconnectCallback();
-		self.disconnectCallback = nil;
+	/* Termination has its own slot: reconnect paths (retry, /CONN,
+	 redirects, flood errors, irssi proxy) set disconnectCallback and must
+	 not replace what quitting the app waits for */
+	dispatch_block_t callback = (self.terminationCallback ?: self.disconnectCallback);
+
+	self.terminationCallback = nil;
+	self.disconnectCallback = nil;
+
+	if (callback) {
+		callback();
 	}
 
 	[RZNotificationCenter() postNotificationName:IRCClientDidDisconnectNotification object:self];
