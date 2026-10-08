@@ -107,6 +107,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -294,6 +295,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandUnquiet) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
 			@(IRCLocalCommandVoice) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandWallops) : NSStringFromSelector(@selector(_handleLocalCommandWallops:)),
+			@(IRCLocalCommandSts) : NSStringFromSelector(@selector(_handleLocalCommandSts:)),
 			@(IRCLocalCommandWatch) : NSStringFromSelector(@selector(_handleLocalCommandWatch:)),
 			@(IRCLocalCommandWeights) : NSStringFromSelector(@selector(_handleLocalCommandWeights:)),
 			@(IRCLocalCommandWho) : NSStringFromSelector(@selector(_handleLocalCommandWho:)),
@@ -523,6 +525,46 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self connect];
+}
+
+/* STS: the strict transport security policies of this server's addresses; "clear" removes them */
+- (void)_handleLocalCommandSts:(IRCLocalCommandContext *)context
+{
+	NSString *action = context.stringIn.string.trim;
+
+	BOOL clear = [action isEqualToStringIgnoringCase:@"clear"];
+
+	if (action.length > 0 && clear == NO) {
+		[self printInvalidSyntaxMessageForCommand:context.command];
+
+		return;
+	}
+
+	NSMutableOrderedSet<NSString *> *hosts = [NSMutableOrderedSet orderedSet];
+
+	for (IRCServer *server in self.config.serverList) {
+		[hosts addObject:server.serverAddress.lowercaseString];
+	}
+
+	IRCStrictTransportSecurity *policies = [IRCStrictTransportSecurity sharedPolicies];
+
+	for (NSString *host in hosts) {
+		NSDate *expiry = [policies expiryForHost:host];
+
+		if (clear) {
+			if (expiry) {
+				[policies removePolicyForHost:host];
+
+				[self printDebugInformation:TXTLS(@"IRC[st5-u5]", host)];
+			}
+		} else if (expiry) {
+			NSString *expiryString = [NSDateFormatter localizedStringFromDate:expiry dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterShortStyle];
+
+			[self printDebugInformation:TXTLS(@"IRC[st5-u3]", host, [policies portForHost:host], expiryString)];
+		} else {
+			[self printDebugInformation:TXTLS(@"IRC[st5-u4]", host)];
+		}
+	}
 }
 
 /* CTCP / CTCPREPLY */

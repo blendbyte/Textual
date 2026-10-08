@@ -107,6 +107,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -199,6 +200,19 @@ NS_ASSUME_NONNULL_BEGIN
 		connectionPrefersSecuredConnection = server.prefersSecuredConnection;
 
 		self.server = server;
+	}
+
+	/* strict-transport-security: a host with a policy is only reached over TLS */
+	if (connectionPrefersSecuredConnection == NO) {
+		uint16_t policyPort = [[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress];
+
+		if (policyPort > 0) {
+			[self printDebugInformationToConsole:TXTLS(@"IRC[st5-u2]", serverAddress, policyPort)];
+
+			serverPort = policyPort;
+
+			connectionPrefersSecuredConnection = YES;
+		}
 	}
 
 	/* Do not wait for an actual connect before destroying the temporary

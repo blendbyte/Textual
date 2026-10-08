@@ -120,6 +120,7 @@ typedef NS_ENUM(NSUInteger, IRCLocalCommand) {
 	IRCLocalCommandSme = 5064,
 	IRCLocalCommandSmsg = 5065,
 	IRCLocalCommandSslcontext = 5066,
+	IRCLocalCommandSts = 5119,
 	IRCLocalCommandT = 5067,
 	IRCLocalCommandTage = 5093,
 	IRCLocalCommandTempshun = 5068,

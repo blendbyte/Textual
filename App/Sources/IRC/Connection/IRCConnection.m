@@ -321,6 +321,8 @@ NS_ASSUME_NONNULL_BEGIN
 										 trusted = NO;
 									 }
 
+									 strongSelf.certificateTrustedByUser = trusted;
+
 									 ((RCMTrustResponse)contextInfo)(trusted);
 								 }
 									 contextInfo:trustBlock];

@@ -5,9 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,25 +34,34 @@
  *
  *********************************************************************** */
 
-#import "IRCConnection.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface IRCConnection ()
-@property (nonatomic, copy, readwrite) IRCConnectionConfig *config;
-@property (nonatomic, assign, readwrite) BOOL isConnected;
-@property (nonatomic, assign, readwrite) BOOL isConnecting;
-@property (nonatomic, assign, readwrite) BOOL isDisconnecting;
-@property (nonatomic, assign, readwrite) BOOL isSending;
-@property (nonatomic, assign, readwrite) BOOL isSecured;
-@property (nonatomic, assign, readwrite) BOOL isConnectedWithClientSideCertificate;
-@property (nonatomic, assign, readwrite) BOOL EOFReceived;
-@property (nonatomic, copy, readwrite, nullable) NSString *connectedAddress;
-@property (nonatomic, assign) BOOL certificateTrustedByUser; // the user accepted a certificate that failed validation
+/* IRCv3 strict-transport-security (sts): policies learned on secure
+ connections, by host name, so later connections to that host use TLS.
+ https://ircv3.net/specs/extensions/sts */
+@interface IRCStrictTransportSecurity : NSObject
+@property (class, readonly) IRCStrictTransportSecurity *sharedPolicies;
 
-- (void)enforceFloodControl;
+- (instancetype)initWithUserDefaults:(NSUserDefaults *)userDefaults NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
-- (void)openSecuredConnectionCertificateModal;
+/* The value of the sts capability, such as "port=6697,duration=2592000";
+ a key that is missing or not a number comes back as -1 */
++ (void)parseValue:(nullable NSString *)value port:(NSInteger *)port duration:(NSInteger *)duration;
+
+/* The TLS port to use for host, or 0 without an unexpired policy (expired ones are removed) */
+- (uint16_t)portForHost:(NSString *)host;
+- (uint16_t)portForHost:(NSString *)host atDate:(NSDate *)date;
+
+/* Remembers a policy received on a secure connection to host:port for
+ duration seconds; a duration of 0 removes it. IP addresses never get one. */
+- (void)storePolicyForHost:(NSString *)host port:(uint16_t)port duration:(NSUInteger)duration;
+- (void)storePolicyForHost:(NSString *)host port:(uint16_t)port duration:(NSUInteger)duration atDate:(NSDate *)date;
+
+/* When the policy for host expires, or nil */
+- (nullable NSDate *)expiryForHost:(NSString *)host;
+
+- (void)removePolicyForHost:(NSString *)host;
 @end
 
 NS_ASSUME_NONNULL_END

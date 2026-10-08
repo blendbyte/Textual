@@ -149,6 +149,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -203,6 +204,56 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 }
 
 @implementation IRCClient (Capabilities)
+
+#pragma mark -
+#pragma mark Strict Transport Security
+
+/* A policy is kept only from a secure connection whose certificate passed
+ validation (not one the user accepted anyway); offered over plaintext,
+ it only moves this connection to TLS, once */
+- (void)processStrictTransportSecurityValue:(nullable NSString *)value
+{
+	IRCConnectionConfig *socketConfig = self.socket.config;
+
+	NSString *host = socketConfig.serverAddress;
+
+	if (host.length == 0 || host.isIPAddress) {
+		return;
+	}
+
+	NSInteger port = 0;
+	NSInteger duration = 0;
+
+	[IRCStrictTransportSecurity parseValue:value port:&port duration:&duration];
+
+	if (self.socket.isSecured) {
+		if (duration < 0 ||
+			socketConfig.connectionShouldValidateCertificateChain == NO ||
+			self.socket.certificateTrustedByUser)
+		{
+			return;
+		}
+
+		[[IRCStrictTransportSecurity sharedPolicies] storePolicyForHost:host port:socketConfig.serverPort duration:duration];
+
+		return;
+	}
+
+	if (port < 0 || self.isTerminating) {
+		return;
+	}
+
+	[self printDebugInformationToConsole:TXTLS(@"IRC[st5-u1]", host, port)];
+
+	[self disconnectThen:^(IRCClient *client) {
+		[client connect];
+	}];
+
+	/* -disconnect would destroy these so we set them after... */
+	self.temporaryServerAddressOverride = host;
+	self.temporaryServerPortOverride = (uint16_t)port;
+	self.temporaryServerPrefersSecuredConnection = YES;
+}
 
 #pragma mark -
 #pragma mark Server Capability
@@ -356,6 +407,13 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 - (BOOL)capabilityNegotiator:(IRCCapabilityNegotiator *)negotiator shouldRequestCapability:(NSString *)capability value:(nullable NSString *)value
 {
+	/* sts is never requested, only acted on */
+	if ([capability isEqualToStringIgnoringCase:@"sts"]) {
+		[self processStrictTransportSecurityValue:value];
+
+		return NO;
+	}
+
 	if ([self isCapabilitySupported:capability] == NO) {
 		return NO;
 	}

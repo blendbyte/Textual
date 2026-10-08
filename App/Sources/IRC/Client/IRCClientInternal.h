@@ -263,6 +263,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveWallops:(IRCMessage *)m;
 - (void)receiveCertInfo:(IRCMessage *)m;
 - (void)receiveChangeHost:(IRCMessage *)m;
+- (void)processStrictTransportSecurityValue:(nullable NSString *)value;
 - (void)receiveStandardReply:(IRCMessage *)m;
 - (NSString *)standardReplyText:(IRCMessage *)m;
 - (void)receiveAccount:(IRCMessage *)m;

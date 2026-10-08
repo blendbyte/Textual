@@ -951,6 +951,16 @@ async def scenario_standard_replies(client):
 	result(True, "sent; check #sr and the console")
 
 
+async def scenario_sts(client):
+	"""strict-transport-security; connect to irc://localhost:6680 (a host name:
+	policies never apply to IP addresses). Every plaintext connection is offered
+	sts=port=6681 and must reconnect with TLS to 6681, which offers
+	sts=duration=300 and stays connected. A policy is kept only when the
+	certificate is validated; then the next connection goes straight to 6681.
+	Runs for ten minutes."""
+	pass
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -981,12 +991,50 @@ SCENARIOS = {
 	"casemapping": scenario_casemapping,
 	"channel-lookup": scenario_channel_lookup,
 	"standard-replies": scenario_standard_replies,
+	"sts": scenario_sts,
 }
 
 # Scenarios that register the client themselves
 OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
+
+
+async def run_sts_scenario(port):
+	tls_port = port + 1
+
+	tls_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+	tls_context.load_cert_chain(os.path.join(CERTIFICATE_DIRECTORY, "fullchain.pem"),
+								os.path.join(CERTIFICATE_DIRECTORY, "privkey.pem"))
+
+	async def plaintext(reader, writer):
+		client = Client(reader, writer)
+		log("<<", "plaintext connection: offering sts=port=%d" % tls_port)
+		if await client.register_with_capabilities(f"sts=port={tls_port}"):
+			await client.collect(10)
+			result(False, "the client stayed on plaintext after the sts offer")
+		else:
+			result(True, "the client left the plaintext connection after the sts offer")
+		writer.close()
+
+	async def secure(reader, writer):
+		client = Client(reader, writer)
+		log("<<", "TLS connection: offering sts=duration=300")
+		result(True, "the client connected with TLS on %d" % tls_port)
+		if await client.register_with_capabilities("sts=duration=300 server-time"):
+			while await client.collect(3600):
+				pass
+		writer.close()
+
+	servers = [await asyncio.start_server(plaintext, "127.0.0.1", port),
+			   await asyncio.start_server(secure, "127.0.0.1", tls_port, ssl=tls_context)]
+
+	print(f"Scenario 'sts' waiting on irc://localhost:{port} (TLS on {tls_port})", flush=True)
+
+	await asyncio.sleep(600)
+
+	for server in servers:
+		server.close()
 
 
 async def main():
@@ -1057,6 +1105,10 @@ async def main():
 		Events.reconnected_with_tls = (first == b"\x16")
 		Events.reconnected.set()
 		writer.close()
+
+	if arguments.scenario == "sts":
+		await run_sts_scenario(arguments.port)
+		return
 
 	servers = [await asyncio.start_server(handle, "127.0.0.1", arguments.port, ssl=tls_context)]
 
