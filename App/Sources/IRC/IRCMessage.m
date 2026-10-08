@@ -165,6 +165,17 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return self.sender.isServer;
 }
 
+- (nullable NSString *)msgid
+{
+	NSString *msgid = self.messageTags[@"msgid"];
+
+	if (msgid.length == 0) {
+		return nil;
+	}
+
+	return msgid;
+}
+
 - (void)populateDuringCopy:(__kindof XRPortablePropertyObject *)newObject mutableCopy:(BOOL)mutableCopy
 {
 	IRCMessage *object = (IRCMessage *)newObject;

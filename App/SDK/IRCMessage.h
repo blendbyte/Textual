@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL isPrintOnlyMessage; /* The message should be parsed and passed to print: but special actions such as adding/removing user from member list should be ignored. (currently unused) */
 @property (readonly, copy, nullable) NSString *batchToken;
 @property (readonly, copy, nullable) NSDictionary<NSString *, NSString *> *messageTags; /* IRCv3 message tags. See ircv3.net for more information regarding extensions in the IRC protocol. */
+@property (readonly, copy, nullable) NSString *msgid; /* The server's ID for this message (msgid tag), when it sends one */
 
 - (nullable instancetype)initWithLine:(NSString *)line;
 - (nullable instancetype)initWithLine:(NSString *)line onClient:(nullable IRCClient *)client NS_DESIGNATED_INITIALIZER;

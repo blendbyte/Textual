@@ -62,8 +62,7 @@ typedef NS_ENUM(NSUInteger, IRCClientDisconnectMode) {
 };
 
 /* Bit allocation, public and private (IRCClientPrivate.h) together:
-   0–20  public, below
-  21     free
+   0–21  public, below
   22–26  private: SASL (generic, PLAIN, EXTERNAL), ZNC server-time variants
   27     public: ZNC playback
   28     private: plan.io playback
@@ -91,6 +90,7 @@ typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityExtendedJoin			= 1 << 18, // YES if extended-join CAP supported
 	ClientIRCv3SupportedCapabilityInviteNotify			= 1 << 19, // YES if invite-notify CAP supported
 	ClientIRCv3SupportedCapabilitySetName				= 1 << 20, // YES if setname CAP supported
+	ClientIRCv3SupportedCapabilityMessageTags			= 1 << 21, // YES if message-tags CAP supported
 	ClientIRCv3SupportedCapabilityZNCPlaybackModule		= 1 << 27  // YES if the ZNC vendor specific CAP supported
 };
 

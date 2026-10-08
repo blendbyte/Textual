@@ -176,6 +176,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "identify-ctcp",			ClientIRCv3SupportedCapabilityIdentifyCTCP,			ClientIRCv3SupportedCapabilityIdentifyCTCP },
 	{ "identify-msg",			ClientIRCv3SupportedCapabilityIdentifyMsg,			ClientIRCv3SupportedCapabilityIdentifyMsg },
 	{ "invite-notify",			ClientIRCv3SupportedCapabilityInviteNotify,			ClientIRCv3SupportedCapabilityInviteNotify },
+	{ "message-tags",			ClientIRCv3SupportedCapabilityMessageTags,			ClientIRCv3SupportedCapabilityMessageTags },
 	{ "multi-prefix",			ClientIRCv3SupportedCapabilityMultiPrefix,			ClientIRCv3SupportedCapabilityMultiPrefix },
 	{ "sasl",					ClientIRCv3SupportedCapabilitySASLGeneric,			ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL }, // enabled once authenticated
 	{ "server-time",			ClientIRCv3SupportedCapabilityServerTime,			ClientIRCv3SupportedCapabilityServerTime },
@@ -279,6 +280,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityIdentifyMsg, @"identify-msg");
 	appendValue(ClientIRCv3SupportedCapabilityInviteNotify, @"invite-notify");
 	appendValue(ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL, @"sasl");
+	appendValue(ClientIRCv3SupportedCapabilityMessageTags, @"message-tags");
 	appendValue(ClientIRCv3SupportedCapabilityMultiPrefix, @"multi-prefix");
 	appendValue(ClientIRCv3SupportedCapabilityPlayback, @"playback");
 	appendValue(ClientIRCv3SupportedCapabilityServerTime, @"server-time");

@@ -146,6 +146,10 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(message.messageTags[@"msgid"], @"abc123");
 	XCTAssertEqualObjects(message.messageTags[@"example.com/flag"], @"");
 	XCTAssertEqualObjects([message paramAt:1], @"tagged");
+
+	XCTAssertEqualObjects(message.msgid, @"abc123");
+	XCTAssertNil([self parse:@"@msgid= :nick!user@host PRIVMSG #channel :empty ID"].msgid);
+	XCTAssertNil([self parse:@":nick!user@host PRIVMSG #channel :untagged"].msgid);
 }
 
 /* https://ircv3.net/specs/extensions/message-tags: decoded in one pass, so "\\s"
