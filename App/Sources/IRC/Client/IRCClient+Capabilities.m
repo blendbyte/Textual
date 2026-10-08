@@ -181,6 +181,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "sasl",					ClientIRCv3SupportedCapabilitySASLGeneric,			ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL }, // enabled once authenticated
 	{ "server-time",			ClientIRCv3SupportedCapabilityServerTime,			ClientIRCv3SupportedCapabilityServerTime },
 	{ "setname",				ClientIRCv3SupportedCapabilitySetName,				ClientIRCv3SupportedCapabilitySetName },
+	{ "standard-replies",		ClientIRCv3SupportedCapabilityStandardReplies,		ClientIRCv3SupportedCapabilityStandardReplies },
 	{ "userhost-in-names",		ClientIRCv3SupportedCapabilityUserhostInNames,		ClientIRCv3SupportedCapabilityUserhostInNames },
 	{ "plan.io/playback",		ClientIRCv3SupportedCapabilityPlanioPlayback,		ClientIRCv3SupportedCapabilityPlayback },
 	{ "znc.in/playback",		ClientIRCv3SupportedCapabilityZNCPlaybackModule,	ClientIRCv3SupportedCapabilityPlayback },
@@ -285,6 +286,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityPlayback, @"playback");
 	appendValue(ClientIRCv3SupportedCapabilityServerTime, @"server-time");
 	appendValue(ClientIRCv3SupportedCapabilitySetName, @"setname");
+	appendValue(ClientIRCv3SupportedCapabilityStandardReplies, @"standard-replies");
 	appendValue(ClientIRCv3SupportedCapabilityUserhostInNames, @"userhost-in-names");
 	appendValue(ClientIRCv3SupportedCapabilityZNCCertInfoModule, @"znc.in/tlsinfo");
 	appendValue(ClientIRCv3SupportedCapabilityZNCSelfMessage, @"znc.in/self-message");

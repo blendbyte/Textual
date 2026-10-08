@@ -632,6 +632,7 @@
 		4C7EF3CDF301C7E967AFD3D0 /* IRCClientConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */; };
 		4C6F6E1F814F60FDA7BC0766 /* IRCClientChannelLookupTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */; };
 		4CD0E449CF7E02E65667B9C4 /* IRCClientAccountTrackingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7EC48B2EA3147AADA9A9FC /* IRCClientAccountTrackingTests.m */; };
+		4CC5F8D17179503D974EE804 /* IRCClientStandardReplyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD5D545AF3EC22B5F5DCBFA /* IRCClientStandardReplyTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1418,6 +1419,7 @@
 		4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientConfigTests.m; sourceTree = "<group>"; };
 		4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientChannelLookupTests.m; sourceTree = "<group>"; };
 		4C7EC48B2EA3147AADA9A9FC /* IRCClientAccountTrackingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientAccountTrackingTests.m; sourceTree = "<group>"; };
+		4CD5D545AF3EC22B5F5DCBFA /* IRCClientStandardReplyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientStandardReplyTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2605,6 +2607,7 @@
 				4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */,
 				4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
+				4CD5D545AF3EC22B5F5DCBFA /* IRCClientStandardReplyTests.m */,
 				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */,
 				4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */,
@@ -3497,6 +3500,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CC5F8D17179503D974EE804 /* IRCClientStandardReplyTests.m in Sources */,
 				4CD0E449CF7E02E65667B9C4 /* IRCClientAccountTrackingTests.m in Sources */,
 				4C6F6E1F814F60FDA7BC0766 /* IRCClientChannelLookupTests.m in Sources */,
 				4C7EF3CDF301C7E967AFD3D0 /* IRCClientConfigTests.m in Sources */,

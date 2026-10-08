@@ -673,6 +673,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 				break;
 			}
+			case IRCRemoteCommandFail: // Commands: FAIL, WARN, NOTE (standard-replies)
+			case IRCRemoteCommandWarn:
+			case IRCRemoteCommandNote:
+			{
+				[self receiveStandardReply:message];
+
+				break;
+			}
 		} // switch
 	}
 

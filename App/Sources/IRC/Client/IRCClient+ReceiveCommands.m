@@ -2114,6 +2114,54 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark -
+#pragma mark Standard Replies
+
+/* FAIL, WARN and NOTE: <command> <code> [<context>...] <description>.
+ Shown whether or not standard-replies was negotiated, unknown codes included. */
+- (void)receiveStandardReply:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	NSAssertReturn([m paramsCount] >= 3);
+
+	/* In a channel the context names, otherwise in the console */
+	IRCChannel *channel = nil;
+
+	for (NSUInteger i = 2; i < (m.paramsCount - 1); i++) {
+		IRCChannel *contextChannel = [self findChannel:[m paramAt:i]];
+
+		if (contextChannel.isChannel) {
+			channel = contextChannel;
+
+			break;
+		}
+	}
+
+	[self printDebugInformation:[self standardReplyText:m] inChannel:channel asCommand:m.command];
+}
+
+- (NSString *)standardReplyText:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+	NSParameterAssert([m paramsCount] >= 3);
+
+	NSString *replyType = m.command.uppercaseString;
+
+	NSString *command = [m paramAt:0];
+
+	NSString *code = [m paramAt:1];
+
+	NSString *description = [m paramAt:(m.paramsCount - 1)];
+
+	/* "*" means the reply isn't about one command */
+	if ([command isEqualToString:@"*"]) {
+		return TXTLS(@"IRC[s4r-2q]", replyType, code, description);
+	}
+
+	return TXTLS(@"IRC[s4r-1p]", replyType, command, code, description);
+}
+
+#pragma mark -
 #pragma mark Account Tracking
 
 /* The account name in ACCOUNT, extended-join and account-tag; "*" means logged out */

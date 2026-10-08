@@ -927,6 +927,30 @@ async def scenario_channel_lookup(client):
 	result(True, "sent; check #Chan[1] and the Robert query")
 
 
+async def scenario_standard_replies(client):
+	"""FAIL, WARN and NOTE (standard-replies). Afterwards: #sr shows reply 1
+	(its context names the channel); the console shows replies 2, 3 and 4
+	(4 has a code no client knows) without a "*"; the malformed reply 5 shows
+	nowhere."""
+	nick = client.nickname
+	channel = "#sr"
+
+	await client.send(f":{nick}!user@client.textual.test JOIN {channel}")
+	await client.send(f":{SERVER} 353 {nick} = {channel} :@{nick}")
+	await client.send(f":{SERVER} 366 {nick} {channel} :End of /NAMES list.")
+	await client.collect(2)
+
+	await client.send(f":{SERVER} FAIL PRIVMSG CANNOT_SEND {channel} :1 Your message could not be delivered")
+	await client.send(f":{SERVER} WARN REHASH CERTS_EXPIRED :2 Certificate [xyz] has expired")
+	await client.send(f":{SERVER} NOTE * OPER_MESSAGE :3 The server will restart soon")
+	await client.send(f":{SERVER} FAIL CHATHISTORY TEXTUAL_UNKNOWN_CODE LATEST somewhere :4 A code Textual doesn't know")
+	await client.send(f":{SERVER} FAIL ONLY_TWO :5 malformed, must not show")
+
+	await client.collect(30)
+
+	result(True, "sent; check #sr and the console")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -956,6 +980,7 @@ SCENARIOS = {
 	"ison-split": scenario_ison_split,
 	"casemapping": scenario_casemapping,
 	"channel-lookup": scenario_channel_lookup,
+	"standard-replies": scenario_standard_replies,
 }
 
 # Scenarios that register the client themselves

@@ -325,6 +325,8 @@ The identifier for a timer can be found using “/timer list”";
 "wk4-rv" = "Inviting %1$@ to join %2$@";
 "qw4-t3" = "%1$@!%2$@@%3$@ invited you to join %4$@";
 "t8m-3k" = "\002%1$@\002 invited \002%2$@\002 to the channel";
+"s4r-1p" = "\002%1$@\002 %2$@ %3$@: %4$@";
+"s4r-2q" = "\002%1$@\002 %2$@: %3$@";
 "c1h-fq" = "%1$@ is away (%2$@)";
 "6bh-br" = "You are now an IRC Operator on %@";
 "ziu-p9" = "\002%1$@\002 (%2$@@%3$@) joined the channel";
