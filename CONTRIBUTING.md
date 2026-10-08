@@ -34,6 +34,41 @@ Open pull requests against `main` unless you are fixing a bug that only affects 
 3. **Keep pull requests focused.** One behavior change per pull request. Unrelated fixes, refactors, and formatting changes belong in separate pull requests.
 4. **Fill out the pull request template**, including how you tested the change.
 
+## Building
+
+You need a Mac with Xcode 26 or later (CI builds with Xcode 26 and 27). Textual runs on macOS 14 or later.
+
+```sh
+git clone https://github.com/blendbyte/Textual.git
+cd Textual
+open Textual.xcworkspace
+```
+
+Always open `Textual.xcworkspace`, not `App/Textual.xcodeproj`: the workspace also contains the frameworks and the bundled plugins, which are built as part of the app. Pick a scheme:
+
+| Scheme | Builds |
+|---|---|
+| Textual (Debug) | **Textual Dev**, the development build. It has its own bundle identifier and data, so it runs next to an installed copy of Textual. |
+| Textual (Release) | The direct-download build, with Sparkle updates. |
+| Textual (App Store) | The Mac App Store build. |
+| Textual (Debug, Address Sanitizer), Textual (Debug, Thread Sanitizer) | Textual Dev with a sanitizer. |
+
+Everything the build produces goes to Xcode's build folder (DerivedData), never into the checkout. From the command line:
+
+```sh
+xcodebuild -workspace Textual.xcworkspace -scheme "Textual (Debug)" build
+xcodebuild -workspace Textual.xcworkspace -scheme "Textual (Debug)" -destination "platform=macOS,arch=$(uname -m)" test
+```
+
+Builds are signed with Blendbyte's development certificate. To build without it, create `Configurations/Signing.local.xcconfig` (ignored by git):
+
+```
+CODE_SIGN_IDENTITY = -
+DEVELOPMENT_TEAM =
+```
+
+[Configurations/README.md](Configurations/README.md) describes the build settings files. To run Textual Dev against local test servers, see the next section.
+
 ## Running a development build
 
 Debug builds are **Textual Dev**: they have their own bundle identifier (`com.textualapp.app.dev`) and app group, so they never share settings, logs or scrollback with an installed copy of Textual. They show "Textual Dev" in the menu bar and a DEV ribbon on the Dock icon.

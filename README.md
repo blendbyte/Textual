@@ -18,6 +18,8 @@
 
 Textual is a highly customizable app for Internet Relay Chat (IRC) on macOS. It can be customized with styles written in CSS, HTML, and JavaScript, plugins written in Objective-C and Swift, and scripts written in AppleScript and many other languages.
 
+Get Textual at [www.textualapp.com](https://www.textualapp.com).
+
 ## Resources
 
 - Website: [www.textualapp.com](https://www.textualapp.com)
@@ -31,7 +33,7 @@ Textual is a highly customizable app for Internet Relay Chat (IRC) on macOS. It 
 
 Pull requests are welcome. Because `main` is being refactored heavily ahead of Textual 8, large changes are likely to conflict with work in progress, so please open a discussion first for anything beyond a small fix. Fixes for Textual 7 should target the `v7` branch.
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. It explains the contributor license grant and the project conventions.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. It explains how to build and test Textual, the contributor license grant and the project conventions.
 
 ## License
 
