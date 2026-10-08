@@ -61,11 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _storeFilename				@"Historic Log.sqlite"
 
-/* Textual 7 and earlier development builds kept the store in the
- (purgeable) Caches folder under a name stored in this key */
-#define _legacyFilenameDefaultsKey	@"TVCLogControllerHistoricLogFileSavePath_v3"
-#define _legacyFilenamePrefix		@"logControllerHistoricLog_"
-
 typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 {
 	HLSHistoricLogFetchDirectionBefore,
@@ -149,53 +144,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	return @[@"", @"-wal", @"-shm"];
 }
 
-/* Moves the store out of Caches (which macOS may purge) into Application
- Support, once, and deletes stores left behind by old corruption recovery */
-- (void)_migrateLegacyStoreToURL:(NSURL *)storeURL
-{
-	NSParameterAssert(storeURL != nil);
-
-	NSString *legacyDirectory = [TPCPathInfo groupContainerApplicationCaches];
-
-	if (legacyDirectory == nil) {
-		return;
-	}
-
-	NSString *legacyFilename = [RZUserDefaults() stringForKey:_legacyFilenameDefaultsKey];
-
-	NSFileManager *fileManager = RZFileManager();
-
-	if (legacyFilename && [fileManager fileExistsAtPath:storeURL.path] == NO) {
-		NSString *legacyPath = [legacyDirectory stringByAppendingPathComponent:legacyFilename];
-
-		if ([fileManager fileExistsAtPath:legacyPath]) {
-			for (NSString *suffix in [self.class _storeFileSuffixes]) {
-				NSString *source = [legacyPath stringByAppendingString:suffix];
-
-				if ([fileManager fileExistsAtPath:source] == NO) {
-					continue;
-				}
-
-				NSError *moveError = nil;
-
-				if ([fileManager moveItemAtPath:source toPath:[storeURL.path stringByAppendingString:suffix] error:&moveError] == NO) {
-					LogToConsoleError("Failed to move the historic log from Caches: %{public}@", moveError.localizedDescription);
-				}
-			}
-
-			LogToConsole("Moved the historic log to %{public}@", storeURL.path.standardizedTildePath);
-		}
-	}
-
-	[RZUserDefaults() removeObjectForKey:_legacyFilenameDefaultsKey];
-
-	for (NSString *file in [fileManager contentsOfDirectoryAtPath:legacyDirectory error:NULL]) {
-		if ([file hasPrefix:_legacyFilenamePrefix]) {
-			[fileManager removeItemAtPath:[legacyDirectory stringByAppendingPathComponent:file] error:NULL];
-		}
-	}
-}
-
 - (void)_destroyStoreAtURL:(NSURL *)storeURL
 {
 	NSParameterAssert(storeURL != nil);
@@ -214,8 +162,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 
 		return;
 	}
-
-	[self _migrateLegacyStoreToURL:storeURL];
 
 	NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"HistoricLogFileStorageModel" withExtension:@"momd"];
 

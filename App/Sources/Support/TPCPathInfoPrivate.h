@@ -40,6 +40,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TPCPathInfo ()
+/* The app's own sandbox container ("Data"); its Library holds everything */
+@property (readonly, class, copy) NSURL *applicationContainerURL;
+
 + (void)_createDirectoryAtPath:(NSString *)directoryPath;
 + (void)_createDirectoryAtURL:(NSURL *)directoryURL;
 @end

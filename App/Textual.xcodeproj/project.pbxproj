@@ -263,7 +263,6 @@
 		4C06E6F020EC55B90055D09A /* TVCDockIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152C520EB673E00448776 /* TVCDockIcon.m */; };
 		4C0A31152C374A5B0081EF1F /* KeysExcludedFromMigrate.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */; };
 		4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */; };
-		4C2BEB642C3866DF008F8F0D /* KeysExcludedFromContainer.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */; };
 		4C2F42062C3F4218000D962D /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2F42042C3F4218000D962D /* UserNotifications.framework */; };
 		4C3155A320EB6CB400448776 /* IRC.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31524120EB673E00448776 /* IRC.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C3155A420EB6CB400448776 /* IRCAddressBook.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151A720EB673E00448776 /* IRCAddressBook.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -525,7 +524,6 @@
 		4CEA6AA52C36F90000A36551 /* KeysExcludedFromExport.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C315EE72C36581A001A16B4 /* KeysExcludedFromExport.plist */; };
 		4CEA6AA62C36F90000A36551 /* PreferenceKeyMasterList.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C315EE82C36581A001A16B4 /* PreferenceKeyMasterList.plist */; };
 		4CEA6AA72C36F90000A36551 /* RegisteredUserDefaults.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A520EB676400448776 /* RegisteredUserDefaults.plist */; };
-		4CEA6AA82C36F90000A36551 /* RegisteredUserDefaultsInContainer.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A620EB676400448776 /* RegisteredUserDefaultsInContainer.plist */; };
 		4CEFEDAB22B4AF42002CEE19 /* TDCPreferencesUserStyleSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CB873D622B4A497005AB046 /* TDCPreferencesUserStyleSheetPrivate.h */; };
 		4CEFEDB222B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4CEFEDAE22B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings */; };
 		4CD29A7005E9204039D14F04 /* IRCColorFormatTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */; };
@@ -726,12 +724,10 @@
 			dstPath = Preferences;
 			dstSubfolderSpec = 7;
 			files = (
-				4C2BEB642C3866DF008F8F0D /* KeysExcludedFromContainer.plist in Copy Preference Resources */,
 				4CEA6AA52C36F90000A36551 /* KeysExcludedFromExport.plist in Copy Preference Resources */,
 				4C0A31152C374A5B0081EF1F /* KeysExcludedFromMigrate.plist in Copy Preference Resources */,
 				4CEA6AA62C36F90000A36551 /* PreferenceKeyMasterList.plist in Copy Preference Resources */,
 				4CEA6AA72C36F90000A36551 /* RegisteredUserDefaults.plist in Copy Preference Resources */,
-				4CEA6AA82C36F90000A36551 /* RegisteredUserDefaultsInContainer.plist in Copy Preference Resources */,
 			);
 			name = "Copy Preference Resources";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -832,7 +828,6 @@
 		4C1DC5521580420500A47BC9 /* Textual.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Textual.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C24DC751A93C9CE0098D1BE /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ../Frameworks/Vendor/Sparkle/Sparkle.framework; sourceTree = SOURCE_ROOT; };
 		4C2BEB622C385189008F8F0D /* PostprocessSparkle.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/PostprocessSparkle.sh; sourceTree = SOURCE_ROOT; };
-		4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromContainer.plist; sourceTree = "<group>"; };
 		4C2F42042C3F4218000D962D /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		4C31511420EB673E00448776 /* TPCApplicationInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCApplicationInfo.m; sourceTree = "<group>"; };
 		4C31511520EB673E00448776 /* TPCPreferencesLocal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCPreferencesLocal.m; sourceTree = "<group>"; };
@@ -1228,7 +1223,6 @@
 		4C3153A220EB676400448776 /* IRCNetworks.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCNetworks.plist; sourceTree = "<group>"; };
 		4C3153A420EB676400448776 /* StaticStore.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = StaticStore.plist; sourceTree = "<group>"; };
 		4C3153A520EB676400448776 /* RegisteredUserDefaults.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = RegisteredUserDefaults.plist; sourceTree = "<group>"; };
-		4C3153A620EB676400448776 /* RegisteredUserDefaultsInContainer.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = RegisteredUserDefaultsInContainer.plist; sourceTree = "<group>"; };
 		4C3154E720EB68A900448776 /* Standard Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Standard Release.entitlements"; sourceTree = "<group>"; };
 		4C315EE72C36581A001A16B4 /* KeysExcludedFromExport.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KeysExcludedFromExport.plist; sourceTree = "<group>"; };
 		4C315EE82C36581A001A16B4 /* PreferenceKeyMasterList.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PreferenceKeyMasterList.plist; sourceTree = "<group>"; };
@@ -2465,12 +2459,10 @@
 		4C3B3C24384141A43C9E9CA7 /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
-				4C2BEB632C3864C1008F8F0D /* KeysExcludedFromContainer.plist */,
 				4C315EE72C36581A001A16B4 /* KeysExcludedFromExport.plist */,
 				4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */,
 				4C315EE82C36581A001A16B4 /* PreferenceKeyMasterList.plist */,
 				4C3153A520EB676400448776 /* RegisteredUserDefaults.plist */,
-				4C3153A620EB676400448776 /* RegisteredUserDefaultsInContainer.plist */,
 			);
 			path = Preferences;
 			sourceTree = "<group>";

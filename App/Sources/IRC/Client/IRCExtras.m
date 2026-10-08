@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	else if ([action isEqualToString:@"application-support-folder"])
 	{
-		[RZWorkspace() openURL:[TPCPathInfo groupContainerApplicationSupportURL]];
+		[RZWorkspace() openURL:[TPCPathInfo applicationSupportURL]];
 	}
 	else if ([action isEqualToString:@"contributors"])
 	{
@@ -546,7 +546,7 @@ static BOOL _developmentConnectRequested = NO;
 
 /* textual://dev-reset deletes Textual Dev's own preferences (including the
  server list), scrollback, caches and logs, then quits without saving. Only
- the app itself may remove the contents of its containers. The container
+ the app itself may remove the contents of its container. The container
  holds links to the user's folders, so only these folders are removed.
  Keychain items are kept. */
 + (void)performDevelopmentReset
@@ -565,26 +565,15 @@ static BOOL _developmentConnectRequested = NO;
 		return;
 	}
 
-	[RZUserDefaults() removePersistentDomainForName:TXBundleBuildGroupContainerIdentifier];
-
-	[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:bundleIdentifier];
+	[RZUserDefaults() removePersistentDomainForName:bundleIdentifier];
 
 	NSURL *containerLibraryURL = [[NSURL fileURLWithPath:NSHomeDirectory()] URLByAppendingPathComponent:@"Library"];
-
-	NSURL *groupContainerLibraryURL = [[TPCPathInfo groupContainerURL] URLByAppendingPathComponent:@"Library"];
 
 	NSArray *folders = @[
 		[containerLibraryURL URLByAppendingPathComponent:@"Application Support"],
 		[containerLibraryURL URLByAppendingPathComponent:@"Caches"],
 		[containerLibraryURL URLByAppendingPathComponent:@"Logs"]
 	];
-
-	if (groupContainerLibraryURL) {
-		folders = [folders arrayByAddingObjectsFromArray:@[
-			[groupContainerLibraryURL URLByAppendingPathComponent:@"Application Support"],
-			[groupContainerLibraryURL URLByAppendingPathComponent:@"Caches"]
-		]];
-	}
 
 	for (NSURL *folder in folders) {
 		[RZFileManager() removeItemAtURL:folder error:NULL];

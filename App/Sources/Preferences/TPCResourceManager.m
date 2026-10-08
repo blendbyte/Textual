@@ -58,7 +58,7 @@ NSString * const TPCResourceManagerScriptDocumentTypeExtensionWithoutPeriod		= @
 	/* Add a system link for the unsupervised scripts folder if it exists. */
 	NSString *sourcePath = [TPCPathInfo customScripts];
 
-	NSString *destinationPath = [[TPCPathInfo groupContainerApplicationSupport] stringByAppendingPathComponent:@"/Custom Scripts/"];
+	NSString *destinationPath = [[TPCPathInfo applicationSupport] stringByAppendingPathComponent:@"/Custom Scripts/"];
 
 	if ([RZFileManager() fileExistsAtPath:sourcePath] &&
 		[RZFileManager() fileExistsAtPath:destinationPath] == NO)

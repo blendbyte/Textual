@@ -71,7 +71,7 @@ DEVELOPMENT_TEAM =
 
 ## Running a development build
 
-Debug builds are **Textual Dev**: they have their own bundle identifier (`com.textualapp.app.dev`) and app group, so they never share settings, logs or scrollback with an installed copy of Textual. They show "Textual Dev" in the menu bar and a DEV ribbon on the Dock icon.
+Debug builds are **Textual Dev**: they have their own bundle identifier (`com.textualapp.app.dev`) and container, so they never share settings, logs or scrollback with an installed copy of Textual. They show "Textual Dev" in the menu bar and a DEV ribbon on the Dock icon.
 
 `Development/dev` builds and runs Textual Dev and provides servers to test against, all on 127.0.0.1:
 

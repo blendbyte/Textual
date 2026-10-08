@@ -1430,7 +1430,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)onOpenPathToScripts:(id)sender
 {
-	[RZWorkspace() openURL:[TPCPathInfo groupContainerApplicationSupportURL]];
+	[RZWorkspace() openURL:[TPCPathInfo applicationSupportURL]];
 }
 
 - (void)openPathToThemesCallback:(TDCAlertResponse)returnCode withOriginalAlert:(NSAlert *)originalAlert

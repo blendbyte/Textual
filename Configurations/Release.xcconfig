@@ -3,7 +3,6 @@
 #include "Base.xcconfig"
 
 TEXTUAL_BUNDLE_IDENTIFIER = com.textualapp.app
-TEXTUAL_GROUP_CONTAINER_IDENTIFIER = FANJ7JNLP5.com.textualapp.app
 TEXTUAL_BUILD_SCHEME_TOKEN = devid
 
 // Feature flags, written to FeatureFlags.h by Scripts/UpdateFeatureFlags.sh.

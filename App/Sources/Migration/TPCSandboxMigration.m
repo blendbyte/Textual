@@ -39,7 +39,7 @@
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TPCApplicationInfo.h"
-#import "TPCPathInfo.h"
+#import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TPCPreferencesUserDefaultsLocal.h"
 #import "TPCSandboxMigrationPrivate.h"
@@ -164,7 +164,7 @@ typedef NS_ENUM(NSUInteger, TPCMigrateSandboxInstallation)
 		return;
 	}
 
-	/* Do not migrate if the age of the current group container is not recent.
+	/* Do not migrate if the app's container is not recent.
 	 The age is only going to be recent the launch it was created. */
 	if ([TPCResourceManager _ageOfCurrentContainerIsRecent] == NO) {
 		[self _setMigrationCompleteAndAcknowledged];
@@ -396,7 +396,7 @@ typedef NS_ENUM(NSUInteger, TPCMigrateSandboxInstallation)
 		return NO;
 	}
 
-	NSURL *newLocation = [TPCPathInfo groupContainerURL];
+	NSURL *newLocation = [TPCPathInfo applicationContainerURL];
 
 	if (newLocation == nil) {
 		LogToConsoleError("Cannot migrate group container contents because of nil destination location");
@@ -745,7 +745,7 @@ typedef NS_ENUM(NSUInteger, TPCMigrateSandboxInstallation)
 
 + (BOOL)_ageOfCurrentContainerIsRecent
 {
-	NSURL *newLocation = [TPCPathInfo groupContainerURL];
+	NSURL *newLocation = [TPCPathInfo applicationContainerURL];
 
 	if (newLocation == NO) {
 		return NO;
@@ -753,9 +753,9 @@ typedef NS_ENUM(NSUInteger, TPCMigrateSandboxInstallation)
 
 	NSTimeInterval age = [self _intervalSinceCreatedForURL:newLocation];
 
-	/* macOS will create the group container the first time
-	 we ask for its path. If the group container wasn't created
-	 recently, then we have no reason to perform migration to it.
+	/* macOS creates the app's container the first time the app
+	 is launched. If the container wasn't created recently, then
+	 we have no reason to perform migration to it.
 	 In theory, this could probably be narrowed down further as
 	 the interval should be sub-second. */
 	return (age < 5.0);

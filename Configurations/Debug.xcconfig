@@ -36,10 +36,9 @@ VERSION_INFO_BUILDER = ${USER}
 //
 ENABLE_DEBUG_DYLIB = NO
 
-// Debug builds are "Textual Dev": their own identifier and group, so they never
-// share a container, preferences or logs with an installed copy of Textual.
+// Debug builds are "Textual Dev": their own identifier, so they never share a
+// container, preferences or logs with an installed copy of Textual.
 TEXTUAL_BUNDLE_IDENTIFIER = com.textualapp.app.dev
-TEXTUAL_GROUP_CONTAINER_IDENTIFIER = FANJ7JNLP5.com.textualapp.app.dev
 TEXTUAL_BUILD_SCHEME_TOKEN = debug
 
 // Feature flags, written to FeatureFlags.h by Scripts/UpdateFeatureFlags.sh.

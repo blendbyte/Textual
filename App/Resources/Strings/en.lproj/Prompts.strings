@@ -108,8 +108,6 @@ Do you want to add these channels to that connection or would you rather create 
 "u5x-b5" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so this extension can't be installed.";
 "u5x-b3" = "Move to Trash";
 "u5x-b4" = "Keep";
-"u5x-b7" = "Textual 8 can't use these inline media modules: %@";
-"u5x-b8" = "Textual 8 shows inline media with its own built-in modules and no longer loads add-on modules, so these won't be loaded. You can move them to the Trash or keep them.";
 "af6-45" = "The version of Textual that you are using is no longer compatible with these addons: %@";
 "45a-df" = "Please contact the developer of each addon to receive information on updating.
 

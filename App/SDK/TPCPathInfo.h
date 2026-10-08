@@ -50,17 +50,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, class, copy, nullable) NSString *applicationCaches;
 @property (readonly, class, copy, nullable) NSURL *applicationCachesURL;
 
-@property (readonly, class, copy, nullable) NSString *groupContainer;
-@property (readonly, class, copy, nullable) NSURL *groupContainerURL;
-
-@property (readonly, class, copy, nullable) NSString *groupContainerApplicationCaches;
-@property (readonly, class, copy, nullable) NSURL *groupContainerApplicationCachesURL;
-
 @property (readonly, class, copy, nullable) NSString *applicationSupport;
 @property (readonly, class, copy, nullable) NSURL *applicationSupportURL;
 
-@property (readonly, class, copy, nullable) NSString *groupContainerApplicationSupport;
-@property (readonly, class, copy, nullable) NSURL *groupContainerApplicationSupportURL;
+/* Textual has no group container any more: everything lives in the app's
+ own container. These return that container, its caches folder and its
+ Application Support folder. */
+@property (readonly, class, copy, nullable) NSString *groupContainer TEXTUAL_DEPRECATED("Textual has no group container. Use applicationSupport or applicationCaches instead");
+@property (readonly, class, copy, nullable) NSURL *groupContainerURL TEXTUAL_DEPRECATED("Textual has no group container. Use applicationSupportURL or applicationCachesURL instead");
+
+@property (readonly, class, copy, nullable) NSString *groupContainerApplicationCaches TEXTUAL_DEPRECATED("Use applicationCaches instead");
+@property (readonly, class, copy, nullable) NSURL *groupContainerApplicationCachesURL TEXTUAL_DEPRECATED("Use applicationCachesURL instead");
+
+@property (readonly, class, copy, nullable) NSString *groupContainerApplicationSupport TEXTUAL_DEPRECATED("Use applicationSupport instead");
+@property (readonly, class, copy, nullable) NSURL *groupContainerApplicationSupportURL TEXTUAL_DEPRECATED("Use applicationSupportURL instead");
 
 @property (readonly, class, copy, nullable) NSString *applicationLogs;
 @property (readonly, class, copy, nullable) NSURL *applicationLogsURL;

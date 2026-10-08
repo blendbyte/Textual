@@ -60,15 +60,17 @@ NSString * const TPCPreferencesUserDefaultsDidChangeNotification = @"TPCPreferen
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		sharedSelf = [[self alloc] _initGroupContainer];
+		sharedSelf = [[self alloc] _initStandardDomain];
 	});
 
 	return sharedSelf;
 }
 
-- (instancetype)_initGroupContainer
+/* The app's own preferences domain (its bundle identifier), the same one
+ +[NSUserDefaults standardUserDefaults] and the system frameworks use */
+- (instancetype)_initStandardDomain
 {
-	TPCPreferencesUserDefaults *defaults = [super initWithSuiteName:TXBundleBuildGroupContainerIdentifier];
+	TPCPreferencesUserDefaults *defaults = [super initWithSuiteName:nil];
 
 	return defaults;
 }

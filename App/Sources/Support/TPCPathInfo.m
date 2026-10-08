@@ -133,50 +133,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return [NSURL fileURLWithPath:sourcePath isDirectory:YES];
 }
 
-+ (nullable NSString *)groupContainer
-{
-	NSURL *sourceURL = self.groupContainerURL;
-
-	if (sourceURL == nil) {
-		return nil;
-	}
-
-	return sourceURL.path;
-}
-
-+ (nullable NSURL *)groupContainerURL
-{
-	NSURL *baseURL = [RZFileManager() containerURLForSecurityApplicationGroupIdentifier:TXBundleBuildGroupContainerIdentifier];
-
-	return baseURL;
-}
-
-+ (nullable NSString *)groupContainerApplicationCaches
-{
-	NSURL *sourceURL = self.groupContainerApplicationCachesURL;
-
-	if (sourceURL == nil) {
-		return nil;
-	}
-
-	return sourceURL.path;
-}
-
-+ (nullable NSURL *)groupContainerApplicationCachesURL
-{
-	NSURL *sourceURL = self.groupContainerURL;
-
-	if (sourceURL == nil) {
-		return nil;
-	}
-
-	NSURL *baseURL = [sourceURL URLByAppendingPathComponent:@"/Library/Caches/"];
-
-	[self _createDirectoryAtURL:baseURL];
-
-	return baseURL;
-}
-
 + (nullable NSString *)applicationSupport
 {
 	NSArray *pathArray = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
@@ -203,30 +159,40 @@ NS_ASSUME_NONNULL_BEGIN
 	return [NSURL fileURLWithPath:sourcePath isDirectory:YES];
 }
 
++ (NSURL *)applicationContainerURL
+{
+	/* The app's sandbox container ("Data"), or the home folder when unsandboxed */
+	return [NSURL fileURLWithPath:NSHomeDirectory() isDirectory:YES];
+}
+
++ (nullable NSString *)groupContainer
+{
+	return self.applicationContainerURL.path;
+}
+
++ (nullable NSURL *)groupContainerURL
+{
+	return self.applicationContainerURL;
+}
+
++ (nullable NSString *)groupContainerApplicationCaches
+{
+	return self.applicationCaches;
+}
+
++ (nullable NSURL *)groupContainerApplicationCachesURL
+{
+	return self.applicationCachesURL;
+}
+
 + (nullable NSString *)groupContainerApplicationSupport
 {
-	NSURL *sourceURL = self.groupContainerApplicationSupportURL;
-
-	if (sourceURL == nil) {
-		return nil;
-	}
-
-	return sourceURL.path;
+	return self.applicationSupport;
 }
 
 + (nullable NSURL *)groupContainerApplicationSupportURL
 {
-	NSURL *sourceURL = self.groupContainerURL;
-
-	if (sourceURL == nil) {
-		return nil;
-	}
-
-	NSURL *baseURL = [sourceURL URLByAppendingPathComponent:@"/Library/Application Support/Textual/"];
-
-	[self _createDirectoryAtURL:baseURL];
-
-	return baseURL;
+	return self.applicationSupportURL;
 }
 
 + (nullable NSString *)applicationLogs
@@ -344,7 +310,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable NSURL *)customExtensionsURL
 {
-	NSURL *sourceURL = self.groupContainerApplicationSupportURL;
+	NSURL *sourceURL = self.applicationSupportURL;
 
 	if (sourceURL == nil) {
 		return nil;
@@ -394,7 +360,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable NSURL *)customThemesURL
 {
-	NSURL *sourceURL = self.groupContainerApplicationSupportURL;
+	NSURL *sourceURL = self.applicationSupportURL;
 
 	if (sourceURL == nil) {
 		return nil;

@@ -1338,15 +1338,10 @@ static NSArray<NSString *> *_matchKeywords = nil;
 
 + (void)registerDefaults
 {
-	NSDictionary *localDefaults =
+	NSDictionary *defaults =
 	[TPCResourceManager dictionaryFromResources:@"RegisteredUserDefaults" inDirectory:@"Preferences" cacheValue:NO];
 
-	[[NSUserDefaults standardUserDefaults] registerDefaults:localDefaults];
-
-	NSDictionary *containerDefaults =
-	[TPCResourceManager dictionaryFromResources:@"RegisteredUserDefaultsInContainer" inDirectory:@"Preferences" cacheValue:NO];
-
-	[RZUserDefaults() registerDefaults:containerDefaults];
+	[RZUserDefaults() registerDefaults:defaults];
 
 	[self registerDynamicDefaults];
 }

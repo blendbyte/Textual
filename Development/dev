@@ -2,9 +2,9 @@
 #
 # Build, run and test "Textual Dev", the Debug build of Textual.
 #
-# Textual Dev has its own bundle identifier (com.textualapp.app.dev) and
-# app group, so it never shares a container, preferences or logs with an
-# installed copy of Textual. For testing, it connects to IRC servers on
+# Textual Dev has its own bundle identifier (com.textualapp.app.dev), so it
+# never shares a container, preferences or logs with an installed copy of
+# Textual. For testing, it connects to IRC servers on
 # this Mac only (see "server" and "scripted" below).
 #
 # "vm-bundle" packs Textual Dev, Ergo, the scripted server and a standalone
