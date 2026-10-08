@@ -1166,11 +1166,11 @@ NS_ASSUME_NONNULL_BEGIN
 				} else if ([self nicknameIsMyself:nicknameInt]) {
 					memberMutable = [member mutableCopy];
 				} else {
-					/* If a user with this name already exists in the channel,
-					 then we do not continue unless its us. We are added to the
-					 channel when the JOIN is received, but we still need modes. */
+					/* A user with this name is already in the channel: skip
+					 them, unless it's us. We are added to the channel when the
+					 JOIN is received, but we still need modes. */
 
-					return YES;
+					continue;
 				}
 
 				/* Create channel user */
@@ -1429,9 +1429,9 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Present reply to the user if we have destination */
 			BOOL visibleIsonRequest = self.requestedCommands.visibleIsonRequest;
 
-			[self.requestedCommands recordIsonRequestClosed];
-
 			if (visibleIsonRequest) {
+				[self.requestedCommands recordIsonRequestClosed];
+
 				if (printMessage) {
 					[self printReplyToHiddenCommandResponsesQuery:m];
 				}
@@ -1444,10 +1444,21 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			/* If the ISON records were not requested by the user, then
-			 treat the results as user tracking information. */
-			NSString *onlineNicknamesString = m.sequence;
+			 treat the results as user tracking information. A long request
+			 is sent as several lines: collect the replies until the last. */
+			for (NSString *nickname in [m.sequence componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]) {
+				if (nickname.length > 0) {
+					[self.isonReplyNicknames addObject:nickname];
+				}
+			}
 
-			NSArray *onlineNicknames = [onlineNicknamesString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+			if ([self.requestedCommands recordIsonReplyReceived] == NO) {
+				break;
+			}
+
+			NSArray *onlineNicknames = [self.isonReplyNicknames copy];
+
+			[self.isonReplyNicknames removeAllObjects];
 
 			/* Start going over the list of tracked nicknames */
 			NSDictionary *trackedUsers = self.trackedUsers.trackedUsers;

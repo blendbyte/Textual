@@ -614,8 +614,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	IRCChannel *channel = [mainWindow() selectedChannelOn:self];
 
-	/* Ignores command and escapeMessage (R3.8, fixed in plan 6.3) */
-	[self printDebugInformation:message inChannel:channel asCommand:TVCLogLineDefaultCommandValue escapeMessage:YES];
+	[self printDebugInformation:message inChannel:channel asCommand:command escapeMessage:escapeMessage];
 }
 
 - (void)printDebugInformation:(NSString *)message inChannel:(nullable IRCChannel *)channel

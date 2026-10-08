@@ -80,6 +80,35 @@ class Client:
 
 		return True
 
+	async def register_with_capabilities(self, capabilities, server_name=SERVER):
+		"""Register like a CAP 302 server that offers capabilities (one LS line)
+		and acknowledges whatever the client requests."""
+		seen = set()
+
+		while True:
+			line = await self.read_line()
+			if line is None:
+				return False
+
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			seen.add(command)
+
+			if command == "CAP" and rest.upper().startswith("LS"):
+				await self.send(f":{server_name} CAP * LS :{capabilities}")
+			elif command == "CAP" and rest.upper().startswith("REQ"):
+				requested = rest.split(" ", 1)[1].lstrip(":")
+				await self.send(f":{server_name} CAP * ACK :{requested}")
+			elif command == "CAP" and rest.upper().startswith("END"):
+				if "NICK" in seen and "USER" in seen:
+					break
+			elif command == "NICK":
+				self.nickname = rest.lstrip(":")
+
+		await self.welcome()
+
+		return True
+
 	async def welcome(self):
 		for line in [
 			f":{SERVER} 001 {self.nickname} :Welcome to the scripted test server",
@@ -753,6 +782,91 @@ async def scenario_cap_ls(client):
 	result(not problems, "; ".join(problems) or "one REQ after the last LS line, END after SASL, NEW requested after registration without END")
 
 
+async def scenario_protocol_fixes(client):
+	"""Lines that exercise protocol fixes (plan 6.3), checked in Textual Dev:
+	#pf must list 4 users (a NAMES line starting with a known nickname used to
+	drop the rest); a ZNC buffextras nickname change prints in #pf; a nested
+	batch's lines print (nested first, then outer); a batch that never closes
+	prints its line after about 60 seconds; "You are now an IRC operator" is
+	shown twice, because -o in between clears the operator state."""
+	if not await client.register_with_capabilities("batch", server_name="irc.znc.in"):
+		result(False, "registration failed")
+		return
+
+	nick = client.nickname
+	channel = "#pf"
+
+	await client.send(f":{nick}!user@client.textual.test JOIN {channel}")
+	await client.send(f":{SERVER} 353 {nick} = {channel} :@{nick} friend1")
+	await client.send(f":{SERVER} 353 {nick} = {channel} :friend1 friend2 friend3")
+	await client.send(f":{SERVER} 366 {nick} {channel} :End of /NAMES list.")
+	await client.collect(2)
+
+	await client.send(f":*buffextras!buffextras@znc.in PRIVMSG {channel} :friend3!f@friend.test is now known as friend3b")
+	await client.collect(1)
+
+	await client.send(f":{SERVER} BATCH +outer example.test/outer")
+	await client.send(f"@batch=outer :{SERVER} BATCH +inner example.test/inner")
+	await client.send(f"@batch=inner :friend1!f@friend.test PRIVMSG {channel} :nested batch line")
+	await client.send(f"@batch=outer :friend2!f@friend.test PRIVMSG {channel} :outer batch line")
+	await client.send(f"@batch=outer :{SERVER} BATCH -inner")
+	await client.send(f":{SERVER} BATCH -outer")
+	await client.collect(1)
+
+	await client.send(f":{SERVER} BATCH +stuck example.test/stuck")
+	await client.send(f"@batch=stuck :friend1!f@friend.test PRIVMSG {channel} :line of a batch that never closes")
+
+	await client.send(f":{SERVER} 381 {nick} :You are now an IRC operator")
+	await client.send(f":{nick} MODE {nick} :-o")
+	await client.send(f":{SERVER} 381 {nick} :You are now an IRC operator")
+
+	await client.collect(75)
+
+	result(True, "sent; check #pf (4 users, friend3b, both batch lines, the stuck line after ~60 s) and the console (operator message twice)")
+
+
+async def scenario_ison_split(client):
+	"""Answer the ISON requests Textual Dev sends for its open queries: open
+	many queries with long nicknames first (e.g. 45 of 12 characters with
+	Development/dev input). Every ISON line must stay under 512 bytes, a long
+	list must be split, and each line is answered with every second nickname
+	online; those queries become active, the others inactive."""
+	start = time.monotonic()
+	rounds = []
+	current = []
+
+	while time.monotonic() - start < 100:
+		try:
+			line = await asyncio.wait_for(client.read_line(), 1)
+		except asyncio.TimeoutError:
+			if current:
+				rounds.append(current)
+				current = []
+			continue
+
+		if line is None:
+			break
+
+		upper = line.upper()
+
+		if upper.startswith("PING"):
+			await client.send(f":{SERVER} PONG {SERVER} {line[5:]}")
+		elif upper.startswith("ISON "):
+			current.append(line)
+			nicknames = line[5:].lstrip(":").split()
+			online = " ".join(nicknames[::2])
+			await client.send(f":{SERVER} 303 {client.nickname} :{online}")
+
+	if current:
+		rounds.append(current)
+
+	too_long = [line for round in rounds for line in round if len((line + "\r\n").encode()) > 512]
+	split = [round for round in rounds if len(round) > 1]
+
+	result(bool(rounds) and not too_long and bool(split),
+		f"{len(rounds)} ISON rounds, line counts {[len(round) for round in rounds]}, longest {max((len(line) for round in rounds for line in round), default=0)} bytes, {len(too_long)} over 512")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -778,10 +892,12 @@ SCENARIOS = {
 	"pong-priority": scenario_pong_priority,
 	"silent": scenario_silent,
 	"cap-ls": scenario_cap_ls,
+	"protocol-fixes": scenario_protocol_fixes,
+	"ison-split": scenario_ison_split,
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"cap-ls"}
+OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

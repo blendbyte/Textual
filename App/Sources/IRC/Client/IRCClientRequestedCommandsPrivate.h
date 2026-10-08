@@ -58,8 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, getter=inVisibleIsonRequest) BOOL visibleIsonRequest;
 - (void)recordIsonRequestOpened;
+- (void)recordIsonRequestOpenedWithCount:(NSUInteger)count; // hidden, one reply per line sent
 - (void)recordIsonRequestOpenedAsVisible;
 - (void)recordIsonRequestClosed;
+- (BOOL)recordIsonReplyReceived; // YES once every line of a hidden request was answered
 
 #pragma mark -
 #pragma mark MONITOR Command (Default: hidden)

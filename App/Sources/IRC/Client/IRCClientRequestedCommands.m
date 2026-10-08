@@ -186,6 +186,13 @@ typedef NS_ENUM(NSUInteger, IRCClientRequestedCommandVisibility)
 	[self addCommand:IRCRemoteCommandIson hiddenResponse:YES];
 }
 
+- (void)recordIsonRequestOpenedWithCount:(NSUInteger)count
+{
+	NSParameterAssert(count > 0);
+
+	[self addCommand:IRCRemoteCommandIson withCount:count hiddenResponse:YES];
+}
+
 - (void)recordIsonRequestOpenedAsVisible
 {
 	[self addCommand:IRCRemoteCommandIson hiddenResponse:NO];
@@ -194,6 +201,25 @@ typedef NS_ENUM(NSUInteger, IRCClientRequestedCommandVisibility)
 - (void)recordIsonRequestClosed
 {
 	[self removeCommand:IRCRemoteCommandIson];
+}
+
+- (BOOL)recordIsonReplyReceived
+{
+	IRCClientRequestedCommand *commandObject = [self findCommand:IRCRemoteCommandIson];
+
+	if (commandObject == nil) {
+		return YES;
+	}
+
+	if (commandObject.enforceCount == NO || commandObject.count <= 1) {
+		[self removeCommandObject:commandObject];
+
+		return YES;
+	}
+
+	commandObject.count -= 1;
+
+	return NO;
 }
 
 #if 0

@@ -167,6 +167,8 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 "pqj-1y" = "I am using %@";
 "ccb-ur" = "%1$@ %2$@ (Build %3$@)%4$@%5$@";
 "b8p-44" = " as classic binary on an %@ Mac.";
+"g1u-os" = "Apple silicon";
+"swz-uj" = "Intel";
 
 /* /timer/ command */
 "jj9-94" = "Invalid Syntax. Type “/timer help” for more information.";

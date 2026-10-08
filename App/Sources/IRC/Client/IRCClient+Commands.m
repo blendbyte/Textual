@@ -967,37 +967,55 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(nicknames != nil);
 
-	/* Split nicknames into fixed number per-command in case there are a lot or are long. */
-	/* June 11, 2018: Disabled this because Textual expects nicknames to appear in ISON
-	 response or they are considered offline. If we chunk out results, then user may
-	 disappear in one ISON response and then appear in another. The long term solution
-	 is to stop relying on ISON but no idea when that will come. */
-//	[nicknames enumerateSubarraysOfSize:8 usingBlock:^(NSArray *objects, BOOL *stop) {
-		[self _sendIsonForNicknames:nicknames hideResponse:hideResponse];
-//	}];
-}
-
-- (void)_sendIsonForNicknames:(NSArray<NSString *> *)nicknames hideResponse:(BOOL)hideResponse
-{
-	NSParameterAssert(nicknames != nil);
-
 	if (self.isLoggedIn == NO) {
 		return;
 	}
 
-	if (nicknames.count == 0) {
+	/* A long list is split into lines that stay under the server's line
+	 limit (R3.14). The tracking logic needs every nickname in one reply,
+	 so the replies to a hidden request are collected and evaluated
+	 together once the last one arrives (see RPL_ISON). */
+	NSMutableArray<NSString *> *lines = [NSMutableArray array];
+
+	NSMutableString *line = [NSMutableString string];
+
+	for (NSString *nickname in nicknames) {
+		NSUInteger nicknameLength = [nickname lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+
+		if (line.length > 0 && ([line lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1 + nicknameLength) > _isonLineMaximumLength) {
+			[lines addObject:[line copy]];
+
+			[line setString:@""];
+		}
+
+		if (line.length > 0) {
+			[line appendString:@" "];
+		}
+
+		[line appendString:nickname];
+	}
+
+	if (line.length > 0) {
+		[lines addObject:[line copy]];
+	}
+
+	if (lines.count == 0) {
 		return;
 	}
 
-	if (hideResponse == NO) {
-		[self.requestedCommands recordIsonRequestOpenedAsVisible];
-	} else {
-		[self.requestedCommands recordIsonRequestOpened];
+	if (hideResponse) {
+		[self.isonReplyNicknames removeAllObjects];
+
+		[self.requestedCommands recordIsonRequestOpenedWithCount:lines.count];
 	}
 
-	NSString *nicknamesString = [nicknames componentsJoinedByString:@" "];
+	for (NSString *nicknamesString in lines) {
+		if (hideResponse == NO) {
+			[self.requestedCommands recordIsonRequestOpenedAsVisible];
+		}
 
-	[self send:@"ISON", nicknamesString, nil];
+		[self send:@"ISON", nicknamesString, nil];
+	}
 }
 
 - (void)requestChannelList

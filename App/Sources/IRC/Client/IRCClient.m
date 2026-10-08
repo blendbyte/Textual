@@ -216,6 +216,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.cachedHighlights = @[];
 
+	self.isonReplyNicknames = [NSMutableArray array];
+
 	self.capabilityNegotiator = [IRCCapabilityNegotiator new];
 
 	self.capabilityNegotiator.delegate = self;
@@ -517,6 +519,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	configMutable.sidebarItemExpanded = self.sidebarItemIsExpanded;
 
 	self.config = configMutable;
+
+	/* Until one of them changes again (R3.12: every save copied the configuration) */
+	self.configurationIsStale = NO;
 }
 
 - (void)updateStoredChannelList
@@ -688,7 +693,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self zncPlaybackClearChannel:channel];
 
 	if (self.hiddenCommandResponsesQuery == channel) {
-		self.hiddenCommandResponsesQuery = channel;
+		self.hiddenCommandResponsesQuery = nil;
 	}
 
 	if (self.rawDataLogQuery == channel) {
@@ -1467,6 +1472,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 - (void)removeRequestedCommands
 {
 	[self.requestedCommands removeCommands];
+
+	[self.isonReplyNicknames removeAllObjects];
 }
 
 - (void)createHiddenCommandResponses
@@ -1475,7 +1482,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		return;
 	}
 
-	if (self.rawDataLogQuery != nil) {
+	if (self.hiddenCommandResponsesQuery != nil) {
 		return;
 	}
 

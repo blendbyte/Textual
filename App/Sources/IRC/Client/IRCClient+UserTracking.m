@@ -308,13 +308,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Wrap around before working out the end of the batch: computed from
+	 a position past the end, the batch covered every channel (R3.14) */
 	NSUInteger startingPosition = self.lastWhoRequestChannelListIndex;
-
-	NSUInteger endingPosition = (startingPosition + _maximumChannelCountPerWhoBatchRequest);
 
 	if (startingPosition >= channelCount) {
 		startingPosition = 0;
 	}
+
+	NSUInteger endingPosition = (startingPosition + _maximumChannelCountPerWhoBatchRequest - 1);
 
 	if (endingPosition >= channelCount) {
 		endingPosition = (channelCount - 1);
@@ -396,7 +398,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateUserTrackingStatusForEntry:(IRCAddressBookEntry *)addressBookEntry withMessage:(IRCMessage *)message
 {
+	[self updateUserTrackingStatusForEntry:addressBookEntry nickname:message.senderNickname withMessage:message];
+}
+
+/* nickname is the user the entry matched: the sender, or for NICK the old
+ or the new nickname */
+- (void)updateUserTrackingStatusForEntry:(IRCAddressBookEntry *)addressBookEntry nickname:(NSString *)nickname withMessage:(IRCMessage *)message
+{
 	NSParameterAssert(addressBookEntry != nil);
+	NSParameterAssert(nickname != nil);
 	NSParameterAssert(message != nil);
 
 	if (self.supportsAdvancedTracking) {
@@ -414,7 +424,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Notification Type: JOIN Command */
 	if ([message.command isEqualToStringIgnoringCase:@"JOIN"]) {
 		if (ison == NO) {
-			[self statusOfTrackedNickname:message.senderNickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
 		}
 
 		return;
@@ -423,18 +433,21 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Notification Type: QUIT Command */
 	if ([message.command isEqualToStringIgnoringCase:@"QUIT"]) {
 		if (ison) {
-			[self statusOfTrackedNickname:message.senderNickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
 		}
 
 		return;
 	}
 
-	/* Notification Type: NICK Command */
+	/* Notification Type: NICK Command: the old nickname is gone,
+	 the new one has arrived (R3.3: the new one was reported as the old) */
 	if ([message.command isEqualToStringIgnoringCase:@"NICK"]) {
-		if (ison) {
-			[self statusOfTrackedNickname:message.senderNickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
-		} else {
-			[self statusOfTrackedNickname:message.senderNickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
+		BOOL isOldNickname = [nickname isEqualToStringIgnoringCase:message.senderNickname];
+
+		if (isOldNickname && ison) {
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOff notify:YES];
+		} else if (isOldNickname == NO && ison == NO) {
+			[self statusOfTrackedNickname:nickname changedTo:IRCAddressBookUserTrackingStatusSignedOn notify:YES];
 		}
 
 		return;

@@ -58,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define _retryInterval				240
 #define _timeoutInterval			360
 #define _whoCheckInterval			120
+#define _batchFlushTimeout			60 // a batch that never closes is processed after this many seconds
+#define _isonLineMaximumLength		400 // bytes of nicknames per ISON line (lines are limited to 512)
 
 #define _CTCPReplyLimit				5 // replies per _CTCPReplyLimitInterval
 #define _CTCPReplyLimitPerSender	2 // replies to one host per _CTCPReplyLimitInterval
@@ -130,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL zncBouncerIsSendingCertificateInfo;
 @property (nonatomic, assign) BOOL zncBouncerIsPlayingBackHistory;
 @property (nonatomic, strong) IRCCapabilityNegotiator *capabilityNegotiator;
+@property (nonatomic, strong) NSMutableArray<NSString *> *isonReplyNicknames; // online nicknames of a hidden ISON request so far
 @property (nonatomic, assign) NSUInteger connectDelay;
 @property (nonatomic, assign) NSUInteger lastServerSelected;
 @property (nonatomic, assign) NSUInteger lastWhoRequestChannelListIndex;
@@ -198,6 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stopISONTimer;
 - (void)statusOfTrackedNickname:(NSString *)nickname changedTo:(IRCAddressBookUserTrackingStatus)newStatus notify:(BOOL)notify;
 - (void)updateUserTrackingStatusForEntry:(IRCAddressBookEntry *)addressBookEntry withMessage:(IRCMessage *)message;
+- (void)updateUserTrackingStatusForEntry:(IRCAddressBookEntry *)addressBookEntry nickname:(NSString *)nickname withMessage:(IRCMessage *)message;
 @end
 
 @interface IRCClient (SendingInternal)

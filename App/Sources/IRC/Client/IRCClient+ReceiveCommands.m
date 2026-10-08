@@ -849,11 +849,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL myself = [self nicknameIsMyself:sender];
 
+	/* Context */
+	NSMutableString *textMutable = [text mutableCopy];
+
+	NSString *command = textMutable.uppercaseGetToken;
+
+	if (command.length == 0) {
+		return;
+	}
+
 	IRCAddressBookEntry *ignoreInfo = nil;
 
 	if (myself) {
-		/* Ignore messages echoed back to ourselves */
-		if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage]) {
+		/* Ignore messages echoed back to ourselves, except the lag check,
+		 which is sent to ourselves on purpose (R3.11) */
+		if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] &&
+			[command isEqualToString:@"LAGCHECK"] == NO)
+		{
 			return;
 		}
 	} else {
@@ -863,15 +875,6 @@ NS_ASSUME_NONNULL_BEGIN
 		if (ignoreInfo.ignoreClientToClientProtocol) {
 			return;
 		}
-	}
-
-	/* Context */
-	NSMutableString *textMutable = [text mutableCopy];
-
-	NSString *command = textMutable.uppercaseGetToken;
-
-	if (command.length == 0) {
-		return;
 	}
 
 	/* Lag check responses should only ever come from ourselves so we
@@ -1565,11 +1568,11 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(m != nil);
 
-	NSAssertReturn([m paramsCount] == 1);
-
 	/* Print only messages target specific channels which means
-	 the index of incoming data will be different */
+	 the index of incoming data will be different: [channel, nickname] */
 	BOOL isPrintOnlyMessage = m.isPrintOnlyMessage;
+
+	NSAssertReturn([m paramsCount] == (isPrintOnlyMessage ? 2 : 1));
 
 	NSString *channelName = nil;
 
@@ -1618,14 +1621,14 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			/* Update user tracking status for old nickname */
 			if (oldNicknameIgnoreInfo) {
-				[self updateUserTrackingStatusForEntry:oldNicknameIgnoreInfo withMessage:m];
+				[self updateUserTrackingStatusForEntry:oldNicknameIgnoreInfo nickname:oldNickname withMessage:m];
 			}
 
 			/* Update user tracking status for new nickname */
 			IRCAddressBookEntry *newNicknameIgnoreInfo = [self findUserTrackingAddressBookEntryForNickname:newNickname];
 
 			if (newNicknameIgnoreInfo) {
-				[self updateUserTrackingStatusForEntry:newNicknameIgnoreInfo withMessage:m];
+				[self updateUserTrackingStatusForEntry:newNicknameIgnoreInfo nickname:newNickname withMessage:m];
 			}
 		}
 
@@ -1633,13 +1636,15 @@ NS_ASSUME_NONNULL_BEGIN
 		[self postEventToViewController:@"nicknameChanged"];
 	}
 
-	/* Inform observers */
-	[RZNotificationCenter() postNotificationName:IRCClientUserNicknameChangedNotification
-										  object:self
-										userInfo:@{
-											@"oldNickname" : oldNickname,
-											@"newNickname" : newNickname
-										}];
+	/* Inform observers (not for print-only messages: playback, not a change) */
+	if (isPrintOnlyMessage == NO) {
+		[RZNotificationCenter() postNotificationName:IRCClientUserNicknameChangedNotification
+											  object:self
+											userInfo:@{
+												@"oldNickname" : oldNickname,
+												@"newNickname" : newNickname
+											}];
+	}
 
 	/* Look for user */
 	IRCUser *user = nil;
@@ -1764,6 +1769,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Present user modes */
 	if ([self stringIsChannelName:channelName] == NO) {
+		/* Losing operator status (-o) on ourselves (R3.14: it was never cleared) */
+		if (isPrintOnlyMessage == NO && self.userIsIRCop && [self nicknameIsMyself:channelName]) {
+			BOOL modeIsSet = YES;
+
+			for (NSUInteger i = 0; i < modeString.length; i++) {
+				unichar modeCharacter = [modeString characterAtIndex:i];
+
+				if (modeCharacter == '+') {
+					modeIsSet = YES;
+				} else if (modeCharacter == '-') {
+					modeIsSet = NO;
+				} else if (modeCharacter == ' ') {
+					break;
+				} else if (modeCharacter == 'o' && modeIsSet == NO) {
+					self.userIsIRCop = NO;
+				}
+			}
+		}
+
 		BOOL printMessage = [self postReceivedCommand:@"UMODE" withText:modeString destinedFor:nil referenceMessage:m];
 
 		if (printMessage) {
@@ -1991,19 +2015,9 @@ NS_ASSUME_NONNULL_BEGIN
 			return; // Nothing left to do...
 		}
 
-		batchType = thisBatchMessage.batchType;
+		[self cancelPerformRequestsWithSelector:@selector(flushUnclosedBatchWithToken:) object:batchToken];
 
-		/* Process queued entries for this batch message. */
-		/* The method used for processing queued entries will 
-		 also remove it from queue once completed. */
-		[self recursivelyProcessBatchMessage:thisBatchMessage];
-
-		/* Set vendor specific flags based on BATCH command values */
-		if ([batchType isEqualToString:@"znc.in/playback"]) {
-			self.zncBouncerIsPlayingBackHistory = NO;
-		} else if ([batchType isEqualToString:@"znc.in/tlsinfo"]) {
-			self.zncBouncerIsSendingCertificateInfo = NO;
-		}
+		[self finishBatchMessage:thisBatchMessage];
 	}
 	else // isBatchOpening == NO
 	{
@@ -2027,6 +2041,15 @@ NS_ASSUME_NONNULL_BEGIN
 		newBatchMessage.parentBatchMessage = parentBatchMessage;
 
 		[self.batchMessages queueEntry:newBatchMessage];
+
+		/* A nested batch is processed in its place in the parent, when
+		 the parent closes; a batch that never closes would hold its
+		 messages forever, so after a while it is processed anyway */
+		if (parentBatchMessage) {
+			[parentBatchMessage queueEntry:newBatchMessage];
+		} else {
+			[self performSelectorInCommonModes:@selector(flushUnclosedBatchWithToken:) withObject:batchToken afterDelay:_batchFlushTimeout];
+		}
 
 		/* Set vendor specific flags based on BATCH command values */
 		if ([batchType isEqualToString:@"znc.in/playback"]) {
@@ -2085,6 +2108,12 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(m != nil);
 
+	/* BATCH lines open and close batches, also nested ones (which carry the
+	 parent's batch tag), so they are never held back in a batch */
+	if ([m.command isEqualToStringIgnoringCase:@"BATCH"]) {
+		return NO;
+	}
+
 	NSString *batchToken = m.batchToken;
 
 	if (batchToken) {
@@ -2109,9 +2138,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(batchMessage != nil);
 
-	if (batchMessage.batchIsOpen) {
+	/* A nested batch still open when its parent is processed never closed
+	 properly: its messages are processed rather than lost */
+	if (recursionDepth == 0 && batchMessage.batchIsOpen) {
 		return;
 	}
+
+	batchMessage.batchIsOpen = NO;
 
 	NSArray *queuedEntries = batchMessage.queuedEntries;
 
@@ -2123,9 +2156,46 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	if (recursionDepth == 0) {
-		[self.batchMessages dequeueEntry:batchMessage];
+	/* Nested batches are registered by token too, so each one goes */
+	[self.batchMessages dequeueEntry:batchMessage];
+}
+
+/* Processes a closed top-level batch and resets the vendor states it set */
+- (void)finishBatchMessage:(IRCMessageBatchMessage *)batchMessage
+{
+	NSParameterAssert(batchMessage != nil);
+
+	NSString *batchType = batchMessage.batchType;
+
+	/* Process queued entries for this batch message. */
+	/* The method used for processing queued entries will
+	 also remove it from queue once completed. */
+	[self recursivelyProcessBatchMessage:batchMessage];
+
+	/* Set vendor specific flags based on BATCH command values */
+	if ([batchType isEqualToString:@"znc.in/playback"]) {
+		self.zncBouncerIsPlayingBackHistory = NO;
+	} else if ([batchType isEqualToString:@"znc.in/tlsinfo"]) {
+		self.zncBouncerIsSendingCertificateInfo = NO;
 	}
+}
+
+- (void)flushUnclosedBatchWithToken:(NSString *)batchToken
+{
+	NSParameterAssert(batchToken != nil);
+
+	IRCMessageBatchMessage *batchMessage = [self.batchMessages queuedEntryWithBatchToken:batchToken];
+
+	if (batchMessage == nil || batchMessage.batchIsOpen == NO) {
+		return;
+	}
+
+	LogToConsoleError("BATCH '%{public}@' was not closed within %d seconds; processing its %lu messages",
+		batchToken, _batchFlushTimeout, (unsigned long)batchMessage.queuedEntries.count);
+
+	batchMessage.batchIsOpen = NO;
+
+	[self finishBatchMessage:batchMessage];
 }
 
 @end

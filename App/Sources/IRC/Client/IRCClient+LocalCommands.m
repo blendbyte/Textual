@@ -399,7 +399,7 @@ NS_ASSUME_NONNULL_BEGIN
 		NSUInteger commentMaximumLength = client.supportInfo.maximumAwayLength;
 
 		if (commentMaximumLength > 0 && comment.length > commentMaximumLength) {
-			[client printDebugInformation:TXTLS(@"IRC[41y-p2]", self.networkNameAlt, commentMaximumLength)];
+			[client printDebugInformation:TXTLS(@"IRC[41y-p2]", client.networkNameAlt, commentMaximumLength)];
 		}
 
 		[client toggleAwayStatusWithComment:comment];
@@ -543,7 +543,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (targetChannel && targetChannel != selectedChannel) {
 		if (targetChannel.isUtility) {
-			[self printDebugInformation:TXTLS(@"sxf-qx")];
+			[self printDebugInformation:TXTLS(@"IRC[sxf-qx]")];
 
 			return;
 		}
@@ -2012,7 +2012,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray *arguments = [stringIn.string componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
 	for (NSString *argument in arguments) {
-		if ([argument hasPrefix:@"-"] || [stringIn.string hasPrefix:@"+"] ) {
+		if ([argument hasPrefix:@"-"] || [argument hasPrefix:@"+"]) {
 			isModifierCommand = YES;
 
 			break;
@@ -2195,7 +2195,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* All other scenarios use the string in (token) */
 	if (isSecretMessage == NO && lineType == TVCLogLineTypeAction && targetChannel) {
 		if (targetChannel.isUtility) {
-			[self printDebugInformation:TXTLS(@"sxf-qx")];
+			[self printDebugInformation:TXTLS(@"IRC[sxf-qx]")];
 
 			return;
 		}

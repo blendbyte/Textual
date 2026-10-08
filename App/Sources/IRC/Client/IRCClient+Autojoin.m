@@ -311,8 +311,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	/* Nothing to join: autojoin is done (staying "autojoining" blocked /AUTOJOIN, R3.7) */
 	if (channelsToAutojoin.count == 0) {
-		self.isAutojoining = YES;
+		self.isAutojoined = YES;
 
 		return;
 	}

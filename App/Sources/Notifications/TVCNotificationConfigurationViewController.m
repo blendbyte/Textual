@@ -55,7 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSButton *alertSpeakEventButton;
 @property (nonatomic, weak) IBOutlet NSPopUpButton *alertSoundChoiceButton;
 @property (nonatomic, weak) IBOutlet NSPopUpButton *alertTypeChoiceButton;
-@property (nonatomic, weak) IBOutlet NSTextField *alertNotificationDestinationTextField;
 @property (nonatomic, strong) TLONotificationConfiguration *activeAlert;
 @property (nonatomic, assign) BOOL activeAlertPropertyChangedByUser;
 @property (nonatomic, copy) NSArray *alertSounds;
@@ -92,8 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[RZMainBundle() loadNibNamed:@"TVCNotificationConfigurationView" owner:self topLevelObjects:nil];
 
 	[self updateAvailableSounds];
-
-	self.alertNotificationDestinationTextField.stringValue = TXTLS(@"TVCNotificationConfigurationView[br6-di]");
 }
 
 - (void)attachToView:(NSView *)view

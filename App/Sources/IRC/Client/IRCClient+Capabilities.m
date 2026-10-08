@@ -443,9 +443,16 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilitySASLPlainText])
 	{
+		/* Like registration (USER), an empty username means the nickname (R3.14) */
+		NSString *username = self.config.username;
+
+		if (username.length == 0) {
+			username = self.config.nickname;
+		}
+
 		NSString *authString = [NSString stringWithFormat:@"%@%C%@%C%@",
-								 self.config.username, 0x00,
-								 self.config.username, 0x00,
+								 username, 0x00,
+								 username, 0x00,
 								 self.config.nicknamePassword];
 
 		NSArray *authStrings = [authString base64EncodingWithLineLength:400];
