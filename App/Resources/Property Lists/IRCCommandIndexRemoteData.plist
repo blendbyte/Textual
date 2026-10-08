@@ -11,288 +11,206 @@
 	<dict>
 		<key>indexValue</key>
 		<integer>1003</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>away</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1050</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>authenticate</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1005</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>batch</key>
 	<dict>
 		<key>indexValue</key>
 		<real>1054</real>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>cap</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1004</integer>
-		<key>outgoingColonIndex</key>
-		<integer>-1</integer>
 	</dict>
 	<key>certinfo</key>
 	<dict>
 		<key>indexValue</key>
 		<real>1055</real>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>chatops</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1006</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>chghost</key>
 	<dict>
 		<key>indexValue</key>
 		<real>1057</real>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>error</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1016</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>gline</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1047</integer>
-		<key>outgoingColonIndex</key>
-		<integer>2</integer>
 	</dict>
 	<key>globops</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1017</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>gzline</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1048</integer>
-		<key>outgoingColonIndex</key>
-		<integer>2</integer>
 	</dict>
 	<key>invite</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1018</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>ison</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1019</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>join</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1020</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>kick</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1021</integer>
-		<key>outgoingColonIndex</key>
-		<integer>2</integer>
 	</dict>
 	<key>kill</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1022</integer>
-		<key>outgoingColonIndex</key>
-		<integer>1</integer>
 	</dict>
 	<key>list</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1023</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>locops</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1024</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>mode</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1026</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>monitor</key>
 	<dict>
 		<key>indexValue</key>
 		<real>1056</real>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>nachat</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1027</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>names</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1028</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>nick</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1029</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>notice</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1030</integer>
-		<key>outgoingColonIndex</key>
-		<integer>1</integer>
 	</dict>
 	<key>part</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1031</integer>
-		<key>outgoingColonIndex</key>
-		<integer>1</integer>
 	</dict>
 	<key>pass</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1032</integer>
-		<key>outgoingColonIndex</key>
-		<integer>-1</integer>
 	</dict>
 	<key>ping</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1033</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>pong</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1034</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>privmsg</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1035</integer>
-		<key>outgoingColonIndex</key>
-		<integer>1</integer>
 	</dict>
 	<key>quit</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1036</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>shun</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1045</integer>
-		<key>outgoingColonIndex</key>
-		<integer>2</integer>
 	</dict>
 	<key>tempshun</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1046</integer>
-		<key>outgoingColonIndex</key>
-		<integer>1</integer>
 	</dict>
 	<key>topic</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1039</integer>
-		<key>outgoingColonIndex</key>
-		<integer>1</integer>
 	</dict>
 	<key>user</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1037</integer>
-		<key>outgoingColonIndex</key>
-		<integer>3</integer>
 	</dict>
 	<key>wallops</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1038</integer>
-		<key>outgoingColonIndex</key>
-		<integer>0</integer>
 	</dict>
 	<key>watch</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1053</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>who</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1040</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>whois</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1042</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>whowas</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1041</integer>
-		<key>outgoingColonIndex</key>
-		<integer>999</integer>
 	</dict>
 	<key>zline</key>
 	<dict>
 		<key>indexValue</key>
 		<integer>1049</integer>
-		<key>outgoingColonIndex</key>
-		<integer>2</integer>
 	</dict>
 </dict>
 </plist>

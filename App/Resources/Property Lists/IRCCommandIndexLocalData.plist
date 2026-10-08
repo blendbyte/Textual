@@ -184,7 +184,7 @@
 		<false/>
 		<key>indexValue</key>
 		<integer>5092</integer>
-		<key>New item</key>
+		<key>arguments</key>
 		<string>&lt;enable | disable&gt; [-a] &lt;feature&gt;</string>
 	</dict>
 	<key>dehalfop</key>

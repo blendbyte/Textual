@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,26 +34,61 @@
  *
  *********************************************************************** */
 
-#import "IRCISupportInfo.h"
+#import <XCTest/XCTest.h>
+
+#import "IRCSendingMessage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCClient;
+@interface IRCSendingMessageTests : XCTestCase
+@end
 
-@interface IRCISupportInfo ()
-@property (nonatomic, copy, readwrite, nullable) NSString *serverAddress;
+@implementation IRCSendingMessageTests
 
-@property (readonly, copy, nullable) NSString *stringValueForLastUpdate;
+- (NSString *)line:(NSString *)command, ... NS_REQUIRES_NIL_TERMINATION
+{
+	NSMutableArray *arguments = [NSMutableArray array];
 
-- (instancetype)initWithClient:(IRCClient *)client NS_DESIGNATED_INITIALIZER;
+	va_list list;
+	va_start(list, command);
 
-- (void)processConfigurationData:(NSString *)configurationData;
+	NSString *argument = nil;
 
-- (NSArray<IRCModeInfo *> *)parseModes:(NSString *)modeString;
+	while ((argument = va_arg(list, NSString *))) {
+		[arguments addObject:argument];
+	}
 
-- (BOOL)modeHasParameter:(NSString *)modeSymbol whenModeIsSet:(BOOL)whenModeIsSet;
+	va_end(list);
 
-- (void)reset;
+	return [IRCSendingMessage stringWithCommand:command arguments:arguments];
+}
+
+/* Free text is always the trailing parameter, also when it is empty */
+- (void)testFreeTextIsTheTrailingParameter
+{
+	XCTAssertEqualObjects(([self line:@"PRIVMSG", @"#c", @"hi", nil]), @"PRIVMSG #c :hi");
+	XCTAssertEqualObjects(([self line:@"TOPIC", @"#c", @"", nil]), @"TOPIC #c :");
+	XCTAssertEqualObjects(([self line:@"TOPIC", @"#c", nil]), @"TOPIC #c");
+	XCTAssertEqualObjects(([self line:@"PART", @"#c", nil]), @"PART #c");
+	XCTAssertEqualObjects(([self line:@"CAP", @"REQ", @"batch sasl", nil]), @"CAP REQ :batch sasl");
+}
+
+/* Parameter lists go out as given (plugins pass "+o nick" as one argument);
+ other commands get a trailing parameter when the last argument has spaces */
+- (void)testOtherCommandsKeepTheirArguments
+{
+	XCTAssertEqualObjects(([self line:@"MODE", @"#c", @"+o nick", nil]), @"MODE #c +o nick");
+	XCTAssertEqualObjects(([self line:@"SETNAME", @"New Name", nil]), @"SETNAME :New Name");
+	XCTAssertEqualObjects(([self line:@"PONG", @":token", nil]), @"PONG ::token");
+}
+
+/* An empty argument is left out instead of cutting off the rest */
+- (void)testEmptyArgumentIsLeftOut
+{
+	XCTAssertEqualObjects(([self line:@"JOIN", @"#c", @"", nil]), @"JOIN #c");
+	XCTAssertEqualObjects(([self line:@"WHOIS", @"", @"nick", nil]), @"WHOIS nick");
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

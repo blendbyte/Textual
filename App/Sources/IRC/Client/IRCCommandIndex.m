@@ -38,8 +38,14 @@
 #import "TPCPreferencesLocal.h"
 #import "TPCResourceManager.h"
 #import "IRCCommandIndexPrivate.h"
+#import "IRCSendingMessage.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+/* Implemented in IRCSendingMessage.m */
+@interface IRCSendingMessage (IRCCommandIndex)
++ (NSDictionary<NSString *, NSNumber *> *)textParameterPositions;
+@end
 
 #define _reservedSlotDictionaryKey			@"Reserved Information"
 
@@ -170,19 +176,13 @@ static NSDictionary *IRCCommandIndexRemoteData = nil;
 {
 	NSParameterAssert(command != nil);
 
-	NSDictionary *index = IRCCommandIndexRemoteData[command.uppercaseString];
-	
-	if (index == nil) {
+	NSNumber *position = [IRCSendingMessage textParameterPositions][command.uppercaseString];
+
+	if (position == nil) {
 		return NSNotFound;
 	}
-	
-	NSInteger position = [index integerForKey:@"outgoingColonIndex"];
-	
-	if (position < 0) {
-		return NSNotFound;
-	}
-	
-	return position;
+
+	return position.unsignedIntegerValue;
 }
 
 + (nullable NSString *)syntaxForLocalCommand:(NSString *)command

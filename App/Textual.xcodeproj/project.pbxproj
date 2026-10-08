@@ -627,6 +627,8 @@
 		4C6E5E26CAC8042A68B61EBD /* IRCCapabilityNegotiatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */; };
 		4C34DFFDDB44DF73DA15DCB8 /* IRCUserList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2EFD7CAF2E21384307E270 /* IRCUserList.m */; };
 		4C6971E9F5057FA3827828BB /* IRCAddressBookTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */; };
+		4C68DED5D8394473C8E220C2 /* IRCSendingMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1BC25C5F0C5B1AB8330D04 /* IRCSendingMessageTests.m */; };
+		4C0713269A9999A36B1FF9EA /* IRCChannelUserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5E81BAC2E82922B2CDF2DB /* IRCChannelUserTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1408,6 +1410,8 @@
 		4C2EFD7CAF2E21384307E270 /* IRCUserList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCUserList.m; sourceTree = "<group>"; };
 		4C95A42F8B47C0382053B59A /* IRCUserListPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCUserListPrivate.h; sourceTree = "<group>"; };
 		4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAddressBookTests.m; sourceTree = "<group>"; };
+		4C1BC25C5F0C5B1AB8330D04 /* IRCSendingMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSendingMessageTests.m; sourceTree = "<group>"; };
+		4C5E81BAC2E82922B2CDF2DB /* IRCChannelUserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCChannelUserTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2590,10 +2594,12 @@
 				4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */,
 				4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */,
 				4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */,
+				4C5E81BAC2E82922B2CDF2DB /* IRCChannelUserTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
 				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */,
 				4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */,
+				4C1BC25C5F0C5B1AB8330D04 /* IRCSendingMessageTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3B /* TDCFileTransferTests.m */,
 				4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */,
@@ -3482,6 +3488,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C68DED5D8394473C8E220C2 /* IRCSendingMessageTests.m in Sources */,
+				4C0713269A9999A36B1FF9EA /* IRCChannelUserTests.m in Sources */,
 				4C6971E9F5057FA3827828BB /* IRCAddressBookTests.m in Sources */,
 				4C6E5E26CAC8042A68B61EBD /* IRCCapabilityNegotiatorTests.m in Sources */,
 				4C7FE9B965386EBECD77C5E2 /* ICLURLSessionTests.m in Sources */,

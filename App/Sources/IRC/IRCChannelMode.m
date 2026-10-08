@@ -106,61 +106,90 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(modes != nil);
 
-	NSDictionary *modesSetOld = self.modes.modes;
+	IRCISupportInfo *supportInfo = self.client.supportInfo;
 
-	NSDictionary *modesSetNew = modes.modes;
+	NSDictionary<NSString *, IRCModeInfo *> *modesSetOld = self.modes.modes;
 
-	NSMutableString *modeAddString = [NSMutableString string];
+	NSDictionary<NSString *, IRCModeInfo *> *modesSetNew = modes.modes;
+
 	NSMutableString *modeRemoveString = [NSMutableString string];
-	NSMutableString *modeParamString = [NSMutableString string];
+	NSMutableString *modeAddString = [NSMutableString string];
 
-	/* Look over the set of modes that are currently set. If a mode is present
-	 in that set, but not in the new set, then mark that mode for removal. */
-	[modesSetOld enumerateKeysAndObjectsUsingBlock:^(NSString *modeSymbol, IRCModeInfo *mode, BOOL *stop) {
-		if (modesSetNew[modeSymbol] != nil) {
-			return;
+	NSMutableArray<NSString *> *removeParameters = [NSMutableArray array];
+	NSMutableArray<NSString *> *addParameters = [NSMutableArray array];
+
+	/* A removal carries the parameter when the mode needs one to be unset
+	 (-k key); without it servers refuse (R3.20) */
+	void (^removeMode)(IRCModeInfo *) = ^(IRCModeInfo *modeOld) {
+		[modeRemoveString appendString:modeOld.modeSymbol];
+
+		NSString *modeParameter = modeOld.modeParameter;
+
+		if (modeParameter.length > 0 && [supportInfo modeHasParameter:modeOld.modeSymbol whenModeIsSet:NO]) {
+			[removeParameters addObject:modeParameter];
 		}
+	};
 
-		if (modeRemoveString.length == 0) {
-			[modeRemoveString appendFormat:@"-%@", modeSymbol];
-		} else {
-			[modeRemoveString appendString:modeSymbol];
-		}
-	}];
-
-	/* Look over the new set of modes and compare them to the old set.
-	 If a mode has changed (check for equality), then perform action. */
-	[modesSetNew enumerateKeysAndObjectsUsingBlock:^(NSString *modeSymbol, IRCModeInfo *mode, BOOL *stop) {
-		IRCModeInfo *modeOld = modesSetOld[modeSymbol];
-
-		if ([mode isEqual:modeOld]) {
-			return;
-		}
-
-		if (mode.modeIsSet) {
-			if (modeAddString.length == 0) {
-				[modeAddString appendFormat:@"+%@", modeSymbol];
-			} else {
-				[modeAddString appendString:modeSymbol];
-			}
-		} else {
-			if (modeRemoveString.length == 0) {
-				[modeRemoveString appendFormat:@"-%@", modeSymbol];
-			} else {
-				[modeRemoveString appendString:modeSymbol];
-			}
-		}
+	void (^addMode)(IRCModeInfo *) = ^(IRCModeInfo *mode) {
+		[modeAddString appendString:mode.modeSymbol];
 
 		NSString *modeParameter = mode.modeParameter;
 
-		if (modeParameter.length == 0) {
+		if (modeParameter.length > 0) {
+			[addParameters addObject:modeParameter];
+		}
+	};
+
+	/* Modes that are set now but not in the new set are removed */
+	[modesSetOld enumerateKeysAndObjectsUsingBlock:^(NSString *modeSymbol, IRCModeInfo *modeOld, BOOL *stop) {
+		if (modesSetNew[modeSymbol] == nil && modeOld.modeIsSet) {
+			removeMode(modeOld);
+		}
+	}];
+
+	/* Modes of the new set that differ from what is set now */
+	[modesSetNew enumerateKeysAndObjectsUsingBlock:^(NSString *modeSymbol, IRCModeInfo *mode, BOOL *stop) {
+		IRCModeInfo *modeOld = modesSetOld[modeSymbol];
+
+		BOOL isSetNow = modeOld.modeIsSet;
+
+		if (mode.modeIsSet == NO) {
+			/* Unsetting a mode that isn't set made a spurious -x (R3.20) */
+			if (isSetNow) {
+				removeMode(modeOld);
+			}
+
 			return;
 		}
 
-		[modeParamString appendFormat:@" %@", modeParameter];
+		if (isSetNow && [mode isEqual:modeOld]) {
+			return;
+		}
+
+		/* A key can't be replaced while one is set: remove the old one first */
+		if (isSetNow && [supportInfo modeHasParameter:modeSymbol whenModeIsSet:NO]) {
+			removeMode(modeOld);
+		}
+
+		addMode(mode);
 	}];
 
-	return [NSString stringWithFormat:@"%@%@%@", modeRemoveString, modeAddString, modeParamString];
+	NSMutableString *changeCommand = [NSMutableString string];
+
+	if (modeRemoveString.length > 0) {
+		[changeCommand appendFormat:@"-%@", modeRemoveString];
+	}
+
+	if (modeAddString.length > 0) {
+		[changeCommand appendFormat:@"+%@", modeAddString];
+	}
+
+	/* Parameters in the order of their mode letters: removals, then additions */
+	for (NSString *modeParameter in [removeParameters arrayByAddingObjectsFromArray:addParameters]) {
+		[changeCommand appendFormat:@" %@", modeParameter];
+	}
+
+	return [changeCommand copy];
 }
 
 - (void)clear

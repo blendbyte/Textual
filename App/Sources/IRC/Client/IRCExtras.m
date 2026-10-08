@@ -248,10 +248,6 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Continue normal parsing... */
 	NSNumber *serverPort = baseURL.port;
 
-	if (serverPort == nil) {
-		serverPort = @(IRCConnectionDefaultServerPort);
-	}
-
 	__block BOOL connectSecurely = NO;
 
 	if ([addressScheme isEqualToString:@"ircs"]) {
@@ -312,6 +308,12 @@ NS_ASSUME_NONNULL_BEGIN
 	/* We have parsed every part of our URL. Build the final result and
 	 pass it along. We are done here. */
 	NSString *resultValue = nil;
+
+	/* Without a port: the standard one for TLS or plain text (ircs:// used
+	 to default to 6667, R3.20) */
+	if (serverPort == nil) {
+		serverPort = @(connectSecurely ? IRCConnectionDefaultSecureServerPort : IRCConnectionDefaultServerPort);
+	}
 
 	if (connectSecurely) {
 		resultValue = [NSString stringWithFormat:@"-SSL %@:%hu", serverAddress, serverPort.unsignedShortValue];
@@ -600,7 +602,7 @@ static BOOL _developmentConnectRequested = NO;
 	/* Establish our variables */
 	NSString *serverAddress = nil;
 
-	uint16_t serverPort = IRCConnectionDefaultServerPort;
+	uint16_t serverPort = 0;
 
 	NSString *serverPassword = nil;
 
@@ -704,6 +706,10 @@ static BOOL _developmentConnectRequested = NO;
 		}
 
 		serverPort = tempServerPort.integerValue;
+	}
+
+	if (serverPort == 0) {
+		serverPort = (connectSecurely ? IRCConnectionDefaultSecureServerPort : IRCConnectionDefaultServerPort);
 	}
 
 	/* Server Password */

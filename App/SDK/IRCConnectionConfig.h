@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define IRCConnectionConfigFloodControlMaximumMessageCount					60
 
 TEXTUAL_EXTERN uint16_t const IRCConnectionDefaultServerPort;
+TEXTUAL_EXTERN uint16_t const IRCConnectionDefaultSecureServerPort; // TLS (ircs://)
 TEXTUAL_EXTERN uint16_t const IRCConnectionDefaultProxyPort;
 
 typedef NS_ENUM(NSUInteger, IRCConnectionProxyType) {

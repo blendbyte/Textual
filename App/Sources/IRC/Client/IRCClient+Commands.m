@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Begin populating configuration */
 	/* Temporary values take priority. When a temporary server
 	 address is specified, then the temporary port and TLS setting
-	 are used too (port 6667 if none was given). Nothing else from
+	 are used too (6697 with TLS, 6667 without, if none was given). Nothing else from
 	 the current server configuration is read if there is a
 	 temporary server. */
 	NSString *serverAddress = nil;
@@ -165,13 +165,15 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.temporaryServerAddressOverride) {
 		serverAddress = self.temporaryServerAddressOverride;
 
+		connectionPrefersSecuredConnection = self.temporaryServerPrefersSecuredConnection;
+
 		if (self.temporaryServerPortOverride > 0 &&
 			self.temporaryServerPortOverride <= TXMaximumTCPPort)
 		{
 			serverPort = self.temporaryServerPortOverride;
+		} else if (connectionPrefersSecuredConnection) {
+			serverPort = IRCConnectionDefaultSecureServerPort;
 		}
-
-		connectionPrefersSecuredConnection = self.temporaryServerPrefersSecuredConnection;
 	}
 
 	if (serverAddress.isValidInternetAddress == NO) {

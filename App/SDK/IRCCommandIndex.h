@@ -194,7 +194,7 @@ typedef NS_ENUM(NSUInteger, IRCRemoteCommand) {
 + (NSUInteger)indexOfRemoteCommand:(NSString *)command;
 + (NSUInteger)indexOfLocalCommand:(NSString *)command;
 
-+ (NSUInteger)colonPositionForRemoteCommand:(NSString *)command;
++ (NSUInteger)colonPositionForRemoteCommand:(NSString *)command TEXTUAL_DEPRECATED("IRCSendingMessage decides where the trailing parameter goes; this returns the position of a command's free-text parameter, or NSNotFound");
 
 + (nullable NSString *)syntaxForLocalCommand:(NSString *)command;
 @end

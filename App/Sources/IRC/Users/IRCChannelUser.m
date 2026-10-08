@@ -142,14 +142,58 @@ NS_ASSUME_NONNULL_BEGIN
 	return [supportInfo rankForUserPrefixWithMode:mode];
 }
 
-- (BOOL)isOp
+/* Ranks come from the order of the server's PREFIX (most powerful first),
+ measured from the operator mode, instead of fixed letters (R3.20) */
+- (NSArray<NSString *> *)prefixModeSymbols
 {
-	return [self.modes containsCharacters:@"qOao"];
+	NSArray *modeSymbols = self.client.supportInfo.userModeSymbols[IRCISupportUserModeSymbolsSymbolsKey];
+
+	return (modeSymbols ?: @[]);
 }
 
-- (BOOL)isHalfOp 
+- (NSUInteger)prefixPositionOfModeSymbol:(nullable NSString *)modeSymbol
 {
-	return [self.modes containsCharacters:@"qOaoh"];
+	if (modeSymbol.length == 0) {
+		return NSNotFound;
+	}
+
+	return [self.prefixModeSymbols indexOfObject:modeSymbol];
+}
+
+/* The operator mode: o, or the mode shown as @ */
+- (NSUInteger)operatorPrefixPosition
+{
+	NSUInteger position = [self prefixPositionOfModeSymbol:@"o"];
+
+	if (position != NSNotFound) {
+		return position;
+	}
+
+	NSString *modeSymbol = [self.client.supportInfo modeSymbolForUserPrefix:@"@"];
+
+	return [self prefixPositionOfModeSymbol:modeSymbol];
+}
+
+- (BOOL)isOp
+{
+	NSUInteger operatorPosition = self.operatorPrefixPosition;
+
+	NSUInteger position = [self prefixPositionOfModeSymbol:self.highestRankedUserMode];
+
+	return (operatorPosition != NSNotFound && position != NSNotFound && position <= operatorPosition);
+}
+
+- (BOOL)isHalfOp
+{
+	NSUInteger halfOperatorPosition = [self prefixPositionOfModeSymbol:@"h"];
+
+	if (halfOperatorPosition == NSNotFound) {
+		halfOperatorPosition = self.operatorPrefixPosition;
+	}
+
+	NSUInteger position = [self prefixPositionOfModeSymbol:self.highestRankedUserMode];
+
+	return (halfOperatorPosition != NSNotFound && position != NSNotFound && position <= halfOperatorPosition);
 }
 
 - (IRCUserRank)rank
@@ -184,30 +228,44 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IRCUserRank)rankForModeSymbol:(nullable NSString *)modeSymbol
 {
-	if (modeSymbol == nil) {
+	NSUInteger position = [self prefixPositionOfModeSymbol:modeSymbol];
+
+	if (position == NSNotFound) {
 		return IRCUserRankNone;
 	}
 
-	if ([modeSymbol isEqualToString:@"y"] ||
-		[modeSymbol isEqualToString:@"Y"])
-	{
+	NSUInteger lastPosition = (self.prefixModeSymbols.count - 1);
+
+	NSUInteger operatorPosition = self.operatorPrefixPosition;
+
+	/* Without an operator mode the only rank left is the last mode */
+	if (operatorPosition == NSNotFound) {
+		return ((position == lastPosition) ? IRCUserRankVoiced : IRCUserRankNone);
+	}
+
+	/* Above the operator: super operator (a), owner (q), IRC operator (Y) */
+	if (position < operatorPosition) {
+		NSUInteger distance = (operatorPosition - position);
+
+		if (distance == 1) {
+			return IRCUserRankSuperOperator;
+		} else if (distance == 2) {
+			return IRCUserRankChannelOwner;
+		}
+
 		return IRCUserRankIRCopByMode;
 	}
-	else if ([modeSymbol isEqualToString:@"q"] ||
-			 [modeSymbol isEqualToString:@"O"])
-	{
-		return IRCUserRankChannelOwner;
-	} else if ([modeSymbol isEqualToString:@"a"]) {
-		return IRCUserRankSuperOperator;
-	} else if ([modeSymbol isEqualToString:@"o"]) {
+
+	if (position == operatorPosition) {
 		return IRCUserRankNormalOperator;
-	} else if ([modeSymbol isEqualToString:@"h"]) {
-		return IRCUserRankHalfOperator;
-	} else if ([modeSymbol isEqualToString:@"v"]) {
+	}
+
+	/* Below the operator: the last mode is voice (v), any in between half operator (h) */
+	if (position == lastPosition) {
 		return IRCUserRankVoiced;
 	}
 
-	return IRCUserRankNone;
+	return IRCUserRankHalfOperator;
 }
 
 - (double)totalWeight

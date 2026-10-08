@@ -43,51 +43,113 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation IRCSendingMessage
 
+/* How the last argument of a command is sent:
+ - Free text at a known position (PRIVMSG, TOPIC…): always as the trailing
+   parameter (":text"), also when empty (TOPIC #c : clears the topic).
+ - Parameter lists (MODE, WHO…): as given, so a plugin passing several
+   parameters in one string ("+o nick") keeps working.
+ - Any other command: as the trailing parameter when it contains a space. */
++ (NSDictionary<NSString *, NSNumber *> *)textParameterPositions
+{
+	static NSDictionary<NSString *, NSNumber *> *positions = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		positions = @{
+			@"ADCHAT" : @(0),
+			@"AWAY" : @(0),
+			@"CAP" : @(1),
+			@"CHATOPS" : @(0),
+			@"ERROR" : @(0),
+			@"GLINE" : @(2),
+			@"GLOBOPS" : @(0),
+			@"GZLINE" : @(2),
+			@"KICK" : @(2),
+			@"KILL" : @(1),
+			@"LOCOPS" : @(0),
+			@"NACHAT" : @(0),
+			@"NOTICE" : @(1),
+			@"PART" : @(1),
+			@"PASS" : @(0),
+			@"PRIVMSG" : @(1),
+			@"QUIT" : @(0),
+			@"SHUN" : @(2),
+			@"TEMPSHUN" : @(1),
+			@"TOPIC" : @(1),
+			@"USER" : @(3),
+			@"WALLOPS" : @(0),
+			@"ZLINE" : @(2)
+		};
+	});
+
+	return positions;
+}
+
++ (NSSet<NSString *> *)parameterListCommands
+{
+	static NSSet<NSString *> *commands = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		commands = [NSSet setWithArray:@[
+			@"AUTHENTICATE", @"BATCH", @"CERTINFO", @"CHGHOST", @"INVITE", @"ISON", @"JOIN", @"LIST",
+			@"MODE", @"MONITOR", @"NAMES", @"NICK", @"PING", @"PONG", @"WATCH", @"WHO", @"WHOIS", @"WHOWAS"
+		]];
+	});
+
+	return commands;
+}
+
 + (NSString *)stringWithCommand:(NSString *)command arguments:(nullable NSArray<NSString *> *)arguments
 {
 	NSParameterAssert(command != nil);
 
 	NSString *commandUppercase = command.uppercaseString;
 
-	if (arguments.count == 0) {
-		return commandUppercase;
-	}
+	NSNumber *textPosition = [self textParameterPositions][commandUppercase];
+
+	BOOL isParameterList = [[self parameterListCommands] containsObject:commandUppercase];
 
 	NSMutableString *builtString = [NSMutableString stringWithString:commandUppercase];
 
-	NSInteger colonIndexBase = [IRCCommandIndex colonPositionForRemoteCommand:command];
+	NSUInteger argumentCount = arguments.count;
 
-	NSInteger colonIndexCount = 0;
+	NSUInteger position = 0;
 
-	for (NSString *argument in arguments) {
-		if (argument.length == 0) {
-			break;
+	for (NSUInteger index = 0; index < argumentCount; index++) {
+		NSString *argument = arguments[index];
+
+		BOOL isLastArgument = (index == (argumentCount - 1));
+
+		BOOL isText = (textPosition && position == textPosition.unsignedIntegerValue);
+
+		/* An empty argument can't be sent except as free text: it is left
+		 out (it used to cut off every argument after it, R3.20) */
+		if (argument.length == 0 && (isText == NO || isLastArgument == NO)) {
+			continue;
 		}
 
 		[builtString appendString:@" "];
 
-		if (colonIndexBase == NSNotFound) {
-			// Guess where the colon (:) should go.
-			//
-			// A colon is supposed to represent a section of an outgoing command
-			// that has a parameter which contains spaces. For example, PRIVMSG
-			// is in the format "PRIVMSG #channel :long message" — The message
-			// will have spaces part of it, so we inform the server.
+		if (isLastArgument) {
+			BOOL trailing = NO;
 
-			if (colonIndexCount == (arguments.count - 1) && ([argument hasPrefix:@":"] || [argument contains:@" "])) {
-				[builtString appendString:@":"];
+			if (isText || [argument hasPrefix:@":"]) {
+				trailing = YES;
+			} else if (textPosition == nil && isParameterList == NO) {
+				trailing = [argument contains:@" "];
 			}
-		} else {
-			// We know where it goes thanks to the command index
 
-			if (colonIndexCount == colonIndexBase) {
+			if (trailing) {
 				[builtString appendString:@":"];
 			}
 		}
 
 		[builtString appendString:argument];
 
-		colonIndexCount += 1;
+		position += 1;
 	}
 
 	return [builtString copy];
