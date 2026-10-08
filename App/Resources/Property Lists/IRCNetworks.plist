@@ -2,12 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>AccessIRC</key>
+	<key>2600net</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.accessirc.net</string>
+		<string>irc.2600.net</string>
 		<key>serverPort</key>
-		<real>6697</real>
+		<integer>6667</integer>
+		<key>prefersSecuredConnection</key>
+		<false/>
+	</dict>
+	<key>AfterNET</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.afternet.org</string>
+		<key>serverPort</key>
+		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
@@ -34,32 +43,50 @@
 		<key>serverAddress</key>
 		<string>irc.dal.net</string>
 		<key>serverPort</key>
-		<integer>6667</integer>
+		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
-		<false/>
+		<true/>
+	</dict>
+	<key>DarkMyst</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.darkmyst.org</string>
+		<key>serverPort</key>
+		<integer>6697</integer>
+		<key>prefersSecuredConnection</key>
+		<true/>
 	</dict>
 	<key>EFnet</key>
 	<dict>
 		<key>serverAddress</key>
 		<string>irc.efnet.info</string>
 		<key>serverPort</key>
-		<real>6667</real>
+		<integer>6667</integer>
 		<key>prefersSecuredConnection</key>
 		<false/>
 	</dict>
-	<key>EsperNet</key>
+	<key>EpiKnet</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.esper.net</string>
+		<string>irc.epiknet.org</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
-	<key>Ewnix</key>
+	<key>Ergo</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.ewnix.net</string>
+		<string>irc.ergo.chat</string>
+		<key>serverPort</key>
+		<integer>6697</integer>
+		<key>prefersSecuredConnection</key>
+		<true/>
+	</dict>
+	<key>EsperNet</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.esper.net</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
@@ -74,6 +101,15 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
+	<key>GIMPnet</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.gimp.org</string>
+		<key>serverPort</key>
+		<integer>6667</integer>
+		<key>prefersSecuredConnection</key>
+		<false/>
+	</dict>
 	<key>GameSurge</key>
 	<dict>
 		<key>serverAddress</key>
@@ -83,10 +119,10 @@
 		<key>prefersSecuredConnection</key>
 		<false/>
 	</dict>
-	<key>GeeksIRC</key>
+	<key>GeekNode</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.geeksirc.net</string>
+		<string>irc.geeknode.org</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
@@ -97,9 +133,9 @@
 		<key>serverAddress</key>
 		<string>irc.geekshed.net</string>
 		<key>serverPort</key>
-		<real>6697</real>
+		<integer>6667</integer>
 		<key>prefersSecuredConnection</key>
-		<true/>
+		<false/>
 	</dict>
 	<key>German-Elite</key>
 	<dict>
@@ -110,23 +146,23 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
-	<key>Global Gamers</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.globalgamers.net</string>
-		<key>serverPort</key>
-		<integer>6697</integer>
-		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
 	<key>IRCHighWay</key>
 	<dict>
 		<key>serverAddress</key>
 		<string>irc.irchighway.net</string>
 		<key>serverPort</key>
-		<integer>6697</integer>
+		<integer>6667</integer>
 		<key>prefersSecuredConnection</key>
-		<true/>
+		<false/>
+	</dict>
+	<key>IRCnet</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>open.ircnet.net</string>
+		<key>serverPort</key>
+		<integer>6667</integer>
+		<key>prefersSecuredConnection</key>
+		<false/>
 	</dict>
 	<key>Interlinked</key>
 	<dict>
@@ -137,21 +173,12 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
-	<key>IdleChat</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.idlechat.net</string>
-		<key>serverPort</key>
-		<integer>6697</integer>
-		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
 	<key>Libera Chat</key>
 	<dict>
 		<key>serverAddress</key>
 		<string>irc.libera.chat</string>
 		<key>serverPort</key>
-		<real>6697</real>
+		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
@@ -159,15 +186,6 @@
 	<dict>
 		<key>serverAddress</key>
 		<string>irc.lizardirc.org</string>
-		<key>serverPort</key>
-		<real>6697</real>
-		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
-	<key>Mibbit</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.mibbit.com</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
@@ -178,27 +196,9 @@
 		<key>serverAddress</key>
 		<string>irc.mindforge.org</string>
 		<key>serverPort</key>
-		<integer>6697</integer>
+		<integer>6667</integer>
 		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
-	<key>Mozor</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.mozor.net</string>
-		<key>serverPort</key>
-		<integer>6697</integer>
-		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
-	<key>NixtrixIRC</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.nixtrixirc.net</string>
-		<key>serverPort</key>
-		<integer>6697</integer>
-		<key>prefersSecuredConnection</key>
-		<true/>
+		<false/>
 	</dict>
 	<key>OFTC</key>
 	<dict>
@@ -209,10 +209,10 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
-	<key>PonyChat</key>
+	<key>PIRC.pl</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.ponychat.net</string>
+		<string>irc.pirc.pl</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
@@ -236,6 +236,15 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
+	<key>SlashNET</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.slashnet.org</string>
+		<key>serverPort</key>
+		<integer>6667</integer>
+		<key>prefersSecuredConnection</key>
+		<false/>
+	</dict>
 	<key>Snoonet</key>
 	<dict>
 		<key>serverAddress</key>
@@ -245,19 +254,19 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
-	<key>Snyde</key>
+	<key>SorceryNet</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.snyde.net</string>
+		<string>irc.sorcery.net</string>
 		<key>serverPort</key>
-		<integer>6697</integer>
+		<integer>6667</integer>
 		<key>prefersSecuredConnection</key>
-		<true/>
+		<false/>
 	</dict>
-	<key>StormBit</key>
+	<key>SwiftIRC</key>
 	<dict>
 		<key>serverAddress</key>
-		<string>irc.stormbit.net</string>
+		<string>irc.swiftirc.net</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>
@@ -272,24 +281,6 @@
 		<key>prefersSecuredConnection</key>
 		<true/>
 	</dict>
-	<key>Thinkstack</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.thinstack.net</string>
-		<key>serverPort</key>
-		<integer>6697</integer>
-		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
-	<key>TinyCrab</key>
-	<dict>
-		<key>serverAddress</key>
-		<string>irc.tinycrab.net</string>
-		<key>serverPort</key>
-		<integer>6697</integer>
-		<key>prefersSecuredConnection</key>
-		<true/>
-	</dict>
 	<key>Undernet</key>
 	<dict>
 		<key>serverAddress</key>
@@ -298,6 +289,15 @@
 		<integer>6667</integer>
 		<key>prefersSecuredConnection</key>
 		<false/>
+	</dict>
+	<key>euIRC</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.euirc.net</string>
+		<key>serverPort</key>
+		<integer>6697</integer>
+		<key>prefersSecuredConnection</key>
+		<true/>
 	</dict>
 	<key>freenode</key>
 	<dict>
@@ -312,6 +312,24 @@
 	<dict>
 		<key>serverAddress</key>
 		<string>irc.hackint.org</string>
+		<key>serverPort</key>
+		<integer>6697</integer>
+		<key>prefersSecuredConnection</key>
+		<true/>
+	</dict>
+	<key>synIRC</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.synirc.net</string>
+		<key>serverPort</key>
+		<integer>6697</integer>
+		<key>prefersSecuredConnection</key>
+		<true/>
+	</dict>
+	<key>tilde.chat</key>
+	<dict>
+		<key>serverAddress</key>
+		<string>irc.tilde.chat</string>
 		<key>serverPort</key>
 		<integer>6697</integer>
 		<key>prefersSecuredConnection</key>

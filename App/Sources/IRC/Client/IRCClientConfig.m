@@ -53,9 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define IRCClientConfigDictionaryVersionLatest		710
 
-#define IRCClientConfigFloodControlDefaultDelayIntervalLimited		2
-#define IRCClientConfigFloodControlDefaultMessageCountLimited		2 // freenode gets a special case 'cause they are strict about flood control
-
 @interface IRCClientConfig ()
 @property (readonly) BOOL prefersSecuredConnection_;
 @property (readonly) uint16_t serverPort_;
@@ -136,51 +133,6 @@ NS_ASSUME_NONNULL_BEGIN
 	SetVariableIfNil(self->_alternateNicknames, @[])
 
 	SetVariableIfNil(self->_loginCommands, @[])
-
-	[self modifyFloodControlDefaults];
-}
-
-- (void)populateDefaultsByAppendingDictionary:(NSDictionary<NSString *, id> *)defaultsToAppend
-{
-	NSParameterAssert(defaultsToAppend != nil);
-
-	self->_defaults = [self->_defaults dictionaryByAddingEntries:defaultsToAppend];
-}
-
-- (void)modifyFloodControlDefaults
-{
-	if (self.floodControlDelayTimerInterval != IRCConnectionConfigFloodControlDefaultDelayInterval ||
-		self.floodControlMaximumMessages != IRCConnectionConfigFloodControlDefaultMessageCount)
-	{
-		return;
-	}
-
-	BOOL haveLimitedServer = NO;
-
-	for (IRCServer *server in self.serverList) {
-		if ([server.serverAddress hasSuffix:@".freenode.net"] == NO) {
-			continue;
-		}
-
-		haveLimitedServer = YES;
-
-		break;
-	}
-
-	if (haveLimitedServer == NO) {
-		return;
-	}
-
-	NSUInteger floodControlDelayTimerInterval = IRCClientConfigFloodControlDefaultDelayIntervalLimited;
-	NSUInteger floodControlMaximumMessages = IRCClientConfigFloodControlDefaultMessageCountLimited;
-
-	[self populateDefaultsByAppendingDictionary:@{
-		@"floodControlDelayTimerInterval" : @(floodControlDelayTimerInterval),
-		@"floodControlMaximumMessages" : @(floodControlMaximumMessages)
-	}];
-
-	self->_floodControlDelayTimerInterval = floodControlDelayTimerInterval;
-	self->_floodControlMaximumMessages = floodControlMaximumMessages;
 }
 
 #pragma mark -
