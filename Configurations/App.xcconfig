@@ -24,6 +24,14 @@ SWIFT_OBJC_BRIDGING_HEADER = ${PROJECT_DIR}/Supporting Files/SwiftBridgingHeader
 
 REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES = NO
 
+// The app icon set in Assets.xcassets; the build adds CFBundleIconFile and
+// CFBundleIconName to the Info.plist. The birthday icon (TVCDockIcon, July 23)
+// is a second icon set, compiled into the catalog with all its sizes.
+ASSETCATALOG_COMPILER_APPICON_NAME = applicationIcon
+ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = applicationIconBirthday
+// Images are loaded by name; no generated accessors
+ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO
+
 INFOPLIST_FILE = ${PROJECT_DIR}/Supporting Files/Info.plist
 
 // Info.plist is run through the preprocessor so that builds without Sparkle

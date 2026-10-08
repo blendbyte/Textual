@@ -63,7 +63,7 @@ Development/dev reset                # delete Textual Dev's data
 
 ### Code layout and naming
 
-- **Where things live:** `App/Sources/` holds the app's code by area (`IRC/`, `Channel View/`, `Main Window/`, `Dialogs/`, `Preferences/`, …), `App/SDK/` exactly the headers plugins may use, `App/Resources/` the bundled resources, `Plugins/` the bundled plugins and `Samples/` the sample plugins.
+- **Where things live:** `App/Sources/` holds the app's code by area (`IRC/`, `Channel View/`, `Main Window/`, `Dialogs/`, `Preferences/`, …), `App/SDK/` exactly the headers plugins may use, `App/Resources/` the bundled resources (images and the app icon in `Assets.xcassets`, loaded by name with `+[NSImage imageNamed:]`), `Plugins/` the bundled plugins and `Samples/` the sample plugins.
 - **One class per file, named after the class.** Two exceptions stay together in one file: a class and its mutable variant (`IRCUser` and `IRCUserMutable`), and small private helpers used only by that class (contexts, cells, list entries). Vendored code in `App/Sources/Vendor/` keeps its upstream layout.
 - **Large classes are split into categories** named after what they do, one file each: `IRCClient+Commands.m`, `TXMenuController+Sheets.m`. A class's own `ClassInternal.h` holds what only its files share. Methods implemented in a category are declared in a matching category interface (`@interface IRCClient (Commands)`); clang warns when a method declared in the main `@interface` is implemented in another file.
 - **Headers:** `App/SDK/` headers are public and keep their names, because plugins import them by name. `ClassPrivate.h` is for the rest of the app, `ClassInternal.h` for the class's own files.

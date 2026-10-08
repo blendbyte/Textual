@@ -1,0 +1,18 @@
+{
+  "images": [
+    {
+      "filename": "channelRoomStatusIconDarkActive.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "filename": "channelRoomStatusIconDarkActive@2x.png",
+      "idiom": "universal",
+      "scale": "2x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

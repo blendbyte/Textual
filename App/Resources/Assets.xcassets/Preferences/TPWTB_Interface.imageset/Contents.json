@@ -1,0 +1,18 @@
+{
+  "images": [
+    {
+      "filename": "TPWTB_Interface.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "filename": "TPWTB_Interface@2x.png",
+      "idiom": "universal",
+      "scale": "2x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

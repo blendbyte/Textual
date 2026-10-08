@@ -26,8 +26,6 @@
 	<string>Copyright © 2026 Blendbyte GmbH. Copyright © 2010 - 2020 Codeux Software, LLC. All rights reserved.</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
-	<key>CFBundleIconFile</key>
-	<string>applicationIcon.icns</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>NSMainNibFile</key>

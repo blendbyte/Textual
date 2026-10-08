@@ -7,74 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		69D4705D6D19E20C463A132C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DD116667156B6E9123159A9 /* Assets.xcassets */; };
 		4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */; };
 		4C06DF3420EC49A60055D09A /* IRCCommandIndexRemoteData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */; };
 		4C06DF3520EC49A60055D09A /* IRCNetworks.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A220EB676400448776 /* IRCNetworks.plist */; };
 		4C06DF3820EC49A60055D09A /* StaticStore.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A420EB676400448776 /* StaticStore.plist */; };
 		4C06DF3920EC49A60055D09A /* TemplateLineTypes.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A120EB676400448776 /* TemplateLineTypes.plist */; };
 		4C06DF4420EC49B90055D09A /* RemoteLicenseSystemPublicKey.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4C3152EE20EB676400448776 /* RemoteLicenseSystemPublicKey.pub */; };
-		4C06DFE420EC49FB0055D09A /* MainWindowSegmentedControlUserTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537820EB676400448776 /* MainWindowSegmentedControlUserTemplate.pdf */; };
-		4C06DFE520EC49FB0055D09A /* MainWindowSpotlightIconTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537920EB676400448776 /* MainWindowSpotlightIconTemplate.pdf */; };
-		4C06DFE620EC49FB0055D09A /* ErroneousTextFieldValueIndicator.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537B20EB676400448776 /* ErroneousTextFieldValueIndicator.tif */; };
-		4C06DFE720EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconInactive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537E20EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconInactive@2x.tif */; };
-		4C06DFE820EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537F20EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif */; };
-		4C06DFEB20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconActive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31538220EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconActive.tif */; };
-		4C06DFEC20EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconActive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31538320EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconActive.tif */; };
-		4C06DFED20EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconInactive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31538420EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconInactive.tif */; };
-		4C06DFEE20EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconActive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31538520EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconActive@2x.tif */; };
-		4C06DFEF20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31538620EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif */; };
-		4C06DFF020EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31538720EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif */; };
-		4C06E02020EC4A060055D09A /* DIRedBadgeRight.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537020EB676400448776 /* DIRedBadgeRight.png */; };
-		4C06E02120EC4A060055D09A /* DIRedBadgeLeft.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537120EB676400448776 /* DIRedBadgeLeft.png */; };
-		4C06E02220EC4A060055D09A /* DIRedBadgeCenter.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31537220EB676400448776 /* DIRedBadgeCenter.png */; };
-		4C06E03820EC4A0F0055D09A /* DIGreenBadgeLeft.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535F20EB676400448776 /* DIGreenBadgeLeft.png */; };
-		4C06E03920EC4A0F0055D09A /* DIGreenBadgeRight.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31536020EB676400448776 /* DIGreenBadgeRight.png */; };
-		4C06E03A20EC4A0F0055D09A /* DIGreenBadgeCenter.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31536120EB676400448776 /* DIGreenBadgeCenter.png */; };
-		4C06E04E20EC4A2F0055D09A /* applicationIcon.iconset in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535920EB676400448776 /* applicationIcon.iconset */; };
-		4C06E04F20EC4A2F0055D09A /* applicationIconBirthday.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535A20EB676400448776 /* applicationIconBirthday.icns */; };
 		4C06E05320EC4A3D0055D09A /* Copyright Information for Images.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4C31535620EB676400448776 /* Copyright Information for Images.txt */; };
-		4C06E07820EC4A540055D09A /* FormattingColor_8.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533D20EB676400448776 /* FormattingColor_8.png */; };
-		4C06E07920EC4A540055D09A /* FormattingColor_9.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533E20EB676400448776 /* FormattingColor_9.png */; };
-		4C06E07A20EC4A540055D09A /* FormattingColor_11.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533F20EB676400448776 /* FormattingColor_11.png */; };
-		4C06E07B20EC4A540055D09A /* FormattingColor_10.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534020EB676400448776 /* FormattingColor_10.png */; };
-		4C06E07C20EC4A540055D09A /* FormattingColor_12.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534120EB676400448776 /* FormattingColor_12.png */; };
-		4C06E07D20EC4A540055D09A /* FormattingColor_Rainbow.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534220EB676400448776 /* FormattingColor_Rainbow.tif */; };
-		4C06E07E20EC4A540055D09A /* FormattingColor_13.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534320EB676400448776 /* FormattingColor_13.png */; };
-		4C06E07F20EC4A540055D09A /* FormattingColor_14.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534420EB676400448776 /* FormattingColor_14.png */; };
-		4C06E08020EC4A540055D09A /* FormattingColor_15.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534520EB676400448776 /* FormattingColor_15.png */; };
-		4C06E08120EC4A540055D09A /* FormattingColor_7.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534620EB676400448776 /* FormattingColor_7.png */; };
-		4C06E08220EC4A540055D09A /* FormattingColor_6.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534720EB676400448776 /* FormattingColor_6.png */; };
-		4C06E08320EC4A540055D09A /* FormattingColor_4.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534820EB676400448776 /* FormattingColor_4.png */; };
-		4C06E08420EC4A540055D09A /* FormattingColor_5.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534920EB676400448776 /* FormattingColor_5.png */; };
-		4C06E08520EC4A540055D09A /* FormattingColor_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534A20EB676400448776 /* FormattingColor_1.png */; };
-		4C06E08620EC4A540055D09A /* FormattingColor_Rainbow@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534B20EB676400448776 /* FormattingColor_Rainbow@2x.tif */; };
-		4C06E08720EC4A540055D09A /* FormattingColor_0.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534C20EB676400448776 /* FormattingColor_0.png */; };
-		4C06E08820EC4A540055D09A /* FormattingColor_2.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534D20EB676400448776 /* FormattingColor_2.png */; };
-		4C06E08920EC4A540055D09A /* FormattingColor_3.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31534E20EB676400448776 /* FormattingColor_3.png */; };
-		4C06E0C720EC4A5B0055D09A /* channelRoomStatusIconLightActive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533120EB676400448776 /* channelRoomStatusIconLightActive@2x.tif */; };
-		4C06E0C820EC4A5B0055D09A /* channelRoomStatusIconDarkActive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533220EB676400448776 /* channelRoomStatusIconDarkActive@2x.tif */; };
-		4C06E0C920EC4A5B0055D09A /* channelRoomStatusIconLightInactive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533320EB676400448776 /* channelRoomStatusIconLightInactive.tif */; };
-		4C06E0CA20EC4A5B0055D09A /* channelRoomStatusIconDarkInactive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533420EB676400448776 /* channelRoomStatusIconDarkInactive@2x.tif */; };
-		4C06E0CC20EC4A5B0055D09A /* channelRoomStatusIconDarkActive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533620EB676400448776 /* channelRoomStatusIconDarkActive.tif */; };
-		4C06E0CD20EC4A5B0055D09A /* channelRoomStatusIconLightActive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533720EB676400448776 /* channelRoomStatusIconLightActive.tif */; };
-		4C06E0CF20EC4A5B0055D09A /* channelRoomStatusIconDarkInactive.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533920EB676400448776 /* channelRoomStatusIconDarkInactive.tif */; };
-		4C06E0D120EC4A5B0055D09A /* channelRoomStatusIconLightInactive@2x.tif in Resources */ = {isa = PBXBuildFile; fileRef = 4C31533B20EB676400448776 /* channelRoomStatusIconLightInactive@2x.tif */; };
-		4C06E11620EC4A630055D09A /* TPWTB_Advanced@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531920EB676400448776 /* TPWTB_Advanced@2x.png */; };
-		4C06E11720EC4A630055D09A /* TPWTB_Highlights.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531A20EB676400448776 /* TPWTB_Highlights.png */; };
-		4C06E11820EC4A630055D09A /* TPWTB_Highlights@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531B20EB676400448776 /* TPWTB_Highlights@2x.png */; };
-		4C06E11920EC4A630055D09A /* TPWTB_Addons.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531C20EB676400448776 /* TPWTB_Addons.png */; };
-		4C06E11A20EC4A630055D09A /* TPWTB_Advanced.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531D20EB676400448776 /* TPWTB_Advanced.png */; };
-		4C06E11B20EC4A630055D09A /* TPWTB_Controls.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531E20EB676400448776 /* TPWTB_Controls.png */; };
-		4C06E11C20EC4A630055D09A /* TPWTB_Style@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31531F20EB676400448776 /* TPWTB_Style@2x.png */; };
-		4C06E11D20EC4A630055D09A /* TPWTB_General@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532020EB676400448776 /* TPWTB_General@2x.png */; };
-		4C06E11E20EC4A630055D09A /* TPWTB_Addons@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532120EB676400448776 /* TPWTB_Addons@2x.png */; };
-		4C06E11F20EC4A630055D09A /* TPWTB_Notifications@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532220EB676400448776 /* TPWTB_Notifications@2x.png */; };
-		4C06E12020EC4A630055D09A /* TPWTB_Controls@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532320EB676400448776 /* TPWTB_Controls@2x.png */; };
-		4C06E12120EC4A630055D09A /* TPWTB_Interface.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532420EB676400448776 /* TPWTB_Interface.png */; };
-		4C06E12220EC4A630055D09A /* TPWTB_Interface@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532520EB676400448776 /* TPWTB_Interface@2x.png */; };
-		4C06E12320EC4A630055D09A /* TPWTB_Notifications.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532620EB676400448776 /* TPWTB_Notifications.png */; };
-		4C06E12420EC4A630055D09A /* TPWTB_Style.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532720EB676400448776 /* TPWTB_Style.png */; };
-		4C06E12520EC4A630055D09A /* TPWTB_General.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C31532820EB676400448776 /* TPWTB_General.png */; };
 		4C06E18C20EC4AC40055D09A /* TDCServerPropertiesSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E13920EC4AC40055D09A /* TDCServerPropertiesSheet.xib */; };
 		4C06E19420EC4AC40055D09A /* TDCServerHighlightListSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E13D20EC4AC40055D09A /* TDCServerHighlightListSheet.xib */; };
 		4C06E19820EC4AC40055D09A /* TDCServerEndpointListSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E13F20EC4AC40055D09A /* TDCServerEndpointListSheet.xib */; };
@@ -799,6 +739,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0DD116667156B6E9123159A9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A220E42AEA73B12CB115232B /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		8E84F1B5BF068DAEB6F914D3 /* Warnings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Warnings.xcconfig; sourceTree = "<group>"; };
 		2D722846AE90206CA1F438D8 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
@@ -1280,68 +1221,7 @@
 		4C3152E820EB673E00448776 /* NSTableViewHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSTableViewHelper.m; sourceTree = "<group>"; };
 		4C3152E920EB673E00448776 /* TXAppearanceHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TXAppearanceHelper.m; sourceTree = "<group>"; };
 		4C3152EE20EB676400448776 /* RemoteLicenseSystemPublicKey.pub */ = {isa = PBXFileReference; lastKnownFileType = text; path = RemoteLicenseSystemPublicKey.pub; sourceTree = "<group>"; };
-		4C31531920EB676400448776 /* TPWTB_Advanced@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Advanced@2x.png"; sourceTree = "<group>"; };
-		4C31531A20EB676400448776 /* TPWTB_Highlights.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Highlights.png; sourceTree = "<group>"; };
-		4C31531B20EB676400448776 /* TPWTB_Highlights@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Highlights@2x.png"; sourceTree = "<group>"; };
-		4C31531C20EB676400448776 /* TPWTB_Addons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Addons.png; sourceTree = "<group>"; };
-		4C31531D20EB676400448776 /* TPWTB_Advanced.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Advanced.png; sourceTree = "<group>"; };
-		4C31531E20EB676400448776 /* TPWTB_Controls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Controls.png; sourceTree = "<group>"; };
-		4C31531F20EB676400448776 /* TPWTB_Style@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Style@2x.png"; sourceTree = "<group>"; };
-		4C31532020EB676400448776 /* TPWTB_General@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_General@2x.png"; sourceTree = "<group>"; };
-		4C31532120EB676400448776 /* TPWTB_Addons@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Addons@2x.png"; sourceTree = "<group>"; };
-		4C31532220EB676400448776 /* TPWTB_Notifications@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Notifications@2x.png"; sourceTree = "<group>"; };
-		4C31532320EB676400448776 /* TPWTB_Controls@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Controls@2x.png"; sourceTree = "<group>"; };
-		4C31532420EB676400448776 /* TPWTB_Interface.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Interface.png; sourceTree = "<group>"; };
-		4C31532520EB676400448776 /* TPWTB_Interface@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TPWTB_Interface@2x.png"; sourceTree = "<group>"; };
-		4C31532620EB676400448776 /* TPWTB_Notifications.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Notifications.png; sourceTree = "<group>"; };
-		4C31532720EB676400448776 /* TPWTB_Style.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_Style.png; sourceTree = "<group>"; };
-		4C31532820EB676400448776 /* TPWTB_General.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TPWTB_General.png; sourceTree = "<group>"; };
-		4C31533120EB676400448776 /* channelRoomStatusIconLightActive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "channelRoomStatusIconLightActive@2x.tif"; sourceTree = "<group>"; };
-		4C31533220EB676400448776 /* channelRoomStatusIconDarkActive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "channelRoomStatusIconDarkActive@2x.tif"; sourceTree = "<group>"; };
-		4C31533320EB676400448776 /* channelRoomStatusIconLightInactive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = channelRoomStatusIconLightInactive.tif; sourceTree = "<group>"; };
-		4C31533420EB676400448776 /* channelRoomStatusIconDarkInactive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "channelRoomStatusIconDarkInactive@2x.tif"; sourceTree = "<group>"; };
-		4C31533620EB676400448776 /* channelRoomStatusIconDarkActive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = channelRoomStatusIconDarkActive.tif; sourceTree = "<group>"; };
-		4C31533720EB676400448776 /* channelRoomStatusIconLightActive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = channelRoomStatusIconLightActive.tif; sourceTree = "<group>"; };
-		4C31533920EB676400448776 /* channelRoomStatusIconDarkInactive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = channelRoomStatusIconDarkInactive.tif; sourceTree = "<group>"; };
-		4C31533B20EB676400448776 /* channelRoomStatusIconLightInactive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "channelRoomStatusIconLightInactive@2x.tif"; sourceTree = "<group>"; };
-		4C31533D20EB676400448776 /* FormattingColor_8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_8.png; sourceTree = "<group>"; };
-		4C31533E20EB676400448776 /* FormattingColor_9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_9.png; sourceTree = "<group>"; };
-		4C31533F20EB676400448776 /* FormattingColor_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_11.png; sourceTree = "<group>"; };
-		4C31534020EB676400448776 /* FormattingColor_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_10.png; sourceTree = "<group>"; };
-		4C31534120EB676400448776 /* FormattingColor_12.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_12.png; sourceTree = "<group>"; };
-		4C31534220EB676400448776 /* FormattingColor_Rainbow.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = FormattingColor_Rainbow.tif; sourceTree = "<group>"; };
-		4C31534320EB676400448776 /* FormattingColor_13.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_13.png; sourceTree = "<group>"; };
-		4C31534420EB676400448776 /* FormattingColor_14.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_14.png; sourceTree = "<group>"; };
-		4C31534520EB676400448776 /* FormattingColor_15.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_15.png; sourceTree = "<group>"; };
-		4C31534620EB676400448776 /* FormattingColor_7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_7.png; sourceTree = "<group>"; };
-		4C31534720EB676400448776 /* FormattingColor_6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_6.png; sourceTree = "<group>"; };
-		4C31534820EB676400448776 /* FormattingColor_4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_4.png; sourceTree = "<group>"; };
-		4C31534920EB676400448776 /* FormattingColor_5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_5.png; sourceTree = "<group>"; };
-		4C31534A20EB676400448776 /* FormattingColor_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_1.png; sourceTree = "<group>"; };
-		4C31534B20EB676400448776 /* FormattingColor_Rainbow@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "FormattingColor_Rainbow@2x.tif"; sourceTree = "<group>"; };
-		4C31534C20EB676400448776 /* FormattingColor_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_0.png; sourceTree = "<group>"; };
-		4C31534D20EB676400448776 /* FormattingColor_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_2.png; sourceTree = "<group>"; };
-		4C31534E20EB676400448776 /* FormattingColor_3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FormattingColor_3.png; sourceTree = "<group>"; };
 		4C31535620EB676400448776 /* Copyright Information for Images.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Copyright Information for Images.txt"; sourceTree = "<group>"; };
-		4C31535920EB676400448776 /* applicationIcon.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; path = applicationIcon.iconset; sourceTree = "<group>"; };
-		4C31535A20EB676400448776 /* applicationIconBirthday.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = applicationIconBirthday.icns; sourceTree = "<group>"; };
-		4C31535F20EB676400448776 /* DIGreenBadgeLeft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIGreenBadgeLeft.png; sourceTree = "<group>"; };
-		4C31536020EB676400448776 /* DIGreenBadgeRight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIGreenBadgeRight.png; sourceTree = "<group>"; };
-		4C31536120EB676400448776 /* DIGreenBadgeCenter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIGreenBadgeCenter.png; sourceTree = "<group>"; };
-		4C31537020EB676400448776 /* DIRedBadgeRight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIRedBadgeRight.png; sourceTree = "<group>"; };
-		4C31537120EB676400448776 /* DIRedBadgeLeft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIRedBadgeLeft.png; sourceTree = "<group>"; };
-		4C31537220EB676400448776 /* DIRedBadgeCenter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DIRedBadgeCenter.png; sourceTree = "<group>"; };
-		4C31537820EB676400448776 /* MainWindowSegmentedControlUserTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = MainWindowSegmentedControlUserTemplate.pdf; sourceTree = "<group>"; };
-		4C31537920EB676400448776 /* MainWindowSpotlightIconTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = MainWindowSpotlightIconTemplate.pdf; sourceTree = "<group>"; };
-		4C31537B20EB676400448776 /* ErroneousTextFieldValueIndicator.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = ErroneousTextFieldValueIndicator.tif; sourceTree = "<group>"; };
-		4C31537E20EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconInactive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "VibrantDarkServerListViewPrivateMessageUserIconInactive@2x.tif"; sourceTree = "<group>"; };
-		4C31537F20EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif"; sourceTree = "<group>"; };
-		4C31538220EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconActive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = VibrantDarkServerListViewPrivateMessageUserIconActive.tif; sourceTree = "<group>"; };
-		4C31538320EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconActive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = VibrantLightServerListViewPrivateMessageUserIconActive.tif; sourceTree = "<group>"; };
-		4C31538420EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconInactive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = VibrantLightServerListViewPrivateMessageUserIconInactive.tif; sourceTree = "<group>"; };
-		4C31538520EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconActive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "VibrantLightServerListViewPrivateMessageUserIconActive@2x.tif"; sourceTree = "<group>"; };
-		4C31538620EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = VibrantDarkServerListViewPrivateMessageUserIconInactive.tif; sourceTree = "<group>"; };
-		4C31538720EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif"; sourceTree = "<group>"; };
 		4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCCommandIndexRemoteData.plist; sourceTree = "<group>"; };
 		4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCCommandIndexLocalData.plist; sourceTree = "<group>"; };
 		4C3153A120EB676400448776 /* TemplateLineTypes.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = TemplateLineTypes.plist; sourceTree = "<group>"; };
@@ -2523,163 +2403,6 @@
 			path = "Data Models";
 			sourceTree = "<group>";
 		};
-		4C31AEACB2BF29BBE9156A2F /* Application */ = {
-			isa = PBXGroup;
-			children = (
-				4C31535920EB676400448776 /* applicationIcon.iconset */,
-				4C31535A20EB676400448776 /* applicationIconBirthday.icns */,
-			);
-			path = Application;
-			sourceTree = "<group>";
-		};
-		4C148104EFE9369305537298 /* Green */ = {
-			isa = PBXGroup;
-			children = (
-				4C31536120EB676400448776 /* DIGreenBadgeCenter.png */,
-				4C31535F20EB676400448776 /* DIGreenBadgeLeft.png */,
-				4C31536020EB676400448776 /* DIGreenBadgeRight.png */,
-			);
-			path = Green;
-			sourceTree = "<group>";
-		};
-		4CFC4250551DD8ACBA996A29 /* Red */ = {
-			isa = PBXGroup;
-			children = (
-				4C31537220EB676400448776 /* DIRedBadgeCenter.png */,
-				4C31537120EB676400448776 /* DIRedBadgeLeft.png */,
-				4C31537020EB676400448776 /* DIRedBadgeRight.png */,
-			);
-			path = Red;
-			sourceTree = "<group>";
-		};
-		4C911992722FE70FD5EAEDA2 /* Dock Icon Badges */ = {
-			isa = PBXGroup;
-			children = (
-				4C148104EFE9369305537298 /* Green */,
-				4CFC4250551DD8ACBA996A29 /* Red */,
-			);
-			path = "Dock Icon Badges";
-			sourceTree = "<group>";
-		};
-		4C40B0852CBB858A31AD7636 /* IRC Formatting Colors */ = {
-			isa = PBXGroup;
-			children = (
-				4C31534C20EB676400448776 /* FormattingColor_0.png */,
-				4C31534A20EB676400448776 /* FormattingColor_1.png */,
-				4C31534020EB676400448776 /* FormattingColor_10.png */,
-				4C31533F20EB676400448776 /* FormattingColor_11.png */,
-				4C31534120EB676400448776 /* FormattingColor_12.png */,
-				4C31534320EB676400448776 /* FormattingColor_13.png */,
-				4C31534420EB676400448776 /* FormattingColor_14.png */,
-				4C31534520EB676400448776 /* FormattingColor_15.png */,
-				4C31534D20EB676400448776 /* FormattingColor_2.png */,
-				4C31534E20EB676400448776 /* FormattingColor_3.png */,
-				4C31534820EB676400448776 /* FormattingColor_4.png */,
-				4C31534920EB676400448776 /* FormattingColor_5.png */,
-				4C31534720EB676400448776 /* FormattingColor_6.png */,
-				4C31534620EB676400448776 /* FormattingColor_7.png */,
-				4C31533D20EB676400448776 /* FormattingColor_8.png */,
-				4C31533E20EB676400448776 /* FormattingColor_9.png */,
-				4C31534220EB676400448776 /* FormattingColor_Rainbow.tif */,
-				4C31534B20EB676400448776 /* FormattingColor_Rainbow@2x.tif */,
-			);
-			path = "IRC Formatting Colors";
-			sourceTree = "<group>";
-		};
-		4CC7850B7F7224148AC2DC59 /* Preferences */ = {
-			isa = PBXGroup;
-			children = (
-				4C31531C20EB676400448776 /* TPWTB_Addons.png */,
-				4C31532120EB676400448776 /* TPWTB_Addons@2x.png */,
-				4C31531D20EB676400448776 /* TPWTB_Advanced.png */,
-				4C31531920EB676400448776 /* TPWTB_Advanced@2x.png */,
-				4C31531E20EB676400448776 /* TPWTB_Controls.png */,
-				4C31532320EB676400448776 /* TPWTB_Controls@2x.png */,
-				4C31532820EB676400448776 /* TPWTB_General.png */,
-				4C31532020EB676400448776 /* TPWTB_General@2x.png */,
-				4C31531A20EB676400448776 /* TPWTB_Highlights.png */,
-				4C31531B20EB676400448776 /* TPWTB_Highlights@2x.png */,
-				4C31532420EB676400448776 /* TPWTB_Interface.png */,
-				4C31532520EB676400448776 /* TPWTB_Interface@2x.png */,
-				4C31532620EB676400448776 /* TPWTB_Notifications.png */,
-				4C31532220EB676400448776 /* TPWTB_Notifications@2x.png */,
-				4C31532720EB676400448776 /* TPWTB_Style.png */,
-				4C31531F20EB676400448776 /* TPWTB_Style@2x.png */,
-			);
-			path = Preferences;
-			sourceTree = "<group>";
-		};
-		4C6569B4387B80C6C4743C86 /* Status Badges */ = {
-			isa = PBXGroup;
-			children = (
-				4C31533620EB676400448776 /* channelRoomStatusIconDarkActive.tif */,
-				4C31533220EB676400448776 /* channelRoomStatusIconDarkActive@2x.tif */,
-				4C31533920EB676400448776 /* channelRoomStatusIconDarkInactive.tif */,
-				4C31533420EB676400448776 /* channelRoomStatusIconDarkInactive@2x.tif */,
-				4C31533720EB676400448776 /* channelRoomStatusIconLightActive.tif */,
-				4C31533120EB676400448776 /* channelRoomStatusIconLightActive@2x.tif */,
-				4C31533320EB676400448776 /* channelRoomStatusIconLightInactive.tif */,
-				4C31533B20EB676400448776 /* channelRoomStatusIconLightInactive@2x.tif */,
-			);
-			path = "Status Badges";
-			sourceTree = "<group>";
-		};
-		4C1A3A3AA70131079E2F925D /* Miscellaneous */ = {
-			isa = PBXGroup;
-			children = (
-				4C31537B20EB676400448776 /* ErroneousTextFieldValueIndicator.tif */,
-			);
-			path = Miscellaneous;
-			sourceTree = "<group>";
-		};
-		4C47F0ED1B91B423AF6DA529 /* Glass */ = {
-			isa = PBXGroup;
-			children = (
-				4C31538220EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconActive.tif */,
-				4C31537F20EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif */,
-				4C31538620EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif */,
-				4C31537E20EB676400448776 /* VibrantDarkServerListViewPrivateMessageUserIconInactive@2x.tif */,
-				4C31538320EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconActive.tif */,
-				4C31538520EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconActive@2x.tif */,
-				4C31538420EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconInactive.tif */,
-				4C31538720EB676400448776 /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif */,
-			);
-			path = Glass;
-			sourceTree = "<group>";
-		};
-		4C8167D8A8459B9BBAB6D4AB /* Server List */ = {
-			isa = PBXGroup;
-			children = (
-				4C47F0ED1B91B423AF6DA529 /* Glass */,
-			);
-			path = "Server List";
-			sourceTree = "<group>";
-		};
-		4C648DE5C237E10DB80FE9D0 /* User Interface */ = {
-			isa = PBXGroup;
-			children = (
-				4C1A3A3AA70131079E2F925D /* Miscellaneous */,
-				4C8167D8A8459B9BBAB6D4AB /* Server List */,
-				4C31537820EB676400448776 /* MainWindowSegmentedControlUserTemplate.pdf */,
-				4C31537920EB676400448776 /* MainWindowSpotlightIconTemplate.pdf */,
-			);
-			path = "User Interface";
-			sourceTree = "<group>";
-		};
-		4C6F5AE0B3C1E4B9F7CACC22 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-				4C31AEACB2BF29BBE9156A2F /* Application */,
-				4C911992722FE70FD5EAEDA2 /* Dock Icon Badges */,
-				4C40B0852CBB858A31AD7636 /* IRC Formatting Colors */,
-				4CC7850B7F7224148AC2DC59 /* Preferences */,
-				4C6569B4387B80C6C4743C86 /* Status Badges */,
-				4C648DE5C237E10DB80FE9D0 /* User Interface */,
-				4C31535620EB676400448776 /* Copyright Information for Images.txt */,
-			);
-			path = Images;
-			sourceTree = "<group>";
-		};
 		4C203165AD462EEB83EE1AA8 /* Appearance */ = {
 			isa = PBXGroup;
 			children = (
@@ -2825,8 +2548,9 @@
 		4C1BEA9E12A0EE1804DAAA44 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0DD116667156B6E9123159A9 /* Assets.xcassets */,
+				4C31535620EB676400448776 /* Copyright Information for Images.txt */,
 				4C43266A6A2383C83D1B1E1E /* Data Models */,
-				4C6F5AE0B3C1E4B9F7CACC22 /* Images */,
 				4C58704424A9DD77BE100808 /* Interface */,
 				4C48005785959C54D2DAE357 /* License Manager */,
 				4C7CE285799A812CABA13339 /* Property Lists */,
@@ -3337,28 +3061,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C06E07820EC4A540055D09A /* FormattingColor_8.png in Resources */,
+				69D4705D6D19E20C463A132C /* Assets.xcassets in Resources */,
 				4C06E1DC20EC4AC40055D09A /* TDCNicknameColorSheet.xib in Resources */,
 				4C06E20820EC4AC50055D09A /* TDCLicenseManagerDialog.xib in Resources */,
-				4C06E11C20EC4A630055D09A /* TPWTB_Style@2x.png in Resources */,
-				4C06DFE520EC49FB0055D09A /* MainWindowSpotlightIconTemplate.pdf in Resources */,
 				4CEFEDB222B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings in Resources */,
 				4C06E2EE20EC4FF00055D09A /* BasicLanguage.strings in Resources */,
-				4C06E08320EC4A540055D09A /* FormattingColor_4.png in Resources */,
-				4C06E0D120EC4A5B0055D09A /* channelRoomStatusIconLightInactive@2x.tif in Resources */,
 				4C06E21020EC4AC50055D09A /* TVCMemberListAppearance.plist in Resources */,
-				4C06E07B20EC4A540055D09A /* FormattingColor_10.png in Resources */,
-				4C06E08020EC4A540055D09A /* FormattingColor_15.png in Resources */,
-				4C06E11D20EC4A630055D09A /* TPWTB_General@2x.png in Resources */,
 				4C06E32A20EC4FF00055D09A /* TVCNotificationConfigurationView.strings in Resources */,
-				4C06E08520EC4A540055D09A /* FormattingColor_1.png in Resources */,
-				4C06E02020EC4A060055D09A /* DIRedBadgeRight.png in Resources */,
 				4C06E1C420EC4AC40055D09A /* TVCChannelSelectionView.xib in Resources */,
-				4C06E03920EC4A0F0055D09A /* DIGreenBadgeRight.png in Resources */,
-				4C06E04E20EC4A2F0055D09A /* applicationIcon.iconset in Resources */,
 				4C06E1FC20EC4AC50055D09A /* TDCAboutDialog.xib in Resources */,
 				4C06E05320EC4A3D0055D09A /* Copyright Information for Images.txt in Resources */,
-				4C06E07A20EC4A540055D09A /* FormattingColor_11.png in Resources */,
 				4C06E1CC20EC4AC40055D09A /* TVCNotificationConfigurationView.xib in Resources */,
 				4C06DF3520EC49A60055D09A /* IRCNetworks.plist in Resources */,
 				4C06E1EC20EC4AC50055D09A /* TVCAlert.xib in Resources */,
@@ -3368,107 +3080,59 @@
 				4C06E31220EC4FF00055D09A /* IRC.strings in Resources */,
 				4C06E1E420EC4AC40055D09A /* TDCProgressIndicatorSheet.xib in Resources */,
 				4C06E34220EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings in Resources */,
-				4C06DFE620EC49FB0055D09A /* ErroneousTextFieldValueIndicator.tif in Resources */,
-				4C06E03820EC4A0F0055D09A /* DIGreenBadgeLeft.png in Resources */,
 				4C06DF4420EC49B90055D09A /* RemoteLicenseSystemPublicKey.pub in Resources */,
 				4C06E19C20EC4AC40055D09A /* TDCChannelModifyModesSheet.xib in Resources */,
-				4C06E0CD20EC4A5B0055D09A /* channelRoomStatusIconLightActive.tif in Resources */,
-				4C06E0CC20EC4A5B0055D09A /* channelRoomStatusIconDarkActive.tif in Resources */,
-				4C06E11820EC4A630055D09A /* TPWTB_Highlights@2x.png in Resources */,
-				4C06E08120EC4A540055D09A /* FormattingColor_7.png in Resources */,
 				4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */,
 				4C06E1D820EC4AC40055D09A /* TDCChannelInviteSheet.xib in Resources */,
-				4C06E03A20EC4A0F0055D09A /* DIGreenBadgeCenter.png in Resources */,
 				4C06E19820EC4AC40055D09A /* TDCServerEndpointListSheet.xib in Resources */,
 				4C06DF3920EC49A60055D09A /* TemplateLineTypes.plist in Resources */,
-				4C06E11920EC4A630055D09A /* TPWTB_Addons.png in Resources */,
 				4C06E2F220EC4FF00055D09A /* Accessibility.strings in Resources */,
-				4C06E11B20EC4A630055D09A /* TPWTB_Controls.png in Resources */,
 				4C33341E20CC471A00ACB9AD /* Bundled Scripts in Resources */,
 				4C06DF3420EC49A60055D09A /* IRCCommandIndexRemoteData.plist in Resources */,
 				4C33342320CC475300ACB9AD /* Bundled Styles in Resources */,
-				4C06E07C20EC4A540055D09A /* FormattingColor_12.png in Resources */,
 				4C06E1D020EC4AC40055D09A /* TDCLicenseUpgradeActivateSheet.xib in Resources */,
-				4C06E12020EC4A630055D09A /* TPWTB_Controls@2x.png in Resources */,
 				4C06E20C20EC4AC50055D09A /* TDCLicenseManagerRecoverLostLicenseSheet.xib in Resources */,
 				4C06E1AC20EC4AC40055D09A /* TDCChannelBanListSheet.xib in Resources */,
-				4C06E12220EC4A630055D09A /* TPWTB_Interface@2x.png in Resources */,
 				4C06E2FE20EC4FF00055D09A /* TDCPreferencesController.strings in Resources */,
 				4C06E1A820EC4AC40055D09A /* TDCServerChannelListDialog.xib in Resources */,
-				4C06E0C820EC4A5B0055D09A /* channelRoomStatusIconDarkActive@2x.tif in Resources */,
 				4C06E30620EC4FF00055D09A /* TDCChannelInviteSheet.strings in Resources */,
 				4C06E22820EC4AC50055D09A /* TVCMainWindowAppearance.plist in Resources */,
-				4C06E11A20EC4A630055D09A /* TPWTB_Advanced.png in Resources */,
-				4C06E08620EC4A540055D09A /* FormattingColor_Rainbow@2x.tif in Resources */,
 				4C06E19420EC4AC40055D09A /* TDCServerHighlightListSheet.xib in Resources */,
-				4C06E0CA20EC4A5B0055D09A /* channelRoomStatusIconDarkInactive@2x.tif in Resources */,
-				4C06E0C720EC4A5B0055D09A /* channelRoomStatusIconLightActive@2x.tif in Resources */,
 				4C06E1C820EC4AC40055D09A /* TXCMainMenu.xib in Resources */,
 				4C06E23020EC4AC50055D09A /* TVCServerListAppearance.plist in Resources */,
 				4C06E30A20EC4FF00055D09A /* TDCAboutDialog.strings in Resources */,
-				4C06E0C920EC4A5B0055D09A /* channelRoomStatusIconLightInactive.tif in Resources */,
-				4C06DFEB20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconActive.tif in Resources */,
 				4C06E2E620EC4FF00055D09A /* CommonErrors.strings in Resources */,
 				4C06E30E20EC4FF00055D09A /* TDCServerPropertiesSheet.strings in Resources */,
 				4C06E2FA20EC4FF00055D09A /* TDCChannelBanListSheet.strings in Resources */,
 				4C06E1B420EC4AC40055D09A /* TDCLicenseManagerMigrateAppStoreSheet.xib in Resources */,
-				4C06E07F20EC4A540055D09A /* FormattingColor_14.png in Resources */,
-				4C06E08720EC4A540055D09A /* FormattingColor_0.png in Resources */,
-				4C06DFED20EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconInactive.tif in Resources */,
 				4C06E1D420EC4AC40055D09A /* TDCPreferences.xib in Resources */,
-				4C06E04F20EC4A2F0055D09A /* applicationIconBirthday.icns in Resources */,
-				4C06E02120EC4A060055D09A /* DIRedBadgeLeft.png in Resources */,
-				4C06E02220EC4A060055D09A /* DIRedBadgeCenter.png in Resources */,
 				4C06E18C20EC4AC40055D09A /* TDCServerPropertiesSheet.xib in Resources */,
 				4C06E20020EC4AC50055D09A /* TDCHighlightEntrySheet.xib in Resources */,
 				4C06DF3820EC49A60055D09A /* StaticStore.plist in Resources */,
-				4C06E12120EC4A630055D09A /* TPWTB_Interface.png in Resources */,
 				4C06E22C20EC4AC50055D09A /* TVCMainWindowTextViewAppearance.plist in Resources */,
-				4C06E11E20EC4A630055D09A /* TPWTB_Addons@2x.png in Resources */,
-				4C06E08820EC4A540055D09A /* FormattingColor_2.png in Resources */,
 				4CCD93FF1CA7291300335381 /* JavaScript in Resources */,
-				4C06E07D20EC4A540055D09A /* FormattingColor_Rainbow.tif in Resources */,
 				4C06E31A20EC4FF00055D09A /* TDCChannelModifyModesSheet.strings in Resources */,
 				4C06E2DE20EC4FF00055D09A /* Prompts.strings in Resources */,
 				4C06E33A20EC4FF00055D09A /* TDCAddressBookSheet.strings in Resources */,
 				4C06E1B020EC4AC40055D09A /* TDCChannelPropertiesSheet.xib in Resources */,
 				4C06E1F820EC4AC50055D09A /* TDCChannelModifyTopicSheet.xib in Resources */,
 				4C06E1F420EC4AC50055D09A /* TDCServerChangeNicknameSheet.xib in Resources */,
-				4C06E07E20EC4A540055D09A /* FormattingColor_13.png in Resources */,
-				4C06E08220EC4A540055D09A /* FormattingColor_6.png in Resources */,
-				4C06E12420EC4A630055D09A /* TPWTB_Style.png in Resources */,
 				4C06E1E820EC4AC50055D09A /* TDCAddressBookSheet.xib in Resources */,
 				4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */,
-				4C06E0CF20EC4A5B0055D09A /* channelRoomStatusIconDarkInactive.tif in Resources */,
 				4C06E31E20EC4FF00055D09A /* TVCMainWindow.strings in Resources */,
-				4C06E08920EC4A540055D09A /* FormattingColor_3.png in Resources */,
-				4C06DFE820EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconActive@2x.tif in Resources */,
-				4C06E11F20EC4A630055D09A /* TPWTB_Notifications@2x.png in Resources */,
 				4C06E33E20EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings in Resources */,
-				4C06E11720EC4A630055D09A /* TPWTB_Highlights.png in Resources */,
-				4C06DFE420EC49FB0055D09A /* MainWindowSegmentedControlUserTemplate.pdf in Resources */,
-				4C06E07920EC4A540055D09A /* FormattingColor_9.png in Resources */,
 				4C52379415C18F6700414852 /* Style Default Templates in Resources */,
 				4C06E30220EC4FF00055D09A /* TDCFileTransferDialog.strings in Resources */,
-				4C06DFEE20EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconActive@2x.tif in Resources */,
 				4C06E31620EC4FF00055D09A /* TLOLicenseManager.strings in Resources */,
-				4C06E12320EC4A630055D09A /* TPWTB_Notifications.png in Resources */,
 				4C06E1E020EC4AC40055D09A /* TDCWelcomeSheet.xib in Resources */,
-				4C06E12520EC4A630055D09A /* TPWTB_General.png in Resources */,
 				4C06E33220EC4FF00055D09A /* TDCServerChannelListDialog.strings in Resources */,
 				4C06E33620EC4FF00055D09A /* TDCChannelSpotlightController.strings in Resources */,
 				4C06E1A420EC4AC40055D09A /* TDCFileTransferDialog.xib in Resources */,
-				4C06DFEC20EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconActive.tif in Resources */,
-				4C06DFE720EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconInactive@2x.tif in Resources */,
-				4C06E08420EC4A540055D09A /* FormattingColor_5.png in Resources */,
-				4C06E11620EC4A630055D09A /* TPWTB_Advanced@2x.png in Resources */,
 				4C06E1F020EC4AC50055D09A /* TDCLicenseUpgradeDialog.xib in Resources */,
 				4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */,
 				4C06E22420EC4AC50055D09A /* TDCChannelSpotlightAppearance.plist in Resources */,
 				4C06E1BC20EC4AC40055D09A /* TDCLicenseUpgradeEligibilitySheet.xib in Resources */,
 				4C06E20420EC4AC50055D09A /* TVCMainWindow.xib in Resources */,
-				4C06DFEF20EC49FB0055D09A /* VibrantDarkServerListViewPrivateMessageUserIconInactive.tif in Resources */,
-				4C06DFF020EC49FB0055D09A /* VibrantLightServerListViewPrivateMessageUserIconInactive@2x.tif in Resources */,
 				4C272AF654968393F0B03C9A /* Inline Media */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -195,13 +195,13 @@ static NSInteger _cachedMessageCount = (-1);
 
 	NSImage *appIcon = [[self applicationIcon] copy];
 
-	NSImage *redBadgeLeft = [NSImage imageNamed:@"DIRedBadgeLeft.png"];
-	NSImage *redBadgeCenter = [NSImage imageNamed:@"DIRedBadgeCenter.png"];
-	NSImage *redBadgeRight = [NSImage imageNamed:@"DIRedBadgeRight.png"];
+	NSImage *redBadgeLeft = [NSImage imageNamed:@"DIRedBadgeLeft"];
+	NSImage *redBadgeCenter = [NSImage imageNamed:@"DIRedBadgeCenter"];
+	NSImage *redBadgeRight = [NSImage imageNamed:@"DIRedBadgeRight"];
 
-	NSImage *greenBadgeLeft = [NSImage imageNamed:@"DIGreenBadgeLeft.png"];
-	NSImage *greenBadgeCenter = [NSImage imageNamed:@"DIGreenBadgeCenter.png"];
-	NSImage *greenBadgeRight = [NSImage imageNamed:@"DIGreenBadgeRight.png"];
+	NSImage *greenBadgeLeft = [NSImage imageNamed:@"DIGreenBadgeLeft"];
+	NSImage *greenBadgeCenter = [NSImage imageNamed:@"DIGreenBadgeCenter"];
+	NSImage *greenBadgeRight = [NSImage imageNamed:@"DIGreenBadgeRight"];
 
 	/* ////////////////////////////////////////////////////////// */
 	/* Build Scaling Frames */
