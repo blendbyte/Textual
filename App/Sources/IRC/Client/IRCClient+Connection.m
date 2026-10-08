@@ -541,6 +541,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self processIncomingMessageAttributes:message];
 
+	[self processAccountTagInMessage:message];
+
 	if (message.commandNumeric > 0) {
 		[self receiveNumericReply:message];
 	} else {
@@ -656,6 +658,18 @@ NS_ASSUME_NONNULL_BEGIN
 			case IRCRemoteCommandChghost:
 			{
 				[self receiveChangeHost:message];
+
+				break;
+			}
+			case IRCRemoteCommandAccount: // Command: ACCOUNT (account-notify CAP)
+			{
+				[self receiveAccount:message];
+
+				break;
+			}
+			case IRCRemoteCommandSetname: // Command: SETNAME (setname CAP)
+			{
+				[self receiveSetName:message];
 
 				break;
 			}

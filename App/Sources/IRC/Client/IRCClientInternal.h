@@ -38,11 +38,13 @@
 
 #include <stdatomic.h>
 
+#import "IRCAddressBook.h"
 #import "IRCClientPrivate.h"
 #import "IRCCapabilityNegotiatorPrivate.h"
+#import "IRCISupportInfo.h"
 
 @class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessageContainer;
-@class TLOFileLogger, TLOTimer;
+@class TDCServerChannelListDialog, TLOFileLogger, TLOTimer;
 @class IRCUserList;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -261,6 +263,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveWallops:(IRCMessage *)m;
 - (void)receiveCertInfo:(IRCMessage *)m;
 - (void)receiveChangeHost:(IRCMessage *)m;
+- (void)receiveAccount:(IRCMessage *)m;
+- (void)receiveSetName:(IRCMessage *)m;
+- (void)processAccountTagInMessage:(IRCMessage *)m;
+- (void)updateUser:(IRCUserMutable *)userMutable fromExtendedJoin:(IRCMessage *)m;
 @end
 
 @interface IRCClient (CapabilitiesInternal) <IRCCapabilityNegotiatorDelegate>

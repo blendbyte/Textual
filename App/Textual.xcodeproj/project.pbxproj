@@ -631,6 +631,7 @@
 		4C0713269A9999A36B1FF9EA /* IRCChannelUserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5E81BAC2E82922B2CDF2DB /* IRCChannelUserTests.m */; };
 		4C7EF3CDF301C7E967AFD3D0 /* IRCClientConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */; };
 		4C6F6E1F814F60FDA7BC0766 /* IRCClientChannelLookupTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */; };
+		4CD0E449CF7E02E65667B9C4 /* IRCClientAccountTrackingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7EC48B2EA3147AADA9A9FC /* IRCClientAccountTrackingTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1416,6 +1417,7 @@
 		4C5E81BAC2E82922B2CDF2DB /* IRCChannelUserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCChannelUserTests.m; sourceTree = "<group>"; };
 		4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientConfigTests.m; sourceTree = "<group>"; };
 		4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientChannelLookupTests.m; sourceTree = "<group>"; };
+		4C7EC48B2EA3147AADA9A9FC /* IRCClientAccountTrackingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientAccountTrackingTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2599,6 +2601,7 @@
 				4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */,
 				4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */,
 				4C5E81BAC2E82922B2CDF2DB /* IRCChannelUserTests.m */,
+				4C7EC48B2EA3147AADA9A9FC /* IRCClientAccountTrackingTests.m */,
 				4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */,
 				4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
@@ -3494,6 +3497,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CD0E449CF7E02E65667B9C4 /* IRCClientAccountTrackingTests.m in Sources */,
 				4C6F6E1F814F60FDA7BC0766 /* IRCClientChannelLookupTests.m in Sources */,
 				4C7EF3CDF301C7E967AFD3D0 /* IRCClientConfigTests.m in Sources */,
 				4C68DED5D8394473C8E220C2 /* IRCSendingMessageTests.m in Sources */,

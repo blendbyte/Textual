@@ -5,7 +5,12 @@
 	<key>Reserved Information</key>
 	<dict>
 		<key>Next Index Value</key>
-		<real>1058</real>
+		<real>1060</real>
+	</dict>
+	<key>account</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1058</integer>
 	</dict>
 	<key>adchat</key>
 	<dict>
@@ -161,6 +166,11 @@
 	<dict>
 		<key>indexValue</key>
 		<integer>1036</integer>
+	</dict>
+	<key>setname</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1059</integer>
 	</dict>
 	<key>shun</key>
 	<dict>

@@ -142,6 +142,7 @@ typedef NS_ENUM(NSUInteger, IRCLocalCommand) {
 
 /* Remote commands are server-side commands */
 typedef NS_ENUM(NSUInteger, IRCRemoteCommand) {
+	IRCRemoteCommandAccount = 1058,
 	IRCRemoteCommandAdchat = 1003,
 	IRCRemoteCommandAuthenticate = 1005,
 	IRCRemoteCommandAway = 1050,
@@ -174,6 +175,7 @@ typedef NS_ENUM(NSUInteger, IRCRemoteCommand) {
 	IRCRemoteCommandPrivmsg = 1035,
 	IRCRemoteCommandPrivmsgAction = 1002,
 	IRCRemoteCommandQuit = 1036,
+	IRCRemoteCommandSetname = 1059,
 	IRCRemoteCommandShun = 1045,
 	IRCRemoteCommandTempshun = 1046,
 	IRCRemoteCommandTime = 1012,

@@ -1198,6 +1198,8 @@ NS_ASSUME_NONNULL_BEGIN
 		userMutable.username = m.senderUsername;
 		userMutable.address = m.senderAddress;
 
+		[self updateUser:userMutable fromExtendedJoin:m];
+
 		IRCUser *userAdded = [self addUserAndReturn:userMutable];
 
 		IRCChannelUser *member = [[IRCChannelUser alloc] initWithUser:userAdded];
@@ -1878,7 +1880,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *sender = m.senderNickname;
 
+	NSString *invitedNickname = [m paramAt:0];
+
 	NSString *channelName = [m paramAt:1];
+
+	/* invite-notify also tells channel members about invites for others:
+	 a quiet line in that channel, without notification or auto-join */
+	if ([self nicknameIsMyself:invitedNickname] == NO) {
+		IRCChannel *channel = [self findChannel:channelName];
+
+		if (channel == nil) {
+			return;
+		}
+
+		if ([self postReceivedMessage:m withText:channelName destinedFor:channel]) {
+			[self print:TXTLS(@"IRC[t8m-3k]", sender, invitedNickname)
+					 by:nil
+			  inChannel:channel
+				 asType:TVCLogLineTypeInvite
+				command:m.command
+			 receivedAt:m.receivedAt];
+		}
+
+		return;
+	}
 
 	NSString *message = TXTLS(@"IRC[qw4-t3]", sender, m.senderUsername, m.senderAddress, channelName);
 
@@ -2085,6 +2110,104 @@ NS_ASSUME_NONNULL_BEGIN
 	[self modifyUserUserWithNickname:nickname withBlock:^(IRCUserMutable *userMutable) {
 		userMutable.username = username;
 		userMutable.address = address;
+	}];
+}
+
+#pragma mark -
+#pragma mark Account Tracking
+
+/* The account name in ACCOUNT, extended-join and account-tag; "*" means logged out */
+- (nullable NSString *)accountNameFromValue:(NSString *)value
+{
+	NSParameterAssert(value != nil);
+
+	if (value.length == 0 || [value isEqualToString:@"*"]) {
+		return nil;
+	}
+
+	return value;
+}
+
+/* extended-join: JOIN #channel account :real name */
+- (void)updateUser:(IRCUserMutable *)userMutable fromExtendedJoin:(IRCMessage *)m
+{
+	NSParameterAssert(userMutable != nil);
+	NSParameterAssert(m != nil);
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityExtendedJoin] == NO || [m paramsCount] < 3) {
+		return;
+	}
+
+	userMutable.account = [self accountNameFromValue:[m paramAt:1]];
+
+	userMutable.realName = [m sequence:2];
+}
+
+- (void)receiveAccount:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	NSAssertReturn([m paramsCount] > 0);
+
+	/* Replayed lines describe the past, not the user's current account */
+	if (m.isPrintOnlyMessage) {
+		return;
+	}
+
+	NSString *account = [self accountNameFromValue:[m paramAt:0]];
+
+	[self modifyUserUserWithNickname:m.senderNickname withBlock:^(IRCUserMutable *userMutable) {
+		userMutable.account = account;
+	}];
+}
+
+- (void)receiveSetName:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	NSAssertReturn([m paramsCount] > 0);
+
+	if (m.isPrintOnlyMessage) {
+		return;
+	}
+
+	NSString *realName = [m sequence:0];
+
+	[self modifyUserUserWithNickname:m.senderNickname withBlock:^(IRCUserMutable *userMutable) {
+		userMutable.realName = realName;
+	}];
+}
+
+- (void)processAccountTagInMessage:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityAccountTag] == NO) {
+		return;
+	}
+
+	/* Replayed lines carry the account the user had then. Live lines with
+	 server-time are seconds old; a bouncer's backlog is older. */
+	if (m.isPrintOnlyMessage || (m.isHistoric && m.receivedAt.timeIntervalSinceNow < (-60.0))) {
+		return;
+	}
+
+	NSString *accountTag = m.messageTags[@"account"];
+
+	if (accountTag == nil) {
+		return;
+	}
+
+	NSString *nickname = m.senderNickname;
+
+	if (nickname.length == 0) {
+		return;
+	}
+
+	NSString *account = [self accountNameFromValue:accountTag];
+
+	[self modifyUserUserWithNickname:nickname withBlock:^(IRCUserMutable *userMutable) {
+		userMutable.account = account;
 	}];
 }
 

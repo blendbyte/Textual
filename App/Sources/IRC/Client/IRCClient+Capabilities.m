@@ -166,15 +166,20 @@ typedef struct {
 } IRCClientCapabilityTableEntry;
 
 static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
+	{ "account-notify",			ClientIRCv3SupportedCapabilityAccountNotify,		ClientIRCv3SupportedCapabilityAccountNotify },
+	{ "account-tag",			ClientIRCv3SupportedCapabilityAccountTag,			ClientIRCv3SupportedCapabilityAccountTag },
 	{ "away-notify",			ClientIRCv3SupportedCapabilityAwayNotify,			ClientIRCv3SupportedCapabilityAwayNotify },
 	{ "batch",					ClientIRCv3SupportedCapabilityBatch,				ClientIRCv3SupportedCapabilityBatch },
 	{ "chghost",				ClientIRCv3SupportedCapabilityChangeHost,			ClientIRCv3SupportedCapabilityChangeHost },
 	{ "echo-message",			ClientIRCv3SupportedCapabilityEchoMessage,			ClientIRCv3SupportedCapabilityEchoMessage },
+	{ "extended-join",			ClientIRCv3SupportedCapabilityExtendedJoin,			ClientIRCv3SupportedCapabilityExtendedJoin },
 	{ "identify-ctcp",			ClientIRCv3SupportedCapabilityIdentifyCTCP,			ClientIRCv3SupportedCapabilityIdentifyCTCP },
 	{ "identify-msg",			ClientIRCv3SupportedCapabilityIdentifyMsg,			ClientIRCv3SupportedCapabilityIdentifyMsg },
+	{ "invite-notify",			ClientIRCv3SupportedCapabilityInviteNotify,			ClientIRCv3SupportedCapabilityInviteNotify },
 	{ "multi-prefix",			ClientIRCv3SupportedCapabilityMultiPrefix,			ClientIRCv3SupportedCapabilityMultiPrefix },
 	{ "sasl",					ClientIRCv3SupportedCapabilitySASLGeneric,			ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL }, // enabled once authenticated
 	{ "server-time",			ClientIRCv3SupportedCapabilityServerTime,			ClientIRCv3SupportedCapabilityServerTime },
+	{ "setname",				ClientIRCv3SupportedCapabilitySetName,				ClientIRCv3SupportedCapabilitySetName },
 	{ "userhost-in-names",		ClientIRCv3SupportedCapabilityUserhostInNames,		ClientIRCv3SupportedCapabilityUserhostInNames },
 	{ "plan.io/playback",		ClientIRCv3SupportedCapabilityPlanioPlayback,		ClientIRCv3SupportedCapabilityPlayback },
 	{ "znc.in/playback",		ClientIRCv3SupportedCapabilityZNCPlaybackModule,	ClientIRCv3SupportedCapabilityPlayback },
@@ -263,16 +268,21 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		}
 	};
 
+	appendValue(ClientIRCv3SupportedCapabilityAccountNotify, @"account-notify");
+	appendValue(ClientIRCv3SupportedCapabilityAccountTag, @"account-tag");
 	appendValue(ClientIRCv3SupportedCapabilityAwayNotify, @"away-notify");
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
 	appendValue(ClientIRCv3SupportedCapabilityEchoMessage, @"echo-message");
+	appendValue(ClientIRCv3SupportedCapabilityExtendedJoin, @"extended-join");
 	appendValue(ClientIRCv3SupportedCapabilityIdentifyCTCP, @"identify-ctcp");
 	appendValue(ClientIRCv3SupportedCapabilityIdentifyMsg, @"identify-msg");
+	appendValue(ClientIRCv3SupportedCapabilityInviteNotify, @"invite-notify");
 	appendValue(ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL, @"sasl");
 	appendValue(ClientIRCv3SupportedCapabilityMultiPrefix, @"multi-prefix");
 	appendValue(ClientIRCv3SupportedCapabilityPlayback, @"playback");
 	appendValue(ClientIRCv3SupportedCapabilityServerTime, @"server-time");
+	appendValue(ClientIRCv3SupportedCapabilitySetName, @"setname");
 	appendValue(ClientIRCv3SupportedCapabilityUserhostInNames, @"userhost-in-names");
 	appendValue(ClientIRCv3SupportedCapabilityZNCCertInfoModule, @"znc.in/tlsinfo");
 	appendValue(ClientIRCv3SupportedCapabilityZNCSelfMessage, @"znc.in/self-message");
