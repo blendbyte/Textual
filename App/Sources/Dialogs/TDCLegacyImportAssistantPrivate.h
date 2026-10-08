@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- *   Copyright (c) 2024 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,12 +34,18 @@
  *
  *********************************************************************** */
 
-#import "TPCResourceManager.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TPCSandboxMigration : NSObject
-+ (void)migrateResources;
+/* The window that walks the user through importing Textual 7's settings
+ (TPCLegacyImport does the work): welcome, access, importing, licence, done */
+@interface TDCLegacyImportAssistant : NSWindowController
+/* At launch, before preferences load: shown once on a copy without servers
+ when there is something to import. The completion block runs right away
+ when there is nothing to offer, otherwise once the assistant closes. */
++ (void)offerImportAtLaunchThen:(dispatch_block_t)completion;
+
+/* File > Import Settings from Textual 7…; restarts Textual when done */
++ (void)importFromMenu;
 @end
 
 NS_ASSUME_NONNULL_END

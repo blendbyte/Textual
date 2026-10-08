@@ -60,6 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _fetchLimitCap				10000
 
 #define _storeFilename				@"Historic Log.sqlite"
+#define _importedStoreFilename		@"Historic Log (Imported).sqlite"
 
 typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 {
@@ -139,9 +140,51 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	return [NSURL fileURLWithPath:[directory stringByAppendingPathComponent:_storeFilename]];
 }
 
++ (nullable NSURL *)importedStoreURL
+{
+	NSString *directory = [TPCPathInfo applicationSupport];
+
+	if (directory == nil) {
+		return nil;
+	}
+
+	return [NSURL fileURLWithPath:[directory stringByAppendingPathComponent:_importedStoreFilename]];
+}
+
 + (NSArray<NSString *> *)_storeFileSuffixes
 {
 	return @[@"", @"-wal", @"-shm"];
+}
+
+/* An import can't replace the store while it is open, so it leaves the
+ imported files next to it and they take its place here */
+- (void)_replaceStoreWithImportedStoreAtURL:(NSURL *)storeURL
+{
+	NSParameterAssert(storeURL != nil);
+
+	NSURL *importedStoreURL = [self.class importedStoreURL];
+
+	if (importedStoreURL == nil || [RZFileManager() fileExistsAtURL:importedStoreURL] == NO) {
+		return;
+	}
+
+	[self _destroyStoreAtURL:storeURL];
+
+	for (NSString *suffix in [self.class _storeFileSuffixes]) {
+		NSString *source = [importedStoreURL.path stringByAppendingString:suffix];
+
+		if ([RZFileManager() fileExistsAtPath:source] == NO) {
+			continue;
+		}
+
+		NSError *moveError = nil;
+
+		if ([RZFileManager() moveItemAtPath:source toPath:[storeURL.path stringByAppendingString:suffix] error:&moveError] == NO) {
+			LogToConsoleError("Failed to use the imported historic log: %{public}@", moveError.localizedDescription);
+		}
+	}
+
+	LogToConsole("Replaced the historic log with the imported one");
 }
 
 - (void)_destroyStoreAtURL:(NSURL *)storeURL
@@ -162,6 +205,8 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 
 		return;
 	}
+
+	[self _replaceStoreWithImportedStoreAtURL:storeURL];
 
 	NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"HistoricLogFileStorageModel" withExtension:@"momd"];
 

@@ -82,6 +82,8 @@ enum
 	MTMMFilePrint = 203, // "Print"
 	MTMMFilePrintSeparator = 204, // "-"
 	MTMMFileCloseWindow = 205, // "Close Window"
+	MTMMFileImportFromEarlierVersion = 206, // "Import Settings from Textual 7…"
+	MTMMFileImportFromEarlierVersionSeparator = 207, // "-"
 
 	/* Main menu - Edit menu */
 	MTMMEditUndo = 300, // "Undo"
@@ -469,6 +471,8 @@ enum
 
 - (IBAction)exportPreferences:(id)sender;
 - (IBAction)importPreferences:(id)sender;
+
+- (IBAction)importSettingsFromTextual7:(id)sender;
 
 - (IBAction)openStandaloneStoreWebpage:(id)sender;;
 

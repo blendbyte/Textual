@@ -45,6 +45,7 @@
 #import "TLOLocalization.h"
 #import "TLOSpeechSynthesizerPrivate.h"
 #import "THOPluginManagerPrivate.h"
+#import "TDCLegacyImportAssistantPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
@@ -59,7 +60,6 @@
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TPCResourceManagerPrivate.h"
-#import "TPCSandboxMigrationPrivate.h"
 #import "TPCThemeControllerPrivate.h"
 #import "TXMenuControllerPrivate.h"
 #import "TXWindowControllerPrivate.h"
@@ -151,21 +151,29 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL hostingUnitTests = (NSProcessInfo.processInfo.environment[@"XCTestConfigurationFilePath"] != nil ||
 							 NSProcessInfo.processInfo.environment[@"XCTestSessionIdentifier"] != nil);
 
-	/* Migrate files and preferences. Development builds ("Textual Dev")
-	 never look at another installation's data. */
-#ifndef DEBUG
-	if (hostingUnitTests == NO) {
-		[TPCSandboxMigration migrateResources];
-	}
-#endif
+	if (hostingUnitTests) {
+		[self _loadPreferencesAndMainWindow:NO];
 
+		return;
+	}
+
+	/* Offer to import Textual 7's settings before preferences load, so that
+	 a first-launch import needs no restart. Development builds ("Textual
+	 Dev") only offer it when asked to. */
+	[TDCLegacyImportAssistant offerImportAtLaunchThen:^{
+		[self _loadPreferencesAndMainWindow:YES];
+	}];
+}
+
+- (void)_loadPreferencesAndMainWindow:(BOOL)loadMainWindow
+{
 	/* Initialize preferences */
 	[TPCPreferences initPreferences];
 
 	/* Call shared instance to warm it */
 	[TXSharedApplication sharedAppearance];
 
-	if (hostingUnitTests) {
+	if (loadMainWindow == NO) {
 		return;
 	}
 

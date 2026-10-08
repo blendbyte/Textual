@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface HLSHistoricLogManager : NSObject
 + (HLSHistoricLogManager *)sharedInstance;
 
+/* Where an imported store (Textual 7's scrollback) is put, with its -wal and
+ -shm files. It replaces the store the next time the store is opened. */
+@property (class, readonly, nullable) NSURL *importedStoreURL;
+
 - (void)writeNewEntryWithLogLine:(TVCLogLine *)logLine forItem:(IRCTreeItem *)item;
 
 - (void)saveData; // asynchronous operation

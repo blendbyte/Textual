@@ -235,6 +235,12 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="204" id="Cel-Q1-WOk"/>
+                            <menuItem title="Import Settings from Textual 7…" tag="206" id="Lg7-Im-p0r">
+                                <connections>
+                                    <action selector="importSettingsFromTextual7:" target="267" id="Lg7-Im-a1c"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="207" id="Lg7-Im-s3p"/>
                             <menuItem title="Close Window" tag="205" keyEquivalent="w" id="1770">
                                 <connections>
                                     <action selector="closeWindow:" target="267" id="CHQ-u4-kTI"/>

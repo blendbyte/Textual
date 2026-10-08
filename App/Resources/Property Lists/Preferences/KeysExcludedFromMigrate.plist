@@ -2,25 +2,51 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>File Transfers -&gt; File Transfer Download Folder Bookmark</key>
+	<integer>0</integer>
+	<key>File Transfers -&gt; Partial Downloads</key>
+	<integer>0</integer>
+	<key>Legacy Settings Import -&gt; </key>
+	<integer>1</integer>
+	<key>LogTranscriptDestinationSecurityBookmark_5</key>
+	<integer>0</integer>
 	<key>NSWindowAutosaveFrameMovesToActiveDisplay</key>
+	<integer>0</integer>
+	<key>SUEnableAutomaticChecks</key>
+	<integer>0</integer>
+	<key>SUHasLaunchedBefore</key>
+	<integer>0</integer>
+	<key>SULastCheckTime</key>
+	<integer>0</integer>
+	<key>SUScheduledCheckInterval</key>
+	<integer>0</integer>
+	<key>SUSendProfileInfo</key>
+	<integer>0</integer>
+	<key>SUUpdateGroupIdentifier</key>
+	<integer>0</integer>
+	<key>Sandbox Migration -&gt; </key>
+	<integer>1</integer>
+	<key>TLOLicenseManagerAuthorizationCode</key>
+	<integer>0</integer>
+	<key>TPCResourceManagerMigrate -&gt; </key>
+	<integer>1</integer>
+	<key>TVCLogControllerHistoricLogFileSavePath_v3</key>
+	<integer>0</integer>
+	<key>TXRunCount</key>
+	<integer>0</integer>
+	<key>TXRunTime</key>
+	<integer>0</integer>
+	<key>Textual 7 Upgrade -&gt; </key>
+	<integer>1</integer>
+	<key>Theme -&gt; Font Name -&gt; Did Not Exist During Last Sync</key>
+	<integer>0</integer>
+	<key>Theme -&gt; Name -&gt; Did Not Exist During Last Sync</key>
 	<integer>0</integer>
 	<key>WebKitDeveloperExtras</key>
 	<integer>0</integer>
 	<key>__uniquePageGroupID-1.WebKit2ScrollAnimatorEnabled</key>
 	<integer>0</integer>
 	<key>__uniquePageGroupID-1.WebKit2ShouldRespectImageOrientation</key>
-	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; Migrated Resources</key>
-	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; Installation Migrated</key>
-	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; User Acknowledged</key>
-	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; User Prefers Pruning Files</key>
-	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; All Extensions Pruned</key>
-	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; Imported Keys</key>
 	<integer>0</integer>
 </dict>
 </plist>

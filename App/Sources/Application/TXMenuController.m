@@ -237,8 +237,9 @@ NS_ASSUME_NONNULL_BEGIN
 		/* Set flag letting logic know trial expired */
 		isTrialExpired = YES;
 
-		/* Disable everything by default except "Manage license…" */
-		validationResult = (tag == MTMMAppManageLicense);
+		/* Disable everything by default except "Manage license…" and the
+		 import, which brings a Textual 7 licence along */
+		validationResult = (tag == MTMMAppManageLicense || tag == MTMMFileImportFromEarlierVersion);
 	} // if
 #endif
 

@@ -66,6 +66,7 @@
 #import "TDCChannelSpotlightControllerPrivate.h"
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCInputPrompt.h"
+#import "TDCLegacyImportAssistantPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCPreferencesControllerPrivate.h"
@@ -157,6 +158,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)exportPreferences:(id)sender
 {
 	[TPCPreferencesImportExport exportInWindow:mainWindow()];
+}
+
+- (void)importSettingsFromTextual7:(id)sender
+{
+	[TDCLegacyImportAssistant importFromMenu];
 }
 
 #pragma mark -

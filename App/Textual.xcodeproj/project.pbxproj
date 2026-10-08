@@ -505,8 +505,6 @@
 		4C58B572186011B900834882 /* Acknowledgements.pdf in Copy Acknowledgements */ = {isa = PBXBuildFile; fileRef = 4C58B570186011AC00834882 /* Acknowledgements.pdf */; };
 		4C7B05011D12110500295E82 /* BuildConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CC70202171E1CB400BDFAE0 /* BuildConfig.h */; };
 		4C83B9121BA9BED500BD7718 /* Chat Filters.bundle in Copy Extensions */ = {isa = PBXBuildFile; fileRef = 4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		4C8878042C33706E0016DB98 /* TPCSandboxMigration.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8878032C33706E0016DB98 /* TPCSandboxMigration.m */; };
-		4C8878072C3371470016DB98 /* TPCSandboxMigrationPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C8878062C3371470016DB98 /* TPCSandboxMigrationPrivate.h */; };
 		4C8F3FD82C31AF7700118AAF /* THOPluginManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C8F3FD62C31AF6E00118AAF /* THOPluginManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C8F3FDC2C31B15B00118AAF /* THOPluginItemLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8F3FDB2C31B15200118AAF /* THOPluginItemLogging.m */; };
 		4C95689F194A894D003D97FD /* Smiley Converter.bundle in Copy Extensions */ = {isa = PBXBuildFile; fileRef = 4C956893194A8862003D97FD /* Smiley Converter.bundle */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -623,6 +621,8 @@
 		4C63E627E5F14C27390D95EE /* TVCMainWindowTextViewContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1F0F69BD7A27C86BC04397 /* TVCMainWindowTextViewContentView.m */; };
 		4C4AB961850998E1583E5DB8 /* TDCChannelSpotlightTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCD0A084951CD4D03D697AF /* TDCChannelSpotlightTextField.m */; };
 		4C645DF1C0CB836A8D75372B /* TDCChannelSpotlightImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C542C8E03D5367309AD7E1E /* TDCChannelSpotlightImageView.m */; };
+		4CD58E100E86FC7ED02E10AE /* TPCLegacyImport.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9BF5AB1EC9904F8DA940A /* TPCLegacyImport.m */; };
+		4C5C98C3316CF4A4FBD6DCBC /* TDCLegacyImportAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD22A2FECF2D9FC82A38BDF /* TDCLegacyImportAssistant.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1240,8 +1240,6 @@
 		4C58B570186011AC00834882 /* Acknowledgements.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = ../Acknowledgements.pdf; sourceTree = SOURCE_ROOT; };
 		4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ../Scripts/UpdateFeatureFlags.sh; sourceTree = SOURCE_ROOT; };
 		4C83B9101BA9BEB800BD7718 /* Chat Filters.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "Chat Filters.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4C8878032C33706E0016DB98 /* TPCSandboxMigration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCSandboxMigration.m; sourceTree = "<group>"; };
-		4C8878062C3371470016DB98 /* TPCSandboxMigrationPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCSandboxMigrationPrivate.h; sourceTree = "<group>"; };
 		4C8F3FD62C31AF6E00118AAF /* THOPluginManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = THOPluginManager.h; sourceTree = "<group>"; };
 		4C8F3FDB2C31B15200118AAF /* THOPluginItemLogging.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = THOPluginItemLogging.m; sourceTree = "<group>"; };
 		4C956893194A8862003D97FD /* Smiley Converter.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.plug-in; path = "Smiley Converter.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1396,6 +1394,10 @@
 		4C1917120FB477F42090F08C /* TVCMemberListCellInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMemberListCellInternal.h; sourceTree = "<group>"; };
 		4CD12E8629F51FBE1DBD6642 /* TVCMainWindowTextViewInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowTextViewInternal.h; sourceTree = "<group>"; };
 		4C7A01AD580DE09005E5E257 /* TPCThemeInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCThemeInternal.h; sourceTree = "<group>"; };
+		4CE9BF5AB1EC9904F8DA940A /* TPCLegacyImport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCLegacyImport.m; sourceTree = "<group>"; };
+		4C869260B7548770E0FA1F65 /* TPCLegacyImportPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCLegacyImportPrivate.h; sourceTree = "<group>"; };
+		4CD22A2FECF2D9FC82A38BDF /* TDCLegacyImportAssistant.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLegacyImportAssistant.m; sourceTree = "<group>"; };
+		4C835A5B0452CDB46013A7CC /* TDCLegacyImportAssistantPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLegacyImportAssistantPrivate.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1665,6 +1667,8 @@
 				4C267EA11407E8CFED86925C /* Server Properties */,
 				4C31528120EB673E00448776 /* TDCAboutDialog.m */,
 				4C31522820EB673E00448776 /* TDCAboutDialogPrivate.h */,
+				4CD22A2FECF2D9FC82A38BDF /* TDCLegacyImportAssistant.m */,
+				4C835A5B0452CDB46013A7CC /* TDCLegacyImportAssistantPrivate.h */,
 				4C31529420EB673E00448776 /* TDCNicknameColorSheet.m */,
 				4C3151E620EB673E00448776 /* TDCNicknameColorSheetPrivate.h */,
 				4C31528B20EB673E00448776 /* TDCWelcomeSheet.m */,
@@ -2121,8 +2125,8 @@
 		4C67637BCA59C942338790BF /* Migration */ = {
 			isa = PBXGroup;
 			children = (
-				4C8878032C33706E0016DB98 /* TPCSandboxMigration.m */,
-				4C8878062C3371470016DB98 /* TPCSandboxMigrationPrivate.h */,
+				4CE9BF5AB1EC9904F8DA940A /* TPCLegacyImport.m */,
+				4C869260B7548770E0FA1F65 /* TPCLegacyImportPrivate.h */,
 			);
 			path = Migration;
 			sourceTree = "<group>";
@@ -2726,7 +2730,6 @@
 				4C3156FA20EB6D0500448776 /* IRCUserNicknameColorStyleGeneratorPrivate.h in Headers */,
 				4C31572520EB6D0500448776 /* TDCPreferencesNotificationConfigurationPrivate.h in Headers */,
 				4C31577320EB6D0500448776 /* TXMenuControllerPrivate.h in Headers */,
-				4C8878072C3371470016DB98 /* TPCSandboxMigrationPrivate.h in Headers */,
 				4C3155E020EB6CB400448776 /* TVCChannelSelectionViewController.h in Headers */,
 				4C3156E920EB6D0500448776 /* IRCChannelModePrivate.h in Headers */,
 				4C31576120EB6D0500448776 /* TVCMainWindowTextViewAppearancePrivate.h in Headers */,
@@ -3211,6 +3214,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C5C98C3316CF4A4FBD6DCBC /* TDCLegacyImportAssistant.m in Sources */,
+				4CD58E100E86FC7ED02E10AE /* TPCLegacyImport.m in Sources */,
 				4C4AB961850998E1583E5DB8 /* TDCChannelSpotlightTextField.m in Sources */,
 				4C645DF1C0CB836A8D75372B /* TDCChannelSpotlightImageView.m in Sources */,
 				4C356A3711D5EFA936856585 /* TVCMainWindowTextViewBackground.m in Sources */,
@@ -3343,7 +3348,6 @@
 				4C06E69020EC55B90055D09A /* IRCSendingMessage.m in Sources */,
 				4C06E69120EC55B90055D09A /* IRCServer.m in Sources */,
 				4C06E69220EC55B90055D09A /* IRCTimedCommand.m in Sources */,
-				4C8878042C33706E0016DB98 /* TPCSandboxMigration.m in Sources */,
 				4C06E69320EC55B90055D09A /* IRCTreeItem.m in Sources */,
 				4C06E69420EC55B90055D09A /* IRCWorld.m in Sources */,
 				4C06E69620EC55B90055D09A /* IRCUserRelations.m in Sources */,
