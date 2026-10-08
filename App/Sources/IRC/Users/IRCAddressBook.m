@@ -305,11 +305,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config->_parentEntries = self->_parentEntries;
 
+	config = [config initWithDictionary:self.dictionaryValueForCopy];
+
+	/* After initialization (see IRCChannelConfig, R2.2) */
 	if (uniquing) {
 		config->_uniqueIdentifier = [NSString stringWithUUID];
 	}
 
-	return [config initWithDictionary:self.dictionaryValueForCopy];
+	return config;
 }
 
 - (__kindof XRPortablePropertyDict *)mutableClass

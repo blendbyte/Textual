@@ -133,11 +133,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config->_destroyKeychainItemsDuringDealloc = self->_destroyKeychainItemsDuringDealloc;
 
+	config = [config initWithDictionary:self.dictionaryValueForCopy];
+
+	/* After initialization (see IRCChannelConfig, R2.2): the password comes
+	 along to be saved under the new identifier */
 	if (uniquing) {
+		config->_serverPassword = self.serverPassword;
+
+		config->_destroyKeychainItemsDuringDealloc = NO;
+
 		config->_uniqueIdentifier = [NSString stringWithUUID];
 	}
 
-	return [config initWithDictionary:self.dictionaryValueForCopy];
+	return config;
 }
 
 - (__kindof XRPortablePropertyDict *)mutableClass

@@ -272,11 +272,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config->_secretKey = self->_secretKey;
 
+	config = [config initWithDictionary:self.dictionaryValueForCopy];
+
+	/* After initialization, which reads the identifier from the dictionary:
+	 set before, the copy kept the original's identifier and shared its
+	 Keychain items (R2.2). The key comes along to be saved under the new
+	 identifier. */
 	if (uniquing) {
+		config->_secretKey = self.secretKey;
+
 		config->_uniqueIdentifier = [NSString stringWithUUID];
 	}
 
-	return [config initWithDictionary:self.dictionaryValueForCopy];
+	return config;
 }
 
 - (__kindof XRPortablePropertyDict *)mutableClass

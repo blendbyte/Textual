@@ -672,8 +672,6 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		config->_highlightList = [highlightList copy];
 		config->_ignoreList = [ignoreList copy];
 		config->_serverList = [serverList copy];
-
-		config->_uniqueIdentifier = [NSString stringWithUUID];
 	} 
 	else // uniquing
 	{
@@ -683,7 +681,20 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		config->_serverList = self->_serverList;
 	}
 
-	return [config initWithDictionary:self.dictionaryValueForCopy ignorePrivateMessages:NO];
+	config = [config initWithDictionary:self.dictionaryValueForCopy ignorePrivateMessages:NO];
+
+	/* After initialization (see IRCChannelConfig, R2.2): the NickServ and
+	 proxy passwords come along to be saved under the new identifier */
+	if (uniquing) {
+		config->_nicknamePassword = self.nicknamePassword;
+		config->_proxyPassword = self.proxyPassword;
+
+		config->_migratedServerPasswordPendingDestroy = NO;
+
+		config->_uniqueIdentifier = [NSString stringWithUUID];
+	}
+
+	return config;
 }
 
 - (__kindof XRPortablePropertyDict *)mutableClass
