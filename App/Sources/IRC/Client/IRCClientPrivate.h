@@ -74,6 +74,8 @@ enum {
 
 - (void)removeChannel:(IRCChannel *)channel; // This only removes the channel from channel array. Use world controller to properly destroy a channel.
 
+- (void)channelNameChanged; // A query was renamed; drops the name lookup map
+
 - (NSUInteger)indexOfChannel:(IRCChannel *)channel;
 
 - (void)selectFirstChannelInChannelList;
@@ -94,6 +96,9 @@ enum {
 - (void)postEventToViewController:(NSString *)eventToken forChannel:(IRCChannel *)channel;
 
 - (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
+
+/* For print completion blocks: the message was printed, so the output rules already passed */
+- (BOOL)notifyPrintedText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text;
 @end
 
 @interface IRCClient (UsersPrivate)

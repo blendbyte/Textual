@@ -421,7 +421,17 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self notifyEvent:eventType lineType:lineType target:target nickname:nickname text:text userInfo:nil];
 }
 
+- (BOOL)notifyPrintedText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text
+{
+	return [self notifyEvent:eventType lineType:lineType target:target nickname:nickname text:text userInfo:nil checkOutputRules:NO];
+}
+
 - (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(null_unspecified IRCChannel *)target nickname:(null_unspecified NSString *)nickname text:(null_unspecified NSString *)text userInfo:(nullable NSDictionary<NSString *, id> *)userInfo
+{
+	return [self notifyEvent:eventType lineType:lineType target:target nickname:nickname text:text userInfo:userInfo checkOutputRules:YES];
+}
+
+- (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(null_unspecified IRCChannel *)target nickname:(null_unspecified NSString *)nickname text:(null_unspecified NSString *)text userInfo:(nullable NSDictionary<NSString *, id> *)userInfo checkOutputRules:(BOOL)checkOutputRules
 {
 	if (self.isTerminating) {
 		return NO;
@@ -441,7 +451,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	if (target && text != nil) {
+	if (checkOutputRules && target && text != nil) {
 		if ([self outputRuleMatchedInMessage:text inChannel:target]) {
 			return NO;
 		}

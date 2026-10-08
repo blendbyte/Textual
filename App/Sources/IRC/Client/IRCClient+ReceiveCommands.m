@@ -312,7 +312,7 @@ NS_ASSUME_NONNULL_BEGIN
 		^(TVCLogControllerPrintOperationContext *context)
 		{
 			if ([self isSafeToPostNotificationForMessage:m inChannel:channel]) {
-				[self notifyText:TXNotificationTypeChannelNotice lineType:lineType target:channel nickname:sender text:text];
+				[self notifyPrintedText:TXNotificationTypeChannelNotice lineType:lineType target:channel nickname:sender text:text];
 			}
 		};
 	} else {
@@ -331,9 +331,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 			if ([self isSafeToPostNotificationForMessage:m inChannel:channel]) {
 				if (isHighlight) {
-					postEvent = [self notifyText:TXNotificationTypeHighlight lineType:lineType target:channel nickname:sender text:text];
+					postEvent = [self notifyPrintedText:TXNotificationTypeHighlight lineType:lineType target:channel nickname:sender text:text];
 				} else {
-					postEvent = [self notifyText:TXNotificationTypeChannelMessage lineType:lineType target:channel nickname:sender text:text];
+					postEvent = [self notifyPrintedText:TXNotificationTypeChannelMessage lineType:lineType target:channel nickname:sender text:text];
 				}
 			}
 
@@ -471,7 +471,7 @@ NS_ASSUME_NONNULL_BEGIN
 			BOOL postEvent = YES;
 
 			if ([self isSafeToPostNotificationForMessage:m inChannel:query]) {
-				postEvent = [self notifyText:TXNotificationTypePrivateNotice lineType:lineType target:query nickname:sender text:text];
+				postEvent = [self notifyPrintedText:TXNotificationTypePrivateNotice lineType:lineType target:query nickname:sender text:text];
 			}
 
 			if (postEvent && query != nil) {
@@ -506,12 +506,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 			if ([self isSafeToPostNotificationForMessage:m inChannel:query]) {
 				if (isHighlight) {
-					postEvent = [self notifyText:TXNotificationTypeHighlight lineType:lineType target:query nickname:sender text:text];
+					postEvent = [self notifyPrintedText:TXNotificationTypeHighlight lineType:lineType target:query nickname:sender text:text];
 				} else {
 					if (newPrivateMessage) {
-						postEvent = [self notifyText:TXNotificationTypeNewPrivateMessage lineType:lineType target:query nickname:sender text:text];
+						postEvent = [self notifyPrintedText:TXNotificationTypeNewPrivateMessage lineType:lineType target:query nickname:sender text:text];
 					} else {
-						postEvent = [self notifyText:TXNotificationTypePrivateMessage lineType:lineType target:query nickname:sender text:text];
+						postEvent = [self notifyPrintedText:TXNotificationTypePrivateMessage lineType:lineType target:query nickname:sender text:text];
 					}
 				}
 			}

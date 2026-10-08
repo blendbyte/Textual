@@ -1139,6 +1139,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			}
 		}
 
+		self.channelMap = nil;
+
 		[self updateStoredChannelList];
 	}
 }
@@ -1154,6 +1156,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		[self.channelListPrivate insertObject:channel atIndex:position];
 
+		self.channelMap = nil;
+
 		[self updateStoredChannelList];
 	}
 }
@@ -1164,6 +1168,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	@synchronized(self.channelListPrivate) {
 		[self.channelListPrivate removeObjectIdenticalTo:channel];
+
+		self.channelMap = nil;
 
 		[self updateStoredChannelList];
 	}
@@ -1200,6 +1206,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		[self.channelListPrivate removeAllObjects];
 
 		[self.channelListPrivate addObjectsFromArray:channelList];
+
+		self.channelMap = nil;
 
 		[self updateStoredChannelList];
 	}
@@ -1297,11 +1305,15 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(message != nil);
 
+	NSArray *rules = sharedPluginManager().pluginOutputSuppressionRules;
+
+	if (rules.count == 0) {
+		return NO;
+	}
+
 	if ([TPCPreferences removeAllFormatting] == NO) {
 		message = message.stripIRCEffects;
 	}
-
-	NSArray *rules = sharedPluginManager().pluginOutputSuppressionRules;
 
 	for (THOPluginOutputSuppressionRule *rule in rules) {
 		if ([XRRegularExpression string:message isMatchedByRegex:rule.match] == NO) {
@@ -1384,14 +1396,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	NSString *foldedName = [supportInfo foldedString:withName];
 
-	NSUInteger channelIndex =
-	[channelList indexOfObjectWithOptions:NSEnumerationConcurrent
-							  passingTest:^BOOL(IRCChannel *channel, NSUInteger index, BOOL *stop) {
-								  return [foldedName isEqualToString:[supportInfo foldedString:channel.name]];
-							  }];
-
-	if (channelIndex != NSNotFound) {
-		return channelList[channelIndex];
+	for (IRCChannel *channel in channelList) {
+		if ([foldedName isEqualToString:[supportInfo foldedString:channel.name]]) {
+			return channel;
+		}
 	}
 
 	return nil;
@@ -1399,7 +1407,40 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 - (nullable IRCChannel *)findChannel:(NSString *)name
 {
-	return [self findChannel:name inList:self.channelList];
+	NSParameterAssert(name != nil);
+
+	IRCISupportInfo *supportInfo = self.supportInfo;
+
+	@synchronized (self.channelListPrivate) {
+		/* Built on first use after the list, a query name or CASEMAPPING changed */
+		IRCISupportInfoCaseMapping caseMapping = supportInfo.caseMapping;
+
+		if (self.channelMap == nil || self.channelMapCaseMapping != caseMapping) {
+			NSMutableDictionary *channelMap = [NSMutableDictionary dictionaryWithCapacity:self.channelListPrivate.count];
+
+			for (IRCChannel *channel in self.channelListPrivate) {
+				NSString *foldedName = [supportInfo foldedString:channel.name];
+
+				/* The first of two names that fold the same wins, as in a linear search */
+				if (channelMap[foldedName] == nil) {
+					channelMap[foldedName] = channel;
+				}
+			}
+
+			self.channelMap = channelMap;
+
+			self.channelMapCaseMapping = caseMapping;
+		}
+
+		return self.channelMap[[supportInfo foldedString:name]];
+	}
+}
+
+- (void)channelNameChanged
+{
+	@synchronized (self.channelListPrivate) {
+		self.channelMap = nil;
+	}
 }
 
 - (nullable IRCChannel *)findChannelOrCreate:(NSString *)name

@@ -41,9 +41,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogLine;
+@class TVCLogLine, IRCChannelHighlightKeywords;
 
 @interface IRCChannel () <IRCChannelMemberListPrivatePrototype>
+@property (atomic, strong, nullable) IRCChannelHighlightKeywords *highlightKeywords; // built by IRCClient (Logging)
 @property (nonatomic, assign, readwrite) IRCChannelStatus status;
 @property (nonatomic, assign) BOOL sentInitialWhoRequest;
 @property (nonatomic, assign) BOOL channelModesReceived;

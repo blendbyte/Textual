@@ -295,6 +295,8 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 	mutableConfig.channelName = name;
 
 	self.config = mutableConfig;
+
+	[self.associatedClient channelNameChanged];
 }
 
 - (void)setTopic:(nullable NSString *)topic

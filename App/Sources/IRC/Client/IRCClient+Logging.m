@@ -111,6 +111,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* The highlight keywords of a channel and what they were built from,
+ so they are only rebuilt when one of those changes (R4.5) */
+@interface IRCChannelHighlightKeywords : NSObject
+@property (nonatomic, copy) NSArray<NSString *> *matchKeywords;
+@property (nonatomic, copy) NSArray<NSString *> *excludeKeywords;
+@property (nonatomic, strong, nullable) NSArray<NSString *> *globalMatchKeywords;
+@property (nonatomic, strong, nullable) NSArray<NSString *> *globalExcludeKeywords;
+@property (nonatomic, strong) NSArray<IRCHighlightMatchCondition *> *clientHighlightList;
+@property (nonatomic, copy, nullable) NSString *nickname; // nil when the nickname isn't a keyword
+@end
+
+@implementation IRCChannelHighlightKeywords
+@end
+
 @implementation IRCClient (Logging)
 
 #pragma mark -
@@ -355,6 +369,78 @@ NS_ASSUME_NONNULL_BEGIN
 	[self print:messageBody by:nickname inChannel:channel asType:lineType command:command receivedAt:receivedAt isEncrypted:isEncrypted escapeMessage:YES referenceMessage:referenceMessage completionBlock:completionBlock];
 }
 
+- (IRCChannelHighlightKeywords *)highlightKeywordsForChannel:(IRCChannel *)channel nickname:(NSString *)localNickname
+{
+	NSParameterAssert(channel != nil);
+	NSParameterAssert(localNickname != nil);
+
+	/* Global highlight keywords (TPCPreferences replaces these arrays when they change) */
+	NSArray *globalExcludeKeywords = [TPCPreferences highlightExcludeKeywords];
+	NSArray *globalMatchKeywords = [TPCPreferences highlightMatchKeywords];
+
+	/* Self nickname keyword */
+	NSString *nickname = nil;
+
+	if ([TPCPreferences highlightMatchingMethod] != TXNicknameHighlightMatchTypeRegularExpression &&
+		[TPCPreferences highlightCurrentNickname])
+	{
+		nickname = localNickname;
+	}
+
+	/* Client/channel specific keywords (a new array whenever the configuration changes) */
+	NSArray *clientHighlightList = self.config.highlightList;
+
+	IRCChannelHighlightKeywords *keywords = channel.highlightKeywords;
+
+	if (keywords &&
+		keywords.globalExcludeKeywords == globalExcludeKeywords &&
+		keywords.globalMatchKeywords == globalMatchKeywords &&
+		keywords.clientHighlightList == clientHighlightList &&
+		NSObjectsAreEqual(keywords.nickname, nickname))
+	{
+		return keywords;
+	}
+
+	NSMutableArray<NSString *> *excludeKeywords = [NSMutableArray arrayWithArray:globalExcludeKeywords];
+	NSMutableArray<NSString *> *matchKeywords = [NSMutableArray arrayWithArray:globalMatchKeywords];
+
+	if (nickname) {
+		[matchKeywords addObjectWithoutDuplication:nickname];
+	}
+
+	NSString *channelId = channel.uniqueIdentifier;
+
+	for (IRCHighlightMatchCondition *e in clientHighlightList) {
+		NSString *matchChannelId = e.matchChannelId;
+
+		if (matchChannelId.length > 0) {
+			if ([matchChannelId isEqualToString:channelId] == NO) {
+				continue;
+			}
+		}
+
+		if (e.matchIsExcluded) {
+			[excludeKeywords addObjectWithoutDuplication:e.matchKeyword];
+		} else {
+			[matchKeywords addObjectWithoutDuplication:e.matchKeyword];
+		}
+	}
+
+	keywords = [IRCChannelHighlightKeywords new];
+
+	keywords.excludeKeywords = excludeKeywords;
+	keywords.matchKeywords = matchKeywords;
+
+	keywords.globalExcludeKeywords = globalExcludeKeywords;
+	keywords.globalMatchKeywords = globalMatchKeywords;
+	keywords.clientHighlightList = clientHighlightList;
+	keywords.nickname = nickname;
+
+	channel.highlightKeywords = keywords;
+
+	return keywords;
+}
+
 - (void)print:(NSString *)messageBody by:(nullable NSString *)nickname inChannel:(nullable IRCChannel *)channel asType:(TVCLogLineType)lineType command:(nullable NSString *)command receivedAt:(NSDate *)receivedAt isEncrypted:(BOOL)isEncrypted escapeMessage:(BOOL)escapeMessage referenceMessage:(nullable IRCMessage *)referenceMessage completionBlock:(nullable TVCLogControllerPrintOperationCompletionBlock)completionBlock
 {
 	NSParameterAssert(messageBody != nil);
@@ -398,42 +484,15 @@ NS_ASSUME_NONNULL_BEGIN
 		 (lineType == TVCLogLineTypePrivateMessage || lineType == TVCLogLineTypeAction) &&
 		 memberType == TVCLogLineMemberTypeNormal);
 
-	NSMutableArray<NSString *> *excludeKeywords = nil;
-	NSMutableArray<NSString *> *matchKeywords = nil;
+	NSArray<NSString *> *excludeKeywords = nil;
+	NSArray<NSString *> *matchKeywords = nil;
 	
 	if (matchHighlights) {
-		/* Global highlight keywords */
-		excludeKeywords = [[TPCPreferences highlightExcludeKeywords] mutableCopy];
-		matchKeywords = [[TPCPreferences highlightMatchKeywords] mutableCopy];
+		IRCChannelHighlightKeywords *keywords = [self highlightKeywordsForChannel:channel nickname:localNickname];
 
-		/* Self nickname keyword */
-		if ([TPCPreferences highlightMatchingMethod] != TXNicknameHighlightMatchTypeRegularExpression &&
-			[TPCPreferences highlightCurrentNickname])
-		{
-			[matchKeywords addObjectWithoutDuplication:localNickname];
-		}
-
-		/* Client/channel specific keywords */
-		NSArray *clientHighlightList = self.config.highlightList;
-
-		NSString *channelId = channel.uniqueIdentifier;
-
-		for (IRCHighlightMatchCondition *e in clientHighlightList) {
-			NSString *matchChannelId = e.matchChannelId;
-			
-			if (matchChannelId.length > 0) {
-				if ([matchChannelId isEqualToString:channelId] == NO) {
-					continue;
-				}
-			}
-			
-			if (e.matchIsExcluded) {
-				[excludeKeywords addObjectWithoutDuplication:e.matchKeyword];
-			} else {
-				[matchKeywords addObjectWithoutDuplication:e.matchKeyword];
-			}
-		}
-	} // matchKeywords
+		excludeKeywords = keywords.excludeKeywords;
+		matchKeywords = keywords.matchKeywords;
+	}
 
 	if (lineType == TVCLogLineTypeActionNoHighlight) {
 		lineType = TVCLogLineTypeAction;

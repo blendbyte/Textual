@@ -888,6 +888,45 @@ async def scenario_casemapping(client):
 	result(True, "sent; #cm must list 2 users (Textual Dev and NICK{B})")
 
 
+async def scenario_channel_lookup(client):
+	"""Channel and query lookups follow CASEMAPPING (also when it changes) and
+	query renames, and highlights follow the current nickname. Afterwards:
+	#Chan[1] shows messages 1, 4 and 6 but not 3; 6 is a highlight, 5 isn't
+	(it names the old nickname); there is one query, Robert, with message 2
+	and "after rename", and no separate robert query."""
+	nick = client.nickname
+	new_nick = "Renamed"
+	channel = "#Chan[1]"
+
+	await client.send(f":{nick}!user@client.textual.test JOIN {channel}")
+	await client.send(f":{SERVER} 353 {nick} = {channel} :@{nick} friend")
+	await client.send(f":{SERVER} 366 {nick} {channel} :End of /NAMES list.")
+	await client.collect(2)
+
+	await client.send(":friend!f@friend.test PRIVMSG #chan{1} :1 sent to #chan{1}, the same channel under rfc1459")
+	await client.send(f":Bob!b@friend.test PRIVMSG {nick} :2 before rename")
+	await client.collect(2)
+
+	await client.send(":Bob!b@friend.test NICK Robert")
+	await client.collect(1)
+	await client.send(f":robert!b@friend.test PRIVMSG {nick} :after rename")
+	await client.collect(1)
+
+	await client.send(f":{SERVER} 005 {nick} CASEMAPPING=ascii :are supported by this server")
+	await client.send(":friend!f@friend.test PRIVMSG #chan{1} :3 sent to #chan{1} under ascii, must not show")
+	await client.send(":friend!f@friend.test PRIVMSG #CHAN[1] :4 sent to #CHAN[1] under ascii")
+	await client.collect(1)
+
+	await client.send(f":{nick}!user@client.textual.test NICK {new_nick}")
+	await client.collect(1)
+	await client.send(f":friend!f@friend.test PRIVMSG {channel} :5 {nick}: the old nickname, no highlight")
+	await client.send(f":friend!f@friend.test PRIVMSG {channel} :6 {new_nick}: the new nickname, a highlight")
+
+	await client.collect(30)
+
+	result(True, "sent; check #Chan[1] and the Robert query")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -916,6 +955,7 @@ SCENARIOS = {
 	"protocol-fixes": scenario_protocol_fixes,
 	"ison-split": scenario_ison_split,
 	"casemapping": scenario_casemapping,
+	"channel-lookup": scenario_channel_lookup,
 }
 
 # Scenarios that register the client themselves
