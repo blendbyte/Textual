@@ -232,6 +232,10 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		[itemChangedTo resetState];
+
+		if (itemChangedTo.isClient == NO) {
+			[itemChangedTo.associatedClient markChannelAsRead:(IRCChannel *)itemChangedTo];
+		}
 	}
 
 	/* Notify WebKit its selection status has changed */

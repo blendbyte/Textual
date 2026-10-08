@@ -50,6 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *chatHistoryAnchorMessageId; // newest message seen
 @property (nonatomic, copy, nullable) NSDate *chatHistoryAnchorTime;
 @property (nonatomic, strong, nullable) NSMutableOrderedSet<NSString *> *chatHistoryRecentMessageIds;
+
+/* draft/read-marker (IRCClient+ReadMarker) */
+@property (nonatomic, copy, nullable) NSDate *readMarkerTime; // read up to here, by any client
+@property (nonatomic, copy, nullable) NSDate *newestMessageTime; // newest message printed here
 @property (nonatomic, assign, readwrite) IRCChannelStatus status;
 @property (nonatomic, assign) BOOL sentInitialWhoRequest;
 @property (nonatomic, assign) BOOL channelModesReceived;

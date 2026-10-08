@@ -559,6 +559,14 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	/* draft/read-marker: the newest message someone viewing the channel has seen */
+	if (lineType == TVCLogLineTypePrivateMessage ||
+		lineType == TVCLogLineTypeAction ||
+		lineType == TVCLogLineTypeNotice)
+	{
+		[self readMarkerNoteMessageAt:receivedAt inChannel:channel];
+	}
+
 	/* Print to channel */
 	[channel print:logLine completionBlock:completionBlock];
 }

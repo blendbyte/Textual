@@ -173,6 +173,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "batch",					ClientIRCv3SupportedCapabilityBatch,				ClientIRCv3SupportedCapabilityBatch },
 	{ "chghost",				ClientIRCv3SupportedCapabilityChangeHost,			ClientIRCv3SupportedCapabilityChangeHost },
 	{ "draft/chathistory",		ClientIRCv3SupportedCapabilityChatHistory,			ClientIRCv3SupportedCapabilityChatHistory },
+	{ "draft/read-marker",		ClientIRCv3SupportedCapabilityReadMarker,			ClientIRCv3SupportedCapabilityReadMarker },
 	{ "echo-message",			ClientIRCv3SupportedCapabilityEchoMessage,			ClientIRCv3SupportedCapabilityEchoMessage },
 	{ "extended-join",			ClientIRCv3SupportedCapabilityExtendedJoin,			ClientIRCv3SupportedCapabilityExtendedJoin },
 	{ "identify-ctcp",			ClientIRCv3SupportedCapabilityIdentifyCTCP,			ClientIRCv3SupportedCapabilityIdentifyCTCP },
@@ -328,6 +329,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
 	appendValue(ClientIRCv3SupportedCapabilityChatHistory, @"draft/chathistory");
+	appendValue(ClientIRCv3SupportedCapabilityReadMarker, @"draft/read-marker");
 	appendValue(ClientIRCv3SupportedCapabilityEchoMessage, @"echo-message");
 	appendValue(ClientIRCv3SupportedCapabilityExtendedJoin, @"extended-join");
 	appendValue(ClientIRCv3SupportedCapabilityIdentifyCTCP, @"identify-ctcp");

@@ -97,6 +97,9 @@ enum {
 
 - (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
 
+/* draft/read-marker: tells the server a channel being viewed is read up to its newest message */
+- (void)markChannelAsRead:(IRCChannel *)channel;
+
 /* For print completion blocks: the message was printed, so the output rules already passed */
 - (BOOL)notifyPrintedText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text;
 @end

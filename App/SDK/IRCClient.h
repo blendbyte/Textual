@@ -67,6 +67,7 @@ typedef NS_ENUM(NSUInteger, IRCClientDisconnectMode) {
   27     public: ZNC playback
   28     private: plan.io playback
   29–30  public: standard-replies, draft/chathistory
+  31     public: draft/read-marker
   31+    new values, written as 1ULL << n (1 << 31 overflows an int) */
 typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityAwayNotify			= 1 << 0, // YES if away-notify CAP supported
@@ -93,7 +94,8 @@ typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityMessageTags			= 1 << 21, // YES if message-tags CAP supported
 	ClientIRCv3SupportedCapabilityZNCPlaybackModule		= 1 << 27, // YES if the ZNC vendor specific CAP supported
 	ClientIRCv3SupportedCapabilityStandardReplies		= 1 << 29, // YES if standard-replies CAP supported
-	ClientIRCv3SupportedCapabilityChatHistory			= 1 << 30  // YES if draft/chathistory CAP supported
+	ClientIRCv3SupportedCapabilityChatHistory			= 1 << 30, // YES if draft/chathistory CAP supported
+	ClientIRCv3SupportedCapabilityReadMarker			= 1ULL << 31 // YES if draft/read-marker CAP supported
 };
 
 TEXTUAL_EXTERN NSNotificationName const IRCClientConfigurationWasUpdatedNotification;

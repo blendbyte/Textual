@@ -5,7 +5,7 @@
 	<key>Reserved Information</key>
 	<dict>
 		<key>Next Index Value</key>
-		<real>1063</real>
+		<real>1064</real>
 	</dict>
 	<key>account</key>
 	<dict>
@@ -111,6 +111,11 @@
 	<dict>
 		<key>indexValue</key>
 		<integer>1024</integer>
+	</dict>
+	<key>markread</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1063</integer>
 	</dict>
 	<key>mode</key>
 	<dict>

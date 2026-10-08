@@ -374,10 +374,14 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 		return;
 	}
 
-	id selectedItem = self.selectedItem;
+	IRCTreeItem *selectedItem = self.selectedItem;
 
 	if (selectedItem) {
 		[selectedItem resetState];
+
+		if (selectedItem.isClient == NO) {
+			[selectedItem.associatedClient markChannelAsRead:(IRCChannel *)selectedItem];
+		}
 	}
 
 	[TVCDockIcon updateDockIcon];

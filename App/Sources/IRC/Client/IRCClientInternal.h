@@ -267,6 +267,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveChangeHost:(IRCMessage *)m;
 - (void)processStrictTransportSecurityValue:(nullable NSString *)value;
 
+/* draft/read-marker (IRCClient+ReadMarker.m) */
+- (void)readMarkerNoteMessageAt:(NSDate *)receivedAt inChannel:(IRCChannel *)channel;
+- (nullable NSString *)readMarkerRequestForChannel:(IRCChannel *)channel;
+- (BOOL)applyReadMarker:(IRCMessage *)m;
+- (void)receiveMarkRead:(IRCMessage *)m;
++ (nullable NSString *)readMarkerTimestampForDate:(NSDate *)date;
+
 /* draft/chathistory gap-fill (IRCClient+ChatHistory.m) */
 - (BOOL)isChatHistoryMessage:(IRCMessage *)m;
 - (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel;
