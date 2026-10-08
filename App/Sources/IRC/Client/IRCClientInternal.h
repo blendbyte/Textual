@@ -195,6 +195,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateUserTrackingStatusForEntry:(IRCAddressBookEntry *)addressBookEntry withMessage:(IRCMessage *)message;
 @end
 
+@interface IRCClient (SendingInternal)
+- (void)sendTextLine:(NSAttributedString *)line asCommand:(NSString *)command lineType:(TVCLogLineType)lineType toDestination:(NSString *)destinationName printIn:(nullable IRCChannel *)channel printAsCommand:(NSString *)printCommand;
+@end
+
 @interface IRCClient (CommandsInternal)
 - (void)sendIsonForNicknames:(NSArray<NSString *> *)nicknames hideResponse:(BOOL)hideResponse;
 - (void)sendWhoToChannel:(IRCChannel *)channel hideResponse:(BOOL)hideResponse;

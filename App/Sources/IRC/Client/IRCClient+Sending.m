@@ -305,30 +305,48 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray *lines = string.splitIntoLines;
 
 	for (NSAttributedString *line in lines) {
-		NSMutableAttributedString *lineMutable = [line mutableCopy];
-
-		while (lineMutable.length > 0)
-		{
-			NSString *message = [lineMutable stringFormattedForChannel:channel.name onClient:self withLineType:lineType];
-
-			if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
-				[self print:message
-						 by:self.userNickname
-				  inChannel:channel
-					 asType:lineType
-					command:commandToSend
-				 receivedAt:[NSDate date]];
-			}
-
-			if (lineType == TVCLogLineTypeAction) {
-				message = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, message, 0x01];
-			}
-
-			[self send:commandToSend, channel.name, message, nil];
-		}
+		[self sendTextLine:line
+			 asCommand:commandToSend
+			  lineType:lineType
+		 toDestination:channel.name
+			   printIn:channel
+		printAsCommand:commandToSend];
 	}
 
 	[self processBundlesUserMessage:string.string command:commandToSend];
+}
+
+/* Sends one line of text to a channel or user, split into as many messages
+ as the server allows, and shows each in the channel (if there is one)
+ unless the server echoes it back */
+- (void)sendTextLine:(NSAttributedString *)line asCommand:(NSString *)command lineType:(TVCLogLineType)lineType toDestination:(NSString *)destinationName printIn:(nullable IRCChannel *)channel printAsCommand:(NSString *)printCommand
+{
+	NSParameterAssert(line != nil);
+	NSParameterAssert(command != nil);
+	NSParameterAssert(destinationName != nil);
+	NSParameterAssert(printCommand != nil);
+
+	NSMutableAttributedString *lineMutable = [line mutableCopy];
+
+	while (lineMutable.length > 0)
+	{
+		NSString *message = [lineMutable stringFormattedForChannel:destinationName onClient:self withLineType:lineType];
+
+		if (channel && [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
+			[self print:message
+					 by:self.userNickname
+			  inChannel:channel
+				 asType:lineType
+				command:printCommand
+			 receivedAt:[NSDate date]];
+		}
+
+		if (lineType == TVCLogLineTypeAction) {
+			message = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, message, 0x01];
+		}
+
+		[self send:command, destinationName, message, nil];
+	}
 }
 
 - (void)sendPrivmsg:(NSString *)message toChannel:(IRCChannel *)channel
@@ -371,23 +389,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)sendCTCPQuery:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text
 {
-	NSParameterAssert(nickname != nil);
-	NSParameterAssert(command != nil);
-
-	NSString *stringToSend = nil;
-
-	if (text == nil) {
-		stringToSend = command;
-	} else {
-		stringToSend = [NSString stringWithFormat:@"%@ %@", command, text];
-	}
-
-	NSString *message = [NSString stringWithFormat:@"%c%@%c", 0x01, stringToSend, 0x01];
-
-	[self send:@"PRIVMSG", nickname, message, nil];
+	[self _sendCTCP:command text:text to:nickname as:@"PRIVMSG"];
 }
 
 - (void)sendCTCPReply:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text
+{
+	[self _sendCTCP:command text:text to:nickname as:@"NOTICE"];
+}
+
+/* A query goes out as PRIVMSG, a reply as NOTICE */
+- (void)_sendCTCP:(NSString *)command text:(nullable NSString *)text to:(NSString *)nickname as:(NSString *)messageCommand
 {
 	NSParameterAssert(nickname != nil);
 	NSParameterAssert(command != nil);
@@ -402,7 +413,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *message = [NSString stringWithFormat:@"%c%@%c", 0x01, stringToSend, 0x01];
 
-	[self send:@"NOTICE", nickname, message, nil];
+	[self send:messageCommand, nickname, message, nil];
 }
 
 - (void)sendCTCPPing:(NSString *)nickname

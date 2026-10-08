@@ -1132,6 +1132,28 @@ NS_ASSUME_NONNULL_BEGIN
 	 receivedAt:m.receivedAt];
 }
 
+/* Whether a join, part, kick, quit, nickname change or mode change by
+ someone else is printed: the "show join and leave" preference, then the
+ channel's setting, then the user's address book entry, if there is one */
+- (BOOL)shouldPrintGeneralEventInChannel:(IRCChannel *)channel addressBookEntry:(nullable IRCAddressBookEntry *)addressBookEntry
+{
+	NSParameterAssert(channel != nil);
+
+	if ([TPCPreferences showJoinLeave] == NO) {
+		return NO;
+	}
+
+	if (channel.config.ignoreGeneralEventMessages) {
+		return NO;
+	}
+
+	if (addressBookEntry) {
+		return (addressBookEntry.ignoreGeneralEventMessages == NO);
+	}
+
+	return YES;
+}
+
 - (void)receiveJoin:(IRCMessage *)m
 {
 	NSAssertReturn([m paramsCount] > 0);
@@ -1213,15 +1235,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL printMessage = [self postReceivedMessage:m withText:nil destinedFor:channel];
 
-	if (printMessage && myself == NO)
-	{
-		if ([TPCPreferences showJoinLeave] == NO) {
-			printMessage = NO;
-		} else if (channel.config.ignoreGeneralEventMessages) {
-			printMessage = NO;
-		} else if (ignoreInfo) {
-			printMessage = (ignoreInfo.ignoreGeneralEventMessages == NO);
-		}
+	if (printMessage && myself == NO) {
+		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
 
 	if (printMessage) {
@@ -1296,19 +1311,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL printMessage = [self postReceivedMessage:m withText:comment destinedFor:channel];
 
-	if (printMessage && myself == NO)
-	{
-		if ([TPCPreferences showJoinLeave] == NO) {
-			printMessage = NO;
-		} else if (channel.config.ignoreGeneralEventMessages) {
-			printMessage = NO;
-		} else {
-			IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+	if (printMessage && myself == NO) {
+		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
 
-			if (ignoreInfo) {
-				printMessage = (ignoreInfo.ignoreGeneralEventMessages == NO);
-			}
-		}
+		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
 
 	if (printMessage) {
@@ -1381,19 +1387,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL printMessage = [self postReceivedMessage:m withText:comment destinedFor:channel];
 
-	if (printMessage && myself == NO)
-	{
-		if ([TPCPreferences showJoinLeave] == NO) {
-			printMessage = NO;
-		} else if (channel.config.ignoreGeneralEventMessages) {
-			printMessage = NO;
-		} else {
-			IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+	if (printMessage && myself == NO) {
+		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
 
-			if (ignoreInfo) {
-				printMessage = (ignoreInfo.ignoreGeneralEventMessages == NO);
-			}
-		}
+		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
 
 	if (printMessage) {
@@ -1505,15 +1502,8 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			BOOL printMessage = [self postReceivedMessage:m withText:comment destinedFor:channel];
 
-			if (printMessage && myself == NO)
-			{
-				if ([TPCPreferences showJoinLeave] == NO) {
-					printMessage = NO;
-				} else if (channel.config.ignoreGeneralEventMessages) {
-					printMessage = NO;
-				} else if (ignoreInfo) {
-					printMessage = (ignoreInfo.ignoreGeneralEventMessages == NO);
-				}
+			if (printMessage && myself == NO) {
+				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 			}
 
 			[mainWindow() updateTitleFor:channel];
@@ -1720,15 +1710,8 @@ NS_ASSUME_NONNULL_BEGIN
 		if (channel.isChannel) {
 			BOOL printMessage = [self postReceivedMessage:m withText:newNickname destinedFor:channel];
 
-			if (printMessage && myself == NO)
-			{
-				if ([TPCPreferences showJoinLeave] == NO) {
-					printMessage = NO;
-				} else if (channel.config.ignoreGeneralEventMessages) {
-					printMessage = NO;
-				} else if (oldNicknameIgnoreInfo) {
-					printMessage = (oldNicknameIgnoreInfo.ignoreGeneralEventMessages == NO);
-				}
+			if (printMessage && myself == NO) {
+				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:oldNicknameIgnoreInfo];
 			}
 
 			if (printMessage == NO) {
@@ -1817,7 +1800,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = [self postReceivedMessage:m withText:modeString destinedFor:channel];
 
 	if (printMessage) {
-		printMessage = ([TPCPreferences showJoinLeave] && channel.config.ignoreGeneralEventMessages == NO);
+		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:nil];
 	}
 
 	if (printMessage) {

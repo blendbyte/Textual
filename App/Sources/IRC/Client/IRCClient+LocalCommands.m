@@ -2278,27 +2278,12 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		/* Break text up into substrings which can then be sent. */
-		NSMutableAttributedString *lineMutable = [stringIn mutableCopy];
-
-		while (lineMutable.length > 0)
-		{
-			NSString *message = [lineMutable stringFormattedForChannel:destinationName onClient:self withLineType:lineType];
-
-			if (destination && [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
-				[self print:message
-						 by:self.userNickname
-				  inChannel:destination
-					 asType:lineType
-					command:command
-				 receivedAt:[NSDate date]];
-			}
-
-			if (lineType == TVCLogLineTypeAction) {
-				message = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, message, 0x01];
-			}
-
-			[self send:commandToSend, destinationName, message, nil];
-		}
+		[self sendTextLine:stringIn
+			 asCommand:commandToSend
+			  lineType:lineType
+		 toDestination:destinationName
+			   printIn:destination
+		printAsCommand:command];
 	} // destination for()
 
 	/* Focus destination */

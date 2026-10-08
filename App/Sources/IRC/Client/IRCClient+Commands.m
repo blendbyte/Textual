@@ -290,24 +290,24 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.connectDelay = delay;
 
-	if (afterWakeUp) {
-		[self autoConnectAfterWakeUp];
-	} else {
-		[self autoConnect];
-	}
-}
-
-- (void)autoConnect
-{
-	NSUInteger connectDelay = self.connectDelay;
-
-	if (connectDelay == 0) {
-		[self autoConnectPerformConnect];
+	/* After waking up, the connection counts as a reconnect */
+	if (delay == 0) {
+		if (afterWakeUp) {
+			[self autoConnectAfterWakeUpPerformConnect];
+		} else {
+			[self autoConnectPerformConnect];
+		}
 
 		return;
 	}
 
-	[self performSelectorInCommonModes:@selector(autoConnectPerformConnect) withObject:nil afterDelay:connectDelay];
+	if (afterWakeUp) {
+		[self printDebugInformationToConsole:TXTLS(@"IRC[3s6-e6]", delay)];
+	}
+
+	SEL performConnect = (afterWakeUp ? @selector(autoConnectAfterWakeUpPerformConnect) : @selector(autoConnectPerformConnect));
+
+	[self performSelectorInCommonModes:performConnect withObject:nil afterDelay:delay];
 }
 
 - (void)autoConnectPerformConnect
@@ -317,21 +317,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self connect];
-}
-
-- (void)autoConnectAfterWakeUp
-{
-	NSUInteger connectDelay = self.connectDelay;
-
-	if (connectDelay == 0) {
-		[self autoConnectAfterWakeUpPerformConnect];
-
-		return;
-	}
-
-	[self printDebugInformationToConsole:TXTLS(@"IRC[3s6-e6]", connectDelay)];
-
-	[self performSelectorInCommonModes:@selector(autoConnectAfterWakeUpPerformConnect) withObject:nil afterDelay:connectDelay];
 }
 
 - (void)autoConnectAfterWakeUpPerformConnect

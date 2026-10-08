@@ -440,23 +440,17 @@ present_error:
 
 - (void)sendFileResume:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
 {
-	NSParameterAssert(nickname != nil);
-	NSParameterAssert(filename != nil);
-
-	NSString *escapedFilename = [self DCCSendEscapeFilename:filename];
-
-	NSString *stringToSend = nil;
-
-	if (transferToken) {
-		stringToSend = [NSString stringWithFormat:@"%@ %hu %lli %@", escapedFilename, port, totalFilesize, transferToken];
-	} else {
-		stringToSend = [NSString stringWithFormat:@"%@ %hu %lli", escapedFilename, port, totalFilesize];
-	}
-
-	[self sendCTCPQuery:nickname command:@"DCC RESUME" text:stringToSend];
+	[self _sendFileResumeCommand:@"DCC RESUME" to:nickname port:port filename:filename filesize:totalFilesize token:transferToken];
 }
 
 - (void)sendFileResumeAccept:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
+{
+	[self _sendFileResumeCommand:@"DCC ACCEPT" to:nickname port:port filename:filename filesize:totalFilesize token:transferToken];
+}
+
+/* DCC RESUME (asking to continue a transfer) and DCC ACCEPT (agreeing to)
+ carry the same arguments */
+- (void)_sendFileResumeCommand:(NSString *)command to:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
 {
 	NSParameterAssert(nickname != nil);
 	NSParameterAssert(filename != nil);
@@ -471,7 +465,7 @@ present_error:
 		stringToSend = [NSString stringWithFormat:@"%@ %hu %lli", escapedFilename, port, totalFilesize];
 	}
 
-	[self sendCTCPQuery:nickname command:@"DCC ACCEPT" text:stringToSend];
+	[self sendCTCPQuery:nickname command:command text:stringToSend];
 }
 
 - (void)sendFile:(NSString *)nickname port:(uint16_t)port filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken

@@ -533,9 +533,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)printUnknownReply:(IRCMessage *)message inChannel:(nullable IRCChannel *)channel withSequence:(NSUInteger)sequence
 {
-	NSParameterAssert(message != nil);
-
-	[self print:[message sequence:sequence] by:nil inChannel:channel asType:TVCLogLineTypeDebug command:message.command receivedAt:message.receivedAt];
+	[self printReply:message inChannel:channel withSequence:sequence];
 }
 
 - (void)printErrorReply:(IRCMessage *)message
@@ -562,12 +560,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *errorMessage = TXTLS(@"IRC[3yo-gw]", message.commandNumeric, sequenceMessage);
 
-	[self print:errorMessage by:nil inChannel:channel asType:TVCLogLineTypeDebug command:message.command];
+	[self printDebugInformation:errorMessage inChannel:channel asCommand:message.command escapeMessage:YES];
 }
 
 - (void)printError:(NSString *)errorMessage asCommand:(NSString *)command
 {
-	[self print:errorMessage by:nil inChannel:nil asType:TVCLogLineTypeDebug command:command];
+	[self printDebugInformation:errorMessage inChannel:nil asCommand:command escapeMessage:YES];
 }
 
 - (void)printDebugInformationToConsole:(NSString *)message
@@ -587,7 +585,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)printDebugInformationToConsole:(NSString *)message asCommand:(NSString *)command escapeMessage:(BOOL)escapeMessage
 {
-	[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDebug command:command escapeMessage:escapeMessage];
+	[self printDebugInformation:message inChannel:nil asCommand:command escapeMessage:escapeMessage];
 }
 
 - (void)printDebugInformation:(NSString *)message
@@ -616,6 +614,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	IRCChannel *channel = [mainWindow() selectedChannelOn:self];
 
+	/* Ignores command and escapeMessage (R3.8, fixed in plan 6.3) */
 	[self printDebugInformation:message inChannel:channel asCommand:TVCLogLineDefaultCommandValue escapeMessage:YES];
 }
 
@@ -626,7 +625,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)printDebugInformation:(NSString *)message inChannel:(nullable IRCChannel *)channel asCommand:(NSString *)command
 {
-	[self print:message by:nil inChannel:channel asType:TVCLogLineTypeDebug command:command escapeMessage:YES];
+	[self printDebugInformation:message inChannel:channel asCommand:command escapeMessage:YES];
 }
 
 - (void)printDebugInformation:(NSString *)message inChannel:(nullable IRCChannel *)channel escapeMessage:(BOOL)escapeMessage
@@ -634,6 +633,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[self printDebugInformation:message inChannel:channel asCommand:TVCLogLineDefaultCommandValue escapeMessage:escapeMessage];
 }
 
+/* Every debug message (console, selected channel, a channel, all views,
+ errors) ends here */
 - (void)printDebugInformation:(NSString *)message inChannel:(nullable IRCChannel *)channel asCommand:(NSString *)command escapeMessage:(BOOL)escapeMessage
 {
 	[self print:message by:nil inChannel:channel asType:TVCLogLineTypeDebug command:command escapeMessage:escapeMessage];
