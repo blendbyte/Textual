@@ -68,6 +68,29 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(info.networkName, @"Libera.Chat");
 }
 
+/* Nicknames and channel names compare under the server's CASEMAPPING:
+ under rfc1459 (also the default) [ ] \\ ~ are the upper case of { } | ^ */
+- (void)testCaseMappingFoldsNamesLikeTheServer
+{
+	IRCISupportInfo *info = self.client.supportInfo;
+
+	XCTAssertEqual(info.caseMapping, IRCISupportInfoCaseMappingRFC1459);
+	XCTAssertEqualObjects([info foldedString:@"Nick[A]\\~"], @"nick{a}|^");
+
+	[info processConfigurationData:@"me CASEMAPPING=strict-rfc1459 :are supported by this server"];
+
+	XCTAssertEqualObjects([info foldedString:@"Nick[A]\\~"], @"nick{a}|~");
+
+	[info processConfigurationData:@"me CASEMAPPING=ascii :are supported by this server"];
+
+	XCTAssertEqualObjects([info foldedString:@"Nick[A]\\~"], @"nick[a]\\~");
+	XCTAssertEqualObjects([info foldedString:@"ÄBC"], @"Äbc");
+
+	[info processConfigurationData:@"me CASEMAPPING=rfc8265 :are supported by this server"];
+
+	XCTAssertEqualObjects([info foldedString:@"ÄBC"], @"äbc");
+}
+
 /* A malformed PREFIX from any server or bouncer used to crash the app */
 - (void)testMalformedPrefixIsIgnored
 {

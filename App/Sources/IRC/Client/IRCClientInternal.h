@@ -43,6 +43,7 @@
 
 @class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessageContainer;
 @class TLOFileLogger, TLOTimer;
+@class IRCUserList;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -146,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IRCAddressBookUserTrackingContainer *trackedUsers;
 @property (nonatomic, strong) IRCClientRequestedCommands *requestedCommands;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, IRCTimedCommand *> *timedCommands;
-@property (nonatomic, strong) NSMutableDictionary<NSString *, IRCUser *> *userListPrivate;
+@property (nonatomic, strong, nullable) IRCUserList *knownUsers;
 @property (nonatomic, strong, nullable) NSMutableString *zncBouncerCertificateChainDataMutable;
 @property (nonatomic, copy, nullable) NSString *temporaryServerAddressOverride;
 @property (nonatomic, assign) uint16_t temporaryServerPortOverride;

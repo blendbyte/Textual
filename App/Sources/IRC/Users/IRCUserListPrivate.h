@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,15 +36,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* IRCUserPersistentStore is a class used by IRCUser to store
- properties which are persistent between multiple read-only 
- and mutable copies of the same IRCUser instance. */
-@class IRCUserRelations;
+@class IRCClient, IRCUser;
 
-@interface IRCUserPersistentStore : NSObject
-@property (nonatomic, strong) IRCUserRelations *relations;
-@property (nonatomic, assign) CFAbsoluteTime presentAwayMessageFor301LastEvent;
-@property (nonatomic, assign) CFAbsoluteTime unusedSince; // in no channel since; 0 while in one
+/* The users a client knows, keyed by nickname folded with the server's
+ CASEMAPPING. A user that is in no channel is forgotten after a while,
+ unless a private message with them is open. */
+@interface IRCUserList : NSObject
+- (instancetype)initWithClient:(IRCClient *)client NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@property (readonly) NSUInteger count;
+@property (readonly, copy) NSArray<IRCUser *> *users;
+
+- (nullable IRCUser *)userWithNickname:(NSString *)nickname;
+
+/* Replaces any user with the same nickname */
+- (void)setUser:(IRCUser *)user;
+
+- (void)removeUserWithNickname:(NSString *)nickname;
+- (void)removeAllUsers;
+
+/* Forgets users that have been in no channel for this long and have no
+ private message open; called periodically */
+- (void)removeUsersUnusedFor:(NSTimeInterval)interval;
+
+- (void)stopExpiryTimer; // when the client goes away
 @end
 
 NS_ASSUME_NONNULL_END

@@ -45,11 +45,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* IRCUser has an internal timer that is started when relations reach zero.
- This timer runs for five minutes, using a GCD timer. When the timer fires,
- it removes the user from the client, thus remove any trace of it. */
-#define _removeUserTimerInterval					(60 * 5) // 5 minutes
-
 #define _presentAwayMessageFor301Threshold			300.0
 
 @interface IRCUser ()
@@ -88,11 +83,14 @@ NS_ASSUME_NONNULL_BEGIN
 	self.persistentStore = [IRCUserPersistentStore new];
 
 	self.persistentStore.relations = [IRCUserRelations new];
+
+	/* Not in a channel yet (e.g. the sender of a private message) */
+	self.persistentStore.unusedSince = CFAbsoluteTimeGetCurrent();
 }
 
-- (void)dealloc
+- (CFAbsoluteTime)unusedSince
 {
-	[self cancelRemoveUserTimer];
+	return self.persistentStore.unusedSince;
 }
 
 - (IRCUserRelations *)relationsInt
@@ -236,6 +234,12 @@ NS_ASSUME_NONNULL_BEGIN
 			self.isIRCop == objectCast.isIRCop);
 }
 
+/* Equal objects hash the same (R3.20: -isEqual: had no matching -hash) */
+- (NSUInteger)hash
+{
+	return (self.nickname.hash ^ self.username.hash ^ self.address.hash);
+}
+
 - (id)copyAsMutable:(BOOL)mutableCopy uniquing:(BOOL)uniquing
 {
 	IRCUser *object = [self allocForCopyAsMutable:mutableCopy];
@@ -261,80 +265,15 @@ NS_ASSUME_NONNULL_BEGIN
 	return [IRCUserMutable self];
 }
 
-- (void)updateRemoveUserTimerBlockToFire
-{
-	/* If the timer is already active, we reset the block that is scheduled
-	 so that the user that is targeted is always the primary */
-	dispatch_source_t removeUserTimer = self.persistentStore.removeUserTimer;
-
-	if (removeUserTimer == nil) {
-		return;
-	}
-
-	dispatch_block_t blockToFire = [self removeUserTimerBlockToFire];
-
-	dispatch_source_set_event_handler(removeUserTimer, blockToFire);
-}
-
-- (void)toggleRemoveUserTimer
+/* Copies share the persistent store: a timer kept there was cancelled when
+ any copy went away, so the user list sweeps unused users instead */
+- (void)updateUnusedSince
 {
 	if (self.relationsInt.numberOfRelations > 0) {
-		[self cancelRemoveUserTimer];
-	} else {
-		[self startRemoveUserTimer];
+		self.persistentStore.unusedSince = 0;
+	} else if (self.persistentStore.unusedSince == 0) {
+		self.persistentStore.unusedSince = CFAbsoluteTimeGetCurrent();
 	}
-}
-
-- (void)startRemoveUserTimer
-{
-	dispatch_source_t removeUserTimer = self.persistentStore.removeUserTimer;
-
-	if (removeUserTimer != NULL) {
-		return;
-	}
-
-	dispatch_block_t blockToFire = [self removeUserTimerBlockToFire];
-
-	removeUserTimer = XRScheduleBlockOnGlobalQueue(blockToFire, _removeUserTimerInterval);
-
-	XRResumeScheduledBlock(removeUserTimer);
-
-	if (removeUserTimer == NULL) {
-		LogToConsoleFault("Failed to create timer to remove user");
-
-		blockToFire(); // Remove user if timer isn't available
-
-		return;
-	}
-
-	self.persistentStore.removeUserTimer = removeUserTimer;
-}
-
-- (void)cancelRemoveUserTimer
-{
-	dispatch_source_t removeUserTimer = self.persistentStore.removeUserTimer;
-
-	if (removeUserTimer == nil) {
-		return;
-	}
-
-	XRCancelScheduledBlock(removeUserTimer);
-
-	self.persistentStore.removeUserTimer = nil;
-}
-
-- (dispatch_block_t)removeUserTimerBlockToFire
-{
-	/* Using weak references means that the object can be deallocated when 
-	 the timer is active. -dealloc will cancel the timer if it is active. */
-
-	__weak IRCClient *client = self.client;
-
-	__weak IRCUser *user = self;
-
-	return [^{
-		[client removeUser:user];
-	} copy];
 }
 
 @end
@@ -347,14 +286,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self.relationsInt associateUser:user withChannel:channel];
 
-	[self toggleRemoveUserTimer];
+	[self updateUnusedSince];
 }
 
 - (void)disassociateUserWithChannel:(IRCChannel *)channel
 {
 	[self.relationsInt disassociateUserWithChannel:channel];
 
-	[self toggleRemoveUserTimer];
+	[self updateUnusedSince];
 }
 
 - (nullable IRCChannelUser *)userAssociatedWithChannel:(IRCChannel *)channel
@@ -371,8 +310,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)becamePrimaryUser
 {
-	[self updateRemoveUserTimerBlockToFire];
-
 	[self relinkRelations];
 }
 

@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,17 +34,49 @@
  *
  *********************************************************************** */
 
+#import <XCTest/XCTest.h>
+
+#import "IRCAddressBook.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-/* IRCUserPersistentStore is a class used by IRCUser to store
- properties which are persistent between multiple read-only 
- and mutable copies of the same IRCUser instance. */
-@class IRCUserRelations;
+@interface IRCAddressBookTests : XCTestCase
+@end
 
-@interface IRCUserPersistentStore : NSObject
-@property (nonatomic, strong) IRCUserRelations *relations;
-@property (nonatomic, assign) CFAbsoluteTime presentAwayMessageFor301LastEvent;
-@property (nonatomic, assign) CFAbsoluteTime unusedSince; // in no channel since; 0 while in one
+@implementation IRCAddressBookTests
+
+/* An ignore mask matches whole hostmasks; * and ? are the only wildcards */
+- (void)testIgnoreMaskMatchesWholeHostmasksOnly
+{
+	IRCAddressBookEntry *bob = [IRCAddressBookEntry newIgnoreEntryForHostmask:@"bob!*@*"];
+
+	XCTAssertTrue([bob checkMatch:@"bob!user@host.example"]);
+	XCTAssertTrue([bob checkMatch:@"BOB!user@host.example"]);
+	XCTAssertFalse([bob checkMatch:@"jimbob!user@host.example"]);
+	XCTAssertFalse([bob checkMatch:@"bobby!user@host.example"]);
+
+	IRCAddressBookEntry *oneCharacter = [IRCAddressBookEntry newIgnoreEntryForHostmask:@"b?b!*@*"];
+
+	XCTAssertTrue([oneCharacter checkMatch:@"bab!user@host"]);
+	XCTAssertFalse([oneCharacter checkMatch:@"bb!user@host"]);
+
+	IRCAddressBookEntry *host = [IRCAddressBookEntry newIgnoreEntryForHostmask:@"*!*@host.example"];
+
+	XCTAssertTrue([host checkMatch:@"anyone!user@host.example"]);
+	XCTAssertFalse([host checkMatch:@"anyone!user@hostXexample"]);
+}
+
+/* A tracked nickname is literal, even with regular expression characters */
+- (void)testTrackedNicknameIsMatchedLiterally
+{
+	IRCAddressBookEntryMutable *entry = [[IRCAddressBookEntry newUserTrackingEntry] mutableCopy];
+
+	entry.hostmask = @"[x]";
+
+	XCTAssertTrue([entry checkMatch:@"[x]!user@host"]);
+	XCTAssertFalse([entry checkMatch:@"x!user@host"]);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

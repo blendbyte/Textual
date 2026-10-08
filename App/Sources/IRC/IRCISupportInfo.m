@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *inviteExceptionModeSymbol;
 @property (nonatomic, copy, readwrite, nullable) NSString *networkName;
 @property (nonatomic, copy, readwrite, nullable) NSString *networkNameFormatted;
+@property (nonatomic, assign, readwrite) IRCISupportInfoCaseMapping caseMapping;
 @end
 
 @implementation IRCISupportInfo
@@ -105,6 +106,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.networkName = nil;
 	self.networkNameFormatted = nil;
+
+	self.caseMapping = IRCISupportInfoCaseMappingRFC1459;
 
 	self.channelNamePrefixes = @[@"#"];
 
@@ -172,6 +175,8 @@ NS_ASSUME_NONNULL_BEGIN
 				if (awayLength > 0) {
 					self.maximumAwayLength = awayLength;
 				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
+				self.caseMapping = [self.class caseMappingNamed:segmentValue];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHANMODES"]) {
 				[self parseChannelModes:segmentValue];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHANNELLEN"]) {
@@ -273,6 +278,64 @@ NS_ASSUME_NONNULL_BEGIN
 	} // while()
 
 	self.cachedConfiguration = [self.cachedConfiguration arrayByAddingObject:configuration];
+}
+
++ (IRCISupportInfoCaseMapping)caseMappingNamed:(NSString *)name
+{
+	NSParameterAssert(name != nil);
+
+	if ([name isEqualToStringIgnoringCase:@"rfc1459"]) {
+		return IRCISupportInfoCaseMappingRFC1459;
+	} else if ([name isEqualToStringIgnoringCase:@"strict-rfc1459"]) {
+		return IRCISupportInfoCaseMappingStrictRFC1459;
+	} else if ([name isEqualToStringIgnoringCase:@"ascii"]) {
+		return IRCISupportInfoCaseMappingASCII;
+	}
+
+	return IRCISupportInfoCaseMappingUnicode;
+}
+
+- (NSString *)foldedString:(NSString *)string
+{
+	NSParameterAssert(string != nil);
+
+	IRCISupportInfoCaseMapping caseMapping = self.caseMapping;
+
+	if (caseMapping == IRCISupportInfoCaseMappingUnicode) {
+		return string.lowercaseString;
+	}
+
+	NSUInteger length = string.length;
+
+	unichar *characters = malloc(sizeof(unichar) * MAX(length, 1));
+
+	[string getCharacters:characters range:NSMakeRange(0, length)];
+
+	for (NSUInteger i = 0; i < length; i++) {
+		unichar character = characters[i];
+
+		if (character >= 'A' && character <= 'Z') {
+			characters[i] = (character + ('a' - 'A'));
+
+			continue;
+		}
+
+		if (caseMapping == IRCISupportInfoCaseMappingASCII) {
+			continue;
+		}
+
+		if (character == '[') {
+			characters[i] = '{';
+		} else if (character == ']') {
+			characters[i] = '}';
+		} else if (character == '\\') {
+			characters[i] = '|';
+		} else if (character == '~' && caseMapping == IRCISupportInfoCaseMappingRFC1459) {
+			characters[i] = '^';
+		}
+	}
+
+	return [[NSString alloc] initWithCharactersNoCopy:characters length:length freeWhenDone:YES];
 }
 
 - (nullable NSString *)stringValueForConfiguration:(NSDictionary<NSString *, id> *)configuration

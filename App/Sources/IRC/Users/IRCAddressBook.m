@@ -187,23 +187,17 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSString *hostmask = self.hostmask;
 
+	/* R3.16: the mask must match the whole hostmask ("bob!*@*" matched
+	 "jimbob!…"), * and ? are the only wildcards (? was a regular expression
+	 quantifier, . and + matched other characters) */
 	if (self.entryType == IRCAddressBookEntryTypeIgnore)
 	{
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"{" withString:@"\\{"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"}" withString:@"\\}"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@")" withString:@"\\)"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"(" withString:@"\\("];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"]" withString:@"\\]"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"[" withString:@"\\["];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"^" withString:@"\\^"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"|" withString:@"\\|"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"~" withString:@"\\~"];
-		hostmask = [hostmask stringByReplacingOccurrencesOfString:@"*" withString:@"(.*?)"];
+		hostmask = [self.class regularExpressionForMask:hostmask];
 	}
 	else if (self.entryType == IRCAddressBookEntryTypeUserTracking)
 	{
-		hostmask = [NSString stringWithFormat:@"^%@!(.*?)@(.*?)$", hostmask];
+		/* A tracked nickname is matched literally ([x], foo\) */
+		hostmask = [NSString stringWithFormat:@"^%@!.*@.*$", [NSRegularExpression escapedPatternForString:hostmask]];
 	}
 	else
 	{
@@ -211,6 +205,33 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self->_hostmaskRegularExpression = [hostmask copy];
+}
+
+/* An IRC mask as an anchored regular expression: * is any run of
+ characters, ? any one character, everything else is literal */
++ (NSString *)regularExpressionForMask:(NSString *)mask
+{
+	NSParameterAssert(mask != nil);
+
+	NSMutableString *pattern = [NSMutableString stringWithString:@"^"];
+
+	NSUInteger length = mask.length;
+
+	for (NSUInteger i = 0; i < length; i++) {
+		unichar character = [mask characterAtIndex:i];
+
+		if (character == '*') {
+			[pattern appendString:@".*"];
+		} else if (character == '?') {
+			[pattern appendString:@"."];
+		} else {
+			[pattern appendString:[NSRegularExpression escapedPatternForString:[NSString stringWithCharacters:&character length:1]]];
+		}
+	}
+
+	[pattern appendString:@"$"];
+
+	return [pattern copy];
 }
 
 - (void)rebuildTrackingNickname

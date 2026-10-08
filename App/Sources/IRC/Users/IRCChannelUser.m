@@ -343,6 +343,13 @@ NS_ASSUME_NONNULL_BEGIN
 			 [self.modes isEqualToString:objectCast.modes]));
 }
 
+/* Equal objects hash the same (R3.20: -isEqual: had no matching -hash) */
+- (NSUInteger)hash
+{
+	/* -isEqual: compares the user by identity */
+	return (((NSUInteger)(__bridge void *)self.user) ^ self.modes.hash);
+}
+
 - (id)copyAsMutable:(BOOL)mutableCopy uniquing:(BOOL)uniquing
 {
 	IRCChannelUser *object = [self allocForCopyAsMutable:mutableCopy];

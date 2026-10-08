@@ -48,6 +48,15 @@ typedef NS_ENUM(NSUInteger, IRCISupportInfoListType)
 	IRCISupportInfoListTypeQuiet
 };
 
+/* How nicknames and channel names compare without regard to case (CASEMAPPING) */
+typedef NS_ENUM(NSUInteger, IRCISupportInfoCaseMapping)
+{
+	IRCISupportInfoCaseMappingRFC1459 = 0, // A-Z and []\~ fold to a-z and {}|^; the default when a server doesn't say
+	IRCISupportInfoCaseMappingStrictRFC1459, // A-Z and []\ fold to a-z and {}|
+	IRCISupportInfoCaseMappingASCII, // A-Z fold to a-z
+	IRCISupportInfoCaseMappingUnicode // any other mapping (e.g. rfc8265): Unicode lower case
+};
+
 #define IRCISupportInfoHighestUserPrefixRank			100
 
 #define IRCISupportUserModeSymbolsSymbolsKey			@"modeSymbols"
@@ -71,6 +80,11 @@ typedef NS_ENUM(NSUInteger, IRCISupportInfoListType)
 @property (readonly, copy, nullable) NSString *serverAddress;
 @property (readonly, copy, nullable) NSString *networkName;
 @property (readonly, copy, nullable) NSString *networkNameFormatted;
+@property (readonly) IRCISupportInfoCaseMapping caseMapping;
+
+/* A nickname or channel name folded with the server's CASEMAPPING: two
+ names are the same when their folded strings are equal */
+- (NSString *)foldedString:(NSString *)string;
 
 - (instancetype)init NS_UNAVAILABLE;
 

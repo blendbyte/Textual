@@ -625,6 +625,8 @@
 		4C5C98C3316CF4A4FBD6DCBC /* TDCLegacyImportAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD22A2FECF2D9FC82A38BDF /* TDCLegacyImportAssistant.m */; };
 		4C52FD1C6BA2D648909E786E /* IRCCapabilityNegotiator.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD36165258A42DBACB328CB /* IRCCapabilityNegotiator.m */; };
 		4C6E5E26CAC8042A68B61EBD /* IRCCapabilityNegotiatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */; };
+		4C34DFFDDB44DF73DA15DCB8 /* IRCUserList.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2EFD7CAF2E21384307E270 /* IRCUserList.m */; };
+		4C6971E9F5057FA3827828BB /* IRCAddressBookTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1403,6 +1405,9 @@
 		4CD36165258A42DBACB328CB /* IRCCapabilityNegotiator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCCapabilityNegotiator.m; sourceTree = "<group>"; };
 		4CEC027D8CA59E5622636592 /* IRCCapabilityNegotiatorPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCCapabilityNegotiatorPrivate.h; sourceTree = "<group>"; };
 		4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCCapabilityNegotiatorTests.m; sourceTree = "<group>"; };
+		4C2EFD7CAF2E21384307E270 /* IRCUserList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCUserList.m; sourceTree = "<group>"; };
+		4C95A42F8B47C0382053B59A /* IRCUserListPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCUserListPrivate.h; sourceTree = "<group>"; };
+		4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAddressBookTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1937,6 +1942,8 @@
 				4C31521120EB673E00448776 /* IRCChannelUserPrivate.h */,
 				4C31513420EB673E00448776 /* IRCUser.m */,
 				4C31518620EB673E00448776 /* IRCUserInternal.h */,
+				4C2EFD7CAF2E21384307E270 /* IRCUserList.m */,
+				4C95A42F8B47C0382053B59A /* IRCUserListPrivate.h */,
 				4C31513520EB673E00448776 /* IRCUserNicknameColorStyleGenerator.m */,
 				4C3151FF20EB673E00448776 /* IRCUserNicknameColorStyleGeneratorPrivate.h */,
 				4C31513620EB673E00448776 /* IRCUserPersistentStore.m */,
@@ -2581,6 +2588,7 @@
 			children = (
 				4CCEEF3CE8E84E1B5AE9AC3D /* ChatFilterTests.m */,
 				4C05431772A95CF291B102D1 /* ICLURLSessionTests.m */,
+				4C2B49A6001C8C52B6677F69 /* IRCAddressBookTests.m */,
 				4C548034B89A6FDAD3AB12BA /* IRCCapabilityNegotiatorTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
 				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
@@ -3222,6 +3230,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C34DFFDDB44DF73DA15DCB8 /* IRCUserList.m in Sources */,
 				4C52FD1C6BA2D648909E786E /* IRCCapabilityNegotiator.m in Sources */,
 				4C5C98C3316CF4A4FBD6DCBC /* TDCLegacyImportAssistant.m in Sources */,
 				4CD58E100E86FC7ED02E10AE /* TPCLegacyImport.m in Sources */,
@@ -3473,6 +3482,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C6971E9F5057FA3827828BB /* IRCAddressBookTests.m in Sources */,
 				4C6E5E26CAC8042A68B61EBD /* IRCCapabilityNegotiatorTests.m in Sources */,
 				4C7FE9B965386EBECD77C5E2 /* ICLURLSessionTests.m in Sources */,
 				4CD29A7005E9204039D14F04 /* IRCColorFormatTests.m in Sources */,

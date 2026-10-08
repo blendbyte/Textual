@@ -150,6 +150,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCUserListPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -226,7 +227,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.timedCommands = [NSMutableDictionary dictionary];
 
-	self.userListPrivate = [NSMutableDictionary dictionary];
+	self.knownUsers = [[IRCUserList alloc] initWithClient:self];
 
 	self.addressBookMatchCache = [[IRCAddressBookMatchCache alloc] initWithClient:self];
 	
@@ -314,7 +315,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	self.timedCommands = nil;
 	self.trackedUsers = nil;
 	self.requestedCommands = nil;
-	self.userListPrivate = nil;
+	[self.knownUsers stopExpiryTimer];
+
+	self.knownUsers = nil;
 
 	[self cancelPerformRequests];
 }
@@ -886,7 +889,15 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(nickname != nil);
 
-	return [self.userNickname isEqualToStringIgnoringCase:nickname];
+	NSString *userNickname = self.userNickname;
+
+	if (userNickname == nil) {
+		return NO;
+	}
+
+	IRCISupportInfo *supportInfo = self.supportInfo;
+
+	return [[supportInfo foldedString:userNickname] isEqualToString:[supportInfo foldedString:nickname]];
 }
 
 - (BOOL)stringIsNickname:(NSString *)string
@@ -1361,12 +1372,15 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	NSParameterAssert(withName != nil);
 	NSParameterAssert(channelList != nil);
 
+	/* Compared under the server's CASEMAPPING (R3.15) */
+	IRCISupportInfo *supportInfo = self.supportInfo;
+
+	NSString *foldedName = [supportInfo foldedString:withName];
+
 	NSUInteger channelIndex =
 	[channelList indexOfObjectWithOptions:NSEnumerationConcurrent
 							  passingTest:^BOOL(IRCChannel *channel, NSUInteger index, BOOL *stop) {
-								  NSString *channelName = channel.name;
-
-								  return [withName isEqualToStringIgnoringCase:channelName];
+								  return [foldedName isEqualToString:[supportInfo foldedString:channel.name]];
 							  }];
 
 	if (channelIndex != NSNotFound) {
@@ -1441,16 +1455,14 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 - (NSUInteger)numberOfUsers
 {
-	@synchronized (self.userListPrivate) {
-		return self.userListPrivate.count;
-	}
+	return self.knownUsers.count;
 }
 
 - (NSArray<IRCUser *> *)userList
 {
-	@synchronized (self.userListPrivate) {
-		return self.userListPrivate.allValues;
-	}
+	NSArray *users = self.knownUsers.users;
+
+	return (users ?: @[]);
 }
 
 #pragma mark -

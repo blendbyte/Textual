@@ -116,6 +116,12 @@ NS_ASSUME_NONNULL_BEGIN
 			 [self.modeParameter isEqualToString:objectCast.modeParameter]));
 }
 
+/* Equal objects hash the same (R3.20: -isEqual: had no matching -hash) */
+- (NSUInteger)hash
+{
+	return (self.modeSymbol.hash ^ self.modeParameter.hash ^ (NSUInteger)self.modeIsSet);
+}
+
 - (BOOL)isModeForChangingMemberModeOn:(IRCClient *)client
 {
 	NSParameterAssert(client != nil);

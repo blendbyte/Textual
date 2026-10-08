@@ -107,6 +107,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCUserListPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -179,9 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self resetCapabilities];
 
-	@synchronized (self.userListPrivate) {
-		[self.userListPrivate removeAllObjects];
-	}
+	[self.knownUsers removeAllUsers];
 }
 
 - (void)changeStateOff

@@ -867,6 +867,27 @@ async def scenario_ison_split(client):
 		f"{len(rounds)} ISON rounds, line counts {[len(round) for round in rounds]}, longest {max((len(line) for round in rounds for line in round), default=0)} bytes, {len(too_long)} over 512")
 
 
+async def scenario_casemapping(client):
+	"""Nicknames compare under CASEMAPPING (rfc1459 when the server doesn't
+	say): NAMES lists Nick[A], then nick{a} leaves and NICK{B} joins. #cm must
+	end with 2 users (Textual Dev and NICK{B}): nick{a} is the same user as
+	Nick[A] under rfc1459."""
+	nick = client.nickname
+	channel = "#cm"
+
+	await client.send(f":{nick}!user@client.textual.test JOIN {channel}")
+	await client.send(f":{SERVER} 353 {nick} = {channel} :@{nick} Nick[A]")
+	await client.send(f":{SERVER} 366 {nick} {channel} :End of /NAMES list.")
+	await client.collect(2)
+
+	await client.send(f":nick{{a}}!a@friend.test PART {channel} :leaving under another case")
+	await client.send(f":NICK{{B}}!b@friend.test JOIN {channel}")
+
+	await client.collect(30)
+
+	result(True, "sent; #cm must list 2 users (Textual Dev and NICK{B})")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -894,6 +915,7 @@ SCENARIOS = {
 	"cap-ls": scenario_cap_ls,
 	"protocol-fixes": scenario_protocol_fixes,
 	"ison-split": scenario_ison_split,
+	"casemapping": scenario_casemapping,
 }
 
 # Scenarios that register the client themselves

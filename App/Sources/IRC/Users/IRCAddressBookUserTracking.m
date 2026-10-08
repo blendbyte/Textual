@@ -151,7 +151,9 @@ NSString * const IRCAddressBookUserTrackingRemovedAllTrackedUsersNotification = 
 			return IRCAddressBookUserTrackingStatusUnknown;
 		}
 
-		return [self _statusOfUser:nickname];
+		/* The stored nickname: in another case the lookup found nothing
+		 and every tracked user looked offline (R3.20) */
+		return [self _statusOfUser:trackingNickname];
 	}
 }
 

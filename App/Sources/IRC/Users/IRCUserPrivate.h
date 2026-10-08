@@ -42,7 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCUser ()
 - (IRCClient *)client;
 
-- (void)cancelRemoveUserTimer;
+/* When the user stopped sharing a channel with us; 0 while they share one.
+ IRCUserList forgets users unused for a while. */
+@property (readonly) CFAbsoluteTime unusedSince;
 @end
 
 NS_ASSUME_NONNULL_END

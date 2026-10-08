@@ -107,6 +107,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCUserListPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -180,11 +181,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(nickname != nil);
 
-	nickname = nickname.lowercaseString;
-
-	@synchronized (self.userListPrivate) {
-		return self.userListPrivate[nickname];
-	}
+	return [self.knownUsers userWithNickname:nickname];
 }
 
 - (IRCUserMutable *)mutableCopyOfUserWithNickname:(NSString *)nickname
@@ -213,11 +210,7 @@ NS_ASSUME_NONNULL_BEGIN
 		user = [user copy];
 	}
 
-	NSString *nickname = user.lowercaseNickname;
-
-	@synchronized (self.userListPrivate) {
-		self.userListPrivate[nickname] = user;
-	}
+	[self.knownUsers setUser:user];
 
 	[user becamePrimaryUser];
 
@@ -243,8 +236,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(user != nil);
 
-	[user cancelRemoveUserTimer];
-	
 	NSString *hostmask = user.hostmask;
 
 	if (hostmask) {
@@ -258,11 +249,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(nickname != nil);
 
-	nickname = nickname.lowercaseString;
-
-	@synchronized (self.userListPrivate) {
-		[self.userListPrivate removeObjectForKey:nickname];
-	}
+	[self.knownUsers removeUserWithNickname:nickname];
 }
 
 - (void)renameUser:(IRCUser *)user to:(NSString *)toNickname

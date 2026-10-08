@@ -95,6 +95,12 @@ NS_ASSUME_NONNULL_BEGIN
 			 [self.hostmask isEqualToString:objectCast.hostmask]));
 }
 
+/* Equal objects hash the same (R3.20: -isEqual: had no matching -hash) */
+- (NSUInteger)hash
+{
+	return (self.nickname.hash ^ self.address.hash ^ (NSUInteger)self.isServer);
+}
+
 @end
 
 #pragma mark -
