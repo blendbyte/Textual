@@ -72,6 +72,27 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([self channelNamesInString:@"&local #global" prefixes:(@[@"#", @"&"])], (@[@"&local", @"#global"]));
 }
 
+/* Nicknames are found without searching for every member: the candidates must
+ include every nickname the old search found, and never part of a word */
+- (void)testNicknameCandidates
+{
+	NSString *message = @"hey [bob], ab-cd and bobby: x_y";
+
+	NSMutableSet *candidates = [NSMutableSet set];
+
+	for (NSValue *range in [TVCLogRenderer nicknameCandidateRangesInString:message]) {
+		[candidates addObject:[message substringWithRange:range.rangeValue]];
+	}
+
+	for (NSString *expected in @[@"hey", @"bob", @"[bob]", @"ab", @"cd", @"ab-cd", @"bobby", @"x_y", @"x", @"y"]) {
+		XCTAssertTrue([candidates containsObject:expected], @"%@", expected);
+	}
+
+	for (NSString *unexpected in @[@"bo", @"ob", @"bobb", @"by", @"b-c", @"bob]," ]) {
+		XCTAssertFalse([candidates containsObject:unexpected], @"%@", unexpected);
+	}
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

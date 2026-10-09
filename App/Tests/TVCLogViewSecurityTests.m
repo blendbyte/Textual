@@ -35,9 +35,11 @@
  *********************************************************************** */
 
 #import <XCTest/XCTest.h>
+#import <JavaScriptCore/JavaScriptCore.h>
 
 #import "TVCLogRenderer.h"
 #import "TVCLogScriptEventSinkPrivate.h"
+#import "TVCLogViewPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -72,6 +74,36 @@ NS_ASSUME_NONNULL_BEGIN
 	for (NSString *link in @[@"javascript:alert(1)", @"JavaScript:alert(1)", @" javascript:alert(1)", @"data:text/html,x", @"file:///etc/passwd", @"example.com"]) {
 		XCTAssertFalse([TVCLogRenderer isClickableLinkLocation:link], @"%@", link);
 	}
+}
+
+/* Message text becomes part of a script: whatever it contains, the function
+ receives it unchanged and nothing else runs */
+- (void)testFunctionCallArgumentsCannotEscape
+{
+	NSString *hostile = @"a\"b\\c'd\ne\rf\u2028g\u2029h</script><script>injected = true;</script>\");injected = true;//";
+
+	NSArray *arguments = @[hostile, @42, @YES, [NSNull null], @[@"x", @{@"key" : @"va\"lue"}], [NSURL URLWithString:@"https://example.com/?a=1&b=2"]];
+
+	NSString *script = [TVCLogView compiledFunctionCall:@"capture" withArguments:arguments];
+
+	JSContext *context = [JSContext new];
+
+	[context evaluateScript:@"var captured = null; var injected = false; function capture() { captured = Array.prototype.slice.call(arguments); }"];
+
+	[context evaluateScript:script];
+
+	XCTAssertNil(context.exception);
+	XCTAssertFalse([context[@"injected"] toBool]);
+
+	NSArray *captured = [context[@"captured"] toArray];
+
+	XCTAssertEqual(captured.count, (NSUInteger)6);
+	XCTAssertEqualObjects(captured[0], hostile);
+	XCTAssertEqualObjects(captured[1], @42);
+	XCTAssertEqualObjects(captured[2], @YES);
+	XCTAssertEqualObjects(captured[3], [NSNull null]);
+	XCTAssertEqualObjects(captured[4], (@[@"x", @{@"key" : @"va\"lue"}]));
+	XCTAssertEqualObjects(captured[5], @"https://example.com/?a=1&b=2");
 }
 
 @end

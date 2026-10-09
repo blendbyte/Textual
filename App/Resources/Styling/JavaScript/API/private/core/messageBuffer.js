@@ -192,8 +192,6 @@ MessageBuffer.noteMessagesRemovedFromBuffer = function(numberRemoved)
 
 _MessageBuffer._adjustCurrentBufferSize = function(byHowMuch)
 {
-	console.log("Adjusting buffer by: " + byHowMuch);
-	
 	var newSize = (_MessageBuffer._bufferCurrentSize + byHowMuch);
 
 	if (newSize < 0) {
@@ -203,8 +201,6 @@ _MessageBuffer._adjustCurrentBufferSize = function(byHowMuch)
 	}
 
 	_MessageBuffer._bufferCurrentSize = newSize;
-	
-	console.log("Buffer adjusted to: " + newSize);
 };
 
 /* Allow user to set a custom buffer limit */
@@ -340,7 +336,6 @@ _MessageBuffer.resizeBuffer = function(numberToRemove, fromTop) /* PRIVATE */
 		_Textual.messageRemovedFromView(lineNumbers);
 	}
 
-	console.log("Removed " + lineNumbersCount + " lines from buffer");
 };
 
 /* Timer set once user scrolls back to the bottom. */

@@ -43,6 +43,11 @@ NS_ASSUME_NONNULL_BEGIN
  (the server's CHANTYPES; "#" when empty) and runs until a space, comma or BEL,
  without the punctuation that ends a sentence */
 + (NSArray<NSValue *> *)channelNameRangesInString:(NSString *)string withPrefixes:(NSArray<NSString *> *)prefixes;
+
+/* Every part of a message that could be a whole nickname (looked up in the
+ channel): runs of nickname characters and the pieces of them that begin and
+ end next to a special character, never part of a word */
++ (NSArray<NSValue *> *)nicknameCandidateRangesInString:(NSString *)string;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -480,140 +480,73 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 @implementation TVCLogView (TVCLogViewJavaScriptHandlerPrivate)
 
-- (NSString *)compileJavaScriptDictionaryArgument:(NSDictionary<NSString *, id> *)objects
-{
-	NSParameterAssert(objects != nil);
-
-	NSMutableString *compiledScript = [NSMutableString string];
-
-	[compiledScript appendString:@"{"];
-
-	NSInteger lastIndex = (objects.count - 1);
-
-	__block NSInteger currentIndex = 0;
-
-	[objects enumerateKeysAndObjectsUsingBlock:^(id key, id object, BOOL *stop) {
-		/* Perform check to make sure the key we are using is actually a string. */
-		if ([key isKindOfClass:[NSString class]] == NO) {
-			LogToConsoleDebug("Silently ignoring non-string key: %{public}@", NSStringFromClass([key class]));
-
-			return;
-		}
-
-		/* Add key and value to new object. */
-		NSString *keyString = [self.class escapeJavaScriptString:key];
-
-		NSString *objectString = [self compileJavaScriptGenericArgument:object];
-
-		if (currentIndex == lastIndex) {
-			[compiledScript appendFormat:@"\"%@\":%@", keyString, objectString];
-		} else {
-			[compiledScript appendFormat:@"\"%@\":%@, ", keyString, objectString];
-		}
-
-		currentIndex += 1;
-	}];
-
-	[compiledScript appendString:@"}"];
-
-	return [compiledScript copy];
-}
-
-- (NSString *)compileJavaScriptArrayArgument:(NSArray *)objects
-{
-	NSParameterAssert(objects != nil);
-
-	NSMutableString *compiledScript = [NSMutableString string];
-
-	[compiledScript appendString:@"["];
-
-	NSInteger lastIndex = (objects.count - 1);
-
-	[objects enumerateObjectsUsingBlock:^(id object, NSUInteger index, BOOL *stop) {
-		NSString *objectString = [self compileJavaScriptGenericArgument:object];
-
-		if (index == lastIndex) {
-			[compiledScript appendString:objectString];
-		} else {
-			[compiledScript appendFormat:@"%@,", objectString];
-		}
-	}];
-
-	[compiledScript appendString:@"]"];
-
-	return [compiledScript copy];
-}
-
-- (NSString *)compileJavaScriptGenericArgument:(id)object
-{
-	NSParameterAssert(object != nil);
-
-	if ([object isKindOfClass:[NSURL class]])
-	{
-		object = [object absoluteString];
-	}
-
-	if ([object isKindOfClass:[NSString class]])
-	{
-		NSString *objectEscaped = [self.class escapeJavaScriptString:object];
-
-		return [NSString stringWithFormat:@"\"%@\"", objectEscaped];
-	}
-	else if ([object isKindOfClass:[NSNumber class]])
-	{
-		if ([object isBooleanValue]) {
-			if ([object boolValue]) {
-				return @"true";
-			} else {
-				return @"false";
-			}
-		} else {
-			return [object stringValue];
-		}
-	}
-	else if ([object isKindOfClass:[NSArray class]])
-	{
-		return [self compileJavaScriptArrayArgument:object];
-	}
-	else if ([object isKindOfClass:[NSDictionary class]])
-	{
-		return [self compileJavaScriptDictionaryArgument:object];
-	}
-	else if ([object isKindOfClass:[NSNull class]])
-	{
-		return @"null";
-	}
-	else
-	{
-		return @"undefined";
-	}
-}
-
 - (NSString *)compiledFunctionCall:(NSString *)function withArguments:(nullable NSArray *)arguments
+{
+	return [self.class compiledFunctionCall:function withArguments:arguments];
+}
+
+/* The arguments go in as JSON, which is valid JavaScript for any string (quotes,
+ backslashes, line breaks, U+2028) and any nesting */
++ (NSString *)compiledFunctionCall:(NSString *)function withArguments:(nullable NSArray *)arguments
 {
 	NSParameterAssert(function != nil);
 
-	NSMutableString *compiledScript = [NSMutableString string];
+	NSString *argumentList = @"";
 
-	[compiledScript appendFormat:@"%@(", function];
+	if (arguments.count > 0) {
+		NSData *data = [NSJSONSerialization dataWithJSONObject:[self JSONObjectForArgument:arguments] options:0 error:NULL];
 
-	if ( arguments) {
-		NSUInteger argumentCount = arguments.count;
+		NSString *array = ((data) ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil);
 
-		for (NSUInteger i = 0; i < argumentCount; i++) {
-			NSString *argument = [self compileJavaScriptGenericArgument:arguments[i]];
-
-			[compiledScript appendString:argument];
-
-			if (i < (argumentCount - 1)) {
-				[compiledScript appendString:@","];
-			}
+		/* "[a,b]" becomes "a,b" */
+		if (array.length >= 2) {
+			argumentList = [array substringWithRange:NSMakeRange(1, (array.length - 2))];
 		}
 	}
 
-	[compiledScript appendString:@");\n"];
+	return [NSString stringWithFormat:@"%@(%@);\n", function, argumentList];
+}
 
-	return [compiledScript copy];
+/* URLs as strings; what JSON can't hold (other objects, NaN) becomes null */
++ (id)JSONObjectForArgument:(id)object
+{
+	NSParameterAssert(object != nil);
+
+	if ([object isKindOfClass:[NSURL class]]) {
+		return [object absoluteString];
+	}
+
+	if ([object isKindOfClass:[NSString class]] || [object isKindOfClass:[NSNull class]]) {
+		return object;
+	}
+
+	if ([object isKindOfClass:[NSNumber class]]) {
+		return ((isfinite([object doubleValue])) ? object : [NSNull null]);
+	}
+
+	if ([object isKindOfClass:[NSArray class]]) {
+		NSMutableArray *array = [NSMutableArray arrayWithCapacity:[object count]];
+
+		for (id element in object) {
+			[array addObject:[self JSONObjectForArgument:element]];
+		}
+
+		return array;
+	}
+
+	if ([object isKindOfClass:[NSDictionary class]]) {
+		NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:[object count]];
+
+		[object enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+			if ([key isKindOfClass:[NSString class]]) {
+				dictionary[key] = [self JSONObjectForArgument:value];
+			}
+		}];
+
+		return dictionary;
+	}
+
+	return [NSNull null];
 }
 
 @end

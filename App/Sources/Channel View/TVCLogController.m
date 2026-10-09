@@ -86,6 +86,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL reloadingHistory;
 @property (nonatomic, assign) BOOL reloadingTheme; // while the new document is built
 @property (nonatomic, assign) BOOL pendingThemeReload; // until that document has loaded
+@property (nonatomic, strong, nullable) NSMutableString *pendingAppendHTML; // lines waiting for -flushPendingAppend
+@property (nonatomic, strong, nullable) NSMutableArray<NSString *> *pendingAppendLineNumbers;
 @property (nonatomic, assign) BOOL historyLoaded;
 @property (nonatomic, assign) NSInteger activeLineCount;
 @property (nonatomic, copy, nullable) NSString *lastVisitedHighlight;
@@ -190,6 +192,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.backingView = nil;
 
 	[self.printingQueue cancelOperationsForViewController:self];
+
+	[self discardPendingAppend];
 
 	[self failPendingJumps];
 
@@ -458,12 +462,59 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	}
 
+	/* Lines waiting to be added belong to the main thread; the script would
+	 have gone there anyway (the view evaluates on the main queue) */
+	if ([NSThread isMainThread] == NO) {
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[self _evaluateFunction:function withArguments:arguments];
+		});
+
+		return;
+	}
+
+	[self flushPendingAppend];
+
 	[self.backingView evaluateFunction:function withArguments:arguments];
 }
 
+/* Lines printed in one pass of the main queue go to the view in one call
+ (one script evaluation and one layout instead of one per line) */
 - (void)appendToDocumentBody:(NSString *)html withLineNumbers:(NSArray<NSString *> *)lineNumbers
 {
 	NSParameterAssert(html != nil);
+	NSParameterAssert(lineNumbers != nil);
+
+	if (self.loaded == NO || self.terminating) {
+		return;
+	}
+
+	if (self.pendingAppendHTML == nil) {
+		self.pendingAppendHTML = [NSMutableString string];
+		self.pendingAppendLineNumbers = [NSMutableArray array];
+
+		__weak typeof(self) weakSelf = self;
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[weakSelf flushPendingAppend];
+		});
+	}
+
+	[self.pendingAppendHTML appendString:html];
+
+	[self.pendingAppendLineNumbers addObjectsFromArray:lineNumbers];
+}
+
+/* Also before any other script, so the view sees everything in order */
+- (void)flushPendingAppend
+{
+	NSString *html = self.pendingAppendHTML;
+	NSArray *lineNumbers = self.pendingAppendLineNumbers;
+
+	if (html == nil) {
+		return;
+	}
+
+	[self discardPendingAppend];
 
 	if (self.loaded == NO || self.terminating) {
 		return;
@@ -479,6 +530,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			[weakSelf notifyPluginsOfLinesPosted:lineNumbers];
 		}
 	}];
+}
+
+/* The document they were meant for is being replaced (they are in the history) */
+- (void)discardPendingAppend
+{
+	self.pendingAppendHTML = nil;
+	self.pendingAppendLineNumbers = nil;
 }
 
 #pragma mark -
@@ -848,6 +906,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		[handlers addObject:[completionHandler copy]];
 	}
 
+	/* The line may still be waiting to be added */
+	[self flushPendingAppend];
+
 	[self.backingView evaluateFunction:@"Textual.jumpToLine" withArguments:@[lineNumber]];
 }
 
@@ -1127,6 +1188,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	[self.printingQueue cancelOperationsForViewController:self];
+
+	[self discardPendingAppend];
 
 	[self failPendingJumps];
 

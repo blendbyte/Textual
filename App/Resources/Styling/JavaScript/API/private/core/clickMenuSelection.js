@@ -68,13 +68,44 @@ _Textual.recordSelection = function() /* PRIVATE */
 	appPrivate.setSelection(selectedText);
 };
 
+/* Selecting by dragging changes the selection many times a second: the app
+hears of it at once, then at most every 100 ms, and whenever it needs the
+selection (mouse up, context menu) */
+_Textual._selectionRecordedAt = 0; /* PRIVATE */
+_Textual._selectionRecordTimer = null; /* PRIVATE */
+
 _Textual._selectionChangedCallback = function() /* PRIVATE */
 {
+	var elapsed = (Date.now() - _Textual._selectionRecordedAt);
+
+	if (elapsed >= 100) {
+		_Textual.flushSelection();
+
+		return;
+	}
+
+	if (_Textual._selectionRecordTimer === null) {
+		_Textual._selectionRecordTimer = setTimeout(_Textual.flushSelection, (100 - elapsed));
+	}
+};
+
+_Textual.flushSelection = function() /* PRIVATE */
+{
+	if (_Textual._selectionRecordTimer !== null) {
+		clearTimeout(_Textual._selectionRecordTimer);
+
+		_Textual._selectionRecordTimer = null;
+	}
+
+	_Textual._selectionRecordedAt = Date.now();
+
 	_Textual.recordSelection();
 };
 
 _Textual.copySelectionOnMouseUpEvent = function() /* PRIVATE */
 {
+	_Textual.flushSelection();
+
 	if (window.event.metaKey || window.event.altKey) {
 		return;
 	}
@@ -90,6 +121,7 @@ _Textual.copySelectionOnMouseUpEvent = function() /* PRIVATE */
 
 _Textual._openGenericContextualMenu = function() /* PRIVATE */
 {
+	_Textual.flushSelection();
 
 };
 

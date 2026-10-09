@@ -388,11 +388,13 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	BOOL foundKeyword = NO;
 
-	switch ([TPCPreferences highlightMatchingMethod]) {
+	TXNicknameHighlightMatchType matchingMethod = [TPCPreferences highlightMatchingMethod];
+
+	switch (matchingMethod) {
 		case TXNicknameHighlightMatchTypeExact:
 		case TXNicknameHighlightMatchTypePartial:
 		{
-			foundKeyword = [self matchKeywordsUsingNormalMatching:highlightKeywords excludedRanges:excludeRanges];
+			foundKeyword = [self matchKeywordsUsingNormalMatching:highlightKeywords excludedRanges:excludeRanges exactMatching:(matchingMethod == TXNicknameHighlightMatchTypeExact)];
 
 			break;
 		}
@@ -407,7 +409,7 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 	self->_outputDictionary[TVCLogRendererResultsKeywordMatchFoundAttribute] = @(foundKeyword);
 }
 
-- (BOOL)matchKeywordsUsingNormalMatching:(NSArray<NSString *> *)keywords excludedRanges:(NSArray<NSValue *> *)excludedRanges
+- (BOOL)matchKeywordsUsingNormalMatching:(NSArray<NSString *> *)keywords excludedRanges:(NSArray<NSValue *> *)excludedRanges exactMatching:(BOOL)exactMatching
 {
 	NSParameterAssert(keywords != nil);
 	NSParameterAssert(excludedRanges != nil);
@@ -424,7 +426,7 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 				}
 			}
 
-			if ([TPCPreferences highlightMatchingMethod] == TXNicknameHighlightMatchTypeExact) {
+			if (exactMatching) {
 				if ([self sectionOfBodyIsSurroundedByNonAlphabeticals:range] == NO) {
 					return;
 				}
@@ -636,6 +638,96 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 	return YES;
 }
 
+/* Letters and digits; next to each other they make one word */
+static BOOL _isWordCharacter(UniChar character)
+{
+	return (CS_StringIsBase10Numeric(character) || [THOUnicodeHelper isAlphabeticalCodePoint:character]);
+}
+
+/* The other characters a nickname can contain (RFC 2812) */
+static BOOL _isNicknameSpecialCharacter(UniChar character)
+{
+	switch (character) {
+		case '[': case ']': case '\\': case '`': case '_': case '^': case '{': case '|': case '}': case '-':
+		{
+			return YES;
+		}
+	}
+
+	return NO;
+}
+
+/* Every part of the message that could be a whole nickname: a run of nickname
+ characters, or a piece of one that begins and ends next to a special character
+ (so "[bob]" and "ab-cd" still find "bob" and "ab"), never part of a word */
++ (NSArray<NSValue *> *)nicknameCandidateRangesInString:(NSString *)string
+{
+	NSParameterAssert(string != nil);
+
+	static const NSUInteger maximumNicknameLength = 64;
+
+	NSUInteger length = string.length;
+
+	NSMutableArray<NSValue *> *ranges = [NSMutableArray array];
+
+	NSUInteger position = 0;
+
+	while (position < length) {
+		UniChar character = [string characterAtIndex:position];
+
+		if (_isWordCharacter(character) == NO && _isNicknameSpecialCharacter(character) == NO) {
+			position += 1;
+
+			continue;
+		}
+
+		/* One run of nickname characters */
+		NSUInteger runStart = position;
+
+		while (position < length) {
+			character = [string characterAtIndex:position];
+
+			if (_isWordCharacter(character) == NO && _isNicknameSpecialCharacter(character) == NO) {
+				break;
+			}
+
+			position += 1;
+		}
+
+		NSUInteger runEnd = position;
+
+		/* Where a candidate can start or end inside the run: at its edges and next to a special character */
+		NSMutableIndexSet *starts = [NSMutableIndexSet indexSetWithIndex:runStart];
+		NSMutableIndexSet *ends = [NSMutableIndexSet indexSetWithIndex:runEnd];
+
+		for (NSUInteger i = runStart; i < runEnd; i++) {
+			if (_isNicknameSpecialCharacter([string characterAtIndex:i])) {
+				[starts addIndex:i];
+				[starts addIndex:(i + 1)];
+
+				[ends addIndex:i];
+				[ends addIndex:(i + 1)];
+			}
+		}
+
+		[starts enumerateIndexesUsingBlock:^(NSUInteger start, BOOL *stopStarts) {
+			if (start >= runEnd) {
+				return;
+			}
+
+			[ends enumerateIndexesUsingBlock:^(NSUInteger end, BOOL *stopEnds) {
+				if (end <= start || (end - start) > maximumNicknameLength) {
+					return;
+				}
+
+				[ranges addObject:[NSValue valueWithRange:NSMakeRange(start, (end - start))]];
+			}];
+		}];
+	}
+
+	return [ranges copy];
+}
+
 - (void)scanBodyForChannelMembers
 {
 	if ([self isRenderingPRIVMSG] == NO) {
@@ -654,32 +746,34 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	IRCChannel *channel = self->_viewController.associatedChannel;
 
-	NSArray<IRCChannelUser *> *users = channel.memberList;
-
-	__block NSUInteger totalNicknameCount = 0;
-	__block NSUInteger totalNicknameLength = 0;
+	NSUInteger totalNicknameCount = 0;
+	NSUInteger totalNicknameLength = 0;
 
 	NSMutableSet<IRCChannelUser *> *userSet = [NSMutableSet set];
 
-	for (IRCChannelUser *user in users) {
-		[body enumerateMatchesOfString:user.user.nickname withBlock:^(NSRange range, BOOL *stop) {
-			if ([self sectionOfBodyIsSurroundedByNonAlphabeticals:range] == NO) {
-				return;
-			}
+	/* The words in the message that could be nicknames are looked up, instead of
+	 searching the message once for every member (thousands in a big channel) */
+	for (NSValue *rangeValue in [self.class nicknameCandidateRangesInString:body]) {
+		NSRange range = rangeValue.rangeValue;
 
-			if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingURLAttribute inRange:range] == NO) {
-				[self->_bodyWithAttributes addAttribute:TVCLogRendererFormattingConversationTrackingAttribute value:@(YES) range:range];
+		IRCChannelUser *user = [channel findMember:[body substringWithRange:range]];
 
-				if ([userSet containsObject:user] == NO) {
-					[userSet addObject:user];
-				}
+		if (user == nil) {
+			continue;
+		}
 
-				if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingKeywordHighlightAttribute inRange:range] == NO) {
-					totalNicknameCount += 1;
-					totalNicknameLength += range.length;
-				}
-			}
-		} options:NSCaseInsensitiveSearch];
+		if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingURLAttribute inRange:range]) {
+			continue;
+		}
+
+		[self->_bodyWithAttributes addAttribute:TVCLogRendererFormattingConversationTrackingAttribute value:@(YES) range:range];
+
+		[userSet addObject:user];
+
+		if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingKeywordHighlightAttribute inRange:range] == NO) {
+			totalNicknameCount += 1;
+			totalNicknameLength += range.length;
+		}
 	}
 
 	/* Calculate how much of the message is just nicknames.
@@ -1000,7 +1094,92 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	templateTokens[@"messageFragment"] = html;
 
+	NSString *plainRender = [self.class renderPlainFragment:html withTemplateTokens:templateTokens];
+
+	if (plainRender) {
+		return plainRender;
+	}
+
 	return [self.class renderTemplateNamed:@"formattedMessageFragment" attributes:templateTokens];
+}
+
+/* Most of a message is plain text: no effect, color, link or nickname. For such a
+ fragment the template's output is the same around any text, so it is rendered
+ once per template (a style can have its own) and reused. nil when the fragment
+ isn't plain or the template uses the text other than once. */
++ (nullable NSString *)renderPlainFragment:(NSString *)html withTemplateTokens:(NSDictionary<NSString *, id> *)templateTokens
+{
+	NSParameterAssert(html != nil);
+	NSParameterAssert(templateTokens != nil);
+
+	for (NSString *key in templateTokens) {
+		if ([key isEqualToString:@"messageFragment"] || [key isEqualToString:@"messageFragmentEscaped"]) {
+			continue;
+		}
+
+		if ([key isEqualToString:@"fragmentIsSpoiler"] && [templateTokens boolForKey:key] == NO) {
+			continue;
+		}
+
+		return nil;
+	}
+
+	GRMustacheTemplate *template = [theme() templateWithName:@"formattedMessageFragment"];
+
+	if (template == nil) {
+		return nil;
+	}
+
+	static NSMapTable<GRMustacheTemplate *, NSMutableDictionary *> *wrappers = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		wrappers = [NSMapTable weakToStrongObjectsMapTable];
+	});
+
+	BOOL escaped = [templateTokens boolForKey:@"messageFragmentEscaped"];
+
+	NSArray *wrapper = nil;
+
+	@synchronized (wrappers) {
+		NSMutableDictionary *templateWrappers = [wrappers objectForKey:template];
+
+		if (templateWrappers == nil) {
+			templateWrappers = [NSMutableDictionary dictionary];
+
+			[wrappers setObject:templateWrappers forKey:template];
+		}
+
+		wrapper = templateWrappers[@(escaped)];
+
+		if (wrapper == nil) {
+			NSString *placeholder = @"\uFFFFTextualMessageFragment\uFFFF";
+
+			NSString *render = [self renderTemplate:template attributes:@{
+				@"messageFragment" : placeholder,
+				@"messageFragmentEscaped" : @(escaped),
+				@"fragmentIsSpoiler" : @(NO)
+			}];
+
+			NSArray *parts = [render componentsSeparatedByString:placeholder];
+
+			if (parts.count == 2) {
+				wrapper = parts;
+			} else {
+				wrapper = (id)[NSNull null];
+			}
+
+			templateWrappers[@(escaped)] = wrapper;
+		}
+	}
+
+	if ([wrapper isKindOfClass:[NSArray class]] == NO) {
+		return nil;
+	}
+
+	/* The template's render loses its newlines, the text's included */
+	return [NSString stringWithFormat:@"%@%@%@", wrapper[0], html.removeAllNewlines, wrapper[1]];
 }
 
 #pragma mark -

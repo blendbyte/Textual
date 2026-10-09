@@ -78,6 +78,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogView (TVCLogViewJavaScriptHandlerPrivate)
 - (NSString *)compiledFunctionCall:(NSString *)function withArguments:(nullable NSArray *)arguments;
+
+/* "function(arguments…);" with the arguments as JSON */
++ (NSString *)compiledFunctionCall:(NSString *)function withArguments:(nullable NSArray *)arguments;
 @end
 
 NS_ASSUME_NONNULL_END
