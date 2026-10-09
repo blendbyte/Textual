@@ -51,8 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) NSView *attachedView;
 @property (nonatomic, strong) NSMutableArray<NSString *> *cachedSelectedClientIds;
 @property (nonatomic, strong) NSMutableArray<NSString *> *cachedSelectedChannelIds;
+@property (nonatomic, copy) NSArray<IRCClient *> *cachedClientList; // in server list order
 @property (nonatomic, copy) NSDictionary<IRCClient *, NSArray<IRCChannel *> *> *cachedChannelList;
-@property (nonatomic, strong) dispatch_source_t expandOutlineViewTimer;
+@property (nonatomic, strong, nullable) dispatch_source_t expandOutlineViewTimer;
 @end
 
 @implementation TVCChannelSelectionViewController
@@ -132,7 +133,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSOutlineView *outlineView = self.outlineView;
 
-	BOOL isGroupItem = [outlineView isGroupItem:item];
+	/* Servers are no group items here (-outlineView:isGroupItem:), so asking
+	 that filed every server as a channel */
+	BOOL isGroupItem = item.isClient;
 
 	BOOL isEnablingItem = (clickedCell.selectedCheckbox.state == NSControlStateValueOn ||
 						   clickedCell.selectedCheckbox.state == NSControlStateValueMixed);
@@ -178,6 +181,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSInteger parentItemRow = [outlineView rowForItem:parentItem];
 
+	if (parentItemRow < 0) {
+		return;
+	}
+
 	TVCChannelSelectionOutlineCellView *parentItemView = [outlineView viewAtColumn:0 row:parentItemRow makeIfNecessary:NO];
 
 	BOOL parentItemInFilter = [self.cachedSelectedClientIds containsObject:parentItem.uniqueIdentifier];
@@ -189,7 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
 	for (IRCTreeItem *childItem in childrenItems) {
 		NSInteger childItemRow = [outlineView rowForItem:childItem];
 
-		TVCChannelSelectionOutlineCellView *childItemView = [outlineView viewAtColumn:0 row:childItemRow makeIfNecessary:NO];
+		TVCChannelSelectionOutlineCellView *childItemView = ((childItemRow < 0) ? nil : [outlineView viewAtColumn:0 row:childItemRow makeIfNecessary:NO]);
 
 		BOOL childItemInFilter = [self.cachedSelectedChannelIds containsObject:childItem.uniqueIdentifier];
 
@@ -281,6 +288,9 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self.expandOutlineViewTimer != nil) {
 		XRCancelScheduledBlock(self.expandOutlineViewTimer);
+
+		/* Left set, it kept every later timer from being made */
+		self.expandOutlineViewTimer = nil;
 	}
 }
 
@@ -310,11 +320,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)channelListChanged:(id)sender
 {
+	[self expandOutlineViewItemsCancelTimer];
+
 	[self rebuildCachedChannelList];
 
 	[self reloadOutlineView];
-
-	[self expandOutlineViewItemsCancelTimer];
 }
 
 - (void)rebuildCachedChannelList
@@ -337,6 +347,8 @@ NS_ASSUME_NONNULL_BEGIN
 		cachedChannelList[(id)u] = [uChannelList copy];
 	}
 
+	self.cachedClientList = clientList;
+
 	self.cachedChannelList = cachedChannelList;
 }
 
@@ -349,7 +361,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return self.cachedChannelList[item].count;
 	}
 
-	return self.cachedChannelList.count;
+	return self.cachedClientList.count;
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(nullable id)item
@@ -358,7 +370,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return self.cachedChannelList[item][index];
 	}
 
-	return self.cachedChannelList.allKeys[index];
+	/* The keys of a dictionary come in no particular order, which changed */
+	return self.cachedClientList[index];
 }
 
 - (nullable id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(nullable NSTableColumn *)tableColumn byItem:(nullable id)item
@@ -386,11 +399,16 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Perform work on next pass of the main thread to avoid exception:
 	 "insertRowsAtIndexes:withRowAnimation: can not happen while updating visible rows!" */
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		NSView *cellView = [rowView viewAtColumn:0];
+		TVCChannelSelectionOutlineCellView *cellView = [rowView viewAtColumn:0];
 
 		[cellView prepareInitialState];
 
-		id item = [outlineView itemAtRow:row];
+		/* By now the row may hold another item (or none): ask the view */
+		IRCTreeItem *item = [self itemFromCellView:cellView];
+
+		if (item == nil) {
+			return;
+		}
 
 		[self updateSelectedStateForItem:item];
 	});
@@ -400,7 +418,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)outlineView:(NSOutlineView *)sender isItemExpandable:(id)item
 {
-	return YES;
+	return [item isClient];
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldCollapseItem:(id)item

@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) TVCChannelSelectionViewController *parentController;
 
 @property (nonatomic, weak) IBOutlet NSButton *selectedCheckbox;
+
+- (void)prepareInitialState;
 @end
 
 NS_ASSUME_NONNULL_END

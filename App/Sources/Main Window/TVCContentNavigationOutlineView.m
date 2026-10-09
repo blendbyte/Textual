@@ -94,7 +94,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 		for (TVCContentNavigationOutlineViewItem *childItem in groupItem.children) {
 			if (childItem.identifier == identifier) {
-				[self selectItemAtIndex:[self rowForItem:childItem]];
+				/* A collapsed group's children have no rows */
+				[self expandItem:groupItem];
+
+				NSInteger row = [self rowForItem:childItem];
+
+				if (row >= 0) {
+					[self selectItemAtIndex:row];
+				}
 
 				return;
 			}

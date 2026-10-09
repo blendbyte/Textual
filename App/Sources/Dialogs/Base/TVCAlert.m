@@ -349,35 +349,29 @@ typedef NS_ENUM(NSUInteger, TVCAlertLaunchedAs) {
 		[buttons addObject:self.secondButton];
 	}
 
-	if (self.secondButton.hidden == NO) {
-		[buttons addObject:self.secondButton];
+	/* This listed the second button twice and never the third */
+	if (self.thirdButton.hidden == NO) {
+		[buttons addObject:self.thirdButton];
 	}
 
 	return [buttons copy];
 }
 
+/* Returns the button, as declared (it returned nil) */
 - (NSButton *)setTitle:(NSString *)title forButton:(TVCAlertResponseButton)button
 {
 	switch (button) {
 		case TVCAlertResponseButtonFirst:
-			[self setTitle:title forButtonAtIndex:0];
-
-			break;
+			return [self setTitle:title forButtonAtIndex:0];
 		case TVCAlertResponseButtonSecond:
-			[self setTitle:title forButtonAtIndex:1];
-
-			break;
+			return [self setTitle:title forButtonAtIndex:1];
 		case TVCAlertResponseButtonThird:
-			[self setTitle:title forButtonAtIndex:2];
-
-			break;
+			return [self setTitle:title forButtonAtIndex:2];
 		default:
 			NSAssert(NO, @"Invalid button type");
 
-			break;
+			return self.firstButton;
 	}
-
-	return nil;
 }
 
 - (NSButton *)setTitle:(NSString *)title forButtonAtIndex:(NSUInteger)index

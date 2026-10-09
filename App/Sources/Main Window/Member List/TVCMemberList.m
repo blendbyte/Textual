@@ -70,6 +70,9 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 {
 	[super awakeFromNib];
 
+	/* 0 was the first row: hovering it first showed nothing */
+	self.lastRowShownUserInfoPopover = (-1);
+
 	[self updateTrackingAreas];
 
 	[self registerForDraggedTypes:@[NSFilenamesPboardType]];
@@ -113,6 +116,9 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 
 - (void)assignToChannel:(nullable IRCChannel *)channel
 {
+	/* Its row belongs to the previous channel's list */
+	[self destroyUserInfoPopover];
+
 	[self.contentController assignToChannel:channel];
 }
 

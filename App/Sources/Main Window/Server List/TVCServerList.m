@@ -364,18 +364,16 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 	return self.menu;
 }
 
+/* The table tracks the mouse inside -mouseDown: and takes the mouse up
+ itself (-mouseUp: never came), so the flag stayed set and keyboard and
+ VoiceOver selection changes counted as clicks */
 - (void)mouseDown:(NSEvent *)theEvent
 {
 	self.leftMouseIsDownInView = YES;
 
 	[super mouseDown:theEvent];
-}
 
-- (void)mouseUp:(NSEvent *)theEvent
-{
 	self.leftMouseIsDownInView = NO;
-
-	[super mouseUp:theEvent];
 }
 
 - (void)keyDown:(NSEvent *)e

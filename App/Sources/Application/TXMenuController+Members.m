@@ -769,16 +769,22 @@ NS_ASSUME_NONNULL_BEGIN
 	[self memberSendDroppedFiles:files to:c.name];
 }
 
+/* Files dropped on someone in the member list, which only channels have
+ (this required a query, so nothing was ever sent) */
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
-	if (u == nil || c == nil || u.isLoggedIn == NO || c.isPrivateMessage == NO) {
+	if (u == nil || c == nil || u.isLoggedIn == NO || c.isChannel == NO) {
 		return;
 	}
 
 	IRCChannelUser *member = [mainWindowMemberList() itemAtRow:row];
+
+	if (member == nil) {
+		return;
+	}
 
 	[self memberSendDroppedFiles:files to:member.user.nickname];
 }

@@ -180,7 +180,8 @@ static NSInteger _cachedMessageCount = (-1);
 
 	NSSize badgeTextSize = NSZeroSize;
 
-	NSMutableAttributedString *badgeText = [NSMutableAttributedString alloc];
+	/* A new string per badge: one object was initialized twice */
+	NSAttributedString *badgeText = nil;
 
 	CGFloat badgeTextFrameCorrection = 2.0;
 
@@ -300,7 +301,7 @@ static NSInteger _cachedMessageCount = (-1);
 		[redBadgeRight drawInRect:redBadgeRightFrame fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
 
 		/* Red Badge Text */
-		badgeText = [badgeText initWithString:[NSString stringWithInteger:messageCount] attributes:badgeTextAttributes];
+		badgeText = [[NSAttributedString alloc] initWithString:[NSString stringWithInteger:messageCount] attributes:badgeTextAttributes];
 
 		badgeTextSize = [badgeText size];
 
@@ -327,7 +328,7 @@ static NSInteger _cachedMessageCount = (-1);
 		[greenBadgeRight drawInRect:greenBadgeRightFrame fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
 
 		/* Green Badge Text */
-		badgeText = [badgeText initWithString:[NSString stringWithInteger:highlightCount] attributes:badgeTextAttributes];
+		badgeText = [[NSAttributedString alloc] initWithString:[NSString stringWithInteger:highlightCount] attributes:badgeTextAttributes];
 
 		badgeTextSize = [badgeText size];
 
