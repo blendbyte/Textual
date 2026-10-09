@@ -1116,6 +1116,44 @@ async def scenario_chathistory(client):
 	pass
 
 
+async def scenario_utf8only(client):
+	"""UTF8ONLY (set the server's primary encoding to Latin-1 first, e.g. config
+	primaryEncoding=5). The server advertises UTF8ONLY and NETWORK=UTF8\\x20Test;
+	#u gets line 1 with a Latin-1 byte (must show "caf" + U+FFFD + " x") and
+	line 2 in UTF-8. Then type "café ☃" in #u: it must arrive as UTF-8."""
+	nick = client.nickname
+	await client.send(f":{SERVER} 005 {nick} UTF8ONLY NETWORK=UTF8\\x20Test :are supported by this server")
+	await client.send(f":{nick}!user@client.textual.test JOIN #u")
+	await client.send(f":{SERVER} 353 {nick} = #u :@{nick} gina")
+	await client.send(f":{SERVER} 366 {nick} #u :End of /NAMES list.")
+	await client.collect(1)
+	await client.send_raw(b":gina!g@friend.test PRIVMSG #u :1 caf\xe9 x\r\n")
+	await client.send(":gina!g@friend.test PRIVMSG #u :2 caf\u00e9 \u2713 in UTF-8")
+
+	print("WAITING: type caf\u00e9 \u2603 in #u", flush=True)
+	end = time.monotonic() + 120
+	while time.monotonic() < end:
+		try:
+			data = await asyncio.wait_for(client.reader.readline(), 1)
+		except asyncio.TimeoutError:
+			continue
+		if not data:
+			break
+		if data.startswith(b"PING"):
+			await client.send(":" + SERVER + " PONG " + SERVER + " " + data[5:].decode(errors="replace").strip())
+		if data.startswith(b"PRIVMSG #u"):
+			log("<<", f"raw bytes: {data!r}")
+			try:
+				text = data.decode("utf-8")
+			except UnicodeDecodeError:
+				result(False, f"the client sent non-UTF-8 bytes: {data!r}")
+				return
+			result("caf\u00e9 \u2603" in text, f"the client's line arrived as UTF-8: {text.strip()!r}")
+			await client.collect(30)
+			return
+	result(False, "no line from the client")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -1149,6 +1187,7 @@ SCENARIOS = {
 	"sts": scenario_sts,
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
+	"utf8only": scenario_utf8only,
 	"sasl-scram-fallback": scenario_sasl_scram_fallback,
 	"sasl-scram-badsig": scenario_sasl_scram_badsig,
 }

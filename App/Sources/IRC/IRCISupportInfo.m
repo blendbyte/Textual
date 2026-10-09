@@ -53,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<NSDictionary *> *cachedConfiguration;
 @property (nonatomic, assign, readwrite) NSUInteger maximumAwayLength;
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
+@property (nonatomic, assign, readwrite) BOOL utf8Only;
 @property (nonatomic, assign, readwrite) NSUInteger maximumChannelNameLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKeyLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKickLength;
@@ -112,6 +113,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.chatHistoryLimit = 0;
 
+	self.utf8Only = NO;
+
 	self.channelNamePrefixes = @[@"#"];
 
 	self.maximumModeCount = TXMaximumNodesPerModeCommand;
@@ -151,6 +154,13 @@ NS_ASSUME_NONNULL_BEGIN
 			continue;
 		}
 
+		/* "-TOKEN" withdraws a token advertised before */
+		if (segment.length > 1 && [segment hasPrefix:@"-"]) {
+			[self withdrawToken:[segment substringFromIndex:1]];
+
+			continue;
+		}
+
 		NSString *segmentKey = segment;
 		NSString *segmentValue = nil;
 
@@ -158,7 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		if (equalSignPosition > 0) {
 			segmentKey = [segment substringToIndex:equalSignPosition];
-			segmentValue = [segment substringAfterIndex:equalSignPosition];
+			segmentValue = [self.class unescapedValue:[segment substringAfterIndex:equalSignPosition]];
 
 			if (segmentValue.length == 0) {
 				segmentValue = nil;
@@ -268,10 +278,75 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 		} else if ([segmentKey isEqualToStringIgnoringCase:@"WATCH"]) {
 			[client enableCapability:ClientIRCv3SupportedCapabilityWatchCommand];
+		} else if ([segmentKey isEqualToStringIgnoringCase:@"UTF8ONLY"]) {
+			self.utf8Only = YES;
 		}
 	} // while()
 
 	self.cachedConfiguration = [self.cachedConfiguration arrayByAddingObject:configuration];
+}
+
+/* Values escape characters as \xHH (\x20 for a space, \x5C for a backslash, \x3D for "=") */
++ (NSString *)unescapedValue:(NSString *)value
+{
+	NSParameterAssert(value != nil);
+
+	if ([value rangeOfString:@"\\x"].location == NSNotFound) {
+		return value;
+	}
+
+	NSMutableData *bytes = [NSMutableData data];
+
+	NSData *source = [value dataUsingEncoding:NSUTF8StringEncoding];
+
+	const char *characters = source.bytes;
+
+	NSUInteger length = source.length;
+
+	for (NSUInteger i = 0; i < length; i++) {
+		if (characters[i] == '\\' && (i + 3) < length && characters[i + 1] == 'x' &&
+			isxdigit((unsigned char)characters[i + 2]) && isxdigit((unsigned char)characters[i + 3]))
+		{
+			char hex[3] = { characters[i + 2], characters[i + 3], 0 };
+
+			char byte = (char)strtol(hex, NULL, 16);
+
+			[bytes appendBytes:&byte length:1];
+
+			i += 3;
+
+			continue;
+		}
+
+		[bytes appendBytes:&characters[i] length:1];
+	}
+
+	NSString *unescaped = [[NSString alloc] initWithData:bytes encoding:NSUTF8StringEncoding];
+
+	return ((unescaped) ?: value);
+}
+
+- (void)withdrawToken:(NSString *)token
+{
+	NSParameterAssert(token != nil);
+
+	IRCClient *client = self.client;
+
+	if ([token isEqualToStringIgnoringCase:@"UTF8ONLY"]) {
+		self.utf8Only = NO;
+	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"]) {
+		self.chatHistoryLimit = 0;
+	} else if ([token isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
+		self.caseMapping = IRCISupportInfoCaseMappingRFC1459;
+	} else if ([token isEqualToStringIgnoringCase:@"EXCEPTS"]) {
+		self.banExceptionModeSymbol = nil;
+	} else if ([token isEqualToStringIgnoringCase:@"INVEX"]) {
+		self.inviteExceptionModeSymbol = nil;
+	} else if ([token isEqualToStringIgnoringCase:@"MONITOR"]) {
+		[client disableCapability:ClientIRCv3SupportedCapabilityMonitorCommand];
+	} else if ([token isEqualToStringIgnoringCase:@"WATCH"]) {
+		[client disableCapability:ClientIRCv3SupportedCapabilityWatchCommand];
+	}
 }
 
 + (IRCISupportInfoCaseMapping)caseMappingNamed:(NSString *)name

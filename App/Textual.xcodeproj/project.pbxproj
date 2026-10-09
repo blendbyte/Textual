@@ -641,6 +641,7 @@
 		4CAA51424F39CA15DD7B0560 /* IRCClientReadMarkerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E0C095E3CDA192F237123 /* IRCClientReadMarkerTests.m */; };
 		4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C65B8EE2C71D14B10E4EFF6 /* IRCSASLSCRAM.m */; };
 		4C6F236CB78B0A2ED9AAE50B /* IRCSASLSCRAMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */; };
+		4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1438,6 +1439,8 @@
 		4C65B8EE2C71D14B10E4EFF6 /* IRCSASLSCRAM.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSASLSCRAM.m; sourceTree = "<group>"; };
 		4CDE29638C97F18101B500F8 /* IRCSASLSCRAMPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCSASLSCRAMPrivate.h; sourceTree = "<group>"; };
 		4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSASLSCRAMTests.m; sourceTree = "<group>"; };
+		4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCTextDecoding.swift; sourceTree = "<group>"; };
+		4C7447AA34678929018F9FAE /* IRCTextDecodingPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCTextDecodingPrivate.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1927,6 +1930,8 @@
 				4CDE29638C97F18101B500F8 /* IRCSASLSCRAMPrivate.h */,
 				4C62447F2A77B1D5DDEF5950 /* IRCStrictTransportSecurity.m */,
 				4C7156152F379979AA4E682A /* IRCStrictTransportSecurityPrivate.h */,
+				4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */,
+				4C7447AA34678929018F9FAE /* IRCTextDecodingPrivate.h */,
 				4C31512F20EB673E00448776 /* IRCTimedCommand.m */,
 				4C3151B820EB673E00448776 /* IRCTimedCommandPrivate.h */,
 			);
@@ -3276,6 +3281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */,
 				4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */,
 				4CF1DD0FFE1F92EB021F9272 /* IRCClient+ReadMarker.m in Sources */,
 				4CF811CC295D38C86E5ECE93 /* IRCClient+ChatHistory.m in Sources */,

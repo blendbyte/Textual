@@ -151,6 +151,7 @@
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
 #import "IRCUserListPrivate.h"
+#import "IRCTextDecodingPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -1260,6 +1261,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(string != nil);
 
+	/* UTF8ONLY: the server takes nothing else */
+	if (self.supportInfo.utf8Only) {
+		return [string dataUsingEncoding:NSUTF8StringEncoding];
+	}
+
 	NSData *data = [string dataUsingEncoding:self.config.primaryEncoding allowLossyConversion:NO];
 
 	if (data == nil) {
@@ -1281,6 +1287,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 - (nullable NSString *)convertFromCommonEncoding:(NSData *)data
 {
 	NSParameterAssert(data != nil);
+
+	/* UTF8ONLY: no guessing; bytes that aren't UTF-8 become replacement characters */
+	if (self.supportInfo.utf8Only) {
+		return [IRCTextDecoding stringByDecodingUTF8Replacing:data];
+	}
 
 	NSString *string = [NSString stringWithBytes:data.bytes length:data.length encoding:self.config.primaryEncoding];
 

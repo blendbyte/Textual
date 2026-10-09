@@ -91,6 +91,37 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([info foldedString:@"ÄBC"], @"äbc");
 }
 
+/* UTF8ONLY can be withdrawn later with "-UTF8ONLY", like other tokens; values unescape \\xHH */
+- (void)testTokenWithdrawalAndEscapedValues
+{
+	IRCISupportInfo *info = self.client.supportInfo;
+
+	[info processConfigurationData:@"me UTF8ONLY CHATHISTORY=100 NETWORK=Example\\x20Net :are supported by this server"];
+
+	XCTAssertTrue(info.utf8Only);
+	XCTAssertEqual(info.chatHistoryLimit, 100);
+	XCTAssertEqualObjects(info.networkName, @"Example Net");
+
+	[info processConfigurationData:@"me -UTF8ONLY -CHATHISTORY :are supported by this server"];
+
+	XCTAssertFalse(info.utf8Only);
+	XCTAssertEqual(info.chatHistoryLimit, 0);
+}
+
+/* With UTF8ONLY nothing is guessed: bytes that aren't UTF-8 become U+FFFD and the rest of the line stays */
+- (void)testUTF8OnlyDecoding
+{
+	const char bytes[] = { 'c', 'a', 'f', (char)0xE9, ' ', 'x' };
+
+	NSData *data = [NSData dataWithBytes:bytes length:sizeof(bytes)];
+
+	XCTAssertEqualObjects([self.client convertFromCommonEncoding:data], @"caf\u00E9 x", @"Without UTF8ONLY: the fallback encoding (Latin-1)");
+
+	[self.client.supportInfo processConfigurationData:@"me UTF8ONLY :are supported by this server"];
+
+	XCTAssertEqualObjects([self.client convertFromCommonEncoding:data], @"caf\uFFFD x");
+}
+
 /* A malformed PREFIX from any server or bouncer used to crash the app */
 - (void)testMalformedPrefixIsIgnored
 {
