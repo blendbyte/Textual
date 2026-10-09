@@ -513,6 +513,16 @@ NS_ASSUME_NONNULL_BEGIN
 	[self _processModeChange:sender usingCommand:@"DEOP"];
 }
 
+- (void)memberModeGiveOwner:(id)sender
+{
+	[self _processModeChange:sender usingCommand:@"OWNER"];
+}
+
+- (void)memberModeTakeOwner:(id)sender
+{
+	[self _processModeChange:sender usingCommand:@"DEOWNER"];
+}
+
 - (void)memberModeGiveHalfop:(id)sender
 { 
 	[self _processModeChange:sender usingCommand:@"HALFOP"];

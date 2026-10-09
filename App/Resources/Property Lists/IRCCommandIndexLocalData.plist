@@ -5,7 +5,7 @@
 	<key>Reserved Information</key>
 	<dict>
 		<key>Next Index Value</key>
-		<real>5120</real>
+		<real>5122</real>
 	</dict>
 	<key>adchat</key>
 	<dict>
@@ -202,6 +202,15 @@
 		<false/>
 		<key>indexValue</key>
 		<integer>5020</integer>
+		<key>arguments</key>
+		<string>[channel] &lt;nickname&gt;</string>
+	</dict>
+	<key>deowner</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5121</integer>
 		<key>arguments</key>
 		<string>[channel] &lt;nickname&gt;</string>
 	</dict>
@@ -548,6 +557,15 @@
 		<false/>
 		<key>indexValue</key>
 		<integer>5053</integer>
+		<key>arguments</key>
+		<string>[channel] &lt;nickname&gt;</string>
+	</dict>
+	<key>owner</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5120</integer>
 		<key>arguments</key>
 		<string>[channel] &lt;nickname&gt;</string>
 	</dict>

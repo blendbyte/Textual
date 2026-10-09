@@ -320,6 +320,8 @@ enum
 	MTUserControlsIRCOperatorMenuKillFromServer = 16240002, // "Kill from Server"
 	MTUserControlsIRCOperatorMenuShunOnServer = 16240003, // "Shun on Server"
 	MTUserControlsIRCOperatorMenuBanFromServer = 16240004, // "Ban from Server (G:Line)"
+	MTUserControlsGiveOwner = 1625, // "Give Owner (+q)"
+	MTUserControlsTakeOwner = 1626, // "Take Owner (-q)"
 
 	/* Dock menu */
 	MTDockMenuDisableAllNotifications = 1700, // "Disable All Notifications"
@@ -419,9 +421,11 @@ enum
 
 - (IBAction)memberModeGiveHalfop:(id)sender;
 - (IBAction)memberModeGiveOp:(id)sender;
+- (IBAction)memberModeGiveOwner:(id)sender;
 - (IBAction)memberModeGiveVoice:(id)sender;
 - (IBAction)memberModeTakeHalfop:(id)sender;
 - (IBAction)memberModeTakeOp:(id)sender;
+- (IBAction)memberModeTakeOwner:(id)sender;
 - (IBAction)memberModeTakeVoice:(id)sender;
 
 - (IBAction)memberSendCTCPClientInfo:(id)sender;

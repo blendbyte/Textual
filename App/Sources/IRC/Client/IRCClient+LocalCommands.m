@@ -230,6 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandDefaults) : NSStringFromSelector(@selector(_handleLocalCommandDefaults:)),
 			@(IRCLocalCommandDehalfop) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandDeop) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
+			@(IRCLocalCommandDeowner) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandDevoice) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandEcho) : NSStringFromSelector(@selector(_handleLocalCommandEcho:)),
 			@(IRCLocalCommandGline) : NSStringFromSelector(@selector(_handleLocalCommandGline:)),
@@ -267,6 +268,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandOmsg) : NSStringFromSelector(@selector(_handleLocalCommandMessage:)),
 			@(IRCLocalCommandOnotice) : NSStringFromSelector(@selector(_handleLocalCommandMessage:)),
 			@(IRCLocalCommandOp) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
+			@(IRCLocalCommandOwner) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandPart) : NSStringFromSelector(@selector(_handleLocalCommandPart:)),
 			@(IRCLocalCommandQuery) : NSStringFromSelector(@selector(_handleLocalCommandQuery:)),
 			@(IRCLocalCommandQuiet) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
@@ -628,7 +630,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self forceJoinChannel:targetChannel.name password:targetChannel.secretKey];
 }
 
-/* DEHALFOP / DEOP / DEVOICE / HALFOP / OP / VOICE */
+/* DEHALFOP / DEOP / DEOWNER / DEVOICE / HALFOP / OP / OWNER / VOICE */
 - (void)_handleLocalCommandOp:(IRCLocalCommandContext *)context
 {
 	NSMutableAttributedString *stringIn = context.stringIn;
@@ -641,7 +643,8 @@ NS_ASSUME_NONNULL_BEGIN
 	
 	BOOL modeIsSet = (commandNumeric == IRCLocalCommandOp ||
 					  commandNumeric == IRCLocalCommandHalfop ||
-					  commandNumeric == IRCLocalCommandVoice);
+					  commandNumeric == IRCLocalCommandVoice ||
+					  commandNumeric == IRCLocalCommandOwner);
 
 	NSString *modeSymbol = nil;
 
@@ -649,6 +652,8 @@ NS_ASSUME_NONNULL_BEGIN
 		modeSymbol = @"o";
 	} else if (commandNumeric == IRCLocalCommandHalfop || commandNumeric == IRCLocalCommandDehalfop) {
 		modeSymbol = @"h";
+	} else if (commandNumeric == IRCLocalCommandOwner || commandNumeric == IRCLocalCommandDeowner) {
+		modeSymbol = @"q";
 	} else { // VOICE, DEVOICE
 		modeSymbol = @"v";
 	}

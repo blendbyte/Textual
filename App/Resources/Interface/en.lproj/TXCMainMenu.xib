@@ -1367,6 +1367,12 @@ CA
                 <menuItem isSeparatorItem="YES" tag="1608" id="331">
                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                 </menuItem>
+                <menuItem title="Give Owner (+q)" tag="1625" id="Own-Gv-q01">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="memberModeGiveOwner:" target="267" id="Own-Gv-a01"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Give Op (+o)" tag="1609" keyEquivalent="O" id="1319">
                     <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                     <connections>
@@ -1393,6 +1399,12 @@ CA
                 </menuItem>
                 <menuItem isSeparatorItem="YES" tag="1613" id="1315">
                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                </menuItem>
+                <menuItem title="Take Owner (-q)" tag="1626" id="Own-Tk-q01">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="memberModeTakeOwner:" target="267" id="Own-Tk-a01"/>
+                    </connections>
                 </menuItem>
                 <menuItem title="Take Op (-o)" tag="1614" keyEquivalent="O" id="1320">
                     <connections>

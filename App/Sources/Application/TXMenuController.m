@@ -1130,9 +1130,11 @@ NS_ASSUME_NONNULL_BEGIN
 #define _setHidden(tag, value)		[menu itemWithTag:(tag)].hidden = (value)
 
 	if (c.isChannel == NO) {
+		_setHidden(MTUserControlsGiveOwner, YES);
 		_setHidden(MTUserControlsGiveOp, YES);
 		_setHidden(MTUserControlsGiveHalfop, YES);
 		_setHidden(MTUserControlsGiveVoice, YES);
+		_setHidden(MTUserControlsTakeOwner, YES);
 		_setHidden(MTUserControlsTakeOp, YES);
 		_setHidden(MTUserControlsTakeHalfop, YES);
 		_setHidden(MTUserControlsTakeVoice, YES);
@@ -1148,8 +1150,10 @@ NS_ASSUME_NONNULL_BEGIN
 	_setHidden(MTUserControlsAllModesGivenSeparator, NO);
 	_setHidden(MTUserControlsAllModesTakenSeparator, NO);
 
-	/* Never offered when the server has no such prefix, however many are selected */
+	/* Never offered when the server has no such prefix, however many are selected
+	 (on networks where +q is a quiet, q is not a prefix) */
 	BOOL halfOpModeSupported = [u.supportInfo modeSymbolIsUserPrefix:@"h"];
+	BOOL ownerModeSupported = [u.supportInfo modeSymbolIsUserPrefix:@"q"];
 
 	NSArray *nicknames = [self selectedMembers:menuItem];
 
@@ -1159,6 +1163,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		IRCUserRank userRanks = user.ranks;
 
+		BOOL UserHasModeQ = NO;
 		BOOL UserHasModeO = ((userRanks & IRCUserRankNormalOperator) == IRCUserRankNormalOperator);
 		BOOL UserHasModeH = NO;
 		BOOL UserHasModeV = ((userRanks & IRCUserRankVoiced) == IRCUserRankVoiced);
@@ -1178,19 +1183,33 @@ NS_ASSUME_NONNULL_BEGIN
 			_setHidden(MTUserControlsTakeHalfop, (UserHasModeH == NO));
 		}
 
-		BOOL hideGiveSepItem = ((UserHasModeO == NO || UserHasModeV == NO) || (UserHasModeH == NO && halfOpModeSupported));
+		if (ownerModeSupported == NO) {
+			_setHidden(MTUserControlsGiveOwner, YES);
+			_setHidden(MTUserControlsTakeOwner, YES);
+		} else {
+			UserHasModeQ = ((userRanks & IRCUserRankChannelOwner) == IRCUserRankChannelOwner);
+
+			_setHidden(MTUserControlsGiveOwner, UserHasModeQ);
+			_setHidden(MTUserControlsTakeOwner, (UserHasModeQ == NO));
+		}
+
+		BOOL hideGiveSepItem = ((UserHasModeO == NO || UserHasModeV == NO) ||
+								(UserHasModeH == NO && halfOpModeSupported) ||
+								(UserHasModeQ == NO && ownerModeSupported));
 
 		_setHidden(MTUserControlsAllModesGiven, hideGiveSepItem);
 
-		BOOL hideTakenSepItem = (UserHasModeO || UserHasModeH || UserHasModeV);
+		BOOL hideTakenSepItem = (UserHasModeQ || UserHasModeO || UserHasModeH || UserHasModeV);
 
 		_setHidden(MTUserControlsAllModesTaken, hideTakenSepItem);
 	}
 	else
 	{
+		_setHidden(MTUserControlsGiveOwner, (ownerModeSupported == NO));
 		_setHidden(MTUserControlsGiveOp, NO);
 		_setHidden(MTUserControlsGiveHalfop, (halfOpModeSupported == NO));
 		_setHidden(MTUserControlsGiveVoice, NO);
+		_setHidden(MTUserControlsTakeOwner, (ownerModeSupported == NO));
 		_setHidden(MTUserControlsTakeOp, NO);
 		_setHidden(MTUserControlsTakeHalfop, (halfOpModeSupported == NO));
 		_setHidden(MTUserControlsTakeVoice, NO);
@@ -1302,9 +1321,11 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u.isLoggedIn && c.isUtility == NO);
 		}
 
+		case MTUserControlsGiveOwner: // "Give Owner (+q)"
 		case MTUserControlsGiveOp: // "Give Op (+o)"
 		case MTUserControlsGiveHalfop: // "Give Halfop (+h)"
 		case MTUserControlsGiveVoice: // "Give Voice (+v)"
+		case MTUserControlsTakeOwner: // "Take Owner (-q)"
 		case MTUserControlsTakeOp: // "Take Op (-o)"
 		case MTUserControlsTakeHalfop: // "Take Halfop (-h)"
 		case MTUserControlsTakeVoice: // "Take Voice (-v)"
