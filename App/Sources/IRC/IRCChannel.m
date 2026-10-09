@@ -360,6 +360,9 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 	self.receivedWhoxAccountData = NO;
 	self.whoxRefreshPending = NO;
 
+	self.typingNicknameExpiryDates = nil;
+	self.typingActiveSentAt = nil;
+
 	self.channelJoinTime = 0;
 
 	self.modeInfo = nil;
@@ -719,6 +722,57 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 - (nullable IRCChannel *)associatedChannel
 {
 	return self;
+}
+
+#pragma mark -
+#pragma mark Typing Notifications
+
+- (BOOL)markNicknameAsTyping:(NSString *)nickname until:(NSDate *)expiryDate
+{
+	NSParameterAssert(nickname != nil);
+	NSParameterAssert(expiryDate != nil);
+
+	if (self.typingNicknameExpiryDates == nil) {
+		self.typingNicknameExpiryDates = [NSMutableDictionary dictionary];
+	}
+
+	BOOL wasTyping = (self.typingNicknameExpiryDates[nickname] != nil);
+
+	self.typingNicknameExpiryDates[nickname] = expiryDate;
+
+	return (wasTyping == NO);
+}
+
+- (BOOL)clearTypingForNickname:(NSString *)nickname
+{
+	NSParameterAssert(nickname != nil);
+
+	if (self.typingNicknameExpiryDates[nickname] == nil) {
+		return NO;
+	}
+
+	[self.typingNicknameExpiryDates removeObjectForKey:nickname];
+
+	return YES;
+}
+
+- (NSArray<NSString *> *)typingNicknamesAtDate:(NSDate *)date
+{
+	NSParameterAssert(date != nil);
+
+	NSMutableDictionary *expiryDates = self.typingNicknameExpiryDates;
+
+	if (expiryDates.count == 0) {
+		return @[];
+	}
+
+	NSArray *expired = [expiryDates keysOfEntriesPassingTest:^BOOL(NSString *nickname, NSDate *expiryDate, BOOL *stop) {
+		return ([expiryDate compare:date] != NSOrderedDescending);
+	}].allObjects;
+
+	[expiryDates removeObjectsForKeys:expired];
+
+	return [expiryDates.allKeys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
 }
 
 @end

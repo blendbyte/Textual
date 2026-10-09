@@ -143,7 +143,22 @@ _MessageBuffer.bufferElementInsert = function(placement, html, lineNumbers) /* P
 
 	buffer.prepareForMutation();
 
+	/* New lines go above the typing indicator, which stays last */
+	var typingIndicator = null;
+
+	if (placement === "beforeend") {
+		typingIndicator = document.getElementById("typing-indicator");
+
+		if (typingIndicator) {
+			typingIndicator.remove();
+		}
+	}
+
 	buffer.insertAdjacentHTML(placement, html);
+
+	if (typingIndicator) {
+		buffer.appendChild(typingIndicator);
+	}
 
 	if (lineNumbers) {
 		_MessageBuffer._bufferCurrentSize += lineNumbers.length;

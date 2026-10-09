@@ -644,6 +644,8 @@
 		4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */; };
 		4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2FA6EB7E48EABB4607298A /* IRCWhoReply.m */; };
 		4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */; };
+		4CB9788CF63607DBC7AEAEAE /* IRCClient+Typing.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */; };
+		4C26F4ADBA3A82BEF397F9E4 /* IRCClientTypingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1446,6 +1448,8 @@
 		4C2FA6EB7E48EABB4607298A /* IRCWhoReply.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCWhoReply.m; sourceTree = "<group>"; };
 		4CFA6BF73C6D752213A4B9C4 /* IRCWhoReplyPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCWhoReplyPrivate.h; sourceTree = "<group>"; };
 		4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCWhoReplyTests.m; sourceTree = "<group>"; };
+		4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Typing.m"; sourceTree = "<group>"; };
+		4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientTypingTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1916,6 +1920,7 @@
 				4C7117F365FF940AAF5C6E38 /* IRCClient+Scripts.m */,
 				4CA17C786A4284B8DC4A8561 /* IRCClient+Sending.m */,
 				4C01C22E7F90ADA6C7447A97 /* IRCClient+TimedCommands.m */,
+				4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */,
 				4CC09B56304AD18920BFA48C /* IRCClient+Users.m */,
 				4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */,
 				4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */,
@@ -2646,6 +2651,7 @@
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
 				4C2E0C095E3CDA192F237123 /* IRCClientReadMarkerTests.m */,
 				4CD5D545AF3EC22B5F5DCBFA /* IRCClientStandardReplyTests.m */,
+				4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */,
 				4C8BBECA8C79E538453CA313 /* IRCColorFormatTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC36 /* IRCISupportInfoTests.m */,
 				4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */,
@@ -3289,6 +3295,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CB9788CF63607DBC7AEAEAE /* IRCClient+Typing.m in Sources */,
 				4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */,
 				4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */,
 				4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */,
@@ -3547,6 +3554,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C26F4ADBA3A82BEF397F9E4 /* IRCClientTypingTests.m in Sources */,
 				4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */,
 				4C6F236CB78B0A2ED9AAE50B /* IRCSASLSCRAMTests.m in Sources */,
 				4CAA51424F39CA15DD7B0560 /* IRCClientReadMarkerTests.m in Sources */,

@@ -312,6 +312,8 @@
 	<integer>0</integer>
 	<key>TrackNicknameHighlightsOfLocalUser</key>
 	<integer>0</integer>
+	<key>Typing Notifications -&gt; Send</key>
+	<integer>0</integer>
 	<key>TrackUserAwayStatusMaximumChannelSize</key>
 	<integer>0</integer>
 	<key>TPCPreferencesDictionaryVersion</key>

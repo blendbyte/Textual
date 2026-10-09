@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
 @property (nonatomic, assign, readwrite) BOOL whoxSupported;
+@property (nonatomic, copy) NSArray<NSString *> *clientTagDenyList;
 @property (nonatomic, assign, readwrite) NSUInteger maximumChannelNameLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKeyLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKickLength;
@@ -117,6 +118,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.utf8Only = NO;
 
 	self.whoxSupported = NO;
+
+	self.clientTagDenyList = @[];
 
 	self.channelNamePrefixes = @[@"#"];
 
@@ -191,6 +194,8 @@ NS_ASSUME_NONNULL_BEGIN
 				if (awayLength > 0) {
 					self.maximumAwayLength = awayLength;
 				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
+				self.clientTagDenyList = [segmentValue componentsSeparatedByString:@","];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
 				self.caseMapping = [self.class caseMappingNamed:segmentValue];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHATHISTORY"] ||
@@ -333,6 +338,26 @@ NS_ASSUME_NONNULL_BEGIN
 	return ((unescaped) ?: value);
 }
 
+/* CLIENTTAGDENY=*,-typing: "*" denies every client tag, "-name" makes an exception, "name" denies one */
+- (BOOL)isClientTagAllowed:(NSString *)tagName
+{
+	NSParameterAssert(tagName != nil);
+
+	BOOL allowed = YES;
+
+	for (NSString *entry in self.clientTagDenyList) {
+		if ([entry isEqualToString:@"*"]) {
+			allowed = NO;
+		} else if ([entry isEqualToString:[@"-" stringByAppendingString:tagName]]) {
+			return YES;
+		} else if ([entry isEqualToString:tagName]) {
+			allowed = NO;
+		}
+	}
+
+	return allowed;
+}
+
 - (void)withdrawToken:(NSString *)token
 {
 	NSParameterAssert(token != nil);
@@ -343,6 +368,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.utf8Only = NO;
 	} else if ([token isEqualToStringIgnoringCase:@"WHOX"]) {
 		self.whoxSupported = NO;
+	} else if ([token isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
+		self.clientTagDenyList = @[];
 	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"] || [token isEqualToStringIgnoringCase:@"draft/CHATHISTORY"]) {
 		self.chatHistoryLimit = 0;
 	} else if ([token isEqualToStringIgnoringCase:@"CASEMAPPING"]) {

@@ -273,6 +273,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveChangeHost:(IRCMessage *)m;
 - (void)processStrictTransportSecurityValue:(nullable NSString *)value;
 
+/* Typing notifications (IRCClient+Typing.m) */
+- (BOOL)canSendTypingNotificationsToChannel:(IRCChannel *)channel;
+- (void)receiveTagmsg:(IRCMessage *)m;
+- (void)typingEndedByMessageFrom:(NSString *)nickname inChannel:(IRCChannel *)channel;
+
 /* draft/read-marker (IRCClient+ReadMarker.m) */
 - (void)readMarkerNoteMessageAt:(NSDate *)receivedAt inChannel:(IRCChannel *)channel;
 - (nullable NSString *)readMarkerRequestForChannel:(IRCChannel *)channel;

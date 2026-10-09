@@ -299,6 +299,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *sender = m.senderNickname;
 
+	[self typingEndedByMessageFrom:sender inChannel:channel];
+
 	BOOL isSelfMessage = NO;
 
 	/* Backfilled history includes our own lines */
@@ -536,6 +538,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (query && [self chatHistoryShouldSkipMessage:m inChannel:query]) {
 		return;
+	}
+
+	if (query) {
+		[self typingEndedByMessageFrom:sender inChannel:query];
 	}
 
 	/* Ask for permission to print message */

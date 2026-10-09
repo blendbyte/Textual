@@ -542,6 +542,33 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 }
 
 #pragma mark -
+#pragma mark Typing Indicator
+
+/* Shown as the last line of the view (typingIndicator template, an element with id typing-indicator) */
+- (void)setTypingIndicatorText:(NSString *)text
+{
+	NSParameterAssert(text != nil);
+
+	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
+		/* The template escapes the text ({{typingText}}) */
+		NSString *indicatorTemplate = [TVCLogRenderer renderTemplateNamed:@"typingIndicator" attributes:@{@"typingText" : text}];
+
+		if (indicatorTemplate == nil) {
+			return;
+		}
+
+		[self _evaluateFunction:@"_Textual.typingIndicatorSet" withArguments:@[indicatorTemplate]];
+	};
+
+	_enqueueBlock(operationBlock);
+}
+
+- (void)removeTypingIndicator
+{
+	[self _evaluateFunction:@"_Textual.typingIndicatorRemove" withArguments:nil];
+}
+
+#pragma mark -
 #pragma mark Reload Scrollback
 
 - (void)appendHistoricMessageFragment:(NSString *)html withLineNumbers:(NSArray<NSString *> *)lineNumbers isReload:(BOOL)isReload

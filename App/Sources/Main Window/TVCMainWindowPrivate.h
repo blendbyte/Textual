@@ -64,6 +64,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 };
 
 @interface TVCMainWindow ()
+@property (nonatomic, strong, nullable) NSTimer *typingIndicatorSweepTimer; // while someone is shown typing
 @property (nonatomic, assign) BOOL ignoreOutlineViewSelectionChanges;
 @property (nonatomic, assign) BOOL ignoreNextOutlineViewSelectionChange;
 
@@ -106,6 +107,10 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)channelViewSelectionChangeTo:(IRCTreeItem *)selectedItem;
 
 - (void)updateDrawingForUserInUserList:(IRCUser *)user;
+
+/* Typing notifications */
+- (void)updateTypingIndicatorForChannel:(IRCChannel *)channel;
+- (void)inputTextDidChange;
 @end
 
 @interface TVCMainWindow (InputPrivate)

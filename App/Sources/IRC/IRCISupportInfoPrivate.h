@@ -44,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCISupportInfo ()
 @property (nonatomic, copy, readwrite, nullable) NSString *serverAddress;
 
+/* Client-only tags (without the "+") the server lets through (CLIENTTAGDENY) */
+- (BOOL)isClientTagAllowed:(NSString *)tagName;
+
 @property (readonly, copy, nullable) NSString *stringValueForLastUpdate;
 
 - (instancetype)initWithClient:(IRCClient *)client NS_DESIGNATED_INITIALIZER;

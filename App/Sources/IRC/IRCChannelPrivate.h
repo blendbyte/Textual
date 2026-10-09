@@ -58,6 +58,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL sentInitialWhoRequest;
 @property (nonatomic, assign) BOOL receivedWhoxAccountData; // WHOX answered: a nil account now means logged out, not unknown
 @property (nonatomic, assign) BOOL whoxRefreshPending; // redraw the member list at the end of this WHOX answer
+
+/* Typing notifications (+typing): who is typing here, until when */
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSDate *> *typingNicknameExpiryDates;
+@property (nonatomic, copy, nullable) NSDate *typingActiveSentAt; // our last "active", nil when we said nothing or "done"
+
+/* YES when the set of typing nicknames changed */
+- (BOOL)markNicknameAsTyping:(NSString *)nickname until:(NSDate *)expiryDate;
+- (BOOL)clearTypingForNickname:(NSString *)nickname;
+
+/* Sorted; drops those expired at date */
+- (NSArray<NSString *> *)typingNicknamesAtDate:(NSDate *)date;
 @property (nonatomic, assign) BOOL channelModesReceived;
 @property (nonatomic, assign) BOOL channelNamesReceived;
 @property (nonatomic, assign, readwrite) BOOL errorOnLastJoinAttempt;

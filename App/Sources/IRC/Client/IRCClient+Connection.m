@@ -677,6 +677,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 				break;
 			}
+			case IRCRemoteCommandTagmsg: // Command: TAGMSG (typing notifications)
+			{
+				[self receiveTagmsg:message];
+
+				break;
+			}
 			case IRCRemoteCommandMarkread: // Command: MARKREAD (draft/read-marker)
 			{
 				[self receiveMarkRead:message];

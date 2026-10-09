@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogController ()
 
+/* Typing notifications: "… is typing" as the last line of the view */
+- (void)setTypingIndicatorText:(NSString *)text;
+- (void)removeTypingIndicator;
+
 - (instancetype)initWithClient:(IRCClient *)client inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithChannel:(IRCChannel *)channel inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 

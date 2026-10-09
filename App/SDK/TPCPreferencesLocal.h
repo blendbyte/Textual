@@ -311,6 +311,8 @@ typedef NS_ENUM(NSUInteger, TXPreferredAppearance) {
 + (BOOL)logHighlights;
 + (BOOL)highlightCurrentNickname;
 
++ (BOOL)sendTypingNotifications; // "Let others see when I'm typing"
+
 + (CGFloat)swipeMinimumLength;
 
 + (nullable NSArray<NSString *> *)highlightMatchKeywords;

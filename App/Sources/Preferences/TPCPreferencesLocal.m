@@ -398,6 +398,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"TrackNicknameHighlightsOfLocalUser"];
 }
 
++ (BOOL)sendTypingNotifications
+{
+	return [RZUserDefaults() boolForKey:@"Typing Notifications -> Send"];
+}
+
 + (BOOL)inputHistoryIsChannelSpecific
 {
 	return [RZUserDefaults() boolForKey:@"SaveInputHistoryPerSelection"];

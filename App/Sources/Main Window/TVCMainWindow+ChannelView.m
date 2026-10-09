@@ -243,6 +243,17 @@ NS_ASSUME_NONNULL_BEGIN
 		[itemChangedFrom.viewController notifySelectionChanged];
 	}
 
+	/* Typing: leaving a conversation ends ours there; the next one shows its own */
+	if (itemChangedFrom && itemChangedFrom.isClient == NO) {
+		IRCChannel *previousChannel = (IRCChannel *)itemChangedFrom;
+
+		[previousChannel.associatedClient sendTypingDoneToChannel:previousChannel];
+
+		[previousChannel.viewController removeTypingIndicator];
+	}
+
+	[self refreshTypingIndicator];
+
 	/* Destroy member list if we have no selection */
 	if (itemChangedTo == nil) {
 		[self.memberList assignToChannel:nil];
@@ -349,6 +360,68 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 #pragma mark User List
+
+#pragma mark -
+#pragma mark Typing Notifications
+
+/* Only the selected channel shows who is typing, as the last line of its view */
+- (void)updateTypingIndicatorForChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if (channel != self.selectedChannel) {
+		return;
+	}
+
+	[self refreshTypingIndicator];
+}
+
+- (void)refreshTypingIndicator
+{
+	IRCChannel *channel = self.selectedChannel;
+
+	/* The console (no channel) has nobody typing */
+	NSArray *nicknames = @[];
+
+	if (channel) {
+		nicknames = [channel typingNicknamesAtDate:[NSDate date]];
+	}
+
+	NSString *text = [IRCClient typingIndicatorTextForNicknames:nicknames];
+
+	if (text == nil) {
+		[channel.viewController removeTypingIndicator];
+
+		[self.typingIndicatorSweepTimer invalidate];
+
+		self.typingIndicatorSweepTimer = nil;
+
+		return;
+	}
+
+	[channel.viewController setTypingIndicatorText:text];
+
+	/* Nothing has to arrive for typing to expire: look again every few seconds */
+	if (self.typingIndicatorSweepTimer == nil) {
+		__weak TVCMainWindow *weakSelf = self;
+
+		self.typingIndicatorSweepTimer =
+		[NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer *timer) {
+			[weakSelf refreshTypingIndicator];
+		}];
+	}
+}
+
+- (void)inputTextDidChange
+{
+	IRCTreeItem *selectedItem = self.selectedItem;
+
+	if (selectedItem == nil || selectedItem.isClient) {
+		return;
+	}
+
+	[selectedItem.associatedClient typingInputChanged:self.inputTextField.string inChannel:(IRCChannel *)selectedItem];
+}
 
 - (void)updateDrawingForUserInUserList:(IRCUser *)user
 {

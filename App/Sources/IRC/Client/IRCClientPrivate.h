@@ -100,6 +100,12 @@ enum {
 /* draft/read-marker: tells the server a channel being viewed is read up to its newest message */
 - (void)markChannelAsRead:(IRCChannel *)channel;
 
+/* Typing notifications, from the input field */
+- (void)typingInputChanged:(NSString *)text inChannel:(IRCChannel *)channel;
+- (void)sendTypingDoneToChannel:(IRCChannel *)channel;
+- (void)typingMessageSentInChannel:(IRCChannel *)channel;
++ (nullable NSString *)typingIndicatorTextForNicknames:(NSArray<NSString *> *)nicknames;
+
 /* For print completion blocks: the message was printed, so the output rules already passed */
 - (BOOL)notifyPrintedText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text;
 @end

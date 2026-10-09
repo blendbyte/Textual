@@ -158,6 +158,23 @@ _Textual.historyIndicatorRemove = function() /* PRIVATE */
 	}
 };
 
+/* Typing indicator: the last element of the buffer (messageBuffer.js keeps it there) */
+_Textual.typingIndicatorSet = function(templateHTML) /* PRIVATE */
+{
+	_Textual.typingIndicatorRemove();
+
+	MessageBuffer.bufferElementAppend(templateHTML);
+};
+
+_Textual.typingIndicatorRemove = function() /* PRIVATE */
+{
+	var e = document.getElementById("typing-indicator");
+
+	if (e) {
+		e.remove();
+	}
+};
+
 /* Document body */
 Textual._documentBodyElementReference = null; /* PRIVATE */
 

@@ -671,6 +671,14 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 		return;
 	}
 
+	/* The message itself ends typing: forget the "active" before clearing
+	 the field, whose change would otherwise send a needless "done" */
+	IRCTreeItem *selectedItem = self.selectedItem;
+
+	if (selectedItem && selectedItem.isClient == NO) {
+		[selectedItem.associatedClient typingMessageSentInChannel:(IRCChannel *)selectedItem];
+	}
+
 	self.inputTextField.attributedStringValue = [NSAttributedString attributedString];
 
 	[self.inputHistoryManager add:stringValue];
