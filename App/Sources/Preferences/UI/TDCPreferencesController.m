@@ -93,7 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define _toolbarItemIndexCommandScope				108001
 #define _toolbarItemIndexFloodControl				108002
 #define _toolbarItemIndexIncomingData				108003
-#define _toolbarItemIndexCompatibility				108004
 #define _toolbarItemIndexFileTransfers				108005
 #define _toolbarItemIndexInlineMedia				108006
 #define _toolbarItemIndexLogLocation				108007
@@ -129,7 +128,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSView *contentViewInstalledAddons;
 @property (nonatomic, strong) IBOutlet NSView *contentViewChannelManagement;
 @property (nonatomic, strong) IBOutlet NSView *contentViewCommandScope;
-@property (nonatomic, strong) IBOutlet NSView *contentViewCompatibility;
 @property (nonatomic, strong) IBOutlet NSView *contentViewFloodControl;
 @property (nonatomic, strong) IBOutlet NSView *contentViewIncomingData;
 @property (nonatomic, strong) IBOutlet NSView *contentViewFileTransfers;
@@ -382,7 +380,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 		_de(_toolbarItemIndexChannelManagement, self.contentViewChannelManagement, _toolbarItemIndexAdvanced)
 		_de(_toolbarItemIndexCommandScope, self.contentViewCommandScope, _toolbarItemIndexAdvanced)
-		_de(_toolbarItemIndexCompatibility, self.contentViewCompatibility, _toolbarItemIndexAdvanced)
 		_de(_toolbarItemIndexFloodControl, self.contentViewFloodControl, _toolbarItemIndexAdvanced)
 		_de(_toolbarItemIndexIncomingData, self.contentViewIncomingData, _toolbarItemIndexAdvanced)
 		_de(_toolbarItemIndexFileTransfers, self.contentViewFileTransfers, _toolbarItemIndexAdvanced)

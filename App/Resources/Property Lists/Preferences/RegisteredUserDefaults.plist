@@ -94,8 +94,6 @@
 	<true/>
 	<key>FocusSelectionOnMessageCommandExecution</key>
 	<true/>
-	<key>IRC -&gt; Enable echo-message Capability</key>
-	<false/>
 	<key>IRCopDefaultLocalizaiton -&gt; G:Line Reason</key>
 	<string>35d Your behavior is not conducive to the desired environment.</string>
 	<key>IRCopDefaultLocalizaiton -&gt; Kill Reason</key>

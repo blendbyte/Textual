@@ -14,7 +14,6 @@
                 <outlet property="contentViewBehavior" destination="Yrc-pc-3Zr" id="tdC-pL-8hL"/>
                 <outlet property="contentViewChannelManagement" destination="kTM-XW-Yb5" id="yM5-Ac-xep"/>
                 <outlet property="contentViewCommandScope" destination="1YF-k7-FrW" id="cvJ-I0-CaK"/>
-                <outlet property="contentViewCompatibility" destination="e8Q-5b-yYH" id="ydU-7E-b7E"/>
                 <outlet property="contentViewControls" destination="Fnm-DD-Hbc" id="zeT-MV-IWQ"/>
                 <outlet property="contentViewDefaultIRCopMessages" destination="Pkr-Na-yb0" id="lW6-WQ-FZ7"/>
                 <outlet property="contentViewDefaultIdentity" destination="d6J-SH-Xgl" id="wDj-Vh-gXg"/>
@@ -138,13 +137,6 @@
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="onPrefPaneSelected:" target="-2" id="Dyy-4W-dEd"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" hidden="YES" id="W4U-AF-ygV"/>
-                                        <menuItem title="Compatibility" tag="108004" hidden="YES" id="FDb-XE-P95">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="onPrefPaneSelected:" target="-2" id="wJI-G9-QuF"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="GoV-UM-Is2"/>
@@ -2933,32 +2925,6 @@ Messages are not saved between app launches unless “Restore scrollback from pr
                 <constraint firstItem="kWh-2T-Yta" firstAttribute="top" secondItem="doe-fL-WAB" secondAttribute="bottom" constant="9" id="wgl-Y2-eoa"/>
             </constraints>
             <point key="canvasLocation" x="329" y="-4115"/>
-        </customView>
-        <customView translatesAutoresizingMaskIntoConstraints="NO" id="e8Q-5b-yYH">
-            <rect key="frame" x="0.0" y="0.0" width="670" height="76"/>
-            <userGuides>
-                <userLayoutGuide location="373" affinity="minY"/>
-            </userGuides>
-            <subviews>
-                <button translatesAutoresizingMaskIntoConstraints="NO" id="Ink-td-oFr">
-                    <rect key="frame" x="40" y="29" width="223" height="18"/>
-                    <buttonCell key="cell" type="check" title="Enable echo-message capability" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="k2j-qv-6ty">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="G2Q-fc-ddg" name="value" keyPath="values.IRC -&gt; Enable echo-message Capability" id="JWt-1e-abq"/>
-                    </connections>
-                </button>
-            </subviews>
-            <constraints>
-                <constraint firstAttribute="bottom" secondItem="Ink-td-oFr" secondAttribute="bottom" constant="30" id="0Ac-4O-f3E"/>
-                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ink-td-oFr" secondAttribute="trailing" constant="20" id="8oo-XL-6zc"/>
-                <constraint firstItem="Ink-td-oFr" firstAttribute="top" secondItem="e8Q-5b-yYH" secondAttribute="top" constant="30" id="Rug-cD-ODk"/>
-                <constraint firstItem="Ink-td-oFr" firstAttribute="leading" secondItem="e8Q-5b-yYH" secondAttribute="leading" constant="42" id="Yvx-kI-Ikd"/>
-            </constraints>
-            <string key="userLabel">Compatibility	</string>
-            <point key="canvasLocation" x="318" y="-3861"/>
         </customView>
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="1YF-k7-FrW" userLabel="Command Scope">
             <rect key="frame" x="0.0" y="0.0" width="670" height="312"/>

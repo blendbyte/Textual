@@ -153,6 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableString *saslIncomingData; // an AUTHENTICATE message arriving in 400-byte parts
 @property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
 @property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last connection ended
+@property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate
 @property (nonatomic, assign) IRCISupportInfoCaseMapping channelMapCaseMapping;
 @property (nonatomic, strong, nullable) NSMutableArray<IRCChannel *> *channelsToAutojoin;

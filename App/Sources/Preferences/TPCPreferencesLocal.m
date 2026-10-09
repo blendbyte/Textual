@@ -187,9 +187,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (BOOL)enableEchoMessageCapability
 {
-//	return [RZUserDefaults() boolForKey:@"IRC -> Enable echo-message Capability"];
-	
-	return NO;
+	return YES;
 }
 
 + (BOOL)displayServerMOTD

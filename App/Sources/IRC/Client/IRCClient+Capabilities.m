@@ -371,15 +371,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	const IRCClientCapabilityTableEntry *entry = IRCClientCapabilityTableEntryNamed(capabilityString);
 
-	if (entry == NULL) {
-		return NO;
-	}
-
-	if (entry->request == ClientIRCv3SupportedCapabilityEchoMessage) {
-		return [TPCPreferences enableEchoMessageCapability];
-	}
-
-	return YES;
+	return (entry != NULL);
 }
 
 - (void)receiveCapabilityOrAuthenticationRequest:(IRCMessage *)m

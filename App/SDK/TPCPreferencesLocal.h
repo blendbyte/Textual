@@ -163,7 +163,7 @@ typedef NS_ENUM(NSUInteger, TXPreferredAppearance) {
 + (NSString *)IRCopDefaultGlineMessage;
 + (NSString *)IRCopDefaultShunMessage;
 
-+ (BOOL)enableEchoMessageCapability;
++ (BOOL)enableEchoMessageCapability TEXTUAL_DEPRECATED("echo-message is always requested when a server offers it; returns YES");
 
 + (BOOL)giveFocusOnMessageCommand;
 

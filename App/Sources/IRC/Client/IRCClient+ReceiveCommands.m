@@ -1060,6 +1060,13 @@ NS_ASSUME_NONNULL_BEGIN
 	
 	NSTimeInterval firstTime = [lagCheckContext doubleForKey:@"time"];
 
+	/* With echo-message a query to ourselves arrives twice (delivered and echoed): answer it once */
+	if (firstTime == self.lastAnsweredLagCheckTime) {
+		return;
+	}
+
+	self.lastAnsweredLagCheckTime = firstTime;
+
 	double delta = (([NSDate timeIntervalSince1970] - firstTime) * 1000);
 	
 	NSString *ratingString = nil;
@@ -1115,6 +1122,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSMutableString *textMutable = [text mutableCopy];
 
 	NSString *sender = m.senderNickname;
+
+	/* Our own replies, echoed back (echo-message) */
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] && [self nicknameIsMyself:sender]) {
+		return;
+	}
 
 	NSString *command = textMutable.uppercaseGetToken;
 
