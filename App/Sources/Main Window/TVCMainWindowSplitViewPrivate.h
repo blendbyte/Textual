@@ -41,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMainWindowSplitView ()
 - (void)restorePositions;
+
+/* Positions changed by dragging are written shortly after; this writes them now */
+- (void)writeSavedFrames;
 @end
 
 NS_ASSUME_NONNULL_END

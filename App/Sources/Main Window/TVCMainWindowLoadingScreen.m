@@ -203,9 +203,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* ================================== */
 
-	RZAnimationCurrentContext().duration = 1.0;
-
 	[NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+		/* Not on the current context: that slowed whatever else animated too */
+		context.duration = 1.0;
+
 		self.animator.alphaValue = 0.0;
 	} completionHandler:^{
 		phaseTwoBlock(view);

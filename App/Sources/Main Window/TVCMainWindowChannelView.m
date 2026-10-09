@@ -77,9 +77,12 @@ NSComparisonResult sortSubviews(TVCMainWindowChannelViewSubview *firstView,
 
 - (void)viewDidMoveToWindow
 {
-	if (self.window == nil) {
-		[RZNotificationCenter() removeObserver:self];
+	[super viewDidMoveToWindow];
 
+	/* Once per window, not once per move */
+	[RZNotificationCenter() removeObserver:self];
+
+	if (self.window == nil) {
 		return;
 	}
 
@@ -87,6 +90,15 @@ NSComparisonResult sortSubviews(TVCMainWindowChannelViewSubview *firstView,
 							   selector:@selector(themeAppearanceChanged:)
 								   name:TPCThemeAppearanceChangedNotification
 								 object:nil];
+
+	/* Choosing another style posts no appearance change, only the reload */
+	[RZNotificationCenter() addObserver:self
+							   selector:@selector(themeAppearanceChanged:)
+								   name:TVCMainWindowDidReloadThemeNotification
+								 object:nil];
+
+	/* It was never set at launch */
+	[self updateVibrancy];
 }
 
 - (void)resetSubviews

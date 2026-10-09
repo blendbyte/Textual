@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedControllerCell *segmentedControllerCell;
 @property (nonatomic, strong) TVCMainWindowTextViewAppearance *userInterfaceObjects;
 @property (readonly) NSArray<NSString *> *defaultSpellingIgnores;
+@property (nonatomic, assign) BOOL observingUserDefaults;
 @end
 
 NS_ASSUME_NONNULL_END

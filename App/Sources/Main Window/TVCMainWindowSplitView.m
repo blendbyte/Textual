@@ -59,6 +59,7 @@ NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel V
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *serverListWidthMaxConstraint;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *memberListWidthMinConstraint;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *memberListWidthMaxConstraint;
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSNumber *> *unsavedFrames; // until -writeSavedFrames
 @end
 
 @implementation TVCMainWindowSplitView
@@ -339,11 +340,37 @@ NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel V
 		@"memberList" : @(memberListPosition),
 	};
 
-	[RZUserDefaults() setObject:newFrames forKey:_userDefaultsKey];
+	if ([newFrames isEqualToDictionary:[self savedFrames]]) {
+		return;
+	}
+
+	/* Written once the dragging stops: every write told all views a preference changed */
+	self.unsavedFrames = newFrames;
+
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(writeSavedFrames) withObject:nil afterDelay:0.5];
+}
+
+- (void)writeSavedFrames
+{
+	[self cancelPerformRequestsWithSelector:@selector(writeSavedFrames)];
+
+	NSDictionary *unsavedFrames = self.unsavedFrames;
+
+	if (unsavedFrames == nil) {
+		return;
+	}
+
+	self.unsavedFrames = nil;
+
+	[RZUserDefaults() setObject:unsavedFrames forKey:_userDefaultsKey];
 }
 
 - (nullable NSDictionary<NSString *, NSNumber *> *)savedFrames
 {
+	if (self.unsavedFrames) {
+		return self.unsavedFrames;
+	}
+
 	return [RZUserDefaults() objectForKey:_userDefaultsKey];
 }
 

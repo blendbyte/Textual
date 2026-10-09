@@ -397,30 +397,14 @@ NS_ASSUME_NONNULL_BEGIN
 	switch (tag) {
 		case MTMainMenuChannel: // "Channel"
 		{
-			BOOL isChannel = c.isChannel;
-
-			menuItem.hidden = (isChannel == NO);
-
-			if (isChannel) {
-				menuItem.submenu = self.mainMenuChannelMenu;
-			} else {
-				menuItem.submenu = nil;
-			}
+			[self showMainMenuItem:menuItem withSubmenu:((c.isChannel) ? self.mainMenuChannelMenu : nil)];
 
 			return YES;
 		}
 
 		case MTMainMenuQuery: // "Query"
 		{
-			BOOL isQuery = (c.isPrivateMessage || c.isUtility);
-
-			menuItem.hidden = (isQuery == NO);
-
-			if (isQuery) {
-				menuItem.submenu = self.mainMenuQueryMenu;
-			} else {
-				menuItem.submenu = nil;
-			}
+			[self showMainMenuItem:menuItem withSubmenu:((c.isPrivateMessage || c.isUtility) ? self.mainMenuQueryMenu : nil)];
 
 			return YES;
 		}
@@ -432,6 +416,26 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return YES;
+}
+
+/* A hidden item has no submenu, so its shortcuts don't work. The submenu goes
+ in before the item shows: the menu bar draws the submenu's title, and showing
+ the item first left an empty gap there until it was clicked. */
+- (void)showMainMenuItem:(NSMenuItem *)menuItem withSubmenu:(nullable NSMenu *)submenu
+{
+	NSParameterAssert(menuItem != nil);
+
+	if (submenu) {
+		if (menuItem.submenu != submenu) {
+			menuItem.submenu = submenu;
+		}
+
+		menuItem.hidden = NO;
+	} else {
+		menuItem.hidden = YES;
+
+		menuItem.submenu = nil;
+	}
 }
 
 /* App */

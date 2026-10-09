@@ -56,8 +56,8 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 #pragma mark -
 #pragma mark Private Headers
 
-@interface NSMutableString (IRCTextFormatterPrivate)
-- (NSUInteger)wrapIRCTextFormatterResultWith:(NSUInteger)minimumIndex maxDistance:(NSUInteger)maxDistance;
+@interface NSString (IRCTextFormatterPrivate)
+- (NSUInteger)indexToWrapIRCTextFormatterResultAt:(NSUInteger)minimumIndex maxDistance:(NSUInteger)maxDistance;
 @end
 
 #pragma mark -
@@ -537,11 +537,29 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 
 			/* Would this character go over the max length? */
 			if (resultLength > maximumLength) {
-				/* Look for best character to wrap on */
-				NSUInteger indexDifference = [result wrapIRCTextFormatterResultWith:segmentRange.location maxDistance:_textTruncationWrapMaxDistance];
+				/* Nothing fits, not even this one character: it goes alone, over
+				 the limit. A result that takes nothing made the sender loop for ever. */
+				if (deletionLength == 0) {
+					deletionLength += characterRange.length;
 
-				if (indexDifference != NSNotFound) {
-					deletionLength -= indexDifference;
+					[result appendString:character];
+
+					breakLoopAfterAppend = YES;
+
+					break;
+				}
+
+				/* Look for best character to wrap on, as long as something stays */
+				NSUInteger wrapIndex = [result indexToWrapIRCTextFormatterResultAt:segmentRange.location maxDistance:_textTruncationWrapMaxDistance];
+
+				if (wrapIndex != NSNotFound) {
+					NSUInteger indexDifference = (result.length - wrapIndex);
+
+					if (indexDifference < deletionLength) {
+						[result deleteCharactersInRange:NSMakeRange(wrapIndex, indexDifference)];
+
+						deletionLength -= indexDifference;
+					}
 				}
 
 				/* Break attribute enumeration using stater variable
@@ -1038,28 +1056,33 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 #pragma mark -
 #pragma mark Truncation Helpers
 
-@implementation NSMutableString (IRCTextFormatterPrivate)
+@implementation NSString (IRCTextFormatterPrivate)
 
 /* Look for best character to wrap on */
 /* Now this is where the append gets a little technical. We want clean
  truncation. Not half-assed ones. Therefore, if we have space character
  and it is within a certain range of the end of the line, then we will
  stop append at that instead of breaking inside of a word. */
-/* Returns number of characters deleted from self or NSNotFound if none. */
+/* Returns the index of that space, or NSNotFound if there is none. */
 /* minimumIndex is index we can't pass so that we always wrap within our
  own segment and not within another. */
 /* maxDistance is how far back we search backwards from the end.
  While similar, this value is different compared to minimumIndex.
  maxDistance is a suggestion whereas minimumIndex is a must. */
-- (NSUInteger)wrapIRCTextFormatterResultWith:(NSUInteger)minimumIndex maxDistance:(NSUInteger)maxDistance
+- (NSUInteger)indexToWrapIRCTextFormatterResultAt:(NSUInteger)minimumIndex maxDistance:(NSUInteger)maxDistance
 {
 	NSParameterAssert(maxDistance > 0);
 
 	NSUInteger selfLength = self.length;
 
-	NSUInteger searchIndex = ((self.length - 1) - maxDistance);
+	/* Shorter than maxDistance (one oversized character): the subtraction underflowed */
+	NSUInteger searchLength = MIN(maxDistance, selfLength);
 
-	NSRange searchRange = NSMakeRange(searchIndex, maxDistance);
+	if (searchLength == 0) {
+		return NSNotFound;
+	}
+
+	NSRange searchRange = NSMakeRange((selfLength - searchLength), searchLength);
 
 	NSRange spaceRange = [self rangeOfCharacterFromSet:[NSCharacterSet whitespaceCharacterSet]
 											   options:NSBackwardsSearch
@@ -1071,11 +1094,7 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 		return NSNotFound;
 	}
 
-	NSInteger indexDifference = (selfLength - spaceRange.location);
-
-	[self deleteCharactersInRange:NSMakeRange(spaceRange.location, indexDifference)];
-
-	return indexDifference;
+	return spaceRange.location;
 }
 
 @end

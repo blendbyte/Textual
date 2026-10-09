@@ -78,17 +78,19 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[super viewDidMoveToWindow];
 
-	NSWindow *window = self.window;
+	/* This can come with a window more than once: observe once */
+	BOOL observe = (self.window != nil);
 
-	if (window)
-	{
-		for (NSString *key in _KeyObservingArray) {
-			[RZUserDefaults() addObserver:self forKeyPath:key options:(NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew) context:NULL];
-		}
+	if (self.observingUserDefaults == observe) {
+		return;
 	}
-	else // window
-	{
-		for (NSString *key in _KeyObservingArray) {
+
+	self.observingUserDefaults = observe;
+
+	for (NSString *key in _KeyObservingArray) {
+		if (observe) {
+			[RZUserDefaults() addObserver:self forKeyPath:key options:(NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew) context:NULL];
+		} else {
 			[RZUserDefaults() removeObserver:self forKeyPath:key];
 		}
 	}

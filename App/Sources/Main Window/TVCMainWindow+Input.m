@@ -113,6 +113,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)performedCustomKeyboardEvent:(NSEvent *)e
 {
+	/* With Full Keyboard Access, Tab outside the input field moves the focus */
+	if (e.keyCode == TXKeyTabCode &&
+		(e.modifierFlags & (NSEventModifierFlagCommand | NSEventModifierFlagControl | NSEventModifierFlagOption)) == 0 &&
+		NSApp.fullKeyboardAccessEnabled &&
+		self.firstResponder != self.inputTextField)
+	{
+		return NO;
+	}
+
 	if ([self.keyEventHandler processKeyEvent:e]) {
 		return YES;
 	}
@@ -122,6 +131,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)redirectKeyDown:(NSEvent *)e
 {
+	/* With Full Keyboard Access, Tab moves the focus instead of being typed */
+	if (e.keyCode == TXKeyTabCode && NSApp.fullKeyboardAccessEnabled) {
+		if ((e.modifierFlags & NSEventModifierFlagShift) == NSEventModifierFlagShift) {
+			[self selectPreviousKeyView:nil];
+		} else {
+			[self selectNextKeyView:nil];
+		}
+
+		return;
+	}
+
 	[self.inputTextField focus];
 
 	if (e.keyCode == TXKeyEnterCode ||
@@ -296,38 +316,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)textFormattingBold:(NSEvent *)e
 {
-	if (self.formattingMenu.textIsBold) {
-		[self.formattingMenu removeBoldCharFromTextBox:nil];
-	} else {
-		[self.formattingMenu insertBoldCharIntoTextBox:nil];
-	}
+	[self.formattingMenu toggleEffect:IRCTextFormatterEffectBold];
 }
 
 - (void)textFormattingItalic:(NSEvent *)e
 {
-	if (self.formattingMenu.textIsItalicized) {
-		[self.formattingMenu removeItalicCharFromTextBox:nil];
-	} else {
-		[self.formattingMenu insertItalicCharIntoTextBox:nil];
-	}
+	[self.formattingMenu toggleEffect:IRCTextFormatterEffectItalic];
 }
 
 - (void)textFormattingStrikethrough:(NSEvent *)e
 {
-	if (self.formattingMenu.textIsStruckthrough) {
-		[self.formattingMenu removeStrikethroughCharFromTextBox:nil];
-	} else {
-		[self.formattingMenu insertStrikethroughCharIntoTextBox:nil];
-	}
+	[self.formattingMenu toggleEffect:IRCTextFormatterEffectStrikethrough];
 }
 
 - (void)textFormattingUnderline:(NSEvent *)e
 {
-	if (self.formattingMenu.textIsUnderlined) {
-		[self.formattingMenu removeUnderlineCharFromTextBox:nil];
-	} else {
-		[self.formattingMenu insertUnderlineCharIntoTextBox:nil];
-	}
+	[self.formattingMenu toggleEffect:IRCTextFormatterEffectUnderline];
 }
 
 - (void)textFormattingForegroundColor:(NSEvent *)e
@@ -342,12 +346,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSRect textFieldFrame = self.inputTextField.frame;
-
-	textFieldFrame.origin.y -= 200;
-	textFieldFrame.origin.x += 100;
-
-	[self.formattingMenu.foregroundColorMenu popUpMenuPositioningItem:nil atLocation:textFieldFrame.origin inView:self.inputTextField];
+	[self popUpTextFormattingColorMenu:self.formattingMenu.foregroundColorMenu];
 }
 
 - (void)textFormattingBackgroundColor:(NSEvent *)e
@@ -361,17 +360,24 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (self.formattingMenu.textHasBackgroundColor) {
-		[self.formattingMenu removeForegroundColorCharFromTextBox:nil];
+		[self.formattingMenu removeBackgroundColorCharFromTextBox:nil];
 
 		return;
 	}
+
+	[self popUpTextFormattingColorMenu:self.formattingMenu.backgroundColorMenu];
+}
+
+- (void)popUpTextFormattingColorMenu:(NSMenu *)menu
+{
+	NSParameterAssert(menu != nil);
 
 	NSRect textFieldFrame = self.inputTextField.frame;
 
 	textFieldFrame.origin.y -= 200;
 	textFieldFrame.origin.x += 100;
 
-	[self.formattingMenu.backgroundColorMenu popUpMenuPositioningItem:nil atLocation:textFieldFrame.origin inView:self.inputTextField];
+	[menu popUpMenuPositioningItem:nil atLocation:textFieldFrame.origin inView:self.inputTextField];
 }
 
 - (void)exitFullscreenMode:(NSEvent *)e // escape key

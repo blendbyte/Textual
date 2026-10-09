@@ -93,12 +93,20 @@ NS_ASSUME_NONNULL_BEGIN
 				   navigationType:(TVCServerListNavigationMovementType)navigationType
 					selectionType:(TVCServerListNavigationSelectionType)selectionType
 {
-	NSParameterAssert(entryCount > 0);
-	NSParameterAssert(startingPoint >= 0);
+	if (entryCount <= 0) {
+		return;
+	}
+
+	/* Nothing selected, or the selection isn't in these rows (no row or
+	 NSNotFound): start from the end the movement comes from */
+	if (startingPoint < 0 || startingPoint >= entryCount) {
+		startingPoint = ((isMovingDown) ? -1 : entryCount);
+	}
 
 	NSInteger currentPosition = startingPoint;
 
-	while (1) {
+	/* One pass over every row at most */
+	for (NSInteger step = 0; step < entryCount; step++) {
 		/* Move to next selection */
 		if (isMovingDown) {
 			currentPosition += 1;
@@ -193,10 +201,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)navigateChannelEntriesWithinServerScope:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType
 {
+	IRCClient *selectedClient = self.selectedClient;
+
+	if (selectedClient == nil) {
+		return;
+	}
+
 	NSArray *scannedRows = [self.serverList itemsFromParentGroup:self.selectedItem];
 
 	/* We add selected server so navigation falls within its scope if its the selected item */
-	scannedRows = [scannedRows arrayByAddingObject:self.selectedClient];
+	scannedRows = [(scannedRows ?: @[]) arrayByAddingObject:selectedClient];
 
 	[self navigateServerListEntries:scannedRows
 						 entryCount:scannedRows.count

@@ -66,12 +66,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateSegmentedControllerOrigin
 {
+	/* Zero width alone left it clickable */
 	if ([TPCPreferences hideMainWindowSegmentedController]) {
 		[self.segmentedControllerLeadingConstraint archiveConstantAndZeroOut];
 		[self.segmentedControllerWidthConstraint archiveConstantAndZeroOut];
+
+		self.hidden = YES;
 	} else {
 		[self.segmentedControllerLeadingConstraint restoreArchivedConstant];
 		[self.segmentedControllerWidthConstraint restoreArchivedConstant];
+
+		self.hidden = NO;
 	}
 }
 

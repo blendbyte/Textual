@@ -196,15 +196,18 @@ NS_ASSUME_NONNULL_BEGIN
 	[self addTitlebarAccessoryViewController:accessoryView];
 }
 
+/* Servers pass themselves for nickname, away and connection changes, which
+ show while one of their channels is selected too. Many changes at once
+ (joins and parts) make one update. */
 - (void)updateTitleFor:(IRCTreeItem *)item
 {
 	NSParameterAssert(item != nil);
 
-	if ([self isItemSelected:item] == NO) {
+	if ([self isItemSelected:item] == NO && item != self.selectedClient) {
 		return;
 	}
 
-	[self updateTitle];
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(updateTitle) withObject:nil afterDelay:0.0];
 }
 
 - (void)updateTitle
@@ -303,6 +306,10 @@ NS_ASSUME_NONNULL_BEGIN
 				break;
 			}
 		}
+	}
+
+	if ([self.title isEqualToString:title]) {
+		return;
 	}
 
 	self.title = title;

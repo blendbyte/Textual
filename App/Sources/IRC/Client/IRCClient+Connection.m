@@ -310,6 +310,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[mainWindow() reloadTreeGroup:self];
 
 		[mainWindow() updateTitleFor:self];
+
+		/* The Address Book segment needs a connection */
+		[mainWindowTextField() updateSegmentedController];
 	}
 }
 

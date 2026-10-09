@@ -150,9 +150,13 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.attributedString.stringFormattedForIRC;
 }
 
+/* Both setters replace the text the undo actions were recorded for (another
+ channel's, a history entry's): undoing them brought it back or raised */
 - (void)setStringValue:(NSString *)stringValue
 {
 	NSParameterAssert(stringValue != nil);
+
+	[self.undoManager removeAllActions];
 
 	[self.textStorage replaceCharactersInRange:self.range withString:stringValue];
 
@@ -325,7 +329,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[layoutManager lineFragmentRectForGlyphAtIndex:0 effectiveRange:&firstLineRange];
 
-		inFirstLine = (selectedRange.location <= NSMaxRange(firstLineRange));
+		/* The end of the first line's range is the start of the second */
+		inFirstLine = (selectedRange.location < NSMaxRange(firstLineRange));
 	}
 
 	/* Check last line */
@@ -351,40 +356,38 @@ NS_ASSUME_NONNULL_BEGIN
 	return TVCTextViewCaretLocationMiddle;
 }
 
+/* The height of the text plus padding, or of as many whole lines as fit below the maximum */
 - (CGFloat)highestHeightBelowHeight:(CGFloat)maximumHeight withPadding:(CGFloat)valuePadding
 {
 	NSLayoutManager *layoutManager = self.layoutManager;
 
-	BOOL skipLastFragmentCheck = NO;
+	NSTextContainer *textContainer = self.textContainer;
+
+	/* Usually it all fits: one measurement instead of a walk over every line */
+	CGFloat usedHeight = [layoutManager usedRectForTextContainer:textContainer].size.height;
+
+	if ((valuePadding + usedHeight) <= maximumHeight) {
+		return (valuePadding + usedHeight);
+	}
+
+	CGFloat totalLineHeight = valuePadding;
 
 	NSUInteger numberOfGlyphs = layoutManager.numberOfGlyphs;
 
-	NSUInteger totalLineHeight = valuePadding;
+	NSUInteger glyphIndex = 0;
 
-	for (NSUInteger i = 0; i < numberOfGlyphs; i++) {
+	while (glyphIndex < numberOfGlyphs) {
 		NSRange lineRange;
 
-		NSRect rect = [layoutManager lineFragmentRectForGlyphAtIndex:i effectiveRange:&lineRange];
+		NSRect rect = [layoutManager lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:&lineRange];
 
-		if ((totalLineHeight +  rect.size.height) <= maximumHeight) {
-			totalLineHeight  += rect.size.height;
-		} else {
-			skipLastFragmentCheck = YES;
-
+		if ((totalLineHeight + rect.size.height) > maximumHeight) {
 			break;
 		}
 
-		i = NSMaxRange(lineRange);
-	}
+		totalLineHeight += rect.size.height;
 
-	if (skipLastFragmentCheck) {
-		return totalLineHeight;
-	}
-
-	NSRect lastFragmentRect = layoutManager.extraLineFragmentRect;
-
-	if ((totalLineHeight +  lastFragmentRect.size.height) <= maximumHeight) {
-		totalLineHeight  += lastFragmentRect.size.height;
+		glyphIndex = NSMaxRange(lineRange);
 	}
 
 	return totalLineHeight;

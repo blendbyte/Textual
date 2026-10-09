@@ -35,6 +35,8 @@
  *
  *********************************************************************** */
 
+#import "IRCColorFormat.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define TVCTextViewIRCFormattingMenuFormatterMenuTag			53037
@@ -72,6 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)removeForegroundColorCharFromTextBox:(id)sender;
 - (IBAction)removeBackgroundColorCharFromTextBox:(id)sender;
 - (IBAction)removeSpoilerCharFromTextBox:(id)sender;
+
+/* Bold, italic, monospace, strikethrough or underline on for the selection, or off where it is on */
+- (void)toggleEffect:(IRCTextFormatterEffectType)effect;
 @end
 
 NS_ASSUME_NONNULL_END

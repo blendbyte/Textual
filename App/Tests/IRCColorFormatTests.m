@@ -37,6 +37,9 @@
 #import <XCTest/XCTest.h>
 
 #import "NSStringHelper.h"
+#import "IRCClientPrivate.h"
+#import "IRCClientConfig.h"
+#import "IRCColorFormatPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -51,6 +54,55 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *formatted = @"\x02" @"bold" @"\x02 \x1d" @"italic" @"\x1d \x03" @"04red\x03 \x03" @"12,01blue on black\x0f plain";
 
 	XCTAssertEqualObjects(formatted.stripIRCEffects, @"bold italic red blue on black plain");
+}
+
+/* What the sender does with a typed line: one message per pass until nothing is left */
+- (nullable NSArray<NSString *> *)messagesForLine:(NSString *)line
+{
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	NSMutableAttributedString *remainder = [[NSMutableAttributedString alloc] initWithString:line];
+
+	NSMutableArray<NSString *> *messages = [NSMutableArray array];
+
+	while (remainder.length > 0) {
+		if (messages.count == 50) {
+			return nil; // never ends
+		}
+
+		[messages addObject:[remainder stringFormattedForChannel:@"#channel" onClient:client withLineType:TVCLogLineTypePrivateMessage]];
+	}
+
+	return [messages copy];
+}
+
+/* Long lines are split into messages that lose nothing, also when a single
+ character is longer than a message may be or the only space comes first (R2.21) */
+- (void)testLongLinesSplitWithoutLoss
+{
+	NSMutableString *words = [NSMutableString string];
+
+	for (NSUInteger i = 0; i < 120; i++) {
+		[words appendString:@"word "];
+	}
+
+	NSMutableString *oversizedCharacter = [NSMutableString stringWithString:@"a"];
+
+	for (NSUInteger i = 0; i < 300; i++) {
+		[oversizedCharacter appendString:@"\u0301"]; // combining acute accent: one character of 601 bytes
+	}
+
+	NSString *leadingSpace = [@" " stringByPaddingToLength:700 withString:@"x" startingAtIndex:0];
+
+	for (NSString *line in @[words, oversizedCharacter, leadingSpace]) {
+		NSArray<NSString *> *messages = [self messagesForLine:line];
+
+		XCTAssertNotNil(messages);
+
+		XCTAssertEqualObjects([messages componentsJoinedByString:@""], line);
+	}
+
+	XCTAssertEqual([self messagesForLine:oversizedCharacter].count, 1);
 }
 
 @end

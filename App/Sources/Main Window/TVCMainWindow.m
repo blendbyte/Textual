@@ -162,6 +162,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 	[self registerKeyHandlers];
 
+	[self addFormattingMenuToInputTextField];
+
 	[worldController() setupConfiguration];
 
 	[self setupTrees];
@@ -221,7 +223,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 		return;
 	}
 
-	[self performSelectorInCommonModes:@selector(toggleFullscreenAfterLaunch) withObject:nil afterDelay:1.0];
+	/* Called again before the second is up: still one toggle, or the window leaves full screen right away */
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(toggleFullscreenAfterLaunch) withObject:nil afterDelay:1.0];
 }
 
 - (void)toggleFullscreenAfterLaunch
@@ -317,6 +320,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 	[self saveWindowStateUsingKeyword:@"Main Window"];
 
+	[self.contentSplitView writeSavedFrames];
+
 	[self saveContentSplitViewState];
 
 	[self saveSelection];
@@ -342,7 +347,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 	[self.memberList assignToChannel:nil];
 
-	self.delegate = (id)self;
+	/* No window delegate calls (selection, resizing) while closing */
+	self.delegate = nil;
 
 	self.selectedItems = nil;
 	self.selectedItem = nil;
@@ -395,8 +401,16 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 #pragma mark -
 #pragma mark NSWindow Delegate
 
-- (void)windowDidChangeScreen:(NSNotification *)notification
+/* The appearance (four files) depends on the scale only: moving to another
+ screen with the same scale rebuilt it for nothing */
+- (void)windowDidChangeBackingProperties:(NSNotification *)notification
 {
+	NSNumber *oldScaleFactor = notification.userInfo[NSBackingPropertyOldScaleFactorKey];
+
+	if (oldScaleFactor && oldScaleFactor.doubleValue == self.backingScaleFactor) {
+		return;
+	}
+
 	[self reloadMainWindowFrameOnScreenChange];
 }
 
@@ -483,27 +497,27 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 	[self animator].alphaValue = 1.0;
 }
 
-- (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)client
+/* The Format menu at the end of the input field's context menu. This was done
+ by making the input field the field editor of every text field in the window. */
+- (void)addFormattingMenuToInputTextField
 {
-	static dispatch_once_t onceToken;
+	NSMenu *editorMenu = self.inputTextField.menu;
 
-	dispatch_once(&onceToken, ^{
-		NSMenu *editorMenu = self.inputTextField.menu;
+	NSMenuItem *formatterMenu = self.formattingMenu.formatterMenu;
 
-		NSMenuItem *formatterMenu = self.formattingMenu.formatterMenu;
+	if (editorMenu == nil || formatterMenu == nil) {
+		return;
+	}
 
-		NSInteger formatterMenuIndex = [editorMenu indexOfItemWithTitle:formatterMenu.title];
+	if ([editorMenu indexOfItem:formatterMenu] >= 0) {
+		return;
+	}
 
-		if (formatterMenuIndex < 0) {
-			[editorMenu addItem:[NSMenuItem separatorItem]];
+	[editorMenu addItem:[NSMenuItem separatorItem]];
 
-			[editorMenu addItem:formatterMenu];
-		}
+	[editorMenu addItem:formatterMenu];
 
-		self.inputTextField.menu = editorMenu;
-	});
-
-	return self.inputTextField;
+	self.inputTextField.menu = editorMenu;
 }
 
 #pragma mark -
@@ -555,11 +569,20 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 	[self markAllAsReadInGroup:nil];
 }
 
+/* With an item: only its server and that server's channels. Without: everything. */
 - (void)markAllAsReadInGroup:(nullable IRCTreeItem *)item
 {
 	BOOL markScrollback = [TPCPreferences autoAddScrollbackMark];
 
-	for (IRCClient *u in worldController().clientList) {
+	NSArray<IRCClient *> *clientList = worldController().clientList;
+
+	if (item) {
+		IRCClient *client = item.associatedClient;
+
+		clientList = ((client) ? @[client] : @[]);
+	}
+
+	for (IRCClient *u in clientList) {
 		if (markScrollback) {
 			[u.viewController mark];
 		}

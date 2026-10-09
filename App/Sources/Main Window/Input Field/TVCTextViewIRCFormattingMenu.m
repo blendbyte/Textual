@@ -63,13 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Menu Management
 
-- (void)awakeFromNib
-{
-	[super awakeFromNib];
-
-	[self generateColorList];
-}
-
 - (nullable TVCTextViewWithIRCFormatter *)textField
 {
 	id firstResponder = [[NSApp keyWindow] firstResponder];
@@ -215,8 +208,18 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Menu Generation
 
+/* Attached the first time the panel is opened: creating the shared colour
+ panel at launch for an item few people use cost start-up time */
 - (void)generateColorList
 {
+	static BOOL colorListAttached = NO;
+
+	if (colorListAttached) {
+		return;
+	}
+
+	colorListAttached = YES;
+
 	/* While we could technically load this from a file; we don't need to.
 	 That just adds extra space to the app when we already need to have an
 	 array of colors in the binary. */
@@ -344,6 +347,13 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.textField setSelectedRange:limitRange];
 }
 
+- (void)toggleEffect:(IRCTextFormatterEffectType)effect
+{
+	id value = (([self propertyIsSet:effect]) ? nil : @(YES));
+
+	[self applyEffectToTextBox:effect withValue:value inRange:self.textField.selectedRange];
+}
+
 #pragma mark -
 #pragma mark Add Formatting
 
@@ -384,53 +394,48 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)insertForegroundColorCharIntoTextBox:(id)sender
 {
-	if ([sender tag] == _formattingMenuRainbowColorMenuItemTag) {
-		[self insertRainbowColorCharInfoTextBox:sender asForegroundColor:YES];
-
-		return;
-	}
-	else if ([sender tag] == _formattingMenuHexColorMenuItemTag)
-	{
-		NSColorPanel *colorPanel = [NSColorPanel sharedColorPanel];
-
-		[colorPanel setTarget:self];
-		[colorPanel setAction:@selector(foregroundColorPanelColorChanged:)];
-		[colorPanel setAlphaValue:1.0];
-		[colorPanel setMode:NSColorPanelModeColorList];
-		[colorPanel setColor:[NSColor formatterWhiteColor]];
-
-		[colorPanel orderFront:nil];
-	}
-
-	NSRange selectedTextRange = self.textField.selectedRange;
-
-	[self applyEffectToTextBox:IRCTextFormatterEffectForegroundColor withValue:@([sender tag]) inRange:selectedTextRange];
+	[self insertColorCharIntoTextBox:sender asForegroundColor:YES];
 }
 
 - (void)insertBackgroundColorCharIntoTextBox:(id)sender
 {
-	if ([sender tag] == _formattingMenuRainbowColorMenuItemTag)
-	{
-		[self insertRainbowColorCharInfoTextBox:sender asForegroundColor:NO];
+	[self insertColorCharIntoTextBox:sender asForegroundColor:NO];
+}
+
+- (void)insertColorCharIntoTextBox:(id)sender asForegroundColor:(BOOL)asForegroundColor
+{
+	NSInteger tag = [sender tag];
+
+	if (tag == _formattingMenuRainbowColorMenuItemTag) {
+		[self insertRainbowColorCharInfoTextBox:sender asForegroundColor:asForegroundColor];
 
 		return;
 	}
-	else if ([sender tag] == _formattingMenuHexColorMenuItemTag)
-	{
+
+	/* The colour is applied from the panel; the tag is no colour number */
+	if (tag == _formattingMenuHexColorMenuItemTag) {
+		[self generateColorList];
+
 		NSColorPanel *colorPanel = [NSColorPanel sharedColorPanel];
 
-		[colorPanel setTarget:self];
-		[colorPanel setAction:@selector(backgroundColorPanelColorChanged:)];
-		[colorPanel setAlphaValue:1.0];
-		[colorPanel setMode:NSColorPanelModeColorList];
-		[colorPanel setColor:[NSColor formatterBlackColor]];
+		/* The starting colour before the action: setting it sends the action,
+		 which coloured the text before anything was chosen */
+		colorPanel.target = nil;
+		colorPanel.alphaValue = 1.0;
+		colorPanel.mode = NSColorPanelModeColorList;
+		colorPanel.color = ((asForegroundColor) ? [NSColor formatterWhiteColor] : [NSColor formatterBlackColor]);
+
+		colorPanel.target = self;
+		colorPanel.action = ((asForegroundColor) ? @selector(foregroundColorPanelColorChanged:) : @selector(backgroundColorPanelColorChanged:));
 
 		[colorPanel orderFront:nil];
+
+		return;
 	}
 
-	NSRange selectedTextRange = self.textField.selectedRange;
+	IRCTextFormatterEffectType effect = ((asForegroundColor) ? IRCTextFormatterEffectForegroundColor : IRCTextFormatterEffectBackgroundColor);
 
-	[self applyEffectToTextBox:IRCTextFormatterEffectBackgroundColor withValue:@([sender tag]) inRange:selectedTextRange];
+	[self applyEffectToTextBox:effect withValue:@(tag) inRange:self.textField.selectedRange];
 }
 
 - (void)insertRainbowColorCharInfoTextBox:(id)sender asForegroundColor:(BOOL)asForegroundColor
@@ -474,32 +479,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)foregroundColorPanelColorChanged:(NSColorPanel *)sender
 {
-	NSRange selectedTextRange = self.textField.selectedRange;
-
-	NSColor *color = sender.color;
-
-	NSUInteger colorDigit = [[NSColor formatterColors] indexOfObject:color];
-
-	if (colorDigit == NSNotFound) {
-		[self applyEffectToTextBox:IRCTextFormatterEffectForegroundColor withValue:color inRange:selectedTextRange];
-	} else {
-		[self applyEffectToTextBox:IRCTextFormatterEffectForegroundColor withValue:@(colorDigit) inRange:selectedTextRange];
-	}
+	[self colorPanelColorChanged:sender effect:IRCTextFormatterEffectForegroundColor];
 }
 
 - (void)backgroundColorPanelColorChanged:(NSColorPanel *)sender
 {
-	NSRange selectedTextRange = self.textField.selectedRange;
+	[self colorPanelColorChanged:sender effect:IRCTextFormatterEffectBackgroundColor];
+}
 
+/* One of the IRC colours as its number, any other as itself */
+- (void)colorPanelColorChanged:(NSColorPanel *)sender effect:(IRCTextFormatterEffectType)effect
+{
 	NSColor *color = sender.color;
 
 	NSUInteger colorDigit = [[NSColor formatterColors] indexOfObject:color];
 
-	if (colorDigit == NSNotFound) {
-		[self applyEffectToTextBox:IRCTextFormatterEffectBackgroundColor withValue:color inRange:selectedTextRange];
-	} else {
-		[self applyEffectToTextBox:IRCTextFormatterEffectBackgroundColor withValue:@(colorDigit) inRange:selectedTextRange];
-	}
+	id value = ((colorDigit == NSNotFound) ? color : @(colorDigit));
+
+	[self applyEffectToTextBox:effect withValue:value inRange:self.textField.selectedRange];
 }
 
 - (void)insertSpoilerCharIntoTextBox:(id)sender
@@ -564,14 +561,24 @@ NS_ASSUME_NONNULL_BEGIN
 	[self applyEffectToTextBox:IRCTextFormatterEffectBackgroundColor withValue:nil inRange:selectedTextRange];
 }
 
+/* One edit (and one undo step) for its three effects */
 - (void)removeSpoilerCharFromTextBox:(id)sender
 {
 	NSRange selectedTextRange = self.textField.selectedRange;
 
-	[self applyEffectToTextBox:IRCTextFormatterEffectForegroundColor withValue:nil inRange:selectedTextRange];
-	[self applyEffectToTextBox:IRCTextFormatterEffectBackgroundColor withValue:nil inRange:selectedTextRange];
+	NSMutableAttributedString *stringMutableCopy = [self mutableStringAtRange:selectedTextRange];
 
-	[self applyEffectToTextBox:IRCTextFormatterEffectSpoiler withValue:nil inRange:selectedTextRange];
+	if (stringMutableCopy == nil) {
+		return;
+	}
+
+	[self applyEffect:IRCTextFormatterEffectForegroundColor withValue:nil toMutableString:stringMutableCopy];
+	[self applyEffect:IRCTextFormatterEffectBackgroundColor withValue:nil toMutableString:stringMutableCopy];
+	[self applyEffect:IRCTextFormatterEffectSpoiler withValue:nil toMutableString:stringMutableCopy];
+
+	[self applyAttributedStringToTextBox:stringMutableCopy inRange:selectedTextRange];
+
+	[self.textField resetFontColorInRange:selectedTextRange];
 }
 
 @end
