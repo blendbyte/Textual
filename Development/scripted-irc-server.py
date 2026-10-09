@@ -10,6 +10,7 @@
 
 import argparse
 import asyncio
+import datetime
 import os
 import ssl
 import sys
@@ -961,6 +962,160 @@ async def scenario_sts(client):
 	pass
 
 
+async def run_sasl_scram(client, variant):
+	"""Shared by the sasl-scram scenarios: offers sasl=PLAIN,SCRAM-SHA-512 and
+	runs the server side of SCRAM-SHA-512 for the user "scramuser" with the
+	password "textual-scram" (set them in Textual first)."""
+	import base64, hashlib, hmac as hmac_module
+
+	username, password = "scramuser", "textual-scram"
+	salt = os.urandom(300)  # makes the server-first longer than 400 base64 characters
+	iterations = 4096
+	nickname = "*"
+	state = "start"
+	parts = []
+	auth = {}
+	outcome = []
+
+	async def send_authenticate(payload):
+		encoded = base64.b64encode(payload.encode()).decode()
+		chunks = [encoded[i:i + 400] for i in range(0, len(encoded), 400)] or [""]
+		for chunk in chunks:
+			await client.send(f"AUTHENTICATE {chunk or '+'}")
+		if len(chunks[-1]) == 400:
+			await client.send("AUTHENTICATE +")
+
+	while True:
+		line = await client.read_line()
+		if line is None:
+			break
+
+		command, _, rest = line.partition(" ")
+		command = command.upper()
+
+		if command == "CAP" and rest.upper().startswith("LS"):
+			await client.send(f":{SERVER} CAP * LS :sasl=PLAIN,SCRAM-SHA-512")
+		elif command == "CAP" and rest.upper().startswith("REQ"):
+			await client.send(f":{SERVER} CAP * ACK :{rest.split(' ', 1)[1].lstrip(':')}")
+		elif command == "NICK":
+			nickname = rest.lstrip(":")
+			client.nickname = nickname
+		elif command == "CAP" and rest.upper().startswith("END"):
+			outcome.append("CAP END")
+			break
+		elif command == "AUTHENTICATE":
+			data = rest.strip()
+
+			if state == "start" and data == "SCRAM-SHA-512":
+				if variant == "fallback":
+					await client.send(f":{SERVER} 904 {nickname} :SASL authentication failed")
+					state = "expect-plain"
+				else:
+					await client.send("AUTHENTICATE +")
+					state = "client-first"
+			elif state == "expect-plain":
+				outcome.append(f"after 904: {data}")
+				if data == "PLAIN":
+					await client.send("AUTHENTICATE +")
+					state = "plain"
+				else:
+					break
+			elif state == "plain":
+				fields = base64.b64decode(data).split(b"\0")
+				if fields[-1].decode() == password:
+					await client.send(f":{SERVER} 900 {nickname} {nickname}!u@h {username} :You are now logged in as {username}")
+					await client.send(f":{SERVER} 903 {nickname} :SASL authentication successful")
+					outcome.append("PLAIN accepted")
+				else:
+					await client.send(f":{SERVER} 904 {nickname} :SASL authentication failed")
+			elif state == "client-first":
+				parts.append("" if data == "+" else data)
+				if len(data) == 400:
+					continue
+				message = base64.b64decode("".join(parts)).decode(); parts.clear()
+				bare = message[3:]
+				attributes = dict(item.split("=", 1) for item in bare.split(","))
+				nonce = attributes["r"] + base64.b64encode(os.urandom(18)).decode()
+				server_first = f"r={nonce},s={base64.b64encode(salt).decode()},i={iterations}"
+				auth.update(bare=bare, server_first=server_first, nonce=nonce, user=attributes["n"])
+				await send_authenticate(server_first)
+				state = "client-final"
+			elif state == "client-final":
+				parts.append("" if data == "+" else data)
+				if len(data) == 400:
+					continue
+				message = base64.b64decode("".join(parts)).decode(); parts.clear()
+				without_proof, _, proof = message.rpartition(",p=")
+				salted = hashlib.pbkdf2_hmac("sha512", password.encode(), salt, iterations)
+				client_key = hmac_module.new(salted, b"Client Key", hashlib.sha512).digest()
+				stored_key = hashlib.sha512(client_key).digest()
+				auth_message = f"{auth['bare']},{auth['server_first']},{without_proof}".encode()
+				signature = hmac_module.new(stored_key, auth_message, hashlib.sha512).digest()
+				expected_proof = bytes(a ^ b for a, b in zip(client_key, signature))
+				valid = (auth["user"] == username and base64.b64decode(proof) == expected_proof and without_proof == f"c=biws,r={auth['nonce']}")
+				outcome.append(f"proof {'valid' if valid else 'INVALID'}")
+				server_key = hmac_module.new(salted, b"Server Key", hashlib.sha512).digest()
+				server_signature = hmac_module.new(server_key, auth_message, hashlib.sha512).digest()
+				if variant == "badsig":
+					server_signature = bytes(64)
+				await send_authenticate("v=" + base64.b64encode(server_signature).decode())
+				state = "server-final"
+			elif state == "server-final":
+				outcome.append(f"after server-final: {data}")
+				if data == "+":
+					await client.send(f":{SERVER} 900 {nickname} {nickname}!u@h {username} :You are now logged in as {username}")
+					await client.send(f":{SERVER} 903 {nickname} :SASL authentication successful")
+				elif data == "*":
+					await client.send(f":{SERVER} 906 {nickname} :SASL authentication aborted")
+				state = "done"
+			elif state == "done" and data == "PLAIN":
+				outcome.append("PLAIN after the abort")
+
+	print(f"CHECK: {outcome}", flush=True)
+
+	if variant == "badsig":
+		result(outcome == ["proof valid", "after server-final: *", "CAP END"],
+			"the client aborted on the wrong server signature and didn't fall back to PLAIN")
+	elif variant == "fallback":
+		result(outcome == ["after 904: PLAIN", "PLAIN accepted", "CAP END"], "the client fell back to PLAIN after 904")
+	else:
+		result(outcome == ["proof valid", "after server-final: +", "CAP END"],
+			"SCRAM-SHA-512 with a long server-first, the server signature checked and the final + sent")
+
+	if "CAP END" in outcome:
+		await client.welcome()
+		await client.collect(30)
+
+
+async def scenario_sasl_scram(client):
+	"""SCRAM-SHA-512 (set username=scramuser nicknamePassword=textual-scram):
+	the server-first is longer than 400 characters (reassembly), the proof must
+	be valid, the client must check the server signature and send the final +."""
+	await run_sasl_scram(client, "ok")
+
+
+async def scenario_sasl_scram_fallback(client):
+	"""SCRAM-SHA-512 fails with 904 (an account without SCRAM credentials): the
+	client must try PLAIN next and log in with it."""
+	await run_sasl_scram(client, "fallback")
+
+
+async def scenario_sasl_scram_badsig(client):
+	"""The server sends a wrong signature: the client must abort (AUTHENTICATE *)
+	and must not fall back to PLAIN with the password."""
+	await run_sasl_scram(client, "badsig")
+
+
+async def scenario_chathistory(client):
+	"""draft/chathistory without ZNC playback. Connection 1: #ch gets line 1
+	(msgid m1), then the server drops the connection. Connection 2 (the
+	reconnect): after the client joins #ch it must send CHATHISTORY LATEST #ch
+	msgid=m1; the batch holds line 1 again, line 2 (missed) and line 3 (our own,
+	sent from another client). #ch must show 1 once, then 2 and 3, without a
+	notification. Runs for five minutes."""
+	pass
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -992,12 +1147,86 @@ SCENARIOS = {
 	"channel-lookup": scenario_channel_lookup,
 	"standard-replies": scenario_standard_replies,
 	"sts": scenario_sts,
+	"sasl-scram": scenario_sasl_scram,
+	"chathistory": scenario_chathistory,
+	"sasl-scram-fallback": scenario_sasl_scram_fallback,
+	"sasl-scram-badsig": scenario_sasl_scram_badsig,
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes"}
+OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
+
+
+async def run_chathistory_scenario(port):
+	capabilities = "batch server-time message-tags draft/chathistory"
+	connections = 0
+
+	def stamp(seconds_ago):
+		moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(seconds=seconds_ago)
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	async def handle(reader, writer):
+		nonlocal connections
+		connections += 1
+		number = connections
+		client = Client(reader, writer)
+
+		if not await client.register_with_capabilities(capabilities):
+			writer.close()
+			return
+
+		nick = client.nickname
+
+		if number == 1:
+			await client.send(f":{nick}!user@client.textual.test JOIN #ch")
+			await client.send(f":{SERVER} 353 {nick} = #ch :{nick} gina")
+			await client.send(f":{SERVER} 366 {nick} #ch :End of /NAMES list.")
+			await client.collect(1)
+			stamps["line1"] = stamp(0)
+			await client.send(f"@msgid=m1;time={stamps['line1']} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop")
+			await client.collect(2)
+			log("<<", "dropping the connection")
+			writer.close()
+			return
+
+		requested = None
+		end = time.monotonic() + 30
+
+		while time.monotonic() < end:
+			try:
+				line = await asyncio.wait_for(client.read_line(), 1)
+			except asyncio.TimeoutError:
+				continue
+			if line is None:
+				break
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+			elif command == "JOIN":
+				await client.send(f":{nick}!user@client.textual.test JOIN #ch")
+				await client.send(f":{SERVER} 353 {nick} = #ch :{nick} gina")
+				await client.send(f":{SERVER} 366 {nick} #ch :End of /NAMES list.")
+			elif command == "CHATHISTORY":
+				requested = line
+				await client.send(f":{SERVER} BATCH +h1 chathistory #ch")
+				await client.send(f"@batch=h1;msgid=m1;time={stamps['line1']} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop")
+				await client.send(f"@batch=h1;msgid=m2;time={stamp(0)} :gina!g@friend.test PRIVMSG #ch :2 missed while disconnected")
+				await client.send(f"@batch=h1;msgid=m3;time={stamp(0)} :{nick}!user@client.textual.test PRIVMSG #ch :3 my own line from another client")
+				await client.send(f":{SERVER} BATCH -h1")
+				break
+
+		result(requested == "CHATHISTORY LATEST #ch msgid=m1 100", f"request after the rejoin: {requested!r}")
+		await client.collect(240)
+		writer.close()
+
+	stamps = {}
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'chathistory' waiting on irc://127.0.0.1:{port}", flush=True)
+	await asyncio.sleep(300)
+	server.close()
 
 
 async def run_sts_scenario(port):
@@ -1108,6 +1337,10 @@ async def main():
 
 	if arguments.scenario == "sts":
 		await run_sts_scenario(arguments.port)
+		return
+
+	if arguments.scenario == "chathistory":
+		await run_chathistory_scenario(arguments.port)
 		return
 
 	servers = [await asyncio.start_server(handle, "127.0.0.1", arguments.port, ssl=tls_context)]

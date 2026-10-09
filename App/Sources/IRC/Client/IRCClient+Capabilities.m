@@ -149,6 +149,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCSASLSCRAMPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
 #import "IRCClientInternal.h"
 
@@ -310,6 +311,11 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	atomic_store(&self->_capabilitiesPending, 0);
 
+	self.saslMechanismsToTry = nil;
+	self.saslMechanism = nil;
+	self.saslSCRAM = nil;
+	self.saslIncomingData = nil;
+
 	[self.capabilityNegotiator reset];
 }
 
@@ -398,9 +404,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	}
 	else if ([command isEqualToStringIgnoringCase:@"AUTHENTICATE"])
 	{
-		if ([modifier isEqualToString:@"+"]) {
-			[self sendSASLIdentificationInformation];
-		}
+		[self receiveSASLData:modifier];
 	}
 
 	[self postReceivedMessage:m];
@@ -480,71 +484,30 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 - (void)processPendingCapabilityForSASL:(nullable NSArray<NSString *> *)capabilityOptions
 {
-	ClientIRCv3SupportedCapability identificationMechanism = 0;
+	BOOL canUseExternal = (self.socket.isConnectedWithClientSideCertificate &&
+						   self.config.saslAuthenticationDisableExternalMechanism == NO);
 
-	if (self.socket.isConnectedWithClientSideCertificate &&
-		self.config.saslAuthenticationDisableExternalMechanism == NO)
-	{
-		if (capabilityOptions.count == 0 ||
-			[capabilityOptions containsObjectIgnoringCase:@"EXTERNAL"])
-		{
-			identificationMechanism = ClientIRCv3SupportedCapabilitySASLExternal;
+	BOOL havePassword = (self.config.nicknamePassword.length > 0);
 
-			[self enablePendingCapability:ClientIRCv3SupportedCapabilitySASLExternal];
-		}
-	}
+	NSArray *mechanisms = IRCSASLMechanismsToTry((capabilityOptions ?: @[]), canUseExternal, havePassword);
 
-	if (identificationMechanism == 0 &&
-		self.config.nicknamePassword.length > 0)
-	{
-		if (capabilityOptions.count == 0 ||
-			[capabilityOptions containsObjectIgnoringCase:@"PLAIN"])
-		{
-			identificationMechanism = ClientIRCv3SupportedCapabilitySASLPlainText;
+	self.saslMechanismsToTry = [mechanisms mutableCopy];
 
-			[self enablePendingCapability:ClientIRCv3SupportedCapabilitySASLPlainText];
-		}
-	}
-
-	if (identificationMechanism != 0) {
+	if (mechanisms.count > 0) {
 		[self enablePendingCapability:ClientIRCv3SupportedCapabilitySASLGeneric];
 	}
 }
 
-- (void)sendSASLIdentificationInformation
+/* Like registration (USER), an empty username means the nickname (R3.14) */
+- (NSString *)saslUsername
 {
-	if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilityIsInSASLNegotiation] == NO) {
-		return;
+	NSString *username = self.config.username;
+
+	if (username.length == 0) {
+		username = self.config.nickname;
 	}
 
-	if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilitySASLPlainText])
-	{
-		/* Like registration (USER), an empty username means the nickname (R3.14) */
-		NSString *username = self.config.username;
-
-		if (username.length == 0) {
-			username = self.config.nickname;
-		}
-
-		NSString *authString = [NSString stringWithFormat:@"%@%C%@%C%@",
-								 username, 0x00,
-								 username, 0x00,
-								 self.config.nicknamePassword];
-
-		NSArray *authStrings = [authString base64EncodingWithLineLength:400];
-
-		for (NSString *string in authStrings) {
-			[self sendCapabilityAuthenticate:string];
-		}
-
-		if (authStrings.count == 0 || ((NSString *)authStrings.lastObject).length == 400) {
-			[self sendCapabilityAuthenticate:@"+"];
-		}
-	}
-	else if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilitySASLExternal])
-	{
-		[self sendCapabilityAuthenticate:@"+"];
-	}
+	return username;
 }
 
 - (BOOL)sendSASLIdentificationRequest
@@ -559,25 +522,230 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	[self enablePendingCapability:ClientIRCv3SupportedCapabilityIsInSASLNegotiation];
 
-	if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilitySASLPlainText]) {
-		[self sendCapabilityAuthenticate:@"PLAIN"];
+	if ([self sendNextSASLMechanism] == NO) {
+		[self disablePendingCapability:ClientIRCv3SupportedCapabilityIsInSASLNegotiation];
 
-		return YES;
-	} else if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilitySASLExternal]) {
-		[self sendCapabilityAuthenticate:@"EXTERNAL"];
-
-		return YES;
+		return NO;
 	}
 
-	return NO;
+	return YES;
+}
+
+/* Starts the next mechanism (EXTERNAL, SCRAM-SHA-512, SCRAM-SHA-256, PLAIN);
+ NO when none is left */
+- (BOOL)sendNextSASLMechanism
+{
+	self.saslSCRAM = nil;
+	self.saslSCRAMStep = 0;
+	self.saslIncomingData = nil;
+
+	NSString *mechanism = self.saslMechanismsToTry.firstObject;
+
+	if (mechanism == nil) {
+		self.saslMechanism = nil;
+
+		return NO;
+	}
+
+	[self.saslMechanismsToTry removeObjectAtIndex:0];
+
+	self.saslMechanism = mechanism;
+
+	IRCSASLSCRAMHash hash = IRCSASLSCRAMHashSHA256;
+
+	if ([IRCSASLSCRAM hash:&hash forMechanismName:mechanism]) {
+		self.saslSCRAM = [[IRCSASLSCRAM alloc] initWithHash:hash
+												   username:[self saslUsername]
+												   password:self.config.nicknamePassword
+												clientNonce:nil];
+	}
+
+	[self sendCapabilityAuthenticate:mechanism];
+
+	return YES;
+}
+
+/* RPL_SASLMECHS: only these are worth trying after the current one fails */
+- (void)receiveSASLMechanismList:(NSString *)mechanisms
+{
+	NSParameterAssert(mechanisms != nil);
+
+	NSArray *offered = [mechanisms componentsSeparatedByString:@","];
+
+	[self.saslMechanismsToTry filterUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSString *mechanism, id bindings) {
+		return [offered containsObjectIgnoringCase:mechanism];
+	}]];
+}
+
+/* AUTHENTICATE from the server: base64 in parts of 400 characters, a part
+ shorter than 400 (or "+") ending it */
+- (void)receiveSASLData:(NSString *)data
+{
+	NSParameterAssert(data != nil);
+
+	if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilityIsInSASLNegotiation] == NO) {
+		return;
+	}
+
+	NSMutableString *buffer = self.saslIncomingData;
+
+	if (buffer == nil) {
+		buffer = [NSMutableString string];
+	}
+
+	if ([data isEqualToString:@"+"] == NO) {
+		[buffer appendString:data];
+	}
+
+	if (data.length == 400) {
+		self.saslIncomingData = buffer;
+
+		return;
+	}
+
+	self.saslIncomingData = nil;
+
+	NSString *challenge = @"";
+
+	if (buffer.length > 0) {
+		NSData *decoded = [[NSData alloc] initWithBase64EncodedString:buffer options:0];
+
+		challenge = [[NSString alloc] initWithData:decoded encoding:NSUTF8StringEncoding];
+
+		if (challenge == nil) {
+			[self abortSASLAuthentication];
+
+			return;
+		}
+	}
+
+	[self respondToSASLChallenge:challenge];
+}
+
+/* A response in base64 parts of 400, followed by "+" when empty or when the last part is exactly 400 */
+- (void)sendSASLResponse:(NSString *)response
+{
+	NSParameterAssert(response != nil);
+
+	NSArray *parts = [response base64EncodingWithLineLength:400];
+
+	for (NSString *part in parts) {
+		[self sendCapabilityAuthenticate:part];
+	}
+
+	if (parts.count == 0 || ((NSString *)parts.lastObject).length == 400) {
+		[self sendCapabilityAuthenticate:@"+"];
+	}
+}
+
+- (void)abortSASLAuthentication
+{
+	self.saslSCRAM = nil;
+
+	/* The server answers with ERR_SASLABORTED, which ends negotiation */
+	[self sendCapabilityAuthenticate:@"*"];
+}
+
+- (void)respondToSASLChallenge:(NSString *)challenge
+{
+	NSParameterAssert(challenge != nil);
+
+	NSString *mechanism = self.saslMechanism;
+
+	if ([mechanism isEqualToString:@"PLAIN"]) {
+		NSString *username = [self saslUsername];
+
+		[self sendSASLResponse:[NSString stringWithFormat:@"%@%C%@%C%@", username, 0x00, username, 0x00, self.config.nicknamePassword]];
+	} else if ([mechanism isEqualToString:@"EXTERNAL"]) {
+		[self sendCapabilityAuthenticate:@"+"];
+	} else if (self.saslSCRAM) {
+		[self respondToSCRAMChallenge:challenge];
+	}
+}
+
+- (void)respondToSCRAMChallenge:(NSString *)challenge
+{
+	IRCSASLSCRAM *scram = self.saslSCRAM;
+
+	switch (self.saslSCRAMStep) {
+		case 0: // the server is ready
+		{
+			self.saslSCRAMStep = 1;
+
+			[self sendSASLResponse:scram.clientFirstMessage];
+
+			break;
+		}
+		case 1: // server-first
+		{
+			if ([scram processServerFirstMessage:challenge] == NO) {
+				[self abortSASLAuthentication];
+
+				return;
+			}
+
+			self.saslSCRAMStep = 2;
+
+			/* PBKDF2 can take a while */
+			__weak IRCClient *weakSelf = self;
+
+			dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+				NSString *clientFinalMessage = [scram clientFinalMessage];
+
+				dispatch_async(dispatch_get_main_queue(), ^{
+					IRCClient *client = weakSelf;
+
+					if (client == nil || client.saslSCRAM != scram) {
+						return;
+					}
+
+					if (clientFinalMessage == nil) {
+						[client abortSASLAuthentication];
+
+						return;
+					}
+
+					client.saslSCRAMStep = 3;
+
+					[client sendSASLResponse:clientFinalMessage];
+				});
+			});
+
+			break;
+		}
+		case 3: // server-final
+		{
+			/* Never continue (or fall back to PLAIN) with a server that can't prove it knows the password */
+			if ([scram verifyServerFinalMessage:challenge] == NO) {
+				[self printDebugInformationToConsole:TXTLS(@"IRC[sc7-v1]", scram.mechanismName)];
+
+				[self abortSASLAuthentication];
+
+				return;
+			}
+
+			self.saslSCRAMStep = 4;
+
+			[self sendCapabilityAuthenticate:@"+"];
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
 }
 
 - (void)resetSASLNegotiation
 {
 	[self disablePendingCapability:ClientIRCv3SupportedCapabilitySASLGeneric];
-	[self disablePendingCapability:ClientIRCv3SupportedCapabilitySASLPlainText];
-	[self disablePendingCapability:ClientIRCv3SupportedCapabilitySASLExternal];
 	[self disablePendingCapability:ClientIRCv3SupportedCapabilityIsInSASLNegotiation];
+
+	self.saslMechanismsToTry = nil;
+	self.saslMechanism = nil;
+	self.saslSCRAM = nil;
+	self.saslIncomingData = nil;
 
 	[self disableCapability:ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL];
 }

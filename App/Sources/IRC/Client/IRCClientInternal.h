@@ -45,6 +45,7 @@
 
 @class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessageContainer;
 @class TDCServerChannelListDialog, TLOFileLogger, TLOTimer;
+@class IRCSASLSCRAM;
 @class IRCUserList;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -145,6 +146,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger autojoinDelayedWarningCount;
 @property (nonatomic, copy, nullable) NSString *tryingNicknameSentNickname;
 @property (nonatomic, strong) NSMutableArray<IRCChannel *> *channelListPrivate;
+@property (nonatomic, strong, nullable) NSMutableArray<NSString *> *saslMechanismsToTry; // left to try, in order
+@property (nonatomic, copy, nullable) NSString *saslMechanism; // being tried
+@property (nonatomic, strong, nullable) IRCSASLSCRAM *saslSCRAM;
+@property (nonatomic, assign) NSUInteger saslSCRAMStep;
+@property (nonatomic, strong, nullable) NSMutableString *saslIncomingData; // an AUTHENTICATE message arriving in 400-byte parts
 @property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
 @property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last connection ended
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate
@@ -296,6 +302,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)disablePendingCapability:(ClientIRCv3SupportedCapability)capability;
 - (BOOL)isPendingCapabilityEnabled:(ClientIRCv3SupportedCapability)capability;
 - (void)resetSASLNegotiation;
+- (BOOL)sendNextSASLMechanism;
+- (void)receiveSASLMechanismList:(NSString *)mechanisms;
 - (void)resumeCapabilityNegotiation;
 - (void)receiveCapabilityOrAuthenticationRequest:(IRCMessage *)m;
 @end

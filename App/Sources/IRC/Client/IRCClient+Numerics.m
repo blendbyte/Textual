@@ -1750,13 +1750,43 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		case RPL_SASLMECHS:
+		{
+			/* Followed by ERR_SASLFAIL; narrows what is tried next */
+			if ([m paramsCount] >= 2) {
+				[self receiveSASLMechanismList:[m paramAt:1]];
+			}
+
+			if (printMessage) {
+				[self printErrorReply:m];
+			}
+
+			break;
+		}
+		case ERR_SASLFAIL:
+		{
+			if (printMessage) {
+				[self printErrorReply:m];
+			}
+
+			/* The next mechanism (a server may lack SCRAM credentials for an account) */
+			if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilityIsInSASLNegotiation] && [self sendNextSASLMechanism]) {
+				break;
+			}
+
+			if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilityIsInSASLNegotiation]) {
+				[self disablePendingCapability:ClientIRCv3SupportedCapabilityIsInSASLNegotiation];
+
+				[self resumeCapabilityNegotiation];
+			}
+
+			break;
+		}
 		case RPL_SASLSUCCESS:
 		case ERR_NICKLOCKED:
-		case ERR_SASLFAIL:
 		case ERR_SASLTOOLONG:
 		case ERR_SASLABORTED:
 		case ERR_SASLALREADY:
-		case RPL_SASLMECHS: /* Treated as error */
 		{
 			if (numeric == RPL_SASLSUCCESS) {
 				self.isAuthenticatedWithSASL = YES;
