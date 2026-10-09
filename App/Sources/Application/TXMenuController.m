@@ -305,13 +305,93 @@ NS_ASSUME_NONNULL_BEGIN
 	return validationResult;
 }
 
+/* Each menu has its own validator. An item's tag starts with its menu's number
+ (Server items are 5xx) and a submenu's items carry their parent's tag × 10000
+ (Channel → Modes is 609, its items 6090000…). */
 - (BOOL)_validateMenuItem:(NSMenuItem *)menuItem
 {
 	NSParameterAssert(menuItem != nil);
 
+	NSInteger tag = menuItem.tag;
+
+	if (tag < 100) {
+		return [self _validateMainMenuItem:menuItem];
+	}
+
+	if (tag >= 10000) {
+		tag /= 10000;
+	}
+
+	switch (tag / 100) {
+		case 1: // App
+		{
+			return [self _validateAppMenuItem:menuItem];
+		}
+		case 2: // File
+		{
+			return [self _validateFileMenuItem:menuItem];
+		}
+		case 3: // Edit
+		{
+			return [self _validateEditMenuItem:menuItem];
+		}
+		case 4: // View
+		{
+			return [self _validateViewMenuItem:menuItem];
+		}
+		case 5: // Server
+		{
+			return [self _validateServerMenuItem:menuItem];
+		}
+		case 6: // Channel
+		{
+			return [self _validateChannelMenuItem:menuItem];
+		}
+		case 18: // Query
+		{
+			return [self _validateQueryMenuItem:menuItem];
+		}
+		case 7: // Navigation
+		{
+			return [self _validateNavigationMenuItem:menuItem];
+		}
+		case 8: // Window
+		{
+			return [self _validateWindowMenuItem:menuItem];
+		}
+		case 9: // Help
+		{
+			return [self _validateHelpMenuItem:menuItem];
+		}
+		case 16: // UserControls
+		{
+			return [self _validateUserControlsMenuItem:menuItem];
+		}
+		case 10: // WebView: channel names
+		case 11: // WebView: links
+		case 12: // WebView: everything else
+		{
+			return [self _validateWebViewMenuItem:menuItem];
+		}
+		case 13: // Main window: add button
+		case 14: // Main window: server list
+		{
+			return [self _validateMainWindowMenuItem:menuItem];
+		}
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* The main menu's own items (its submenus) */
+- (BOOL)_validateMainMenuItem:(NSMenuItem *)menuItem
+{
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
 	IRCChannel *c = mainWindow().selectedChannel;
 
 	switch (tag) {
@@ -329,6 +409,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			return YES;
 		}
+
 		case MTMainMenuQuery: // "Query"
 		{
 			BOOL isQuery = (c.isPrivateMessage || c.isUtility);
@@ -344,6 +425,21 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* App */
+- (BOOL)_validateAppMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	switch (tag) {
 		case MTMMAppManageLicense: // "Manage license…"
 		{
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 0
@@ -352,6 +448,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			return YES;
 		}
+
 		case MTMMAppCheckForUpdates: // "Check for Updates"
 		{
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 0
@@ -361,6 +458,24 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* File */
+- (BOOL)_validateFileMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+	IRCChannel *c = mainWindow().selectedChannel;
+
+	switch (tag) {
 		case MTMMFileCloseWindow: // "Close Window"
 		{
 			TXCommandWKeyAction keyAction = [TPCPreferences commandWKeyAction];
@@ -423,7 +538,447 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Edit */
+- (BOOL)_validateEditMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	switch (tag) {
 		case MTMMEditPaste: // "Paste"
+		{
+			NSString *currentPasteboard = RZPasteboard().stringContent;
+
+			if (currentPasteboard.length == 0) {
+				return NO;
+			}
+
+			if (mainWindow().keyWindow) {
+				return mainWindowTextField().editable;
+			}
+
+			id firstResponder = [NSApp keyWindow].firstResponder;
+
+			if ([firstResponder respondsToSelector:@selector(isEditable)]) {
+				return [firstResponder isEditable];
+			}
+
+			return NO;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* View */
+- (BOOL)_validateViewMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	switch (tag) {
+		case MTMMViewMarkScrollback: // "Mark Scrollback"
+		case MTMMViewScrollbackMarker: // "Scrollback Marker"
+		case MTMMViewMarkAllAsRead: // "Mark All as Read"
+		case MTMMViewClearScrollback: // "Clear Scrollback"
+		case MTMMViewIncreaseFontSize: // "Increase Font Size"
+		case MTMMViewDecreaseFontSize: // "Decrease Font Size"
+		{
+			return (self.selectedViewController != nil);
+		}
+
+		case MTMMViewToggleFullscreen:
+		{
+			NSWindowCollectionBehavior collectionBehavior = [NSApp keyWindow].collectionBehavior;
+
+			return ((collectionBehavior & NSWindowCollectionBehaviorFullScreenAuxiliary) == NSWindowCollectionBehaviorFullScreenAuxiliary ||
+					(collectionBehavior & NSWindowCollectionBehaviorFullScreenPrimary) == NSWindowCollectionBehaviorFullScreenPrimary);
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Server */
+- (BOOL)_validateServerMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+
+	switch (tag) {
+		case MTMMServerConnect: // "Connect"
+		{
+			if (u == nil) {
+				menuItem.hidden = NO;
+				
+				return NO;
+			}
+
+			BOOL connected = (u.isConnected || u.isConnecting);
+			
+			menuItem.hidden = connected;
+
+			return (connected == NO && u.isQuitting == NO);
+		}
+
+		case MTMMServerConnectWithoutProxy: // "Connect Without Proxy"
+		{
+			/* Shift alone; Caps Lock and the function key don't count */
+			NSEventModifierFlags flags = ([NSEvent modifierFlags] & (NSEventModifierFlagShift | NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagCommand));
+
+			if (flags != NSEventModifierFlagShift) {
+				menuItem.hidden = YES;
+
+				return NO;
+			}
+
+			if (u == nil) {
+				menuItem.hidden = YES;
+
+				return NO;
+			}
+
+			BOOL condition = (u.isConnected || u.isConnecting ||
+					u.config.proxyType == IRCConnectionProxyTypeNone);
+
+			menuItem.hidden = condition;
+
+			return (condition == NO && u.isQuitting == NO);
+		}
+
+		case MTMMServerDisconnect: // "Disconnect"
+		{
+			BOOL connected = (u.isConnected || u.isConnecting);
+			
+			menuItem.hidden = (connected == NO);
+			
+			return connected;
+		}
+
+		case MTMMServerCancelReconnect: // "Cancel Reconnect"
+		{
+			BOOL reconnecting = u.isReconnecting;
+			
+			menuItem.hidden = (reconnecting == NO);
+			
+			return reconnecting;
+		}
+
+		case MTMMServerChannelList: // "Channel List…"
+		{
+			return u.isLoggedIn;
+		}
+
+		case MTMMServerChangeNickname: // "Change Nickname…"
+		{
+			return u.isConnected;
+		}
+
+		case MTMMServerDuplicateServer: // "Duplicate Server"
+		case MTMMServerAddChannel: // "Add Channel…"
+		case MTMMServerServerProperties: // "Server Properties…"
+		{
+			return (u != nil);
+		}
+
+		case MTMMServerDeleteServer: // "Delete Server…"
+		{
+			return (u && u.isConnecting == NO && u.isConnected == NO);
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Channel */
+- (BOOL)_validateChannelMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+	IRCChannel *c = mainWindow().selectedChannel;
+
+	switch (tag) {
+		case MTMMChannelJoinChannel: // "Join Channel"
+		{
+			menuItem.hidden = (u.isLoggedIn == NO || c.isActive);
+
+			return YES;
+		}
+
+		case MTMMChannelLeaveChannel: // "Leave Channel"
+		{
+			menuItem.hidden = (u.isLoggedIn == NO || c.isActive == NO);
+
+			NSMenuItem *joinChannel = [menuItem.menu itemWithTag:MTMMChannelJoinChannel];
+
+			[menuItem.menu itemWithTag:MTMMChannelLeaveChannelSeparator].hidden = (menuItem.hidden && joinChannel.hidden);
+
+			return YES;
+		}
+
+		case MTMMChannelAddChannel: // "Add Channel…"
+		{
+			return (u != nil);
+		}
+
+		case MTMMChannelViewLogs: // "View Logs"
+		{
+			return [TPCPreferences logToDiskIsEnabled];
+		}
+
+		case MTMMChannelModifyTopic: // "Modify Topic"
+		case MTMMChannelModesMenu: // "Modes"
+		case MTMMChannelListOfBans: // "List of Bans"
+		{
+			return (u.isLoggedIn && c.isActive);
+		}
+
+		case MTMMChannelListOfBanExceptions: // "List of Ban Exceptions"
+		{
+			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeBanException] == NO);
+
+			return (u.isLoggedIn && c.isActive);
+		}
+
+		case MTMMChannelListOfInviteExceptions: // "List of Invite Exceptions"
+		{
+			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeInviteException] == NO);
+
+			return (u.isLoggedIn && c.isActive);
+		}
+
+		case MTMMChannelListOfQuiets: // "List of Quiets"
+		{
+			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeQuiet] == NO);
+
+			return (u.isLoggedIn && c.isActive);
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Query */
+- (BOOL)_validateQueryMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCChannel *c = mainWindow().selectedChannel;
+
+	switch (tag) {
+		case MTMMQueryQueryLogs: // "Query Logs"
+		{
+			/* Query menu is used for utility windows too so we
+			 hide "Query Logs" for anything except private messages. */
+			BOOL isQuery = c.isPrivateMessage;
+
+			menuItem.hidden = (isQuery == NO);
+
+			[menuItem.menu itemWithTag:MTMMQueryCloseQuerySeparator].hidden = (isQuery == NO);
+
+			return [TPCPreferences logToDiskIsEnabled];
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Navigation */
+- (BOOL)_validateNavigationMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	switch (tag) {
+		case MTMMNavigationJumpToCurrentSession: // "Jump to Current Session"
+		case MTMMNavigationJumpToPresent: // "Jump to Present"
+		{
+			return (self.selectedViewController != nil);
+		}
+
+		case MTMMNavigationNextHighlight: // "Next Highlight"
+		case MTMMNavigationPreviousHighlight: // "Previous Highlight"
+		{
+			TVCLogController *viewController = self.selectedViewController;
+
+			if (viewController == nil) {
+				return NO;
+			}
+
+			return [viewController highlightAvailable:(tag == MTMMNavigationPreviousHighlight)];
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Window */
+- (BOOL)_validateWindowMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+	IRCChannel *c = mainWindow().selectedChannel;
+
+	switch (tag) {
+		case MTMMWindowToggleVisibilityOfServerList: // "Toggle Visibility of Server List"
+		case MTMMWindowSortChannelList: // "Sort Channel List"
+		case MTMMWindowCenterWindow: // "Center Window"
+		case MTMMWindowResetWindowToDefaultSize: // "Reset Window to Default Size"
+		{
+			BOOL isMainWindowMain = mainWindow().mainWindow;
+
+			menuItem.hidden = (isMainWindowMain == NO);
+
+			if (tag == MTMMWindowSortChannelList) {
+				[menuItem.menu itemWithTag:MTMMWindowSortChannelListSeparator].hidden = (isMainWindowMain == NO);
+			} else if (tag == MTMMWindowResetWindowToDefaultSize) {
+				[menuItem.menu itemWithTag:MTMMWindowResetWindowToDefaultSizeSeparator].hidden = (isMainWindowMain == NO);
+			}
+
+			return YES;
+		}
+
+		case MTMMWindowMainWindow: // "Main Window"
+		{
+			BOOL isMainWindowMain = mainWindow().mainWindow;
+			BOOL isMainWindowDisabled = mainWindow().disabled;
+
+			menuItem.hidden = isMainWindowMain;
+
+			return (isMainWindowDisabled == NO);
+		}
+
+		case MTMMWindowToggleVisibilityOfMemberList: // "Toggle Visibility of Member List"
+		{
+			BOOL isMainWindowMain = mainWindow().mainWindow;
+
+			menuItem.hidden = (isMainWindowMain == NO);
+
+			return c.isChannel;
+		}
+
+		case MTMMWindowToggleWindowAppearance: // "Toggle Window Appearance"
+		{
+			BOOL isMainWindowMain = mainWindow().mainWindow;
+
+			menuItem.hidden = (isMainWindowMain == NO);
+
+			[menuItem.menu itemWithTag:MTMMWindowToggleWindowAppearanceSeparator].hidden = (isMainWindowMain == NO);
+
+			return YES;
+		}
+
+		case MTMMWindowAddressBook: // "Address Book"
+		case MTMMWindowIgnoreList: // "Ignore List"
+		{
+			BOOL isMainWindowMain = mainWindow().mainWindow;
+
+			menuItem.hidden = (isMainWindowMain == NO);
+
+			return (u != nil);
+		}
+
+		case MTMMWindowViewLogs: // "View Logs"
+		{
+			return [TPCPreferences logToDiskIsEnabled];
+		}
+
+		case MTMMWindowHighlightList: // "Highlight List"
+		{
+			BOOL isMainWindowMain = mainWindow().mainWindow;
+
+			menuItem.hidden = (isMainWindowMain == NO);
+
+			if (u == nil) {
+				return NO;
+			}
+
+			return [TPCPreferences logHighlights];
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* Help */
+- (BOOL)_validateHelpMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	switch (tag) {
+		case MTMMHelpAdvancedMenuEnableDeveloperMode: // Developer Mode
+		{
+			if ([TPCPreferences developerModeEnabled]) {
+				menuItem.state = NSControlStateValueOn;
+			} else {
+				menuItem.state = NSControlStateValueOff;
+			}
+
+			return YES;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* The chat view's context menus */
+- (BOOL)_validateWebViewMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+	IRCChannel *c = mainWindow().selectedChannel;
+
+	switch (tag) {
 		case MTWKGeneralPaste: // "Paste" (WebView)
 		{
 			NSString *currentPasteboard = RZPasteboard().stringContent;
@@ -445,244 +1000,221 @@ NS_ASSUME_NONNULL_BEGIN
 			return NO;
 		}
 
-		case MTMMViewMarkScrollback: // "Mark Scrollback"
-		case MTMMViewScrollbackMarker: // "Scrollback Marker"
-		case MTMMViewMarkAllAsRead: // "Mark All as Read"
-		case MTMMViewClearScrollback: // "Clear Scrollback"
-		case MTMMViewIncreaseFontSize: // "Increase Font Size"
-		case MTMMViewDecreaseFontSize: // "Decrease Font Size"
-		case MTMMNavigationJumpToCurrentSession: // "Jump to Current Session"
-		case MTMMNavigationJumpToPresent: // "Jump to Present"
-		{
-			return (self.selectedViewController != nil);
-		}
-		case MTMMViewToggleFullscreen:
-		{
-			NSWindowCollectionBehavior collectionBehavior = [NSApp keyWindow].collectionBehavior;
-
-			return ((collectionBehavior & NSWindowCollectionBehaviorFullScreenAuxiliary) == NSWindowCollectionBehaviorFullScreenAuxiliary ||
-					(collectionBehavior & NSWindowCollectionBehaviorFullScreenPrimary) == NSWindowCollectionBehaviorFullScreenPrimary);
-		}
-
-		case MTMMServerConnect: // "Connect"
-		{
-			if (u == nil) {
-				menuItem.hidden = NO;
-				
-				return NO;
-			}
-
-			BOOL connected = (u.isConnected || u.isConnecting);
-			
-			menuItem.hidden = connected;
-
-			return (connected == NO && u.isQuitting == NO);
-		}
-		case MTMMServerConnectWithoutProxy: // "Connect Without Proxy"
-		{
-			NSUInteger flags = ([NSEvent modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask);
-
-			if (flags != NSEventModifierFlagShift) {
-				menuItem.hidden = YES;
-
-				return NO;
-			}
-
-			if (u == nil) {
-				menuItem.hidden = YES;
-
-				return NO;
-			}
-
-			BOOL condition = (u.isConnected || u.isConnecting ||
-					u.config.proxyType == IRCConnectionProxyTypeNone);
-
-			menuItem.hidden = condition;
-
-			return (condition == NO && u.isQuitting == NO);
-		}
-		case MTMMServerDisconnect: // "Disconnect"
-		{
-			BOOL connected = (u.isConnected || u.isConnecting);
-			
-			menuItem.hidden = (connected == NO);
-			
-			return connected;
-		}
-		case MTMMServerCancelReconnect: // "Cancel Reconnect"
-		{
-			BOOL reconnecting = u.isReconnecting;
-			
-			menuItem.hidden = (reconnecting == NO);
-			
-			return reconnecting;
-		}
-		case MTMMServerChannelList: // "Channel List…"
-		{
-			return u.isLoggedIn;
-		}
-		case MTMMServerChangeNickname: // "Change Nickname…"
 		case MTWKGeneralChangeNickname: // "Change Nickname…"
 		{
 			return u.isConnected;
 		}
-		case MTMMServerDuplicateServer: // "Duplicate Server"
-		case MTMMServerAddChannel: // "Add Channel…"
-		case MTMMServerServerProperties: // "Server Properties…"
-		{
-			return (u != nil);
-		}
-		case MTMMServerDeleteServer: // "Delete Server…"
-		{
-			return (u && u.isConnecting == NO && u.isConnected == NO);
-		}
 
-		case MTMMNavigationNextHighlight: // "Next Highlight"
-		case MTMMNavigationPreviousHighlight: // "Previous Highlight"
+		case MTWKGeneralSearchWithGoogle: // "Search With Google"
 		{
-			TVCLogController *viewController = self.selectedViewController;
+			TVCLogView *webView = self.selectedViewControllerBackingView;
 
-			if (viewController == nil) {
+			if (webView == nil) {
 				return NO;
 			}
 
-			return [viewController highlightAvailable:(tag == MTMMNavigationPreviousHighlight)];
+			NSString *searchProviderName = [self searchProviderName];
+
+			menuItem.title = TXTLS(@"BasicLanguage[1ll-h9]", searchProviderName);
+
+			return webView.hasSelection;
 		}
 
-		case MTMMChannelJoinChannel: // "Join Channel"
+		case MTWKGeneralLookUpInDictionary: // "Look Up in Dictionary"
 		{
-			menuItem.hidden = (u.isLoggedIn == NO || c.isActive);
+			TVCLogView *webView = self.selectedViewControllerBackingView;
 
-			return YES;
-		}
-		case MTMMChannelLeaveChannel: // "Leave Channel"
-		{
-			menuItem.hidden = (u.isLoggedIn == NO || c.isActive == NO);
-
-			NSMenuItem *joinChannel = [menuItem.menu itemWithTag:MTMMChannelJoinChannel];
-
-			[menuItem.menu itemWithTag:MTMMChannelLeaveChannelSeparator].hidden = (menuItem.hidden && joinChannel.hidden);
-
-			return YES;
-		}
-		case MTMMChannelAddChannel: // "Add Channel…"
-		{
-			return (u != nil);
-		}
-		case MTMMChannelViewLogs: // "View Logs"
-		{
-			return [TPCPreferences logToDiskIsEnabled];
-		}
-		case MTMMChannelModifyTopic: // "Modify Topic"
-		case MTMMChannelModesMenu: // "Modes"
-		case MTMMChannelListOfBans: // "List of Bans"
-		{
-			return (u.isLoggedIn && c.isActive);
-		}
-		case MTMMChannelListOfBanExceptions: // "List of Ban Exceptions"
-		{
-			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeBanException] == NO);
-
-			return (u.isLoggedIn && c.isActive);
-		}
-		case MTMMChannelListOfInviteExceptions: // "List of Invite Exceptions"
-		{
-			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeInviteException] == NO);
-
-			return (u.isLoggedIn && c.isActive);
-		}
-		case MTMMChannelListOfQuiets: // "List of Quiets"
-		{
-			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeQuiet] == NO);
-
-			return (u.isLoggedIn && c.isActive);
-		}
-
-		case MTMMQueryQueryLogs: // "Query Logs"
-		{
-			/* Query menu is used for utility windows too so we
-			 hide "Query Logs" for anything except private messages. */
-			BOOL isQuery = c.isPrivateMessage;
-
-			menuItem.hidden = (isQuery == NO);
-
-			[menuItem.menu itemWithTag:MTMMQueryCloseQuerySeparator].hidden = (isQuery == NO);
-
-			return [TPCPreferences logToDiskIsEnabled];
-		}
-
-		case MTMMWindowToggleVisibilityOfServerList: // "Toggle Visibility of Server List"
-		case MTMMWindowSortChannelList: // "Sort Channel List"
-		case MTMMWindowCenterWindow: // "Center Window"
-		case MTMMWindowResetWindowToDefaultSize: // "Reset Window to Default Size"
-		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-
-			menuItem.hidden = (isMainWindowMain == NO);
-
-			if (tag == MTMMWindowSortChannelList) {
-				[menuItem.menu itemWithTag:MTMMWindowSortChannelListSeparator].hidden = (isMainWindowMain == NO);
-			} else if (tag == MTMMWindowResetWindowToDefaultSize) {
-				[menuItem.menu itemWithTag:MTMMWindowResetWindowToDefaultSizeSeparator].hidden = (isMainWindowMain == NO);
-			}
-
-			return YES;
-		}
-		case MTMMWindowMainWindow: // "Main Window"
-		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-			BOOL isMainWindowDisabled = mainWindow().disabled;
-
-			menuItem.hidden = isMainWindowMain;
-
-			return (isMainWindowDisabled == NO);
-		}
-		case MTMMWindowToggleVisibilityOfMemberList: // "Toggle Visibility of Member List"
-		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-
-			menuItem.hidden = (isMainWindowMain == NO);
-
-			return c.isChannel;
-		}
-		case MTMMWindowToggleWindowAppearance: // "Toggle Window Appearance"
-		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-
-			menuItem.hidden = (isMainWindowMain == NO);
-
-			[menuItem.menu itemWithTag:MTMMWindowToggleWindowAppearanceSeparator].hidden = (isMainWindowMain == NO);
-
-			return YES;
-		}
-		case MTMMWindowAddressBook: // "Address Book"
-		case MTMMWindowIgnoreList: // "Ignore List"
-		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-
-			menuItem.hidden = (isMainWindowMain == NO);
-
-			return (u != nil);
-		}
-		case MTMMWindowViewLogs: // "View Logs"
-		{
-			return [TPCPreferences logToDiskIsEnabled];
-		}
-		case MTMMWindowHighlightList: // "Highlight List"
-		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-
-			menuItem.hidden = (isMainWindowMain == NO);
-
-			if (u == nil) {
+			if (webView == nil) {
 				return NO;
 			}
 
-			return [TPCPreferences logHighlights];
+			NSString *selection = webView.selection;
+
+			NSUInteger selectionLength = selection.length;
+
+			if (selectionLength == 0 || selectionLength > 40) {
+				menuItem.title = TXTLS(@"BasicLanguage[o5l-4s]");
+
+				return NO;
+			}
+
+			if (selectionLength > 25) {
+				selection = [selection substringToIndex:24];
+
+				selection = [NSString stringWithFormat:@"%@…", selection.trim];
+			}
+
+			menuItem.title = TXTLS(@"BasicLanguage[zxs-yy]", selection);
+
+			return (selectionLength > 0);
 		}
 
+		case MTWKGeneralCopy: // "Copy" (WebView)
+		{
+			TVCLogView *webView = self.selectedViewControllerBackingView;
+
+			if (webView == nil) {
+				return NO;
+			}
+
+			return webView.hasSelection;
+		}
+
+		case MTWKGeneralQueryLogs: // "Query Logs" (WebKit)
+		{
+			menuItem.hidden = (c.isPrivateMessage == NO);
+
+			return [TPCPreferences logToDiskIsEnabled];
+		}
+
+		case MTWKGeneralChannelMenu: // "Channel" (WebKit)
+		{
+			menuItem.hidden = (c.isChannel == NO);
+
+			/* "Query Logs" will appear above this menu item,
+			 but if this is neither channel or query, then we
+			 have to hide the separator above that so it's not
+			 just sitting there with nothing beneath it. */
+			NSMenuItem *queryLogs = [menuItem.menu itemWithTag:MTWKGeneralQueryLogs];
+
+			[menuItem.menu itemWithTag:MTWKGeneralPasteSeparator].hidden = (menuItem.hidden && queryLogs.hidden);
+
+			return YES;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* The main window's add button */
+- (BOOL)_validateMainWindowMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+
+	switch (tag) {
+		case MTMainWindowSegmentedControllerAddChannel: // "Add Channel…"
+		{
+			return (u != nil);
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+	return YES;
+}
+
+/* The Give/Take items show what can be given or taken from the selected
+ member, so they are shown and hidden as a group. This runs while "Add Ignore",
+ the menu's first item, is validated: the items below it are validated later in
+ the same pass and then see their new visibility. (Run for "All Modes Taken",
+ the group's last item, the menu showed what was right the time before.) */
+- (void)_updateUserControlsModeItems:(NSMenuItem *)menuItem
+{
+	NSParameterAssert(menuItem != nil);
+
+	NSMenu *menu = menuItem.menu;
+
+	IRCClient *u = mainWindow().selectedClient;
+	IRCChannel *c = mainWindow().selectedChannel;
+
+#define _setHidden(tag, value)		[menu itemWithTag:(tag)].hidden = (value)
+
+	if (c.isChannel == NO) {
+		_setHidden(MTUserControlsGiveOp, YES);
+		_setHidden(MTUserControlsGiveHalfop, YES);
+		_setHidden(MTUserControlsGiveVoice, YES);
+		_setHidden(MTUserControlsTakeOp, YES);
+		_setHidden(MTUserControlsTakeHalfop, YES);
+		_setHidden(MTUserControlsTakeVoice, YES);
+
+		_setHidden(MTUserControlsAllModesGiven, YES);
+		_setHidden(MTUserControlsAllModesGivenSeparator, YES);
+		_setHidden(MTUserControlsAllModesTaken, YES);
+		_setHidden(MTUserControlsAllModesTakenSeparator, YES);
+
+		return;
+	}
+
+	_setHidden(MTUserControlsAllModesGivenSeparator, NO);
+	_setHidden(MTUserControlsAllModesTakenSeparator, NO);
+
+	/* Never offered when the server has no such prefix, however many are selected */
+	BOOL halfOpModeSupported = [u.supportInfo modeSymbolIsUserPrefix:@"h"];
+
+	NSArray *nicknames = [self selectedMembers:menuItem];
+
+	if (nicknames.count == 1)
+	{
+		IRCChannelUser *user = nicknames[0];
+
+		IRCUserRank userRanks = user.ranks;
+
+		BOOL UserHasModeO = ((userRanks & IRCUserRankNormalOperator) == IRCUserRankNormalOperator);
+		BOOL UserHasModeH = NO;
+		BOOL UserHasModeV = ((userRanks & IRCUserRankVoiced) == IRCUserRankVoiced);
+
+		_setHidden(MTUserControlsGiveOp, UserHasModeO);
+		_setHidden(MTUserControlsGiveVoice, UserHasModeV);
+		_setHidden(MTUserControlsTakeOp, (UserHasModeO == NO));
+		_setHidden(MTUserControlsTakeVoice, (UserHasModeV == NO));
+
+		if (halfOpModeSupported == NO) {
+			_setHidden(MTUserControlsGiveHalfop, YES);
+			_setHidden(MTUserControlsTakeHalfop, YES);
+		} else {
+			UserHasModeH = ((userRanks & IRCUserRankHalfOperator) == IRCUserRankHalfOperator);
+
+			_setHidden(MTUserControlsGiveHalfop, UserHasModeH);
+			_setHidden(MTUserControlsTakeHalfop, (UserHasModeH == NO));
+		}
+
+		BOOL hideGiveSepItem = ((UserHasModeO == NO || UserHasModeV == NO) || (UserHasModeH == NO && halfOpModeSupported));
+
+		_setHidden(MTUserControlsAllModesGiven, hideGiveSepItem);
+
+		BOOL hideTakenSepItem = (UserHasModeO || UserHasModeH || UserHasModeV);
+
+		_setHidden(MTUserControlsAllModesTaken, hideTakenSepItem);
+	}
+	else
+	{
+		_setHidden(MTUserControlsGiveOp, NO);
+		_setHidden(MTUserControlsGiveHalfop, (halfOpModeSupported == NO));
+		_setHidden(MTUserControlsGiveVoice, NO);
+		_setHidden(MTUserControlsTakeOp, NO);
+		_setHidden(MTUserControlsTakeHalfop, (halfOpModeSupported == NO));
+		_setHidden(MTUserControlsTakeVoice, NO);
+
+		_setHidden(MTUserControlsAllModesGiven, YES);
+		_setHidden(MTUserControlsAllModesTaken, YES);
+	}
+
+#undef _setHidden
+}
+
+/* The member menu (member list and nicknames in the chat view) */
+- (BOOL)_validateUserControlsMenuItem:(NSMenuItem *)menuItem
+{
+	NSUInteger tag = menuItem.tag;
+
+	IRCClient *u = mainWindow().selectedClient;
+	IRCChannel *c = mainWindow().selectedChannel;
+
+	switch (tag) {
 		case MTUserControlsAddIgnore: // "Add Ignore"
 		{
+			[self _updateUserControlsModeItems:menuItem];
+
 			/* To make it as efficient as possible, we only check for ignore
 			 for the "Add Ignore" menu item. When that menu item is validated,
 			 we validate "Modify Ignore" and "Remove Ignore" at the same time. */
@@ -733,11 +1265,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 			return YES;
 		}
+
 		case MTUserControlsModifyIgnore: // "Modify Ignore"
 		case MTUserControlsRemoveIgnore: // "Remove Ignore"
 		{
 			return YES;
 		}
+
 		case MTUserControlsInviteTo: // "Invite To…"
 		{
 			if (u.isLoggedIn == NO || c.isUtility) {
@@ -754,17 +1288,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 			return (channelCount > 0);
 		}
+
 		case MTUserControlsGetInfo: // "Get Info (Whois)"
 		case MTUserControlsClientToClientMenu: // "Client-to-Client"
 		{
 			return (u.isLoggedIn && c.isUtility == NO);
 		}
+
 		case MTUserControlsPrivateMessage: // "Private Message (Query)"
 		{
 			menuItem.hidden = (c.isChannel == NO);
 
 			return (u.isLoggedIn && c.isUtility == NO);
 		}
+
 		case MTUserControlsGiveOp: // "Give Op (+o)"
 		case MTUserControlsGiveHalfop: // "Give Halfop (+h)"
 		case MTUserControlsGiveVoice: // "Give Voice (+v)"
@@ -774,87 +1311,17 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			return (u.isLoggedIn && c.isActive);
 		}
+
 		case MTUserControlsAllModesGiven: // "All Modes Given"
 		{
 			return NO;
 		}
+
 		case MTUserControlsAllModesTaken: // "All Modes Taken"
 		{
-#define _setHidden(tag, value)		[menuItem.menu itemWithTag:(tag)].hidden = (value)
-
-			if (c.isChannel == NO) {
-				_setHidden(MTUserControlsGiveOp, YES);
-				_setHidden(MTUserControlsGiveHalfop, YES);
-				_setHidden(MTUserControlsGiveVoice, YES);
-				_setHidden(MTUserControlsTakeOp, YES);
-				_setHidden(MTUserControlsTakeHalfop, YES);
-				_setHidden(MTUserControlsTakeVoice, YES);
-
-				_setHidden(MTUserControlsAllModesGiven, YES);
-				_setHidden(MTUserControlsAllModesGivenSeparator, YES);
-				_setHidden(MTUserControlsAllModesTaken, YES);
-				_setHidden(MTUserControlsAllModesTakenSeparator, YES);
-
-				return NO;
-			}
-
-			_setHidden(MTUserControlsAllModesGivenSeparator, NO);
-			_setHidden(MTUserControlsAllModesTakenSeparator, NO);
-
-			NSArray *nicknames = [self selectedMembers:menuItem];
-
-			if (nicknames.count == 1)
-			{
-				IRCChannelUser *user = nicknames[0];
-
-				IRCUserRank userRanks = user.ranks;
-
-				BOOL UserHasModeO = ((userRanks & IRCUserRankNormalOperator) == IRCUserRankNormalOperator);
-				BOOL UserHasModeH = NO;
-				BOOL UserHasModeV = ((userRanks & IRCUserRankVoiced) == IRCUserRankVoiced);
-
-				_setHidden(MTUserControlsGiveOp, UserHasModeO);
-				_setHidden(MTUserControlsGiveVoice, UserHasModeV);
-				_setHidden(MTUserControlsTakeOp, (UserHasModeO == NO));
-				_setHidden(MTUserControlsTakeVoice, (UserHasModeV == NO));
-
-				BOOL halfOpModeSupported = [u.supportInfo modeSymbolIsUserPrefix:@"h"];
-
-				if (halfOpModeSupported == NO) {
-					_setHidden(MTUserControlsGiveHalfop, YES);
-					_setHidden(MTUserControlsTakeHalfop, YES);
-				} else {
-					UserHasModeH = ((userRanks & IRCUserRankHalfOperator) == IRCUserRankHalfOperator);
-
-					_setHidden(MTUserControlsGiveHalfop, UserHasModeH);
-					_setHidden(MTUserControlsTakeHalfop, (UserHasModeH == NO));
-				}
-
-				BOOL hideGiveSepItem = ((UserHasModeO == NO || UserHasModeV == NO) || (UserHasModeH == NO && halfOpModeSupported));
-
-				_setHidden(MTUserControlsAllModesGiven, hideGiveSepItem);
-
-				BOOL hideTakenSepItem = (UserHasModeO || UserHasModeH || UserHasModeV);
-
-				_setHidden(MTUserControlsAllModesTaken, hideTakenSepItem);
-			}
-			else
-			{
-				_setHidden(MTUserControlsGiveOp, NO);
-				_setHidden(MTUserControlsGiveHalfop, NO);
-				_setHidden(MTUserControlsGiveVoice, NO);
-				_setHidden(MTUserControlsTakeOp, NO);
-				_setHidden(MTUserControlsTakeHalfop, NO);
-				_setHidden(MTUserControlsTakeVoice, NO);
-
-				_setHidden(MTUserControlsAllModesGiven, YES);
-				_setHidden(MTUserControlsAllModesTaken, YES);
-			}
-
 			return NO;
-
-#undef _setHidden
 		}
+
 		case MTUserControlsBan: // "Ban"
 		case MTUserControlsKick: // "Kick"
 		case MTUserControlsBanAndKick: // "Ban and Kick"
@@ -867,100 +1334,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 			return (u.isLoggedIn && isChannel && c.isActive);
 		}
+
 		case MTUserControlsIRCOperatorMenu: // "IRC Operator"
 		{
 			menuItem.hidden = (u.userIsIRCop == NO);
 
 			return (u.isLoggedIn && c.isUtility == NO);
-		}
-
-		case MTWKGeneralSearchWithGoogle: // "Search With Google"
-		{
-			TVCLogView *webView = self.selectedViewControllerBackingView;
-
-			if (webView == nil) {
-				return NO;
-			}
-
-			NSString *searchProviderName = [self searchProviderName];
-
-			menuItem.title = TXTLS(@"BasicLanguage[1ll-h9]", searchProviderName);
-
-			return webView.hasSelection;
-		}
-		case MTWKGeneralLookUpInDictionary: // "Look Up in Dictionary"
-		{
-			TVCLogView *webView = self.selectedViewControllerBackingView;
-
-			if (webView == nil) {
-				return NO;
-			}
-
-			NSString *selection = webView.selection;
-
-			NSUInteger selectionLength = selection.length;
-
-			if (selectionLength == 0 || selectionLength > 40) {
-				menuItem.title = TXTLS(@"BasicLanguage[o5l-4s]");
-
-				return NO;
-			}
-
-			if (selectionLength > 25) {
-				selection = [selection substringToIndex:24];
-
-				selection = [NSString stringWithFormat:@"%@…", selection.trim];
-			}
-
-			menuItem.title = TXTLS(@"BasicLanguage[zxs-yy]", selection);
-
-			return (selectionLength > 0);
-		}
-		case MTWKGeneralCopy: // "Copy" (WebView)
-		{
-			TVCLogView *webView = self.selectedViewControllerBackingView;
-
-			if (webView == nil) {
-				return NO;
-			}
-
-			return webView.hasSelection;
-		}
-		case MTWKGeneralQueryLogs: // "Query Logs" (WebKit)
-		{
-			menuItem.hidden = (c.isPrivateMessage == NO);
-
-			return [TPCPreferences logToDiskIsEnabled];
-		}
-		case MTWKGeneralChannelMenu: // "Channel" (WebKit)
-		{
-			menuItem.hidden = (c.isChannel == NO);
-
-			/* "Query Logs" will appear above this menu item,
-			 but if this is neither channel or query, then we
-			 have to hide the separator above that so it's not
-			 just sitting there with nothing beneath it. */
-			NSMenuItem *queryLogs = [menuItem.menu itemWithTag:MTWKGeneralQueryLogs];
-
-			[menuItem.menu itemWithTag:MTWKGeneralPasteSeparator].hidden = (menuItem.hidden && queryLogs.hidden);
-
-			return YES;
-		}
-
-		case MTMMHelpAdvancedMenuEnableDeveloperMode: // Developer Mode
-		{
-			if ([TPCPreferences developerModeEnabled]) {
-				menuItem.state = NSControlStateValueOn;
-			} else {
-				menuItem.state = NSControlStateValueOff;
-			}
-
-			return YES;
-		}
-
-		case MTMainWindowSegmentedControllerAddChannel: // "Add Channel…"
-		{
-			return (u != nil);
 		}
 
 		default:

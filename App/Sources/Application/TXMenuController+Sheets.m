@@ -95,14 +95,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showChannelPropertiesSheet:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
 	if (u == nil || c == nil || c.isChannel == NO) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCChannelPropertiesSheet *sheet =
 	[[TDCChannelPropertiesSheet alloc] initWithChannel:c];
@@ -149,8 +149,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)memberSendInvite:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
@@ -177,6 +175,8 @@ NS_ASSUME_NONNULL_BEGIN
 	if (channels.count == 0) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCChannelInviteSheet *sheet =
 	[[TDCChannelInviteSheet alloc] initWithNicknames:nicknames onClient:u];
@@ -355,13 +355,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showServerHighlightList:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 
 	if (u == nil) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCServerHighlightListSheet *sheet =
 	[[TDCServerHighlightListSheet alloc] initWithClient:u];
@@ -387,13 +387,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(nickname != nil);
 
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 
 	if (u == nil) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCNicknameColorSheet *sheet =
 	[[TDCNicknameColorSheet alloc] initWithNickname:nickname];
@@ -422,14 +422,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showChannelModifyTopicSheet:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
 	if (u == nil || c == nil || c.isChannel == NO) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCChannelModifyTopicSheet *sheet =
 	[[TDCChannelModifyTopicSheet alloc] initWithChannel:c];
@@ -465,14 +465,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showChannelModifyModesSheet:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
 	if (u == nil || c == nil || c.isChannel == NO) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCChannelModifyModesSheet *sheet =
 	[[TDCChannelModifyModesSheet alloc] initWithChannel:c];
@@ -540,13 +540,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showServerChangeNicknameSheet:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 
 	if (u == nil || u.isLoggedIn == NO) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCServerChangeNicknameSheet *sheet =
 	[[TDCServerChangeNicknameSheet alloc] initWithClient:u];

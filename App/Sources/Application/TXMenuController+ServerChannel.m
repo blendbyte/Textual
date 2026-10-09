@@ -251,13 +251,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addChannel:(id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
-
 	IRCClient *u = self.selectedClient;
 
 	if (u == nil) {
 		return;
 	}
+
+	[windowController() popMainWindowSheetIfExists];
 
 	TDCChannelPropertiesSheet *sheet =
 	[[TDCChannelPropertiesSheet alloc] initWithClient:u];

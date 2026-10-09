@@ -264,6 +264,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)memberInMemberListDoubleClicked:(id)sender
 {
+	/* The member list's selection, never a nickname left from the chat view */
+	self.pointedNickname = nil;
+
 	NSInteger rowBeneathMouse = mainWindowMemberList().rowBeneathMouse;
 
 	if (rowBeneathMouse < 0) {
@@ -292,6 +295,9 @@ NS_ASSUME_NONNULL_BEGIN
 	} else if (action == TXUserDoubleClickActionInsertTextField) {
 		[self memberInsertNameIntoTextField:sender];
 	}
+
+	/* For this double-click only: an action that returned early left it set */
+	self.pointedNickname = nil;
 }
 
 - (void)memberInsertNameIntoTextField:(id)sender

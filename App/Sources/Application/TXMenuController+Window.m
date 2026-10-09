@@ -192,8 +192,9 @@ NS_ASSUME_NONNULL_BEGIN
 		NSMutableArray *channelList = [u.channelList mutableCopy];
 
 		[channelList sortUsingComparator:^NSComparisonResult(IRCChannel *channel1, IRCChannel *channel2) {
-			if (channel1.isChannel && channel2.isChannel == NO) {
-				return NSOrderedAscending;
+			/* Channels before private messages */
+			if (channel1.isChannel != channel2.isChannel) {
+				return ((channel1.isChannel) ? NSOrderedAscending : NSOrderedDescending);
 			}
 
 			NSString *name1 = channel1.name.lowercaseString;
