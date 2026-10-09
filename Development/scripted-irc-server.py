@@ -1087,6 +1087,153 @@ async def run_sasl_scram(client, variant):
 		await client.collect(30)
 
 
+def p256_verify(public_key, digest, signature):
+	"""ECDSA P-256 verification of a DER signature over digest (taken as the hash, as
+	Atheme does with the challenge); public_key is compressed. Plain Python: the VM's
+	Python has no crypto package."""
+	p = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff
+	n = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551
+	b = 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b
+	g = (0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296,
+		0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5)
+
+	def add(first, second):
+		if first is None:
+			return second
+		if second is None:
+			return first
+		if first[0] == second[0] and (first[1] + second[1]) % p == 0:
+			return None
+		if first == second:
+			slope = (3 * first[0] * first[0] - 3) * pow(2 * first[1], -1, p) % p
+		else:
+			slope = (second[1] - first[1]) * pow(second[0] - first[0], -1, p) % p
+		x = (slope * slope - first[0] - second[0]) % p
+		return (x, (slope * (first[0] - x) - first[1]) % p)
+
+	def multiply(k, point):
+		total = None
+		while k:
+			if k & 1:
+				total = add(total, point)
+			point = add(point, point)
+			k >>= 1
+		return total
+
+	x = int.from_bytes(public_key[1:], "big")
+	y = pow((x * x * x - 3 * x + b) % p, (p + 1) // 4, p)
+	if (y & 1) != (public_key[0] & 1):
+		y = p - y
+
+	try:
+		if signature[0] != 0x30 or signature[2] != 0x02:
+			return False
+		r_length = signature[3]
+		r = int.from_bytes(signature[4:4 + r_length], "big")
+		offset = 4 + r_length
+		if signature[offset] != 0x02:
+			return False
+		s = int.from_bytes(signature[offset + 2:offset + 2 + signature[offset + 1]], "big")
+	except IndexError:
+		return False
+
+	if not (0 < r < n and 0 < s < n):
+		return False
+
+	w = pow(s, -1, n)
+	point = add(multiply(int.from_bytes(digest, "big") * w % n, g), multiply(r * w % n, (x, y)))
+	return point is not None and point[0] % n == r
+
+
+async def run_sasl_ecdsa(client, variant):
+	"""Shared by the sasl-ecdsa scenarios: offers sasl=PLAIN,ECDSA-NIST256P-CHALLENGE
+	and runs Atheme's side of it for the account "ecdsauser", whose registered key is the
+	one in ~/ecdsa/k.pem (import it in Textual, set username=ecdsauser). "wrongkey": the
+	account has another key, so the signature fails with 904 and PLAIN must follow."""
+	import base64
+
+	username = "ecdsauser"
+	registered_key = base64.b64decode("A2D+1LolWp0xyWHrdMY1bWjASbiSO2H6bOZpYi5g8p+2")
+	if variant == "wrongkey":
+		registered_key = base64.b64decode("A2sX0fLhLEJH+Lzm5WOkQPJ3A32BLeszoPShOUXYmMKW")  # the generator
+	nickname = "*"
+	state = "start"
+	challenge = b""
+	outcome = []
+
+	while True:
+		line = await client.read_line()
+		if line is None:
+			break
+
+		command, _, rest = line.partition(" ")
+		command = command.upper()
+
+		if command == "CAP" and rest.upper().startswith("LS"):
+			await client.send(f":{SERVER} CAP * LS :sasl=PLAIN,ECDSA-NIST256P-CHALLENGE")
+		elif command == "CAP" and rest.upper().startswith("REQ"):
+			await client.send(f":{SERVER} CAP * ACK :{rest.split(' ', 1)[1].lstrip(':')}")
+		elif command == "NICK":
+			nickname = rest.lstrip(":")
+			client.nickname = nickname
+		elif command == "CAP" and rest.upper().startswith("END"):
+			outcome.append("CAP END")
+			break
+		elif command == "AUTHENTICATE":
+			data = rest.strip()
+
+			if state == "start":
+				outcome.append(f"mechanism {data}")
+				await client.send("AUTHENTICATE +")
+				state = "plain" if data == "PLAIN" else "account"
+			elif state == "account":
+				account = base64.b64decode(data).decode()
+				outcome.append(f"account {account}")
+				challenge = os.urandom(32)
+				await client.send(f"AUTHENTICATE {base64.b64encode(challenge).decode()}")
+				state = "signature"
+			elif state == "signature":
+				valid = p256_verify(registered_key, challenge, base64.b64decode(data))
+				outcome.append(f"signature {'valid' if valid else 'invalid'}")
+				if valid:
+					await client.send(f":{SERVER} 900 {nickname} {nickname}!u@h {username} :You are now logged in as {username}")
+					await client.send(f":{SERVER} 903 {nickname} :SASL authentication successful")
+				else:
+					await client.send(f":{SERVER} 904 {nickname} :SASL authentication failed")
+				state = "start"
+			elif state == "plain":
+				fields = base64.b64decode(data).split(b"\0")
+				outcome.append(f"PLAIN as {fields[1].decode()}")
+				await client.send(f":{SERVER} 900 {nickname} {nickname}!u@h {username} :You are now logged in as {username}")
+				await client.send(f":{SERVER} 903 {nickname} :SASL authentication successful")
+				state = "done"
+
+	print(f"CHECK: {outcome}", flush=True)
+
+	mechanism = "mechanism ECDSA-NIST256P-CHALLENGE"
+	if variant == "wrongkey":
+		result(outcome == [mechanism, f"account {username}", "signature invalid", "mechanism PLAIN", f"PLAIN as {username}", "CAP END"],
+			"the signature from the wrong key failed with 904 and the client logged in with PLAIN next")
+	else:
+		result(outcome == [mechanism, f"account {username}", "signature valid", "CAP END"],
+			"ECDSA-NIST256P-CHALLENGE first: the account name, then a signature the registered key verifies")
+
+	if "CAP END" in outcome:
+		await client.welcome()
+		await client.collect(30)
+
+
+async def scenario_sasl_ecdsa(client):
+	"""ECDSA-NIST256P-CHALLENGE (import ~/ecdsa/k.pem as the login key, set
+	username=ecdsauser): tried before PLAIN, account name then a valid signature."""
+	await run_sasl_ecdsa(client, "ok")
+
+
+async def scenario_sasl_ecdsa_wrongkey(client):
+	"""The account has another key: 904, then PLAIN (set a nicknamePassword too)."""
+	await run_sasl_ecdsa(client, "wrongkey")
+
+
 async def scenario_sasl_scram(client):
 	"""SCRAM-SHA-512 (set username=scramuser nicknamePassword=textual-scram):
 	the server-first is longer than 400 characters (reassembly), the proof must
@@ -1226,10 +1373,12 @@ SCENARIOS = {
 	"whox": scenario_whox,
 	"sasl-scram-fallback": scenario_sasl_scram_fallback,
 	"sasl-scram-badsig": scenario_sasl_scram_badsig,
+	"sasl-ecdsa": scenario_sasl_ecdsa,
+	"sasl-ecdsa-wrongkey": scenario_sasl_ecdsa_wrongkey,
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig"}
+OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

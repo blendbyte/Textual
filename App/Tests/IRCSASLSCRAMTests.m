@@ -110,15 +110,17 @@ static NSString * const IRCSASLSCRAMTestsServerFirst = @"r=rOprNGfwEbeRWgbNEkqO%
 	XCTAssertEqualObjects([IRCSASLSCRAM preparedString:@"pass wo­rd"], @"pass word");
 }
 
-/* EXTERNAL first, then the strongest SCRAM, then PLAIN; nothing is guessed without a list */
+/* EXTERNAL first, then a login key, then the strongest SCRAM, then PLAIN; nothing is guessed without a list */
 - (void)testMechanismOrder
 {
-	NSArray *offered = @[@"PLAIN", @"EXTERNAL", @"SCRAM-SHA-256", @"SCRAM-SHA-512"];
+	NSArray *offered = @[@"PLAIN", @"EXTERNAL", @"SCRAM-SHA-256", @"ECDSA-NIST256P-CHALLENGE", @"SCRAM-SHA-512"];
 
-	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, NO, YES), (@[@"SCRAM-SHA-512", @"SCRAM-SHA-256", @"PLAIN"]));
-	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, YES, YES), (@[@"EXTERNAL", @"SCRAM-SHA-512", @"SCRAM-SHA-256", @"PLAIN"]));
-	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, YES, NO), (@[@"EXTERNAL"]));
-	XCTAssertEqualObjects(IRCSASLMechanismsToTry(@[], NO, YES), (@[@"PLAIN"]));
+	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, NO, NO, YES), (@[@"SCRAM-SHA-512", @"SCRAM-SHA-256", @"PLAIN"]));
+	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, YES, NO, YES), (@[@"EXTERNAL", @"SCRAM-SHA-512", @"SCRAM-SHA-256", @"PLAIN"]));
+	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, YES, NO, NO), (@[@"EXTERNAL"]));
+	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, YES, YES, YES), (@[@"EXTERNAL", @"ECDSA-NIST256P-CHALLENGE", @"SCRAM-SHA-512", @"SCRAM-SHA-256", @"PLAIN"]));
+	XCTAssertEqualObjects(IRCSASLMechanismsToTry(offered, NO, YES, NO), (@[@"ECDSA-NIST256P-CHALLENGE"]));
+	XCTAssertEqualObjects(IRCSASLMechanismsToTry(@[], NO, YES, YES), (@[@"PLAIN"]));
 }
 
 @end

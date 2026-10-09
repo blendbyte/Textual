@@ -49,17 +49,24 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL showConnectionPrefersIPv4Warning;
 @property (readonly) BOOL connectionPrefersIPv4 TEXTUAL_DEPRECATED("Use -addressType instead");
 
+/* The SASL ECDSA-NIST256P-CHALLENGE key (IRCSASLECDSAKey's stored value): from the
+ Keychain unless changed in this copy. Not in the SDK: plugins don't get the private key. */
+@property (readonly, copy, nullable) NSString *saslECDSAKey;
+
 - (void)writeNicknamePasswordToKeychain;
 - (void)writeProxyPasswordToKeychain;
+- (void)writeSASLECDSAKeyToKeychain;
 
 - (void)destroyNicknamePasswordKeychainItem;
 - (void)destroyProxyPasswordKeychainItem;
+- (void)destroySASLECDSAKeyKeychainItem;
 
 - (void)destroyServerPasswordKeychainItemAfterMigration;
 @end
 
 @interface IRCClientConfigMutable ()
 @property (nonatomic, assign, readwrite) BOOL connectionPrefersIPv4 TEXTUAL_DEPRECATED("Use -addressType instead");
+@property (nonatomic, copy, readwrite, nullable) NSString *saslECDSAKey; // an empty string removes it
 @end
 
 NS_ASSUME_NONNULL_END

@@ -72,8 +72,11 @@ typedef NS_ENUM(NSUInteger, IRCSASLSCRAMHash) {
 - (BOOL)verifyServerFinalMessage:(NSString *)serverFinalMessage;
 @end
 
-/* SASL mechanisms to try in order: EXTERNAL, then the strongest SCRAM, then PLAIN.
- offered is the server's list (empty when it gave none: then no SCRAM is guessed). */
-TEXTUAL_EXTERN NSArray<NSString *> *IRCSASLMechanismsToTry(NSArray<NSString *> *offered, BOOL canUseExternal, BOOL havePassword);
+TEXTUAL_EXTERN NSString * const IRCSASLECDSAMechanismName; // ECDSA-NIST256P-CHALLENGE
+
+/* SASL mechanisms to try in order: EXTERNAL, ECDSA-NIST256P-CHALLENGE, then the strongest
+ SCRAM, then PLAIN. offered is the server's list (empty when it gave none: then neither
+ ECDSA nor SCRAM is guessed). */
+TEXTUAL_EXTERN NSArray<NSString *> *IRCSASLMechanismsToTry(NSArray<NSString *> *offered, BOOL canUseExternal, BOOL haveECDSAKey, BOOL havePassword);
 
 NS_ASSUME_NONNULL_END

@@ -149,6 +149,7 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCSASLECDSAPrivate.h"
 #import "IRCSASLSCRAMPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
 #import "IRCClientInternal.h"
@@ -314,6 +315,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	self.saslMechanismsToTry = nil;
 	self.saslMechanism = nil;
 	self.saslSCRAM = nil;
+	self.saslECDSAKey = nil;
 	self.saslIncomingData = nil;
 
 	[self.capabilityNegotiator reset];
@@ -479,9 +481,11 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	BOOL canUseExternal = (self.socket.isConnectedWithClientSideCertificate &&
 						   self.config.saslAuthenticationDisableExternalMechanism == NO);
 
+	BOOL haveECDSAKey = (self.config.saslECDSAKey.length > 0);
+
 	BOOL havePassword = (self.config.nicknamePassword.length > 0);
 
-	NSArray *mechanisms = IRCSASLMechanismsToTry((capabilityOptions ?: @[]), canUseExternal, havePassword);
+	NSArray *mechanisms = IRCSASLMechanismsToTry((capabilityOptions ?: @[]), canUseExternal, haveECDSAKey, havePassword);
 
 	self.saslMechanismsToTry = [mechanisms mutableCopy];
 
@@ -523,12 +527,13 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	return YES;
 }
 
-/* Starts the next mechanism (EXTERNAL, SCRAM-SHA-512, SCRAM-SHA-256, PLAIN);
- NO when none is left */
+/* Starts the next mechanism (EXTERNAL, ECDSA-NIST256P-CHALLENGE, SCRAM-SHA-512,
+ SCRAM-SHA-256, PLAIN); NO when none is left */
 - (BOOL)sendNextSASLMechanism
 {
 	self.saslSCRAM = nil;
-	self.saslSCRAMStep = 0;
+	self.saslECDSAKey = nil;
+	self.saslStep = 0;
 	self.saslIncomingData = nil;
 
 	NSString *mechanism = self.saslMechanismsToTry.firstObject;
@@ -550,6 +555,16 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 												   username:[self saslUsername]
 												   password:self.config.nicknamePassword
 												clientNonce:nil];
+	} else if ([mechanism isEqualToString:IRCSASLECDSAMechanismName]) {
+		NSString *storedKey = self.config.saslECDSAKey;
+
+		self.saslECDSAKey = ((storedKey) ? [IRCSASLECDSAKey keyWithStoredValue:storedKey] : nil);
+
+		if (self.saslECDSAKey == nil) {
+			LogToConsoleError("The SASL login key in the Keychain is not a P-256 key");
+
+			return [self sendNextSASLMechanism];
+		}
 	}
 
 	[self sendCapabilityAuthenticate:mechanism];
@@ -597,12 +612,10 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	self.saslIncomingData = nil;
 
-	NSString *challenge = @"";
+	NSData *challenge = [NSData data];
 
 	if (buffer.length > 0) {
-		NSData *decoded = [[NSData alloc] initWithBase64EncodedString:buffer options:0];
-
-		challenge = [[NSString alloc] initWithData:decoded encoding:NSUTF8StringEncoding];
+		challenge = [[NSData alloc] initWithBase64EncodedString:buffer options:0];
 
 		if (challenge == nil) {
 			[self abortSASLAuthentication];
@@ -614,12 +627,23 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	[self respondToSASLChallenge:challenge];
 }
 
-/* A response in base64 parts of 400, followed by "+" when empty or when the last part is exactly 400 */
 - (void)sendSASLResponse:(NSString *)response
 {
 	NSParameterAssert(response != nil);
 
-	NSArray *parts = [response base64EncodingWithLineLength:400];
+	[self sendSASLResponseData:[response dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+/* A response in base64 parts of 400, followed by "+" when empty or when the last part is exactly 400 */
+- (void)sendSASLResponseData:(NSData *)response
+{
+	NSParameterAssert(response != nil);
+
+	NSArray *parts = @[];
+
+	if (response.length > 0) {
+		parts = [[response base64EncodedStringWithOptions:0] splitWithMaximumLength:400];
+	}
 
 	for (NSString *part in parts) {
 		[self sendCapabilityAuthenticate:part];
@@ -633,12 +657,13 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 - (void)abortSASLAuthentication
 {
 	self.saslSCRAM = nil;
+	self.saslECDSAKey = nil;
 
 	/* The server answers with ERR_SASLABORTED, which ends negotiation */
 	[self sendCapabilityAuthenticate:@"*"];
 }
 
-- (void)respondToSASLChallenge:(NSString *)challenge
+- (void)respondToSASLChallenge:(NSData *)challenge
 {
 	NSParameterAssert(challenge != nil);
 
@@ -650,8 +675,52 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		[self sendSASLResponse:[NSString stringWithFormat:@"%@%C%@%C%@", username, 0x00, username, 0x00, self.config.nicknamePassword]];
 	} else if ([mechanism isEqualToString:@"EXTERNAL"]) {
 		[self sendCapabilityAuthenticate:@"+"];
+	} else if (self.saslECDSAKey) {
+		[self respondToECDSAChallenge:challenge];
 	} else if (self.saslSCRAM) {
-		[self respondToSCRAMChallenge:challenge];
+		NSString *challengeString = [[NSString alloc] initWithData:challenge encoding:NSUTF8StringEncoding];
+
+		if (challengeString == nil) {
+			[self abortSASLAuthentication];
+
+			return;
+		}
+
+		[self respondToSCRAMChallenge:challengeString];
+	}
+}
+
+- (void)respondToECDSAChallenge:(NSData *)challenge
+{
+	switch (self.saslStep) {
+		case 0: // the server is ready: the account to log in to
+		{
+			self.saslStep = 1;
+
+			[self sendSASLResponse:[self saslUsername]];
+
+			break;
+		}
+		case 1: // the challenge, signed
+		{
+			NSData *signature = [self.saslECDSAKey signatureForChallenge:challenge];
+
+			if (signature == nil) {
+				[self abortSASLAuthentication];
+
+				return;
+			}
+
+			self.saslStep = 2;
+
+			[self sendSASLResponseData:signature];
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 }
 
@@ -659,10 +728,10 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 {
 	IRCSASLSCRAM *scram = self.saslSCRAM;
 
-	switch (self.saslSCRAMStep) {
+	switch (self.saslStep) {
 		case 0: // the server is ready
 		{
-			self.saslSCRAMStep = 1;
+			self.saslStep = 1;
 
 			[self sendSASLResponse:scram.clientFirstMessage];
 
@@ -676,7 +745,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 				return;
 			}
 
-			self.saslSCRAMStep = 2;
+			self.saslStep = 2;
 
 			/* PBKDF2 can take a while */
 			__weak IRCClient *weakSelf = self;
@@ -697,7 +766,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 						return;
 					}
 
-					client.saslSCRAMStep = 3;
+					client.saslStep = 3;
 
 					[client sendSASLResponse:clientFinalMessage];
 				});
@@ -716,7 +785,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 				return;
 			}
 
-			self.saslSCRAMStep = 4;
+			self.saslStep = 4;
 
 			[self sendCapabilityAuthenticate:@"+"];
 
@@ -737,6 +806,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	self.saslMechanismsToTry = nil;
 	self.saslMechanism = nil;
 	self.saslSCRAM = nil;
+	self.saslECDSAKey = nil;
 	self.saslIncomingData = nil;
 
 	[self disableCapability:ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL];

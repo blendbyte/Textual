@@ -340,7 +340,9 @@ static NSUInteger const IRCSASLSCRAMMaximumIterations = 1000000;
 
 @end
 
-NSArray<NSString *> *IRCSASLMechanismsToTry(NSArray<NSString *> *offered, BOOL canUseExternal, BOOL havePassword)
+NSString * const IRCSASLECDSAMechanismName = @"ECDSA-NIST256P-CHALLENGE";
+
+NSArray<NSString *> *IRCSASLMechanismsToTry(NSArray<NSString *> *offered, BOOL canUseExternal, BOOL haveECDSAKey, BOOL havePassword)
 {
 	NSCParameterAssert(offered != nil);
 
@@ -361,6 +363,10 @@ NSArray<NSString *> *IRCSASLMechanismsToTry(NSArray<NSString *> *offered, BOOL c
 
 	if (canUseExternal && (anyOffered || isOffered(@"EXTERNAL"))) {
 		[mechanisms addObject:@"EXTERNAL"];
+	}
+
+	if (haveECDSAKey && isOffered(IRCSASLECDSAMechanismName)) {
+		[mechanisms addObject:IRCSASLECDSAMechanismName];
 	}
 
 	if (havePassword) {

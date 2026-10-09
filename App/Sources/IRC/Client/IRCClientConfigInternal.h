@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_proxyPassword;
 	NSString *_proxyUsername;
 	NSString *_realName;
+	NSString *_saslECDSAKey;
 	NSString *_serverAddress;
 	NSString *_sleepModeLeavingComment;
 	NSString *_username;

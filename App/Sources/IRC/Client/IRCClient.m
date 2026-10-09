@@ -512,6 +512,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	[self.config writeNicknamePasswordToKeychain];
 	[self.config writeProxyPasswordToKeychain];
+	[self.config writeSASLECDSAKeyToKeychain];
 }
 
 - (void)destroyServerPasswordKeychainItemAfterMigration
@@ -651,6 +652,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	[self.config destroyNicknamePasswordKeychainItem];
 	[self.config destroyProxyPasswordKeychainItem];
+	[self.config destroySASLECDSAKeyKeychainItem];
 
 	[self destroyServerPasswordsKeychainItems];
 

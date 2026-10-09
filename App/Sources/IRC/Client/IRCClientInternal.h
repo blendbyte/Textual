@@ -45,7 +45,7 @@
 
 @class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessageContainer;
 @class TDCServerChannelListDialog, TLOFileLogger, TLOTimer;
-@class IRCSASLSCRAM;
+@class IRCSASLECDSAKey, IRCSASLSCRAM;
 @class IRCUserList;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -149,7 +149,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableArray<NSString *> *saslMechanismsToTry; // left to try, in order
 @property (nonatomic, copy, nullable) NSString *saslMechanism; // being tried
 @property (nonatomic, strong, nullable) IRCSASLSCRAM *saslSCRAM;
-@property (nonatomic, assign) NSUInteger saslSCRAMStep;
+@property (nonatomic, strong, nullable) IRCSASLECDSAKey *saslECDSAKey;
+@property (nonatomic, assign) NSUInteger saslStep; // of a mechanism with several exchanges
 @property (nonatomic, strong, nullable) NSMutableString *saslIncomingData; // an AUTHENTICATE message arriving in 400-byte parts
 @property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
 @property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last connection ended

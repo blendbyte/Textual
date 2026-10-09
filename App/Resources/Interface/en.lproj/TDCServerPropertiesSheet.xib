@@ -71,6 +71,8 @@
                 <outlet property="highlightsTable" destination="2454" id="2474"/>
                 <outlet property="navigationOutlineView" destination="Uj0-Wm-eox" id="9jc-dy-sjg"/>
                 <outlet property="nickServHostTextField" destination="n5V-hT-f01" id="n5V-oT-001"/>
+                <outlet property="saslECDSAKeyButton" destination="eK1-pd-001" id="eK1-ot-001"/>
+                <outlet property="saslECDSAKeyField" destination="eK1-vf-001" id="eK1-ot-002"/>
                 <outlet property="nicknamePasswordTextField" destination="1601" id="i9R-Eg-aTO"/>
                 <outlet property="nicknameTextField" destination="1595" id="BL9-gX-P5G"/>
                 <outlet property="normalLeavingCommentTextField" destination="2290" id="Fhf-Py-Njw"/>
@@ -591,6 +593,75 @@ Gw
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eK1-lb-001">
+                    <rect key="frame" x="100" y="40" width="122" height="16"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Login Key:" id="eK1-lb-002">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" preferredMaxLayoutWidth="212" id="eK1-vf-001">
+                    <rect key="frame" x="226" y="40" width="216" height="16"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="212" id="eK1-cs-001"/>
+                    </constraints>
+                    <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="None" id="eK1-vf-002">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <connections>
+                        <accessibilityConnection property="title" destination="eK1-lb-001" id="eK1-ac-001"/>
+                    </connections>
+                </textField>
+                <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eK1-pd-001">
+                    <rect key="frame" x="224" y="10" width="160" height="25"/>
+                    <popUpButtonCell key="cell" type="push" title="Manage Login Key" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" pullsDown="YES" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="eK1-pd-002">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" usesAppearanceFont="YES"/>
+                        <menu key="menu" autoenablesItems="NO" id="eK1-mn-001">
+                            <items>
+                                <menuItem title="Manage Login Key" hidden="YES" id="eK1-mi-000"/>
+                                <menuItem title="Generate New Key" tag="1" id="eK1-mi-001">
+                                    <connections>
+                                        <action selector="onSASLECDSAKeyGenerateRequested:" target="-2" id="eK1-ma-001"/>
+                                    </connections>
+                                </menuItem>
+                                <menuItem title="Import Key File…" tag="2" id="eK1-mi-002">
+                                    <connections>
+                                        <action selector="onSASLECDSAKeyImportRequested:" target="-2" id="eK1-ma-002"/>
+                                    </connections>
+                                </menuItem>
+                                <menuItem isSeparatorItem="YES" id="eK1-mi-s01"/>
+                                <menuItem title="Copy Public Key" tag="3" id="eK1-mi-003">
+                                    <connections>
+                                        <action selector="onSASLECDSAKeyCopyPublicKeyRequested:" target="-2" id="eK1-ma-003"/>
+                                    </connections>
+                                </menuItem>
+                                <menuItem title="Copy NickServ Command" tag="4" id="eK1-mi-004">
+                                    <connections>
+                                        <action selector="onSASLECDSAKeyCopyNickServCommandRequested:" target="-2" id="eK1-ma-004"/>
+                                    </connections>
+                                </menuItem>
+                                <menuItem isSeparatorItem="YES" id="eK1-mi-s02"/>
+                                <menuItem title="Remove Key" tag="5" id="eK1-mi-005">
+                                    <connections>
+                                        <action selector="onSASLECDSAKeyRemoveRequested:" target="-2" id="eK1-ma-005"/>
+                                    </connections>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                </popUpButton>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" preferredMaxLayoutWidth="212" id="eK1-ht-001">
+                    <rect key="frame" x="226" y="-30" width="216" height="42"/>
+                    <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="Logs in with SASL ECDSA-NIST256P-CHALLENGE, tried before the password. Register the public key with the network first." id="eK1-ht-002">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
                 <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="2Zg-jJ-evU">
                     <rect key="frame" x="100" y="139" width="320" height="5"/>
                 </box>
@@ -704,7 +775,17 @@ Gw
                 <constraint firstItem="ptP-ZP-JAf" firstAttribute="top" secondItem="B1u-e0-30u" secondAttribute="bottom" constant="6" symbolic="YES" id="IuK-ad-UDf"/>
                 <constraint firstItem="1604" firstAttribute="top" secondItem="tzn-BP-yin" secondAttribute="bottom" constant="4" id="JKr-Xx-KHb"/>
                 <constraint firstItem="1601" firstAttribute="leading" secondItem="1623" secondAttribute="trailing" constant="8" id="JNn-Jx-8aX"/>
-                <constraint firstItem="B1u-e0-30u" firstAttribute="top" secondItem="n5V-hT-f01" secondAttribute="bottom" constant="25" id="KTa-A7-fam"/>
+                <constraint firstItem="B1u-e0-30u" firstAttribute="top" secondItem="eK1-ht-001" secondAttribute="bottom" constant="20" id="KTa-A7-fam"/>
+                <constraint firstItem="eK1-vf-001" firstAttribute="top" secondItem="n5V-hT-f01" secondAttribute="bottom" constant="12" id="eK1-cs-002"/>
+                <constraint firstItem="eK1-vf-001" firstAttribute="leading" secondItem="1601" secondAttribute="leading" id="eK1-cs-003"/>
+                <constraint firstItem="eK1-lb-001" firstAttribute="trailing" secondItem="1623" secondAttribute="trailing" id="eK1-cs-004"/>
+                <constraint firstItem="eK1-lb-001" firstAttribute="firstBaseline" secondItem="eK1-vf-001" secondAttribute="firstBaseline" id="eK1-cs-005"/>
+                <constraint firstItem="eK1-lb-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="1563" secondAttribute="leading" constant="20" id="eK1-cs-006"/>
+                <constraint firstItem="eK1-pd-001" firstAttribute="top" secondItem="eK1-vf-001" secondAttribute="bottom" constant="8" id="eK1-cs-007"/>
+                <constraint firstItem="eK1-pd-001" firstAttribute="leading" secondItem="1601" secondAttribute="leading" id="eK1-cs-008"/>
+                <constraint firstItem="eK1-ht-001" firstAttribute="top" secondItem="eK1-pd-001" secondAttribute="bottom" constant="8" id="eK1-cs-009"/>
+                <constraint firstItem="eK1-ht-001" firstAttribute="leading" secondItem="1601" secondAttribute="leading" id="eK1-cs-010"/>
+                <constraint firstItem="eK1-ht-001" firstAttribute="trailing" secondItem="1601" secondAttribute="trailing" id="eK1-cs-011"/>
                 <constraint firstItem="n5V-hT-f01" firstAttribute="top" secondItem="1601" secondAttribute="bottom" constant="8" id="n5V-cS-001"/>
                 <constraint firstItem="n5V-hT-f01" firstAttribute="leading" secondItem="1601" secondAttribute="leading" id="n5V-cS-002"/>
                 <constraint firstItem="n5V-hT-f01" firstAttribute="trailing" secondItem="1601" secondAttribute="trailing" id="n5V-cS-003"/>

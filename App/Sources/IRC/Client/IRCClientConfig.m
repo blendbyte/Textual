@@ -590,7 +590,10 @@ TEXTUAL_IGNORE_DEPRECATION_END
 			 [self->_nicknamePassword isEqualToString:objectCast->_nicknamePassword]) &&
 
 			((self->_proxyPassword == nil && objectCast->_proxyPassword == nil) ||
-			 [self->_proxyPassword isEqualToString:objectCast->_proxyPassword]));
+			 [self->_proxyPassword isEqualToString:objectCast->_proxyPassword]) &&
+
+			((self->_saslECDSAKey == nil && objectCast->_saslECDSAKey == nil) ||
+			 [self->_saslECDSAKey isEqualToString:objectCast->_saslECDSAKey]));
 }
 
 - (NSUInteger)hash
@@ -604,6 +607,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	config->_nicknamePassword = self->_nicknamePassword;
 	config->_proxyPassword = self->_proxyPassword;
+	config->_saslECDSAKey = self->_saslECDSAKey;
 
 	config->_defaults = self->_defaults;
 
@@ -636,10 +640,11 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	config = [config initWithDictionary:self.dictionaryValueForCopy ignorePrivateMessages:NO];
 
 	/* After initialization (see IRCChannelConfig, R2.2): the NickServ and
-	 proxy passwords come along to be saved under the new identifier */
+	 proxy passwords and the login key come along to be saved under the new identifier */
 	if (uniquing) {
 		config->_nicknamePassword = self.nicknamePassword;
 		config->_proxyPassword = self.proxyPassword;
+		config->_saslECDSAKey = self.saslECDSAKey;
 
 		config->_migratedServerPasswordPendingDestroy = NO;
 
@@ -833,6 +838,40 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}
 }
 
+- (nullable NSString *)saslECDSAKey
+{
+	if (self->_saslECDSAKey) {
+		return ((self->_saslECDSAKey.length > 0) ? self->_saslECDSAKey : nil);
+	}
+
+	return [TLOKeychain passwordOfKind:TLOKeychainItemKindSASLECDSAKey forIdentifier:self.uniqueIdentifier];
+}
+
+- (void)writeSASLECDSAKeyToKeychain
+{
+	if (self->_saslECDSAKey == nil) {
+		return;
+	}
+
+	if (self->_saslECDSAKey.length == 0) {
+		[self destroySASLECDSAKeyKeychainItem];
+
+		return;
+	}
+
+	/* Kept in memory if the Keychain refuses it */
+	if ([TLOKeychain setPassword:self->_saslECDSAKey ofKind:TLOKeychainItemKindSASLECDSAKey forIdentifier:self.uniqueIdentifier]) {
+		self->_saslECDSAKey = nil;
+	}
+}
+
+- (void)destroySASLECDSAKeyKeychainItem
+{
+	[TLOKeychain deletePasswordOfKind:TLOKeychainItemKindSASLECDSAKey forIdentifier:self.uniqueIdentifier];
+
+	self->_saslECDSAKey = nil;
+}
+
 - (void)writeProxyPasswordToKeychain
 {
 	if (self->_proxyPassword == nil) {
@@ -953,6 +992,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic performDisconnectOnReachabilityChange;
 @dynamic performPongTimer;
 @dynamic primaryEncoding;
+@dynamic saslECDSAKey;
 @dynamic proxyAddress;
 @dynamic proxyPassword;
 @dynamic proxyPort;
@@ -1236,6 +1276,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_nicknamePassword != nicknamePassword) {
 		self->_nicknamePassword = [nicknamePassword copy];
+	}
+}
+
+- (void)setSaslECDSAKey:(nullable NSString *)saslECDSAKey
+{
+	if (self->_saslECDSAKey != saslECDSAKey) {
+		self->_saslECDSAKey = [saslECDSAKey copy];
 	}
 }
 

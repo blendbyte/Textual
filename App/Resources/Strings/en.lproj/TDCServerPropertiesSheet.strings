@@ -96,6 +96,17 @@ Certificates must meet the following criteria:
 "94r-eq" = "The preference you have enabled will not work correctly because you do not have a password set";
 "26u-j8" = "Enter your NickServ password into the field labeled “Personal Password”";
 
+/* Login key (SASL ECDSA-NIST256P-CHALLENGE) */
+"ek1-n0" = "None";
+"ek1-r0" = "Replace the login key?";
+"ek1-r1" = "The current key is deleted when you save these properties and can’t be recovered. To log in with another key, the network needs its public key.";
+"ek1-r2" = "Continue";
+"ek1-x0" = "Remove the login key?";
+"ek1-x2" = "Remove";
+"ek1-i0" = "Choose a P-256 private key in PEM format (not encrypted)";
+"ek1-i1" = "“%@” can't be used as a login key";
+"ek1-i2" = "The file must hold a P-256 (prime256v1) private key in PEM format without a password, such as one made with “openssl ecparam -genkey -name prime256v1”.";
+
 /* Cloud changes */
 "bzh-il" = "This connection's configuration has changed. Do you want to reload the Server Properties dialog?";
 "oz4-kb" = "You will loose unsaved changes if you click “Yes”";

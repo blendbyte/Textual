@@ -44,6 +44,7 @@
 #import "IRCChannel.h"
 #import "IRCHighlightMatchCondition.h"
 #import "IRCNetworkList.h"
+#import "IRCSASLECDSAPrivate.h"
 #import "IRCServer.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
@@ -70,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *clientId;
 @property (nonatomic, strong) IRCClientConfigMutable *config;
 @property (nonatomic, copy) NSArray *navigationTreeMatrix;
+@property (nonatomic, strong, nullable) IRCSASLECDSAKey *currentSASLECDSAKey;
 @property (nonatomic, copy) NSDictionary *encodingList;
 @property (nonatomic, strong) IRCNetworkList *networkList;
 @property (nonatomic, strong) IBOutlet NSMenu *addAddressBookEntryMenu;
@@ -131,6 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSPopUpButton *primaryEncodingButton;
 @property (nonatomic, weak) IBOutlet NSPopUpButton *preferredCipherSuitesButton;
 @property (nonatomic, weak) IBOutlet NSPopUpButton *proxyTypeButton;
+@property (nonatomic, weak) IBOutlet NSPopUpButton *saslECDSAKeyButton;
 @property (nonatomic, weak) IBOutlet NSSlider *floodControlDelayTimerSlider;
 @property (nonatomic, weak) IBOutlet NSSlider *floodControlMessageCountSlider;
 @property (nonatomic, weak) IBOutlet NSTextField *clientCertificateCommonNameField;
@@ -142,6 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSTextField *nickServHostTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *proxyPasswordTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *proxyUsernameTextField;
+@property (nonatomic, weak) IBOutlet NSTextField *saslECDSAKeyField;
 @property (nonatomic, weak) IBOutlet NSTextField *serverPasswordTextField;
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *addressBookTable;
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *channelListTable;
@@ -207,6 +211,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)onClientCertificateFingerprintSHA2CopyRequested:(id)sender;
 - (IBAction)onClientCertificateFingerprintSHA1CopyRequested:(id)sender;
 - (IBAction)onClientCertificateFingerprintMD5CopyRequested:(id)sender;
+
+- (IBAction)onSASLECDSAKeyGenerateRequested:(id)sender;
+- (IBAction)onSASLECDSAKeyImportRequested:(id)sender;
+- (IBAction)onSASLECDSAKeyCopyPublicKeyRequested:(id)sender;
+- (IBAction)onSASLECDSAKeyCopyNickServCommandRequested:(id)sender;
+- (IBAction)onSASLECDSAKeyRemoveRequested:(id)sender;
 
 - (IBAction)preferredCipherSuitesChanged:(id)sender;
 - (IBAction)preferredCipherSuitesViewList:(id)sender;
@@ -1293,6 +1303,30 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.hideAutojoinDelayedWarningsCheck.hidden =
 	(self.autojoinWaitsForNickServCheck.state == NSControlStateValueOff);
+
+	[self updateSASLECDSAKey];
+}
+
+- (void)updateSASLECDSAKey
+{
+	NSString *storedKey = self.config.saslECDSAKey;
+
+	IRCSASLECDSAKey *key = ((storedKey) ? [IRCSASLECDSAKey keyWithStoredValue:storedKey] : nil);
+
+	self.currentSASLECDSAKey = key;
+
+	if (key) {
+		self.saslECDSAKeyField.stringValue = key.publicKey;
+		self.saslECDSAKeyField.textColor = [NSColor labelColor];
+	} else {
+		self.saslECDSAKeyField.stringValue = TXTLS(@"TDCServerPropertiesSheet[ek1-n0]");
+		self.saslECDSAKeyField.textColor = [NSColor secondaryLabelColor];
+	}
+
+	/* Copy (3, 4) and Remove (5) need a key */
+	for (NSInteger tag = 3; tag <= 5; tag++) {
+		[self.saslECDSAKeyButton.menu itemWithTag:tag].enabled = (key != nil);
+	}
 }
 
 #pragma mark -
@@ -1353,7 +1387,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (self.nicknamePasswordTextField.stringValue.length > 0 ||
-		self.clientCertificateResetCertificateButton.enabled)
+		self.clientCertificateResetCertificateButton.enabled ||
+		self.currentSASLECDSAKey != nil)
 	{
 		return;
 	}
@@ -1466,6 +1501,125 @@ TEXTUAL_IGNORE_DEPRECATION_BEGIN
 TEXTUAL_IGNORE_DEPRECATION_END
 
 	self.config.addressType = [sender tag];
+}
+
+#pragma mark -
+#pragma mark Login Key
+
+- (void)setSASLECDSAKey:(nullable IRCSASLECDSAKey *)key
+{
+	/* Written to (or removed from) the Keychain when the sheet is saved */
+	self.config.saslECDSAKey = ((key) ? key.storedValue : @"");
+
+	[self updateSASLECDSAKey];
+}
+
+/* The old key is gone once the sheet is saved: the network must be given the new one */
+- (void)confirmReplacingSASLECDSAKey:(void (^)(void))replaceBlock
+{
+	[self confirmReplacingSASLECDSAKeyWithTitle:TXTLS(@"TDCServerPropertiesSheet[ek1-r0]")
+								  defaultButton:TXTLS(@"TDCServerPropertiesSheet[ek1-r2]")
+								   replaceBlock:replaceBlock];
+}
+
+- (void)confirmReplacingSASLECDSAKeyWithTitle:(NSString *)title defaultButton:(NSString *)defaultButton replaceBlock:(void (^)(void))replaceBlock
+{
+	if (self.currentSASLECDSAKey == nil) {
+		replaceBlock();
+
+		return;
+	}
+
+	[TDCAlert alertSheetWithWindow:self.sheet
+							  body:TXTLS(@"TDCServerPropertiesSheet[ek1-r1]")
+							 title:title
+					 defaultButton:defaultButton
+				   alternateButton:TXTLS(@"Prompts[qso-2g]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					   if (buttonClicked != TDCAlertResponseDefault) {
+						   return;
+					   }
+
+					   /* After this alert has left the sheet */
+					   XRPerformBlockAsynchronouslyOnMainQueue(replaceBlock);
+				   }];
+}
+
+- (void)onSASLECDSAKeyGenerateRequested:(id)sender
+{
+	[self confirmReplacingSASLECDSAKey:^{
+		[self setSASLECDSAKey:[IRCSASLECDSAKey generatedKey]];
+	}];
+}
+
+- (void)onSASLECDSAKeyImportRequested:(id)sender
+{
+	[self confirmReplacingSASLECDSAKey:^{
+		NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+		panel.canChooseDirectories = NO;
+		panel.canChooseFiles = YES;
+		panel.allowsMultipleSelection = NO;
+
+		panel.message = TXTLS(@"TDCServerPropertiesSheet[ek1-i0]");
+
+		[panel beginSheetModalForWindow:self.sheet completionHandler:^(NSModalResponse response) {
+			if (response != NSModalResponseOK || panel.URL == nil) {
+				return;
+			}
+
+			NSString *pem = [NSString stringWithContentsOfURL:panel.URL encoding:NSUTF8StringEncoding error:NULL];
+
+			IRCSASLECDSAKey *key = ((pem) ? [IRCSASLECDSAKey keyWithPEM:pem] : nil);
+
+			if (key) {
+				[self setSASLECDSAKey:key];
+
+				return;
+			}
+
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[TDCAlert alertSheetWithWindow:self.sheet
+										  body:TXTLS(@"TDCServerPropertiesSheet[ek1-i2]")
+										 title:TXTLS(@"TDCServerPropertiesSheet[ek1-i1]", panel.URL.lastPathComponent)
+								 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+							   alternateButton:nil
+								   otherButton:nil];
+			});
+		}];
+	}];
+}
+
+- (void)onSASLECDSAKeyCopyPublicKeyRequested:(id)sender
+{
+	NSString *publicKey = self.currentSASLECDSAKey.publicKey;
+
+	if (publicKey == nil) {
+		return;
+	}
+
+	RZPasteboard().stringContent = publicKey;
+}
+
+- (void)onSASLECDSAKeyCopyNickServCommandRequested:(id)sender
+{
+	NSString *publicKey = self.currentSASLECDSAKey.publicKey;
+
+	if (publicKey == nil) {
+		return;
+	}
+
+	RZPasteboard().stringContent = [NSString stringWithFormat:@"/msg NickServ SET PUBKEY %@", publicKey];
+}
+
+- (void)onSASLECDSAKeyRemoveRequested:(id)sender
+{
+	[self confirmReplacingSASLECDSAKeyWithTitle:TXTLS(@"TDCServerPropertiesSheet[ek1-x0]")
+								  defaultButton:TXTLS(@"TDCServerPropertiesSheet[ek1-x2]")
+								   replaceBlock:^{
+		[self setSASLECDSAKey:nil];
+	}];
 }
 
 #pragma mark -

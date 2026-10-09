@@ -3,7 +3,7 @@
  *                 |_   _|____  _| |_ _   _  __ _| |
  *                   | |/ _ \ \/ / __| | | |/ _` | |
  *                   | |  __/>  <| |_| |_| | (_| | |
- *                   |_|\___/_/\_\__|\__,_|\__,_|_|
+ *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
  * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
@@ -36,35 +36,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, TLOKeychainItemKind) {
-	TLOKeychainItemKindServerPassword,
-	TLOKeychainItemKindNicknamePassword,
-	TLOKeychainItemKindProxyPassword,
-	TLOKeychainItemKindChannelKey,
-	TLOKeychainItemKindSASLECDSAKey
-};
+/* Implemented in IRCSASLECDSA.swift: a P-256 key for SASL ECDSA-NIST256P-CHALLENGE */
+@interface IRCSASLECDSAKey : NSObject
++ (IRCSASLECDSAKey *)generatedKey;
 
-/* The app's secrets in the Keychain (server, NickServ and proxy passwords,
- channel keys, SASL login keys): one place for their names, result checking and errors. */
-@interface TLOKeychain : NSObject
-+ (nullable NSString *)passwordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
+/* nil when the value or file holds no P-256 private key */
++ (nullable IRCSASLECDSAKey *)keyWithStoredValue:(NSString *)storedValue;
++ (nullable IRCSASLECDSAKey *)keyWithPEM:(NSString *)pem;
 
-/* Returns NO if the Keychain refused the password (the user is told why, with
- the Keychain's reason). Callers then keep the password in memory, so it is
- not lost silently. */
-+ (BOOL)setPassword:(NSString *)password ofKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
+/* What the Keychain keeps */
+@property (readonly, copy) NSString *storedValue;
 
-+ (void)deletePasswordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
+/* The compressed public key in base64, as NickServ's SET PUBKEY takes it */
+@property (readonly, copy) NSString *publicKey;
+
+/* A DER signature of the server's 32-byte challenge; nil for any other length */
+- (nullable NSData *)signatureForChallenge:(NSData *)challenge;
 @end
-
-#ifdef DEBUG
-@interface TLOKeychain (Testing)
-/* Writes return this status instead of writing (nil: write normally) */
-@property (class, nonatomic, copy, nullable) NSNumber *simulatedWriteStatus;
-
-/* Whether failed writes are shown to the user (YES by default) */
-@property (class, nonatomic, assign) BOOL reportsFailures;
-@end
-#endif
 
 NS_ASSUME_NONNULL_END
