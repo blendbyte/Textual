@@ -43,24 +43,14 @@
 /*                                                    */
 /* ************************************************** */
 
-/* Private objects */
-var _Textual = {};
+/* Private objects (kept when a template loads this file again) */
+var _Textual = (window._Textual || {});
 
 /* Resource management */
+/* The core scripts are injected by Textual before the page loads (8.0);
+templates written for Textual 7 still call this, so it stays, doing nothing. */
 Textual.initializeCore = function(resourcesPath)
 {
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/core/clickMenuSelection.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/core/documentBody.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/core/events.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/core/inlineMedia.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/core/messageBuffer.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/core/scrollTo.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/scroller/state.js");
-
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/scroller/automatic.js");
-
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/conversationTracking.js");
-	Textual.includeScriptResourceFile(resourcesPath + "/JavaScript/API/private/scriptSink.js");
 };
 
 Textual.includeStyleResourceFile = function(file)

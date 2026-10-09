@@ -38,6 +38,7 @@
 #import "WKWebViewPrivate.h"
 
 #import "IRCChannel.h"
+#import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
 #import "TVCLogController.h"
 #import "TVCLogPolicyPrivate.h"
@@ -119,10 +120,58 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"topicBarDoubleClicked"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"finishedLayingOutView"];
 
+		[self _t_addCoreScriptsToUserContentController:_sharedUserContentController];
+
 		_sharedWebViewConfiguration.userContentController = _sharedUserContentController;
 
 		_sharedWebPolicy = [TVCLogPolicy new];
 	});
+}
+
+/* The core JavaScript every view needs, in order, before the template's own scripts
+ run (styles' scripts use it right away). Templates that still load core.js and
+ call Textual.initializeCore() keep working: both are safe to run again. */
++ (void)_t_addCoreScriptsToUserContentController:(WKUserContentController *)userContentController
+{
+	NSParameterAssert(userContentController != nil);
+
+	NSString *scriptsPath = [[TPCPathInfo applicationResources] stringByAppendingPathComponent:@"JavaScript/API"];
+
+	NSArray<NSString *> *scripts = @[
+		@"core.js",
+		@"corePrivate.js",
+		@"private/core/clickMenuSelection.js",
+		@"private/core/documentBody.js",
+		@"private/core/events.js",
+		@"private/core/inlineMedia.js",
+		@"private/core/messageBuffer.js",
+		@"private/core/scrollTo.js",
+		@"private/scroller/state.js",
+		@"private/scroller/automatic.js",
+		@"private/conversationTracking.js",
+		@"private/scriptSink.js"
+	];
+
+	for (NSString *script in scripts) {
+		NSString *path = [scriptsPath stringByAppendingPathComponent:script];
+
+		NSError *readError = nil;
+
+		NSString *source = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&readError];
+
+		if (source == nil) {
+			LogToConsoleError("Failed to read core script %{public}@: %{public}@", script, readError.localizedDescription);
+
+			continue;
+		}
+
+		WKUserScript *userScript =
+		[[WKUserScript alloc] initWithSource:source
+							   injectionTime:WKUserScriptInjectionTimeAtDocumentStart
+							forMainFrameOnly:YES];
+
+		[userContentController addUserScript:userScript];
+	}
 }
 
 - (instancetype)initWithHostView:(TVCLogView *)hostView

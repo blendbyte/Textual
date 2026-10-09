@@ -8,13 +8,6 @@
 
 		<link rel="stylesheet" type="text/css" href="{{applicationTemplatesPath}}/baseLayout.css?{{cacheToken}}" charset="UTF-8">
 
-		<script src="{{applicationResourcePath}}/JavaScript/API/core.js" type="text/javascript" charset="UTF-8"></script>
-		<script src="{{applicationResourcePath}}/JavaScript/API/corePrivate.js" type="text/javascript" charset="UTF-8"></script>
-
-		<script type="text/javascript">
-			Textual.initializeCore("{{applicationResourcePath}}");
-		</script>
-
 		{{#activeStyleJSFiles}}
 		<script src="{{.}}?{{cacheToken}}" type="text/javascript" charset="UTF-8"></script>
 		{{/activeStyleJSFiles}}
