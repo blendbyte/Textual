@@ -58,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TVCMainWindowChannelViewSubviewOverlayView : NSView
+/* A spinner shows half a second into loading, so quick loads show only the style's background */
+- (void)setLoading:(BOOL)loading;
 @end
 
 @interface TVCMainWindowChannelView ()

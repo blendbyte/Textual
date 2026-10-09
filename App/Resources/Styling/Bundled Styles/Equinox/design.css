@@ -42,7 +42,6 @@ body .line {
   z-index: 100;
   max-height: 99.99%;
   opacity: 0; /* Set by JavaScript */
-  -webkit-transition: opacity 0.8s linear;
 }
 
 #body {
@@ -100,7 +99,6 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
   padding: 5px;
   padding-left: 10px;
   opacity: 1; /* Set by JavaScript */
-  -webkit-transition: opacity 0.8s linear;
 }
 
 #loadingScreen progress {
@@ -151,7 +149,6 @@ a:hover {
   padding: 7px 0.5em 7px;
   box-shadow: 0 1px 5px #777;
   border-bottom: 1px solid #404040;
-  -webkit-transition: opacity 0.8s linear;
   text-shadow: 1px 1px rgba(10, 10, 10, 0.7);
   background: rgba(60, 60, 60, 0.91);
 }

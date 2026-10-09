@@ -106,6 +106,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) TVCLogControllerPrintingOperationQueue *printingQueue;
 @property (readonly, copy) NSURL *baseURL;
 @property (nonatomic, assign) BOOL documentLoadHoldsSlot;
+@property (nonatomic, assign) NSTimeInterval documentLoadStartedAt; // 0 before the first load
+@property (nonatomic, assign) NSUInteger stuckDocumentReloadCount; // since the last document that loaded
 @end
 
 /* Loading every view's document at once (one web view per server and
@@ -330,7 +332,35 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	[self.backingView stopLoading];
 
+	self.documentLoadStartedAt = [NSDate timeIntervalSince1970];
+
 	[self.backingView loadHTMLString:newHTML baseURL:self.baseURL];
+}
+
+/* Under load WebKit can fail a document or never finish it; the view then
+ stayed blank for the rest of the session. Loaded again, three times at most. */
+- (void)reloadStuckDocument
+{
+	if (self.terminating) {
+		return;
+	}
+
+	if (self.stuckDocumentReloadCount >= 3) {
+		LogToConsoleError("Gave up loading the document of %{public}@", self.description);
+
+		return;
+	}
+
+	self.stuckDocumentReloadCount += 1;
+
+	LogToConsoleError("Loading the document of %{public}@ again (%{public}lu of 3)", self.description, self.stuckDocumentReloadCount);
+
+	/* Otherwise the next document would skip setting itself up */
+	self.loaded = NO;
+
+	self.historyLoaded = NO;
+
+	[self loadInitialDocument];
 }
 
 #pragma mark -
@@ -698,7 +728,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 		if (highlighted) {
 			@synchronized(self.highlightedLineNumbers) {
-				[self.highlightedLineNumbers addObject:lineNumber];
+				if ([self.highlightedLineNumbers containsObject:lineNumber] == NO) {
+					[self.highlightedLineNumbers addObject:lineNumber];
+				}
 			}
 		}
 	}
@@ -915,6 +947,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)notifyDidBecomeVisible /* When the view is switched to */
 {
 	[self prioritizeDeferredDocumentLoad];
+
+	/* A document that started loading in the background may never finish */
+	if (self.loaded == NO && self.documentLoadStartedAt > 0 &&
+		([NSDate timeIntervalSince1970] - self.documentLoadStartedAt) > 3.0)
+	{
+		[self reloadStuckDocument];
+	}
 
 	[self _evaluateFunction:@"_Textual.notifyDidBecomeVisible" withArguments:nil];
 
@@ -1412,6 +1451,15 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	self.lastLine = logLine;
 
+	/* Unread counts, highlights and notifications don't wait for the document:
+	 views in the background load a few at a time, which held them back for
+	 tens of seconds. The line itself still waits, so it is shown once. */
+	BOOL notifiedEarly = (self.loaded == NO && completionBlock != nil);
+
+	if (notifiedEarly) {
+		[self notifyEarlyOfLogLine:logLine completionBlock:completionBlock];
+	}
+
 	TVCLogControllerPrintingBlock printBlock = ^(id operation) {
 		NSDictionary<NSString *, id> *resultInfo = nil;
 
@@ -1444,15 +1492,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 			self.newestLineNumber = lineNumber;
 
-			IRCClient *client = self.associatedClient;
-			IRCChannel *channel = self.associatedChannel;
-
 			if (highlighted) {
-				@synchronized(self.highlightedLineNumbers) {
-					[self.highlightedLineNumbers addObject:lineNumber];
-				}
-
-				[client cacheHighlightInChannel:channel withLogLine:logLine];
+				[self recordHighlightOfLogLine:logLine];
 			}
 
 			if (pluginObject) {
@@ -1475,45 +1516,109 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			/* Log this log line */
 			[sharedHistoricLog() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
 
-			/* Using information provided by conversation tracking we can update 
-			 our internal array of favored nicknames for nick completion. */
-			if (logLine.memberType == TVCLogLineMemberTypeLocalUser) {
-				[listOfUsers.allObjects makeObjectsPerformSelector:@selector(outgoingConversation)];
-			} else {
-				[listOfUsers.allObjects makeObjectsPerformSelector:@selector(conversation)];
-			}
-
-			if (completionBlock == nil) {
+			if (notifiedEarly) {
 				return;
 			}
 
-			 TVCLogControllerPrintOperationContext *contextObject =
-			[TVCLogControllerPrintOperationContext new];
-
-			contextObject.client = client;
-			contextObject.channel = channel;
-			contextObject.highlight = highlighted;
-			contextObject.logLine = logLine;
-			contextObject.lineNumber = lineNumber;
-
-			completionBlock(contextObject);
+			[self finishPrintingLogLine:logLine highlighted:highlighted listOfUsers:listOfUsers completionBlock:completionBlock];
 		});
 	};
 
 	_enqueueBlock(printBlock)
 }
 
-- (nullable NSString *)renderLogLine:(TVCLogLine *)logLine resultInfo:(NSDictionary<NSString *, id> ** _Nullable)resultInfo
+/* Renders only the message body (for its highlight and nicknames) on a serial
+ queue, so the notifications keep the order the lines were printed in */
+- (void)notifyEarlyOfLogLine:(TVCLogLine *)logLine completionBlock:(TVCLogControllerPrintOperationCompletionBlock)completionBlock
+{
+	NSParameterAssert(logLine != nil);
+	NSParameterAssert(completionBlock != nil);
+
+	static dispatch_queue_t earlyNotificationQueue = NULL;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		earlyNotificationQueue = dispatch_queue_create("TVCLogController.earlyNotificationQueue", DISPATCH_QUEUE_SERIAL);
+	});
+
+	dispatch_async(earlyNotificationQueue, ^{
+		NSDictionary<NSString *, id> *rendererResults = nil;
+
+		(void)[TVCLogRenderer renderBody:logLine.messageBody
+					   forViewController:self
+						  withAttributes:[self rendererAttributesForLogLine:logLine]
+							  resultInfo:&rendererResults];
+
+		BOOL highlighted = [rendererResults boolForKey:TVCLogRendererResultsKeywordMatchFoundAttribute];
+
+		NSSet<IRCChannelUser *> *listOfUsers = rendererResults[TVCLogRendererResultsListOfUsersFoundAttribute];
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			if (self.terminating) {
+				return;
+			}
+
+			if (highlighted) {
+				[self recordHighlightOfLogLine:logLine];
+			}
+
+			[self finishPrintingLogLine:logLine highlighted:highlighted listOfUsers:listOfUsers completionBlock:completionBlock];
+		});
+	});
+}
+
+/* Once per line: the early notification and the printed line both get here */
+- (void)recordHighlightOfLogLine:(TVCLogLine *)logLine
 {
 	NSParameterAssert(logLine != nil);
 
-	// ************************************************************************** /
+	NSString *lineNumber = logLine.uniqueIdentifier;
 
-	TVCLogLineType lineType = logLine.lineType;
+	@synchronized(self.highlightedLineNumbers) {
+		if ([self.highlightedLineNumbers containsObject:lineNumber]) {
+			return;
+		}
 
-	NSString *lineTypeString = logLine.lineTypeString;
+		[self.highlightedLineNumbers addObject:lineNumber];
+	}
 
-	BOOL renderLinks = ([[TLOLinkParser bannedLineTypes] containsObject:lineTypeString] == NO);
+	[self.associatedClient cacheHighlightInChannel:self.associatedChannel withLogLine:logLine];
+}
+
+- (void)finishPrintingLogLine:(TVCLogLine *)logLine highlighted:(BOOL)highlighted listOfUsers:(nullable NSSet<IRCChannelUser *> *)listOfUsers completionBlock:(nullable TVCLogControllerPrintOperationCompletionBlock)completionBlock
+{
+	NSParameterAssert(logLine != nil);
+
+	/* Using information provided by conversation tracking we can update
+	 our internal array of favored nicknames for nick completion. */
+	if (logLine.memberType == TVCLogLineMemberTypeLocalUser) {
+		[listOfUsers.allObjects makeObjectsPerformSelector:@selector(outgoingConversation)];
+	} else {
+		[listOfUsers.allObjects makeObjectsPerformSelector:@selector(conversation)];
+	}
+
+	if (completionBlock == nil) {
+		return;
+	}
+
+	TVCLogControllerPrintOperationContext *contextObject =
+	[TVCLogControllerPrintOperationContext new];
+
+	contextObject.client = self.associatedClient;
+	contextObject.channel = self.associatedChannel;
+	contextObject.highlight = highlighted;
+	contextObject.logLine = logLine;
+	contextObject.lineNumber = logLine.uniqueIdentifier;
+
+	completionBlock(contextObject);
+}
+
+- (NSDictionary<NSString *, id> *)rendererAttributesForLogLine:(TVCLogLine *)logLine
+{
+	NSParameterAssert(logLine != nil);
+
+	BOOL renderLinks = ([[TLOLinkParser bannedLineTypes] containsObject:logLine.lineTypeString] == NO);
 
 	NSMutableDictionary<NSString *, id> *rendererAttributes = [NSMutableDictionary dictionary];
 
@@ -1529,12 +1634,23 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	[rendererAttributes setUnsignedInteger:logLine.lineType forKey:TVCLogRendererConfigurationLineTypeAttribute];
 	[rendererAttributes setUnsignedInteger:logLine.memberType forKey:TVCLogRendererConfigurationMemberTypeAttribute];
 
+	return [rendererAttributes copy];
+}
+
+- (nullable NSString *)renderLogLine:(TVCLogLine *)logLine resultInfo:(NSDictionary<NSString *, id> ** _Nullable)resultInfo
+{
+	NSParameterAssert(logLine != nil);
+
+	// ************************************************************************** /
+
+	TVCLogLineType lineType = logLine.lineType;
+
 	NSDictionary<NSString *, id> *rendererResults = nil;
 
 	NSString *renderedBody =
 	[TVCLogRenderer renderBody:logLine.messageBody
 			 forViewController:self
-				withAttributes:rendererAttributes
+				withAttributes:[self rendererAttributesForLogLine:logLine]
 					resultInfo:&rendererResults];
 
 	if (renderedBody == nil) {
@@ -1597,7 +1713,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	// ---- //
 
-	templateAttributes[@"lineType"] = lineTypeString;
+	templateAttributes[@"lineType"] = logLine.lineTypeString;
 
 	templateAttributes[@"command"] = logLine.command;
 	templateAttributes[@"rawCommand"] = logLine.command; // Legacy key
@@ -1748,8 +1864,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	templateTokens[@"isReloadingStyle"] = @(self.reloadingTheme);
 
-	templateTokens[@"loadingScreenText"] = TXTLS(@"TVCMainWindow[lv8-2c]");
-
 	templateTokens[@"operatingSystemVersion"] = [XRSystemInformation systemStandardVersion];
 
 	TVCMainWindowAppearance *appearance = self.attachedWindow.userInterfaceObjects;
@@ -1845,6 +1959,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	}
 
+	self.stuckDocumentReloadCount = 0;
+
+	[self.backingView scheduleLayoutWatchdog];
+
 	self.viewLoadedTimestamp = [NSDate timeIntervalSince1970];
 
 	IRCChannel *channel = self.associatedChannel;
@@ -1891,6 +2009,14 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	[RZNotificationCenter() postNotificationName:TVCLogControllerViewFinishedLoadingNotification object:self];
 
 	[self.printingQueue updateReadinessState:self];
+}
+
+- (void)logViewWebViewFailedLoading
+{
+	/* Not from inside WebKit's delegate call */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self reloadStuckDocument];
+	});
 }
 
 - (void)logViewWebViewClosedUnexpectedly

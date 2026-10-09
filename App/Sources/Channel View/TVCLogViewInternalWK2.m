@@ -38,8 +38,11 @@
 #import "WKWebViewPrivate.h"
 
 #import "IRCChannel.h"
+#import "TXAppearance.h"
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
+#import "TPCTheme.h"
+#import "TPCThemeController.h"
 #import "TVCLogController.h"
 #import "TVCLogPolicyPrivate.h"
 #import "TVCLogScriptEventSinkPrivate.h"
@@ -205,6 +208,23 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 	self.navigationDelegate = (id)self;
 
 	self.UIDelegate = (id)self;
+
+	[self applyThemeBackgroundColor];
+}
+
+- (void)applyThemeBackgroundColor
+{
+	BOOL dark = (theme().appearance == TPCThemeAppearanceTypeDark || themeSettings().underlyingWindowColorIsDark);
+
+	NSColor *backgroundColor = themeSettings().underlyingWindowColor;
+
+	if (backgroundColor == nil) {
+		backgroundColor = ((dark) ? [NSColor blackColor] : [NSColor whiteColor]);
+	}
+
+	self.appearance = ((dark) ? [TXAppearancePropertyCollection appKitDarkAppearance] : [TXAppearancePropertyCollection appKitLightAppearance]);
+
+	self.underPageBackgroundColor = backgroundColor;
 }
 
 - (void)dealloc
@@ -465,6 +485,41 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 	self.t_viewIsNavigating = NO;
 
 	[self maybeInformDelegateWebViewFinishedLoading];
+}
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+	NSParameterAssert(webView == self);
+
+	[self navigationFailedWithError:error];
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+	NSParameterAssert(webView == self);
+
+	[self navigationFailedWithError:error];
+}
+
+/* Without this the view waited for the end of a navigation that had already
+ failed and stayed blank. A failed page isn't loaded: it is loaded again. */
+- (void)navigationFailedWithError:(NSError *)error
+{
+	NSParameterAssert(error != nil);
+
+	/* A load replaced by the next one */
+	if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+		return;
+	}
+
+	LogToConsoleError("WebView [%{public}@] failed to load: %{public}@", self.description, error.localizedDescription);
+
+	self.t_viewIsLoading = NO;
+	self.t_viewIsNavigating = NO;
+
+	[self stopObservingLoadingProperty];
+
+	[self.t_parentView informDelegateWebViewFailedLoading];
 }
 
 - (NSMenu *)_webView:(WKWebView *)webView contextMenu:(NSMenu *)menu forElement:(id)element

@@ -190,6 +190,11 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 	[self.viewController logViewWebViewFinishedLoading];
 }
 
+- (void)informDelegateWebViewFailedLoading
+{
+	[self.viewController logViewWebViewFailedLoading];
+}
+
 - (void)informDelegateWebViewClosedUnexpectedly
 {
 	[self.viewController logViewWebViewClosedUnexpectedly];
@@ -197,7 +202,45 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 - (void)setViewFinishedLayout
 {
+	[self cancelPerformRequestsWithSelector:@selector(layoutWatchdogFired)];
+
 	self.layingOutView = NO;
+}
+
+/* The page finishes layout about a second after it loads at the latest
+ (events.js), and the document counts as loaded 1.2 seconds after that,
+ so a healthy page is long done when this fires. It never fires before
+ the document has loaded: an unloaded view stays covered. */
+- (void)scheduleLayoutWatchdog
+{
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(layoutWatchdogFired) withObject:nil afterDelay:1.5];
+}
+
+- (void)layoutWatchdogFired
+{
+	TVCLogController *viewController = self.viewController;
+
+	if (self.layingOutView == NO || viewController.viewIsLoaded == NO) {
+		return;
+	}
+
+	LogToConsoleError("Finishing layout of a channel view whose page didn't: %{public}@", viewController.description);
+
+	self.layingOutView = NO;
+
+	/* Bundled styles start the body hidden and show it from their own
+	 Textual.viewBodyDidLoad(), which didn't run either */
+	[self evaluateJavaScript:
+	 @"try {"
+	  "  if (window.Textual && Textual.fadeOutLoadingScreen) {"
+	  "    Textual.fadeOutLoadingScreen(1.00, 0.95);"
+	  "  } else {"
+	  "    var body = document.getElementById('body');"
+	  "    var loadingScreen = document.getElementById('loadingScreen');"
+	  "    if (body) { body.style.opacity = 1; }"
+	  "    if (loadingScreen) { loadingScreen.style.display = 'none'; }"
+	  "  }"
+	  "} catch (error) {}"];
 }
 
 - (TVCLogPolicy *)webViewPolicy
@@ -240,6 +283,13 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 	NSParameterAssert(baseURL != nil);
 
 	self.layingOutView = YES;
+
+	/* The previous document's callbacks are for a page that is going */
+	[self cancelPerformRequestsWithSelector:@selector(informDelegateWebViewFinishedLoading)];
+	[self cancelPerformRequestsWithSelector:@selector(layoutWatchdogFired)];
+
+	/* The style may have changed */
+	[self.webViewBacking applyThemeBackgroundColor];
 
 	[self _loadHTMLString:string baseURL:baseURL];
 }

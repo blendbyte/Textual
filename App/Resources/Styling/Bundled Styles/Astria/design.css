@@ -37,7 +37,6 @@ body {
 	z-index: 100;
 	position: absolute;
 	opacity: 0; /* Set by JavaScript */
-	-webkit-transition: opacity 0.8s linear;
 }
 
 /* Only factor in height of topic bar when selected == true
@@ -96,7 +95,6 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
 	border-radius: 5px;
 	padding: 5px 10px;
 	opacity: 1; /* Set by JavaScript */
-	-webkit-transition: opacity 0.8s linear;
 }
 
 /* Time */
@@ -141,7 +139,6 @@ a:hover {
 	padding: 2px 0.5em 3px;
 	border-bottom: 1px solid #1f1f1f;
 	-webkit-box-shadow: 0 1px 5px #777;
-	-webkit-transition: opacity 0.8s linear;
 	-webkit-font-smoothing: subpixel-antialiased;
 	overflow: hidden;
 	white-space: nowrap;

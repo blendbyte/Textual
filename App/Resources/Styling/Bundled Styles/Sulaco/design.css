@@ -42,7 +42,6 @@ a:hover {
 	z-index: 100;
 	position: absolute;
 	opacity: 0; /* Set by JavaScript */
-	-webkit-transition: opacity 0.8s linear;
 }
 
 .message,
@@ -242,7 +241,6 @@ div.line.selectedUser[data-highlight="false"]:hover .time {
 	border-radius: 5px;
 	padding: 5px 10px;
 	opacity: 1;
-	-webkit-transition: opacity 0.8s linear;
 }
 
 /* Topic Bar */
@@ -261,7 +259,6 @@ div.line.selectedUser[data-highlight="false"]:hover .time {
 	background: #333;
 	font-weight: 600;
 	text-align: center;
-	-webkit-transition: opacity 0.8s linear;
 	-webkit-font-smoothing: subpixel-antialiased;
 }
 

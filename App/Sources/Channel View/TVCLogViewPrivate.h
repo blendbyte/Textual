@@ -54,8 +54,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)informDelegateWebViewClosedUnexpectedly;
 - (void)informDelegateWebViewFinishedLoading;
+- (void)informDelegateWebViewFailedLoading;
 
 - (void)setViewFinishedLayout;
+
+/* After the document has loaded: finish layout if the page hasn't (its
+ script never ran) and show the style's body */
+- (void)scheduleLayoutWatchdog;
 
 - (BOOL)keyDown:(NSEvent *)e inView:(NSView *)view;
 

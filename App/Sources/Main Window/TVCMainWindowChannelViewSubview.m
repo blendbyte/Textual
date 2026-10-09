@@ -201,8 +201,12 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self.backingViewIsLoading || self.isSelected == NO) {
 		[self addOverlayView];
+
+		[self.overlayView setLoading:self.backingViewIsLoading];
 	} else {
 		if ( self.overlayView) {
+			[self.overlayView setLoading:NO];
+
 			[self.overlayView removeFromSuperview];
 
 			self.overlayVisible = NO;
@@ -269,7 +273,63 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 
+@interface TVCMainWindowChannelViewSubviewOverlayView ()
+@property (nonatomic, strong, nullable) NSProgressIndicator *loadingIndicator;
+@end
+
 @implementation TVCMainWindowChannelViewSubviewOverlayView
+
+- (void)setLoading:(BOOL)loading
+{
+	if (loading == NO) {
+		[self cancelPerformRequestsWithSelector:@selector(showLoadingIndicator)];
+
+		[self.loadingIndicator stopAnimation:nil];
+
+		self.loadingIndicator.hidden = YES;
+
+		return;
+	}
+
+	if (self.loadingIndicator.hidden == NO && self.loadingIndicator != nil) {
+		return;
+	}
+
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(showLoadingIndicator) withObject:nil afterDelay:0.5];
+}
+
+- (void)showLoadingIndicator
+{
+	NSProgressIndicator *loadingIndicator = self.loadingIndicator;
+
+	if (loadingIndicator == nil) {
+		loadingIndicator = [NSProgressIndicator new];
+
+		loadingIndicator.style = NSProgressIndicatorStyleSpinning;
+		loadingIndicator.controlSize = NSControlSizeRegular;
+		loadingIndicator.displayedWhenStopped = NO;
+
+		loadingIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+
+		[self addSubview:loadingIndicator];
+
+		[self addConstraints:@[
+			[loadingIndicator.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+			[loadingIndicator.centerYAnchor constraintEqualToAnchor:self.centerYAnchor]
+		]];
+
+		self.loadingIndicator = loadingIndicator;
+	}
+
+	/* Light on dark styles: the window around the view may be light */
+	BOOL dark = (theme().appearance == TPCThemeAppearanceTypeDark || themeSettings().underlyingWindowColorIsDark);
+
+	loadingIndicator.appearance = ((dark) ? [TXAppearancePropertyCollection appKitDarkAppearance] : [TXAppearancePropertyCollection appKitLightAppearance]);
+
+	loadingIndicator.hidden = NO;
+
+	[loadingIndicator startAnimation:nil];
+}
 
 - (void)mouseDown:(NSEvent *)theEvent
 {

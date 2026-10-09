@@ -88,6 +88,8 @@ Textual.viewBodyDidLoadInt = function() /* PRIVATE */
 };
 
 _Textual._viewBodyDidLoadAnimationFrame = null; /* PRIVATE */
+_Textual._viewBodyDidLoadTimeout = null; /* PRIVATE */
+_Textual._viewBodyDidLoadCompleted = false; /* PRIVATE */
 
 _Textual.viewBodyDidLoad = function() /* PRIVATE */
 {
@@ -104,11 +106,36 @@ _Textual.viewBodyDidLoad = function() /* PRIVATE */
 	window.requestAnimationFrame(function() {
 		_Textual._viewBodyDidLoad();
 	});
+
+	/* WebKit gives no animation frames to a view that isn't in a visible window
+	 (at launch, or under the overlay itself), which left the overlay up for good.
+	 Timers are only throttled there, so one second later layout finishes anyway. */
+	_Textual._viewBodyDidLoadTimeout =
+	window.setTimeout(function() {
+		_Textual._viewBodyDidLoad();
+	}, 1000);
 };
 
+/* The animation frame, the timeout and viewFinishedLoading() all end here; only the first counts */
 _Textual._viewBodyDidLoad = function() /* PRIVATE */
 {
-	_Textual._viewBodyDidLoadAnimationFrame = null;
+	if (_Textual._viewBodyDidLoadCompleted) {
+		return;
+	}
+
+	_Textual._viewBodyDidLoadCompleted = true;
+
+	if (_Textual._viewBodyDidLoadAnimationFrame) {
+		window.cancelAnimationFrame(_Textual._viewBodyDidLoadAnimationFrame);
+
+		_Textual._viewBodyDidLoadAnimationFrame = null;
+	}
+
+	if (_Textual._viewBodyDidLoadTimeout) {
+		window.clearTimeout(_Textual._viewBodyDidLoadTimeout);
+
+		_Textual._viewBodyDidLoadTimeout = null;
+	}
 
 	appPrivate.finishedLayingOutView();
 
@@ -133,20 +160,15 @@ _Textual.viewFinishedLoading = function(configuration) /* PRIVATE */
 		_Textual.notifyDidBecomeHidden();
 	}
 
+	/* The document has loaded (the app waits a moment after that), so layout
+	 is done whether or not an animation frame or the timeout has come yet.
+	 The visible view needs this as much as hidden ones. */
+	_Textual._viewBodyDidLoad();
+
 	if (isReloadingTheme) {
 		Textual.viewFinishedReload();
 	} else {
 		Textual.viewFinishedLoading();
-	}
-
-	/* If this view is not visible to the user, then cancel the animation
-	 frame set by Textual.viewBodyDidLoadInt() because there is no use for it. */
-	if (isVisible === false && isSelected === false) {
-		if (_Textual._viewBodyDidLoadAnimationFrame) {
-			window.cancelAnimationFrame(_Textual._viewBodyDidLoadAnimationFrame);
-
-			_Textual._viewBodyDidLoad();
-		}
 	}
 
 	Textual.changeTextSizeMultiplier(textSizeMultiplier);

@@ -49,6 +49,9 @@ Textual.loadingScreenElement = function() /* PUBLIC */
 	return document.getElementById("loadingScreen");
 };
 
+/* Shows the view at once: a fade played the first time a channel was switched
+ to (WebKit holds animations in hidden views), so switching felt slow. The
+ name stays for styles that call it; their own fades are switched off here. */
 Textual.fadeOutLoadingScreen = function(bodyOp, topicOp) /* PUBLIC */
 {
 	var documentBody = Textual.documentBodyElement();
@@ -57,24 +60,17 @@ Textual.fadeOutLoadingScreen = function(bodyOp, topicOp) /* PUBLIC */
 
 	var loadingScreen = Textual.loadingScreenElement();
 
-	/* Modify the opacity values of the various elements */
-	loadingScreen.style.opacity = 0.00;
+	if (loadingScreen !== null) {
+		loadingScreen.style.display = "none";
+	}
 
+	documentBody.style.transition = "none";
 	documentBody.style.opacity = bodyOp;
 
 	if (topicBar !== null) {
+		topicBar.style.transition = "none";
 		topicBar.style.opacity = topicOp;
 	}
-
-	/* The fade time for the loading screen depends on the CSS of the actual
-	style, but there is no reason it should take more than five (5) seconds.
-	We will wait that amount of time before setting the overlay to hidden.
-	Setting it to hidden makes it not copiable after it is not visible. */
-	setTimeout(function() {
-		var loadingScreen = Textual.loadingScreenElement();
-
-		loadingScreen.style.display = "none";
-	}, 5000);
 };
 
 /* Topic bar */

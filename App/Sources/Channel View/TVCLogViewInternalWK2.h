@@ -46,6 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithHostView:(TVCLogView *)hostView;
 
+/* The style's background behind the page and dark or light controls, so a
+ page that hasn't drawn yet isn't white on a dark style */
+- (void)applyThemeBackgroundColor;
+
 - (void)_t_evaluateJavaScript:(NSString *)code completionHandler:(void (^ _Nullable)(id _Nullable))completionHandler;
 
 @property (readonly) TVCLogPolicy *webViewPolicy;

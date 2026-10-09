@@ -94,6 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)processingInlineMediaPayload:(ICLPayload *)payload failedWithError:(NSError *)error;
 
 - (void)logViewWebViewClosedUnexpectedly;
+- (void)logViewWebViewFailedLoading;
 - (void)logViewWebViewFinishedLoading;
 - (void)logViewWebViewKeyDown:(NSEvent *)e;
 - (void)logViewWebViewReceivedDropWithFile:(NSString *)filename;
