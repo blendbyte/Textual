@@ -45,6 +45,9 @@ TEXTUAL_EXTERN NSNotificationName const TPCPreferencesPreventSleepWhileConnected
 @interface TPCPreferences (TPCPreferencesLocalPrivate)
 + (void)initPreferences;
 
+/* Textual 7's Caffeine extension setting becomes "PreventSleepWhileConnected" (once) */
++ (void)migrateCaffeinePreference;
+
 + (void)setAppNapEnabled:(BOOL)appNapEnabled;
 
 /* Posts TPCPreferencesPreventSleepWhileConnectedChangedNotification */

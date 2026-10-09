@@ -57,23 +57,26 @@ ConversationTracking.nicknameSingleClickEventCallback = function(senderElement)
 	/* Toggle status for nickname */
 	var trackingIndex = ConversationTracking.trackedNicknames.indexOf(nickname);
 
-	if (trackingIndex >= 0) {
-		ConversationTracking.trackedNicknames.splice(trackingIndex, 1);
-	} else {
+	var tracked = (trackingIndex < 0);
+
+	if (tracked) {
 		ConversationTracking.trackedNicknames.push(nickname);
+	} else {
+		ConversationTracking.trackedNicknames.splice(trackingIndex, 1);
 	}
 
 	/* Gather basic information */
 	var documentBody = Textual.documentBodyElement();
 
-	var plainTextLines = documentBody.querySelectorAll('div[data-line-type="privmsg"], div[data-line-type="action"]');
+	/* The same line types that new messages mark (notices too) */
+	var plainTextLines = documentBody.querySelectorAll('div[data-line-type="privmsg"], div[data-line-type="action"], div[data-line-type="notice"]');
 
-	/* Update all elements of the DOM matching conditions */
+	/* Set, not flip, so every line ends in the same state */
 	for (var i = 0; i < plainTextLines.length; i++) {
 		var lineSender = plainTextLines[i].querySelector(".sender");
 
 		if (lineSender && lineSender.dataset.nickname === nickname) {
-			ConversationTracking.toggleSelectionStatusForSenderElement(lineSender);
+			ConversationTracking.toggleSelectionStatusForSenderElement(lineSender, tracked);
 		}
 	}
 };
@@ -101,15 +104,20 @@ ConversationTracking.updateNicknameWithNewMessage = function(lineElement)
 		}
 
 		/* Toggle status on for new message */
-		ConversationTracking.toggleSelectionStatusForSenderElement(senderElement);
+		ConversationTracking.toggleSelectionStatusForSenderElement(senderElement, true);
 	}
 };
 
-ConversationTracking.toggleSelectionStatusForSenderElement = function(senderElement)
+/* selected: true or false to set the state, leave out to flip it */
+ConversationTracking.toggleSelectionStatusForSenderElement = function(senderElement, selected)
 {
 	var line = senderElement.lineContainer();
 
-	line.classList.toggle("selectedUser");
+	if (selected === undefined) {
+		line.classList.toggle("selectedUser");
+	} else {
+		line.classList.toggle("selectedUser", selected);
+	}
 };
 
 /* Helper functions */

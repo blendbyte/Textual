@@ -123,12 +123,13 @@ MessageBuffer.bufferElement = function() /* PUBLIC */
 
 MessageBuffer.bufferElementPrepend = function(html, lineNumbers) /* PUBLIC */
 {
-	_MessageBuffer.bufferElementInsert("afterbegin", html, lineNumbers);
+	return _MessageBuffer.bufferElementInsert("afterbegin", html, lineNumbers);
 };
 
+/* Returns false when the lines were not added (older lines are shown) */
 MessageBuffer.bufferElementAppend = function(html, lineNumbers) /* PUBLIC */
 {
-	_MessageBuffer.bufferElementInsert("beforeend", html, lineNumbers);
+	return _MessageBuffer.bufferElementInsert("beforeend", html, lineNumbers);
 };
 
 _MessageBuffer.bufferElementInsert = function(placement, html, lineNumbers) /* PRIVATE */
@@ -136,7 +137,7 @@ _MessageBuffer.bufferElementInsert = function(placement, html, lineNumbers) /* P
 	/* Do not append to bottom if bottom does not reflect
 	the most recent state of the buffer. */
 	if (_MessageBuffer._bufferBottomIsComplete === false) {
-		return;
+		return false;
 	}
 
 	var buffer = MessageBuffer.bufferElement();
@@ -171,6 +172,8 @@ _MessageBuffer.bufferElementInsert = function(placement, html, lineNumbers) /* P
 			console.error(error);			
 		}
 	}
+
+	return true;
 };
 
 /* ************************************************** */
@@ -627,11 +630,15 @@ _MessageBuffer.loadMessagesWithJump = function(lineNumber, callbackFunction) /* 
 	if (_MessageBuffer._loadingMessagesDuringJump) {
 		console.log("Cancelled request to load messages because another request is active");
 
+		callbackFunction(false);
+
 		return;
 	}
 
 	if (Textual.finishedLoadingHistory === false) {
 		console.log("Cancelled request to load messages because history isn't loaded");
+
+		callbackFunction(false);
 
 		return;
 	}
@@ -641,6 +648,8 @@ _MessageBuffer.loadMessagesWithJump = function(lineNumber, callbackFunction) /* 
 	{
 		console.log("Cancelled request to load messages because another request is active");
 
+		callbackFunction(false);
+
 		return;
 	}
 
@@ -648,6 +657,8 @@ _MessageBuffer.loadMessagesWithJump = function(lineNumber, callbackFunction) /* 
 		_MessageBuffer._bufferBottomIsComplete) 
 	{
 		console.log("Cancelled request to load messages because there is nothing new to load");
+
+		callbackFunction(false);
 
 		return;
 	}
@@ -703,70 +714,77 @@ _MessageBuffer.loadMessagesWithJumpPostflight = function(requestPayload) /* PRIV
 
 	console.log("Request to load messages for " + lineNumberContents + " returned " + renderedMessagesCount + " results");
 
-	if (renderedMessagesCount > 0) {
-		/* Array which will house every line number that was loaded. 
-		The style needs this information so it can perform whatever action. */
-		lineNumbers = new Array();
+	/* Even if something below throws, the jump ends and the caller hears of it */
+	var jumped = false;
 
-		/* Array which will house every segment of HTML to append. */
-		html = new Array();
+	try {
+		if (renderedMessagesCount > 0) {
+			/* Array which will house every line number that was loaded. 
+			The style needs this information so it can perform whatever action. */
+			lineNumbers = new Array();
 
-		/* Process result */
-		for (var i = 0; i < renderedMessagesCount; i++) {
-			var renderedMessage = renderedMessages[i];
+			/* Array which will house every segment of HTML to append. */
+			html = new Array();
 
-			var lineNumber = renderedMessage.lineNumber;
+			/* Process result */
+			for (var i = 0; i < renderedMessagesCount; i++) {
+				var renderedMessage = renderedMessages[i];
 
-			if (lineNumber) {
-				lineNumbers.push(renderedMessage.lineNumber);
+				var lineNumber = renderedMessage.lineNumber;
+
+				if (lineNumber) {
+					lineNumbers.push(renderedMessage.lineNumber);
+				}
+
+				html.push(renderedMessage.html);
 			}
 
-			html.push(renderedMessage.html);
-		}
+			/* When we jump to a line that is not visible, we replace 
+			the entire buffer with the rendered messages. This avoids 
+			the hassle of having to navigate the DOM merging lines. 
+			This may change in the future based on user feedback,
+			but for now this is acceptable. */
 
-		/* When we jump to a line that is not visible, we replace 
-		the entire buffer with the rendered messages. This avoids 
-		the hassle of having to navigate the DOM merging lines. 
-		This may change in the future based on user feedback,
-		but for now this is acceptable. */
+			/* Append HTML */
+			var htmlString = html.join("");
 
-		/* Append HTML */
-		var htmlString = html.join("");
+			var buffer = MessageBuffer.bufferElement();
 
-		var buffer = MessageBuffer.bufferElement();
+			buffer.insertAdjacentHTML('afterbegin', htmlString);
 
-		buffer.insertAdjacentHTML('afterbegin', htmlString);
+			/* Resize the buffer by removing messages from the bottom
+			so that the only lines that remain are those appended. */
+			if (_MessageBuffer._bufferCurrentSize > 0) {
+				_MessageBuffer.resizeBuffer(_MessageBuffer._bufferCurrentSize, false);
+			}
 
-		/* Resize the buffer by removing messages from the bottom
-		so that the only lines that remain are those appended. */
-		_MessageBuffer.resizeBuffer(_MessageBuffer._bufferCurrentSize, false);
+			/* Cancel any mutations already queued so that we don't scroll. */
+			/* Place after resizeBuffer() because that triggers a mutation. */
+			buffer.cancelMutation();
 
-		/* Cancel any mutations already queued so that we don't scroll. */
-		/* Place after resizeBuffer() because that triggers a mutation. */
-		buffer.cancelMutation();
+			/* Update buffer size to include appended lines. */
+			_MessageBuffer._bufferCurrentSize += lineNumbers.length;
 
-		/* Update buffer size to include appended lines. */
-		_MessageBuffer._bufferCurrentSize += lineNumbers.length;
+			/* Post line numbers so style can do something with them. */
+			try {
+				_Textual.messageAddedToView(lineNumbers, true);
+			} catch (error) {
+				console.error(error);			
+			}
 
-		/* Post line numbers so style can do something with them. */
-		try {
-			_Textual.messageAddedToView(lineNumbers, true);
-		} catch (error) {
-			console.error(error);			
-		}
+			/* Toggle automatic scrolling */
+			/* Call after resize so that it has latest state of bottom. */
+			_MessageBuffer.toggleAutomaticScrolling();
+		} // renderedMessagesCount > 0
 
-		/* Toggle automatic scrolling */
-		/* Call after resize so that it has latest state of bottom. */
-		_MessageBuffer.toggleAutomaticScrolling();
-	} // renderedMessagesCount > 0
+		/* Try jumping to line */
+		jumped = Textual.scrollToElement(lineNumberStandardized);
+	} finally {
+		/* Flush state and inform callback of result */
+		_MessageBuffer._loadingMessagesDuringJump = false;
 
-	/* Try jumping to line and inform callback of result. */
-	callbackFunction( 
-		Textual.scrollToElement(lineNumberStandardized) 
-	);
-
-	/* Flush state */
-	_MessageBuffer._loadingMessagesDuringJump = false;
+		callbackFunction(jumped);
+	}
 };
 
 /* ************************************************** */

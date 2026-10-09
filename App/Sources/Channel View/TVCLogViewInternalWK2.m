@@ -160,6 +160,9 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 
 - (void)dealloc
 {
+	/* A view released while loading never got its stopLoading */
+	[self stopObservingLoadingProperty];
+
 	self.navigationDelegate = nil;
 
 	self.UIDelegate = nil;

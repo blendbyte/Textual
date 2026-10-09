@@ -44,6 +44,7 @@
 #import "IRCChannel.h"
 #import "IRCChannelUser.h"
 #import "IRCColorFormat.h"
+#import "IRCISupportInfo.h"
 #import "IRCUser.h"
 #import "IRCUserNicknameColorStyleGeneratorPrivate.h"
 #import "TPCPreferencesLocal.h"
@@ -54,7 +55,7 @@
 #import "TLOLinkParser.h"
 #import "TVCLogController.h"
 #import "TVCLogLine.h"
-#import "TVCLogRenderer.h"
+#import "TVCLogRendererPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -144,7 +145,10 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	NSUInteger bodyLength = body.length;
 
-	UniChar charactersIn[bodyLength];
+	/* On the heap: a long line on the stack could overflow it */
+	NSMutableData *charactersBuffer = [NSMutableData dataWithLength:(bodyLength * sizeof(UniChar))];
+
+	UniChar *charactersIn = charactersBuffer.mutableBytes;
 
 	[body getCharacters:charactersIn range:body.range];
 
@@ -485,23 +489,114 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 	return foundKeyword;
 }
 
+/* A channel name starts with one of the server's channel prefixes (CHANTYPES) and
+ runs until a space, comma or BEL, which a name can't contain */
++ (nullable NSRegularExpression *)channelNameExpressionForPrefixes:(NSArray<NSString *> *)prefixes
+{
+	NSParameterAssert(prefixes != nil);
+
+	static NSCache<NSString *, NSRegularExpression *> *cache = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		cache = [NSCache new];
+	});
+
+	NSString *prefixCharacters = [prefixes componentsJoinedByString:@""];
+
+	NSRegularExpression *expression = [cache objectForKey:prefixCharacters];
+
+	if (expression) {
+		return expression;
+	}
+
+	NSMutableString *prefixClass = [NSMutableString string];
+
+	[prefixCharacters enumerateSubstringsInRange:prefixCharacters.range
+										 options:NSStringEnumerationByComposedCharacterSequences
+									  usingBlock:^(NSString * _Nullable character, NSRange characterRange, NSRange enclosingRange, BOOL *stop) {
+		if (character == nil) {
+			return;
+		}
+
+		/* Punctuation is escaped inside the character class; letters and digits can't be */
+		if ([character rangeOfCharacterFromSet:[NSCharacterSet alphanumericCharacterSet]].location == NSNotFound) {
+			[prefixClass appendString:@"\\"];
+		}
+
+		[prefixClass appendString:character];
+	}];
+
+	NSString *pattern = [NSString stringWithFormat:@"[%@][^\\s,\\x07]+", prefixClass];
+
+	expression = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:NULL];
+
+	if (expression) {
+		[cache setObject:expression forKey:prefixCharacters];
+	}
+
+	return expression;
+}
+
+/* Punctuation that ends a sentence ("join #textual.") isn't part of the name */
++ (NSArray<NSValue *> *)channelNameRangesInString:(NSString *)string withPrefixes:(NSArray<NSString *> *)prefixes
+{
+	NSParameterAssert(string != nil);
+	NSParameterAssert(prefixes != nil);
+
+	if (prefixes.count == 0) {
+		prefixes = @[@"#"];
+	}
+
+	NSRegularExpression *expression = [self channelNameExpressionForPrefixes:prefixes];
+
+	if (expression == nil) {
+		return @[];
+	}
+
+	NSCharacterSet *trailingCharacters = [NSCharacterSet characterSetWithCharactersInString:@".,;:!?'\")]}>"];
+
+	NSMutableArray<NSValue *> *ranges = [NSMutableArray array];
+
+	[expression enumerateMatchesInString:string options:0 range:string.range usingBlock:^(NSTextCheckingResult * _Nullable result, NSMatchingFlags flags, BOOL *stop) {
+		NSRange range = result.range;
+
+		while (range.length > 1 && [trailingCharacters characterIsMember:[string characterAtIndex:(NSMaxRange(range) - 1)]]) {
+			range.length -= 1;
+		}
+
+		if (range.length < 2) {
+			return;
+		}
+
+		[ranges addObject:[NSValue valueWithRange:range]];
+	}];
+
+	return [ranges copy];
+}
+
 - (void)findAllChannelNames
 {
 	if ([self isRenderingPRIVMSG_or_NOTICE] == NO) {
 		return;
 	}
 
-	NSString *body = self->_body;
+	NSArray *prefixes = self->_viewController.associatedClient.supportInfo.channelNamePrefixes;
 
-	[body enumerateMatchesOfString:@"#([a-zA-Z0-9\\#\\-]+)" withBlock:^(NSRange range, BOOL *stop) {
+	NSArray *ranges = [self.class channelNameRangesInString:self->_body withPrefixes:(prefixes ?: @[])];
+
+	for (NSValue *rangeValue in ranges) {
+		NSRange range = rangeValue.rangeValue;
+
 		if ([self sectionOfBodyIsSurroundedByNonAlphabeticals:range] == NO) {
-			return;
+			continue;
 		}
 
 		if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingURLAttribute inRange:range] == NO) {
 			[self->_bodyWithAttributes addAttribute:TVCLogRendererFormattingChannelNameAttribute value:@(YES) range:range];
 		}
-	} options:(NSCaseInsensitiveSearch | NSRegularExpressionSearch)];
+	}
 }
 
 - (BOOL)sectionOfBodyIsSurroundedByNonAlphabeticals:(NSRange)range

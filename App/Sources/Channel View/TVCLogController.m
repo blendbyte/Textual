@@ -84,7 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL terminating;
 @property (nonatomic, assign) BOOL historyLoadedForFirstTime;
 @property (nonatomic, assign) BOOL reloadingHistory;
-@property (nonatomic, assign) BOOL reloadingTheme;
+@property (nonatomic, assign) BOOL reloadingTheme; // while the new document is built
+@property (nonatomic, assign) BOOL pendingThemeReload; // until that document has loaded
 @property (nonatomic, assign) BOOL historyLoaded;
 @property (nonatomic, assign) NSInteger activeLineCount;
 @property (nonatomic, copy, nullable) NSString *lastVisitedHighlight;
@@ -93,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable, readwrite) NSString *newestLineNumber;
 @property (nonatomic, strong, nullable) TVCLogLine *lastLine;
 @property (nonatomic, strong) NSMutableArray<NSString *> *highlightedLineNumbers;
-@property (nonatomic, strong) NSCache *jumpToLineCallbacks;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *jumpToLineCallbacks; // line number → handlers waiting for it
 @property (nonatomic, strong, readwrite) TVCLogView *backingView;
 @property (weak, readonly) IRCTreeItem *associatedItem;
 @property (nonatomic, weak, readwrite) IRCClient *associatedClient;
@@ -174,7 +175,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 {
 	self.highlightedLineNumbers	= [NSMutableArray new];
 
-	self.jumpToLineCallbacks = [NSCache new];
+	self.jumpToLineCallbacks = [NSMutableDictionary dictionary];
 }
 
 - (void)prepareForTermination:(BOOL)isTerminatingApplication
@@ -189,6 +190,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.backingView = nil;
 
 	[self.printingQueue cancelOperationsForViewController:self];
+
+	[self failPendingJumps];
 
 	if (isTerminatingApplication) {
 		[self closeHistoricLog];
@@ -462,7 +465,20 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 {
 	NSParameterAssert(html != nil);
 
-	[self _evaluateFunction:@"MessageBuffer.bufferElementAppend" withArguments:@[html, lineNumbers]];
+	if (self.loaded == NO || self.terminating) {
+		return;
+	}
+
+	__weak typeof(self) weakSelf = self;
+
+	[self.backingView evaluateFunction:@"MessageBuffer.bufferElementAppend"
+						 withArguments:@[html, lineNumbers]
+					 completionHandler:^(id _Nullable result) {
+		/* Not added while older lines are shown, but plugins still hear of them */
+		if ([result isKindOfClass:[NSNumber class]] && [result boolValue] == NO) {
+			[weakSelf notifyPluginsOfLinesPosted:lineNumbers];
+		}
+	}];
 }
 
 #pragma mark -
@@ -757,6 +773,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.historyLoadedForFirstTime = YES;
 
 	self.reloadingTheme = YES;
+	self.pendingThemeReload = YES;
 
 	[self clearWithReset:NO];
 
@@ -818,8 +835,17 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	 We do not want invoke the completion handler until we know for certain
 	 whether the line was jumped to. We therefore change the completion
 	 handler and call it from a bridged function when we are finished. */
+	/* A dictionary, not a cache: a handler that is evicted is never called */
 	if (completionHandler) {
-		[self.jumpToLineCallbacks setObject:completionHandler forKey:lineNumber];
+		NSMutableArray *handlers = self.jumpToLineCallbacks[lineNumber];
+
+		if (handlers == nil) {
+			handlers = [NSMutableArray array];
+
+			self.jumpToLineCallbacks[lineNumber] = handlers;
+		}
+
+		[handlers addObject:[completionHandler copy]];
 	}
 
 	[self.backingView evaluateFunction:@"Textual.jumpToLine" withArguments:@[lineNumber]];
@@ -868,13 +894,27 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 #pragma mark -
 #pragma mark Plugins
 
+/* The document that would answer them is being replaced */
+- (void)failPendingJumps
+{
+	NSDictionary *pendingJumps = [self.jumpToLineCallbacks copy];
+
+	[self.jumpToLineCallbacks removeAllObjects];
+
+	[pendingJumps enumerateKeysAndObjectsUsingBlock:^(NSString *lineNumber, NSArray *handlers, BOOL *stop) {
+		for (void (^callbackHandler)(BOOL) in handlers) {
+			callbackHandler(NO);
+		}
+	}];
+}
+
 - (void)notifyJumpToLine:(NSString *)lineNumber successful:(BOOL)successful scrolledToBottom:(BOOL)scrolledToBottom
 {
 	NSParameterAssert(lineNumber != nil);
 
-	void (^callbackHandler)(BOOL) = [self.jumpToLineCallbacks objectForKey:lineNumber];
+	NSArray *handlers = self.jumpToLineCallbacks[lineNumber];
 
-	if (callbackHandler == nil) {
+	if (handlers == nil) {
 		return;
 	}
 
@@ -882,7 +922,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	 tries to jump to same line number again for some reason. */
 	[self.jumpToLineCallbacks removeObjectForKey:lineNumber];
 
-	callbackHandler(successful);
+	for (void (^callbackHandler)(BOOL) in handlers) {
+		callbackHandler(successful);
+	}
 }
 
 - (void)notifyLinesAddedToView:(NSArray<NSString *> *)lineNumbers
@@ -894,6 +936,17 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	self.activeLineCount += lineNumbers.count;
+
+	[self notifyPluginsOfLinesPosted:lineNumbers];
+}
+
+- (void)notifyPluginsOfLinesPosted:(NSArray<NSString *> *)lineNumbers
+{
+	NSParameterAssert(lineNumbers != nil);
+
+	if (self.loaded == NO || self.terminating) {
+		return;
+	}
 
 	if ([sharedPluginManager() supportsFeature:THOPluginItemSupportedFeatureNewMessagePostedEvent] == NO) {
 		return;
@@ -1074,6 +1127,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	[self.printingQueue cancelOperationsForViewController:self];
+
+	[self failPendingJumps];
 
 	if (clearWithReset) {
 		[self historicLogResetChannel];
@@ -1630,6 +1685,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	templateTokens[@"isReloadingStyle"] = @(self.reloadingTheme);
 
+	templateTokens[@"loadingScreenText"] = TXTLS(@"TVCMainWindow[lv8-2c]");
+
 	templateTokens[@"operatingSystemVersion"] = [XRSystemInformation systemStandardVersion];
 
 	TVCMainWindowAppearance *appearance = self.attachedWindow.userInterfaceObjects;
@@ -1754,11 +1811,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		  @{
 			  @"selected" : @(self.selected),
 			  @"visible" : @(self.visible),
-			  @"reloadingTheme" : @(self.reloadingTheme), // TODO: Fix this always being false
+			  @"reloadingTheme" : @(self.pendingThemeReload),
 			  @"textSizeMultiplier" : @(textSizeMultiplier),
 			  @"scrollbackLimit" : @(scrollbackLimit)
 		  }
 	  ]];
+
+	self.pendingThemeReload = NO;
 
 	[self setInitialTopic];
 

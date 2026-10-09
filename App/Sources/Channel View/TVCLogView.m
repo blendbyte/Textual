@@ -53,6 +53,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TVCLogView ()
 @property (nonatomic, strong) TVCLogViewInternalWK2 *webViewBacking;
 @property (nonatomic, getter=isLayingOutView, readwrite) BOOL layingOutView;
+@property (nonatomic, copy, nullable) NSString *documentFileName; // one per view, rewritten for every load
+@property (nonatomic, copy, nullable) NSURL *documentFileURL; // where it was last written
+
+- (void)removeDocumentFile;
 @end
 
 @implementation TVCLogView
@@ -83,7 +87,22 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 - (void)dealloc
 {
+	[self removeDocumentFile];
+
 	self.webViewBacking = nil;
+}
+
+- (void)removeDocumentFile
+{
+	NSURL *documentFileURL = self.documentFileURL;
+
+	if (documentFileURL == nil) {
+		return;
+	}
+
+	self.documentFileURL = nil;
+
+	[RZFileManager() removeItemAtURL:documentFileURL error:NULL];
 }
 
 + (BOOL)webKit2Enabled
@@ -234,21 +253,34 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 	WKWebView *webView = self.webViewBacking;
 
-	NSString *filename = [NSString stringWithFormat:@"%@.html", [NSString stringWithUUID]];
+	if (self.documentFileName == nil) {
+		self.documentFileName = [NSString stringWithFormat:@"%@.html", [NSString stringWithUUID]];
+	}
 
-	NSURL *filePath = [baseURL URLByAppendingPathComponent:filename];
+	NSURL *filePath = [baseURL URLByAppendingPathComponent:self.documentFileName];
+
+	/* Another style folder: the old file would stay behind */
+	if (self.documentFileURL && [self.documentFileURL isEqual:filePath] == NO) {
+		[self removeDocumentFile];
+	}
 
 	NSError *fileWriteError = nil;
 
-	if ([string writeToURL:filePath atomically:NO encoding:NSUTF8StringEncoding error:&fileWriteError] == NO) {
+	if ([string writeToURL:filePath atomically:YES encoding:NSUTF8StringEncoding error:&fileWriteError] == NO) {
 		LogToConsoleError("Failed to write temporary file: %{public}@", fileWriteError.localizedDescription);
+
+		/* Load it from memory instead of staying on the loading screen */
+		[webView loadHTMLString:string baseURL:baseURL];
 
 		return;
 	}
 
+	self.documentFileURL = filePath;
+
 	[webView loadFileURL:filePath
  allowingReadAccessToURL:themeController().temporaryURL];
 }
+
 
 - (void)stopLoading
 {

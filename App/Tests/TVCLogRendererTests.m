@@ -3,10 +3,9 @@
  *                 |_   _|____  _| |_ _   _  __ _| |
  *                   | |/ _ \ \/ / __| | | |/ _` | |
  *                   | |  __/>  <| |_| |_| | (_| | |
- *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
+ *                   |_|\___/_/\_\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,73 +34,44 @@
  *
  *********************************************************************** */
 
-"use strict";
+#import <XCTest/XCTest.h>
 
-/* ************************************************** */
-/*                                                    */
-/* DO NOT OVERRIDE ANYTHING BELOW THIS LINE           */
-/*                                                    */
-/* ************************************************** */
+#import "TVCLogRendererPrivate.h"
 
-/* Scrolling */
-Textual.scrollToBottomOfView = function(fireNotification) /* PUBLIC */
+NS_ASSUME_NONNULL_BEGIN
+
+@interface TVCLogRendererTests : XCTestCase
+@end
+
+@implementation TVCLogRendererTests
+
+- (NSArray<NSString *> *)channelNamesInString:(NSString *)string prefixes:(NSArray<NSString *> *)prefixes
 {
-	TextualScroller.scrollToBottom();
+	NSMutableArray *names = [NSMutableArray array];
 
-	if (fireNotification) {
-		Textual.viewPositionMovedToBottom();
-	}
-};
-
-Textual.scrollToTopOfView = function(fireNotification) /* PUBLIC */
-{
-	TextualScroller.scrollToTop();
-
-	if (fireNotification) {
-		Textual.viewPositionMovedToTop();
-	}
-};
-
-Textual.scrollToLine = function(lineNumber) /* PUBLIC */
-{
-	Textual.jumpToLine(lineNumber);
-};
-
-Textual.jumpToLine = function(lineNumber) /* PUBLIC */
-{
-	MessageBuffer.jumpToLine(
-		lineNumber, 
-
-		(function(success) {
-			var scrolledToBottom = false;
-
-			if (success) {
-				scrolledToBottom = TextualScroller.isScrolledToBottom();
-
-				Textual.viewPositionMovedToLine(lineNumber);
-			}
-
-			appPrivate.notifyJumpToLineCallback(lineNumber, success, scrolledToBottom);
-		})
-	);
-};
-
-Textual.scrollToElement = function(elementName) /* PUBLIC */
-{
-	var element = document.getElementById(elementName);
-
-	if (element) {
-		TextualScroller.scrollElementToCenter(element);
-
-		return true;
+	for (NSValue *range in [TVCLogRenderer channelNameRangesInString:string withPrefixes:prefixes]) {
+		[names addObject:[string substringWithRange:range.rangeValue]];
 	}
 
-	return false;
-};
+	return names;
+}
 
-Textual.scrollToHistoryIndicator = function() /* PUBLIC */
+/* Channel names are linked whole (underscores, dots inside, non-ASCII), without the
+ punctuation after them, and with the server's own prefixes (CHANTYPES) */
+- (void)testChannelNames
 {
-	if (Textual.scrollToElement("mark")) {
-		Textual.viewPositionMovedToHistoryIndicator();
-	}
-};
+	NSArray *hash = @[@"#"];
+
+	XCTAssertEqualObjects([self channelNamesInString:@"see #foo_bar and #c++" prefixes:hash], (@[@"#foo_bar", @"#c++"]));
+	XCTAssertEqualObjects([self channelNamesInString:@"join #textual." prefixes:hash], (@[@"#textual"]));
+	XCTAssertEqualObjects([self channelNamesInString:@"(#a.b) #chän!" prefixes:hash], (@[@"#a.b", @"#chän"]));
+	XCTAssertEqualObjects([self channelNamesInString:@"#one,#two" prefixes:hash], (@[@"#one", @"#two"]));
+	XCTAssertEqualObjects([self channelNamesInString:@"a lone # sign" prefixes:hash], (@[]));
+
+	XCTAssertEqualObjects([self channelNamesInString:@"&local #global" prefixes:hash], (@[@"#global"]));
+	XCTAssertEqualObjects([self channelNamesInString:@"&local #global" prefixes:(@[@"#", @"&"])], (@[@"&local", @"#global"]));
+}
+
+@end
+
+NS_ASSUME_NONNULL_END

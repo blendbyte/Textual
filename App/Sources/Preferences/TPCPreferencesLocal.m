@@ -1223,7 +1223,7 @@ static NSArray<NSString *> *_matchKeywords = nil;
 }
 
 /* Textual 7's Caffeine extension became a built-in preference (8.0) */
-+ (void)_migrateCaffeinePreference
++ (void)migrateCaffeinePreference
 {
 	NSString *extensionKey = @"Private Extension Store -> Caffeine Extension -> Prevent Sleep";
 
@@ -1367,7 +1367,7 @@ static NSArray<NSString *> *_matchKeywords = nil;
 
 	[self _migrateNicknameColorOverridesToVersion722];
 
-	[self _migrateCaffeinePreference];
+	[self migrateCaffeinePreference];
 
 	[TPCPathInfo startUsingTranscriptFolderURL];
 

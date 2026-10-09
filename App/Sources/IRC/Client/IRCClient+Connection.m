@@ -226,10 +226,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.chatHistoryDisconnectTime = [NSDate date];
 
 	if (isTerminating == NO) {
-		/* -prepareForApplicationTermination in TVCLogController will cancel
-		 all operations for this client for us during termination. */
-		[[TXSharedApplication sharedPrintingQueue] cancelOperationsForClient:self];
-
+		/* Lines still queued for the console (it may be loading) are kept: they
+		 were received, and a connection that ends within moments of starting
+		 (an STS upgrade, a server that closes right away) would lose them */
 		IRCClientDisconnectMode disconnectType = self.disconnectType;
 
 		if (disconnectError) {

@@ -3,10 +3,9 @@
  *                 |_   _|____  _| |_ _   _  __ _| |
  *                   | |/ _ \ \/ / __| | | |/ _` | |
  *                   | |  __/>  <| |_| |_| | (_| | |
- *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
+ *                   |_|\___/_/\_\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,73 +34,15 @@
  *
  *********************************************************************** */
 
-"use strict";
+#import "TVCLogRenderer.h"
 
-/* ************************************************** */
-/*                                                    */
-/* DO NOT OVERRIDE ANYTHING BELOW THIS LINE           */
-/*                                                    */
-/* ************************************************** */
+NS_ASSUME_NONNULL_BEGIN
 
-/* Scrolling */
-Textual.scrollToBottomOfView = function(fireNotification) /* PUBLIC */
-{
-	TextualScroller.scrollToBottom();
+@interface TVCLogRenderer (Private)
+/* Where channel names are in a message: a name starts with one of the prefixes
+ (the server's CHANTYPES; "#" when empty) and runs until a space, comma or BEL,
+ without the punctuation that ends a sentence */
++ (NSArray<NSValue *> *)channelNameRangesInString:(NSString *)string withPrefixes:(NSArray<NSString *> *)prefixes;
+@end
 
-	if (fireNotification) {
-		Textual.viewPositionMovedToBottom();
-	}
-};
-
-Textual.scrollToTopOfView = function(fireNotification) /* PUBLIC */
-{
-	TextualScroller.scrollToTop();
-
-	if (fireNotification) {
-		Textual.viewPositionMovedToTop();
-	}
-};
-
-Textual.scrollToLine = function(lineNumber) /* PUBLIC */
-{
-	Textual.jumpToLine(lineNumber);
-};
-
-Textual.jumpToLine = function(lineNumber) /* PUBLIC */
-{
-	MessageBuffer.jumpToLine(
-		lineNumber, 
-
-		(function(success) {
-			var scrolledToBottom = false;
-
-			if (success) {
-				scrolledToBottom = TextualScroller.isScrolledToBottom();
-
-				Textual.viewPositionMovedToLine(lineNumber);
-			}
-
-			appPrivate.notifyJumpToLineCallback(lineNumber, success, scrolledToBottom);
-		})
-	);
-};
-
-Textual.scrollToElement = function(elementName) /* PUBLIC */
-{
-	var element = document.getElementById(elementName);
-
-	if (element) {
-		TextualScroller.scrollElementToCenter(element);
-
-		return true;
-	}
-
-	return false;
-};
-
-Textual.scrollToHistoryIndicator = function() /* PUBLIC */
-{
-	if (Textual.scrollToElement("mark")) {
-		Textual.viewPositionMovedToHistoryIndicator();
-	}
-};
+NS_ASSUME_NONNULL_END

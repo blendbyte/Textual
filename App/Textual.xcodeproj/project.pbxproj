@@ -648,6 +648,8 @@
 		4C26F4ADBA3A82BEF397F9E4 /* IRCClientTypingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */; };
 		4C246D05EAB84C45AC09734B /* IRCSASLECDSA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4BA1780BC4C9206C7E2321 /* IRCSASLECDSA.swift */; };
 		4C3DF3322874E104305061D9 /* IRCSASLECDSATests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1B22A75314CEB59C12CEE9 /* IRCSASLECDSATests.m */; };
+		4CACA1915D50ECEEE616CC47 /* TPCPreferencesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */; };
+		4CA4A4D412BC97120FEB0648 /* TVCLogRendererTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBC0E113EF948059A8A6A3C /* TVCLogRendererTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1455,6 +1457,10 @@
 		4C4BA1780BC4C9206C7E2321 /* IRCSASLECDSA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCSASLECDSA.swift; sourceTree = "<group>"; };
 		4C877F0D2D3B59C90ABEA2A8 /* IRCSASLECDSAPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCSASLECDSAPrivate.h; sourceTree = "<group>"; };
 		4C1B22A75314CEB59C12CEE9 /* IRCSASLECDSATests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSASLECDSATests.m; sourceTree = "<group>"; };
+		4C4E930718ACBFAD2EC95C72 /* TPCPreferencesReloadPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCPreferencesReloadPrivate.h; sourceTree = "<group>"; };
+		4CC90F0D87919D22474F1F77 /* TVCLogRendererPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogRendererPrivate.h; sourceTree = "<group>"; };
+		4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCPreferencesTests.m; sourceTree = "<group>"; };
+		4CBC0E113EF948059A8A6A3C /* TVCLogRendererTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogRendererTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1597,6 +1603,7 @@
 				4C3152B820EB673E00448776 /* TVCLogPolicy.m */,
 				4C3151DD20EB673E00448776 /* TVCLogPolicyPrivate.h */,
 				4C3152BB20EB673E00448776 /* TVCLogRenderer.m */,
+				4CC90F0D87919D22474F1F77 /* TVCLogRendererPrivate.h */,
 				4CAA3123A804C2FFB5C906CA /* TVCLogScriptEventSink+Actions.m */,
 				4C13BB90B6FE1102AB9230C7 /* TVCLogScriptEventSink+Queries.m */,
 				4C76A5ED007AF8A49E24182D /* TVCLogScriptEventSink+Rendering.m */,
@@ -2271,6 +2278,7 @@
 			isa = PBXGroup;
 			children = (
 				4C0964BAD8BA109DE1016229 /* Themes */,
+				4C4E930718ACBFAD2EC95C72 /* TPCPreferencesReloadPrivate.h */,
 				4C6ABA8749E53FEBFA68F60C /* UI */,
 				4C06E28820EC4F000055D09A /* TPCPreferences.m */,
 				4C31511620EB673E00448776 /* TPCPreferencesImportExport.m */,
@@ -2673,6 +2681,8 @@
 				4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */,
 				4C1560075456941B0D119C32 /* TLOLinkParserTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3E /* TPCPreferencesImportTests.m */,
+				4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */,
+				4CBC0E113EF948059A8A6A3C /* TVCLogRendererTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3C /* TVCLogViewSecurityTests.m */,
 			);
 			path = Tests;
@@ -3563,6 +3573,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CACA1915D50ECEEE616CC47 /* TPCPreferencesTests.m in Sources */,
+				4CA4A4D412BC97120FEB0648 /* TVCLogRendererTests.m in Sources */,
 				4C3DF3322874E104305061D9 /* IRCSASLECDSATests.m in Sources */,
 				4C26F4ADBA3A82BEF397F9E4 /* IRCClientTypingTests.m in Sources */,
 				4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */,

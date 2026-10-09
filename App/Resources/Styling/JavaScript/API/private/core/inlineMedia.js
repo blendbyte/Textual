@@ -464,7 +464,7 @@ _InlineMediaLoader.insertPayload = function(payload, html) /* PRIVATE */
 	var mediaContainer = line.querySelector(".inlineMediaContainer");
 
 	if (!mediaContainer) {
-		console.warning("The template for this style appears to be missing a span with the class" +
+		console.warn("The template for this style appears to be missing a span with the class" +
 						"'inlineMediaContainer' — please fix this to support inline media.");
 
 		return;
