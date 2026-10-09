@@ -52,7 +52,6 @@
 #import "TVCLogControllerOperationQueuePrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "IRCChannelPrivate.h"
-#import "IRCChannelMemberListPrivate.h"
 #import "IRCCommandIndexPrivate.h"
 #import "IRCExtrasPrivate.h"
 #import "IRCWorldPrivate.h"
@@ -546,10 +545,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[self.world save];
 	}
-
-	LogToConsoleTerminationProgress("Suspending member list dispatch queue");
-
-	[IRCChannelMemberList suspendMemberListSerialQueues];
 
 	LogToConsoleTerminationProgress("Unloading plugins");
 

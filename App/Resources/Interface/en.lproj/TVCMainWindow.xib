@@ -257,7 +257,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="150" height="439"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="20" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" floatsGroupRows="NO" id="bgh-q2-4XX" customClass="TVCMemberList">
+                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="20" rowSizeStyle="automatic" viewBased="YES" floatsGroupRows="NO" id="bgh-q2-4XX" customClass="TVCMemberList">
                                                     <rect key="frame" x="0.0" y="0.0" width="150" height="439"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -313,8 +313,6 @@
                                                         </tableColumn>
                                                     </tableColumns>
                                                     <connections>
-                                                        <binding destination="hdH-wA-Q1P" name="content" keyPath="arrangedObjects" id="kGZ-Mq-rJ7"/>
-                                                        <outlet property="contentController" destination="hdH-wA-Q1P" id="ADE-cR-3al"/>
                                                         <outlet property="memberListUserInfoPopover" destination="iYh-l7-KsB" id="vr3-QJ-1MS"/>
                                                         <outlet property="visualEffectView" destination="2k7-ax-6YE" id="IbW-dz-7Os"/>
                                                     </connections>
@@ -2078,12 +2076,6 @@ To continue using Textual, you will need to purchase it.</string>
             </constraints>
             <point key="canvasLocation" x="52" y="1002"/>
         </customView>
-        <arrayController objectClassName="IRCChannelMember" preservesSelection="NO" selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="hdH-wA-Q1P" customClass="IRCChannelMemberListController">
-            <classReference key="objectClass" className="IRCChannelMember"/>
-            <connections>
-                <outlet property="tableView" destination="bgh-q2-4XX" id="hkO-aM-hXC"/>
-            </connections>
-        </arrayController>
     </objects>
     <resources>
         <image name="FormattingColor_0" width="16" height="16"/>

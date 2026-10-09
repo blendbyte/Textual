@@ -39,7 +39,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCChannel, IRCChannelMemberListController;
+@class IRCChannel, TVCMemberList;
 
 @protocol IRCChannelMemberListPrivatePrototype <NSObject>
 - (void)addMember:(IRCChannelUser *)member checkForDuplicates:(BOOL)checkForDuplicates;
@@ -67,8 +67,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCChannelMemberList () <IRCChannelMemberListPrivatePrototype>
 - (instancetype)initWithChannel:(IRCChannel *)channel NS_DESIGNATED_INITIALIZER;
 
-+ (void)suspendMemberListSerialQueues;
-+ (void)resumeMemberListSerialQueues;
+/* The member list's table, while it shows this list; told about every change */
+- (void)assignToTableView:(nullable TVCMemberList *)tableView;
+
+/* From a channel's first NAMES reply to its end */
+- (void)beginNamesBatch;
+- (void)endNamesBatch;
+
+/* Any thread; -1 when not found */
+- (nullable IRCChannelUser *)memberAtIndex:(NSUInteger)index;
+- (NSInteger)indexOfMember:(IRCChannelUser *)member;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -51,7 +51,26 @@ NS_ASSUME_NONNULL_BEGIN
 static NSInteger _cachedHighlightCount = (-1);
 static NSInteger _cachedMessageCount = (-1);
 
+/* At most four times a second: every message in a busy channel changed the
+ counts and redrew the icon */
 + (void)updateDockIcon
+{
+	static BOOL updatePending = NO;
+
+	if (updatePending) {
+		return;
+	}
+
+	updatePending = YES;
+
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		updatePending = NO;
+
+		[self _updateDockIconNow];
+	});
+}
+
++ (void)_updateDockIconNow
 {
 	if ([TPCPreferences displayDockBadge] == NO) {
 		return;

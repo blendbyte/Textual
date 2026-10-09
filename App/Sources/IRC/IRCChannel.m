@@ -654,6 +654,19 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 }
 
 #pragma mark -
+#pragma mark Table View Data Source
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+	return self.memberInfo.numberOfMembers;
+}
+
+- (nullable id)tableView:(NSTableView *)tableView objectValueForTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	return [self.memberInfo memberAtIndex:row];
+}
+
+#pragma mark -
 #pragma mark Table View Delegate
 
 - (nullable NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row
@@ -663,9 +676,16 @@ NSString * const IRCChannelConfigurationWasUpdatedNotification = @"IRCChannelCon
 	return newView;
 }
 
+/* Reused: one was made for every row the table showed */
 - (nullable NSTableRowView *)tableView:(NSTableView *)tableView rowViewForRow:(NSInteger)row
 {
-	TVCMemberListRowCell *rowView = [[TVCMemberListRowCell alloc] initWithMemberList:(id)tableView];
+	TVCMemberListRowCell *rowView = [tableView makeViewWithIdentifier:@"MemberRow" owner:self];
+
+	if (rowView == nil) {
+		rowView = [[TVCMemberListRowCell alloc] initWithMemberList:(id)tableView];
+
+		rowView.identifier = @"MemberRow";
+	}
 
 	return rowView;
 }

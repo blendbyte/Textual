@@ -35,31 +35,40 @@
  *
  *********************************************************************** */
 
+#import <os/lock.h>
+
 #import "NSObjectHelperPrivate.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelPrivate.h"
 #import "IRCChannelMemberListPrivate.h"
-#import "IRCChannelMemberListControllerPrivate.h"
 #import "IRCChannelUserPrivate.h"
 #import "IRCISupportInfo.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCUserPrivate.h"
 #import "IRCWorld.h"
 #import "TPCPreferencesLocal.h"
-#import "TVCMemberList.h"
+#import "TVCMemberListPrivate.h"
 #import "TVCMainWindow.h"
 #import "TXMasterController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Members are changed on the main thread, where messages are processed, and
+ the member list's table is told about each change, so its selection stays
+ with the same people. Other threads (rendering, plugins) may read: a lock
+ guards the array. */
 @interface IRCChannelMemberList ()
 @property (nonatomic, weak) IRCClient *client;
 @property (nonatomic, weak) IRCChannel *channel;
-@property (nonatomic, strong, nullable) IRCChannelMemberListController *controller;
+@property (nonatomic, weak, nullable) TVCMemberList *tableView;
 @property (nonatomic, strong) NSMutableArray<IRCChannelUser *> *memberContainer;
+@property (nonatomic, assign) BOOL batchingNames; // from the first NAMES reply to its end: unsorted, no table updates
 @end
 
 @implementation IRCChannelMemberList
+{
+	os_unfair_lock _memberContainerLock;
+}
 
 - (instancetype)init
 {
@@ -86,92 +95,51 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareInitialState
 {
+	self->_memberContainerLock = OS_UNFAIR_LOCK_INIT;
+
 	self.memberContainer = [NSMutableArray array];
 }
 
 - (void)dealloc
 {
 	/* Send a last message before death. */
-	[self unassignController];
-}
+	TVCMemberList *tableView = self.tableView;
 
-- (void)assignController:(nullable IRCChannelMemberListController *)controller
-{
-	/* All modifications to the controller occur on the main thread.
-	 The controller is a UI object which requires updates on the
-	 main thread in addition to the safety it provides us again
-	 race conditions. */
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		[controller replaceContents:self.memberList];
-
-		self.controller = controller;
-	});
-}
-
-- (void)unassignController
-{
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCChannelMemberListController *controller = self.controller;
-
-		if ( controller) {
-			[controller assignToChannel:nil];
-		}
-	});
-}
-
-#pragma mark -
-#pragma mark Grand Central Dispatch
-
-/* All modifications to the member list occur on this serial queue
- to guarantee that there is only ever one person accessing the mutable
- store at any given time. */
-+ (dispatch_queue_t)modifyMemberListSerialQueue
-{
-	static dispatch_queue_t workerQueue = NULL;
-
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		workerQueue =
-		XRCreateDispatchQueueWithPriority("IRCChannel.modifyMemberListSerialQueue", DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT);
-	});
-
-	return workerQueue;
-}
-
-+ (void)resumeMemberListSerialQueues
-{
-	dispatch_resume([self modifyMemberListSerialQueue]);
-}
-
-+ (void)suspendMemberListSerialQueues
-{
-	dispatch_suspend([self modifyMemberListSerialQueue]);
-}
-
-+ (void)accessMemberListUsingBlock:(dispatch_block_t)block
-{
-	NSCParameterAssert(block != NULL);
-
-	dispatch_queue_t workerQueue = [self modifyMemberListSerialQueue];
-
-	static void *IsOnWorkerQueueKey = NULL;
-
-	if (IsOnWorkerQueueKey == NULL) {
-		IsOnWorkerQueueKey = &IsOnWorkerQueueKey;
-
-		dispatch_queue_set_specific(workerQueue, IsOnWorkerQueueKey, (void *)1, NULL);
-	}
-
-	if (dispatch_get_specific(IsOnWorkerQueueKey)) {
-		block();
-
+	if (tableView == nil) {
 		return;
 	}
 
-	dispatch_sync(workerQueue, ^{
-		@autoreleasepool {
-			block();
+	XRPerformBlockSynchronouslyOnMainQueue(^{
+		[tableView memberListWasDestroyed];
+	});
+}
+
+- (void)assignToTableView:(nullable TVCMemberList *)tableView
+{
+	self.tableView = tableView;
+}
+
+- (void)withContainer:(void (NS_NOESCAPE ^)(NSMutableArray<IRCChannelUser *> *container))block
+{
+	NSParameterAssert(block != nil);
+
+	os_unfair_lock_lock(&self->_memberContainerLock);
+
+	block(self.memberContainer);
+
+	os_unfair_lock_unlock(&self->_memberContainerLock);
+}
+
+/* The table is told on the main thread, in the order of the changes */
+- (void)updateTableView:(void (^)(TVCMemberList *tableView))block
+{
+	NSParameterAssert(block != nil);
+
+	XRPerformBlockSynchronouslyOnMainQueue(^{
+		TVCMemberList *tableView = self.tableView;
+
+		if (tableView) {
+			block(tableView);
 		}
 	});
 }
@@ -179,46 +147,55 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Backend Operations
 
+/* Call with the lock held */
+
 - (NSUInteger)nonatomic_sortedIndexForMember:(IRCChannelUser *)member
 {
 	NSParameterAssert(member != nil);
 
 	NSMutableArray *container = self.memberContainer;
 
-	NSUInteger index = [container
-							indexOfObject:member
-							inSortedRange:container.range
-								  options:NSBinarySearchingInsertionIndex
-						  usingComparator:[IRCChannelUser channelRankComparator]];
-
-	return index;
+	return [container indexOfObject:member
+					  inSortedRange:container.range
+							options:NSBinarySearchingInsertionIndex
+					usingComparator:[IRCChannelUser channelRankComparator]];
 }
 
-- (NSInteger)nonatomic_sortedInsert:(IRCChannelUser *)member
+/* Members are sorted: a binary search finds one, unless the list is unsorted
+ (during NAMES) or the order is stale (a preference changed before resorting) */
+- (NSUInteger)nonatomic_indexOfMember:(IRCChannelUser *)member
 {
 	NSParameterAssert(member != nil);
 
-	NSInteger insertedIndex = [self nonatomic_sortedIndexForMember:member];
-
-	[self.memberContainer insertObject:member atIndex:insertedIndex];
-
-	return insertedIndex;
-}
-
-- (NSInteger)nonatomic_replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2
-{
-	NSParameterAssert(member1 != nil);
-	NSParameterAssert(member2 != nil);
-
 	NSMutableArray *container = self.memberContainer;
 
-	NSUInteger index = [container indexOfObjectIdenticalTo:member1];
+	if (self.batchingNames == NO) {
+		NSUInteger index = [container indexOfObject:member
+									  inSortedRange:container.range
+											options:NSBinarySearchingFirstEqual
+									usingComparator:[IRCChannelUser channelRankComparator]];
 
-	if (index == NSNotFound) {
+		if (index != NSNotFound && container[index] == member) {
+			return index;
+		}
+	}
+
+	return [container indexOfObjectIdenticalTo:member];
+}
+
+- (NSInteger)nonatomic_insertMember:(IRCChannelUser *)member
+{
+	NSParameterAssert(member != nil);
+
+	if (self.batchingNames) {
+		[self.memberContainer addObject:member];
+
 		return (-1);
 	}
 
-	container[index] = member2;
+	NSUInteger index = [self nonatomic_sortedIndexForMember:member];
+
+	[self.memberContainer insertObject:member atIndex:index];
 
 	return index;
 }
@@ -227,15 +204,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(member != nil);
 
-	NSMutableArray *container = self.memberContainer;
-
-	NSUInteger index = [container indexOfObjectIdenticalTo:member];
+	NSUInteger index = [self nonatomic_indexOfMember:member];
 
 	if (index == NSNotFound) {
 		return (-1);
 	}
 
-	[container removeObjectAtIndex:index];
+	[self.memberContainer removeObjectAtIndex:index];
 
 	return index;
 }
@@ -282,28 +257,26 @@ NS_ASSUME_NONNULL_BEGIN
 	[self willChangeValueForKey:@"numberOfMembers"];
 	[self willChangeValueForKey:@"memberList"];
 
-	__block NSInteger sortedIndex = (-1);
+	__block NSInteger insertedIndex = (-1);
 
-	[self.class accessMemberListUsingBlock:^{
-		sortedIndex = [self nonatomic_sortedInsert:member];
+	[self withContainer:^(NSMutableArray *container) {
+		insertedIndex = [self nonatomic_insertMember:member];
 	}];
 
 	[self didChangeValueForKey:@"numberOfMembers"];
 	[self didChangeValueForKey:@"memberList"];
 
-	if (channel.isChannel == NO) {
-		return;
+	if (insertedIndex < 0) {
+		return; // NAMES: the table is reloaded at its end
 	}
 
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCChannelMemberListController *controller = self.controller;
+	[self updateTableView:^(TVCMemberList *tableView) {
+		[tableView memberListInsertedRowAtIndex:insertedIndex];
+	}];
 
-		if ( controller != nil) {
-			[controller insertObject:member atArrangedObjectIndex:sortedIndex];
-		}
-
+	if (channel.isChannel) {
 		[self.client postEventToViewController:@"channelMemberAdded" forChannel:channel];
-	});
+	}
 }
 
 - (void)removeMemberWithNickname:(NSString *)nickname
@@ -325,25 +298,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[member disassociateWithChannel:channel];
 
-	__block NSInteger sortedIndex = (-1);
+	[self willChangeValueForKey:@"numberOfMembers"];
+	[self willChangeValueForKey:@"memberList"];
 
-	[self.class accessMemberListUsingBlock:^{
-		sortedIndex = [self nonatomic_removeMember:member];
+	__block NSInteger removedIndex = (-1);
+	__block BOOL batching = NO;
+
+	[self withContainer:^(NSMutableArray *container) {
+		removedIndex = [self nonatomic_removeMember:member];
+
+		batching = self.batchingNames;
 	}];
 
-	if (sortedIndex < 0 || channel.isChannel == NO) {
+	[self didChangeValueForKey:@"numberOfMembers"];
+	[self didChangeValueForKey:@"memberList"];
+
+	if (removedIndex < 0 || batching) {
 		return;
 	}
 
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCChannelMemberListController *controller = self.controller;
+	[self updateTableView:^(TVCMemberList *tableView) {
+		[tableView memberListRemovedRowAtIndex:removedIndex];
+	}];
 
-		if ( controller != nil) {
-			[controller removeObjectAtArrangedObjectIndex:sortedIndex];
-		}
-
+	if (channel.isChannel) {
 		[self.client postEventToViewController:@"channelMemberRemoved" forChannel:channel];
-	});
+	}
 }
 
 - (void)resortMember:(IRCChannelUser *)member
@@ -372,42 +352,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 	__block NSInteger oldIndex = (-1);
 	__block NSInteger newIndex = (-1);
+	__block BOOL batching = NO;
 
-	[self.class accessMemberListUsingBlock:^{
-		if (resort) {
+	[self withContainer:^(NSMutableArray *container) {
+		batching = self.batchingNames;
+
+		/* During NAMES the list is sorted at the end */
+		if (resort && batching == NO) {
 			oldIndex = [self nonatomic_removeMember:member1];
 
-			newIndex = [self nonatomic_sortedInsert:member2];
+			newIndex = [self nonatomic_insertMember:member2];
 		} else {
-			newIndex = [self nonatomic_replaceMember:member1 withMember:member2];
+			NSUInteger index = [self nonatomic_indexOfMember:member1];
+
+			if (index != NSNotFound) {
+				container[index] = member2;
+
+				oldIndex = index;
+				newIndex = index;
+			}
 		}
 	}];
 
-	if (newIndex < 0 || channel.isChannel == NO) {
+	if (newIndex < 0 || batching) {
 		return;
 	}
 
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCChannelMemberListController *controller = self.controller;
-
-		if (controller == nil) {
-			return;
-		}
-
-		[mainWindowMemberList() beginUpdates];
-
-		if (resort) {
-			if (oldIndex >= 0) {
-				[controller removeObjectAtArrangedObjectIndex:oldIndex];
-			}
-
-			[controller insertObject:member2 atArrangedObjectIndex:newIndex];
+	[self updateTableView:^(TVCMemberList *tableView) {
+		if (oldIndex < 0) {
+			[tableView memberListInsertedRowAtIndex:newIndex];
 		} else {
-			[mainWindowMemberList() refreshDrawingForRow:newIndex];
+			[tableView memberListMovedRowAtIndex:oldIndex toIndex:newIndex];
 		}
-
-		[mainWindowMemberList() endUpdates];
-	});
+	}];
 }
 
 - (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2
@@ -546,56 +523,100 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Utilities
 
+- (void)reloadTableView
+{
+	[self updateTableView:^(TVCMemberList *tableView) {
+		[tableView memberListReloaded];
+	}];
+}
+
 - (void)sortMembers
 {
-	[self.class accessMemberListUsingBlock:^{
-		[self.memberContainer sortUsingComparator:[IRCChannelUser channelRankComparator]];
-	}];
+	NSComparator comparator = [IRCChannelUser channelRankComparator];
 
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCChannelMemberListController *controller = self.controller;
-
-		if (controller == nil) {
-			return;
+	[self withContainer:^(NSMutableArray *container) {
+		if (self.batchingNames) {
+			return; // sorted when NAMES ends
 		}
 
-		[controller replaceContents:self.memberList];
-	});
+		[container sortUsingComparator:comparator];
+	}];
+
+	[self reloadTableView];
 }
 
 - (void)clearMembers
 {
 	IRCChannel *channel = self.channel;
 
-	[self.class accessMemberListUsingBlock:^{
-		[self willChangeValueForKey:@"numberOfMembers"];
-		[self willChangeValueForKey:@"memberList"];
+	[self willChangeValueForKey:@"numberOfMembers"];
+	[self willChangeValueForKey:@"memberList"];
 
-		[self.memberContainer makeObjectsPerformSelector:@selector(disassociateWithChannel:) withObject:channel];
+	[self withContainer:^(NSMutableArray *container) {
+		[container makeObjectsPerformSelector:@selector(disassociateWithChannel:) withObject:channel];
 
-		[self.memberContainer removeAllObjects];
+		[container removeAllObjects];
 
-		[self didChangeValueForKey:@"numberOfMembers"];
-		[self didChangeValueForKey:@"memberList"];
+		self.batchingNames = NO;
 	}];
 
-	XRPerformBlockSynchronouslyOnMainQueue(^{
-		__weak IRCChannelMemberListController *controller = self.controller;
+	[self didChangeValueForKey:@"numberOfMembers"];
+	[self didChangeValueForKey:@"memberList"];
 
-		if (controller == nil) {
+	[self reloadTableView];
+}
+
+/* A big channel's NAMES (thousands of members) was one table insert and one
+ view event per member: they are collected, sorted once and shown at once */
+- (void)beginNamesBatch
+{
+	[self withContainer:^(NSMutableArray *container) {
+		self.batchingNames = YES;
+	}];
+
+	/* A server that never ends the list would hide the members for good */
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(endNamesBatch) withObject:nil afterDelay:10.0];
+}
+
+- (void)endNamesBatch
+{
+	[self cancelPerformRequestsWithSelector:@selector(endNamesBatch)];
+
+	__block BOOL wasBatching = NO;
+
+	NSComparator comparator = [IRCChannelUser channelRankComparator];
+
+	[self withContainer:^(NSMutableArray *container) {
+		wasBatching = self.batchingNames;
+
+		if (wasBatching == NO) {
 			return;
 		}
 
-		[controller replaceContents:@[]];
-	});
+		self.batchingNames = NO;
+
+		[container sortUsingComparator:comparator];
+	}];
+
+	if (wasBatching == NO) {
+		return;
+	}
+
+	[self reloadTableView];
+
+	IRCChannel *channel = self.channel;
+
+	if (channel.isChannel) {
+		[self.client postEventToViewController:@"channelMemberAdded" forChannel:channel];
+	}
 }
 
 - (NSUInteger)numberOfMembers
 {
 	__block NSUInteger memberCount = 0;
 
-	[self.class accessMemberListUsingBlock:^{
-		memberCount = self.memberContainer.count;
+	[self withContainer:^(NSMutableArray *container) {
+		memberCount = container.count;
 	}];
 
 	return memberCount;
@@ -605,11 +626,37 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	__block NSArray<IRCChannelUser *> *memberList = nil;
 
-	[self.class accessMemberListUsingBlock:^{
-		memberList = [self.memberContainer copy];
+	[self withContainer:^(NSMutableArray *container) {
+		memberList = [container copy];
 	}];
 
 	return memberList;
+}
+
+- (nullable IRCChannelUser *)memberAtIndex:(NSUInteger)index
+{
+	__block IRCChannelUser *member = nil;
+
+	[self withContainer:^(NSMutableArray *container) {
+		if (index < container.count) {
+			member = container[index];
+		}
+	}];
+
+	return member;
+}
+
+- (NSInteger)indexOfMember:(IRCChannelUser *)member
+{
+	NSParameterAssert(member != nil);
+
+	__block NSUInteger index = NSNotFound;
+
+	[self withContainer:^(NSMutableArray *container) {
+		index = [self nonatomic_indexOfMember:member];
+	}];
+
+	return ((index == NSNotFound) ? (-1) : (NSInteger)index);
 }
 
 #pragma mark -

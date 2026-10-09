@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation IRCChannelUser
+{
+	/* Not properties: those are copied into mutable copies, whose modes change */
+	NSUInteger _cachedChannelRank;
+	BOOL _channelRankIsCached;
+}
 
 - (instancetype)init
 {
@@ -133,13 +138,26 @@ NS_ASSUME_NONNULL_BEGIN
 	return @"";
 }
 
+/* Sorting asks for this for every comparison: an immutable member, whose
+ modes never change, works it out once */
 - (NSUInteger)channelRank
 {
+	if (self->_channelRankIsCached) {
+		return self->_cachedChannelRank;
+	}
+
 	IRCISupportInfo *supportInfo = self.client.supportInfo;
 
 	NSString *mode = self.highestRankedUserMode;
 
-	return [supportInfo rankForUserPrefixWithMode:mode];
+	NSUInteger channelRank = [supportInfo rankForUserPrefixWithMode:mode];
+
+	if (self.class.isMutable == NO) {
+		self->_cachedChannelRank = channelRank;
+		self->_channelRankIsCached = YES;
+	}
+
+	return channelRank;
 }
 
 /* Ranks come from the order of the server's PREFIX (most powerful first),
@@ -334,35 +352,44 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSComparisonResult)compareUsingRank:(IRCChannelUser *)other
 {
+	return [self compareUsingRank:other favorIRCop:[TPCPreferences memberListSortFavorsServerStaff]];
+}
+
+- (NSComparisonResult)compareUsingRank:(IRCChannelUser *)other favorIRCop:(BOOL)favorIRCop
+{
 	NSParameterAssert(other != nil);
 
-	BOOL favorIRCop = [TPCPreferences memberListSortFavorsServerStaff];
+	if (favorIRCop) {
+		BOOL localIRCop = self.user.isIRCop;
+		BOOL remoteIRCop = other.user.isIRCop;
 
-	if (favorIRCop && self.user.isIRCop && other.user.isIRCop == NO) {
+		if (localIRCop && remoteIRCop == NO) {
+			return NSOrderedAscending;
+		} else if (localIRCop == NO && remoteIRCop) {
+			return NSOrderedDescending;
+		}
+	}
+
+	NSUInteger localRank = self.channelRank;
+	NSUInteger remoteRank = other.channelRank;
+
+	/* Higher ranks first */
+	if (localRank > remoteRank) {
 		return NSOrderedAscending;
-	} else if (favorIRCop && self.user.isIRCop == NO && other.user.isIRCop) {
+	} else if (localRank < remoteRank) {
 		return NSOrderedDescending;
 	}
 
-	NSNumber *localRank = @([self channelRank]);
-
-	NSNumber *remoteRank = @([other channelRank]);
-
-	NSComparisonResult normalRank = [localRank compare:remoteRank];
-
-	NSComparisonResult invertedRank = NSInvertedComparisonResult(normalRank);
-
-	if (invertedRank == NSOrderedSame) {
-		return [self.user.nickname caseInsensitiveCompare:other.user.nickname];
-	}
-
-	return invertedRank;
+	return [self.user.nickname caseInsensitiveCompare:other.user.nickname];
 }
 
+/* The preference is read once per comparator (it was read for every comparison) */
 + (NSComparator)channelRankComparator
 {
+	BOOL favorIRCop = [TPCPreferences memberListSortFavorsServerStaff];
+
 	return [^(IRCChannelUser *object1, IRCChannelUser *object2) {
-		return [object1 compareUsingRank:object2];
+		return [object1 compareUsingRank:object2 favorIRCop:favorIRCop];
 	} copy];
 }
 

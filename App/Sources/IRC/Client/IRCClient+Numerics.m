@@ -82,6 +82,7 @@
 #import "IRCAddressBookMatchCachePrivate.h"
 #import "IRCAddressBookUserTrackingPrivate.h"
 #import "IRCChannelConfig.h"
+#import "IRCChannelMemberListPrivate.h"
 #import "IRCChannelModePrivate.h"
 #import "IRCChannelUserPrivate.h"
 #import "IRCChannelPrivate.h"
@@ -992,6 +993,9 @@ NS_ASSUME_NONNULL_BEGIN
 				break;
 			}
 
+			/* Collected until RPL_ENDOFNAMES, then sorted and shown once */
+			[channel.memberInfo beginNamesBatch];
+
 			NSString *nicknamesString = [m paramAt:3];
 
 			NSArray *nicknames = [nicknamesString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
@@ -1097,6 +1101,8 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			channel.channelNamesReceived = YES;
+
+			[channel.memberInfo endNamesBatch];
 
 			/* We have to wait until names are processed before populating
 			 defaults for a channel so that we are certain there is actually

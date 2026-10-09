@@ -552,6 +552,14 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.objectValue;
 }
 
+/* A row reloaded in place (a mode or name change) gets a new member */
+- (void)setObjectValue:(nullable id)objectValue
+{
+	[super setObjectValue:objectValue];
+
+	self.needsDisplay = YES;
+}
+
 - (TVCMemberList *)memberList
 {
 	return self.rowCell.memberList;
