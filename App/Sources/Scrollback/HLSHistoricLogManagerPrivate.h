@@ -37,7 +37,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCTreeItem, TVCLogLine;
+@class IRCTreeItem, TVCLogLine, NSFetchRequest;
 
 #define sharedHistoricLog()			[HLSHistoricLogManager sharedInstance]
 
@@ -96,6 +96,14 @@ NS_ASSUME_NONNULL_BEGIN
 	 beforeUniqueIdentifier:(NSString *)uniqueIdBefore
 				 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
+
+/* The view's lines with entry identifiers in the range, oldest or newest first */
++ (NSFetchRequest *)fetchRequestForView:(NSString *)viewId
+							  ascending:(BOOL)ascending
+							 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap
+				  lowestEntryIdentifier:(NSInteger)lowestEntryIdentifier
+				 highestEntryIdentifier:(NSInteger)highestEntryIdentifier
+							limitToDate:(nullable NSDate *)limitToDate;
 @end
 
 NS_ASSUME_NONNULL_END

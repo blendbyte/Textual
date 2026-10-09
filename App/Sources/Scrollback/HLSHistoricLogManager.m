@@ -269,12 +269,16 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 #pragma mark -
 #pragma mark Fetch Requests
 
-- (NSFetchRequest *)_fetchRequestForView:(NSString *)viewId
-							   ascending:(BOOL)ascending
-							  fetchLimit:(NSUInteger)fetchLimit
-				   lowestEntryIdentifier:(NSInteger)lowestEntryIdentifier
-				  highestEntryIdentifier:(NSInteger)highestEntryIdentifier
-							 limitToDate:(nullable NSDate *)limitToDate
+/* Built here, not from the model's GenericConditional template: on macOS 27
+ a request made from a template ignores its sort descriptors for lines not
+ yet saved to disk, so reloaded lines came back shuffled and a limited
+ fetch picked arbitrary ones */
++ (NSFetchRequest *)fetchRequestForView:(NSString *)viewId
+							  ascending:(BOOL)ascending
+							 fetchLimit:(NSUInteger)fetchLimit
+				  lowestEntryIdentifier:(NSInteger)lowestEntryIdentifier
+				 highestEntryIdentifier:(NSInteger)highestEntryIdentifier
+							limitToDate:(nullable NSDate *)limitToDate
 {
 	NSParameterAssert(viewId != nil);
 
@@ -282,22 +286,19 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 		limitToDate = [NSDate distantFuture];
 	}
 
-	NSDictionary *substitutionVariables = @{
-		@"view_id" : viewId,
-		@"entry_id_lowest" : @(lowestEntryIdentifier),
-		@"entry_id_highest" : @(highestEntryIdentifier),
-		@"creation_date" : @([limitToDate timeIntervalSince1970])
-	};
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"LogLine2"];
 
-	NSFetchRequest *fetchRequest =
-	[self.managedObjectModel fetchRequestFromTemplateWithName:@"GenericConditional"
-										substitutionVariables:substitutionVariables];
+	fetchRequest.predicate =
+	[NSPredicate predicateWithFormat:@"logLineViewIdentifier == %@ AND entryIdentifier >= %@ AND entryIdentifier <= %@ AND entryCreationDate < %@",
+		viewId, @(lowestEntryIdentifier), @(highestEntryIdentifier), @(limitToDate.timeIntervalSince1970)];
 
 	if (fetchLimit == 0 || fetchLimit > _fetchLimitCap) {
 		fetchLimit = _fetchLimitCap;
 	}
 
 	fetchRequest.fetchLimit = fetchLimit;
+
+	fetchRequest.fetchBatchSize = 100;
 
 	fetchRequest.includesPendingChanges = YES;
 	fetchRequest.returnsObjectsAsFaults = NO;
@@ -316,12 +317,12 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 							  fetchLimit:(NSUInteger)fetchLimit
 							 limitToDate:(nullable NSDate *)limitToDate
 {
-	return [self _fetchRequestForView:viewId
-							ascending:ascending
-						   fetchLimit:fetchLimit
-				lowestEntryIdentifier:0
-			   highestEntryIdentifier:NSIntegerMax
-						  limitToDate:limitToDate];
+	return [self.class fetchRequestForView:viewId
+								 ascending:ascending
+								fetchLimit:fetchLimit
+					 lowestEntryIdentifier:0
+					highestEntryIdentifier:NSIntegerMax
+							   limitToDate:limitToDate];
 }
 
 /* Fetches on the view context's queue and completes on a background queue,
@@ -925,12 +926,12 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 			return;
 		}
 
-		NSFetchRequest *fetchRequest = [self _fetchRequestForView:viewId
-														ascending:YES
-													   fetchLimit:fetchLimit
-											lowestEntryIdentifier:range.location
-										   highestEntryIdentifier:(NSMaxRange(range) - 1)
-													  limitToDate:limitToDate];
+		NSFetchRequest *fetchRequest = [self.class fetchRequestForView:viewId
+															 ascending:YES
+															fetchLimit:fetchLimit
+												 lowestEntryIdentifier:range.location
+												highestEntryIdentifier:(NSMaxRange(range) - 1)
+														   limitToDate:limitToDate];
 
 		[self _fetchInViewContext:viewContext fetchRequest:fetchRequest completionBlock:completionBlock];
 	});

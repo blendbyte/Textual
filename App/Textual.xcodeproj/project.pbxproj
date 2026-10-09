@@ -650,6 +650,8 @@
 		4C3DF3322874E104305061D9 /* IRCSASLECDSATests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1B22A75314CEB59C12CEE9 /* IRCSASLECDSATests.m */; };
 		4CACA1915D50ECEEE616CC47 /* TPCPreferencesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */; };
 		4CA4A4D412BC97120FEB0648 /* TVCLogRendererTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBC0E113EF948059A8A6A3C /* TVCLogRendererTests.m */; };
+		4C8EC7F586E5E9F0727E6372 /* TVCLogScrollerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9638A2216C0BA7293B5F9 /* TVCLogScrollerTests.m */; };
+		4C25AC984F529FACD80D31C3 /* HLSHistoricLogManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1461,6 +1463,8 @@
 		4CC90F0D87919D22474F1F77 /* TVCLogRendererPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogRendererPrivate.h; sourceTree = "<group>"; };
 		4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCPreferencesTests.m; sourceTree = "<group>"; };
 		4CBC0E113EF948059A8A6A3C /* TVCLogRendererTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogRendererTests.m; sourceTree = "<group>"; };
+		4CE9638A2216C0BA7293B5F9 /* TVCLogScrollerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogScrollerTests.m; sourceTree = "<group>"; };
+		4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HLSHistoricLogManagerTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2683,6 +2687,8 @@
 				4CCEEF3CE8E84E1B5AE9AC3E /* TPCPreferencesImportTests.m */,
 				4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */,
 				4CBC0E113EF948059A8A6A3C /* TVCLogRendererTests.m */,
+				4CE9638A2216C0BA7293B5F9 /* TVCLogScrollerTests.m */,
+				4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3C /* TVCLogViewSecurityTests.m */,
 			);
 			path = Tests;
@@ -3573,6 +3579,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C8EC7F586E5E9F0727E6372 /* TVCLogScrollerTests.m in Sources */,
+				4C25AC984F529FACD80D31C3 /* HLSHistoricLogManagerTests.m in Sources */,
 				4CACA1915D50ECEEE616CC47 /* TPCPreferencesTests.m in Sources */,
 				4CA4A4D412BC97120FEB0648 /* TVCLogRendererTests.m in Sources */,
 				4C3DF3322874E104305061D9 /* IRCSASLECDSATests.m in Sources */,

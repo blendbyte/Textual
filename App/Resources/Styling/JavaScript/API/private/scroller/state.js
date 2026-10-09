@@ -71,6 +71,9 @@ TextualScroller.scrollPositionPreviousValue = 0; /* PUBLIC */
 TextualScroller.scrollHeightCurrentValue = 0; /* PUBLIC */
 TextualScroller.scrollHeightPreviousValue = 0; /* PUBLIC */
 
+/* Height of the visible area when the last scroll event came */
+_TextualScroller._clientHeightPreviousValue = undefined; /* PRIVATE */
+
 _TextualScroller._documentScrolledCallback = function() /* PRIVATE */
 {
 	/* Fix for scrolling on macOS 27.
@@ -102,6 +105,35 @@ _TextualScroller._documentScrolledCallback = function() /* PRIVATE */
 	var scrollPositionCurrent = (scrolledElement.scrollTop + clientHeight);
 
 	var scrollPositionPrevious = TextualScroller.scrollPositionCurrentValue;
+
+	/* A scroll that comes with a new height of the visible area is the view
+	being laid out, not the user: WebKit on macOS 27 shrinks a view it hides
+	(to zero, or to another height while the window changes) and the browser
+	moves the scroll position with it. Such a scroll is recorded, but it never
+	decides whether the user scrolled up, and a view that was at the bottom goes
+	back there (also when shown or resized, automatic.js). A user's own scroll
+	never changes the height. */
+	var clientHeightPrevious = _TextualScroller._clientHeightPreviousValue;
+
+	_TextualScroller._clientHeightPreviousValue = clientHeight;
+
+	var layoutChanged = (clientHeight === 0 ||
+						 (clientHeightPrevious !== undefined &&
+						  clientHeightPrevious !== clientHeight));
+
+	if (layoutChanged) {
+		TextualScroller.scrollHeightPreviousValue = scrollHeightPrevious;
+		TextualScroller.scrollHeightCurrentValue = scrollHeightCurrent;
+
+		TextualScroller.scrollPositionPreviousValue = scrollPositionPrevious;
+		TextualScroller.scrollPositionCurrentValue = scrollPositionCurrent;
+
+		if (TextualScroller.userScrolled === false && clientHeight > 0) {
+			TextualScroller.scrollToBottom();
+		}
+
+		return;
+	}
 
 	/* If nothing changed, we ignore the event.
 	It is possible to receive a scroll event but nothing changes
