@@ -107,6 +107,8 @@
 #import "IRCUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
+#import "IRCWhoReplyPrivate.h"
+#import "TVCMemberListPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -916,9 +918,8 @@ NS_ASSUME_NONNULL_BEGIN
 			break;
 		}
 		case RPL_WHOREPLY:
+		case RPL_WHOSPCRPL:
 		{
-			NSAssertReturnR([m paramsCount] > 6, YES);
-
 			/* Present reply to the user if we have destination */
 			if (self.requestedCommands.visibleWhoRequest) {
 				if (printMessage) {
@@ -931,137 +932,20 @@ NS_ASSUME_NONNULL_BEGIN
 				break;
 			}
 
-			/* Process reply */
-			NSString *channelName = [m paramAt:1];
+			/* 354 that isn't an answer to our WHOX request: left to plugins */
+			IRCWhoReply *reply = nil;
 
-			IRCChannel *channel = [self findChannel:channelName];
+			if (numeric == RPL_WHOREPLY) {
+				reply = [IRCWhoReply replyFromWhoReply:m];
+			} else {
+				reply = [IRCWhoReply replyFromWhoxReply:m];
+			}
 
-			if (channel == nil) {
+			if (reply == nil) {
 				break;
 			}
 
-			/* Example incoming data:
-				<channel> <user> <host> <server> <nick> <H|G>[*][@|+] <hopcount> <real name>
-
-				#freenode znc unaffiliated/namikaze kornbluth.freenode.net Namikaze G 0 Christian
-				#freenode ~D unaffiliated/solprefixer kornbluth.freenode.net solprefixer H 0 solprefixer
-			*/
-
-			NSString *nickname = [m paramAt:5];
-			NSString *username = [m paramAt:2];
-			NSString *address = [m paramAt:3];
-			NSString *flags = [m paramAt:6];
-			NSString *realName = [m paramAt:7];
-
-			BOOL isAway = NO;
-			BOOL isIRCop = NO;
-
-			// Field Syntax: <H|G>[*][@|+]
-			// Strip G or H (away status).
-			NSMutableString *userModes = [NSMutableString string];
-
-			for (NSUInteger i = 0; i < flags.length; i++) {
-				NSString *character = [flags stringCharacterAtIndex:i];
-
-				if ([character isEqualToString:@"G"]) {
-					isAway = self.monitorAwayStatus;
-
-					continue;
-				} else if ([character isEqualToString:@"*"]) {
-					isIRCop = YES;
-
-					continue;
-				}
-
-				NSString *modeSymbol = [self.supportInfo modeSymbolForUserPrefix:character];
-
-				if (modeSymbol == nil) {
-					continue;
-				}
-
-				[userModes appendString:modeSymbol];
-			}
-
-			/* Parameter 7 includes the hop count and real name because it begins with a :
-			 Therefore, we cut after the first space to get the real, real name value. */
-			NSInteger realNameFirstSpace = [realName stringPosition:@" "];
-
-			if (realNameFirstSpace > 0 && realNameFirstSpace < realName.length) {
-				realName = [realName substringAfterIndex:realNameFirstSpace];
-			}
-
-			/* Find global user and create mutable copy */
-			IRCUser *user = [self findUser:nickname];
-
-			IRCUserMutable *userMutable = nil;
-
-			if (user == nil) {
-				userMutable = [[IRCUserMutable alloc] initWithNickname:nickname onClient:self];
-			} else {
-				userMutable = [user mutableCopy];
-			}
-
-			userMutable.nickname = nickname;
-			userMutable.username = username;
-			userMutable.address = address;
-
-			userMutable.isAway = isAway;
-			userMutable.isIRCop = isIRCop;
-
-			userMutable.realName = realName;
-
-			/* Insert the user into the client and return the final copy that was */
-			BOOL userChanged = (user != nil && [user isEqual:userMutable] == NO);
-
-			IRCUser *userAdded = nil;
-
-			if (user == nil || userChanged) {
-				userAdded = [self addUserAndReturn:userMutable];
-			} else {
-				userAdded = user;
-			}
-
-			/* Find the user associated with this channel  */
-			IRCChannelUser *member = [user userAssociatedWithChannel:channel];
-
-			if (member == nil)
-			{
-				IRCChannelUserMutable *memberMutable = [[IRCChannelUserMutable alloc] initWithUser:userAdded];
-
-				memberMutable.modes = userModes;
-
-				[channel addMember:memberMutable];
-			}
-			else if (userChanged)
-			{
-				/* Determine whether the users were modified in such a way that
-				 they require their cell in the user list be resorted. */
-				/* We do not want to resort unless absolutely necessary because
-				 sorting a channel with a few hundred users has overhead. */
-				BOOL IRCopStatusChanged = (user.isIRCop != userAdded.isIRCop);
-				
-				BOOL resortMember = IRCopStatusChanged;
-
-				BOOL replaceInAllChannels = (IRCopStatusChanged && [TPCPreferences memberListSortFavorsServerStaff]);
-
-				if (resortMember) {
-					[channel replaceMember:member
-								withMember:member
-									resort:resortMember
-					  replaceInAllChannels:replaceInAllChannels];
-				}
-				else if (user.isAway != userAdded.isAway)
-				{
-					[mainWindow() updateDrawingForUserInUserList:userAdded];
-				}
-			}
-
-			/* Update local cache of our hostmask */
-			if ([self nicknameIsMyself:nickname]) {
-				NSString *hostmask = [NSString stringWithFormat:@"%@!%@@%@", nickname, username, address];
-
-				self.userHostmask = hostmask;
-			}
+			[self processWhoReply:reply];
 
 			break;
 		}
@@ -1070,6 +954,19 @@ NS_ASSUME_NONNULL_BEGIN
 			BOOL visibleWhoRequest = self.requestedCommands.visibleWhoRequest;
 
 			[self.requestedCommands recordWhoRequestClosed];
+
+			/* The first WHOX answer for a channel makes its accounts known: redraw its members */
+			if ([m paramsCount] > 1) {
+				IRCChannel *channel = [self findChannel:[m paramAt:1]];
+
+				if (channel.whoxRefreshPending) {
+					channel.whoxRefreshPending = NO;
+
+					if (mainWindow().selectedChannel == channel) {
+						[mainWindow().memberList refreshAllDrawings];
+					}
+				}
+			}
 
 			if (visibleWhoRequest && printMessage) {
 				[self printReplyToHiddenCommandResponsesQuery:m];
@@ -1705,6 +1602,131 @@ NS_ASSUME_NONNULL_BEGIN
 			break;
 		}
 	} // switch()
+}
+
+/* A WHO or WHOX line: update the user (and their account, when WHOX reported it) and their membership */
+- (void)processWhoReply:(IRCWhoReply *)reply
+{
+	NSParameterAssert(reply != nil);
+
+	IRCChannel *channel = [self findChannel:reply.channelName];
+
+	if (channel == nil) {
+		return;
+	}
+
+	NSString *nickname = reply.nickname;
+
+	/* Flags: <H|G>[*][member prefixes] */
+	NSString *flags = reply.flags;
+
+	BOOL isAway = NO;
+	BOOL isIRCop = NO;
+
+	NSMutableString *userModes = [NSMutableString string];
+
+	for (NSUInteger i = 0; i < flags.length; i++) {
+		NSString *character = [flags stringCharacterAtIndex:i];
+
+		if ([character isEqualToString:@"G"]) {
+			isAway = self.monitorAwayStatus;
+
+			continue;
+		} else if ([character isEqualToString:@"*"]) {
+			isIRCop = YES;
+
+			continue;
+		}
+
+		NSString *modeSymbol = [self.supportInfo modeSymbolForUserPrefix:character];
+
+		if (modeSymbol == nil) {
+			continue;
+		}
+
+		[userModes appendString:modeSymbol];
+	}
+
+	/* Find global user and create mutable copy */
+	IRCUser *user = [self findUser:nickname];
+
+	IRCUserMutable *userMutable = nil;
+
+	if (user == nil) {
+		userMutable = [[IRCUserMutable alloc] initWithNickname:nickname onClient:self];
+	} else {
+		userMutable = [user mutableCopy];
+	}
+
+	userMutable.nickname = nickname;
+	userMutable.username = reply.username;
+	userMutable.address = reply.address;
+
+	userMutable.isAway = isAway;
+	userMutable.isIRCop = isIRCop;
+
+	if (reply.realName) {
+		userMutable.realName = reply.realName;
+	}
+
+	if (reply.accountKnown) {
+		userMutable.account = reply.account;
+
+		if (channel.receivedWhoxAccountData == NO) {
+			channel.receivedWhoxAccountData = YES;
+
+			channel.whoxRefreshPending = YES;
+		}
+	}
+
+	/* Insert the user into the client and return the final copy that was */
+	BOOL userChanged = (user != nil && [user isEqual:userMutable] == NO);
+
+	IRCUser *userAdded = nil;
+
+	if (user == nil || userChanged) {
+		userAdded = [self addUserAndReturn:userMutable];
+	} else {
+		userAdded = user;
+	}
+
+	/* The membership of the user as it is now */
+	IRCChannelUser *member = [userAdded userAssociatedWithChannel:channel];
+
+	if (member == nil)
+	{
+		IRCChannelUserMutable *memberMutable = [[IRCChannelUserMutable alloc] initWithUser:userAdded];
+
+		memberMutable.modes = userModes;
+
+		[channel addMember:memberMutable];
+	}
+	else if (userChanged)
+	{
+		/* Determine whether the users were modified in such a way that
+		 they require their cell in the user list be resorted. */
+		/* We do not want to resort unless absolutely necessary because
+		 sorting a channel with a few hundred users has overhead. */
+		BOOL IRCopStatusChanged = (user.isIRCop != userAdded.isIRCop);
+
+		BOOL replaceInAllChannels = (IRCopStatusChanged && [TPCPreferences memberListSortFavorsServerStaff]);
+
+		if (IRCopStatusChanged) {
+			[channel replaceMember:member
+						withMember:member
+							resort:YES
+			  replaceInAllChannels:replaceInAllChannels];
+		}
+		else if (user.isAway != userAdded.isAway || NSObjectsAreEqual(user.account, userAdded.account) == NO)
+		{
+			[mainWindow() updateDrawingForUserInUserList:userAdded];
+		}
+	}
+
+	/* Update local cache of our hostmask */
+	if ([self nicknameIsMyself:nickname]) {
+		self.userHostmask = [NSString stringWithFormat:@"%@!%@@%@", nickname, reply.username, reply.address];
+	}
 }
 
 /* SASL authentication. Returns NO for other numerics. */

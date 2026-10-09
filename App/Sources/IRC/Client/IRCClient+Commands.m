@@ -108,6 +108,7 @@
 #import "IRCUserRelationsPrivate.h"
 #import "IRCWorldPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
+#import "IRCWhoReplyPrivate.h"
 #import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -741,6 +742,13 @@ NS_ASSUME_NONNULL_BEGIN
 		[self.requestedCommands recordWhoRequestOpenedAsVisible];
 	} else {
 		[self.requestedCommands recordWhoRequestOpened];
+	}
+
+	/* Textual's own requests ask WHOX for accounts too; a /WHO typed by the user stays plain */
+	if (hideResponse && self.supportInfo.whoxSupported) {
+		[self send:@"WHO", channel, IRCWhoReplyWhoxRequest, nil];
+
+		return;
 	}
 
 	[self send:@"WHO", channel, nil];

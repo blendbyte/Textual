@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDate *newestMessageTime; // newest message printed here
 @property (nonatomic, assign, readwrite) IRCChannelStatus status;
 @property (nonatomic, assign) BOOL sentInitialWhoRequest;
+@property (nonatomic, assign) BOOL receivedWhoxAccountData; // WHOX answered: a nil account now means logged out, not unknown
+@property (nonatomic, assign) BOOL whoxRefreshPending; // redraw the member list at the end of this WHOX answer
 @property (nonatomic, assign) BOOL channelModesReceived;
 @property (nonatomic, assign) BOOL channelNamesReceived;
 @property (nonatomic, assign, readwrite) BOOL errorOnLastJoinAttempt;

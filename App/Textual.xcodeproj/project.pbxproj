@@ -642,6 +642,8 @@
 		4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C65B8EE2C71D14B10E4EFF6 /* IRCSASLSCRAM.m */; };
 		4C6F236CB78B0A2ED9AAE50B /* IRCSASLSCRAMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */; };
 		4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */; };
+		4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2FA6EB7E48EABB4607298A /* IRCWhoReply.m */; };
+		4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1441,6 +1443,9 @@
 		4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSASLSCRAMTests.m; sourceTree = "<group>"; };
 		4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCTextDecoding.swift; sourceTree = "<group>"; };
 		4C7447AA34678929018F9FAE /* IRCTextDecodingPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCTextDecodingPrivate.h; sourceTree = "<group>"; };
+		4C2FA6EB7E48EABB4607298A /* IRCWhoReply.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCWhoReply.m; sourceTree = "<group>"; };
+		4CFA6BF73C6D752213A4B9C4 /* IRCWhoReplyPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCWhoReplyPrivate.h; sourceTree = "<group>"; };
+		4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCWhoReplyTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2002,6 +2007,8 @@
 				4CCBF5F06DD11AF5D8E0EC07 /* Client */,
 				4C295CC903F2953EC799CA59 /* Connection */,
 				4CA16D6004CBD2F28993CEC5 /* DCC */,
+				4C2FA6EB7E48EABB4607298A /* IRCWhoReply.m */,
+				4CFA6BF73C6D752213A4B9C4 /* IRCWhoReplyPrivate.h */,
 				4CA98A5E0547C1D3059784F3 /* Users */,
 				4C31512820EB673E00448776 /* IRCChannel.m */,
 				4C31512420EB673E00448776 /* IRCChannelConfig.m */,
@@ -2645,6 +2652,7 @@
 				4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */,
 				4C1BC25C5F0C5B1AB8330D04 /* IRCSendingMessageTests.m */,
 				4C2C3C84B52D7A759CC3A1AD /* IRCStrictTransportSecurityTests.m */,
+				4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3B /* TDCFileTransferTests.m */,
 				4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */,
@@ -3281,6 +3289,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */,
 				4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */,
 				4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */,
 				4CF1DD0FFE1F92EB021F9272 /* IRCClient+ReadMarker.m in Sources */,
@@ -3538,6 +3547,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */,
 				4C6F236CB78B0A2ED9AAE50B /* IRCSASLSCRAMTests.m in Sources */,
 				4CAA51424F39CA15DD7B0560 /* IRCClientReadMarkerTests.m in Sources */,
 				4C3D92E576791929A989FCF6 /* IRCClientChatHistoryTests.m in Sources */,

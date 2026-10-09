@@ -1154,6 +1154,41 @@ async def scenario_utf8only(client):
 	result(False, "no line from the client")
 
 
+async def scenario_whox(client):
+	"""WHOX: the server advertises WHOX; after Textual joins #wx it must send
+	"WHO #wx %tcuhnfar,152" within a few seconds (no plain WHO). The 354 answer
+	makes bob away (G) with the real name "Bob from WHOX" and the account
+	bobsaccount, and carl here without an account."""
+	nick = client.nickname
+	await client.send(f":{SERVER} 005 {nick} WHOX :are supported by this server")
+	await client.send(f":{nick}!user@client.textual.test JOIN #wx")
+	await client.send(f":{SERVER} 353 {nick} = #wx :@{nick} bob carl")
+	await client.send(f":{SERVER} 366 {nick} #wx :End of /NAMES list.")
+
+	requested = None
+	end = time.monotonic() + 20
+	while time.monotonic() < end and requested is None:
+		try:
+			line = await asyncio.wait_for(client.read_line(), 1)
+		except asyncio.TimeoutError:
+			continue
+		if line is None:
+			break
+		if line.upper().startswith("PING"):
+			await client.send(f":{SERVER} PONG {SERVER} {line[5:]}")
+		elif line.upper().startswith("WHO "):
+			requested = line
+
+	if requested == "WHO #wx %tcuhnfar,152":
+		await client.send(f":{SERVER} 354 {nick} 152 #wx ~bob friend.test bob G bobsaccount :Bob from WHOX")
+		await client.send(f":{SERVER} 354 {nick} 152 #wx ~carl friend.test carl H 0 :Carl from WHOX")
+		await client.send(f":{SERVER} 354 {nick} 152 #wx ~u client.textual.test {nick} H@ 0 :Textual User")
+		await client.send(f":{SERVER} 315 {nick} #wx :End of /WHO list.")
+
+	result(requested == "WHO #wx %tcuhnfar,152", f"request after the join: {requested!r}")
+	await client.collect(120)
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -1188,6 +1223,7 @@ SCENARIOS = {
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
 	"utf8only": scenario_utf8only,
+	"whox": scenario_whox,
 	"sasl-scram-fallback": scenario_sasl_scram_fallback,
 	"sasl-scram-badsig": scenario_sasl_scram_badsig,
 }

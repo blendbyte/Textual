@@ -83,6 +83,7 @@ typedef NS_ENUM(NSUInteger, IRCISupportInfoCaseMapping)
 @property (readonly) IRCISupportInfoCaseMapping caseMapping;
 @property (readonly) NSUInteger chatHistoryLimit; // CHATHISTORY: most messages per request; 0 = not advertised or no limit
 @property (readonly) BOOL utf8Only; // UTF8ONLY: the server takes and sends only UTF-8
+@property (readonly) BOOL whoxSupported; // WHOX: extended WHO with selectable fields
 
 /* A nickname or channel name folded with the server's CASEMAPPING: two
  names are the same when their folded strings are equal */

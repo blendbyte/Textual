@@ -106,6 +106,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertFalse(info.utf8Only);
 	XCTAssertEqual(info.chatHistoryLimit, 0);
+
+	/* Ergo names it draft/CHATHISTORY; WHOX has no value */
+	[info processConfigurationData:@"me draft/CHATHISTORY=1000 WHOX :are supported by this server"];
+
+	XCTAssertEqual(info.chatHistoryLimit, 1000);
+	XCTAssertTrue(info.whoxSupported);
 }
 
 /* With UTF8ONLY nothing is guessed: bytes that aren't UTF-8 become U+FFFD and the rest of the line stays */

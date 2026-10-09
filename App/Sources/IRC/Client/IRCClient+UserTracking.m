@@ -268,6 +268,15 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self.whoTimer start:_whoCheckInterval onRepeat:YES];
+
+	/* A first pass soon after login instead of after a whole interval (channels a bouncer already has are joined by then) */
+	[self scheduleWhoRequestPass];
+}
+
+/* A pass of the WHO timer a moment from now, with its usual batching */
+- (void)scheduleWhoRequestPass
+{
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(onWhoTimer) withObject:nil afterDelay:3.0];
 }
 
 - (void)stopWhoTimer
@@ -381,6 +390,17 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.lastWhoRequestChannelListIndex = (endingPosition + 1);
+
+	/* Channels still waiting for their first WHO get the next batch in a few seconds, not at the next interval */
+	if (self.config.sendWhoCommandRequestsToChannels) {
+		for (IRCChannel *channel in channelList) {
+			if (channel.isChannel && channel.isActive && channel.sentInitialWhoRequest == NO) {
+				[self cs_reschedulePerformSelectorInCommonModes:@selector(onWhoTimer) withObject:nil afterDelay:10.0];
+
+				break;
+			}
+		}
+	}
 
 	/* Send WHO requests */
 	if (channelsToQuery == nil) {

@@ -1185,6 +1185,9 @@ NS_ASSUME_NONNULL_BEGIN
 			[channel activate];
 
 			[self requestChatHistoryForChannel:channel];
+
+			/* Members' accounts and away state soon, not at the next WHO interval */
+			[self scheduleWhoRequestPass];
 		} else {
 			return;
 		}

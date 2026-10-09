@@ -290,6 +290,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)chatHistoryHidesStandardReply:(IRCMessage *)m;
 - (void)chatHistoryBatchOpenedForTarget:(nullable NSString *)target;
 - (void)receiveStandardReply:(IRCMessage *)m;
+- (void)scheduleWhoRequestPass;
 - (NSString *)standardReplyText:(IRCMessage *)m;
 - (void)receiveAccount:(IRCMessage *)m;
 - (void)receiveSetName:(IRCMessage *)m;

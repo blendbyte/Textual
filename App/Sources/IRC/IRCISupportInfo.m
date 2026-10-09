@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) NSUInteger maximumAwayLength;
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
+@property (nonatomic, assign, readwrite) BOOL whoxSupported;
 @property (nonatomic, assign, readwrite) NSUInteger maximumChannelNameLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKeyLength;
 @property (nonatomic, assign, readwrite) NSUInteger maximumKickLength;
@@ -114,6 +115,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.chatHistoryLimit = 0;
 
 	self.utf8Only = NO;
+
+	self.whoxSupported = NO;
 
 	self.channelNamePrefixes = @[@"#"];
 
@@ -190,7 +193,9 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
 				self.caseMapping = [self.class caseMappingNamed:segmentValue];
-			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHATHISTORY"]) {
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHATHISTORY"] ||
+					   [segmentKey isEqualToStringIgnoringCase:@"draft/CHATHISTORY"]) // Ergo
+			{
 				NSInteger chatHistoryLimit = segmentValue.integerValue;
 
 				if (chatHistoryLimit > 0) {
@@ -280,6 +285,8 @@ NS_ASSUME_NONNULL_BEGIN
 			[client enableCapability:ClientIRCv3SupportedCapabilityWatchCommand];
 		} else if ([segmentKey isEqualToStringIgnoringCase:@"UTF8ONLY"]) {
 			self.utf8Only = YES;
+		} else if ([segmentKey isEqualToStringIgnoringCase:@"WHOX"]) {
+			self.whoxSupported = YES;
 		}
 	} // while()
 
@@ -334,7 +341,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ([token isEqualToStringIgnoringCase:@"UTF8ONLY"]) {
 		self.utf8Only = NO;
-	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"]) {
+	} else if ([token isEqualToStringIgnoringCase:@"WHOX"]) {
+		self.whoxSupported = NO;
+	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"] || [token isEqualToStringIgnoringCase:@"draft/CHATHISTORY"]) {
 		self.chatHistoryLimit = 0;
 	} else if ([token isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
 		self.caseMapping = IRCISupportInfoCaseMappingRFC1459;
