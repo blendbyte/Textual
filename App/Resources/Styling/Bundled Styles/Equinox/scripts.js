@@ -15,6 +15,7 @@ var Equinox = {
 var mappedSelectedUsers = [];
 var rs                  = { // room state
   channelJoined: false,
+  colorNicknames: true,      // false when nickname colours are turned off in Preferences
   enableHistoryView: false,  // this doesn't get enabled until the history has finished loading
   mode: {
     mode: undefined
@@ -46,10 +47,31 @@ Equinox.refreshLocalNicknameCache = function()
 Equinox.refreshChannelJoinedCache = function()
 {
   'use strict';
-  app.channelIsJoined(
+  app.channelIsActive(
     function(returnValue) {
-      rs.channelJoined = returnValue;    
-    }  
+      rs.channelJoined = returnValue;
+    }
+  );
+};
+
+/* Changing the preference reloads the style, so it is read once per view.
+   Lines added before the answer arrives lose their colour if it is off. */
+Equinox.refreshNicknameColorPreference = function()
+{
+  'use strict';
+  app.retrievePreferencesWithMethodName('disableNicknameColorHashing',
+    function(returnValue) {
+      rs.colorNicknames = (returnValue !== true);
+
+      if (rs.colorNicknames) {
+        return;
+      }
+
+      var i, colored = document.querySelectorAll('.sender, .inlineSender, .line[data-line-type="action"] .message');
+      for (i = 0; i < colored.length; i++) {
+        colored[i].style.color = '';
+      }
+    }
   );
 };
 
@@ -96,7 +118,7 @@ var NickColorGenerator = (function () {
     // First, sanitize the nicknames
     nick = nick.toLowerCase();      // make them lowercase (so that April and april produce the same color)
     nick = nick.replace(/[`_-]+$/, ''); // typically `, _, and - are used on the end of a nick
-    nick = nick.replace(/|.*$/, '');  // remove |<anything> from the end
+    nick = nick.replace(/\|.*$/, ''); // remove |<anything> from the end
 
     // Generate the hashes
     app.nicknameColorStyleHash(nick, 'HSL-dark',
@@ -222,7 +244,7 @@ Textual.messageAddedToView = function (line, fromBuffer) {
   'use strict';
   var message = document.getElementById('line-' + line);
   var messageRemoved;
-  var clone, elem, getEmbeddedImages, i, mode, messageText, sender, topic;
+  var clone, elem, mode, sender, topic;
 
   // reset the message count and previous nick, when you rejoin a channel
   if (message.dataset.lineType !== 'privmsg') {
@@ -233,14 +255,17 @@ Textual.messageAddedToView = function (line, fromBuffer) {
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
   if (message.dataset.lineType === 'privmsg' || message.dataset.lineType === 'action') {
     sender = message.getElementsByClassName('sender')[0];
-    if (sender.dataset.overrideColor !== 'true') {
+    if (rs.colorNicknames && sender.dataset.overrideColor !== 'true') {
       new NickColorGenerator(message); // colorized the nick
     }
 
     // Delete (ie, make foreground and background color identical) the previous line's nick, if it was set to be deleted
+    // (the previous line may have been removed since: trimmed, or replaced by a jump to an older line)
     if (rs.nick.delete === true) {
-      elem = document.getElementById(rs.nick.id).getElementsByClassName('sender')[0];
-      elem.className += ' f';
+      elem = document.getElementById(rs.nick.id);
+      if (elem) {
+        elem.getElementsByClassName('sender')[0].className += ' f';
+      }
     }
 
     // Track the nicks that submit messages, so that we can space out everything
@@ -266,7 +291,7 @@ Textual.messageAddedToView = function (line, fromBuffer) {
     }
 
     // Colorize it as well
-    if (sender.dataset.overrideColor !== 'true') {
+    if (rs.colorNicknames && sender.dataset.overrideColor !== 'true') {
       new NickColorGenerator(clone); // colorized the nick
     }
 
@@ -329,7 +354,7 @@ Textual.messageAddedToView = function (line, fromBuffer) {
   if ((message.dataset.lineType === 'debug') && (message.dataset.command === '-100')) {
     if (rs.channelJoined && message.getElementsByClassName('message')[0].textContent.search('Disconnect') !== -1) {
       message.parentNode.removeChild(message);
-      messagesRemoved = true;
+      messageRemoved = true;
     }
   } 
 
@@ -341,19 +366,6 @@ Textual.messageAddedToView = function (line, fromBuffer) {
     MessageBuffer.noteMessageRemovedFromBuffer();
     
     return;
-  }
-
-  getEmbeddedImages = message.querySelectorAll('img');
-  if (getEmbeddedImages) {
-    for (i = 0; i < getEmbeddedImages.length; i++) {
-      getEmbeddedImages[i].onload = function (e) {
-        setTimeout(function () {
-          if (e.target.offsetHeight > (window.innerHeight - 150)) {
-            e.target.style.height = (window.innerHeight - 150);
-          }
-        }, 1000);
-      };
-    }
   }
 
   ConversationTracking.updateNicknameWithNewMessage(message);
@@ -403,4 +415,5 @@ Textual.viewInitiated = function () {
      for callback functions to complete. */
   Equinox.refreshChannelJoinedCache();
   Equinox.refreshLocalNicknameCache();
+  Equinox.refreshNicknameColorPreference();
 };

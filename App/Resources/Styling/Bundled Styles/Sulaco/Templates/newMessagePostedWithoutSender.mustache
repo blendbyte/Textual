@@ -1,3 +1,11 @@
+{{! Written out here: partials are looked up in this folder only, and a missing one makes Textual use its default template }}
+{{#showDateIndicator}}
+	<div class="date_indicator">
+		<hr />
+		<span>{{dateIndicatorMessage}}</span>
+		<hr />
+	</div>
+{{/showDateIndicator}}
 
 <div
 	data-command="{{command}}"
@@ -21,3 +29,11 @@
 	title="{{localizedTimestamp}}"
 	{{/ isEmpty(localizedTimestamp) }}>{{formattedTimestamp}} </span>
 </div>
+
+{{#showSessionIndicator}}
+	<div class="session_indicator message_buffer_session_indicator">
+		<hr />
+		<span>{{sessionIndicatorMessage}}</span>
+		<hr />
+	</div>
+{{/showSessionIndicator}}

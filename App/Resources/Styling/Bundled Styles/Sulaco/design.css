@@ -6,7 +6,7 @@
 /* Basic Structure */
 
 :root {
-	supported-color-schemes: dark;
+	color-scheme: dark;
 }
 
 body {
@@ -44,6 +44,11 @@ a:hover {
 	opacity: 0; /* Set by JavaScript */
 }
 
+/* The topic bar is shown in selected channels only (baseLayout.css) */
+body[data-selected="true"][data-view-type="channel"] #body {
+	max-height: calc(100% - 2.0em); /* height minus topic */
+}
+
 .message,
 .sender,
 .time {
@@ -69,10 +74,6 @@ a:hover {
 	width: 10em;
 }
 
-body[data-view-type="sender"] .sender {
-	display: none;
-}
-
 .time {
 	color: #888;
 	font-size: 0.8em;
@@ -82,9 +83,7 @@ body[data-view-type="sender"] .sender {
 
 div.line {
 	display: flex;
-	display: -webkit-flex;
 	flex-flow: row;
-	-webkit-flex-flow: row;
 }
 
 div.line[data-member-type="myself"] .message {
@@ -181,8 +180,8 @@ div.line[data-line-type="action"]:not(.selectedUser) {
 	transition-duration: 0.5s, 0.5s, 0.5s;
 }
 
-div.line[data-line-type="privmsg"] .time:not(.selectedUser),
-div.line[data-line-type="action"] .time:not(.selectedUser) {
+div.line[data-line-type="privmsg"]:not(.selectedUser) .time,
+div.line[data-line-type="action"]:not(.selectedUser) .time {
 	transition: color 0.5s;
 }
 
@@ -226,7 +225,7 @@ div.line.selectedUser[data-highlight="false"]:hover .time {
 #mark {
 	border-bottom: 1px dotted #9f9f9f;
 	margin: 1px 0;
-	-webkit-transition: 0.2s linear;
+	transition: 0.2s linear;
 }
 
 /* Loading Screen */
@@ -259,7 +258,14 @@ div.line.selectedUser[data-highlight="false"]:hover .time {
 	background: #333;
 	font-weight: 600;
 	text-align: center;
-	-webkit-font-smoothing: subpixel-antialiased;
+	-webkit-font-smoothing: antialiased;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#topicBar:hover {
+	white-space: normal;
 }
 
 #topicBar a,
@@ -270,20 +276,20 @@ div.line.selectedUser[data-highlight="false"]:hover .time {
 }
 
 /* Scrolling */
-body[data-custom-scroller="true"]::-webkit-scrollbar {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar {
 	width: 17px;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar:horizontal {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar:horizontal {
 	height: 0;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-track {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-track {
 	background: #393939;
 	box-shadow: inset 1px 0px 0px 0px #4b4b4b;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-thumb {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb {
 	background-color: #7c7c7c;
 	border: 4px solid transparent;
 	border-left: 5px solid transparent;
@@ -291,7 +297,7 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb {
 	background-clip: content-box;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb:hover {
 	background-color: #b0b0b0;
 }
 
@@ -308,22 +314,18 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
 	letter-spacing: 5px;
 	line-height: 43px;
 	color: #797979;
-	-webkit-animation: ellipsis-period 1.5s infinite;
 	animation: ellipsis-period 1.5s infinite;
 }
 
 .message_buffer_loading_indicator span:nth-child(1) {
-	-webkit-animation-delay: 0.0s;
 	animation-delay: 0.0s;
 }
 
 .message_buffer_loading_indicator span:nth-child(2) {
-	-webkit-animation-delay: 0.1s;
 	animation-delay: 0.1s;
 }
 
 .message_buffer_loading_indicator span:nth-child(3) {
-	-webkit-animation-delay: 0.2s;
 	animation-delay: 0.2s;
 }
 
@@ -337,7 +339,6 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
 .date_indicator ,
 .session_indicator {
 	display: flex;
-	display: -webkit-flex;
 	padding: 0.5em 0;
 }
 
@@ -348,7 +349,6 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
 	height: 1px;
 	margin-top: 0.6em;
 	flex: 1;
-	-webkit-flex: 1;
 }
 
 .date_indicator > span,
@@ -364,6 +364,12 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
 }
 
 /* Nickname Colors */
-data.line.text .sender[data-member-type="myself"] { 
-	color: #ff8c00;
+/* Above the hashed colour Textual sets on each nickname, unless the user chose one */
+div.line.text .sender[data-member-type="myself"]:not([data-override-color="true"]) {
+	color: #ff8c00 !important;
+}
+
+/* Repeated senders: the nickname stays in the line (copying, clicking) but is not shown */
+div.line.coalesced .sender {
+	color: transparent !important;
 }

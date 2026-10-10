@@ -12,7 +12,7 @@
 /* @group Basic Body Structure */
 
 :root {
-	supported-color-schemes: dark;
+	color-scheme: dark;
 }
 
 * {
@@ -70,20 +70,20 @@ body[dir="rtl"] .sender {
 
 /* @group Scrolling */
 
-body[data-custom-scroller="true"]::-webkit-scrollbar {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar {
 	width: 17px;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar:horizontal {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar:horizontal {
 	height: 0;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-track {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-track {
 	background: #393939;
 	box-shadow: inset 1px 0px 0px 0px #4b4b4b;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-thumb {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb {
 	background-color: #7c7c7c;
 	border: 4px solid transparent;
 	border-left: 5px solid transparent;
@@ -91,7 +91,7 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb {
 	background-clip: content-box;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb:hover {
 	background-color: #b0b0b0;
 }
 
@@ -157,7 +157,7 @@ a:hover {
 	position: fixed;
 	padding: 2px 0.5em 3px;
 	background-color: rgba(113, 140, 00, 0.9); /* Tomorrow: Green 90% */
-	-webkit-font-smoothing: subpixel-antialiased;
+	-webkit-font-smoothing: antialiased;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -183,7 +183,7 @@ a:hover {
 	margin-top: -1px;
 	border-bottom: 1px dashed;
 	border-color: #F2777A; /* Tomorrow Night Eighties: Red */
-	-webkit-transition: 0.2s linear;
+	transition: 0.2s linear;
 }
 
 /* @end */
@@ -202,22 +202,18 @@ a:hover {
 	letter-spacing: 5px;
 	line-height: 43px;
 	color: #797979;
-	-webkit-animation: ellipsis-period 1.5s infinite;
 	animation: ellipsis-period 1.5s infinite;
 }
 
 .message_buffer_loading_indicator span:nth-child(1) {
-	-webkit-animation-delay: 0.0s;
 	animation-delay: 0.0s;
 }
 
 .message_buffer_loading_indicator span:nth-child(2) {
-	-webkit-animation-delay: 0.1s;
 	animation-delay: 0.1s;
 }
 
 .message_buffer_loading_indicator span:nth-child(3) {
-	-webkit-animation-delay: 0.2s;
 	animation-delay: 0.2s;
 }
 
@@ -234,7 +230,6 @@ a:hover {
 .date_indicator ,
 .session_indicator {
 	display: flex;
-	display: -webkit-flex;
 	padding: 0.5em 0;
 }
 
@@ -245,7 +240,6 @@ a:hover {
 	height: 1px;
 	margin-top: 0.6em;
 	flex: 1;
-	-webkit-flex: 1;
 }
 
 .date_indicator > span,
@@ -265,8 +259,7 @@ a:hover {
 /* @group NOTICE / CTCP / WALLOPS */
 
 div.line[data-line-type="ctcp"],
-div.line[data-line-type="notice"],
-div.line[data-line-type="wallops"] {
+div.line[data-line-type="notice"] {
 	color: #FFCC66; /* Tomorrow Night Eighties: Yellow */
 	z-index: 191;
 	background-color: rgba(234, 183, 00, 0.2); /* Tomorrow: Yellow 20% */
@@ -366,7 +359,7 @@ div.line[data-command="722"] { /* End. */
 
 div.line[data-command="372"] .message,
 div.line[data-command="375"] .message,
-div.line[data-command="376"] .message
+div.line[data-command="376"] .message,
 div.line[data-command="720"] .message,
 div.line[data-command="721"] .message,
 div.line[data-command="722"] .message {

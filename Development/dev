@@ -91,6 +91,11 @@ check_app() {
 cmd_build() {
 	cd "${ROOT}"
 
+	# Xcode copies a folder reference again only when the folder itself changes,
+	# not a file inside it: without this, edited styles and scripts stay stale
+	touch "App/Resources/Scripts/Script Files/Bundled Scripts" "App/Resources/Styling/Bundled Styles" \
+		"App/Resources/Inline Media" "App/Resources/Styling/Style Default Templates" "App/Resources/Styling/JavaScript"
+
 	xcodebuild -workspace Textual.xcworkspace -scheme "Textual (Debug)" build 2>&1 |
 		grep -E "error:|\*\* BUILD" | sort -u
 

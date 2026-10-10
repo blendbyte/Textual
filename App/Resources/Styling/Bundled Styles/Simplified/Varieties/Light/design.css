@@ -6,7 +6,7 @@
 /* Basic Body Structure */
 
 :root {
-	supported-color-schemes: light;
+	color-scheme: light;
 }
 
 * {
@@ -57,20 +57,20 @@ body[dir="rtl"] .sender {
 
 /* Scrolling */
 
-body[data-custom-scroller="true"]::-webkit-scrollbar {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar {
 	width: 17px;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar:horizontal {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar:horizontal {
 	height: 0;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-track {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-track {
 	background: #fbfbfb;
 	box-shadow: inset 1px 0px 0px 0px #e8e8e8;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-thumb {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb {
 	background-color: #c1c1c1;
 	border: 4px solid transparent;
 	border-left: 5px solid transparent;
@@ -78,7 +78,7 @@ body[data-custom-scroller="true"]::-webkit-scrollbar-thumb {
 	background-clip: content-box;
 }
 
-body[data-custom-scroller="true"]::-webkit-scrollbar-thumb:hover {
+body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb:hover {
 	background-color: #7d7d7d;
 }
 
@@ -139,8 +139,8 @@ a:hover {
 	box-shadow: 0 1px 5px #777;
 	border-bottom: 1px solid #61778F;
 	text-shadow: 1px 1px rgba(83, 86, 94, 0.7);
-	background: -webkit-linear-gradient(top, #A2B0D0 0%, #7385AD 100%);
-	-webkit-font-smoothing: subpixel-antialiased;
+	background: linear-gradient(to bottom, #A2B0D0 0%, #7385AD 100%);
+	-webkit-font-smoothing: antialiased;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -170,7 +170,7 @@ a:hover {
 	margin-top: -1px;
 	border-bottom: 1px dashed;
 	border-color: #444;
-	-webkit-transition: 0.2s linear;
+	transition: 0.2s linear;
 }
 
 /* Message buffer loading animation */
@@ -187,22 +187,18 @@ a:hover {
 	letter-spacing: 5px;
 	line-height: 43px;
 	color: #b6b6b6;
-	-webkit-animation: ellipsis-period 1.5s infinite;
 	animation: ellipsis-period 1.5s infinite;
 }
 
 .message_buffer_loading_indicator span:nth-child(1) {
-	-webkit-animation-delay: 0.0s;
 	animation-delay: 0.0s;
 }
 
 .message_buffer_loading_indicator span:nth-child(2) {
-	-webkit-animation-delay: 0.1s;
 	animation-delay: 0.1s;
 }
 
 .message_buffer_loading_indicator span:nth-child(3) {
-	-webkit-animation-delay: 0.2s;
 	animation-delay: 0.2s;
 }
 
@@ -217,7 +213,6 @@ a:hover {
 .date_indicator ,
 .session_indicator {
 	display: flex;
-	display: -webkit-flex;
 	padding: 0.5em 0;
 }
 
@@ -228,7 +223,6 @@ a:hover {
 	height: 1px;
 	margin-top: 0.6em;
 	flex: 1;
-	-webkit-flex: 1;
 }
 
 .date_indicator > span,
@@ -246,8 +240,7 @@ a:hover {
 /* NOTICE/CTCP/WALLOPS */
 
 div.line[data-line-type="ctcp"],
-div.line[data-line-type="notice"],
-div.line[data-line-type="wallops"] {
+div.line[data-line-type="notice"] {
 	color: #f00;
   	z-index: 191;
 	background: #fcc;
@@ -274,8 +267,8 @@ div.line[data-line-type="action"]:not(.selectedUser) {
 	transition-duration: 0.5s, 0.5s, 0.5s;
 }
 
-div.line[data-line-type="privmsg"] .time:not(.selectedUser),
-div.line[data-line-type="action"] .time:not(.selectedUser) {
+div.line[data-line-type="privmsg"]:not(.selectedUser) .time,
+div.line[data-line-type="action"]:not(.selectedUser) .time {
 	transition: color 0.5s;
 }
 
@@ -301,7 +294,6 @@ div.line[data-line-type="privmsg"][data-highlight="false"] {
  	padding: 2px 5px 2px 5px;
 	border-top: 1px solid transparent;
 	border-bottom: 1px solid transparent;
-	background-color: none;
 }
 
 div.line[data-line-type="privmsg"][data-highlight="true"],
@@ -334,7 +326,6 @@ div.line[data-line-type="action"] {
  	padding: 2px 5px 2px 5px;
 	border-top: 1px solid transparent;
 	border-bottom: 1px solid transparent;
-	background-color: none;
 }
 
 div.line[data-line-type="action"] .message {
@@ -411,7 +402,7 @@ div.line[data-command="722"] { /* End. */
 
 div.line[data-command="372"] .message,
 div.line[data-command="375"] .message,
-div.line[data-command="376"] .message
+div.line[data-command="376"] .message,
 div.line[data-command="720"] .message,
 div.line[data-command="721"] .message,
 div.line[data-command="722"] .message {

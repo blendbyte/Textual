@@ -185,15 +185,25 @@ _Textual.viewFinishedLoadingHistory = function() /* PRIVATE */
 	Textual.viewFinishedLoadingHistory();
 };
 
+/* An error in a style's handler skips only that line, not the rest of the batch */
+_Textual.messageAddedToViewForLine = function(lineNumber, fromBuffer) /* PRIVATE */
+{
+	try {
+		Textual.messageAddedToView(lineNumber, fromBuffer);
+	} catch (error) {
+		console.error("Textual.messageAddedToView() failed for line " + lineNumber + ": " + error);
+	}
+};
+
 _Textual.messageAddedToView = function(lineNumber, fromBuffer) /* PRIVATE */
 {
 	/* Allow lineNumber to be an array of line numbers or a single line number. */
 	if (Array.isArray(lineNumber)) {
 		for (var i = 0; i < lineNumber.length; i++) {
-			Textual.messageAddedToView(lineNumber[i], fromBuffer);
+			_Textual.messageAddedToViewForLine(lineNumber[i], fromBuffer);
 		}
 	} else {
-		Textual.messageAddedToView(lineNumber, fromBuffer);
+		_Textual.messageAddedToViewForLine(lineNumber, fromBuffer);
 	}
 
 	appPrivate.notifyLinesAddedToView(lineNumber);

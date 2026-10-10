@@ -20,8 +20,6 @@ Sulaco = {
 			Sulaco.getLineType(previousLine) === 'privmsg')
 		{
 			line.classList.add('coalesced');
-
-			Sulaco.getSenderElement(line).innerHTML = '';
 		}
 	},
 
