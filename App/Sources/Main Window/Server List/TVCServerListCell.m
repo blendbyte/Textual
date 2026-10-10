@@ -92,6 +92,79 @@ NS_ASSUME_NONNULL_BEGIN
 	TVCServerListAppearance *appearance = self.userInterfaceObjects;
 
 	[self updateDrawingForWithAppearance:appearance inContext:drawingContext];
+
+	[self updateAccessibilityInContext:drawingContext];
+}
+
+/* What VoiceOver reads for the row: kind, joined or connected state,
+ a failed join, and the unread and highlight counts the badge shows */
+- (void)updateAccessibilityInContext:(TVCServerListCellDrawingContext *)drawingContext
+{
+	NSParameterAssert(drawingContext != nil);
+
+	IRCTreeItem *cellItem = self.cellItem;
+
+	NSString *label = cellItem.label;
+
+	BOOL isActive = drawingContext.isActive;
+
+	NSMutableArray<NSString *> *components = [NSMutableArray array];
+
+	if (drawingContext.isGroupItem) {
+		if (isActive) {
+			[components addObject:TXTLS(@"Accessibility[bmy-d2]", label)];
+		} else {
+			[components addObject:TXTLS(@"Accessibility[tu4-8u]", label)];
+		} // isActive
+	} else {
+		IRCChannel *channel = (IRCChannel *)cellItem;
+
+		if (channel.isChannel == NO) {
+			[components addObject:TXTLS(@"Accessibility[9sn-xp]", label)];
+		} else if (isActive) {
+			[components addObject:TXTLS(@"Accessibility[75f-og]", label)];
+		} else {
+			[components addObject:TXTLS(@"Accessibility[edc-7o]", label)];
+		} // isChannel
+
+		if (channel.errorOnLastJoinAttempt) {
+			[components addObject:TXTLS(@"Accessibility[s5c-e1]")];
+		}
+
+		NSUInteger unreadCount = channel.treeUnreadCount;
+
+		if (unreadCount == 1) {
+			[components addObject:TXTLS(@"Accessibility[s5c-u2]")];
+		} else if (unreadCount > 1) {
+			[components addObject:TXTLS(@"Accessibility[s5c-u3]", unreadCount)];
+		}
+
+		NSUInteger highlightCount = ((channel.config.ignoreHighlights) ? 0 : channel.nicknameHighlightCount);
+
+		if (highlightCount == 1) {
+			[components addObject:TXTLS(@"Accessibility[s5c-h4]")];
+		} else if (highlightCount > 1) {
+			[components addObject:TXTLS(@"Accessibility[s5c-h5]", highlightCount)];
+		}
+
+		/* The status icon and the badge are part of the description
+		 (controls are exposed through their cells) */
+		[self.imageView.cell setAccessibilityElement:NO];
+		[self.messageCountBadgeImageView.cell setAccessibilityElement:NO];
+	} // isGroupItem
+
+	NSString *description = [components componentsJoinedByString:@", "];
+
+	/* The row is one element for VoiceOver, read with this label
+	 (it reads a text field's text, not a value description) */
+	self.accessibilityElement = YES;
+	self.accessibilityRole = NSAccessibilityCellRole;
+
+	if ([self.accessibilityLabel isEqualToString:description] == NO) {
+		self.accessibilityLabel = description;
+	}
+
+	[self.cellTextField.cell setAccessibilityElement:NO];
 }
 
 - (void)updateTextFieldInContext:(TVCServerListCellDrawingContext *)drawingContext
@@ -112,32 +185,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	textField.stringValue = stringValueNew;
-
-	/* Update accessibility */
-	BOOL isActive = drawingContext.isActive;
-	BOOL isGroupItem = drawingContext.isGroupItem;
-
-	NSTextFieldCell *textFieldCell = textField.cell;
-
-	if (isGroupItem) {
-		if (isActive) {
-			[textFieldCell setAccessibilityValueDescription:TXTLS(@"Accessibility[bmy-d2]", stringValueNew)];
-		} else {
-			[textFieldCell setAccessibilityValueDescription:TXTLS(@"Accessibility[tu4-8u]", stringValueNew)];
-		} // isActive
-	} else {
-		if (((IRCChannel *)cellItem).isChannel == NO) {
-			[textFieldCell setAccessibilityValueDescription:TXTLS(@"Accessibility[9sn-xp]", stringValueNew)];
-		} else {
-			if (isActive) {
-				[textFieldCell setAccessibilityValueDescription:TXTLS(@"Accessibility[75f-og]", stringValueNew)];
-			} else {
-				[textFieldCell setAccessibilityValueDescription:TXTLS(@"Accessibility[edc-7o]", stringValueNew)];
-			} // isActive
-		} // isChannel
-
-		[self.imageView.cell setAccessibilityLabel:nil];
-	} // isGroupItem
 }
 
 - (void)updateDrawingForWithAppearance:(TVCServerListAppearance *)appearance inContext:(TVCServerListCellDrawingContext *)drawingContext
@@ -317,6 +364,8 @@ NS_ASSUME_NONNULL_BEGIN
 	TVCServerListCellDrawingContext *drawingContext = self.drawingContext;
 
 	[self populateMessageCountBadgeWithAppearance:appearance inContext:drawingContext];
+
+	[self updateAccessibilityInContext:drawingContext];
 }
 
 - (void)populateMessageCountBadgeWithAppearance:(TVCServerListAppearance *)appearance inContext:(TVCServerListCellDrawingContext *)drawingContext

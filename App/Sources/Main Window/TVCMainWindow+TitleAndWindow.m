@@ -170,6 +170,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.titlebarAccessoryViewLockButton.title = @"";
 
+	/* The button only shows a lock icon */
+	self.titlebarAccessoryViewLockButton.accessibilityLabel = TXTLS(@"Accessibility[l0k-c1]");
+
 	if (u.isSecured) {
 		[self.titlebarAccessoryViewLockButton setIconAsLocked];
 
@@ -312,9 +315,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* VoiceOver reads this title too: which server and channel are shown */
 	self.title = title;
-
-	[self setAccessibilityTitle:TXTLS(@"Accessibility[k79-1a]")];
 }
 
 @end

@@ -99,6 +99,92 @@ NS_ASSUME_NONNULL_BEGIN
 	[self updateDrawingWithAppearance:appearance inContext:drawingContext];
 
 	[self updateMarkBadgeWithAppearance:appearance inContext:drawingContext];
+
+	[self updateAccessibility];
+}
+
+/* What VoiceOver reads for the row: nickname, rank and away state
+ (the rank badge and the away colour are only drawn) */
+- (void)updateAccessibility
+{
+	IRCChannelUser *cellItem = self.cellItem;
+
+	IRCUser *user = cellItem.user;
+
+	NSMutableArray<NSString *> *components = [NSMutableArray arrayWithObject:user.nickname];
+
+	NSString *rankDescription = nil;
+
+	switch (cellItem.rank) {
+		case IRCUserRankChannelOwner:
+			rankDescription = TXTLS(@"Accessibility[q8m-o1]");
+			break;
+		case IRCUserRankSuperOperator:
+			rankDescription = TXTLS(@"Accessibility[q8m-a2]");
+			break;
+		case IRCUserRankNormalOperator:
+			rankDescription = TXTLS(@"Accessibility[q8m-o3]");
+			break;
+		case IRCUserRankHalfOperator:
+			rankDescription = TXTLS(@"Accessibility[q8m-h4]");
+			break;
+		case IRCUserRankVoiced:
+			rankDescription = TXTLS(@"Accessibility[q8m-v5]");
+			break;
+		default:
+			break;
+	}
+
+	if (rankDescription) {
+		[components addObject:rankDescription];
+	}
+
+	if (user.isIRCop) {
+		[components addObject:TXTLS(@"Accessibility[q8m-i6]")];
+	}
+
+	if (user.isAway) {
+		[components addObject:TXTLS(@"Accessibility[q8m-w7]")];
+	}
+
+	NSString *description = TXTLS(@"Accessibility[alq-6s]", [components componentsJoinedByString:@", "]);
+
+	/* The row is one element for VoiceOver, read with this label
+	 (it reads a text field's text, not a value description) */
+	self.accessibilityElement = YES;
+	self.accessibilityRole = NSAccessibilityCellRole;
+
+	if ([self.accessibilityLabel isEqualToString:description] == NO) {
+		self.accessibilityLabel = description;
+	}
+
+	[self.cellTextField.cell setAccessibilityElement:NO];
+
+	/* The user information popover is not shown under VoiceOver
+	 (TVCMemberList); its details are read as the row's help instead */
+	NSMutableArray<NSString *> *details = [NSMutableArray array];
+
+	if (user.username.length > 0 && user.address.length > 0) {
+		[details addObject:TXTLS(@"Accessibility[q8m-d8]", [NSString stringWithFormat:@"%@@%@", user.username, user.address])];
+	}
+
+	if (user.realName.length > 0) {
+		[details addObject:TXTLS(@"Accessibility[q8m-r9]", user.realName)];
+	}
+
+	if (user.account.length > 0) {
+		[details addObject:TXTLS(@"Accessibility[q8m-a0]", user.account)];
+	}
+
+	NSString *help = ((details.count > 0) ? [details componentsJoinedByString:@", "] : nil);
+
+	if (help != self.accessibilityHelp && [help isEqualToString:self.accessibilityHelp] == NO) {
+		self.accessibilityHelp = help;
+	}
+
+	/* The rank badge is part of the description above
+	 (controls are exposed through their cells) */
+	[self.imageView.cell setAccessibilityElement:NO];
 }
 
 - (void)updateTextFieldInContext:(TVCMemberListCellDrawingContext *)drawingContext
@@ -119,11 +205,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	textField.stringValue = stringValueNew;
-
-	/* Update accessibility */
-	NSTextFieldCell *textFieldCell = textField.cell;
-
-	[textFieldCell setAccessibilityValueDescription:TXTLS(@"Accessibility[alq-6s]", stringValueNew)];
 }
 
 - (void)updateDrawingWithAppearance:(TVCMemberListAppearance *)appearance inContext:(TVCMemberListCellDrawingContext *)drawingContext

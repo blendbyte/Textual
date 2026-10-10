@@ -300,6 +300,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.placeholderAttributedString =
 	[NSAttributedString attributedStringWithString:TXTLS(@"TVCMainWindow[8r3-ih]") attributes:placeholderStringAttributes];
 
+	/* The placeholder is drawn by hand; VoiceOver reads this */
+	self.accessibilityPlaceholderValue = TXTLS(@"TVCMainWindow[8r3-ih]");
+
 	self.needsDisplay = YES;
 }
 

@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "TLOLocalization.h"
 #import "TVCErrorMessagePopoverPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -105,6 +106,8 @@ NS_ASSUME_NONNULL_BEGIN
 	errorIcon.editable = NO;
 
 	errorIcon.image = [NSImage imageNamed:@"ErroneousTextFieldValueIndicator"];
+
+	errorIcon.accessibilityLabel = TXTLS(@"Accessibility[e7r-i1]");
 
 	[errorIcon addConstraints:
 	 	@[

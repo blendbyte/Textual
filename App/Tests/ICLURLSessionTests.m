@@ -50,33 +50,34 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)testLocalAddressesAreRefused
 {
 	for (NSString *address in @[
-		 @"http://127.0.0.1/a.png",
-		 @"http://127.1/a.png",
-		 @"http://2130706433/a.png",
-		 @"http://0x7f.1/a.png",
-		 @"http://0.0.0.0/a.png",
-		 @"http://10.1.2.3/a.png",
-		 @"http://100.64.0.1/a.png",
-		 @"http://169.254.169.254/latest/meta-data",
-		 @"http://172.16.0.1/a.png",
-		 @"http://172.31.255.255/a.png",
-		 @"http://192.168.1.1/a.png",
-		 @"http://224.0.0.1/a.png",
-		 @"http://255.255.255.255/a.png",
-		 @"http://[::1]/a.png",
-		 @"http://[::]/a.png",
-		 @"http://[fe80::1]/a.png",
-		 @"http://[fd00::1]/a.png",
-		 @"http://[::ffff:192.168.1.1]/a.png",
-		 @"http://[64:ff9b::a00:1]/a.png",
-		 @"http://localhost/a.png",
-		 @"http://LOCALHOST./a.png",
-		 @"http://router/a.png",
-		 @"http://printer.local/a.png",
-		 @"http://app.localhost/a.png",
-		 @"http://nas.home.arpa/a.png",
+		 @"https://127.0.0.1/a.png",
+		 @"https://127.1/a.png",
+		 @"https://2130706433/a.png",
+		 @"https://0x7f.1/a.png",
+		 @"https://0.0.0.0/a.png",
+		 @"https://10.1.2.3/a.png",
+		 @"https://100.64.0.1/a.png",
+		 @"https://169.254.169.254/latest/meta-data",
+		 @"https://172.16.0.1/a.png",
+		 @"https://172.31.255.255/a.png",
+		 @"https://192.168.1.1/a.png",
+		 @"https://224.0.0.1/a.png",
+		 @"https://255.255.255.255/a.png",
+		 @"https://[::1]/a.png",
+		 @"https://[::]/a.png",
+		 @"https://[fe80::1]/a.png",
+		 @"https://[fd00::1]/a.png",
+		 @"https://[::ffff:192.168.1.1]/a.png",
+		 @"https://[64:ff9b::a00:1]/a.png",
+		 @"https://localhost/a.png",
+		 @"https://LOCALHOST./a.png",
+		 @"https://router/a.png",
+		 @"https://printer.local/a.png",
+		 @"https://app.localhost/a.png",
+		 @"https://nas.home.arpa/a.png",
 		 @"file:///etc/passwd",
 		 @"ftp://example.com/a.png",
+		 @"https:///a.png",
 		 @"http:///a.png"])
 	{
 		NSURL *url = [NSURL URLWithString:address];
@@ -87,16 +88,23 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* App Transport Security: inline media is only requested over HTTPS */
+- (void)testPlainHTTPIsRefused
+{
+	XCTAssertFalse([ICLURLSession URLIsAllowed:[NSURL URLWithString:@"http://example.com/a.png"]]);
+	XCTAssertFalse([ICLURLSession URLIsAllowed:[NSURL URLWithString:@"http://8.8.8.8/a.png"]]);
+}
+
 - (void)testPublicAddressesAreAllowed
 {
 	for (NSString *address in @[
 		 @"https://example.com/a.png",
 		 @"HTTPS://EXAMPLE.COM/A.PNG",
-		 @"http://8.8.8.8/a.png",
-		 @"http://172.32.0.1/a.png",
-		 @"http://100.128.0.1/a.png",
-		 @"http://[2606:4700:4700::1111]/a.png",
-		 @"http://[64:ff9b::808:808]/a.png"])
+		 @"https://8.8.8.8/a.png",
+		 @"https://172.32.0.1/a.png",
+		 @"https://100.128.0.1/a.png",
+		 @"https://[2606:4700:4700::1111]/a.png",
+		 @"https://[64:ff9b::808:808]/a.png"])
 	{
 		XCTAssertTrue([ICLURLSession URLIsAllowed:[NSURL URLWithString:address]], @"%@", address);
 	}

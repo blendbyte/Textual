@@ -312,6 +312,7 @@
                                                             </prototypeCellViews>
                                                         </tableColumn>
                                                     </tableColumns>
+                                                    <accessibility description="User List"/>
                                                     <connections>
                                                         <outlet property="memberListUserInfoPopover" destination="iYh-l7-KsB" id="vr3-QJ-1MS"/>
                                                         <outlet property="visualEffectView" destination="2k7-ax-6YE" id="IbW-dz-7Os"/>

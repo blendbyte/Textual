@@ -644,15 +644,28 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 	switch (e.keyCode) {
 		case 125: // down arrow
 		case 126: // up arrow
+		case 116: // page up
+		case 121: // page down
+		case 115: // home
+		case 119: // end
 		{
 			[super keyDown:e];
 
 			break;
 		}
+		case 48: // tab
+		{
+			/* Next or previous control, instead of typing into the input field */
+			if ((e.modifierFlags & NSEventModifierFlagShift) == NSEventModifierFlagShift) {
+				[self.window selectPreviousKeyView:self];
+			} else {
+				[self.window selectNextKeyView:self];
+			}
+
+			break;
+		}
 		case 123: // left arrow
 		case 124: // right arrow
-		case 116: // page up
-		case 121: // page down
 		{
 			break;
 		}

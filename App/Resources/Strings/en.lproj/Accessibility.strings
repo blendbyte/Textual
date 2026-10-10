@@ -35,7 +35,17 @@
  *
  *********************************************************************** */
 
-"alq-6s" = "User %@ in User List";
+"alq-6s" = "User %@";
+"q8m-o1" = "Channel Owner";
+"q8m-a2" = "Channel Admin";
+"q8m-o3" = "Channel Operator";
+"q8m-h4" = "Half-Operator";
+"q8m-v5" = "Voiced";
+"q8m-i6" = "IRC Operator";
+"q8m-w7" = "Away";
+"q8m-d8" = "Address %@";
+"q8m-r9" = "Real Name %@";
+"q8m-a0" = "Logged In as %@";
 
 "bmy-d2" = "Connection %@, Connected";
 "tu4-8u" = "Connection %@, Disconnected";
@@ -44,7 +54,13 @@
 "edc-7o" = "Channel %@, Channel Not Joined";
 
 "9sn-xp" = "Query with User %@";
+"s5c-e1" = "Could Not Join";
+"s5c-u2" = "1 Unread Message";
+"s5c-u3" = "%lu Unread Messages";
+"s5c-h4" = "1 Highlight";
+"s5c-h5" = "%lu Highlights";
 
-"k79-1a" = "Main Window"; // Main window title description
 
 "wbj-gr" = "Alert dialog %@";
+"l0k-c1" = "Secure Connection, Show Certificate";
+"e7r-i1" = "Error";

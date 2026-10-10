@@ -389,7 +389,24 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 		case 124: // right arrow
 		case 116: // page up
 		case 121: // page down
+		case 115: // home
+		case 119: // end
 		{
+			/* Moving through the list, expanding and collapsing servers
+			 (needed without a mouse: Full Keyboard Access, VoiceOver) */
+			[super keyDown:e];
+
+			break;
+		}
+		case 48: // tab
+		{
+			/* Next or previous control, instead of typing into the input field */
+			if ((e.modifierFlags & NSEventModifierFlagShift) == NSEventModifierFlagShift) {
+				[self.window selectPreviousKeyView:self];
+			} else {
+				[self.window selectNextKeyView:self];
+			}
+
 			break;
 		}
 		default:

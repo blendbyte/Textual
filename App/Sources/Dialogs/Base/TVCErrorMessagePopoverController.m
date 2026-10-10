@@ -87,6 +87,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (popoverIsSame == NO) {
 		self.visiblePopover = popover;
+
+		/* The popover never takes focus, so VoiceOver would not read it */
+		NSAccessibilityPostNotificationWithUserInfo(NSApp.mainWindow ?: view.window,
+													NSAccessibilityAnnouncementRequestedNotification,
+													@{
+			NSAccessibilityAnnouncementKey : message,
+			NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
+		});
 	}
 }
 
