@@ -52,6 +52,9 @@
 "k3y-n3" = "proxy password";
 "k3y-n4" = "channel key";
 "k3y-n5" = "login key";
+"t7c-r1" = "Replace the custom style “%@”?";
+"t7c-r2" = "A custom style with this name already exists. Copying replaces it; the existing one is moved to the Trash.";
+"t7c-r3" = "Replace";
 "p4f-i1" = "This file can’t be imported";
 "p4f-i2" = "It isn’t a settings file exported by Textual, or it is damaged. Nothing was changed.";
 "xne-79" = "Select";

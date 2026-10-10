@@ -79,6 +79,7 @@ NSString * const TLOFileLoggerIdleTimerNotification		= @"TLOFileLoggerIdleTimerN
 @property (readonly, copy, readonly, nullable) NSString *filePathComputed;
 @property (nonatomic, copy, nullable) NSDate *dateOpened;
 @property (nonatomic, assign) NSTimeInterval lastWriteTime;
+@property (nonatomic, strong, nullable) NSMutableData *pendingData;
 @property (readonly) BOOL fileHandleIdle;
 @property (readonly, class) TLOTimer *idleTimer;
 @end
@@ -160,23 +161,52 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 
 	NSData *dataToWrite = [stringToWrite dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
 
-	if (dataToWrite) {
-		@try {
-			self.lastWriteTime = [NSDate timeIntervalSince1970];
-
-			[self.fileHandle writeData:dataToWrite];
-		}
-		@catch (NSException *exception) {
-			LogToConsoleError("Caught exception: %{public}@", exception.reason);
-			LogStackTrace();
-
-			if ([exception.reason contains:@"No space left on device"]) {
-				[self failWithNoSpaceLeftOnDevice];
-			}
-
-			[self close];
-		} // @catch
+	if (dataToWrite == nil) {
+		return;
 	}
+
+	self.lastWriteTime = [NSDate timeIntervalSince1970];
+
+	/* Written in batches instead of one write per line: at most a second
+	 later, or once 16 KB are waiting, and always before the file closes */
+	if (self.pendingData == nil) {
+		self.pendingData = [NSMutableData data];
+
+		[self performSelectorInCommonModes:@selector(flush) withObject:nil afterDelay:1.0];
+	}
+
+	[self.pendingData appendData:dataToWrite];
+
+	if (self.pendingData.length >= 16384) {
+		[self flush];
+	}
+}
+
+- (void)flush
+{
+	[self cancelPerformRequestsWithSelector:@selector(flush)];
+
+	NSData *dataToWrite = self.pendingData;
+
+	self.pendingData = nil;
+
+	if (dataToWrite.length == 0 || self.fileHandle == nil) {
+		return;
+	}
+
+	@try {
+		[self.fileHandle writeData:dataToWrite];
+	}
+	@catch (NSException *exception) {
+		LogToConsoleError("Caught exception: %{public}@", exception.reason);
+		LogStackTrace();
+
+		if ([exception.reason contains:@"No space left on device"]) {
+			[self failWithNoSpaceLeftOnDevice];
+		}
+
+		[self close];
+	} // @catch
 }
 
 #pragma mark -
@@ -220,6 +250,10 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 		return;
 	}
 
+	[self cancelPerformRequestsWithSelector:@selector(flush)];
+
+	self.pendingData = nil;
+
 	[self.fileHandle truncateFileAtOffset:0];
 }
 
@@ -227,6 +261,13 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 {
 	if (self.fileHandle == nil) {
 		return;
+	}
+
+	/* Lines from before midnight go to the day they belong to */
+	[self flush];
+
+	if (self.fileHandle == nil) {
+		return; // The flush failed and closed the file
 	}
 
 	@try {
@@ -352,9 +393,11 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
+		/* On the main queue, where lines are written: closing idle files on a
+		 background queue raced with writes and with the open-file count */
 		idleTimer = [TLOTimer timerWithActionBlock:^(TLOTimer *sender) {
 			[self idleTimerFired];
-		} onQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)];
+		} onQueue:dispatch_get_main_queue()];
 	});
 
 	return idleTimer;
@@ -424,7 +467,9 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 
 - (void)removeIdleTimerObserver
 {
-	_numberOfOpenFileHandles -= 1;
+	if (_numberOfOpenFileHandles > 0) {
+		_numberOfOpenFileHandles -= 1;
+	}
 
 	[RZNotificationCenter() removeObserver:self name:TLOFileLoggerIdleTimerNotification object:nil];
 

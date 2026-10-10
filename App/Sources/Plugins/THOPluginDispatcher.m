@@ -302,24 +302,35 @@ NS_ASSUME_NONNULL_BEGIN
 	});
 }
 
-+ (NSCache<NSString *, THOPluginDidPostNewMessageConcreteObject *> *)didPostNewMessageObjectCache
+/* Events wait here until their line is in the view. A cache could drop
+ them before that, and delivered ones were never removed. */
++ (NSMutableDictionary<NSString *, THOPluginDidPostNewMessageConcreteObject *> *)pendingDidPostNewMessageObjects
 {
-	static NSCache *queue = nil;
+	static NSMutableDictionary *pendingObjects = nil;
 
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		queue = [NSCache new];
+		pendingObjects = [NSMutableDictionary dictionary];
 	});
 
-	return queue;
+	return pendingObjects;
 }
 
 + (void)enqueueDidPostNewMessage:(THOPluginDidPostNewMessageConcreteObject *)messageObject
 {
 	NSParameterAssert(messageObject != nil);
 
-	[[self didPostNewMessageObjectCache] setObject:messageObject forKey:messageObject.lineNumber];
+	NSMutableDictionary *pendingObjects = [self pendingDidPostNewMessageObjects];
+
+	@synchronized (pendingObjects) {
+		/* Lines that never reach a view (it was closed or reloaded) */
+		if (pendingObjects.count >= 10000) {
+			[pendingObjects removeAllObjects];
+		}
+
+		pendingObjects[messageObject.lineNumber] = messageObject;
+	}
 }
 
 + (void)dequeueDidPostNewMessageWithLineNumber:(NSString *)messageLineNumber forViewController:(TVCLogController *)viewController
@@ -327,7 +338,15 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(messageLineNumber != nil);
 	NSParameterAssert(viewController != nil);
 
-	THOPluginDidPostNewMessageConcreteObject *messageObject = [[self didPostNewMessageObjectCache] objectForKey:messageLineNumber];
+	NSMutableDictionary *pendingObjects = [self pendingDidPostNewMessageObjects];
+
+	THOPluginDidPostNewMessageConcreteObject *messageObject = nil;
+
+	@synchronized (pendingObjects) {
+		messageObject = pendingObjects[messageLineNumber];
+
+		[pendingObjects removeObjectForKey:messageLineNumber];
+	}
 
 	if (messageObject == nil) {
 		return;

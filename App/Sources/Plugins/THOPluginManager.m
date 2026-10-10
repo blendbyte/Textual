@@ -59,6 +59,8 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 @property (nonatomic, copy, nullable) NSArray<NSBundle *> *obsoleteBundles;
 @property (nonatomic, copy, nullable) NSArray<NSBundle *> *unsupportedBundles;
 @property (nonatomic, assign) THOPluginItemSupportedFeature supportedFeatures;
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *cachedScriptCommandsAndPaths;
+@property (nonatomic, strong, nullable) XRFileSystemMonitor *scriptsMonitor;
 @end
 
 @implementation THOPluginManager
@@ -388,12 +390,57 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 
 - (NSArray<NSString *> *)supportedAppleScriptCommands
 {
-	return [self supportedAppleScriptCommands:NO];
+	return self.supportedAppleScriptCommandsAndPaths.allKeys;
 }
 
+/* Every unknown command listed and checked both script folders (and logged
+ the same warnings again): the list is kept until the scripts folder changes */
 - (NSDictionary<NSString *, NSString *> *)supportedAppleScriptCommandsAndPaths
 {
-	return [self supportedAppleScriptCommands:YES];
+	@synchronized (self) {
+		NSDictionary *scripts = self.cachedScriptCommandsAndPaths;
+
+		if (scripts) {
+			return scripts;
+		}
+
+		scripts = [self supportedAppleScriptCommands:YES];
+
+		self.cachedScriptCommandsAndPaths = scripts;
+
+		[self startMonitoringScripts];
+
+		return scripts;
+	}
+}
+
+/* The bundled scripts are in the signed app and never change */
+- (void)startMonitoringScripts
+{
+	if (self.scriptsMonitor != nil) {
+		return;
+	}
+
+	NSString *path = [TPCPathInfo customScripts];
+
+	if (path == nil) {
+		return;
+	}
+
+	__weak THOPluginManager *weakSelf = self;
+
+	XRFileSystemMonitor *monitor =
+	[[XRFileSystemMonitor alloc] initWithFileURL:[NSURL fileURLWithPath:path isDirectory:YES] callbackBlock:^(NSArray<XRFileSystemEvent *> *events) {
+		THOPluginManager *strongSelf = weakSelf;
+
+		@synchronized (strongSelf) {
+			strongSelf.cachedScriptCommandsAndPaths = nil;
+		}
+	}];
+
+	[monitor startMonitoringWithLatency:1.0];
+
+	self.scriptsMonitor = monitor;
 }
 
 - (id)supportedAppleScriptCommands:(BOOL)returnPathInfo
@@ -601,7 +648,10 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 			*isScript = YES;
 		}
 
-		return;
+		/* Not return: a plugin with the same command is reported too, so
+		 neither runs and the conflict is printed (as documented in
+		 THOPluginProtocol); the script used to win silently */
+		break;
 	}
 
 	/* Find an extension that matches this command */

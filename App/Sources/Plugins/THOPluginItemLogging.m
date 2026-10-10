@@ -40,16 +40,18 @@
 
 os_log_t _THOPluginLoggingSubsystemForBundle(NSBundle *bundle)
 {
-	__block NSCache<NSString *, os_log_t> *subsystems = nil;
+	/* static: as a local it was nil after the first call, so nothing was
+	 cached and the lock locked nothing */
+	static NSMutableDictionary<NSString *, os_log_t> *subsystems = nil;
 
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		subsystems = [NSCache new];
+		subsystems = [NSMutableDictionary dictionary];
 	});
 
 	@synchronized (subsystems) {
-		NSString *identifier = bundle.bundleIdentifier;
+		NSString *identifier = (bundle.bundleIdentifier ?: bundle.bundlePath);
 		
 		os_log_t subsystem = [subsystems objectForKey:identifier];
 		
@@ -63,7 +65,7 @@ os_log_t _THOPluginLoggingSubsystemForBundle(NSBundle *bundle)
 			 in a separate process, it just makes more sense to filter. */
 			subsystem = os_log_create(TXBundleBuildProductIdentifierCString, category.UTF8String);
 			
-			[subsystems setObject:subsystem forKey:identifier];
+			subsystems[identifier] = subsystem;
 		}
 		
 		return subsystem;

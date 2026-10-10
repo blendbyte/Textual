@@ -61,8 +61,11 @@ NSString * const TPCThemeControllerBundledThemeNameCompletePrefix		= @"resource:
 
 NSString * const TPCThemeControllerThemeListDidChangeNotification		= @"TPCThemeControllerThemeListDidChangeNotification";
 
-typedef NSDictionary		<NSString *, TPCTheme *> 	*TPCThemeControllerThemeList;
-typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeListMutable;
+/* A style is a TPCTheme once loaded, NSNull while only its folder is known:
+ loading reads every variety and settings file, so only the active style is
+ loaded at launch and the others when the list of styles is shown */
+typedef NSDictionary		<NSString *, id> 	*TPCThemeControllerThemeList;
+typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutable;
 
 /* Copy operation class is responsible for copying the active theme to a 
  different location when a user requests a local copy of the theme. */
@@ -284,7 +287,11 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 	TPCTheme *theme = nil;
 
 	@synchronized (list) {
-		theme = list[name];
+		id entry = list[name];
+
+		if ([entry isKindOfClass:[TPCTheme class]]) {
+			theme = entry;
+		}
 	}
 
 	if (theme || (theme == nil && createIfNecessary == NO)) {
@@ -609,13 +616,34 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 
 		NSString *name = [fileURL resourceValueForKey:NSURLNameKey];
 
-		(void)[self themeAtURL:fileURL
-				  withFilename:name
-			   storageLocation:storageLocation
-						inList:list
-			 createIfNecessary:YES
-				skipFileExists:YES];
+		@synchronized (list) {
+			if (list[name] == nil) {
+				list[name] = [NSNull null];
+			}
+		}
 	}
+}
+
+- (nullable TPCTheme *)loadedThemeForEntry:(id)entry withFilename:(NSString *)name storageLocation:(TPCThemeStorageLocation)storageLocation
+{
+	if ([entry isKindOfClass:[TPCTheme class]]) {
+		return entry;
+	}
+
+	NSString *path = [self.class pathOfThemeWithFilename:name storageLocation:storageLocation];
+
+	TPCThemeControllerThemeListMutable list = [self mutableListForStorageLocation:storageLocation];
+
+	if (path == nil || list == nil) {
+		return nil;
+	}
+
+	return [self themeAtURL:[NSURL fileURLWithPath:path isDirectory:YES]
+			   withFilename:name
+			storageLocation:storageLocation
+					 inList:list
+		  createIfNecessary:YES
+			 skipFileExists:NO];
 }
 
 - (TPCThemeControllerThemeList)themesInStorageLocation:(TPCThemeStorageLocation)storageLocation
@@ -643,7 +671,10 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 	{
 		TPCThemeControllerThemeList themes = [self themesInStorageLocation:storageLocation];
 
-		[themes enumerateKeysAndObjectsUsingBlock:^(NSString *name, TPCTheme *theme, BOOL *stop) {
+		[themes enumerateKeysAndObjectsUsingBlock:^(NSString *name, id entry, BOOL *stop) {
+			/* Whether a style can be used is only known once it is loaded */
+			TPCTheme *theme = [self loadedThemeForEntry:entry withFilename:name storageLocation:storageLocation];
+
 			if (theme.usable == NO) {
 				return;
 			}
@@ -755,6 +786,10 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 
 	LogToConsoleInfo("Reloading theme because it was modified");
 
+	/* The views load the style from its temporary copy, which -reload only
+	 makes when the style changes: without a new copy the edit never showed */
+	[self createTemporaryCopyOfTheme];
+
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionStyle];
 }
 
@@ -775,6 +810,10 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 	TPCTheme *theme = [self themeNamed:themeName createIfNecessary:YES];
 
 	NSAssert1((theme != nil), @"Missing style resource files: %@", themeName);
+
+	/* Only the active style follows light and dark changes: a style used
+	 before would come back with the variety of that time */
+	[theme updateAppearance];
 
 	if (self.theme != theme) {
 		self.theme = theme;
@@ -1171,6 +1210,34 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 		return;
 	}
 
+	/* The copy replaces a custom style of the same name (to the Trash) */
+	NSString *existingPath = [[TPCPathInfo customThemes] stringByAppendingPathComponent:self.name];
+
+	if ([RZFileManager() fileExistsAtPath:existingPath]) {
+		[TDCAlert alertWithMessage:TXTLS(@"Prompts[t7c-r2]")
+							 title:TXTLS(@"Prompts[t7c-r1]", self.name)
+					 defaultButton:TXTLS(@"Prompts[t7c-r3]")
+				   alternateButton:TXTLS(@"Prompts[qso-2g]")
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+			if (buttonClicked != TDCAlertResponseDefault) {
+				return;
+			}
+
+			[self beginCopyOfActiveThemeToDestinationLocation:destinationLocation reloadOnCopy:reloadOnCopy openOnCopy:openOnCopy];
+		}];
+
+		return;
+	}
+
+	[self beginCopyOfActiveThemeToDestinationLocation:destinationLocation reloadOnCopy:reloadOnCopy openOnCopy:openOnCopy];
+}
+
+- (void)beginCopyOfActiveThemeToDestinationLocation:(TPCThemeStorageLocation)destinationLocation reloadOnCopy:(BOOL)reloadOnCopy openOnCopy:(BOOL)openOnCopy
+{
+	if (self.currentCopyOperation != nil) {
+		return;
+	}
+
 	TPCThemeControllerCopyOperation *copyOperation = [TPCThemeControllerCopyOperation new];
 
 	copyOperation.themeController = self;
@@ -1268,10 +1335,6 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 
 - (void)completeOperation
 {
-	/* The copy process is usually instantaneous so add a slight 
-	 delay because I like to mess with people */
-	[NSThread sleepForTimeInterval:3.0];
-
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self _completeOperation];
 	});

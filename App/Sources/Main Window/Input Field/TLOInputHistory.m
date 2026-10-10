@@ -296,7 +296,9 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 	@synchronized(self.historyBuffer) {
 		NSAttributedString *lastEntry = self.historyBuffer.lastObject;
 
-		if (lastEntry != nil || [lastEntry.string isEqualToString:string.string] == NO) {
+		/* The same line twice in a row is kept once (the check was inverted
+		 and let every line in) */
+		if (lastEntry == nil || [lastEntry.string isEqualToString:string.string] == NO) {
 			[self addToBuffer:string];
 		}
 

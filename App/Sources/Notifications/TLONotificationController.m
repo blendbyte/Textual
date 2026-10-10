@@ -162,12 +162,27 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 	[RZUserNotificationCenter() setNotificationCategories:categories];
 }
 
+/* Each dismissal asks the notification center for every pending and
+ delivered notification: moving through channels with the keyboard did that
+ for each one passed. Only where the selection stays is dismissed. */
 - (void)mainWindowSelectionChanged:(NSNotification *)notification
+{
+	[self cancelPerformRequestsWithSelector:@selector(dismissNotificationsForSelection)];
+
+	[self performSelectorInCommonModes:@selector(dismissNotificationsForSelection) withObject:nil afterDelay:0.5];
+}
+
+- (void)dismissNotificationsForSelection
 {
 	TVCMainWindow *mainWindow = mainWindow();
 
-	[self dismissNotificationsForChannel:mainWindow.selectedChannel
-								onClient:mainWindow.selectedClient];
+	IRCClient *client = mainWindow.selectedClient;
+
+	if (client == nil) {
+		return;
+	}
+
+	[self dismissNotificationsForChannel:mainWindow.selectedChannel onClient:client];
 }
 
 - (NSString *)titleForEvent:(TXNotificationType)event
@@ -484,14 +499,12 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 		notificationContent.threadIdentifier = threadIdentifier;
 	}
 
-	/* The notification identifier should be unique to the specific notification
-	 because otherwise the system will replace existing notifications of the
-	 same identifier. That's not a bad behavior. Just not one we want. */
-	/* Textual will format the identifier as such:
-	 TXNotification[-<clientID>[-<channelId>]]-<eventTitle hash>-<eventDescription hash> */
+	/* Unique per notification: the system replaces a notification with the
+	 same identifier, so the same message twice showed only once. Dismissing
+	 goes by the client and channel in userInfo, not the identifier. */
 	if (notificationIdentifier == nil) {
-		notificationIdentifier = [NSString stringWithFormat:@"TXNotification-%@-%ld-%ld",
-			((threadIdentifier) ?: @"<No Thread>"), title.hash, message.hash];;
+		notificationIdentifier = [NSString stringWithFormat:@"TXNotification-%@-%@",
+			((threadIdentifier) ?: @"<No Thread>"), [NSUUID UUID].UUIDString];
 	}
 
 	[self scheduleNotificationWithContent:notificationContent
@@ -565,7 +578,12 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 	/* Now that is what you call chaining... */
 	NSDictionary *userInfo = response.notification.request.content.userInfo;
 
-	[self notificationResponseReceived:response context:userInfo withReplyMessage:message];
+	/* Delivered on a background queue; the system waits for the handler */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self notificationResponseReceived:response context:userInfo withReplyMessage:message];
+
+		completionHandler();
+	});
 }
 
 - (void)dismissNotificationsForChannel:(nullable IRCChannel *)channel onClient:(IRCClient *)client

@@ -36,6 +36,7 @@
 
 #import <XCTest/XCTest.h>
 
+#import "GTMEncodeHTML.h"
 #import "TVCLogRendererPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -91,6 +92,19 @@ NS_ASSUME_NONNULL_BEGIN
 	for (NSString *unexpected in @[@"bo", @"ob", @"bobb", @"by", @"b-c", @"bob]," ]) {
 		XCTAssertFalse([candidates containsObject:unexpected], @"%@", unexpected);
 	}
+}
+
+/* Message text is escaped before it goes into the chat view's HTML; the
+ escaping skips text that needs none */
+- (void)testHTMLEscaping
+{
+	XCTAssertEqualObjects(@"plain text, nothing to do".gtm_stringByEscapingForHTML, @"plain text, nothing to do");
+
+	XCTAssertEqualObjects(@"<b>\"Tom\" & 'Jerry'</b>".gtm_stringByEscapingForHTML,
+						  @"&lt;b&gt;&quot;Tom&quot; &amp; &apos;Jerry&apos;&lt;/b&gt;");
+
+	/* Other characters of the table are named; the rest stays as it is */
+	XCTAssertEqualObjects(@"5 \u20AC – Ü".gtm_stringByEscapingForHTML, @"5 &euro; &ndash; Ü");
 }
 
 @end

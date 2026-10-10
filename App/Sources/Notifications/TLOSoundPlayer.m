@@ -129,7 +129,36 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* One system sound per name for the life of the app: every alert created a
+ new one (never disposed of) after listing up to three folders */
 + (SystemSoundID)alertSoundNamed:(NSString *)name
+{
+	static NSMutableDictionary<NSString *, NSNumber *> *cachedSoundIDs = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		cachedSoundIDs = [NSMutableDictionary dictionary];
+	});
+
+	@synchronized (cachedSoundIDs) {
+		NSNumber *cachedSoundID = cachedSoundIDs[name];
+
+		if (cachedSoundID) {
+			return (SystemSoundID)cachedSoundID.unsignedIntValue;
+		}
+
+		SystemSoundID soundID = [self _alertSoundNamed:name];
+
+		if (soundID) {
+			cachedSoundIDs[name] = @(soundID);
+		}
+
+		return soundID;
+	}
+}
+
++ (SystemSoundID)_alertSoundNamed:(NSString *)name
 {
 	NSString *soundPath = nil;
 
@@ -187,8 +216,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (soundID) {
 		AudioServicesPlayAlertSound(soundID);
-
-		// AudioServicesDisposeSystemSoundID(soundID);
 	} else {
 		LogToConsoleError("Error: Unable to locate sound '%{public}@'", name);
 	}

@@ -115,6 +115,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)_importPostflight:(NSURL *)pathURL
 {
+	/* One at a time: the clean-up of the previous import is still pending */
+	if (worldController().isImportingConfiguration) {
+		return;
+	}
+
 	/* Create a backup of the old configuration */
 	if ([self importPostflightBackupPreferences] == NO) {
 		return;

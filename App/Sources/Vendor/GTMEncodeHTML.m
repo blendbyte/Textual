@@ -368,13 +368,30 @@ static int EscapeMapCompare(const void *ucharVoid, const void *mapVoid) {
 	return val;
 }
 
+// The characters a table escapes, for a quick membership test (Textual:
+// most lines contain none, and searching the table for every character of
+// every rendered line showed up in profiles)
+static NSCharacterSet *CharacterSetForTable(HTMLEscapeMap *table, NSUInteger tableSize) {
+	NSMutableCharacterSet *set = [NSMutableCharacterSet new];
+	for (NSUInteger i = 0; i < tableSize / sizeof(HTMLEscapeMap); ++i) {
+		[set addCharactersInRange:NSMakeRange(table[i].uchar, 1)];
+	}
+	return [set copy];
+}
+
 static NSString *StringByEscapingHTMLUsingTable(NSString *src,
 												HTMLEscapeMap* table,
 												NSUInteger tableSize,
-												BOOL escapeUnicode) {
+												BOOL escapeUnicode,
+												NSCharacterSet *escapedCharacters) {
 	NSUInteger length = [src length];
 	if (!length) {
 		return src;
+	}
+
+	// Nothing to escape: the string as it is
+	if (escapeUnicode == NO && [src rangeOfCharacterFromSet:escapedCharacters].location == NSNotFound) {
+		return [src copy];
 	}
 
 	NSMutableString *finalString = [NSMutableString string];
@@ -408,9 +425,12 @@ static NSString *StringByEscapingHTMLUsingTable(NSString *src,
 	NSUInteger buffer2Length = 0;
 
 	for (NSUInteger i = 0; i < length; ++i) {
-		HTMLEscapeMap *val = bsearch(&buffer[i], table,
-									 tableSize / sizeof(HTMLEscapeMap),
-									 sizeof(HTMLEscapeMap), EscapeMapCompare);
+		HTMLEscapeMap *val = NULL;
+		if ([escapedCharacters characterIsMember:buffer[i]]) {
+			val = bsearch(&buffer[i], table,
+						  tableSize / sizeof(HTMLEscapeMap),
+						  sizeof(HTMLEscapeMap), EscapeMapCompare);
+		}
 		if (val || (escapeUnicode && buffer[i] > 127)) {
 			if (buffer2Length) {
 				CFStringAppendCharacters((CFMutableStringRef)finalString,
@@ -441,17 +461,31 @@ static NSString *StringByEscapingHTMLUsingTable(NSString *src,
 @implementation NSString (GTMNSStringHTMLAdditions)
 
 - (NSString *)gtm_stringByEscapingForHTML {
+	static NSCharacterSet *escapedCharacters = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		escapedCharacters = CharacterSetForTable(gUnicodeHTMLEscapeMap, sizeof(gUnicodeHTMLEscapeMap));
+	});
+
 	return StringByEscapingHTMLUsingTable(self,
 										  gUnicodeHTMLEscapeMap,
 										  sizeof(gUnicodeHTMLEscapeMap),
-										  /*escapingUnicode=*/NO);
+										  /*escapingUnicode=*/NO,
+										  escapedCharacters);
 } // gtm_stringByEscapingHTML
 
 - (NSString *)gtm_stringByEscapingForAsciiHTML {
+	static NSCharacterSet *escapedCharacters = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		escapedCharacters = CharacterSetForTable(gAsciiHTMLEscapeMap, sizeof(gAsciiHTMLEscapeMap));
+	});
+
 	return StringByEscapingHTMLUsingTable(self,
 										  gAsciiHTMLEscapeMap,
 										  sizeof(gAsciiHTMLEscapeMap),
-										  /*escapingUnicode=*/YES);
+										  /*escapingUnicode=*/YES,
+										  escapedCharacters);
 } // gtm_stringByEscapingAsciiHTML
 
 - (NSString *)gtm_stringByUnescapingFromHTML {

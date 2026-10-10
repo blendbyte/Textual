@@ -126,7 +126,10 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 	self.usable =
 	([self _chooseBestVariety] == _TPCThemeChooseVarietyResultChanged);
 
-	[self _startMonitoring];
+	/* Bundled styles are in the signed app and never change */
+	if (self.storageLocation == TPCThemeStorageLocationCustom) {
+		[self _startMonitoring];
+	}
 }
 
 - (void)_loadGlobalVariety
@@ -663,17 +666,23 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 {
 	TPCThemeVariety *previousVariety = self.variety;
 
-	self.templateCache = nil;
+	/* Templates are looked up on the print queue too: the lock keeps it from
+	 seeing half a change, and the cache is cleared after the repositories
+	 change (cleared before, a lookup in between cached a template of the
+	 previous variety) */
+	@synchronized (self) {
+		self.variety = variety;
 
-	self.variety = variety;
+		[self _combineFiles];
 
-	[self _combineFiles];
+		[self _populateSettings];
 
-	[self _populateSettings];
+		/* Assign the default repository after populating settings
+		 as we need the template engine version for construction. */
+		[self _assignDefaultTemplateRepository];
 
-	/* Assign the default repository after populating settings
-	 as we need the template engine version for construction. */
-	[self _assignDefaultTemplateRepository];
+		self.templateCache = nil;
+	}
 
 	/* Do not fire notification if there is not a previous
 	 variety (during init) or we are in a compromised state. */
@@ -748,7 +757,7 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 
 	/* If we do not have a best variety, then use the global
 	 variety assuming it can be used. */
-	if (bestVariety == nil && globalHasCSS && globalHasCSS) {
+	if (bestVariety == nil && globalHasCSS && globalHasJS) {
 		bestVariety = globalVariety;
 	}
 
@@ -851,18 +860,30 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 {
 	NSParameterAssert(templateName != nil);
 
-	NSCache *cache = self.templateCache;
+	NSCache *cache = nil;
 
-	if (cache == nil) {
-		cache = [NSCache new];
+	NSArray *repositories = nil;
 
-		self.templateCache = cache;
-	} else {
-		GRMustacheTemplate *template = [cache objectForKey:templateName];
+	GRMustacheTemplateRepository *defaultRepository = nil;
 
-		if (template) {
-			return template;
+	@synchronized (self) {
+		cache = self.templateCache;
+
+		if (cache == nil) {
+			cache = [NSCache new];
+
+			self.templateCache = cache;
 		}
+
+		repositories = self.templateRepositories;
+
+		defaultRepository = self.defaultTemplateRepository;
+	}
+
+	GRMustacheTemplate *cachedTemplate = [cache objectForKey:templateName];
+
+	if (cachedTemplate) {
+		return cachedTemplate;
 	}
 
 	 GRMustacheTemplate * _Nullable (^_loadTemplate)(GRMustacheTemplateRepository *) =
@@ -887,8 +908,6 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 
 	GRMustacheTemplate *template = nil;
 
-	NSArray *repositories = self.templateRepositories;
-
 	for (GRMustacheTemplateRepository *repository in repositories) {
 		template = _loadTemplate(repository);
 
@@ -898,11 +917,10 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 	}
 
 	if (template == nil) {
-		GRMustacheTemplateRepository *repository = self.defaultTemplateRepository;
-
-		template = _loadTemplate(repository);
+		template = _loadTemplate(defaultRepository);
 	}
 
+	/* Not into a cache the variety has replaced meanwhile */
 	if (template != nil) {
 		[cache setObject:template forKey:templateName];
 	}

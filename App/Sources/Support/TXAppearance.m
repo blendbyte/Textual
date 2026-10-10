@@ -87,7 +87,8 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 {
 	LogToConsoleTerminationProgress("Removing appearance change observers");
 
-	[RZNotificationCenter() removeObserver:self];
+	/* Added to the workspace center, so removed from there */
+	[RZWorkspaceNotificationCenter() removeObserver:self];
 
 	[NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
 }

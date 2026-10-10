@@ -226,10 +226,57 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[RZUserDefaults() setObject:[newOverrides copy] forKey:_overridesDefaultsKey];
 }
 
+/* Decoded colours by key (NSNull: no override), kept until the overrides
+ change: every nickname in every rendered line was decoded again */
++ (NSMutableDictionary<NSString *, id> *)cachedNicknameColorStyleOverrides
+{
+	static NSMutableDictionary *cachedOverrides = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		cachedOverrides = [NSMutableDictionary dictionary];
+
+		[RZNotificationCenter() addObserverForName:TPCPreferencesUserDefaultsDidChangeNotification
+											object:nil
+											 queue:nil
+										usingBlock:^(NSNotification *notification) {
+			if ([notification.userInfo[@"changedKey"] isEqualToString:_overridesDefaultsKey] == NO) {
+				return;
+			}
+
+			@synchronized (cachedOverrides) {
+				[cachedOverrides removeAllObjects];
+			}
+		}];
+	});
+
+	return cachedOverrides;
+}
+
 + (nullable NSColor *)nicknameColorStyleOverrideForKey:(NSString *)styleKey
 {
 	NSParameterAssert(styleKey != nil);
 
+	NSMutableDictionary *cachedOverrides = [self cachedNicknameColorStyleOverrides];
+
+	@synchronized (cachedOverrides) {
+		id cachedColor = cachedOverrides[styleKey];
+
+		if (cachedColor) {
+			return ((cachedColor == [NSNull null]) ? nil : cachedColor);
+		}
+
+		NSColor *color = [self _nicknameColorStyleOverrideForKey:styleKey];
+
+		cachedOverrides[styleKey] = ((color) ?: [NSNull null]);
+
+		return color;
+	}
+}
+
++ (nullable NSColor *)_nicknameColorStyleOverrideForKey:(NSString *)styleKey
+{
 	NSDictionary *colorOverrides = [RZUserDefaults() dictionaryForKey:_overridesDefaultsKey];
 
 	if (colorOverrides == nil) {

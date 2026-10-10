@@ -110,36 +110,29 @@ NSString * const TPCPreferencesUserDefaultsDidChangeNotification = @"TPCPreferen
 {
 	NSParameterAssert(defaultName != nil);
 
-	id oldValue = [self objectForKey:defaultName];
+	/* Writers on different threads interleaved read, change notices and
+	 write, so observers could see changes out of order. The notification
+	 is posted outside the lock: an observer waiting on another thread must
+	 not hold up writers. */
+	@synchronized (self) {
+		id oldValue = [self objectForKey:defaultName];
 
-	if (oldValue && oldValue == value) {
-		return;
-	}
-
-	[self willChangeValueForKey:defaultName];
-
-	if (value == nil) {
-		if (oldValue) {
-			[self _setObject:nil forKey:defaultName];
+		/* An unchanged value (compared by value) is not written or announced */
+		if (oldValue == value || [oldValue isEqual:value]) {
+			return;
 		}
-	} else {
-		[self _setObject:value forKey:defaultName];
-	}
 
-	[self didChangeValueForKey:defaultName];
+		[self willChangeValueForKey:defaultName];
+
+		[self _setObject:value forKey:defaultName];
+
+		[self didChangeValueForKey:defaultName];
+	}
 
 	if (postNotification) {
 		[RZNotificationCenter() postNotificationName:TPCPreferencesUserDefaultsDidChangeNotification
 											  object:self
 											userInfo:@{@"changedKey" : defaultName}];
-
-		/* We currently don't need to communicate preferences changes between the
-		 main app and XPC services, but if we do, then we should enable this code. */
-#if 0
-		[RZDistributedNotificationCenter() postNotificationName:TPCPreferencesUserDefaultsDidChangeNotification
-														 object:@"TPCPreferencesUserDefaults"
-													   userInfo:@{@"changedKey" : defaultName}];
-#endif
 	}
 }
 

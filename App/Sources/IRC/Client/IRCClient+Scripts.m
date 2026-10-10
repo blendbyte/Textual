@@ -314,19 +314,73 @@ NS_ASSUME_NONNULL_BEGIN
 
 	task.standardOutput = writingPipe;
 
-	/* Try performing task */
-	[task executeWithArguments:taskArguments completionHandler:^(NSError *error) {
+	/* Output is read as it arrives: read only at the end, a script printing
+	 more than the pipe holds (64 KB) blocked for ever. The result is handled
+	 once the output reached its end and the task finished, in either order. */
+	NSMutableData *output = [NSMutableData data];
+
+	dispatch_queue_t outputQueue = dispatch_queue_create("Textual.IRCClient.scriptOutput", DISPATCH_QUEUE_SERIAL);
+
+	__block BOOL outputEnded = NO;
+	__block BOOL taskFinished = NO;
+	__block NSError *executionError = nil;
+
+	void (^finish)(void) = ^{
+		NSData *result = [output copy];
+
+		NSError *error = executionError;
+
 		if (error) {
 			[self outputDescriptionForError:error forTextualCmdScriptAtPath:path inputString:inputString];
 
 			return;
 		}
 
-		NSData *result = [readingPipe readDataToEndOfFile];
-
 		NSString *resultString = [NSString stringWithData:result encoding:NSUTF8StringEncoding];
 
 		[self sendTextualCmdScriptResult:resultString toChannel:targetChannel];
+	};
+
+	/* The handler holds the pipe (its reading end would close when this
+	 method returns) and lets it go at end of file */
+	readingPipe.readabilityHandler = ^(NSFileHandle *handle) {
+		NSData *data = handle.availableData;
+
+		if (data.length == 0) {
+			handle.readabilityHandler = nil;
+
+			[standardOutputPipe.fileHandleForReading closeFile];
+		}
+
+		dispatch_async(outputQueue, ^{
+			if (data.length > 0) {
+				[output appendData:data];
+
+				return;
+			}
+
+			outputEnded = YES;
+
+			if (taskFinished) {
+				finish();
+			}
+		});
+	};
+
+	/* Try performing task */
+	[task executeWithArguments:taskArguments completionHandler:^(NSError *error) {
+		/* Ends the output if the task never ran */
+		[writingPipe closeFile];
+
+		dispatch_async(outputQueue, ^{
+			taskFinished = YES;
+
+			executionError = error;
+
+			if (outputEnded) {
+				finish();
+			}
+		});
 	}];
 }
 
