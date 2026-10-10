@@ -476,7 +476,6 @@
 		4C31577320EB6D0500448776 /* TXMenuControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DE20EB673E00448776 /* TXMenuControllerPrivate.h */; };
 		4C31577420EB6D0500448776 /* TXSharedApplicationPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151C620EB673E00448776 /* TXSharedApplicationPrivate.h */; };
 		4C31577520EB6D0500448776 /* TXWindowControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522A20EB673E00448776 /* TXWindowControllerPrivate.h */; };
-		4C31577620EB6D0500448776 /* WKWebViewPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523120EB673E00448776 /* WKWebViewPrivate.h */; };
 		4C3158BF20EB6D1000448776 /* IRCServerInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31518520EB673E00448776 /* IRCServerInternal.h */; };
 		4C3158C020EB6D1000448776 /* IRCUserInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31518620EB673E00448776 /* IRCUserInternal.h */; };
 		4C3158C120EB6D1000448776 /* IRCAddressBookInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31518720EB673E00448776 /* IRCAddressBookInternal.h */; };
@@ -1101,7 +1100,6 @@
 		4C31522D20EB673E00448776 /* TVCMainWindowSegmentedControllerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowSegmentedControllerPrivate.h; sourceTree = "<group>"; };
 		4C31522F20EB673E00448776 /* TDCServerEndpointListSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerEndpointListSheetPrivate.h; sourceTree = "<group>"; };
 		4C31523020EB673E00448776 /* TVCLogLinePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogLinePrivate.h; sourceTree = "<group>"; };
-		4C31523120EB673E00448776 /* WKWebViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WKWebViewPrivate.h; sourceTree = "<group>"; };
 		4C31523220EB673E00448776 /* TXGlobalModelsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXGlobalModelsPrivate.h; sourceTree = "<group>"; };
 		4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOLicenseManagerLastGenPrivate.h; sourceTree = "<group>"; };
 		4C31523420EB673E00448776 /* TLONotificationConfigurationPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLONotificationConfigurationPrivate.h; sourceTree = "<group>"; };
@@ -1625,7 +1623,6 @@
 				4C3151F020EB673E00448776 /* TVCLogViewInternalWK2.h */,
 				4C3152B920EB673E00448776 /* TVCLogViewInternalWK2.m */,
 				4C31520D20EB673E00448776 /* TVCLogViewPrivate.h */,
-				4C31523120EB673E00448776 /* WKWebViewPrivate.h */,
 			);
 			path = "Channel View";
 			sourceTree = "<group>";
@@ -2911,7 +2908,6 @@
 				4C31572B20EB6D0500448776 /* TDCServerHighlightListSheetPrivate.h in Headers */,
 				4C06E27220EC4E350055D09A /* StaticDefinitions.h in Headers */,
 				4C31577120EB6D0500448776 /* TXGlobalModelsPrivate.h in Headers */,
-				4C31577620EB6D0500448776 /* WKWebViewPrivate.h in Headers */,
 				4C31571620EB6D0500448776 /* TDCFileTransferDialogTransferControllerPrivate.h in Headers */,
 				4C3155CF20EB6CB400448776 /* TLOSoundPlayer.h in Headers */,
 				4C3155D020EB6CB400448776 /* TPCApplicationInfo.h in Headers */,

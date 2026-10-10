@@ -335,8 +335,10 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 	self.documentFileURL = filePath;
 
+	/* The page reads its style, inline media resources in the app bundle and
+	 custom styles; the sandbox, not this URL, limits what can be read */
 	[webView loadFileURL:filePath
- allowingReadAccessToURL:themeController().temporaryURL];
+ allowingReadAccessToURL:[NSURL fileURLWithPath:@"/" isDirectory:YES]];
 }
 
 

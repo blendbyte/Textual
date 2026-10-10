@@ -302,16 +302,10 @@
 	</data>
 	<key>UserListDoubleClickAction</key>
 	<integer>200</integer>
-	<key>WebKitDeveloperExtras</key>
-	<true/>
 	<key>WebViewDoNotUsesCustomScrollers</key>
 	<false/>
 	<key>WebViewPreviewLinks</key>
 	<false/>
-	<key>__uniquePageGroupID-1.WebKit2ScrollAnimatorEnabled</key>
-	<false/>
-	<key>__uniquePageGroupID-1.WebKit2ShouldRespectImageOrientation</key>
-	<true/>
 	<key>com.adiumX.AutoHyperlinks.permittedSchemesDefault</key>
 	<array>
 		<string>feed</string>

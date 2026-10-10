@@ -35,7 +35,6 @@
  *
  *********************************************************************** */
 
-#import "WKWebViewPrivate.h"
 
 #import "IRCChannel.h"
 #import "IRCClient.h"
@@ -43,6 +42,7 @@
 #import "TXAppearance.h"
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TPCTheme.h"
 #import "TPCThemeController.h"
 #import "TVCLogController.h"
@@ -76,14 +76,9 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
+		/* Only public settings: the page reads its style's files through the
+		 read access granted by -loadFileURL:allowingReadAccessToURL: (TVCLogView) */
 		_sharedWebViewConfiguration = [WKWebViewConfiguration new];
-
-		_sharedWebViewConfiguration._allowUniversalAccessFromFileURLs = YES;
-
-		WKPreferences *preferences = _sharedWebViewConfiguration.preferences;
-
-		preferences._allowFileAccessFromFileURLs = YES;
-		preferences._developerExtrasEnabled = YES;
 
 		_sharedWebViewScriptSink = [TVCLogScriptEventSink new];
 
@@ -263,6 +258,32 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 	self.UIDelegate = (id)self;
 
 	[self applyThemeBackgroundColor];
+
+	[self applyDeveloperMode];
+
+	[RZNotificationCenter() addObserver:self
+							   selector:@selector(preferencesChanged:)
+								   name:TPCPreferencesUserDefaultsDidChangeNotification
+								 object:nil];
+}
+
+/* Web Inspector ("Inspect Element" in the context menu) only in Developer Mode */
+- (void)applyDeveloperMode
+{
+	BOOL inspectable = [TPCPreferences developerModeEnabled];
+
+	if (self.inspectable != inspectable) {
+		self.inspectable = inspectable;
+	}
+}
+
+- (void)preferencesChanged:(NSNotification *)notification
+{
+	if ([notification.userInfo[@"changedKey"] isEqualToString:@"TextualDeveloperEnvironment"] == NO) {
+		return;
+	}
+
+	[self applyDeveloperMode];
 }
 
 - (void)applyThemeBackgroundColor
@@ -284,6 +305,8 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 {
 	/* A view released while loading never got its stopLoading */
 	[self stopObservingLoadingProperty];
+
+	[RZNotificationCenter() removeObserver:self name:TPCPreferencesUserDefaultsDidChangeNotification object:nil];
 
 	self.navigationDelegate = nil;
 
@@ -369,30 +392,18 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 {
 	NSParameterAssert(searchString != nil);
 
-	_WKFindOptions findOptions = (_WKFindOptionsCaseInsensitive	| _WKFindOptionsShowOverlay	| _WKFindOptionsShowFindIndicator | _WKFindOptionsWrapAround);
+	WKFindConfiguration *configuration = [WKFindConfiguration new];
 
-	if (movingForward == NO) {
-		findOptions |= _WKFindOptionsBackwards;
-	}
+	configuration.backwards = (movingForward == NO);
+	configuration.caseSensitive = NO;
+	configuration.wraps = YES;
 
-	SEL selector = @selector(_findString:options:maxCount:);
-
-	if ([self respondsToSelector:selector]) {
-		NSMethodSignature *signature = [self methodSignatureForSelector:selector];
-
-		NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-
-		[invocation setTarget:self];
-		[invocation setSelector:selector];
-
-		[invocation setArgument:&searchString atIndex:2];
-		[invocation setArgument:&findOptions atIndex:3];
-
-		NSUInteger one = 1;
-		[invocation setArgument:&one atIndex:4];
-
-		[invocation invoke];
-	}
+	/* Selects and scrolls to the match */
+	[self findString:searchString withConfiguration:configuration completionHandler:^(WKFindResult *result) {
+		if (result.matchFound == NO) {
+			NSBeep();
+		}
+	}];
 }
 
 - (void)startObservingLoadingProperty
@@ -484,13 +495,6 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 #pragma mark -
 #pragma mark Web View Delegate
 
-- (void)_webViewWebProcessDidBecomeUnresponsive:(WKWebView *)webView
-{
-	NSParameterAssert(webView == self);
-
-	LogToConsoleError("WebView [%{public}@] became unresponsive", self.description);
-}
-
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView
 {
 	NSParameterAssert(webView == self);
@@ -581,11 +585,23 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 	[self.t_parentView informDelegateWebViewFailedLoading];
 }
 
-- (NSMenu *)_webView:(WKWebView *)webView contextMenu:(NSMenu *)menu forElement:(id)element
+/* WebKit's own items (copy, look up, Inspect Element…) arrive in menu;
+ Textual's menu, built from them, replaces its contents */
+- (void)willOpenMenu:(NSMenu *)menu withEvent:(NSEvent *)event
 {
-	NSParameterAssert(webView == self);
+	[super willOpenMenu:menu withEvent:event];
 
-	return [_sharedWebPolicy webView2:webView logView:self.t_parentView contextMenuWithDefaultMenu:menu];
+	NSMenu *contextMenu = [_sharedWebPolicy webView2:self logView:self.t_parentView contextMenuWithDefaultMenu:menu];
+
+	NSArray<NSMenuItem *> *items = contextMenu.itemArray;
+
+	[contextMenu removeAllItems];
+
+	[menu removeAllItems];
+
+	for (NSMenuItem *item in items) {
+		[menu addItem:item];
+	}
 }
 
 @end
