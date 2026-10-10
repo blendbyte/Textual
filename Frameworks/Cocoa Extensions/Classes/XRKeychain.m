@@ -36,17 +36,60 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation XRKeychain
 
+/* The data protection keychain doesn't ask before an app with another
+ signature reads an item (Textual 8 is signed by another team than Textual 7)
+ and keeps items available after the first unlock, for connecting at login.
+ It needs a signature with an application identifier, which only builds with a
+ provisioning profile have; elsewhere the file-based keychain is used. */
++ (BOOL)dataProtectionKeychainAvailable
+{
+	static BOOL available = NO;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		NSDictionary *query = @{
+			(id)kSecClass : (id)kSecClassGenericPassword,
+			(id)kSecAttrService : @"XRKeychain data protection keychain check",
+			(id)kSecUseDataProtectionKeychain : (id)kCFBooleanTrue
+		};
+
+		/* Reads of a missing item answer errSecItemNotFound either way; deleting
+		 one (it never exists) reports the missing entitlement */
+		available = (SecItemDelete((__bridge CFDictionaryRef)query) != errSecMissingEntitlement);
+	});
+
+	return available;
+}
+
 + (NSMutableDictionary *)searchDictionary:(NSString *)itemName
 							 withItemKind:(NSString *)itemKind
 							  forUsername:(nullable NSString *)username
 							  serviceName:(NSString *)service
 {
+	return [self searchDictionary:itemName
+					 withItemKind:itemKind
+					  forUsername:username
+					  serviceName:service
+				  legacyKeychain:NO];
+}
+
++ (NSMutableDictionary *)searchDictionary:(NSString *)itemName
+							 withItemKind:(NSString *)itemKind
+							  forUsername:(nullable NSString *)username
+							  serviceName:(NSString *)service
+						   legacyKeychain:(BOOL)legacyKeychain
+{
 	NSMutableDictionary *searchDictionary = [NSMutableDictionary dictionary];
 
 	if ([itemKind isEqualToString:@"internet password"]) {
 		searchDictionary[(id)kSecClass] = (id)kSecClassInternetPassword;
+
+		searchDictionary[(id)kSecAttrServer] = service;
 	} else {
 		searchDictionary[(id)kSecClass] = (id)kSecClassGenericPassword;
+
+		searchDictionary[(id)kSecAttrService] = service;
 	}
 
 	/* Not the label: it isn't part of what makes an item unique, so an item
@@ -54,11 +97,13 @@ NS_ASSUME_NONNULL_BEGIN
 	 fails as a duplicate. The label is only set when saving. */
 	searchDictionary[(id)kSecAttrDescription] = itemKind;
 
-	if (username.length > 0) {
-		searchDictionary[(id)kSecAttrAccount] = username;
-	}
+	/* Without an account, a search matches items with any account: an empty
+	 one only matches items saved without one */
+	searchDictionary[(id)kSecAttrAccount] = ((username.length > 0) ? username : @"");
 
-	searchDictionary[(id)kSecAttrService] = service;
+	if (legacyKeychain == NO && [self dataProtectionKeychainAvailable]) {
+		searchDictionary[(id)kSecUseDataProtectionKeychain] = (id)kCFBooleanTrue;
+	}
 
 	return searchDictionary;
 }
@@ -98,7 +143,22 @@ NS_ASSUME_NONNULL_BEGIN
 	
 	OSStatus status = SecItemDelete((__bridge CFDictionaryRef)dictionary);
 
-	return (status == errSecSuccess);
+	/* Reads fall back to the file-based keychain, so its copy would come back */
+	if (deleteFromCloud == NO && [self dataProtectionKeychainAvailable]) {
+		NSDictionary *legacyDictionary = [self searchDictionary:itemName
+												   withItemKind:itemKind
+													forUsername:username
+													serviceName:service
+												 legacyKeychain:YES];
+
+		OSStatus legacyStatus = SecItemDelete((__bridge CFDictionaryRef)legacyDictionary);
+
+		if (status == errSecSuccess || status == errSecItemNotFound) {
+			status = legacyStatus;
+		}
+	}
+
+	return (status == errSecSuccess || status == errSecItemNotFound);
 }
 
 + (BOOL)modifyOrAddKeychainItem:(NSString *)itemName
@@ -252,6 +312,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if (addToCloud) {
 		dictionary[(id)kSecAttrSynchronizable] = (id)kCFBooleanTrue;
 	}
+
+	/* Only the data protection keychain knows this; servers connect at login */
+	if (dictionary[(id)kSecUseDataProtectionKeychain] != nil) {
+		dictionary[(id)kSecAttrAccessible] = (id)kSecAttrAccessibleAfterFirstUnlock;
+	}
 	
 	NSData *encodedPassword = [password dataUsingEncoding:NSUTF8StringEncoding];
 
@@ -289,28 +354,67 @@ NS_ASSUME_NONNULL_BEGIN
 												 forUsername:username
 												 serviceName:service];
 
-	dictionary[(id)kSecMatchLimit] = (id)kSecMatchLimitOne;
-	dictionary[(id)kSecReturnData] = (id)kCFBooleanTrue;
-
 	if (searchForOnCloud) {
 		dictionary[(id)kSecAttrSynchronizable] = (id)kCFBooleanTrue;
 	}
-	
-	CFDataRef result = nil;
-	
-	OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)dictionary, (CFTypeRef *)&result);
+
+	OSStatus status = errSecSuccess;
+
+	NSData *passwordData = [self passwordDataMatchingDictionary:dictionary status:&status];
+
+	/* Items saved before the data protection keychain could be used (by Textual 7,
+	 or a build without a provisioning profile) are copied over on first use. The
+	 original stays for the version that saved it. */
+	if (status == errSecItemNotFound && searchForOnCloud == NO && [self dataProtectionKeychainAvailable]) {
+		NSDictionary *legacyDictionary = [self searchDictionary:itemName
+												   withItemKind:itemKind
+													forUsername:username
+													serviceName:service
+												 legacyKeychain:YES];
+
+		passwordData = [self passwordDataMatchingDictionary:legacyDictionary status:&status];
+
+		NSString *password = [NSString stringWithData:passwordData encoding:NSUTF8StringEncoding];
+
+		if (password.length > 0) {
+			(void)[self _addKeychainItem:itemName
+							withItemKind:itemKind
+							 forUsername:username
+							withPassword:password
+							 serviceName:service
+							   ontoCloud:NO];
+		}
+	}
 	
 	if ( statusCode) {
 		*statusCode = status;
 	}
-	
-	NSData *passwordData = (__bridge_transfer NSData *)result;
 
 	if (passwordData == nil) {
 		return nil;
 	} else {
 		return [NSString stringWithData:passwordData encoding:NSUTF8StringEncoding];
 	}
+}
+
++ (nullable NSData *)passwordDataMatchingDictionary:(NSDictionary *)searchDictionary status:(OSStatus *)status
+{
+	NSMutableDictionary *dictionary = [searchDictionary mutableCopy];
+
+	dictionary[(id)kSecMatchLimit] = (id)kSecMatchLimitOne;
+	dictionary[(id)kSecReturnData] = (id)kCFBooleanTrue;
+
+	CFTypeRef result = NULL;
+
+	*status = SecItemCopyMatching((__bridge CFDictionaryRef)dictionary, &result);
+
+	id resultObject = CFBridgingRelease(result);
+
+	if ([resultObject isKindOfClass:[NSData class]] == NO) {
+		return nil;
+	}
+
+	return resultObject;
 }
 
 @end

@@ -193,6 +193,68 @@ static BOOL _reportsFailures = YES;
 					   serviceName:[self serviceForKind:kind identifier:identifier]];
 }
 
+#pragma mark -
+#pragma mark Client Certificates
+
++ (nullable SecIdentityRef)copyClientCertificateIdentityForReference:(NSData *)reference
+{
+	NSParameterAssert(reference != nil);
+
+	/* Asking for an identity turns a certificate's reference into the identity too */
+	NSDictionary *query = @{
+		(id)kSecClass : (id)kSecClassIdentity,
+		(id)kSecValuePersistentRef : reference,
+		(id)kSecReturnRef : (id)kCFBooleanTrue
+	};
+
+	CFTypeRef result = NULL;
+
+	OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &result);
+
+	if (status != errSecSuccess) {
+		LogToConsoleError("No identity for the client certificate: %{public}d", (int)status);
+
+		return NULL;
+	}
+
+	if (result == NULL || CFGetTypeID(result) != SecIdentityGetTypeID()) {
+		LogToConsoleError("The client certificate's reference isn't an identity");
+
+		if (result) {
+			CFRelease(result);
+		}
+
+		return NULL;
+	}
+
+	return (SecIdentityRef)result;
+}
+
++ (nullable NSData *)referenceForClientCertificateIdentity:(SecIdentityRef)identity
+{
+	NSParameterAssert(identity != NULL);
+
+	NSDictionary *query = @{
+		(id)kSecClass : (id)kSecClassIdentity,
+		(id)kSecValueRef : (__bridge id)identity,
+		(id)kSecReturnPersistentRef : (id)kCFBooleanTrue
+	};
+
+	CFTypeRef result = NULL;
+
+	OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &result);
+
+	id reference = CFBridgingRelease(result);
+
+	if (status != errSecSuccess || [reference isKindOfClass:[NSData class]] == NO) {
+		LogToConsoleError("No reference for the client certificate: %{public}d", (int)status);
+
+		return nil;
+	}
+
+	return reference;
+}
+
 @end
 
 #ifdef DEBUG

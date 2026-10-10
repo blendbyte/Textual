@@ -55,6 +55,13 @@ typedef NS_ENUM(NSUInteger, TLOKeychainItemKind) {
 + (BOOL)setPassword:(NSString *)password ofKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
 
 + (void)deletePasswordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
+
+/* Client certificates are saved as a persistent reference to the Keychain
+ identity (certificate and private key). Textual 7 saved the certificate's
+ reference instead; both resolve to the identity. NULL if the identity is gone. */
++ (nullable SecIdentityRef)copyClientCertificateIdentityForReference:(NSData *)reference CF_RETURNS_RETAINED;
+
++ (nullable NSData *)referenceForClientCertificateIdentity:(SecIdentityRef)identity;
 @end
 
 #ifdef DEBUG

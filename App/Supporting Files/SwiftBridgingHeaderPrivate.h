@@ -50,4 +50,5 @@
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionErrors.h"
 #import "IRCConnectionTransportPrivate.h"
+#import "TLOKeychainPrivate.h"
 #import "TLOTimer.h"

@@ -127,6 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) TLOTimer *retryTimer;
 @property (nonatomic, strong) TLOTimer *whoTimer;
 @property (nonatomic, assign) BOOL invokingISONCommandForFirstTime;
+@property (nonatomic, assign) BOOL clientCertificateMissingAlertShown;
 @property (nonatomic, assign) BOOL isTerminating; // Is being destroyed
 @property (nonatomic, assign) BOOL inWhoisResponse;
 @property (nonatomic, assign) BOOL inWhowasResponse;

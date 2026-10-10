@@ -46,6 +46,7 @@
 #import "IRCNetworkList.h"
 #import "IRCSASLECDSAPrivate.h"
 #import "IRCServer.h"
+#import "TLOKeychainPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TPCPreferencesLocal.h"
@@ -1688,11 +1689,17 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	/* ====================================== */
 
-	SecKeychainItemRef certificateRef;
+	SecIdentityRef identityRef = [TLOKeychain copyClientCertificateIdentityForReference:certificateDataIn];
 
-	CFDataRef certificateDataInRef = (__bridge CFDataRef)certificateDataIn;
+	if (identityRef == NULL) {
+		return;
+	}
 
-	OSStatus status = SecKeychainItemCopyFromPersistentReference(certificateDataInRef, &certificateRef);
+	SecCertificateRef certificateRef;
+
+	OSStatus status = SecIdentityCopyCertificate(identityRef, &certificateRef);
+
+	CFRelease(identityRef);
 
 	if (status != noErr) {
 		return;
@@ -1702,7 +1709,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	CFStringRef commonNameRef;
 
-	status = SecCertificateCopyCommonName((SecCertificateRef)certificateRef, &commonNameRef);
+	status = SecCertificateCopyCommonName(certificateRef, &commonNameRef);
 
 	if (status != noErr) {
 		CFRelease(certificateRef);
@@ -1710,13 +1717,11 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		return;
 	}
 
-	*commonNameOut = (__bridge NSString *)(commonNameRef);
-
-	CFRelease(commonNameRef);
+	*commonNameOut = (__bridge_transfer NSString *)commonNameRef;
 
 	/* ====================================== */
 
-	CFDataRef certificateDataRef = SecCertificateCopyData((SecCertificateRef)certificateRef);
+	CFDataRef certificateDataRef = SecCertificateCopyData(certificateRef);
 
 	if (certificateDataRef) {
 		NSData *certificateData = (__bridge NSData *)certificateDataRef;
@@ -1742,44 +1747,19 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	/* ====================================== */
 
-	SecCertificateRef certificateRef;
+	NSData *certificateReference = [TLOKeychain referenceForClientCertificateIdentity:identityInRef];
 
-	OSStatus status = SecIdentityCopyCertificate(identityInRef, &certificateRef);
-
-	if (status != noErr) {
-		LogToConsoleError("Operation Failed (2): %{public}i", status);
-
+	if (certificateReference == nil) {
 		return;
 	}
 
-	/* ====================================== */
-
-	CFDataRef certificateDataRef;
-
-	status = SecKeychainItemCreatePersistentReference((SecKeychainItemRef)certificateRef, &certificateDataRef);
-
-	if (status != noErr) {
-		CFRelease(certificateRef);
-
-		LogToConsoleError("Operation Failed (3): %{public}i", status);
-
-		return;
-	}
-
-	/* ====================================== */
-
-	self.config.identityClientSideCertificate = (__bridge NSData *)certificateDataRef;
+	self.config.identityClientSideCertificate = certificateReference;
 
 	if (self.prefersSecuredConnectionCheck.state == NSControlStateValueOff) {
 		self.prefersSecuredConnectionCheck.state = NSControlStateValueOn;
 
 		[self useSSLCheckChanged:nil];
 	}
-
-	/* ====================================== */
-
-	CFRelease(certificateRef);
-	CFRelease(certificateDataRef);
 }
 
 - (void)updateClientCertificatePage
@@ -1799,8 +1779,15 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	BOOL hasNoCertificate = (commonName.length == 0);
 
+	/* Saved, but its identity is no longer in the Keychain: choose it again or remove it */
+	BOOL certificateMissing = (hasNoCertificate && self.config.identityClientSideCertificate != nil);
+
 	if (hasNoCertificate) {
-		self.clientCertificateCommonNameField.stringValue = TXTLS(@"TDCServerPropertiesSheet[6xz-ec]");
+		if (certificateMissing) {
+			self.clientCertificateCommonNameField.stringValue = TXTLS(@"TDCServerPropertiesSheet[c3r-m1]");
+		} else {
+			self.clientCertificateCommonNameField.stringValue = TXTLS(@"TDCServerPropertiesSheet[6xz-ec]");
+		}
 		
 		self.clientCertificateSHA512FingerprintField.stringValue = TXTLS(@"TDCServerPropertiesSheet[6xz-ec]");
 		self.clientCertificateSHA2FingerprintField.stringValue = TXTLS(@"TDCServerPropertiesSheet[6xz-ec]");
@@ -1815,7 +1802,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		self.clientCertificateMD5FingerprintField.stringValue = md5Fingerprint.uppercaseString;
 	}
 
-	self.clientCertificateResetCertificateButton.enabled = (hasNoCertificate == NO);
+	self.clientCertificateResetCertificateButton.enabled = (hasNoCertificate == NO || certificateMissing);
 
 	self.clientCertificateSHA512FingerprintCopyButton.enabled = (hasNoCertificate == NO);
 	self.clientCertificateSHA2FingerprintCopyButton.enabled = (hasNoCertificate == NO);

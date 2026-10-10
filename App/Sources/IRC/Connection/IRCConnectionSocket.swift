@@ -131,42 +131,21 @@ class ConnectionSocket: NSObject
 			return nil
 		}
 
-		/* ====================================== */
-
-		var keychainRef: SecKeychainItem?
-
-		let certificateDataInRef = certificateDataIn as CFData
-
-		var status = SecKeychainItemCopyFromPersistentReference(certificateDataInRef, &keychainRef)
-
-		if (status != noErr) {
-			Logging.defaultSubsystem?.error("Operation Failed (1): \(status, privacy: .public)")
-
+		guard let identityRef = TLOKeychain.copyClientCertificateIdentity(forReference: certificateDataIn) else {
 			return nil
 		}
 
-		/* "A SecKeychainItem object for a certificate that is stored
-		 in a keychain can be safely cast to a SecCertificate for use
-		 with Certificate, Key, and Trust Services." */
-		/* Contrary to the statement above, as stated in documentation,
-		 casting was crashing. This is a workaround until that's fixed. */
-		let certificateRef = unsafeBitCast(keychainRef, to: SecCertificate.self)
+		var certificateRef: SecCertificate?
 
-		/* ====================================== */
+		let status = SecIdentityCopyCertificate(identityRef, &certificateRef)
 
-		var identityRef: SecIdentity?
-
-		status = SecIdentityCreateWithCertificate(nil, certificateRef, &identityRef)
-
-		if (status != noErr) {
+		guard status == noErr, let certificateRef else {
 			Logging.defaultSubsystem?.error("Operation Failed (2): \(status, privacy: .public)")
 
 			return nil
 		}
 
-		/* ====================================== */
-
-		return (identity: identityRef!, certificate: certificateRef)
+		return (identity: identityRef, certificate: certificateRef)
 	}
 }
 

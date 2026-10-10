@@ -51,6 +51,7 @@
 #import "THOPluginProtocol.h"
 #import "TLOFileLoggerPrivate.h"
 #import "TLOInputHistoryPrivate.h"
+#import "TLOKeychainPrivate.h"
 #import "TLOLocalization.h"
 #import "TLONotificationControllerPrivate.h"
 #import "TLOpenLink.h"
@@ -126,6 +127,76 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)connect:(IRCClientConnectMode)connectMode
 {
 	[self connect:connectMode bypassProxy:NO];
+}
+
+/* Textual 7 saved the certificate's reference: the identity's is saved in its
+ place. Nil if the identity is gone; the connection goes ahead without it. */
+- (nullable NSData *)clientCertificateReferenceForConnecting
+{
+	NSData *reference = self.config.identityClientSideCertificate;
+
+	if (reference == nil) {
+		return nil;
+	}
+
+	SecIdentityRef identity = [TLOKeychain copyClientCertificateIdentityForReference:reference];
+
+	if (identity == NULL) {
+		[self printDebugInformation:TXTLS(@"IRC[c3r-c1]")];
+
+		[self askToChooseMissingClientCertificate];
+
+		return nil;
+	}
+
+	NSData *currentReference = [TLOKeychain referenceForClientCertificateIdentity:identity];
+
+	CFRelease(identity);
+
+	if (currentReference == nil || [currentReference isEqualToData:reference]) {
+		return reference;
+	}
+
+	IRCClientConfigMutable *configMutable = [self.config mutableCopy];
+
+	configMutable.identityClientSideCertificate = currentReference;
+
+	self.config = configMutable;
+
+	[worldController() save];
+
+	return currentReference;
+}
+
+- (void)askToChooseMissingClientCertificate
+{
+	/* Once per launch: reconnecting would ask again every time */
+	if (self.clientCertificateMissingAlertShown) {
+		return;
+	}
+
+	self.clientCertificateMissingAlertShown = YES;
+
+	__weak IRCClient *weakSelf = self;
+
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[TDCAlert alertWithMessage:TXTLS(@"IRC[c3r-c3]")
+							 title:TXTLS(@"IRC[c3r-c2]", weakSelf.networkNameAlt)
+					 defaultButton:TXTLS(@"IRC[c3r-c4]")
+				   alternateButton:TXTLS(@"Prompts[qso-2g]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+			IRCClient *client = weakSelf;
+
+			if (buttonClicked != TDCAlertResponseDefault || client == nil) {
+				return;
+			}
+
+			[menuController() showServerPropertiesSheetForClient:client
+												   withSelection:TDCServerPropertiesSheetSelectionClientCertificate
+														 context:nil];
+		}];
+	});
 }
 
 - (void)connect:(IRCClientConnectMode)connectMode bypassProxy:(BOOL)bypassProxy
@@ -274,7 +345,7 @@ NS_ASSUME_NONNULL_BEGIN
 	socketConfig.connectionPrefersSecuredConnection = connectionPrefersSecuredConnection;
 	socketConfig.connectionShouldValidateCertificateChain = self.config.validateServerCertificateChain;
 
-	socketConfig.identityClientSideCertificate = self.config.identityClientSideCertificate;
+	socketConfig.identityClientSideCertificate = [self clientCertificateReferenceForConnecting];
 
 	if (bypassProxy == NO) {
 		socketConfig.proxyType = proxyType;

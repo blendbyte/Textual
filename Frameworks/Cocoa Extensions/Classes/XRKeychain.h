@@ -32,6 +32,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Items live in the data protection keychain when the app's signature allows
+ it (builds with a provisioning profile), else in the file-based keychain.
+ Items found only in the file-based keychain are copied over when read;
+ deleting removes both copies. A missing item counts as deleted. */
 @interface XRKeychain : NSObject
 + (BOOL)deleteKeychainItem:(NSString *)keychainItemName 
 			  withItemKind:(NSString *)keychainItemKind 

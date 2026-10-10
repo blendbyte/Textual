@@ -98,4 +98,29 @@
 	[XRKeychain deleteKeychainItem:@"Textual (NickServ)" withItemKind:@"application password" forUsername:nil serviceName:service];
 }
 
+/* Without an account, deleting matched every item for the service, whatever
+ its account. Deleting what is already gone counts as done. */
+- (void)testDeletingItemWithoutAccountKeepsOtherAccounts
+{
+	NSString *service = [NSString stringWithFormat:@"textual.test.%@", [NSUUID UUID].UUIDString];
+
+	if ([XRKeychain addKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:@"someone" withPassword:@"theirs" serviceName:service] == NO) {
+		XCTSkip(@"No usable Keychain here");
+	}
+
+	XCTAssertTrue([XRKeychain addKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:nil withPassword:@"ours" serviceName:service]);
+
+	XCTAssertEqualObjects([XRKeychain getPasswordFromKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:nil serviceName:service], @"ours");
+
+	XCTAssertTrue([XRKeychain deleteKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:nil serviceName:service]);
+
+	XCTAssertNil([XRKeychain getPasswordFromKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:nil serviceName:service]);
+
+	XCTAssertEqualObjects([XRKeychain getPasswordFromKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:@"someone" serviceName:service], @"theirs");
+
+	XCTAssertTrue([XRKeychain deleteKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:nil serviceName:service]);
+
+	[XRKeychain deleteKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:@"someone" serviceName:service];
+}
+
 @end

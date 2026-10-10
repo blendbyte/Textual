@@ -76,6 +76,7 @@ For example: “Guest1 Guest2 Guest3“";
 
 /* Custom client-side certificate selection */
 "6xz-ec" = "No Certificate Selected";
+"c3r-m1" = "Certificate Not Found in the Keychain";
 
 "6wq-i4" = "Choose An Identity";
 "mi4-fd" = "Select a certificate to send when you connect securely.";
