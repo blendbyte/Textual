@@ -440,8 +440,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.proxyAddressTextField.performValidationWhenEmpty = YES;
 
+	/* Weak: the sheet owns the fields that keep these blocks, so the sheet
+	 (and its client) leaked */
+	__weak typeof(self) weakSelf = self;
+
 	self.proxyAddressTextField.validationBlock = ^NSString *(NSString *currentValue) {
-		NSInteger proxyType = self.proxyTypeButton.selectedTag;
+		NSInteger proxyType = weakSelf.proxyTypeButton.selectedTag;
 
 		if (proxyType == IRCConnectionProxyTypeSocks5 ||
 			proxyType == IRCConnectionProxyTypeHTTP ||
@@ -467,7 +471,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.proxyPortTextField.defaultValue = [NSString stringWithUnsignedInteger:IRCConnectionDefaultProxyPort];
 
 	self.proxyPortTextField.validationBlock = ^NSString *(NSString *currentValue) {
-		NSInteger proxyType = self.proxyTypeButton.selectedTag;
+		NSInteger proxyType = weakSelf.proxyTypeButton.selectedTag;
 
 		if (proxyType == IRCConnectionProxyTypeSocks5 ||
 			proxyType == IRCConnectionProxyTypeHTTP ||
@@ -702,8 +706,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self closeChildSheets];
 
-	[self clearChannelListPredicate];
-
 	[self saveConfig];
 
 	if ([self.delegate respondsToSelector:@selector(serverPropertiesSheet:onOk:)]) {
@@ -866,8 +868,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)underlyingConfigurationChanged:(NSNotification *)notification
 {
-	IRCClient *client = notification.object;
-
 	NSWindow *window = self.sheet.deepestWindow;
 	
 	[TDCAlert alertSheetWithWindow:window
@@ -880,16 +880,14 @@ NS_ASSUME_NONNULL_BEGIN
 					   if (buttonClicked != TDCAlertResponseDefault) {
 						   return;
 					   }
-					   
-					   [self close];
-					   
-					   [client updateStoredConfiguration];
-					   
-					   self.config = [client.config mutableCopy];
-					   
-					   [self loadConfig];
-					   
-					   [self start];
+
+					   /* A new sheet: this one, closed and started again, lost its
+						observers and table data, and loaded every list twice */
+					   id delegate = self.delegate;
+
+					   if ([delegate respondsToSelector:@selector(serverPropertiesSheetWantsReload:)]) {
+						   [delegate serverPropertiesSheetWantsReload:self];
+					   }
 				   }];
 }
 
@@ -1144,7 +1142,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.config.floodControlDelayTimerInterval = self.floodControlDelayTimerSlider.integerValue;
 
 	/* Mutable stores. */
-	self.config.channelList = self.channelListArrayController.arrangedObjects;
+	self.config.channelList = self.allChannelConfigs;
 	self.config.highlightList = self.highlightListArrayController.arrangedObjects;
 	self.config.ignoreList = self.addressBookArrayController.arrangedObjects;
 	self.config.serverList = self.serverListArrayController.arrangedObjects;
@@ -1253,9 +1251,23 @@ NS_ASSUME_NONNULL_BEGIN
 	self.editChannelButton.enabled = (selectedRow >= 0);
 }
 
-- (void)clearChannelListPredicate
+/* The channel table shows the channels of a list that also holds queries
+ (the "type == 0" filter). Rows are mapped to their objects and changes are
+ made to the whole list: row numbers of the shown channels were applied to
+ the whole list, so deleting a channel could delete a query and editing one
+ could replace another. */
+- (NSArray<IRCChannelConfig *> *)allChannelConfigs
 {
-	self.channelListArrayController.filterPredicate = nil;
+	NSArray *content = self.channelListArrayController.content;
+
+	return ((content) ? [content copy] : @[]);
+}
+
+- (void)setAllChannelConfigs:(NSArray<IRCChannelConfig *> *)channelConfigs
+{
+	NSParameterAssert(channelConfigs != nil);
+
+	self.channelListArrayController.content = [channelConfigs mutableCopy];
 }
 
 - (void)setChannelListPredicate
@@ -2085,7 +2097,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 - (void)channelPropertiesSheet:(TDCChannelPropertiesSheet *)sender onOk:(IRCChannelConfig *)config
 {
 	NSUInteger entryIndex =
-	[self.channelList indexOfObjectPassingTest:^BOOL(id object, NSUInteger index, BOOL *stop) {
+	[self.allChannelConfigs indexOfObjectPassingTest:^BOOL(id object, NSUInteger index, BOOL *stop) {
 		if ([[object uniqueIdentifier] isEqualToString:config.uniqueIdentifier]) {
 			return YES;
 		} else {
@@ -2093,15 +2105,15 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		}
 	}];
 
-	[self clearChannelListPredicate];
+	NSMutableArray *channelConfigs = [self.allChannelConfigs mutableCopy];
 
 	if (entryIndex == NSNotFound) {
-		[self.channelListArrayController addObject:config];
+		[channelConfigs addObject:config];
 	} else {
-		[self.channelListArrayController replaceObjectAtArrangedObjectIndex:entryIndex withObject:config];
+		channelConfigs[entryIndex] = config;
 	}
 
-	[self setChannelListPredicate];
+	self.allChannelConfigs = channelConfigs;
 }
 
 - (void)channelPropertiesSheetWillClose:(TDCChannelPropertiesSheet *)sender
@@ -2117,11 +2129,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		return;
 	}
 
-	[self clearChannelListPredicate];
+	IRCChannelConfig *config = self.channelList[selectedRow];
 
-	[self.channelListArrayController removeObjectAtArrangedObjectIndex:selectedRow];
+	NSMutableArray *channelConfigs = [self.allChannelConfigs mutableCopy];
 
-	[self setChannelListPredicate];
+	[channelConfigs removeObjectIdenticalTo:config];
+
+	self.allChannelConfigs = channelConfigs;
 
 	NSUInteger listCount = self.channelList.count;
 
@@ -2366,13 +2380,23 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	if (tableView == self.channelListTable)
 	{
-		IRCChannelConfigMutable *config = [self.channelList[row] mutableCopy];
+		IRCChannelConfig *oldConfig = self.channelList[row];
+
+		IRCChannelConfigMutable *config = [oldConfig mutableCopy];
 
 		if ([columnId isEqualToString:@"join"]) {
 			config.autoJoin = [object boolValue];
 		}
 
-		[self.channelListArrayController replaceObjectAtArrangedObjectIndex:row withObject:[config copy]];
+		NSMutableArray *channelConfigs = [self.allChannelConfigs mutableCopy];
+
+		NSUInteger configIndex = [channelConfigs indexOfObjectIdenticalTo:oldConfig];
+
+		if (configIndex != NSNotFound) {
+			channelConfigs[configIndex] = [config copy];
+
+			self.allChannelConfigs = channelConfigs;
+		}
 	}
 }
 
@@ -2411,13 +2435,27 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	return YES;
 }
 
+/* Rows move within their own table only: a row dragged from one of the
+ three tables was moved by its number in another */
 - (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)dropOperation
 {
+	if (info.draggingSource != tableView) {
+		return NSDragOperationNone;
+	}
+
+	if (dropOperation == NSTableViewDropOn) {
+		[tableView setDropRow:row dropOperation:NSTableViewDropAbove];
+	}
+
 	return NSDragOperationGeneric;
 }
 
 - (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)dropOperation
 {
+	if (info.draggingSource != tableView) {
+		return NO;
+	}
+
 	NSPasteboard *pasteboard = [info draggingPasteboard];
 
 	NSData *draggedData = [pasteboard dataForType:_tableDragToken];
@@ -2426,12 +2464,32 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	NSUInteger draggedRowIndex = draggedRowIndexes.firstIndex;
 
+	NSInteger numberOfRows = tableView.numberOfRows;
+
+	if (draggedRowIndex == NSNotFound || draggedRowIndex >= numberOfRows || row < 0 || row > numberOfRows) {
+		return NO;
+	}
+
 	if (tableView == self.channelListTable) {
-		[self clearChannelListPredicate];
+		NSArray *channelList = self.channelList;
 
-		[self.channelListArrayController moveObjectAtArrangedObjectIndex:draggedRowIndex toIndex:row];
+		IRCChannelConfig *movedConfig = channelList[draggedRowIndex];
 
-		[self setChannelListPredicate];
+		IRCChannelConfig *configAfter = ((row < channelList.count) ? channelList[row] : nil);
+
+		if (configAfter == movedConfig) {
+			return NO;
+		}
+
+		NSMutableArray *channelConfigs = [self.allChannelConfigs mutableCopy];
+
+		[channelConfigs removeObjectIdenticalTo:movedConfig];
+
+		NSUInteger insertionIndex = ((configAfter) ? [channelConfigs indexOfObjectIdenticalTo:configAfter] : channelConfigs.count);
+
+		[channelConfigs insertObject:movedConfig atIndex:insertionIndex];
+
+		self.allChannelConfigs = channelConfigs;
 	} else if (tableView == self.highlightsTable) {
 		[self.highlightListArrayController moveObjectAtArrangedObjectIndex:draggedRowIndex toIndex:row];
 	} else if (tableView == self.addressBookTable) {

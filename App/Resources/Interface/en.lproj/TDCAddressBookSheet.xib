@@ -13,6 +13,7 @@
                 <outlet property="ignoreEntrySaveButton" destination="485" id="5P8-TR-FGV"/>
                 <outlet property="ignoreEntryView" destination="5" id="nse-Nb-KaW"/>
                 <outlet property="ignoreFileTransferRequestsCheck" destination="FDs-Jz-PlJ" id="xHx-kw-Fld"/>
+                <outlet property="ignoreInlineMediaCheck" destination="wGM-8y-f67" id="XQg-IH-6tX"/>
                 <outlet property="ignoreGeneralEventMessagesCheck" destination="ywn-9P-Z6q" id="D3U-RV-9bp"/>
                 <outlet property="ignoreNoticeMessagesCheck" destination="w5b-xP-tx9" id="5tq-MJ-NU6"/>
                 <outlet property="ignorePrivateMessageHighlightsCheck" destination="sz9-Gj-RT4" id="gzf-1U-oMj"/>
@@ -289,6 +290,7 @@ DQ
                             <gridRow id="GPA-DF-G0l"/>
                             <gridRow id="5wc-DR-pnU"/>
                             <gridRow id="uuG-cG-S4B"/>
+                            <gridRow id="mfv-Bp-Sy7"/>
                         </rows>
                         <columns>
                             <gridColumn id="RE2-kr-VyN"/>
@@ -367,6 +369,16 @@ DQ
                                     </buttonCell>
                                 </button>
                             </gridCell>
+                            <gridCell row="mfv-Bp-Sy7" column="RE2-kr-VyN" id="NHg-Vj-xdM">
+                                <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wGM-8y-f67">
+                                    <rect key="frame" x="-2" y="-1" width="104" height="18"/>
+                                    <buttonCell key="cell" type="check" title="Inline Media" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mZE-d4-SFv">
+                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                </button>
+                            </gridCell>
+                            <gridCell row="mfv-Bp-Sy7" column="MRh-9y-CGo" id="5Od-dF-SIp"/>
                         </gridCells>
                     </gridView>
                     <gridView xPlacement="leading" yPlacement="fill" rowAlignment="firstBaseline" rowSpacing="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="tB2-1G-iBQ">

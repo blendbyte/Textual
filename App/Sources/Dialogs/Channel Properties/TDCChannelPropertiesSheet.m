@@ -178,18 +178,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (instancetype)initWithConfig:(nullable IRCChannelConfig *)config onClientWithId:(nullable NSString *)clientId
 {
-	if ((self = [self initWithWindow:nil])) {
+	/* Through the designated initializer: calling our -initWithWindow: and then
+	 loading again loaded the nib and the config twice */
+	if ((self = [self initWithConfig:config onClient:nil])) {
 		self.clientId = clientId;
-
-		if (config) {
-			self.config = [config mutableCopy];
-		} else {
-			self.config = [IRCChannelConfigMutable new];
-		}
-
-		[self prepareInitialState];
-
-		[self loadConfig];
 
 		return self;
 	}
@@ -243,11 +235,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self.notificationsController.notifications = notifications;
 
 	[self.notificationsController attachToView:self.contentViewNotificationsHost];
-}
-
-- (void)reloadNotificationsController
-{
-	[self.notificationsController reload];
 }
 
 - (void)updateNavigationEnabledState
@@ -377,8 +364,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (void)underlyingConfigurationChanged:(NSNotification *)notification
 {
-	IRCChannel *channel = notification.object;
-
 	NSWindow *window = self.sheet;
 	
 	[TDCAlert alertSheetWithWindow:window
@@ -391,16 +376,13 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 					   if (buttonClicked != TDCAlertResponseDefault) {
 						   return;
 					   }
-					   
-					   [self close];
-					   
-					   self.config = [channel.config copy];
-					   
-					   [self loadConfig];
-					   
-					   [self reloadNotificationsController];
-					   
-					   [self start];
+
+					   /* A new sheet, as for Server Properties */
+					   id delegate = self.delegate;
+
+					   if ([delegate respondsToSelector:@selector(channelPropertiesSheetWantsReload:)]) {
+						   [delegate channelPropertiesSheetWantsReload:self];
+					   }
 				   }];
 }
 

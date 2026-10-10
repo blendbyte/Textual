@@ -149,6 +149,20 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self.addressBookMatchCache findAddressBookEntryForHostmask:hostmask];
 }
 
+- (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname
+{
+	NSParameterAssert(nickname != nil);
+
+	/* Matches on the nickname alone when the rest is unknown */
+	NSString *hostmask = [self findUser:nickname].hostmask;
+
+	if (hostmask == nil) {
+		hostmask = [NSString stringWithFormat:@"%@!*@*", nickname];
+	}
+
+	return [self findAddressBookEntryForHostmask:hostmask].ignoreInlineMedia;
+}
+
 - (void)clearAddressBookCache
 {
 	[self.addressBookMatchCache clearCachedMatches];

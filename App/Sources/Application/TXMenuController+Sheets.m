@@ -102,6 +102,13 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	[self showChannelPropertiesSheetForChannel:c];
+}
+
+- (void)showChannelPropertiesSheetForChannel:(IRCChannel *)c
+{
+	NSParameterAssert(c != nil);
+
 	[windowController() popMainWindowSheetIfExists];
 
 	TDCChannelPropertiesSheet *sheet =
@@ -142,6 +149,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)channelPropertiesSheetWillClose:(TDCChannelPropertiesSheet *)sender
 {
 	[windowController() removeWindowFromWindowList:sender];
+}
+
+- (void)channelPropertiesSheetWantsReload:(TDCChannelPropertiesSheet *)sender
+{
+	IRCChannel *c = sender.channel;
+
+	[sender cancel:self];
+
+	if (c == nil) {
+		return;
+	}
+
+	/* Once the old sheet is gone */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self showChannelPropertiesSheetForChannel:c];
+	});
 }
 
 #pragma mark -
@@ -348,6 +371,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)serverPropertiesSheetWillClose:(TDCServerPropertiesSheet *)sender
 {
 	[windowController() removeWindowFromWindowList:sender];
+}
+
+- (void)serverPropertiesSheetWantsReload:(TDCServerPropertiesSheet *)sender
+{
+	IRCClient *u = sender.client;
+
+	[sender cancel:self];
+
+	if (u == nil) {
+		return;
+	}
+
+	/* Once the old sheet is gone */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self showServerPropertiesSheetForClient:u withSelection:TDCServerPropertiesSheetSelectionDefault context:nil];
+	});
 }
 
 #pragma mark -

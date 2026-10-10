@@ -115,6 +115,10 @@ enum {
 
 - (void)modifyUser:(IRCUser *)user withBlock:(void (NS_NOESCAPE ^)(IRCUserMutable *userMutable))block;
 - (void)modifyUserUserWithNickname:(NSString *)nickname withBlock:(void (NS_NOESCAPE ^)(IRCUserMutable *userMutable))block;
+
+/* An address book ignore entry for this person turns off previews of their
+ links. Main thread (the match cache isn't thread safe). */
+- (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname;
 @end
 
 @interface IRCClient (SendingPrivate)

@@ -179,13 +179,26 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
+/* Only rows of this table, between rows, within its bounds */
 - (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id<NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)dropOperation
 {
+	if (info.draggingSource != tableView) {
+		return NSDragOperationNone;
+	}
+
+	if (dropOperation == NSTableViewDropOn) {
+		[tableView setDropRow:row dropOperation:NSTableViewDropAbove];
+	}
+
 	return NSDragOperationGeneric;
 }
 
 - (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)dropOperation
 {
+	if (info.draggingSource != tableView) {
+		return NO;
+	}
+
 	NSPasteboard *pasteboard = [info draggingPasteboard];
 
 	NSData *draggedData = [pasteboard dataForType:_endpointEntryTableDragToken];
@@ -193,6 +206,12 @@ NS_ASSUME_NONNULL_BEGIN
 	NSIndexSet *draggedRowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:draggedData];
 
 	NSUInteger draggedRowIndex = draggedRowIndexes.firstIndex;
+
+	NSInteger numberOfRows = tableView.numberOfRows;
+
+	if (draggedRowIndex == NSNotFound || draggedRowIndex >= numberOfRows || row < 0 || row > numberOfRows) {
+		return NO;
+	}
 
 	[self.entryTableController moveObjectAtArrangedObjectIndex:draggedRowIndex toIndex:row];
 

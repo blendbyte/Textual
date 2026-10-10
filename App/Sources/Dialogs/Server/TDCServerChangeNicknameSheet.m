@@ -79,8 +79,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.tnewNicknameTextField.textDidChangeCallback = self;
 
+	/* Weak: the sheet owns the field that keeps this block, so the sheet
+	 (and its client) leaked */
+	__weak typeof(self) weakSelf = self;
+
 	self.tnewNicknameTextField.validationBlock = ^NSString *(NSString *currentValue) {
-		if ([currentValue isHostmaskNicknameOn:self.client] == NO) {
+		IRCClient *client = weakSelf.client;
+
+		if (client == nil || [currentValue isHostmaskNicknameOn:client] == NO) {
 			return TXTLS(@"CommonErrors[och-j5]");
 		}
 

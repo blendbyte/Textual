@@ -1460,6 +1460,15 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		[self notifyEarlyOfLogLine:logLine completionBlock:completionBlock];
 	}
 
+	/* Decided here: the address book is read on the main thread only */
+	BOOL ignoreInlineMedia = NO;
+
+	NSString *senderNickname = logLine.nickname;
+
+	if (senderNickname.length > 0 && logLine.memberType != TVCLogLineMemberTypeLocalUser && [NSThread isMainThread]) {
+		ignoreInlineMedia = [self.associatedClient ignoresInlineMediaFromNickname:senderNickname];
+	}
+
 	TVCLogControllerPrintingBlock printBlock = ^(id operation) {
 		NSDictionary<NSString *, id> *resultInfo = nil;
 
@@ -1507,7 +1516,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			/* Begin processing inline media */
 			/* We go through the inline media list here and pass to the loader now so
 			 that we know the links have hit the WebView before we even try loading them. */
-			if (processInlineMedia) {
+			if (processInlineMedia && ignoreInlineMedia == NO) {
 				NSArray<AHHyperlinkScannerResult *> *listOfLinks = resultInfo[TVCLogRendererResultsListOfLinksInBodyAttribute];
 
 				[self processInlineMedia:listOfLinks atLineNumber:lineNumber];

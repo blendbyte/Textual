@@ -77,6 +77,12 @@ typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
 
 - (void)serverPropertiesSheet:(TDCServerPropertiesSheet *)sender onOk:(IRCClientConfig *)config;
 - (void)serverPropertiesSheetWillClose:(TDCServerPropertiesSheet *)sender;
+
+@optional
+
+/* The server's configuration changed while the sheet was open and the user
+ wants to see it: close this sheet and open a new one */
+- (void)serverPropertiesSheetWantsReload:(TDCServerPropertiesSheet *)sender;
 @end
 
 NS_ASSUME_NONNULL_END

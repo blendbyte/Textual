@@ -64,6 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)channelPropertiesSheet:(TDCChannelPropertiesSheet *)sender onOk:(IRCChannelConfig *)config;
 - (void)channelPropertiesSheetWillClose:(TDCChannelPropertiesSheet *)sender;
+
+@optional
+
+/* The channel's configuration changed while the sheet was open: close this
+ sheet and open a new one */
+- (void)channelPropertiesSheetWantsReload:(TDCChannelPropertiesSheet *)sender;
 @end
 
 NS_ASSUME_NONNULL_END
