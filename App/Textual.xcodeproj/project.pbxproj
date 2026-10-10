@@ -35,7 +35,8 @@
 		4C06E1DC20EC4AC40055D09A /* TDCNicknameColorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16120EC4AC40055D09A /* TDCNicknameColorSheet.xib */; };
 		4C06E1E020EC4AC40055D09A /* TDCWelcomeSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16320EC4AC40055D09A /* TDCWelcomeSheet.xib */; };
 		4C06E1E420EC4AC40055D09A /* TDCProgressIndicatorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */; };
-		4C06E1E820EC4AC50055D09A /* TDCAddressBookSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16720EC4AC40055D09A /* TDCAddressBookSheet.xib */; };
+		4C06E1E820EC4AC50055D09A /* TDCAddressBookIgnoreSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16720EC4AC40055D09A /* TDCAddressBookIgnoreSheet.xib */; };
+		4CA69EE02C7B64540EAE26A3 /* TDCAddressBookUserTrackingSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C48CF0A57DBF68C07985190 /* TDCAddressBookUserTrackingSheet.xib */; };
 		4C06E1EC20EC4AC50055D09A /* TVCAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16920EC4AC40055D09A /* TVCAlert.xib */; };
 		4C06E1F020EC4AC50055D09A /* TDCLicenseUpgradeDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16B20EC4AC40055D09A /* TDCLicenseUpgradeDialog.xib */; };
 		4C06E1F420EC4AC50055D09A /* TDCServerChangeNicknameSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16D20EC4AC40055D09A /* TDCServerChangeNicknameSheet.xib */; };
@@ -794,7 +795,8 @@
 		4C06E16220EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCNicknameColorSheet.xib; sourceTree = "<group>"; };
 		4C06E16420EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCWelcomeSheet.xib; sourceTree = "<group>"; };
 		4C06E16620EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCProgressIndicatorSheet.xib; sourceTree = "<group>"; };
-		4C06E16820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookSheet.xib; sourceTree = "<group>"; };
+		4C06E16820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookIgnoreSheet.xib; sourceTree = "<group>"; };
+		4CD0CEB5A1E3D5FE3046AEAB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookUserTrackingSheet.xib; sourceTree = "<group>"; };
 		4C06E16A20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TVCAlert.xib; sourceTree = "<group>"; };
 		4C06E16C20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCLicenseUpgradeDialog.xib; sourceTree = "<group>"; };
 		4C06E16E20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCServerChangeNicknameSheet.xib; sourceTree = "<group>"; };
@@ -2500,7 +2502,8 @@
 			children = (
 				4C203165AD462EEB83EE1AA8 /* Appearance */,
 				4C06E17120EC4AC40055D09A /* TDCAboutDialog.xib */,
-				4C06E16720EC4AC40055D09A /* TDCAddressBookSheet.xib */,
+				4C06E16720EC4AC40055D09A /* TDCAddressBookIgnoreSheet.xib */,
+				4C48CF0A57DBF68C07985190 /* TDCAddressBookUserTrackingSheet.xib */,
 				4C06E14920EC4AC40055D09A /* TDCChannelBanListSheet.xib */,
 				4C06E15F20EC4AC40055D09A /* TDCChannelInviteSheet.xib */,
 				4C06E14120EC4AC40055D09A /* TDCChannelModifyModesSheet.xib */,
@@ -3213,7 +3216,8 @@
 				4C06E1B020EC4AC40055D09A /* TDCChannelPropertiesSheet.xib in Resources */,
 				4C06E1F820EC4AC50055D09A /* TDCChannelModifyTopicSheet.xib in Resources */,
 				4C06E1F420EC4AC50055D09A /* TDCServerChangeNicknameSheet.xib in Resources */,
-				4C06E1E820EC4AC50055D09A /* TDCAddressBookSheet.xib in Resources */,
+				4C06E1E820EC4AC50055D09A /* TDCAddressBookIgnoreSheet.xib in Resources */,
+				4CA69EE02C7B64540EAE26A3 /* TDCAddressBookUserTrackingSheet.xib in Resources */,
 				4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */,
 				4C06E31E20EC4FF00055D09A /* TVCMainWindow.strings in Resources */,
 				4C06E33E20EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings in Resources */,
@@ -3796,12 +3800,20 @@
 			name = TDCProgressIndicatorSheet.xib;
 			sourceTree = "<group>";
 		};
-		4C06E16720EC4AC40055D09A /* TDCAddressBookSheet.xib */ = {
+		4C06E16720EC4AC40055D09A /* TDCAddressBookIgnoreSheet.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				4C06E16820EC4AC40055D09A /* en */,
 			);
-			name = TDCAddressBookSheet.xib;
+			name = TDCAddressBookIgnoreSheet.xib;
+			sourceTree = "<group>";
+		};
+		4C48CF0A57DBF68C07985190 /* TDCAddressBookUserTrackingSheet.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4CD0CEB5A1E3D5FE3046AEAB /* en */,
+			);
+			name = TDCAddressBookUserTrackingSheet.xib;
 			sourceTree = "<group>";
 		};
 		4C06E16920EC4AC40055D09A /* TVCAlert.xib */ = {

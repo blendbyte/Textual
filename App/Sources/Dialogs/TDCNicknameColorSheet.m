@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCNicknameColorSheet ()
 @property (nonatomic, copy) NSString *nickname;
 @property (nonatomic, weak) IBOutlet NSColorWell *nicknameColorWell;
+@property (nonatomic, strong, nullable) NSColor *placeholderColor; // shown while there is no override
 
 - (IBAction)resetNicknameColor:(id)sender;
 @end
@@ -73,10 +74,24 @@ NS_ASSUME_NONNULL_BEGIN
 	[IRCUserNicknameColorStyleGenerator nicknameColorStyleOverrideForKey:self.nickname];
 
 	if (nicknameColor == nil) {
-		nicknameColor = [NSColor whiteColor];
+		[self showPlaceholderColor];
+
+		return;
 	}
 
 	self.nicknameColorWell.color = nicknameColor;
+}
+
+/* "No override" is this exact object in the well, not white: white could
+ not be chosen, and a white that came back from the colour panel in another
+ colour space was saved as an override */
+- (void)showPlaceholderColor
+{
+	NSColor *placeholderColor = [NSColor whiteColor];
+
+	self.placeholderColor = placeholderColor;
+
+	self.nicknameColorWell.color = placeholderColor;
 }
 
 - (void)start
@@ -88,9 +103,11 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSColor *nicknameColor = self.nicknameColorWell.color;
 
-	if ([nicknameColor isEqual:[NSColor whiteColor]]) {
-		 nicknameColor = nil;
+	if (nicknameColor == self.placeholderColor) {
+		nicknameColor = nil;
 	}
+
+	[self releaseColorPanel];
 
 	[IRCUserNicknameColorStyleGenerator setNicknameColorStyleOverride:nicknameColor forKey:self.nickname];
 
@@ -103,11 +120,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)resetNicknameColor:(id)sender
 {
+	[self releaseColorPanel];
+
+	[self showPlaceholderColor];
+}
+
+/* The shared colour panel stayed open and tied to the well after the sheet closed */
+- (void)releaseColorPanel
+{
+	[self.nicknameColorWell deactivate];
+
 	if ([NSColorPanel sharedColorPanelExists]) {
 		[[NSColorPanel sharedColorPanel] close];
 	}
-
-	self.nicknameColorWell.color = [NSColor whiteColor];
 }
 
 #pragma mark -
@@ -115,6 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)windowWillClose:(NSNotification *)note
 {
+	[self releaseColorPanel];
+
 	if ([self.delegate respondsToSelector:@selector(nicknameColorSheetWillClose:)]) {
 		[self.delegate nicknameColorSheetWillClose:self];
 	}

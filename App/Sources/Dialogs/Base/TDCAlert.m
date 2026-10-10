@@ -134,6 +134,7 @@ NSString * const TDCAlertSuppressionPrefix = @"Text Input Prompt Suppression -> 
 				accessoryView:(nullable NSView *)accessoryView
 		  suppressionResponse:(nullable BOOL *)suppressionResponse
 {
+	/* The accessory view and suppression response are passed on (they were dropped) */
 	TDCAlertResponse response =
 	[self modalAlertWithMessage:bodyText
 						  title:titleText
@@ -142,8 +143,8 @@ NSString * const TDCAlertSuppressionPrefix = @"Text Input Prompt Suppression -> 
 					otherButton:nil
 				 suppressionKey:suppressKey
 				suppressionText:suppressText
-				  accessoryView:nil
-			suppressionResponse:nil];
+				  accessoryView:accessoryView
+			suppressionResponse:suppressionResponse];
 
 	return (response == TDCAlertResponseDefault);
 }
@@ -429,12 +430,14 @@ NSString * const TDCAlertSuppressionPrefix = @"Text Input Prompt Suppression -> 
 	if ([NSThread isMainThread] == NO) {
 		__block TVCAlert *alert = nil;
 
+		/* With the third button: the overload without it dropped it */
 		XRPerformBlockSynchronouslyOnQueue(dispatch_get_main_queue(), ^{
 			alert =
 			[self alertWithMessage:bodyText
 							 title:titleText
 					 defaultButton:buttonDefault
 				   alternateButton:buttonAlternate
+					   otherButton:buttonOther
 					suppressionKey:suppressKey
 				   suppressionText:suppressText
 					 accessoryView:accessoryView

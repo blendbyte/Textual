@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *channelName;
 @property (nonatomic, copy) NSNumber *channelMemberCount;
 @property (nonatomic, copy) NSString *channelTopicUnformatted;
-@property (nonatomic, copy) NSAttributedString *channelTopicFormatted;
+@property (readonly, copy) NSAttributedString *channelTopicFormatted; // made on first use
 @end
 
 @interface TDCServerChannelListDialog () <NSControlTextEditingDelegate>
@@ -121,6 +121,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clear
 {
+	/* The queue too: rows waiting for the timer, or hidden by the search,
+	 came back after an update */
+	[self cancelPerformRequestsWithSelector:@selector(queuedWritesTimer)];
+
+	self.isWaitingForWrites = NO;
+
+	@synchronized(self.queuedWrites) {
+		[self.queuedWrites removeAllObjects];
+	}
+
 	self.channelListController.content = nil;
 
 	[self updateDialogTitle];
@@ -135,19 +145,9 @@ NS_ASSUME_NONNULL_BEGIN
 	newEntry.channelName = channel;
 	newEntry.channelMemberCount = @(count);
 
-	if (topic == nil) {
-		newEntry.channelTopicUnformatted = @"";
-
-		newEntry.channelTopicFormatted = [NSAttributedString attributedString];
-	} else {
-		newEntry.channelTopicUnformatted = topic;
-
-		NSAttributedString *topicFormatted =
-		[topic attributedStringWithIRCFormatting:[NSTableView preferredGlobalTableViewFont]
-							  preferredFontColor:[NSColor controlTextColor]];
-
-		newEntry.channelTopicFormatted = topicFormatted;
-	}
+	/* Formatted when shown (TDCServerChannelListDialogEntry): a big network
+	 lists tens of thousands of channels */
+	newEntry.channelTopicUnformatted = (topic ?: @"");
 
 	@synchronized(self.queuedWrites) {
 		[self.queuedWrites addObject:newEntry];
@@ -194,6 +194,9 @@ NS_ASSUME_NONNULL_BEGIN
 			[self.queuedWrites removeAllObjects];
 		}
 	}
+
+	/* Sorted and filtered once per batch (automatic rearranging is off) */
+	[self.channelListController rearrangeObjects];
 
 	[self updateDialogTitle];
 }
@@ -295,6 +298,28 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 
 @implementation TDCServerChannelListDialogEntry
+{
+	NSAttributedString *_channelTopicFormatted;
+}
+
+- (NSAttributedString *)channelTopicFormatted
+{
+	if (self->_channelTopicFormatted == nil) {
+		NSString *topic = self.channelTopicUnformatted;
+
+		NSAttributedString *topicFormatted = nil;
+
+		if (topic.length > 0) {
+			topicFormatted =
+			[topic attributedStringWithIRCFormatting:[NSTableView preferredGlobalTableViewFont]
+								  preferredFontColor:[NSColor controlTextColor]];
+		}
+
+		self->_channelTopicFormatted = (topicFormatted ?: [NSAttributedString attributedString]);
+	}
+
+	return self->_channelTopicFormatted;
+}
 @end
 
 NS_ASSUME_NONNULL_END

@@ -89,6 +89,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ok:(id)sender
 {
+	/* An address or port still being typed is committed first */
+	if ([self.sheet makeFirstResponder:nil] == NO) {
+		return;
+	}
+
 	NSArray *serverListIn = self.entryTableController.arrangedObjects;
 
 	NSMutableArray<IRCServer *> *serverListOut =

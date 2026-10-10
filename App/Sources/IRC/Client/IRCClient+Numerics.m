@@ -1238,7 +1238,17 @@ NS_ASSUME_NONNULL_BEGIN
 				entryCreationDate = [NSDate dateWithTimeIntervalSince1970:[m paramAt:(4 + paramsOffset)].doubleValue];
 			}
 
-			TDCChannelBanListSheet *listSheet = [windowController() windowFromWindowList:@"TDCChannelBanListSheet"];
+			TDCChannelBanListSheetEntryType entryType = TDCChannelBanListSheetEntryTypeBan;
+
+			if (numeric == RPL_INVITELIST) {
+				entryType = TDCChannelBanListSheetEntryTypeInviteException;
+			} else if (numeric == RPL_EXCEPTLIST) {
+				entryType = TDCChannelBanListSheetEntryTypeBanException;
+			} else if (numeric == RPL_QUIETLIST) {
+				entryType = TDCChannelBanListSheetEntryTypeQuiet;
+			}
+
+			TDCChannelBanListSheet *listSheet = [self banListSheetForChannelNamed:channelName entryType:entryType];
 
 			if (listSheet) {
 				if (listSheet.contentAlreadyReceived) {
@@ -1296,7 +1306,17 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_ENDOFEXCEPTLIST:
 		case RPL_ENDOFQUIETLIST:
 		{
-			TDCChannelBanListSheet *listSheet = [windowController() windowFromWindowList:@"TDCChannelBanListSheet"];
+			TDCChannelBanListSheetEntryType entryType = TDCChannelBanListSheetEntryTypeBan;
+
+			if (numeric == RPL_ENDOFINVITELIST) {
+				entryType = TDCChannelBanListSheetEntryTypeInviteException;
+			} else if (numeric == RPL_ENDOFEXCEPTLIST) {
+				entryType = TDCChannelBanListSheetEntryTypeBanException;
+			} else if (numeric == RPL_ENDOFQUIETLIST) {
+				entryType = TDCChannelBanListSheetEntryTypeQuiet;
+			}
+
+			TDCChannelBanListSheet *listSheet = [self banListSheetForChannelNamed:[m paramAt:1] entryType:entryType];
 
 			if (listSheet) {
 				listSheet.contentAlreadyReceived = YES;
@@ -1317,6 +1337,27 @@ NS_ASSUME_NONNULL_BEGIN
 	} // switch()
 
 	return YES;
+}
+
+/* The open ban list sheet for this server, channel and list, if there is one:
+ replies for any channel or list went into whatever ban list sheet was open */
+- (nullable TDCChannelBanListSheet *)banListSheetForChannelNamed:(NSString *)channelName entryType:(TDCChannelBanListSheetEntryType)entryType
+{
+	NSParameterAssert(channelName != nil);
+
+	TDCChannelBanListSheet *listSheet = [windowController() windowFromWindowList:@"TDCChannelBanListSheet"];
+
+	if (listSheet == nil || listSheet.client != self || listSheet.entryType != entryType) {
+		return nil;
+	}
+
+	IRCChannel *channel = [self findChannel:channelName];
+
+	if (channel == nil || listSheet.channel != channel) {
+		return nil;
+	}
+
+	return listSheet;
 }
 
 /* User tracking: ISON, WATCH, MONITOR and caller ID (+g). Returns NO for

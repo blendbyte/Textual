@@ -75,9 +75,17 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
+/* On the window it is attached to: a sheet begun on another window
+ (-startSheetWithWindow:, or -window changed meanwhile) never ended */
 - (void)endSheet
 {
-	[self.window endSheet:self.sheet];
+	NSWindow *parentWindow = self.sheet.sheetParent;
+
+	if (parentWindow == nil) {
+		parentWindow = self.window;
+	}
+
+	[parentWindow endSheet:self.sheet];
 }
 
 - (void)sheetDidEndWithReturnCode:(NSInteger)returnCode

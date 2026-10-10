@@ -179,6 +179,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL primaryServerIsPredefined;
 @property (nonatomic, copy, nullable) NSString *lastServerAddressValue;
 @property (nonatomic, copy, nullable) IRCServer *previousPrimaryServer;
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSString *> *channelSecretKeys; // channel ID → key, read once
 
 - (IBAction)proxyTypeChanged:(id)sender;
 - (IBAction)toggleAdvancedEncodings:(id)sender;
@@ -2107,6 +2108,23 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	NSMutableArray *channelConfigs = [self.allChannelConfigs mutableCopy];
 
+	/* A new channel with the name of one in the list made two entries for it */
+	if (entryIndex == NSNotFound) {
+		NSUInteger duplicateIndex =
+		[channelConfigs indexOfObjectPassingTest:^BOOL(IRCChannelConfig *object, NSUInteger index, BOOL *stop) {
+			return ([object.channelName caseInsensitiveCompare:config.channelName] == NSOrderedSame);
+		}];
+
+		if (duplicateIndex != NSNotFound) {
+			NSBeep();
+
+			return;
+		}
+	}
+
+	/* Its key may have changed */
+	[self.channelSecretKeys removeObjectForKey:config.uniqueIdentifier];
+
 	if (entryIndex == NSNotFound) {
 		[channelConfigs addObject:config];
 	} else {
@@ -2285,6 +2303,29 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}
 }
 
+/* The key is read from the Keychain once per channel: it was read for every
+ row each time the table drew */
+- (NSString *)secretKeyForChannelConfig:(IRCChannelConfig *)config
+{
+	NSParameterAssert(config != nil);
+
+	if (self.channelSecretKeys == nil) {
+		self.channelSecretKeys = [NSMutableDictionary dictionary];
+	}
+
+	NSString *channelId = config.uniqueIdentifier;
+
+	NSString *secretKey = self.channelSecretKeys[channelId];
+
+	if (secretKey == nil) {
+		secretKey = (config.secretKey ?: @"");
+
+		self.channelSecretKeys[channelId] = secretKey;
+	}
+
+	return secretKey;
+}
+
 #pragma mark -
 #pragma mark NSTableView Delegate
 
@@ -2302,13 +2343,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		}
 		else if ([columnId isEqualToString:@"pass"])
 		{
-			NSString *secretKeyValue = config.secretKey;
-
-			if (secretKeyValue) {
-				return secretKeyValue;
-			}
-
-			return @"";
+			return [self secretKeyForChannelConfig:config];
 		}
 		else if ([columnId isEqualToString:@"join"])
 		{

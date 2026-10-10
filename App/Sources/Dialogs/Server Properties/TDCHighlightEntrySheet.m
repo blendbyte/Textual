@@ -121,13 +121,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSUInteger channelCount = 0;
 
+	/* Items carry their channel: two channels can have one name */
 	for (IRCChannelConfig *channel in self.channelList) {
-		NSString *channelName = channel.channelName;
+		NSMenuItem *channelItem = [[NSMenuItem alloc] initWithTitle:channel.channelName action:NULL keyEquivalent:@""];
 
-		[self.matchChannelPopupButton addItemWithTitle:channelName];
+		channelItem.representedObject = channel.uniqueIdentifier;
+
+		[self.matchChannelPopupButton.menu addItem:channelItem];
 
 		if ([channel.uniqueIdentifier isEqualToString:matchChannelId]) {
-			[self.matchChannelPopupButton selectItemWithTitle:channelName];
+			[self.matchChannelPopupButton selectItem:channelItem];
 		}
 
 		channelCount += 1;
@@ -152,19 +155,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.config.matchKeyword = self.matchKeywordTextField.value;
 
-	NSInteger selectedChannelIndex = self.matchChannelPopupButton.indexOfSelectedItem;
-
-	if (selectedChannelIndex > 0) {
-		NSString *selectedChannelName = self.matchChannelPopupButton.titleOfSelectedItem;
-
-		for (IRCChannelConfig *c in self.channelList) {
-			if ([c.channelName isEqualToString:selectedChannelName]) {
-				self.config.matchChannelId = c.uniqueIdentifier;
-
-				break;
-			}
-		}
-	}
+	/* "All Channels" has none: choosing it again left the old channel set */
+	self.config.matchChannelId = self.matchChannelPopupButton.selectedItem.representedObject;
 
 	[self.delegate highlightEntrySheet:self onOk:[self.config copy]];
 

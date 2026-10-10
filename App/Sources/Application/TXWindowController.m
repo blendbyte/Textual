@@ -35,6 +35,7 @@
  *
  *********************************************************************** */
 
+#import "TDCSheetBase.h"
 #import "TXMasterController.h"
 #import "TVCMainWindow.h"
 #import "TXWindowControllerPrivate.h"
@@ -208,12 +209,28 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO;
 }
 
+/* Through the sheet's controller, which ends the sheet, removes its observers,
+ closes its child sheets and tells its delegate: closing the window skipped all of that */
 - (void)popMainWindowSheetIfExists
 {
 	NSWindow *attachedSheet = mainWindow().attachedSheet;
 
 	if (attachedSheet == nil) {
 		return;
+	}
+
+	NSArray *windowObjects = nil;
+
+	@synchronized(self.windowObjects) {
+		windowObjects = self.windowObjects.allValues;
+	}
+
+	for (id windowObject in windowObjects) {
+		if ([windowObject isKindOfClass:[TDCSheetBase class]] && ((TDCSheetBase *)windowObject).sheet == attachedSheet) {
+			[(TDCSheetBase *)windowObject cancel:self];
+
+			return;
+		}
 	}
 
 	[attachedSheet close];

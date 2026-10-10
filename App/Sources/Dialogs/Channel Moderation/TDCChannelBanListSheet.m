@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSTextField *headerTitleTextField;
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *entryTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *entryTableController;
+@property (nonatomic, strong, nullable) NSMutableArray<TDCChannelBanListSheetEntry *> *pendingEntries;
 
 - (IBAction)onUpdate:(id)sender;
 - (IBAction)onRemoveEntry:(id)sender;
@@ -125,6 +126,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clear
 {
+	[self cancelPerformRequestsWithSelector:@selector(addPendingEntries)];
+
+	self.pendingEntries = nil;
+
 	self.entryTableController.content = nil;
 }
 
@@ -142,9 +147,30 @@ NS_ASSUME_NONNULL_BEGIN
 	newEntry.entryAuthor = entryAuthor;
 	newEntry.entryCreationDate = entryCreationDate;
 
+	/* Added together once the burst of replies is processed: one at a time,
+	 each re-sorted the whole list */
+	if (self.pendingEntries == nil) {
+		self.pendingEntries = [NSMutableArray array];
+	}
+
+	[self.pendingEntries addObject:newEntry];
+
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(addPendingEntries) withObject:nil afterDelay:0.0];
+}
+
+- (void)addPendingEntries
+{
+	NSArray *pendingEntries = self.pendingEntries;
+
+	if (pendingEntries.count == 0) {
+		return;
+	}
+
+	self.pendingEntries = nil;
+
 	[self willChangeValueForKey:@"entryCount"];
 
-	[self.entryTableController addObject:newEntry];
+	[self.entryTableController addObjects:pendingEntries];
 
 	[self didChangeValueForKey:@"entryCount"];
 }

@@ -113,7 +113,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareInitialState
 {
-	[RZMainBundle() loadNibNamed:@"TDCAddressBookSheet" owner:self topLevelObjects:nil];
+	/* One nib per entry type: both windows were loaded every time */
+	if (self.entryType == IRCAddressBookEntryTypeIgnore) {
+		[RZMainBundle() loadNibNamed:@"TDCAddressBookIgnoreSheet" owner:self topLevelObjects:nil];
+	} else {
+		[RZMainBundle() loadNibNamed:@"TDCAddressBookUserTrackingSheet" owner:self topLevelObjects:nil];
+	}
 
 	self.ignoreEntryHostmaskTextField.stringValueIsInvalidOnEmpty = YES;
 	self.ignoreEntryHostmaskTextField.stringValueUsesOnlyFirstToken = YES;

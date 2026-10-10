@@ -198,6 +198,12 @@ NS_ASSUME_NONNULL_BEGIN
 	objectValue.serverPassword = serverPassword;
 }
 
+/* Still observing its server when the table drops it */
+- (void)dealloc
+{
+	[self stopObservingObjectValue];
+}
+
 - (void)setObjectValue:(nullable id)objectValue
 {
 	[self stopObservingObjectValue];
@@ -240,12 +246,16 @@ NS_ASSUME_NONNULL_BEGIN
 	self.observersRegistered = NO;
 }
 
+/* Each cell observes its own column's key: only the port was passed on, so
+ the other columns didn't show changes made to the server */
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString *, id> *)change context:(nullable void *)context
 {
-	if ([keyPath isEqualToString:@"serverPort"]) {
-		[self willChangeValueForKey:@"serverPort"];
-		[self didChangeValueForKey:@"serverPort"];
+	if (keyPath == nil || [keyPath isEqualToString:self.identifier] == NO) {
+		return;
 	}
+
+	[self willChangeValueForKey:keyPath];
+	[self didChangeValueForKey:keyPath];
 }
 
 @end

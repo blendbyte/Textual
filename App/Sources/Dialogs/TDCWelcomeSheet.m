@@ -155,6 +155,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ok:(id)sender
 {
+	/* A channel name still being typed in the table is committed first */
+	if ([self.sheet makeFirstResponder:nil] == NO) {
+		return;
+	}
+
 	if ([self okOrError] == NO) {
 		return;
 	}
@@ -262,13 +267,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.channelTable reloadData];
 
+	/* The row after the deleted one, or the new last row: deleting the last
+	 row selected past the end, and with none left, row -1 */
 	NSInteger channelListCount = self.channelList.count;
 
-	if (selectedRow > channelListCount) {
+	if (selectedRow >= channelListCount) {
 		selectedRow = (channelListCount - 1);
 	}
 
-	if (channelListCount >= 0) {
+	if (selectedRow >= 0) {
 		[self.channelTable selectItemAtIndex:selectedRow];
 	}
 

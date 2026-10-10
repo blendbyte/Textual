@@ -108,11 +108,20 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(newEntry != nil);
 
+	/* One batch: one at a time re-sorted the list for every entry */
 	if ([newEntry isKindOfClass:[NSArray class]])
 	{
+		NSMutableArray<IRCHighlightLogEntry *> *entries = [NSMutableArray arrayWithCapacity:[newEntry count]];
+
 		for (id entry in newEntry) {
-			[self addEntry:entry];
+			if ([entry isKindOfClass:[IRCHighlightLogEntry class]] == NO) {
+				continue;
+			}
+
+			[entries addObject:[entry copy]];
 		}
+
+		[self.highlightListController addObjects:entries];
 	}
 	else if ([newEntry isKindOfClass:[IRCHighlightLogEntry class]])
 	{

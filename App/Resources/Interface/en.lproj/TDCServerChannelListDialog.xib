@@ -33,7 +33,7 @@
                             <rect key="frame" x="1" y="1" width="598" height="218"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" autosaveColumns="NO" typeSelect="NO" usesAutomaticRowHeights="YES" headerView="XYU-kz-qVy" viewBased="YES" id="fir-Vj-Dlr" customClass="TVCBasicTableView">
+                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="17" headerView="XYU-kz-qVy" viewBased="YES" id="fir-Vj-Dlr" customClass="TVCBasicTableView">
                                     <rect key="frame" x="0.0" y="0.0" width="598" height="190"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -241,7 +241,7 @@ Gw
                         <constraints>
                             <constraint firstAttribute="width" constant="200" id="fg4-E2-QNl"/>
                         </constraints>
-                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" bezelStyle="round" sendsSearchStringImmediately="YES" maximumRecents="0" recentsAutosaveName="" id="113">
+                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" bezelStyle="round" maximumRecents="0" recentsAutosaveName="" id="113">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -282,7 +282,7 @@ Gw
             </connections>
             <point key="canvasLocation" x="496" y="415"/>
         </window>
-        <arrayController objectClassName="TDCServerChannelListDialogEntry" selectsInsertedObjects="NO" avoidsEmptySelection="NO" clearsFilterPredicateOnInsertion="NO" automaticallyRearrangesObjects="YES" id="gJL-Lo-AKT">
+        <arrayController objectClassName="TDCServerChannelListDialogEntry" selectsInsertedObjects="NO" avoidsEmptySelection="NO" clearsFilterPredicateOnInsertion="NO" id="gJL-Lo-AKT">
             <declaredKeys>
                 <string>channelName</string>
                 <string>channelMemberCount</string>

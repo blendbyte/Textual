@@ -208,8 +208,47 @@ NS_ASSUME_NONNULL_BEGIN
 				   completionBlock:nil];
 }
 
+/* A key with a space or comma, or none, and a limit that isn't a positive
+ number, made a MODE line the server rejects or misreads */
+- (BOOL)okOrError
+{
+	if ([self.sheet makeFirstResponder:nil] == NO) {
+		return NO;
+	}
+
+	if (self.kCheck.state == NSControlStateValueOn) {
+		NSString *key = self.kText.stringValue;
+
+		if (key.length == 0 || [key rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@" ,"]].location != NSNotFound) {
+			NSBeep();
+
+			[self.sheet makeFirstResponder:self.kText];
+
+			return NO;
+		}
+	}
+
+	if (self.lCheck.state == NSControlStateValueOn) {
+		NSString *limit = self.lText.stringValue;
+
+		if (limit.length == 0 || limit.isNumericOnly == NO || limit.integerValue <= 0) {
+			NSBeep();
+
+			[self.sheet makeFirstResponder:self.lText];
+
+			return NO;
+		}
+	}
+
+	return YES;
+}
+
 - (void)ok:(id)sender
 {
+	if ([self okOrError] == NO) {
+		return;
+	}
+
 	[self.modes changeMode:@"i"
 				 modeIsSet:(self.iCheck.state == NSControlStateValueOn)];
 
