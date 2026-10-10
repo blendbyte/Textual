@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class TLOInputHistory;
 @class TVCMainWindowChannelView;
 @class TVCMainWindowTitlebarAccessoryView, TVCMainWindowTitlebarAccessoryViewController;
-@class TVCMainWindowTitlebarAccessoryViewLockButton;
+@class TVCMainWindowTitlebarAccessoryViewLockButton, TVCMainWindowTitlebarTitleField;
 @class TVCTextViewIRCFormattingMenu;
 @class TXMenuControllerMainWindowProxy;
 

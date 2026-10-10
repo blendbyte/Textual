@@ -43,6 +43,17 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TVCMainWindowTitlebarAccessoryViewController : NSTitlebarAccessoryViewController
 @end
 
+/* The window's title, centred in the title bar over its whole width (AppKit
+ moves its own title to the left when the title bar has accessory views) */
+@interface TVCMainWindowTitlebarTitleField : NSTextField
+- (instancetype)initInTitlebarOfWindow:(NSWindow *)window;
+
+/* Keeps the title clear of the window buttons and the lock button */
+@property (nonatomic, assign) CGFloat sideMargin;
+
+- (void)updateTextColor;
+@end
+
 @interface TVCMainWindowTitlebarAccessoryViewLockButton : NSButton
 - (void)disableDrawingCustomBackgroundColor;
 - (void)enableDrawingCustomBackgroundColor;

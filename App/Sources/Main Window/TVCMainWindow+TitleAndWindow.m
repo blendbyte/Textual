@@ -173,30 +173,54 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The button only shows a lock icon */
 	self.titlebarAccessoryViewLockButton.accessibilityLabel = TXTLS(@"Accessibility[l0k-c1]");
 
-	if (u.isSecured) {
-		[self.titlebarAccessoryViewLockButton setIconAsLocked];
+	/* The space for the button stays in the title bar, sized with its
+	 icon, so the title doesn't move when it appears */
+	[self.titlebarAccessoryViewLockButton setIconAsLocked];
 
-		self.titlebarAccessoryView.hidden = NO;
-	} else {
-		self.titlebarAccessoryView.hidden = YES;
-	}
+	[self.titlebarAccessoryViewLockButton sizeToFit];
 
-	if (self.titlebarAccessoryView.hidden == NO) {
-		[self.titlebarAccessoryViewLockButton sizeToFit];
-	}
+	self.titlebarAccessoryViewLockButton.hidden = (u.isSecured == NO);
+
+	[self updateTitlebarTitleMargin];
+}
+
+- (void)updateTitlebarTitleMargin
+{
+	/* The same on both sides keeps the title centred */
+	CGFloat windowButtonsWidth = NSMaxX([self standardWindowButton:NSWindowZoomButton].frame);
+
+	CGFloat lockButtonWidth = NSWidth(self.titlebarAccessoryView.frame);
+
+	self.titlebarTitleField.sideMargin = (MAX(windowButtonsWidth, lockButtonWidth) + 8.0);
 }
 
 - (void)addAccessoryViewsToTitlebar
 {
-	NSThemeFrame *themeFrame = (NSThemeFrame *)self.contentView.superview;
+	/* AppKit's own title moves to the left next to accessory views. It stays
+	 the window's title for the Window menu, Mission Control and VoiceOver. */
+	self.titleVisibility = NSWindowTitleHidden;
 
-	themeFrame.usesCustomTitlebarTitlePositioning = YES;
+	self.titlebarTitleField = [[TVCMainWindowTitlebarTitleField alloc] initInTitlebarOfWindow:self];
+
+	self.titlebarTitleField.stringValue = self.title;
+
+	/* Hidden in the XIB; only the lock button in it hides */
+	self.titlebarAccessoryView.hidden = NO;
 
 	NSTitlebarAccessoryViewController *accessoryView = self.titlebarAccessoryViewController;
 
 	accessoryView.layoutAttribute = NSLayoutAttributeRight;
 
 	[self addTitlebarAccessoryViewController:accessoryView];
+
+	[self updateTitlebarTitleMargin];
+}
+
+- (void)setTitle:(NSString *)title
+{
+	[super setTitle:title];
+
+	self.titlebarTitleField.stringValue = title;
 }
 
 /* Servers pass themselves for nickname, away and connection changes, which

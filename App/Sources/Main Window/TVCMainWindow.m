@@ -435,9 +435,21 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 	}
 }
 
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+	[self.titlebarTitleField updateTextColor];
+}
+
+- (void)windowDidResignMain:(NSNotification *)notification
+{
+	[self.titlebarTitleField updateTextColor];
+}
+
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
 	self.lastKeyWindowStateChange = [NSDate timeIntervalSince1970];
+
+	[self.titlebarTitleField updateTextColor];
 
 	[self resetSelectedItemState];
 
@@ -453,6 +465,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 - (void)windowDidResignKey:(NSNotification *)notification
 {
 	self.lastKeyWindowStateChange = [NSDate timeIntervalSince1970];
+
+	[self.titlebarTitleField updateTextColor];
 
 	[self reloadSubviewDrawings];
 }

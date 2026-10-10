@@ -35,8 +35,6 @@
 
 #import <CocoaExtensions/StaticDefinitions.h>
 
-#import <CocoaExtensions/ApplePrivateMac.h>
-
 #import <CocoaExtensions/XRLogging.h>
 
 #import <CocoaExtensions/XRAccessibility.h>
@@ -86,7 +84,6 @@
 #import <CocoaExtensions/NSStringTokenizer.h>
 #import <CocoaExtensions/NSTabViewHelper.h>
 #import <CocoaExtensions/NSTextFieldHelper.h>
-#import <CocoaExtensions/NSThemeFrameHelper.h>
 #import <CocoaExtensions/NSURLHelper.h>
 #import <CocoaExtensions/NSUserDefaultsHelper.h>
 #import <CocoaExtensions/NSValueHelper.h>

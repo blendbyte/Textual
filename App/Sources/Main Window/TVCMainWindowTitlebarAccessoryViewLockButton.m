@@ -143,7 +143,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)drawInterior
 {
-	if (self.mainWindow.isActiveForDrawing == NO) {
+	if (self.mainWindowRef.isActiveForDrawing == NO) {
 		return;
 	}
 
