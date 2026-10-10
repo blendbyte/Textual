@@ -109,27 +109,30 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* The channel the command was entered in: the selection may have moved on to
+ another network by the time this runs */
 - (void)userInputCommandInvokedOnClient:(IRCClient *)client
+							  inChannel:(nullable IRCChannel *)channel
 						  commandString:(NSString *)commandString
 						  messageString:(NSString *)messageString
 {
+	if (channel == nil) {
+		return;
+	}
+
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self _userInputCommandInvokedOnClient:client
+									 inChannel:channel
 								 commandString:commandString
 								 messageString:messageString];
 	});
 }
 
 - (void)_userInputCommandInvokedOnClient:(IRCClient *)client
+							   inChannel:(IRCChannel *)channel
 						   commandString:(NSString *)commandString
 						   messageString:(NSString *)messageString
 {
-	IRCChannel *channel = mainWindow().selectedChannel;
-
-	if (channel == nil) {
-		return;
-	}
-
 	BOOL quietMessage = [messageString isEqualIgnoringCase:@"quiet"];
 
 	NSString *messageOut = nil;
@@ -145,11 +148,6 @@ NS_ASSUME_NONNULL_BEGIN
 			[self sendMessage:memoryMessage onClient:client toChannel:channel];
 		}
 
-		NSString *webKitMemoryUse = [TPI_SP_CompiledOutput webKitFrameworkMemoryUsage];
-
-		if (webKitMemoryUse) {
-			[self printDebugInformation:webKitMemoryUse onClient:client inChannel:channel];
-		}
 	} else if ([commandString isEqualToString:@"UPTIME"]) {
 		messageOut = [TPI_SP_CompiledOutput applicationAndSystemUptime];
 	} else if ([commandString isEqualToString:@"NETSTATS"]) {

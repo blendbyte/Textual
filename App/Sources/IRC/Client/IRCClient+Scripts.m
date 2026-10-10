@@ -384,11 +384,11 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)processBundlesUserMessage:(NSString *)message command:(NSString *)command
+- (void)processBundlesUserMessage:(NSString *)message command:(NSString *)command inChannel:(nullable IRCChannel *)channel
 {
 	NSParameterAssert(message != nil);
 
-	[THOPluginDispatcher userInputCommandInvokedOnClient:self commandString:command messageString:message];
+	[THOPluginDispatcher userInputCommandInvokedOnClient:self inChannel:channel commandString:command messageString:message];
 }
 
 - (void)processBundlesServerMessage:(IRCMessage *)message

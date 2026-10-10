@@ -292,7 +292,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	TPI_ChatFilter *filter = self.filterArrayController.arrangedObjects[selectedRow];
 
-	TPI_ChatFilterMutable *filterNew = [filter mutableCopy];
+	/* A new identifier: the duplicate is another filter */
+	TPI_ChatFilterMutable *filterNew = [filter uniqueCopyMutable];
 
 	filterNew.filterTitle = [filterNew.filterTitle stringByAppendingString:@" (Duplicate)"];
 
@@ -356,7 +357,9 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
-		[self editFilter:filter];
+		/* A new identifier: the same file imported twice made two filters
+		 that shared one */
+		[self editFilter:[filter uniqueCopy]];
 	}];
 }
 

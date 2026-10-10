@@ -228,9 +228,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config->_defaults = self->_defaults;
 
-	config->_cachedIsCommandEnabledResponses = self->_cachedIsCommandEnabledResponses;
+	/* Not the cache: the copy is edited (events, numerics), and a shared
+	 cache kept answering for the old ones until relaunch */
+	config = [config initWithDictionary:self.dictionaryValueForCopy];
 
-	return [config initWithDictionary:self.dictionaryValueForCopy];
+	/* A duplicate is a new filter: with the original's identifier both shared
+	 their flood control state and one replaced the other when saved */
+	if (uniquing) {
+		config->_uniqueIdentifier = [NSString stringWithUUID];
+	}
+
+	return config;
 }
 
 - (BOOL)isCommandEnabled:(NSString *)command

@@ -278,6 +278,23 @@ extern NSString * const THOPluginProtocolCompatibilityMinimumVersion;
 - (void)userInputCommandInvokedOnClient:(IRCClient *)client commandString:(NSString *)commandString messageString:(NSString *)messageString;
 
 /**
+ * @brief Method invoked when a subscribed user input command requires processing,
+ *  with the channel or query it was entered in.
+ *
+ * @discussion Called instead of
+ *  -userInputCommandInvokedOnClient:commandString:messageString: when a plugin
+ *  implements it. The selected channel may have changed by the time the plugin
+ *  runs, so reply to `channel` rather than the selection.
+ *
+ * @param client The client responsible for the event
+ * @param channel The channel or query the command was entered in; nil for the
+ *  server console
+ * @param commandString The name of the command
+ * @param messageString Data that follows `commandString`
+ */
+- (void)userInputCommandInvokedOnClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel commandString:(NSString *)commandString messageString:(NSString *)messageString;
+
+/**
  * @brief Defines a list of commands that the plugin will support as server input.
  *
  * @return An `NSArray` containing a lowercase list of commands that the plugin

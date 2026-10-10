@@ -2360,7 +2360,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else if (pluginFound && scriptFound == NO)
 	{
-		[self processBundlesUserMessage:stringIn.string command:lowercaseCommand];
+		[self processBundlesUserMessage:stringIn.string command:lowercaseCommand inChannel:targetChannel];
 
 		return;
 	}

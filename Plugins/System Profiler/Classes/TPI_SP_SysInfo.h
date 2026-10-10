@@ -50,7 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)systemInformation;
 + (NSString *)systemMemoryInformation;
 + (NSString *)systemNetworkInformation;
-+ (nullable NSString *)webKitFrameworkMemoryUsage;
 @end
 
 NS_ASSUME_NONNULL_END

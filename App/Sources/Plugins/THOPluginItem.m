@@ -131,7 +131,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Process user input commands */
 	if ([primaryClass respondsToSelector:@selector(subscribedUserInputCommands)] &&
-		[primaryClass respondsToSelector:@selector(userInputCommandInvokedOnClient:commandString:messageString:)])
+		([primaryClass respondsToSelector:@selector(userInputCommandInvokedOnClient:commandString:messageString:)] ||
+		 [primaryClass respondsToSelector:@selector(userInputCommandInvokedOnClient:inChannel:commandString:messageString:)]))
 	{
 		id subscribedCommands = primaryClass.subscribedUserInputCommands;
 

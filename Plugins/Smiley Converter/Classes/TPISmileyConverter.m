@@ -40,8 +40,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TPISmileyConverter ()
-@property (nonatomic, copy) NSDictionary<NSString *, NSString *> *conversionTable;
-@property (nonatomic, copy) NSArray<NSString *> *sortedSmileyList;
+/* Lower-cased smiley -> emoji. Replaced as a whole (atomic): lines are
+ rendered on another queue while preferences change the table. */
+@property (atomic, copy, nullable) NSDictionary<NSString *, NSString *> *conversionTable;
 @property (nonatomic, strong) IBOutlet NSView *preferencesPane;
 
 - (IBAction)preferenceChanged:(id)sender;
@@ -98,17 +99,23 @@ NS_ASSUME_NONNULL_BEGIN
 		[conversionTable addEntriesFromDictionary:tableData2];
 	}
 
-	/* Save table contents */
-	self.conversionTable = conversionTable;
+	/* Matched without case */
+	NSMutableDictionary<NSString *, NSString *> *lowercaseTable = [NSMutableDictionary dictionaryWithCapacity:conversionTable.count];
 
-	self.sortedSmileyList = conversionTable.sortedDictionaryKeysReversed;
+	[conversionTable enumerateKeysAndObjectsUsingBlock:^(NSString *smiley, NSString *emoji, BOOL *stop) {
+		NSString *key = smiley.lowercaseString;
+
+		if (lowercaseTable[key] == nil) {
+			lowercaseTable[key] = emoji;
+		}
+	}];
+
+	self.conversionTable = lowercaseTable;
 }
 
 - (void)destroyConversionTable
 {
 	self.conversionTable = nil;
-
-	self.sortedSmileyList = nil;
 }
 
 - (void)preferenceChanged:(id)sender
@@ -148,68 +155,39 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Convert API
 
+/* A smiley is converted when it is a whole word between spaces: one lookup
+ per word (the message was searched once per smiley, up to 950 times) */
 - (NSString *)convertStringToEmoji:(NSString *)string
 {
-	NSMutableString *finalString = [string mutableCopy];
+	NSDictionary<NSString *, NSString *> *conversionTable = self.conversionTable;
 
-	for (NSString *smiley in self.sortedSmileyList) {
-		[self stringWithReplacedSmiley:smiley inString:finalString];
+	if (conversionTable.count == 0 || string.length == 0) {
+		return string;
 	}
 
-	return [finalString copy];
-}
+	NSArray<NSString *> *words = [string componentsSeparatedByString:@" "];
 
-/* The replacement call uses a lot of work done by the actual Textual rendering engine. */
-- (void)stringWithReplacedSmiley:(NSString *)smiley inString:(NSMutableString *)inString
-{
-	NSUInteger currentPosition = 0;
+	NSMutableArray<NSString *> *convertedWords = nil;
 
-	while (currentPosition < inString.length) {
-		NSRange range = [inString rangeOfString:smiley
-										options:NSCaseInsensitiveSearch
-										  range:NSMakeRange(currentPosition, (inString.length - currentPosition))];
+	for (NSUInteger index = 0; index < words.count; index++) {
+		NSString *emoji = conversionTable[words[index].lowercaseString];
 
-		if (range.location == NSNotFound) {
-			break;
+		if (emoji == nil) {
+			continue;
 		}
 
-		BOOL enabled = YES;
-
-		NSInteger leftLocation = (range.location - 1);
-
-		if (leftLocation >= 0 && leftLocation < inString.length) {
-			UniChar c = [inString characterAtIndex:leftLocation];
-
-			if (c != ' ') {
-				enabled = NO;
-
-				goto next_pass;
-			}
+		if (convertedWords == nil) {
+			convertedWords = [words mutableCopy];
 		}
 
-		NSInteger rightLocation = NSMaxRange(range);
-
-		if (rightLocation < inString.length) {
-			UniChar c = [inString characterAtIndex:rightLocation];
-
-			if (c != ' ') {
-				enabled = NO;
-
-				goto next_pass;
-			}
-		}
-
-next_pass:
-		if (enabled) {
-			NSString *emoji = self.conversionTable[smiley];
-
-			[inString replaceCharactersInRange:range withString:emoji];
-
-			currentPosition = (range.location + emoji.length + 1);
-		} else {
-			currentPosition = (NSMaxRange(range) + 1);
-		}
+		convertedWords[index] = emoji;
 	}
+
+	if (convertedWords == nil) {
+		return string;
+	}
+
+	return [convertedWords componentsJoinedByString:@" "];
 }
 
 @end

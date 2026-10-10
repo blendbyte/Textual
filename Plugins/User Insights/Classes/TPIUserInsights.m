@@ -44,29 +44,30 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark User Input
 
+/* The channel the command was entered in (the selection may have moved on) */
 - (void)userInputCommandInvokedOnClient:(IRCClient *)client
+							  inChannel:(nullable IRCChannel *)channel
 						  commandString:(NSString *)commandString
 						  messageString:(NSString *)messageString
 {
+	/* Every command needs a channel or query; there is none in a server console */
+	if (channel == nil) {
+		return;
+	}
+
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[self _userInputCommandInvokedOnClient:client 
+		[self _userInputCommandInvokedOnClient:client
+									 inChannel:channel
 								 commandString:commandString
 								 messageString:messageString];
 	});
 }
 
 - (void)_userInputCommandInvokedOnClient:(IRCClient *)client
+							   inChannel:(IRCChannel *)channel
 						   commandString:(NSString *)commandString
 						   messageString:(NSString *)messageString
 {
-	IRCChannel *channel = mainWindow().selectedChannel;
-
-	/* Every command needs a channel or query of the client it was
-	 invoked on; there is none in a server console. */
-	if (channel == nil || channel.associatedClient != client) {
-		return;
-	}
-
 	/* We can brag in private messages so add above if statement */
 	if ([commandString isEqualToString:@"BRAG"]) {
 		[self bragInChannel:channel onClient:client];
@@ -225,7 +226,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(channel != nil);
 	NSParameterAssert(client != nil);
 
-	NSMutableDictionary<NSString *, NSArray *> *members = [NSMutableDictionary dictionary];
+	/* Grown in place: a new array per clone made big channels quadratic */
+	NSMutableDictionary<NSString *, NSMutableArray *> *members = [NSMutableDictionary dictionary];
 
 	/* Populate our list by matching an array of users to that of the address. */
 	for (IRCChannelUser *member in channel.memberList) {
@@ -237,14 +239,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSString *nickname = member.user.nickname;
 
-		NSArray *clones = members[address];
+		NSMutableArray *clones = members[address];
 
 		if (clones) {
-			clones = [clones arrayByAddingObject:nickname];
-
-			members[address] = clones;
+			[clones addObject:nickname];
 		} else {
-			members[address] = @[nickname];
+			members[address] = [NSMutableArray arrayWithObject:nickname];
 		}
 	}
 
@@ -322,7 +322,8 @@ NS_ASSUME_NONNULL_BEGIN
 			operCount++;
 		}
 
-		NSMutableArray<NSString *> *trackedUsers = [NSMutableArray new];
+		/* A set: an array was searched for every member of every channel */
+		NSMutableSet<NSString *> *trackedUsers = [NSMutableSet new];
 
 		for (IRCChannel *ch in cl.channelList) {
 			if (ch.isActive == NO || ch.isChannel == NO) {

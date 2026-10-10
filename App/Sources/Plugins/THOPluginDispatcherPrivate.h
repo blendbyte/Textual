@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable IRCMessage *)interceptServerInput:(IRCMessage *)inputObject for:(IRCClient *)client;
 + (nullable id)interceptUserInput:(id)inputObject command:(IRCRemoteCommand)commandString;
 + (NSString *)willRenderMessage:(NSString *)newMessage forViewController:(TVCLogController *)viewController lineType:(TVCLogLineType)lineType memberType:(TVCLogLineMemberType)memberType;
-+ (void)userInputCommandInvokedOnClient:(IRCClient *)client commandString:(NSString *)commandString messageString:(NSString *)messageString;
++ (void)userInputCommandInvokedOnClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel commandString:(NSString *)commandString messageString:(NSString *)messageString;
 + (void)didReceiveJavaScriptPayload:(THOPluginWebViewJavaScriptPayloadConcreteObject *)payloadObject fromViewController:(TVCLogController *)viewController;
 + (void)didReceiveServerInput:(IRCMessage *)inputObject onClient:(IRCClient *)client;
 + (void)enqueueDidPostNewMessage:(THOPluginDidPostNewMessageConcreteObject *)messageObject;

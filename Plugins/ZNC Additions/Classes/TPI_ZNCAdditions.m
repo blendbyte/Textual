@@ -57,10 +57,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *message = inputObject.messageSequence;
 
-	if ([client nickname:sender isZNCUser:@"status"] && [message hasPrefix:@"Disconnected from IRC"]) {
+	if ([client nickname:sender isZNCUser:@"status"] && [self isDisconnectMessage:message]) {
 		/* We listen for ZNC disconnects so that we can terminate channels when we
-		 disconnect from the server ZNC was connected to. ZNC does not localize 
-		 itself so detecting these disconnects is not very hard... */
+		 disconnect from the server ZNC was connected to. */
 
 		XRPerformBlockSynchronouslyOnMainQueue(^{
 			[self handleIRCSideDisconnect:client];
@@ -68,18 +67,66 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* ZNC translates its messages (the LANGUAGE setting, ZNC 1.7 and later):
+ "Disconnected from IRC. Reconnecting..." and "Disconnected from IRC (error).
+ Reconnecting..." in every translation ZNC ships (src/po, October 2026) */
+- (BOOL)isDisconnectMessage:(NSString *)message
+{
+	static NSArray<NSString *> *prefixes = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		prefixes = @[
+			@"Disconnected from IRC",			// English
+			@"Изключихте се от IRC",			// Bulgarian
+			@"IRC-Verbindung getrennt",			// German
+			@"Desconectado del IRC",			// Spanish
+			@"Déconnecté d'IRC",				// French
+			@"Déconnecté de IRC",
+			@"Terputus dari IRC",				// Indonesian
+			@"Disconnesso da IRC",				// Italian
+			@"Verbinding met IRC verbroken",	// Dutch
+			@"Rozłączono z IRC",				// Polish
+			@"Rołączono z IRC",					// (as spelt in ZNC's Polish file)
+			@"Desconectado do IRC",				// Portuguese (Brazil)
+			@"Desconectado. Reconectando",
+			@"Desligado do IRC",				// Portuguese (Portugal)
+			@"Deconectat de la IRC",			// Romanian
+			@"Отключён от IRC",					// Russian
+			@"IRC'den bağlantı kesildi"			// Turkish
+		];
+	});
+
+	for (NSString *prefix in prefixes) {
+		if ([message hasPrefix:prefix]) {
+			return YES;
+		}
+	}
+
+	/* Turkish puts the error inside: "IRC (error)'den bağlantı kesildi" */
+	if ([message hasPrefix:@"IRC ("] && [message contains:@"'den bağlantı kesildi"]) {
+		return YES;
+	}
+
+	return NO;
+}
+
 - (void)userInputCommandInvokedOnClient:(IRCClient *)client
+							  inChannel:(nullable IRCChannel *)channel
 						  commandString:(NSString *)commandString
 						  messageString:(NSString *)messageString
 {
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self _userInputCommandInvokedOnClient:client
+									 inChannel:channel
 								 commandString:commandString
 								 messageString:messageString];
 	});
 }
 
 - (void)_userInputCommandInvokedOnClient:(IRCClient *)client
+							   inChannel:(nullable IRCChannel *)channel
 						   commandString:(NSString *)commandString
 						   messageString:(NSString *)messageString
 {
@@ -165,7 +212,9 @@ NS_ASSUME_NONNULL_BEGIN
 		if ([client stringIsChannelName:messageString]) {
 			matchedChannel = [client findChannel:messageString];
 		} else {
-			matchedChannel = mainWindow().selectedChannel;
+			/* The channel it was entered in (the selection could be on
+			 another network by now) */
+			matchedChannel = channel;
 		}
 
 		if (matchedChannel == nil) {

@@ -313,7 +313,7 @@ NS_ASSUME_NONNULL_BEGIN
 		printAsCommand:commandToSend];
 	}
 
-	[self processBundlesUserMessage:string.string command:commandToSend];
+	[self processBundlesUserMessage:string.string command:commandToSend inChannel:channel];
 }
 
 /* Sends one line of text to a channel or user, split into as many messages

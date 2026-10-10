@@ -652,6 +652,27 @@ async def scenario_fin(client):
 	result(True, "sent 5 lines and an ERROR, then closed; check #fin shows all of them and the server shows as disconnected")
 
 
+async def scenario_znc_disconnect(client):
+	"""Looks like ZNC (its CAP replies come from irc.znc.in), lets the client
+	join #znc, then *status says the IRC side disconnected, in German (ZNC's
+	LANGUAGE setting): ZNC Additions must mark #znc as no longer joined. Join
+	#znc within 6 seconds."""
+	if not await client.register_with_capabilities("znc.in/self-message", server_name="irc.znc.in"):
+		return
+
+	await client.collect(6)
+
+	result(len(client.sent(lambda line: line.upper().startswith("JOIN #ZNC"))) >= 1, "client joined #znc")
+
+	await client.send(f":*status!znc@znc.in PRIVMSG {client.nickname} :IRC-Verbindung getrennt. Verbinde erneut...")
+	await client.collect(3)
+
+	print("-- now check in Textual: #znc is shown as not joined")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_pong_priority(client):
 	"""After registering, send 30 lines at once, e.g. Development/dev input
 	--channel '#flood' "$(seq -f 'line %g' 30)". When the third PRIVMSG arrives,
@@ -1359,6 +1380,7 @@ SCENARIOS = {
 	"dcc-reverse-send": scenario_dcc_reverse_send,
 	"fin": scenario_fin,
 	"pong-priority": scenario_pong_priority,
+	"znc-disconnect": scenario_znc_disconnect,
 	"silent": scenario_silent,
 	"cap-ls": scenario_cap_ls,
 	"protocol-fixes": scenario_protocol_fixes,
@@ -1378,7 +1400,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

@@ -345,7 +345,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface IRCClient (ScriptsInternal)
-- (void)processBundlesUserMessage:(NSString *)message command:(NSString *)command;
+- (void)processBundlesUserMessage:(NSString *)message command:(NSString *)command inChannel:(nullable IRCChannel *)channel;
 - (BOOL)postReceivedCommand:(NSString *)command withText:(nullable NSString *)text destinedFor:(nullable IRCChannel *)textDestination referenceMessage:(IRCMessage *)referenceMessage;
 - (BOOL)postReceivedMessage:(IRCMessage *)referenceMessage;
 - (BOOL)postReceivedMessage:(IRCMessage *)referenceMessage withText:(nullable NSString *)text destinedFor:(nullable IRCChannel *)textDestination;

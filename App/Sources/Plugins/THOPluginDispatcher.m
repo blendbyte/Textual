@@ -224,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return returnValue;
 }
 
-+ (void)userInputCommandInvokedOnClient:(IRCClient *)client commandString:(NSString *)commandString messageString:(NSString *)messageString
++ (void)userInputCommandInvokedOnClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel commandString:(NSString *)commandString messageString:(NSString *)messageString
 {
 	NSParameterAssert(client != nil);
 	NSParameterAssert(commandString != nil);
@@ -245,8 +245,14 @@ NS_ASSUME_NONNULL_BEGIN
 				continue;
 			}
 
+			id primaryClass = plugin.primaryClass;
+
 			[plugin performCall:^{
-				[plugin.primaryClass userInputCommandInvokedOnClient:client commandString:uppercaseCommand messageString:messageString];
+				if ([primaryClass respondsToSelector:@selector(userInputCommandInvokedOnClient:inChannel:commandString:messageString:)]) {
+					[primaryClass userInputCommandInvokedOnClient:client inChannel:channel commandString:uppercaseCommand messageString:messageString];
+				} else {
+					[primaryClass userInputCommandInvokedOnClient:client commandString:uppercaseCommand messageString:messageString];
+				}
 			}];
 		}
 	});

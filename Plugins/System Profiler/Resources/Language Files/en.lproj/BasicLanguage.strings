@@ -62,9 +62,6 @@
 
 /* /memory/ command. */
 "scn-br" = "Memory use of Textual: %1$@ • Visible lines: %2$@";
-"ioy-qc" = "\002Top Process (WebKit):\002 Process #%1$i, which is assigned to %2$@, is using %3$@ of memory";
-"a00-8n" = "\002Top Process (WebKit):\002 Process #%1$i, which is assigned to %2$@; is using %3$@ of memory";
-"a5u-m1" = "\002All Processes (WebKit):\002 Process count: %1$lu • Memory use: %2$@";
 
 /* /diskspace/ command. */
 "n6i-xd" = "\002Mounted Drives:\002 %@";
