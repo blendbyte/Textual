@@ -43,17 +43,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TXMenuControllerMainWindowProxy
 
-- (void)openStandaloneStoreWebpage:(id)sender
+- (void)openStandaloneStoreWebpage:(nullable id)sender
 {
 	[menuController() openStandaloneStoreWebpage:sender];
 }
 
-- (void)manageLicense:(id)sender
+- (void)manageLicense:(nullable id)sender
 {
 	[menuController() manageLicense:sender];
 }
 
-- (void)showWelcomeSheet:(id)sender
+- (void)showWelcomeSheet:(nullable id)sender
 {
 	[menuController() showWelcomeSheet:sender];
 }

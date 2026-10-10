@@ -1034,7 +1034,7 @@ typedef NS_ENUM(NSUInteger, TDCLegacyImportAssistantStep) {
 	return row;
 }
 
-- (void)_saveKeysClicked:(id)sender
+- (void)_saveKeysClicked:(nullable id)sender
 {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 
@@ -1060,7 +1060,7 @@ typedef NS_ENUM(NSUInteger, TDCLegacyImportAssistantStep) {
 
 /* Finder only opens another app's folder for Textual once the user granted
  access to it */
-- (void)_showScriptsClicked:(id)sender
+- (void)_showScriptsClicked:(nullable id)sender
 {
 	NSURL *scriptsURL = self.import.result.scriptsURL;
 

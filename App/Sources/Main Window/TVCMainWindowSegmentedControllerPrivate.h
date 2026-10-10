@@ -38,7 +38,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMainWindowSegmentedController : NSSegmentedControl
-- (IBAction)segmentedCellClicked:(id)sender;
+- (IBAction)segmentedCellClicked:(nullable id)sender;
 
 - (void)updateSegmentedController;
 - (void)updateSegmentedControllerOrigin;

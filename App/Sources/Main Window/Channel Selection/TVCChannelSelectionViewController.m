@@ -318,7 +318,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.expandOutlineViewTimer = expandOutlineViewTimer;
 }
 
-- (void)channelListChanged:(id)sender
+- (void)channelListChanged:(nullable id)sender
 {
 	[self expandOutlineViewItemsCancelTimer];
 

@@ -78,7 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dealloc
 {
-	self.target = nil;
 }
 
 - (void)setKeyHandlerTarget:(id)target

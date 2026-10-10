@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, copy, nullable) NSDictionary<NSString *, NSString *> *conversionTable;
 @property (nonatomic, strong) IBOutlet NSView *preferencesPane;
 
-- (IBAction)preferenceChanged:(id)sender;
+- (IBAction)preferenceChanged:(nullable id)sender;
 @end
 
 @implementation TPISmileyConverter
@@ -118,7 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.conversionTable = nil;
 }
 
-- (void)preferenceChanged:(id)sender
+- (void)preferenceChanged:(nullable id)sender
 {
 	[self destroyConversionTable];
 

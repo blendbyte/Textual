@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self startSheet];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self.delegate respondsToSelector:@selector(channelInviteSheet:onSelectChannel:)]) {
 		NSString *channelName = self.channelListPopup.titleOfSelectedItem;

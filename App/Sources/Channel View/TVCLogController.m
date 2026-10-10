@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) TVCLogLine *lastLine;
 @property (nonatomic, strong) NSMutableArray<NSString *> *highlightedLineNumbers;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *jumpToLineCallbacks; // line number → handlers waiting for it
-@property (nonatomic, strong, readwrite) TVCLogView *backingView;
+@property (nonatomic, strong, readwrite, nullable) TVCLogView *backingView; // nil once torn down
 @property (weak, readonly) IRCTreeItem *associatedItem;
 @property (nonatomic, weak, readwrite) IRCClient *associatedClient;
 @property (nonatomic, weak, readwrite) IRCChannel *associatedChannel;

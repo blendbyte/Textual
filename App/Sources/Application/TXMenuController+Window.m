@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Window
 
-- (void)closeWindow:(id)sender
+- (void)closeWindow:(nullable id)sender
 {
 	TXCommandWKeyAction keyAction = [TPCPreferences commandWKeyAction];
 
@@ -160,22 +160,22 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)showMainWindow:(id)sender
+- (void)showMainWindow:(nullable id)sender
 {
 	[mainWindow() makeKeyAndOrderFront:sender];
 }
 
-- (void)centerMainWindow:(id)sender
+- (void)centerMainWindow:(nullable id)sender
 {
 	[mainWindow() exactlyCenterWindow];
 }
 
-- (void)toggleFullscreen:(id)sender
+- (void)toggleFullscreen:(nullable id)sender
 {
 	[[NSApp keyWindow] toggleFullScreen:sender];
 }
 
-- (void)resetMainWindowFrame:(id)sender
+- (void)resetMainWindowFrame:(nullable id)sender
 {
 	if (mainWindow().inFullscreenMode) {
 		[mainWindow() toggleFullScreen:sender];
@@ -186,7 +186,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[mainWindow() exactlyCenterWindow];
 }
 
-- (void)sortChannelListNames:(id)sender
+- (void)sortChannelListNames:(nullable id)sender
 {
 	for (IRCClient *u in worldController().clientList) {
 		NSMutableArray *channelList = [u.channelList mutableCopy];
@@ -215,7 +215,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[worldController() save];
 }
 
-- (void)markAllAsRead:(id)sender
+- (void)markAllAsRead:(nullable id)sender
 {
 	[mainWindow() markAllAsRead];
 }
@@ -328,7 +328,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[mainWindow() select:treeItem];
 }
 
-- (void)performNavigationAction:(id)sender
+- (void)performNavigationAction:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -420,7 +420,7 @@ NS_ASSUME_NONNULL_BEGIN
 	} // switch()
 }
 
-- (void)onNextHighlight:(id)sender
+- (void)onNextHighlight:(nullable id)sender
 {
 	TVCLogController *viewController = self.selectedViewController;
 
@@ -431,7 +431,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[viewController nextHighlight];
 }
 
-- (void)onPreviousHighlight:(id)sender
+- (void)onPreviousHighlight:(nullable id)sender
 {
 	TVCLogController *viewController = self.selectedViewController;
 
@@ -442,7 +442,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[viewController previousHighlight];
 }
 
-- (void)jumpToCurrentSession:(id)sender
+- (void)jumpToCurrentSession:(nullable id)sender
 {
 	TVCLogController *viewController = self.selectedViewController;
 
@@ -453,7 +453,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[viewController jumpToCurrentSession];
 }
 
-- (void)jumpToPresent:(id)sender
+- (void)jumpToPresent:(nullable id)sender
 {
 	TVCLogController *viewController = self.selectedViewController;
 

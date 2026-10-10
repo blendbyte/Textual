@@ -57,23 +57,23 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL textHasBackgroundColor;
 @property (readonly) BOOL textHasSpoiler;
 
-- (IBAction)insertBoldCharIntoTextBox:(id)sender;
-- (IBAction)insertItalicCharIntoTextBox:(id)sender;
-- (IBAction)insertMonospaceCharIntoTextBox:(id)sender;
-- (IBAction)insertStrikethroughCharIntoTextBox:(id)sender;
-- (IBAction)insertUnderlineCharIntoTextBox:(id)sender;
-- (IBAction)insertForegroundColorCharIntoTextBox:(id)sender;
-- (IBAction)insertBackgroundColorCharIntoTextBox:(id)sender;
-- (IBAction)insertSpoilerCharIntoTextBox:(id)sender;
+- (IBAction)insertBoldCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertItalicCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertMonospaceCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertStrikethroughCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertUnderlineCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertForegroundColorCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertBackgroundColorCharIntoTextBox:(nullable id)sender;
+- (IBAction)insertSpoilerCharIntoTextBox:(nullable id)sender;
 
-- (IBAction)removeBoldCharFromTextBox:(id)sender;
-- (IBAction)removeItalicCharFromTextBox:(id)sender;
-- (IBAction)removeMonospaceCharFromTextBox:(id)sender;
-- (IBAction)removeStrikethroughCharFromTextBox:(id)sender;
-- (IBAction)removeUnderlineCharFromTextBox:(id)sender;
-- (IBAction)removeForegroundColorCharFromTextBox:(id)sender;
-- (IBAction)removeBackgroundColorCharFromTextBox:(id)sender;
-- (IBAction)removeSpoilerCharFromTextBox:(id)sender;
+- (IBAction)removeBoldCharFromTextBox:(nullable id)sender;
+- (IBAction)removeItalicCharFromTextBox:(nullable id)sender;
+- (IBAction)removeMonospaceCharFromTextBox:(nullable id)sender;
+- (IBAction)removeStrikethroughCharFromTextBox:(nullable id)sender;
+- (IBAction)removeUnderlineCharFromTextBox:(nullable id)sender;
+- (IBAction)removeForegroundColorCharFromTextBox:(nullable id)sender;
+- (IBAction)removeBackgroundColorCharFromTextBox:(nullable id)sender;
+- (IBAction)removeSpoilerCharFromTextBox:(nullable id)sender;
 
 /* Bold, italic, monospace, strikethrough or underline on for the selection, or off where it is on */
 - (void)toggleEffect:(IRCTextFormatterEffectType)effect;

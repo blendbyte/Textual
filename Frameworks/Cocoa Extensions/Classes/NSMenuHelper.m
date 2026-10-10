@@ -137,12 +137,12 @@ NS_ASSUME_NONNULL_BEGIN
 	self.userInfo = userInfo;
 }
 
-+ (instancetype)menuItemWithTitle:(NSString *)aString target:(id)aTarget action:(SEL)aSelector
++ (instancetype)menuItemWithTitle:(NSString *)aString target:(nullable id)aTarget action:(nullable SEL)aSelector
 {
 	return [self menuItemWithTitle:aString target:aTarget action:aSelector keyEquivalent:@"" keyEquivalentMask:0];
 }
 
-+ (instancetype)menuItemWithTitle:(NSString *)aString target:(id)aTarget action:(SEL)aSelector keyEquivalent:(NSString *)charCode keyEquivalentMask:(NSUInteger)mask
++ (instancetype)menuItemWithTitle:(NSString *)aString target:(nullable id)aTarget action:(nullable SEL)aSelector keyEquivalent:(NSString *)charCode keyEquivalentMask:(NSUInteger)mask
 {
 	id menuItem = [[self alloc] initWithTitle:aString action:aSelector keyEquivalent:charCode];
 

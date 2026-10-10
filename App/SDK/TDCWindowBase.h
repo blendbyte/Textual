@@ -46,8 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)show;
 - (void)close;
 
-- (IBAction)ok:(id)sender;
-- (IBAction)cancel:(id)sender;
+- (IBAction)ok:(nullable id)sender;
+- (IBAction)cancel:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Collapse/Expand Logic
 
-- (void)outlineViewDoubleClicked:(id)sender
+- (void)outlineViewDoubleClicked:(nullable id)sender
 {
 	if (self.expandParentOnDoubleClick == NO) {
 		return;

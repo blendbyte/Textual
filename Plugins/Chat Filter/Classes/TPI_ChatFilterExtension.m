@@ -56,20 +56,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite) IBOutlet NSArrayController *filterArrayController;
 @property (nonatomic, assign) BOOL atleastOneFilterExists;
 @property (nonatomic, assign) NSInteger activeChatFilterIndex;
-@property (nonatomic, strong) TPI_ChatFilterEditFilterSheet *activeChatFilterEditSheet;
-@property (nonatomic, strong) TPI_ChatFilterLogic *filterLogicController;
+@property (nonatomic, strong, nullable) TPI_ChatFilterEditFilterSheet *activeChatFilterEditSheet;
+@property (nonatomic, strong, nullable) TPI_ChatFilterLogic *filterLogicController;
 @property (nonatomic, assign) BOOL savingFilters;
 
-- (IBAction)filterTableDoubleClicked:(id)sender;
+- (IBAction)filterTableDoubleClicked:(nullable id)sender;
 
-- (IBAction)presentFilterAddMenu:(id)sender;
+- (IBAction)presentFilterAddMenu:(nullable id)sender;
 
-- (IBAction)filterAdd:(id)sender;
-- (IBAction)filterRemove:(id)sender;
-- (IBAction)filterEdit:(id)sender;
-- (IBAction)filterDuplicate:(id)sender;
-- (IBAction)filterExport:(id)sender;
-- (IBAction)filterImport:(id)sender;
+- (IBAction)filterAdd:(nullable id)sender;
+- (IBAction)filterRemove:(nullable id)sender;
+- (IBAction)filterEdit:(nullable id)sender;
+- (IBAction)filterDuplicate:(nullable id)sender;
+- (IBAction)filterExport:(nullable id)sender;
+- (IBAction)filterImport:(nullable id)sender;
 @end
 
 @implementation TPI_ChatFilterExtension
@@ -196,17 +196,17 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.filterTable registerForDraggedTypes:@[_filterTableDragToken]];
 }
 
-- (void)filterTableDoubleClicked:(id)sender
+- (void)filterTableDoubleClicked:(nullable id)sender
 {
 	[self filterEdit:sender];
 }
 
-- (void)filterAdd:(id)sender
+- (void)filterAdd:(nullable id)sender
 {
 	[self editFilter:nil];
 }
 
-- (void)filterRemove:(id)sender
+- (void)filterRemove:(nullable id)sender
 {
 	BOOL performRemove = [TDCAlert modalAlertWithMessage:TPILocalizedString(@"TPI_ChatFilterExtension[dj6-fn]")
 												   title:TPILocalizedString(@"TPI_ChatFilterExtension[c0k-xj]")
@@ -228,7 +228,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self saveFilters];
 }
 
-- (void)filterEdit:(id)sender
+- (void)filterEdit:(nullable id)sender
 {
 	NSInteger selectedRow = self.filterTable.selectedRow;
 
@@ -241,12 +241,12 @@ NS_ASSUME_NONNULL_BEGIN
 	[self editFilter:filter atIndex:selectedRow];
 }
 
-- (void)editFilter:(id)filter
+- (void)editFilter:(nullable TPI_ChatFilter *)filter
 {
 	[self editFilter:filter atIndex:(-1)];
 }
 
-- (void)editFilter:(id)filter atIndex:(NSInteger)filterIndex
+- (void)editFilter:(nullable TPI_ChatFilter *)filter atIndex:(NSInteger)filterIndex
 {
 	self.activeChatFilterIndex = filterIndex;
 
@@ -286,7 +286,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.activeChatFilterEditSheet = nil;
 }
 
-- (void)filterDuplicate:(id)sender
+- (void)filterDuplicate:(nullable id)sender
 {
 	NSInteger selectedRow = self.filterTable.selectedRow;
 
@@ -300,7 +300,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self editFilter:[filterNew copy] atIndex:(-1)];
 }
 
-- (void)filterExport:(id)sender
+- (void)filterExport:(nullable id)sender
 {
 	NSInteger selectedRow = self.filterTable.selectedRow;
 
@@ -323,7 +323,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)filterImport:(id)sender
+- (void)filterImport:(nullable id)sender
 {
 	NSOpenPanel *openDialog = [NSOpenPanel openPanel];
 
@@ -363,7 +363,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)presentFilterAddMenu:(id)sender
+- (void)presentFilterAddMenu:(nullable id)sender
 {
 	[self.filterAddMenu popUpMenuPositioningItem:nil atLocation:NSMakePoint(0, 0) inView:sender];
 }

@@ -51,12 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.window close];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	[self close];
 }
 
-- (void)cancel:(id)sender
+- (void)cancel:(nullable id)sender
 {
 	[self close];
 }

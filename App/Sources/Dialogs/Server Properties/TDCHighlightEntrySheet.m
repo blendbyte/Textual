@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.sheet makeFirstResponder:self.matchKeywordTextField];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self okOrError] == NO) {
 		return;

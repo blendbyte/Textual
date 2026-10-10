@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)nicknameDoubleClicked;
 - (void)topicBarDoubleClicked;
 
-- (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
+- (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
 - (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler;
 - (NSMenu *)webView2:(WKWebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenu:(NSMenu *)defaultMenu;
 @end

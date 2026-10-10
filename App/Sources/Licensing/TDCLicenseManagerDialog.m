@@ -88,15 +88,15 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, assign) BOOL textualIsRegistered;
 @property (nonatomic, assign) BOOL isSilentOnSuccess;
 @property (nonatomic, assign) BOOL operationInProgress;
-@property (nonatomic, strong) TLOTimer *trialTimer;
+@property (nonatomic, strong, nullable) TLOTimer *trialTimer;
 
-- (IBAction)unregisteredViewActivateTextual:(id)sender;
-- (IBAction)unregisteredViewCancel:(id)sender;
-- (IBAction)unregisteredViewMigrateMacAppStorePurchase:(id)sender;
-- (IBAction)unregisteredViewPurchaseTextual:(id)sender;
-- (IBAction)unregisteredViewRecoveryLostLicense:(id)sender;
+- (IBAction)unregisteredViewActivateTextual:(nullable id)sender;
+- (IBAction)unregisteredViewCancel:(nullable id)sender;
+- (IBAction)unregisteredViewMigrateMacAppStorePurchase:(nullable id)sender;
+- (IBAction)unregisteredViewPurchaseTextual:(nullable id)sender;
+- (IBAction)unregisteredViewRecoveryLostLicense:(nullable id)sender;
 
-- (IBAction)registeredViewDeactivateTextual:(id)sender;
+- (IBAction)registeredViewDeactivateTextual:(nullable id)sender;
 @end
 
 @interface TLONotificationController ()
@@ -258,7 +258,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 #pragma mark -
 #pragma mark Activate License
 
-- (void)unregisteredViewPurchaseTextual:(id)sender
+- (void)unregisteredViewPurchaseTextual:(nullable id)sender
 {
 	NSString *lastGenLicenseKey = [TLOLicenseManagerLastGen licenseKey];
 
@@ -279,7 +279,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	[menuController() openStandaloneStoreWebpage:nil];
 }
 
-- (void)unregisteredViewCancel:(id)sender
+- (void)unregisteredViewCancel:(nullable id)sender
 {
 	[self close];
 }
@@ -299,7 +299,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	}
 }
 
-- (void)unregisteredViewActivateTextual:(id)sender
+- (void)unregisteredViewActivateTextual:(nullable id)sender
 {
 	NSString *licenseKeyValue = self.unregisteredViewLicenseKeyTextField.stringValue;
 
@@ -659,7 +659,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 #pragma mark -
 #pragma mark Recover Lost License
 
-- (void)unregisteredViewRecoveryLostLicense:(id)sender
+- (void)unregisteredViewRecoveryLostLicense:(nullable id)sender
 {
 	  TDCLicenseManagerRecoverLostLicenseSheet *recoverLostLicenseSheet =
 	[[TDCLicenseManagerRecoverLostLicenseSheet alloc] initWithWindow:self.window];
@@ -700,7 +700,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 #pragma mark -
 #pragma mark Deactivate License
 
-- (void)registeredViewDeactivateTextual:(id)sender
+- (void)registeredViewDeactivateTextual:(nullable id)sender
 {
 	BOOL deactivateCopy = [TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[z87-wb]")
 													title:TXTLS(@"TLOLicenseManager[pg1-a9]")
@@ -740,7 +740,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 #pragma mark -
 #pragma mark Mac App Store Receipt Processing
 
-- (void)unregisteredViewMigrateMacAppStorePurchase:(id)sender
+- (void)unregisteredViewMigrateMacAppStorePurchase:(nullable id)sender
 {
 	  TDCLicenseManagerMigrateAppStoreSheet *migrateAppStoreSheet =
 	[[TDCLicenseManagerMigrateAppStoreSheet alloc] initWithWindow:self.window];

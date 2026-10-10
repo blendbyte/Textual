@@ -107,8 +107,8 @@ void XRPerformBlockAsynchronouslyOnGlobalQueue(dispatch_block_t block)
 	XRPerformBlockAsynchronouslyOnGlobalQueueWithPriority(block, DISPATCH_QUEUE_PRIORITY_DEFAULT);
 }
 
-COCOA_EXTENSIONS_EXTERN dispatch_queue_t XRCreateDispatchQueue(const char *label, dispatch_queue_attr_t attributes);
-COCOA_EXTENSIONS_EXTERN dispatch_queue_t XRCreateDispatchQueueWithPriority(const char *label, dispatch_queue_attr_t attributes, dispatch_qos_class_t priority);
+COCOA_EXTENSIONS_EXTERN dispatch_queue_t XRCreateDispatchQueue(const char *label, dispatch_queue_attr_t _Nullable attributes);
+COCOA_EXTENSIONS_EXTERN dispatch_queue_t XRCreateDispatchQueueWithPriority(const char *label, dispatch_queue_attr_t _Nullable attributes, dispatch_qos_class_t priority);
 
 COCOA_EXTENSIONS_EXTERN dispatch_source_t _Nullable XRScheduleBlockOnGlobalQueue(dispatch_block_t block, NSTimeInterval delay);
 COCOA_EXTENSIONS_EXTERN dispatch_source_t _Nullable XRScheduleBlockOnGlobalQueueWithPriority(dispatch_block_t block, NSTimeInterval delay, dispatch_queue_priority_t priority);

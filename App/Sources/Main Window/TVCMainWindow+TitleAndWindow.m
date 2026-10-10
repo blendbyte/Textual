@@ -149,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Window Extras
 
-- (void)presentCertificateTrustInformation:(id)sender
+- (void)presentCertificateTrustInformation:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 

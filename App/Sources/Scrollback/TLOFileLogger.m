@@ -528,7 +528,11 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 	} else if (channel.isPrivateMessage) {
 		basePath = [NSString stringWithFormat:@"/%@/%@/%@/", clientName.safeFilename, TLOFileLoggerPrivateMessageDirectoryName, channel.name.safeFilename];
 	}
-	
+
+	if (basePath == nil) {
+		return nil;
+	}
+
 	return [sourcePath stringByAppendingPathComponent:basePath];
 }
 

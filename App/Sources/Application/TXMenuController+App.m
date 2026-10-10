@@ -94,14 +94,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Help
 
-- (void)openAcknowledgements:(id)sender
+- (void)openAcknowledgements:(nullable id)sender
 {
 	NSURL *Acknowledgements = [RZMainBundle() URLForResource:@"Acknowledgements" withExtension:@"pdf" subdirectory:@"Documentation"];
 
 	[RZWorkspace() openURL:Acknowledgements];
 }
 
-- (void)openHelpMenuItem:(id)sender
+- (void)openHelpMenuItem:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -127,22 +127,22 @@ NS_ASSUME_NONNULL_BEGIN
 	[TLOpenLink openWithString:link inBackground:NO];
 }
 
-- (void)openStandaloneStoreWebpage:(id)sender
+- (void)openStandaloneStoreWebpage:(nullable id)sender
 {
 	[TLOpenLink openWithString:@"https://www.textualapp.com/standalone-store" inBackground:NO];
 }
 
-- (void)contactSupport:(id)sender
+- (void)contactSupport:(nullable id)sender
 {
 	[TLOpenLink openWithString:@"https://contact.codeux.com/" inBackground:NO];
 }
 
-- (void)connectToTextualHelpChannel:(id)sender
+- (void)connectToTextualHelpChannel:(nullable id)sender
 {
 	[IRCExtras createConnectionToServer:@"irc.libera.chat +6697" channelList:@"#textual" connectWhenCreated:YES mergeConnectionIfPossible:YES selectFirstChannelAdded:YES];
 }
 
-- (void)connectToTextualTestingChannel:(id)sender
+- (void)connectToTextualTestingChannel:(nullable id)sender
 {
 	[IRCExtras createConnectionToServer:@"irc.libera.chat +6697" channelList:@"#textual-testing" connectWhenCreated:YES mergeConnectionIfPossible:YES selectFirstChannelAdded:YES];
 }
@@ -150,17 +150,17 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Preferences
 
-- (void)importPreferences:(id)sender
+- (void)importPreferences:(nullable id)sender
 {
 	[TPCPreferencesImportExport importInWindow:mainWindow()];
 }
 
-- (void)exportPreferences:(id)sender
+- (void)exportPreferences:(nullable id)sender
 {
 	[TPCPreferencesImportExport exportInWindow:mainWindow()];
 }
 
-- (void)importSettingsFromTextual7:(id)sender
+- (void)importSettingsFromTextual7:(nullable id)sender
 {
 	[TDCLegacyImportAssistant importFromMenu];
 }
@@ -190,7 +190,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.muteNotificationsSoundsFileMenuItem.state = state;
 }
 
-- (void)toggleMuteOnNotificationSounds:(id)sender
+- (void)toggleMuteOnNotificationSounds:(nullable id)sender
 {
 	if ([TPCPreferences soundIsMuted]) {
 		[self toggleMuteOnNotificationSoundsShortcutOn:NO];
@@ -199,7 +199,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)toggleMuteOnNotifications:(id)sender
+- (void)toggleMuteOnNotifications:(nullable id)sender
 {
 	if (sharedNotificationController().areNotificationsDisabled) {
 		[self toggleMuteOnNotificationsShortcutOn:NO];
@@ -211,14 +211,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Appearance
 
-- (void)resetMainWindowAppearance:(id)sender
+- (void)resetMainWindowAppearance:(nullable id)sender
 {
 	[TPCPreferences setAppearance:TXPreferredAppearanceInherited];
 
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionAppearance];
 }
 
-- (void)toggleMainWindowAppearance:(id)sender
+- (void)toggleMainWindowAppearance:(nullable id)sender
 {
 	TXPreferredAppearance appearance = [TPCPreferences appearance];
 
@@ -254,19 +254,19 @@ NS_ASSUME_NONNULL_BEGIN
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionAppearance];
 }
 
-- (void)toggleServerListVisibility:(id)sender
+- (void)toggleServerListVisibility:(nullable id)sender
 {
 	[mainWindow().contentSplitView toggleServerListVisibility];
 }
 
-- (void)toggleMemberListVisibility:(id)sender
+- (void)toggleMemberListVisibility:(nullable id)sender
 {
 	mainWindowMemberList().isHiddenByUser = (mainWindowMemberList().isHiddenByUser == NO);
 
 	[mainWindow().contentSplitView toggleMemberListVisibility];
 }
 
-- (void)forceReloadTheme:(id)sender
+- (void)forceReloadTheme:(nullable id)sender
 {
 	[mainWindow() reloadTheme];
 }
@@ -274,7 +274,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark License Manager
 
-- (void)manageLicense:(id)sender
+- (void)manageLicense:(nullable id)sender
 {
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 	[self manageLicense:sender activateLicenseKey:nil licenseKeyPassedByArgument:NO];
@@ -282,12 +282,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
-- (void)manageLicense:(id)sender activateLicenseKey:(nullable NSString *)licenseKey
+- (void)manageLicense:(nullable id)sender activateLicenseKey:(nullable NSString *)licenseKey
 {
 	[self manageLicense:sender activateLicenseKey:licenseKey licenseKeyPassedByArgument:NO];
 }
 
-- (void)manageLicense:(id)sender activateLicenseKeyWithURL:(NSURL *)licenseKeyURL
+- (void)manageLicense:(nullable id)sender activateLicenseKeyWithURL:(NSURL *)licenseKeyURL
 {
 	NSParameterAssert(licenseKeyURL != nil);
 
@@ -328,7 +328,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self manageLicense:sender activateLicenseKey:licenseKey licenseKeyPassedByArgument:NO];
 }
 
-- (void)manageLicense:(id)sender activateLicenseKey:(nullable NSString *)licenseKey licenseKeyPassedByArgument:(BOOL)licenseKeyPassedByArgument
+- (void)manageLicense:(nullable id)sender activateLicenseKey:(nullable NSString *)licenseKey licenseKeyPassedByArgument:(BOOL)licenseKeyPassedByArgument
 {
 	TDCLicenseManagerDialog *licenseDialog = [TXSharedApplication sharedLicenseManagerDialog];
 
@@ -343,14 +343,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Developer
 
-- (void)toggleDeveloperMode:(id)sender
+- (void)toggleDeveloperMode:(nullable id)sender
 {
 	[TPCPreferences setDeveloperModeEnabled:([TPCPreferences developerModeEnabled] == NO)];
 
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionIRCCommandCache];
 }
 
-- (void)resetDoNotAskMePopupWarnings:(id)sender
+- (void)resetDoNotAskMePopupWarnings:(nullable id)sender
 {
 	NSDictionary *settings = [RZUserDefaults() dictionaryRepresentation];
 
@@ -366,7 +366,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Sparkle Framework
 
-- (void)checkForUpdates:(id)sender
+- (void)checkForUpdates:(nullable id)sender
 {
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	SPUStandardUpdaterController *controller = masterController().updateController;

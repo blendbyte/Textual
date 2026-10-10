@@ -506,7 +506,7 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	return [TPCPreferences fileTransferIPAddressInterfaceName];
 }
 
-- (void)portMapperDidFinishWork:(NSNotification *)aNotification
+- (void)portMapperDidFinishWork:(nullable NSNotification *)aNotification
 {
 	NSAssertReturn(self.transferStatus == TDCFileTransferDialogTransferStatusMappingListeningPort);
 

@@ -330,7 +330,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return [buffer copy];
 }
 
-- (void)printAndLog:(TVCLogLine *)logLine completionBlock:(TVCLogControllerPrintOperationCompletionBlock)completionBlock
+- (void)printAndLog:(TVCLogLine *)logLine completionBlock:(nullable TVCLogControllerPrintOperationCompletionBlock)completionBlock
 {
 	NSParameterAssert(logLine != nil);
 

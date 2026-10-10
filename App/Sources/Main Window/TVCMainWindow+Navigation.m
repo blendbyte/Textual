@@ -301,12 +301,12 @@ NS_ASSUME_NONNULL_BEGIN
 	[self selectPreviousItem];
 }
 
-- (void)selectNextWindow:(NSEvent *)e
+- (void)selectNextWindow:(nullable NSEvent *)e
 {
 	[self navigateToNextEntry:YES];
 }
 
-- (void)selectPreviousWindow:(NSEvent *)e
+- (void)selectPreviousWindow:(nullable NSEvent *)e
 {
 	[self navigateToNextEntry:NO];
 }

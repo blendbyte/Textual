@@ -93,22 +93,22 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Selected User(s)
 
-- (BOOL)checkSelectedMembers:(id)sender
+- (BOOL)checkSelectedMembers:(nullable id)sender
 {
 	return ([self selectedMembers:sender].count > 0);
 }
 
-- (NSArray<IRCChannelUser *> *)selectedMembers:(id)sender
+- (NSArray<IRCChannelUser *> *)selectedMembers:(nullable id)sender
 {
 	return [self selectedMembers:sender returnStrings:NO];
 }
 
-- (NSArray<NSString *> *)selectedMembersNicknames:(id)sender
+- (NSArray<NSString *> *)selectedMembersNicknames:(nullable id)sender
 {
 	return [self selectedMembers:sender returnStrings:YES];
 }
 
-- (NSArray *)selectedMembers:(id)sender returnStrings:(BOOL)returnStrings
+- (NSArray *)selectedMembers:(nullable id)sender returnStrings:(BOOL)returnStrings
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -159,7 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return [userArray copy];
 }
 
-- (void)deselectMembers:(id)sender
+- (void)deselectMembers:(nullable id)sender
 {
 	if ([sender isKindOfClass:[NSMenuItem class]]) {
 		if (((NSMenuItem *)sender).userInfo.length > 0) {
@@ -179,7 +179,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Ignores
 
-- (void)memberAddIgnore:(id)sender
+- (void)memberAddIgnore:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -201,7 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendCommand:command completeTarget:YES target:c.name];
 }
 
-- (void)memberRemoveIgnore:(id)sender
+- (void)memberRemoveIgnore:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -223,7 +223,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendCommand:command completeTarget:YES target:c.name];
 }
 
-- (void)memberModifyIgnore:(id)sender
+- (void)memberModifyIgnore:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -262,7 +262,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Members
 
-- (void)memberInMemberListDoubleClicked:(id)sender
+- (void)memberInMemberListDoubleClicked:(nullable id)sender
 {
 	/* The member list's selection, never a nickname left from the chat view */
 	self.pointedNickname = nil;
@@ -284,7 +284,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)memberInChannelViewDoubleClicked:(id)sender
+- (void)memberInChannelViewDoubleClicked:(nullable id)sender
 {
 	TXUserDoubleClickAction action = [TPCPreferences userDoubleClickOption];
 
@@ -300,7 +300,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.pointedNickname = nil;
 }
 
-- (void)memberInsertNameIntoTextField:(id)sender
+- (void)memberInsertNameIntoTextField:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -348,12 +348,12 @@ NS_ASSUME_NONNULL_BEGIN
 	[textView focus];
 }
 
-- (void)memberSendWhois:(id)sender
+- (void)memberSendWhois:(nullable id)sender
 {
 	[self whoisSelectedMembers:sender];
 }
 
-- (void)whoisSelectedMembers:(id)sender
+- (void)whoisSelectedMembers:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -369,7 +369,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberStartPrivateMessage:(id)sender
+- (void)memberStartPrivateMessage:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -387,7 +387,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberSendCTCPPing:(id)sender
+- (void)memberSendCTCPPing:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -403,7 +403,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberSendCTCPFinger:(id)sender
+- (void)memberSendCTCPFinger:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -419,7 +419,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberSendCTCPTime:(id)sender
+- (void)memberSendCTCPTime:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -435,7 +435,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberSendCTCPVersion:(id)sender
+- (void)memberSendCTCPVersion:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -451,7 +451,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberSendCTCPUserinfo:(id)sender
+- (void)memberSendCTCPUserinfo:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -467,7 +467,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberSendCTCPClientInfo:(id)sender
+- (void)memberSendCTCPClientInfo:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -483,7 +483,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)_processModeChange:(id)sender usingCommand:(NSString *)modeCommand
+- (void)_processModeChange:(nullable id)sender usingCommand:(NSString *)modeCommand
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -503,47 +503,47 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendCommand:command completeTarget:YES target:c.name];
 }
 
-- (void)memberModeGiveOp:(id)sender
+- (void)memberModeGiveOp:(nullable id)sender
 {
 	[self _processModeChange:sender usingCommand:@"OP"];
 }
 
-- (void)memberModeTakeOp:(id)sender
+- (void)memberModeTakeOp:(nullable id)sender
 { 
 	[self _processModeChange:sender usingCommand:@"DEOP"];
 }
 
-- (void)memberModeGiveOwner:(id)sender
+- (void)memberModeGiveOwner:(nullable id)sender
 {
 	[self _processModeChange:sender usingCommand:@"OWNER"];
 }
 
-- (void)memberModeTakeOwner:(id)sender
+- (void)memberModeTakeOwner:(nullable id)sender
 {
 	[self _processModeChange:sender usingCommand:@"DEOWNER"];
 }
 
-- (void)memberModeGiveHalfop:(id)sender
+- (void)memberModeGiveHalfop:(nullable id)sender
 { 
 	[self _processModeChange:sender usingCommand:@"HALFOP"];
 }
 
-- (void)memberModeTakeHalfop:(id)sender
+- (void)memberModeTakeHalfop:(nullable id)sender
 { 
 	[self _processModeChange:sender usingCommand:@"DEHALFOP"];
 }
 
-- (void)memberModeGiveVoice:(id)sender
+- (void)memberModeGiveVoice:(nullable id)sender
 { 
 	[self _processModeChange:sender usingCommand:@"VOICE"];
 }
 
-- (void)memberModeTakeVoice:(id)sender
+- (void)memberModeTakeVoice:(nullable id)sender
 { 
 	[self _processModeChange:sender usingCommand:@"DEVOICE"];
 }
 
-- (void)memberKickFromChannel:(id)sender
+- (void)memberKickFromChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -559,7 +559,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberBanFromChannel:(id)sender
+- (void)memberBanFromChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -577,7 +577,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberKickbanFromChannel:(id)sender
+- (void)memberKickbanFromChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -595,7 +595,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberKillFromServer:(id)sender
+- (void)memberKillFromServer:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -613,7 +613,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberBanFromServer:(id)sender
+- (void)memberBanFromServer:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -637,7 +637,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)memberShunOnServer:(id)sender
+- (void)memberShunOnServer:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -655,7 +655,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
-- (void)_showSetVhostPromptOpenDialog:(id)sender
+- (void)_showSetVhostPromptOpenDialog:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -702,7 +702,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)showSetVhostPrompt:(id)sender
+- (void)showSetVhostPrompt:(nullable id)sender
 {
 	[self _showSetVhostPromptOpenDialog:sender];
 }
@@ -710,12 +710,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark File Transfers
 
-- (void)showFileTransfersWindow:(id)sender
+- (void)showFileTransfersWindow:(nullable id)sender
 {
 	[self.fileTransferController show:YES restorePosition:YES];
 }
 
-- (void)memberSendFileRequest:(id)sender
+- (void)memberSendFileRequest:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;

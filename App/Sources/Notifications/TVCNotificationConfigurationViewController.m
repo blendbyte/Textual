@@ -59,13 +59,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL activeAlertPropertyChangedByUser;
 @property (nonatomic, copy) NSArray *alertSounds;
 
-- (IBAction)onChangedAlertBounceDockIcon:(id)sender;
-- (IBAction)onChangedAlertBounceDockIconRepeatedly:(id)sender;
-- (IBAction)onChangedAlertDisableWhileAway:(id)sender;
-- (IBAction)onChangedAlertPushNotification:(id)sender;
-- (IBAction)onChangedAlertSound:(id)sender;
-- (IBAction)onChangedAlertSpoken:(id)sender;
-- (IBAction)onChangedAlertType:(id)sender;
+- (IBAction)onChangedAlertBounceDockIcon:(nullable id)sender;
+- (IBAction)onChangedAlertBounceDockIconRepeatedly:(nullable id)sender;
+- (IBAction)onChangedAlertDisableWhileAway:(nullable id)sender;
+- (IBAction)onChangedAlertPushNotification:(nullable id)sender;
+- (IBAction)onChangedAlertSound:(nullable id)sender;
+- (IBAction)onChangedAlertSpoken:(nullable id)sender;
+- (IBAction)onChangedAlertType:(nullable id)sender;
 @end
 
 @implementation TVCNotificationConfigurationViewController
@@ -223,7 +223,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onChangedAlertType:(id)sender
+- (void)onChangedAlertType:(nullable id)sender
 {
 	TXNotificationType alertTag = (TXNotificationType)self.alertTypeChoiceButton.selectedTag;
 
@@ -232,7 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self reload];
 }
 
-- (void)onChangedAlertPushNotification:(id)sender
+- (void)onChangedAlertPushNotification:(nullable id)sender
 {
 	self.activeAlertPropertyChangedByUser = YES;
 
@@ -241,7 +241,7 @@ NS_ASSUME_NONNULL_BEGIN
 	alert.pushNotification = self.alertPushNotificationButton.state;
 }
 
-- (void)onChangedAlertSpoken:(id)sender
+- (void)onChangedAlertSpoken:(nullable id)sender
 {
 	self.activeAlertPropertyChangedByUser = YES;
 
@@ -250,7 +250,7 @@ NS_ASSUME_NONNULL_BEGIN
 	alert.speakEvent = self.alertSpeakEventButton.state;
 }
 
-- (void)onChangedAlertDisableWhileAway:(id)sender
+- (void)onChangedAlertDisableWhileAway:(nullable id)sender
 {
 	self.activeAlertPropertyChangedByUser = YES;
 
@@ -259,7 +259,7 @@ NS_ASSUME_NONNULL_BEGIN
 	alert.disabledWhileAway = self.alertDisableWhileAwayButton.state;
 }
 
-- (void)onChangedAlertBounceDockIcon:(id)sender
+- (void)onChangedAlertBounceDockIcon:(nullable id)sender
 {
 	self.activeAlertPropertyChangedByUser = YES;
 
@@ -270,7 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.alertBounceDockIconRepeatedlyButton.enabled = (self.alertBounceDockIconButton.state == NSControlStateValueOn);
 }
 
-- (void)onChangedAlertBounceDockIconRepeatedly:(id)sender
+- (void)onChangedAlertBounceDockIconRepeatedly:(nullable id)sender
 {
 	self.activeAlertPropertyChangedByUser = YES;
 
@@ -279,7 +279,7 @@ NS_ASSUME_NONNULL_BEGIN
 	alert.bounceDockIconRepeatedly = self.alertBounceDockIconRepeatedlyButton.state;
 }
 
-- (void)onChangedAlertSound:(id)sender
+- (void)onChangedAlertSound:(nullable id)sender
 {
 	self.activeAlertPropertyChangedByUser = YES;
 

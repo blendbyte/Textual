@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSTextField *searchField;
 @property (nonatomic, weak) IBOutlet NSTableView *searchResultsTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *searchResultsController;
-@property (nonatomic, strong) id mouseEventMonitor;
+@property (nonatomic, strong, nullable) id mouseEventMonitor;
 @end
 
 @implementation TDCChannelSpotlightController
@@ -310,7 +310,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
-- (void)delegatePostSelectChannelForDoubleClickedRow:(id)sender
+- (void)delegatePostSelectChannelForDoubleClickedRow:(nullable id)sender
 {
 	NSInteger clickedRow = self.searchResultsTable.clickedRow;
 
@@ -551,14 +551,14 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)clientListChanged:(id)sender
+- (void)clientListChanged:(nullable id)sender
 {
 	[self populateArrayController];
 
 	[self updateControlsState];
 }
 
-- (void)channelListChanged:(id)sender
+- (void)channelListChanged:(nullable id)sender
 {
 	[self populateArrayController];
 

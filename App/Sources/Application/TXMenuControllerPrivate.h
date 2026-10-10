@@ -46,16 +46,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TXMenuController ()
 @property (nonatomic, copy, nullable) NSString *pointedNickname; // Takes priority if sender of an action returns nil userInfo value
 
-- (IBAction)emptyAction:(id)sender TEXTUAL_DEPRECATED("Do not target this method");
+- (IBAction)emptyAction:(nullable id)sender TEXTUAL_DEPRECATED("Do not target this method");
 @end
 
 @interface TXMenuController (ServerChannelPrivate)
-- (IBAction)joinChannelClicked:(id)sender;
+- (IBAction)joinChannelClicked:(nullable id)sender;
 @end
 
 @interface TXMenuController (MembersPrivate)
-- (void)memberInChannelViewDoubleClicked:(id)sender;
-- (void)memberInMemberListDoubleClicked:(id)sender;
+- (void)memberInChannelViewDoubleClicked:(nullable id)sender;
+- (void)memberInMemberListDoubleClicked:(nullable id)sender;
 
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files to:(NSString *)nickname;
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row;
@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TXMenuController (WindowPrivate)
 - (void)populateNavigationChannelList;
 
-- (IBAction)performNavigationAction:(id)sender;
+- (IBAction)performNavigationAction:(nullable id)sender;
 
 - (void)navigateToTreeItemAtURL:(NSURL *)url;
 - (void)navigateToTreeItemWithIdentifier:(NSString *)identifier;
@@ -73,13 +73,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TXMenuController (AppPrivate)
-- (IBAction)openHelpMenuItem:(id)sender;
+- (IBAction)openHelpMenuItem:(nullable id)sender;
 
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
-- (void)manageLicense:(id)sender activateLicenseKeyWithURL:(NSURL *)licenseKeyURL;
+- (void)manageLicense:(nullable id)sender activateLicenseKeyWithURL:(NSURL *)licenseKeyURL;
 
-- (void)manageLicense:(id)sender activateLicenseKey:(nullable NSString *)licenseKey;
-- (void)manageLicense:(id)sender activateLicenseKey:(nullable NSString *)licenseKey licenseKeyPassedByArgument:(BOOL)licenseKeyPassedByArgument;
+- (void)manageLicense:(nullable id)sender activateLicenseKey:(nullable NSString *)licenseKey;
+- (void)manageLicense:(nullable id)sender activateLicenseKey:(nullable NSString *)licenseKey licenseKeyPassedByArgument:(BOOL)licenseKeyPassedByArgument;
 #endif
 
 - (void)toggleMuteOnNotificationsShortcutOn:(BOOL)toggleOn;
@@ -93,11 +93,11 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TXMenuControllerMainWindowProxy : NSObject
-- (IBAction)showWelcomeSheet:(id)sender;
+- (IBAction)showWelcomeSheet:(nullable id)sender;
 
-- (IBAction)manageLicense:(id)sender;
+- (IBAction)manageLicense:(nullable id)sender;
 
-- (IBAction)openStandaloneStoreWebpage:(id)sender;
+- (IBAction)openStandaloneStoreWebpage:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

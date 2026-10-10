@@ -353,172 +353,172 @@ enum
 @end
 
 @interface TXMenuController (Edit)
-- (IBAction)copy:(id)sender;
-- (IBAction)paste:(id)sender;
+- (IBAction)copy:(nullable id)sender;
+- (IBAction)paste:(nullable id)sender;
 
-- (IBAction)print:(id)sender;
+- (IBAction)print:(nullable id)sender;
 
-- (IBAction)clearScrollback:(id)sender;
+- (IBAction)clearScrollback:(nullable id)sender;
 
-- (IBAction)decreaseLogFontSize:(id)sender;
-- (IBAction)increaseLogFontSize:(id)sender;
+- (IBAction)decreaseLogFontSize:(nullable id)sender;
+- (IBAction)increaseLogFontSize:(nullable id)sender;
 
-- (IBAction)gotoScrollbackMarker:(id)sender;
-- (IBAction)markScrollback:(id)sender;
-- (IBAction)showFindPrompt:(id)sender;
+- (IBAction)gotoScrollbackMarker:(nullable id)sender;
+- (IBAction)markScrollback:(nullable id)sender;
+- (IBAction)showFindPrompt:(nullable id)sender;
 
-- (IBAction)lookUpInDictionary:(id)sender;
-- (IBAction)searchGoogle:(id)sender;
-- (IBAction)copyLogAsHtml:(id)sender;
-- (IBAction)openWebInspector:(id)sender TEXTUAL_DEPRECATED("Does nothing. Use Inspect Element in the chat view's context menu");
+- (IBAction)lookUpInDictionary:(nullable id)sender;
+- (IBAction)searchGoogle:(nullable id)sender;
+- (IBAction)copyLogAsHtml:(nullable id)sender;
+- (IBAction)openWebInspector:(nullable id)sender TEXTUAL_DEPRECATED("Does nothing. Use Inspect Element in the chat view's context menu");
 @end
 
 @interface TXMenuController (ServerChannel)
-- (IBAction)addChannel:(id)sender;
-- (IBAction)deleteChannel:(id)sender;
+- (IBAction)addChannel:(nullable id)sender;
+- (IBAction)deleteChannel:(nullable id)sender;
 
-- (IBAction)addServer:(id)sender;
-- (IBAction)duplicateServer:(id)sender;
-- (IBAction)deleteServer:(id)sender;
+- (IBAction)addServer:(nullable id)sender;
+- (IBAction)duplicateServer:(nullable id)sender;
+- (IBAction)deleteServer:(nullable id)sender;
 
-- (IBAction)joinChannel:(id)sender;
-- (IBAction)leaveChannel:(id)sender;
+- (IBAction)joinChannel:(nullable id)sender;
+- (IBAction)leaveChannel:(nullable id)sender;
 
-- (IBAction)connect:(id)sender;
-- (IBAction)connectBypassingProxy:(id)sender;
+- (IBAction)connect:(nullable id)sender;
+- (IBAction)connectBypassingProxy:(nullable id)sender;
 
-- (IBAction)disconnect:(id)sender;
-- (IBAction)cancelReconnection:(id)sender;
+- (IBAction)disconnect:(nullable id)sender;
+- (IBAction)cancelReconnection:(nullable id)sender;
 
-- (IBAction)openChannelLogs:(id)sender;
-- (IBAction)openLogLocation:(id)sender;
-- (IBAction)showChannelBanExceptionList:(id)sender;
-- (IBAction)showChannelBanList:(id)sender;
-- (IBAction)showChannelInviteExceptionList:(id)sender;
-- (IBAction)showChannelQuietList:(id)sender;
-- (IBAction)showServerChannelList:(id)sender;
+- (IBAction)openChannelLogs:(nullable id)sender;
+- (IBAction)openLogLocation:(nullable id)sender;
+- (IBAction)showChannelBanExceptionList:(nullable id)sender;
+- (IBAction)showChannelBanList:(nullable id)sender;
+- (IBAction)showChannelInviteExceptionList:(nullable id)sender;
+- (IBAction)showChannelQuietList:(nullable id)sender;
+- (IBAction)showServerChannelList:(nullable id)sender;
 
-- (IBAction)toggleChannelInviteMode:(id)sender;
-- (IBAction)toggleChannelModerationMode:(id)sender;
+- (IBAction)toggleChannelInviteMode:(nullable id)sender;
+- (IBAction)toggleChannelModerationMode:(nullable id)sender;
 
-- (IBAction)copyUniqueIdentifier:(id)sender;
+- (IBAction)copyUniqueIdentifier:(nullable id)sender;
 
-- (IBAction)copyUrl:(id)sender;
+- (IBAction)copyUrl:(nullable id)sender;
 @end
 
 @interface TXMenuController (Members)
-- (NSArray<IRCChannelUser *> *)selectedMembers:(id)sender;
-- (NSArray<NSString *> *)selectedMembersNicknames:(id)sender;
-- (void)deselectMembers:(id)sender;
+- (NSArray<IRCChannelUser *> *)selectedMembers:(nullable id)sender;
+- (NSArray<NSString *> *)selectedMembersNicknames:(nullable id)sender;
+- (void)deselectMembers:(nullable id)sender;
 
-- (IBAction)memberAddIgnore:(id)sender;
-- (IBAction)memberModifyIgnore:(id)sender;
-- (IBAction)memberRemoveIgnore:(id)sender;
+- (IBAction)memberAddIgnore:(nullable id)sender;
+- (IBAction)memberModifyIgnore:(nullable id)sender;
+- (IBAction)memberRemoveIgnore:(nullable id)sender;
 
-- (IBAction)memberBanFromChannel:(id)sender;
-- (IBAction)memberKickFromChannel:(id)sender;
-- (IBAction)memberKickbanFromChannel:(id)sender;
+- (IBAction)memberBanFromChannel:(nullable id)sender;
+- (IBAction)memberKickFromChannel:(nullable id)sender;
+- (IBAction)memberKickbanFromChannel:(nullable id)sender;
 
-- (IBAction)memberModeGiveHalfop:(id)sender;
-- (IBAction)memberModeGiveOp:(id)sender;
-- (IBAction)memberModeGiveOwner:(id)sender;
-- (IBAction)memberModeGiveVoice:(id)sender;
-- (IBAction)memberModeTakeHalfop:(id)sender;
-- (IBAction)memberModeTakeOp:(id)sender;
-- (IBAction)memberModeTakeOwner:(id)sender;
-- (IBAction)memberModeTakeVoice:(id)sender;
+- (IBAction)memberModeGiveHalfop:(nullable id)sender;
+- (IBAction)memberModeGiveOp:(nullable id)sender;
+- (IBAction)memberModeGiveOwner:(nullable id)sender;
+- (IBAction)memberModeGiveVoice:(nullable id)sender;
+- (IBAction)memberModeTakeHalfop:(nullable id)sender;
+- (IBAction)memberModeTakeOp:(nullable id)sender;
+- (IBAction)memberModeTakeOwner:(nullable id)sender;
+- (IBAction)memberModeTakeVoice:(nullable id)sender;
 
-- (IBAction)memberSendCTCPClientInfo:(id)sender;
-- (IBAction)memberSendCTCPFinger:(id)sender;
-- (IBAction)memberSendCTCPPing:(id)sender;
-- (IBAction)memberSendCTCPTime:(id)sender;
-- (IBAction)memberSendCTCPUserinfo:(id)sender;
-- (IBAction)memberSendCTCPVersion:(id)sender;
+- (IBAction)memberSendCTCPClientInfo:(nullable id)sender;
+- (IBAction)memberSendCTCPFinger:(nullable id)sender;
+- (IBAction)memberSendCTCPPing:(nullable id)sender;
+- (IBAction)memberSendCTCPTime:(nullable id)sender;
+- (IBAction)memberSendCTCPUserinfo:(nullable id)sender;
+- (IBAction)memberSendCTCPVersion:(nullable id)sender;
 
-- (IBAction)memberSendFileRequest:(id)sender;
-- (IBAction)memberSendWhois:(id)sender;
+- (IBAction)memberSendFileRequest:(nullable id)sender;
+- (IBAction)memberSendWhois:(nullable id)sender;
 
-- (IBAction)memberBanFromServer:(id)sender;
-- (IBAction)memberKillFromServer:(id)sender;
-- (IBAction)memberShunOnServer:(id)sender;
+- (IBAction)memberBanFromServer:(nullable id)sender;
+- (IBAction)memberKillFromServer:(nullable id)sender;
+- (IBAction)memberShunOnServer:(nullable id)sender;
 
-- (IBAction)memberStartPrivateMessage:(id)sender;
-- (IBAction)showFileTransfersWindow:(id)sender;
-- (IBAction)showSetVhostPrompt:(id)sender;
+- (IBAction)memberStartPrivateMessage:(nullable id)sender;
+- (IBAction)showFileTransfersWindow:(nullable id)sender;
+- (IBAction)showSetVhostPrompt:(nullable id)sender;
 @end
 
 @interface TXMenuController (Window)
-- (IBAction)closeWindow:(id)sender;
+- (IBAction)closeWindow:(nullable id)sender;
 
-- (IBAction)markAllAsRead:(id)sender;
+- (IBAction)markAllAsRead:(nullable id)sender;
 
-- (IBAction)jumpToCurrentSession:(id)sender;
-- (IBAction)jumpToPresent:(id)sender;
+- (IBAction)jumpToCurrentSession:(nullable id)sender;
+- (IBAction)jumpToPresent:(nullable id)sender;
 
-- (IBAction)onNextHighlight:(id)sender;
-- (IBAction)onPreviousHighlight:(id)sender;
+- (IBAction)onNextHighlight:(nullable id)sender;
+- (IBAction)onPreviousHighlight:(nullable id)sender;
 
-- (IBAction)centerMainWindow:(id)sender;
-- (IBAction)resetMainWindowFrame:(id)sender;
-- (IBAction)showMainWindow:(id)sender;
+- (IBAction)centerMainWindow:(nullable id)sender;
+- (IBAction)resetMainWindowFrame:(nullable id)sender;
+- (IBAction)showMainWindow:(nullable id)sender;
 
-- (IBAction)sortChannelListNames:(id)sender;
+- (IBAction)sortChannelListNames:(nullable id)sender;
 
-- (IBAction)toggleFullscreen:(id)sender;
+- (IBAction)toggleFullscreen:(nullable id)sender;
 @end
 
 @interface TXMenuController (App)
-- (IBAction)contactSupport:(id)sender;
+- (IBAction)contactSupport:(nullable id)sender;
 
-- (IBAction)connectToTextualHelpChannel:(id)sender;
-- (IBAction)connectToTextualTestingChannel:(id)sender;
+- (IBAction)connectToTextualHelpChannel:(nullable id)sender;
+- (IBAction)connectToTextualTestingChannel:(nullable id)sender;
 
-- (IBAction)exportPreferences:(id)sender;
-- (IBAction)importPreferences:(id)sender;
+- (IBAction)exportPreferences:(nullable id)sender;
+- (IBAction)importPreferences:(nullable id)sender;
 
-- (IBAction)importSettingsFromTextual7:(id)sender;
+- (IBAction)importSettingsFromTextual7:(nullable id)sender;
 
-- (IBAction)openStandaloneStoreWebpage:(id)sender;;
+- (IBAction)openStandaloneStoreWebpage:(nullable id)sender;;
 
-- (IBAction)openAcknowledgements:(id)sender;
+- (IBAction)openAcknowledgements:(nullable id)sender;
 
-- (IBAction)toggleMainWindowAppearance:(id)sender;
-- (IBAction)resetMainWindowAppearance:(id)sender;
+- (IBAction)toggleMainWindowAppearance:(nullable id)sender;
+- (IBAction)resetMainWindowAppearance:(nullable id)sender;
 
-- (IBAction)toggleDeveloperMode:(id)sender;
+- (IBAction)toggleDeveloperMode:(nullable id)sender;
 
-- (IBAction)toggleServerListVisibility:(id)sender;
-- (IBAction)toggleMemberListVisibility:(id)sender;
+- (IBAction)toggleServerListVisibility:(nullable id)sender;
+- (IBAction)toggleMemberListVisibility:(nullable id)sender;
 
-- (IBAction)toggleMuteOnNotifications:(id)sender;
-- (IBAction)toggleMuteOnNotificationSounds:(id)sender;
+- (IBAction)toggleMuteOnNotifications:(nullable id)sender;
+- (IBAction)toggleMuteOnNotificationSounds:(nullable id)sender;
 
-- (IBAction)manageLicense:(id)sender;
-- (IBAction)forceReloadTheme:(id)sender;
+- (IBAction)manageLicense:(nullable id)sender;
+- (IBAction)forceReloadTheme:(nullable id)sender;
 
-- (IBAction)checkForUpdates:(id)sender;
+- (IBAction)checkForUpdates:(nullable id)sender;
 
-- (IBAction)resetDoNotAskMePopupWarnings:(id)sender;
+- (IBAction)resetDoNotAskMePopupWarnings:(nullable id)sender;
 @end
 
 @interface TXMenuController (Sheets)
-- (IBAction)memberSendInvite:(id)sender;
+- (IBAction)memberSendInvite:(nullable id)sender;
 
-- (IBAction)showAboutWindow:(id)sender;
-- (IBAction)showAddressBook:(id)sender;
-- (IBAction)showChannelModifyModesSheet:(id)sender;
-- (IBAction)showChannelModifyTopicSheet:(id)sender;
-- (IBAction)showChannelPropertiesSheet:(id)sender;
-- (IBAction)showChannelSpotlightWindow:(id)sender;
-- (IBAction)showHiddenPreferences:(id)sender;
-- (IBAction)showIgnoreList:(id)sender;
-- (IBAction)showNotificationPreferences:(id)sender;
-- (IBAction)showPreferencesWindow:(id)sender;
-- (IBAction)showServerChangeNicknameSheet:(id)sender;
-- (IBAction)showServerHighlightList:(id)sender;
-- (IBAction)showServerPropertiesSheet:(id)sender;
-- (IBAction)showStylePreferences:(id)sender;
-- (IBAction)showWelcomeSheet:(id)sender;
+- (IBAction)showAboutWindow:(nullable id)sender;
+- (IBAction)showAddressBook:(nullable id)sender;
+- (IBAction)showChannelModifyModesSheet:(nullable id)sender;
+- (IBAction)showChannelModifyTopicSheet:(nullable id)sender;
+- (IBAction)showChannelPropertiesSheet:(nullable id)sender;
+- (IBAction)showChannelSpotlightWindow:(nullable id)sender;
+- (IBAction)showHiddenPreferences:(nullable id)sender;
+- (IBAction)showIgnoreList:(nullable id)sender;
+- (IBAction)showNotificationPreferences:(nullable id)sender;
+- (IBAction)showPreferencesWindow:(nullable id)sender;
+- (IBAction)showServerChangeNicknameSheet:(nullable id)sender;
+- (IBAction)showServerHighlightList:(nullable id)sender;
+- (IBAction)showServerPropertiesSheet:(nullable id)sender;
+- (IBAction)showStylePreferences:(nullable id)sender;
+- (IBAction)showWelcomeSheet:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

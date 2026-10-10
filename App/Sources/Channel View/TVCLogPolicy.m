@@ -219,7 +219,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark WebKit Delegate
 
-- (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nonnull))completionHandler
+- (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable))completionHandler
 {
 	NSString *authenticationMethod = challenge.protectionSpace.authenticationMethod;
 

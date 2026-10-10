@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *entryTable;
 @property (nonatomic, weak) IBOutlet NSSegmentedControl *entryActionsSegmentedControl;
 
-- (IBAction)entryActionsSegmentedControlClicked:(id)sender;
+- (IBAction)entryActionsSegmentedControlClicked:(nullable id)sender;
 @end
 
 @implementation TDCServerEndpointListSheet
@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self startSheet];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	/* An address or port still being typed is committed first */
 	if ([self.sheet makeFirstResponder:nil] == NO) {
@@ -133,7 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.entryActionsSegmentedControl setEnabled:self.entryTableController.canRemove forSegment:1];
 }
 
-- (void)entryActionsSegmentedControlClicked:(id)sender
+- (void)entryActionsSegmentedControlClicked:(nullable id)sender
 {
 	NSInteger selectedSegment = [sender selectedSegment];
 

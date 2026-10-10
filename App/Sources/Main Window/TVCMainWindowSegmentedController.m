@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCMainWindowSegmentedController
 
-- (void)segmentedCellClicked:(id)sender
+- (void)segmentedCellClicked:(nullable id)sender
 {
 	NSInteger selectedSegment = self.selectedSegment;
 

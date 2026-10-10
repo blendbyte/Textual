@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Properties Sheet
 
-- (void)showChannelPropertiesSheet:(id)sender
+- (void)showChannelPropertiesSheet:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -170,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Invite Sheet
 
-- (void)memberSendInvite:(id)sender
+- (void)memberSendInvite:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -234,7 +234,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Address Book Sheet
 
-- (void)showAddressBook:(id)sender
+- (void)showAddressBook:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -247,7 +247,7 @@ NS_ASSUME_NONNULL_BEGIN
 									 context:nil];
 }
 
-- (void)showIgnoreList:(id)sender
+- (void)showIgnoreList:(nullable id)sender
 {
 	[self showAddressBook:sender];
 }
@@ -255,7 +255,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Welcome Sheet
 
-- (void)showWelcomeSheet:(id)sender
+- (void)showWelcomeSheet:(nullable id)sender
 {
 	[windowController() popMainWindowSheetIfExists];
 
@@ -290,7 +290,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark About Window
 
-- (void)showAboutWindow:(id)sender
+- (void)showAboutWindow:(nullable id)sender
 {
 	_popWindowViewIfExists(@"TDCAboutDialog");
 
@@ -328,7 +328,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[windowController() addWindowToWindowList:sheet];
 }
 
-- (void)showServerPropertiesSheet:(id)sender
+- (void)showServerPropertiesSheet:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -392,7 +392,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Highlight List Sheet
 
-- (void)showServerHighlightList:(id)sender
+- (void)showServerHighlightList:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -459,7 +459,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Topic Sheet
 
-- (void)showChannelModifyTopicSheet:(id)sender
+- (void)showChannelModifyTopicSheet:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -502,7 +502,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Mode Sheet
 
-- (void)showChannelModifyModesSheet:(id)sender
+- (void)showChannelModifyModesSheet:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -551,7 +551,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Spotlight Window
 
-- (void)showChannelSpotlightWindow:(id)sender
+- (void)showChannelSpotlightWindow:(nullable id)sender
 {
 	_popWindowViewIfExists(@"TDCChannelSpotlightController");
 
@@ -577,7 +577,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Change Nickname Sheet
 
-- (void)showServerChangeNicknameSheet:(id)sender
+- (void)showServerChangeNicknameSheet:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -618,22 +618,22 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Preferences Dialog
 
-- (void)showPreferencesWindow:(id)sender
+- (void)showPreferencesWindow:(nullable id)sender
 {
 	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionDefault];
 }
 
-- (void)showNotificationPreferences:(id)sender
+- (void)showNotificationPreferences:(nullable id)sender
 {
 	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionNotifications];
 }
 
-- (void)showStylePreferences:(id)sender
+- (void)showStylePreferences:(nullable id)sender
 {
 	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionStyle];
 }
 
-- (void)showHiddenPreferences:(id)sender
+- (void)showHiddenPreferences:(nullable id)sender
 {
 	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionHiddenPreferences];
 }

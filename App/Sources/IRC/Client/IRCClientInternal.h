@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) ClientIRCv3SupportedCapability capabilities;
 @property (nonatomic, copy, readwrite) NSArray<IRCHighlightLogEntry *> *cachedHighlights;
 @property (nonatomic, copy, readwrite, nullable) NSString *userHostmask;
-@property (nonatomic, copy, readwrite) NSString *userNickname;
+@property (nonatomic, copy, readwrite, null_resettable) NSString *userNickname; // nil falls back to the configured nickname
 @property (nonatomic, copy, readwrite) NSString *serverAddress;
 @property (nonatomic, copy, readwrite, nullable) NSString *preAwayUserNickname;
 @property (nonatomic, assign, readwrite) NSUInteger logFileSessionCount;

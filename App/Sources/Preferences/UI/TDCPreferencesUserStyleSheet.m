@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if (self.rulesChanged) {
 		[self saveRules];

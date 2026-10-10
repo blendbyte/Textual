@@ -1070,7 +1070,7 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 	}
 
 	if ([self isRenderingPRIVMSG_or_NOTICE]) {
-		templateTokens[@"fragmentIsSpoiler"] = @(setNewColors && [foregroundColor isEqualToString:backgroundColor]);
+		templateTokens[@"fragmentIsSpoiler"] = @(setNewColors && foregroundColor && backgroundColor && [foregroundColor isEqualToString:backgroundColor]);
 	} else {
 		templateTokens[@"fragmentIsSpoiler"] = @(NO);
 	}

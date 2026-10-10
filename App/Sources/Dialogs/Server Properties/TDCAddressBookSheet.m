@@ -187,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self startSheet];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self okOrError] == NO) {
 		return;

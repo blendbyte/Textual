@@ -45,9 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TLOInternetAddressLookup ()
 @property (nonatomic, weak) id requestDelegate;
-@property (nonatomic, strong) NSURLConnection *connection;
-@property (nonatomic, strong) NSURLResponse *connectionResponse;
-@property (nonatomic, strong) NSMutableData *connectionResponseData;
+@property (nonatomic, strong, nullable) NSURLConnection *connection;
+@property (nonatomic, strong, nullable) NSURLResponse *connectionResponse;
+@property (nonatomic, strong, nullable) NSMutableData *connectionResponseData;
 @property (nonatomic, copy, nullable) NSString *address;
 @end
 

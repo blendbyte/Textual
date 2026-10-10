@@ -77,7 +77,7 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 @property (nonatomic, assign) TPCThemeStorageLocation destinationLocation;
 @property (nonatomic, assign) BOOL reloadThemeWhenCopied; // If YES, setThemeName: is called when copy completes. Otherwise, files are copied and nothing happens.
 @property (nonatomic, assign) BOOL openThemeWhenCopied;
-@property (nonatomic, strong) TDCProgressIndicatorSheet *progressIndicator;
+@property (nonatomic, strong, nullable) TDCProgressIndicatorSheet *progressIndicator;
 
 - (void)beginOperation;
 @end
@@ -89,7 +89,7 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 @property (nonatomic, strong, nullable) TPCThemeControllerCopyOperation *currentCopyOperation;
 @property (nonatomic, strong) TPCThemeControllerThemeListMutable bundledThemes;
 @property (nonatomic, strong) TPCThemeControllerThemeListMutable customThemes;
-@property (nonatomic, strong) XRFileSystemMonitor *themeMonitor;
+@property (nonatomic, strong, nullable) XRFileSystemMonitor *themeMonitor;
 @end
 
 #pragma mark -

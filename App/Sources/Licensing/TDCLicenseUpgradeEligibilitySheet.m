@@ -51,18 +51,18 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCLicenseUpgradeEligibilitySheet ()
 @property (nonatomic, copy, readwrite) NSString *licenseKey;
 @property (nonatomic, assign, readwrite) TLOLicenseUpgradeEligibility eligibility;
-@property (nonatomic, strong) TLOLicenseManagerDownloader *licenseManagerDownloader;
-@property (nonatomic, strong) TDCProgressIndicatorSheet *progressIndicator;
+@property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *licenseManagerDownloader;
+@property (nonatomic, strong, nullable) TDCProgressIndicatorSheet *progressIndicator;
 @property (nonatomic, strong) IBOutlet NSWindow *sheetNotEligible;
 @property (nonatomic, strong) IBOutlet NSWindow *sheetEligibleDiscount;
 @property (nonatomic, strong) IBOutlet NSWindow *sheetEligibleFree;
 @property (nonatomic, assign) BOOL checkingEligibility;
 
-- (IBAction)actionContactSupport:(id)sender;
-- (IBAction)actionActivateLicense:(id)sender;
-- (IBAction)actionPurchaseUpgrade:(id)sender;
-- (IBAction)actionPurchaseStandalone:(id)sender;
-- (IBAction)actionClose:(id)sender;
+- (IBAction)actionContactSupport:(nullable id)sender;
+- (IBAction)actionActivateLicense:(nullable id)sender;
+- (IBAction)actionPurchaseUpgrade:(nullable id)sender;
+- (IBAction)actionPurchaseStandalone:(nullable id)sender;
+- (IBAction)actionClose:(nullable id)sender;
 @end
 
 @implementation TDCLicenseUpgradeEligibilitySheet
@@ -109,8 +109,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	/* If we end sheet early, before self.sheet is ever defined,
 	 then trying to close it wont fire this delegate call.
-	 We fake the call to the delegate so that the sheet can be released. */
-	[self windowWillClose:nil];
+	 We tell the delegate ourselves so that the sheet can be released. */
+	[self.delegate upgradeEligibilitySheetWillClose:self];
 }
 
 - (void)checkEligibility
@@ -305,27 +305,27 @@ NS_ASSUME_NONNULL_BEGIN
 	[super startSheet];
 }
 
-- (void)actionContactSupport:(id)sender
+- (void)actionContactSupport:(nullable id)sender
 {
 	[self.delegate upgradeEligibilitySheetContactSupport:self];
 }
 
-- (void)actionActivateLicense:(id)sender
+- (void)actionActivateLicense:(nullable id)sender
 {
 	[self.delegate upgradeEligibilitySheetActivateLicense:self];
 }
 
-- (void)actionPurchaseUpgrade:(id)sender
+- (void)actionPurchaseUpgrade:(nullable id)sender
 {
 	[self.delegate upgradeEligibilitySheetPurchaseUpgrade:self];
 }
 
-- (void)actionPurchaseStandalone:(id)sender
+- (void)actionPurchaseStandalone:(nullable id)sender
 {
 	[self.delegate upgradeEligibilitySheetPurchaseStandalone:self];
 }
 
-- (void)actionClose:(id)sender
+- (void)actionClose:(nullable id)sender
 {
 	[self endSheet];
 }

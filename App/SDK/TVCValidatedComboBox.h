@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL stringValueIsTrimmed; // -stringValueUsesOnlyFirstToken returns a trimmed value of newlines and spaces. However, if you want more than first token, then specify this.
 @property (nonatomic, assign) BOOL stringValueIsInvalidOnEmpty; // Is an empty string considered invalid?
 @property (nonatomic, assign) BOOL performValidationWhenEmpty;
-@property (nonatomic, weak) id textDidChangeCallback; // Calls method "-(void)validatedTextFieldTextDidChange:(id)sender" whereas "sender" is the text field.
+@property (nonatomic, weak) id textDidChangeCallback; // Calls method "-(void)validatedTextFieldTextDidChange:(nullable id)sender" whereas "sender" is the text field.
 @property (nonatomic, assign) BOOL caseInsensitiveComplete; // Whether completions are case insensitive. Default NO.
 @property (nonatomic, copy, nullable) NSString *defaultValue; // A value to return from -value if the text field is empty. Only used if stringValueIsInvalidOnEmpty = NO
 

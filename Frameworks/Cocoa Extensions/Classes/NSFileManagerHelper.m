@@ -645,7 +645,7 @@ typedef NS_ENUM(NSUInteger, CSFileManagerRemoveItemResult) {
 		removeResult = [self removeItemAtURL:url error:&removeError];
 	}
 
-	if (removeError) {
+	if (removeResult == NO) {
 		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
 			"Failed to remove item to trash: '%{public}@': %{public}@",
 			url.standardizedTildePath, removeError.localizedDescription);

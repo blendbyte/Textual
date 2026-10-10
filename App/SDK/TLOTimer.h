@@ -62,7 +62,7 @@ typedef void (^TLOTimerActionBlock)(TLOTimer *sender);
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithActionBlock:(TLOTimerActionBlock)actionBlock;
-- (instancetype)initWithActionBlock:(TLOTimerActionBlock)actionBlock onQueue:(dispatch_queue_t)queue NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithActionBlock:(TLOTimerActionBlock)actionBlock onQueue:(nullable dispatch_queue_t)queue NS_DESIGNATED_INITIALIZER; // nil: main queue
 
 - (void)start:(NSTimeInterval)interval; // repeatTimer = NO
 - (void)start:(NSTimeInterval)timerInterval onRepeat:(BOOL)repeatTimer; // iterations = 0

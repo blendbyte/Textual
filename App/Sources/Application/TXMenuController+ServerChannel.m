@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Server
 
-- (void)connect:(id)sender
+- (void)connect:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[mainWindow() expandClient:u];
 }
 
-- (void)connectBypassingProxy:(id)sender
+- (void)connectBypassingProxy:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[mainWindow() expandClient:u];
 }
 
-- (void)disconnect:(id)sender
+- (void)disconnect:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -130,7 +130,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u quit];
 }
 
-- (void)cancelReconnection:(id)sender
+- (void)cancelReconnection:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u cancelReconnect];
 }
 
-- (void)showServerChannelList:(id)sender
+- (void)showServerChannelList:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -154,7 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u requestChannelList];
 }
 
-- (void)addServer:(id)sender
+- (void)addServer:(nullable id)sender
 {
 	[windowController() popMainWindowSheetIfExists];
 
@@ -170,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[windowController() addWindowToWindowList:sheet];
 }
 
-- (void)duplicateServer:(id)sender
+- (void)duplicateServer:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -191,7 +191,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[worldController() save];
 }
 
-- (void)deleteServer:(id)sender
+- (void)deleteServer:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -216,7 +216,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel
 
-- (void)joinChannel:(id)sender
+- (void)joinChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -230,7 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[mainWindow() select:c];
 }
 
-- (void)leaveChannel:(id)sender
+- (void)leaveChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -249,7 +249,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[worldController() destroyChannel:c];
 }
 
-- (void)addChannel:(id)sender
+- (void)addChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 
@@ -271,7 +271,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[windowController() addWindowToWindowList:sheet];
 }
 
-- (void)deleteChannel:(id)sender
+- (void)deleteChannel:(nullable id)sender
 {
 	IRCChannel *c = self.selectedChannel;
 
@@ -297,7 +297,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[worldController() save];
 }
 
-- (void)copyUniqueIdentifier:(id)sender
+- (void)copyUniqueIdentifier:(nullable id)sender
 {
 	IRCChannel *c = self.selectedChannel;
 
@@ -311,7 +311,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Other Actions
 
-- (void)copyUrl:(id)sender
+- (void)copyUrl:(nullable id)sender
 {
 	NSString *pointedUrl = ((NSMenuItem *)sender).userInfo;
 
@@ -322,7 +322,7 @@ NS_ASSUME_NONNULL_BEGIN
 	RZPasteboard().stringContent = pointedUrl;
 }
 
-- (void)joinChannelClicked:(id)sender
+- (void)joinChannelClicked:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -356,7 +356,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Logging
 
-- (void)openLogLocation:(id)sender
+- (void)openLogLocation:(nullable id)sender
 {	
 	NSURL *path = [TPCPathInfo transcriptFolderURL];
 
@@ -376,7 +376,7 @@ NS_ASSUME_NONNULL_BEGIN
 					alternateButton:nil];
 }
 
-- (void)openChannelLogs:(id)sender
+- (void)openChannelLogs:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -406,7 +406,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark IRC
 
-- (void)showChannelBanList:(id)sender
+- (void)showChannelBanList:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -420,7 +420,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendModes:@"+b" withParameters:nil inChannel:c];
 }
 
-- (void)showChannelBanExceptionList:(id)sender
+- (void)showChannelBanExceptionList:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -434,7 +434,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendModes:@"+e" withParameters:nil inChannel:c];
 }
 
-- (void)showChannelInviteExceptionList:(id)sender
+- (void)showChannelInviteExceptionList:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -448,7 +448,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendModes:@"+I" withParameters:nil inChannel:c];
 }
 
-- (void)showChannelQuietList:(id)sender
+- (void)showChannelQuietList:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -462,7 +462,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendModes:@"+q" withParameters:nil inChannel:c];
 }
 
-- (void)toggleChannelModerationMode:(id)sender
+- (void)toggleChannelModerationMode:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -484,7 +484,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendModes:modeSymbol withParameters:nil inChannel:c];
 }
 
-- (void)toggleChannelInviteMode:(id)sender
+- (void)toggleChannelInviteMode:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 

@@ -65,8 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSArrayController *entryTableController;
 @property (nonatomic, strong, nullable) NSMutableArray<TDCChannelBanListSheetEntry *> *pendingEntries;
 
-- (IBAction)onUpdate:(id)sender;
-- (IBAction)onRemoveEntry:(id)sender;
+- (IBAction)onUpdate:(nullable id)sender;
+- (IBAction)onRemoveEntry:(nullable id)sender;
 @end
 
 @implementation TDCChannelBanListSheet
@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[NSSortDescriptor sortDescriptorWithKey:@"entryCreationDate" ascending:NO selector:@selector(compare:)]
 	];
 
-	NSString *headerTitle = nil;
+	NSString *headerTitle = @"";
 
 	if (self.entryType == TDCChannelBanListSheetEntryTypeBan) {
 		headerTitle = TXTLS(@"TDCChannelBanListSheet[rhc-ke]", self.channel.name);
@@ -183,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Actions
 
-- (void)onUpdate:(id)sender
+- (void)onUpdate:(nullable id)sender
 {
 	[self clear];
 
@@ -192,7 +192,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onRemoveEntry:(id)sender
+- (void)onRemoveEntry:(nullable id)sender
 {
 	NSIndexSet *selectedRows = self.entryTable.selectedRowIndexes;
 

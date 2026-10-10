@@ -77,16 +77,15 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_BEGIN
 }
 DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
+DESIGNATED_INITIALIZER_EXCEPTION_BODY_BEGIN
 - (nullable instancetype)initWithData:(NSData *)data
 {
 	NSParameterAssert(data != nil);
 
-	if ((self = [super init])) {
-		return [NSKeyedUnarchiver unarchiveObjectWithData:data];
-	}
-
-	return nil;
+	/* The decoded line takes the place of self */
+	return [NSKeyedUnarchiver unarchiveObjectWithData:data];
 }
+DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 + (nullable TVCLogLine *)logLineWithData:(NSData *)data uniqueIdentifier:(nullable NSString *)uniqueIdentifier
 {

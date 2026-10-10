@@ -154,7 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO;
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self.delegate respondsToSelector:@selector(channelModifyTopicSheet:onOk:)]) {
 		NSString *formattedTopic = self.topicValueTextField.stringValueWithIRCFormatting;

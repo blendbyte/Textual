@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Find Panel
 
-- (void)_showFindPromptOpenDialog:(id)sender
+- (void)_showFindPromptOpenDialog:(nullable id)sender
 {
 	void (^promptCompletionBlock)(NSString *) = ^(NSString *resultString)
 	{
@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)showFindPrompt:(id)sender
+- (void)showFindPrompt:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -149,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Edit
 
-- (void)copy:(id)sender
+- (void)copy:(nullable id)sender
 {
 	id firstResponder = [NSApp keyWindow].firstResponder;
 
@@ -158,7 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)paste:(id)sender
+- (void)paste:(nullable id)sender
 {
 	if (mainWindow().keyWindow) {
 		[mainWindowTextField() focus];
@@ -175,7 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)print:(id)sender
+- (void)print:(nullable id)sender
 {
 	if (mainWindow().keyWindow) {
 		TVCLogView *webView = self.selectedViewControllerBackingView;
@@ -199,7 +199,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Backing View
 
-- (void)copyLogAsHtml:(id)sender
+- (void)copyLogAsHtml:(nullable id)sender
 {
 	TVCLogView *webView = self.selectedViewControllerBackingView;
 
@@ -210,13 +210,13 @@ NS_ASSUME_NONNULL_BEGIN
 	[webView copyContentString];
 }
 
-- (void)openWebInspector:(id)sender
+- (void)openWebInspector:(nullable id)sender
 {
 	/* "Inspect Element" in the chat view's context menu (Developer Mode)
 	 opens the inspector; there is no public API to open it from here. */
 }
 
-- (void)markScrollback:(id)sender
+- (void)markScrollback:(nullable id)sender
 {
 	TVCLogController *viewController = self.selectedViewController;
 
@@ -227,7 +227,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[viewController mark];
 }
 
-- (void)gotoScrollbackMarker:(id)sender
+- (void)gotoScrollbackMarker:(nullable id)sender
 {
 	TVCLogController *viewController = self.selectedViewController;
 
@@ -238,7 +238,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[viewController goToMark];
 }
 
-- (void)clearScrollback:(id)sender
+- (void)clearScrollback:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -254,12 +254,12 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)increaseLogFontSize:(id)sender
+- (void)increaseLogFontSize:(nullable id)sender
 {
 	[mainWindow() changeTextSize:YES];
 }
 
-- (void)decreaseLogFontSize:(id)sender
+- (void)decreaseLogFontSize:(nullable id)sender
 {
 	[mainWindow() changeTextSize:NO];
 }
@@ -280,7 +280,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return searchProviderName;
 }
 
-- (void)searchGoogle:(id)sender
+- (void)searchGoogle:(nullable id)sender
 {
 	TVCLogView *webView = self.selectedViewControllerBackingView;
 
@@ -301,7 +301,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSPerformService(@"Search With %WebSearchProvider@", searchPasteboard);
 }
 
-- (void)lookUpInDictionary:(id)sender
+- (void)lookUpInDictionary:(nullable id)sender
 {
 	TVCLogView *webView = self.selectedViewControllerBackingView;
 

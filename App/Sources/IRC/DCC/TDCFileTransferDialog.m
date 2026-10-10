@@ -65,17 +65,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSURL *downloadDestinationURLPrivate;
 @property (nonatomic, assign) BOOL downloadDestinationURLIsAccessed;
 
-- (IBAction)hideWindow:(id)sender;
+- (IBAction)hideWindow:(nullable id)sender;
 
-- (IBAction)clear:(id)sender;
+- (IBAction)clear:(nullable id)sender;
 
-- (IBAction)startTransferOfFile:(id)sender;
-- (IBAction)stopTransferOfFile:(id)sender;
-- (IBAction)removeTransferFromList:(id)sender;
-- (IBAction)openReceivedFile:(id)sender;
-- (IBAction)revealReceivedFileInFinder:(id)sender;
+- (IBAction)startTransferOfFile:(nullable id)sender;
+- (IBAction)stopTransferOfFile:(nullable id)sender;
+- (IBAction)removeTransferFromList:(nullable id)sender;
+- (IBAction)openReceivedFile:(nullable id)sender;
+- (IBAction)revealReceivedFileInFinder:(nullable id)sender;
 
-- (IBAction)navigationSelectionDidChange:(id)sender;
+- (IBAction)navigationSelectionDidChange:(nullable id)sender;
 @end
 
 @implementation TDCFileTransferDialog
@@ -106,7 +106,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[RZNotificationCenter() removeObserver:self];
 
 	[self.maintenanceTimer stop];
-	 self.maintenanceTimer = nil;
 }
 
 - (void)show
@@ -378,7 +377,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO; // Default validation to NO.
 }
 
-- (void)clear:(id)sender
+- (void)clear:(nullable id)sender
 {
 	NSArray *stoppedFileTransfers = [self stoppedFileTransfers];
 
@@ -389,7 +388,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self updateClearButton];
 }
 
-- (void)startTransferOfFile:(id)sender
+- (void)startTransferOfFile:(nullable id)sender
 {
 	NSString *savePath = self.downloadDestinationURLPrivate.path;
 
@@ -451,14 +450,14 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)stopTransferOfFile:(id)sender
+- (void)stopTransferOfFile:(nullable id)sender
 {
 	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
 		[fileTransfer closeAndPostNotification:NO];
 	}];
 }
 
-- (void)removeTransferFromList:(id)sender
+- (void)removeTransferFromList:(nullable id)sender
 {
 	NSArray *selectedFileTransfers = [self selectedFileTransfers];
 
@@ -469,7 +468,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.fileTransfersController removeObjects:selectedFileTransfers];
 }
 
-- (void)openReceivedFile:(id)sender
+- (void)openReceivedFile:(nullable id)sender
 {
 	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
 		if (fileTransfer.isSender != NO) {
@@ -480,7 +479,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)revealReceivedFileInFinder:(id)sender
+- (void)revealReceivedFileInFinder:(nullable id)sender
 {
 	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
 		if (fileTransfer.isSender != NO) {
@@ -623,7 +622,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.navigationControllerCell.selectedSegment;
 }
 
-- (void)navigationSelectionDidChange:(id)sender
+- (void)navigationSelectionDidChange:(nullable id)sender
 {
 	TDCFileTransferDialogSelection selection = self.navigationSelection;
 
@@ -779,7 +778,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.window saveWindowStateForClass:self.class];
 }
 
-- (void)hideWindow:(id)sender
+- (void)hideWindow:(nullable id)sender
 {
 	[self close];
 }

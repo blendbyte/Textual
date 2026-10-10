@@ -350,7 +350,7 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 	/* No window delegate calls (selection, resizing) while closing */
 	self.delegate = nil;
 
-	self.selectedItems = nil;
+	self.selectedItems = @[];
 	self.selectedItem = nil;
 
 	LogToConsoleTerminationProgress("Closing main window");

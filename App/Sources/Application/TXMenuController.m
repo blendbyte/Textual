@@ -1491,7 +1491,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Other Actions
 
-- (void)emptyAction:(id)sender
+- (void)emptyAction:(nullable id)sender
 {
 	/* Empty action used to validate submenus */
 }

@@ -139,7 +139,8 @@
         UniChar c = characters[i];
         switch (state) {
             
-#define CHARACTER_STARTS(x) (c == x ## Initial &&\
+#define CHARACTER_STARTS(x) (x != nil &&\
+                             c == x ## Initial &&\
                              i+x ## Length <= length &&\
                              [[templateString substringWithRange:NSMakeRange(i, x ## Length)] isEqualToString:x])
             

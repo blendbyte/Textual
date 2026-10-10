@@ -32,7 +32,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OELReachability ()
-@property (nonatomic, assign) SCNetworkReachabilityRef reachabilityRef;
+@property (nonatomic, strong) __attribute__((NSObject)) SCNetworkReachabilityRef reachabilityRef; // retained by ARC
 
 - (void)reachabilityChanged:(SCNetworkReachabilityFlags)flags;
 @end
@@ -51,7 +51,11 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 	SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, "www.google.com");
 
 	if (ref) {
-		return [[self alloc] initWithReachabilityRef:ref];
+		OELReachability *reachability = [[self alloc] initWithReachabilityRef:ref];
+
+		CFRelease(ref);
+
+		return reachability;
 	}
 
 	return nil;
@@ -70,12 +74,6 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 - (void)dealloc
 {
 	[self stopNotifier];
-
-	if (self.reachabilityRef)
-	{
-		CFRelease(self.reachabilityRef);
-				  self.reachabilityRef = nil;
-	}
 
 	self.reachableBlock	= nil;
 	self.unreachableBlock = nil;

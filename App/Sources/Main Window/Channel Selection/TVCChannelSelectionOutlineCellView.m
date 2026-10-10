@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TVCChannelSelectionOutlineCellView ()
 @property (readonly) IRCTreeItem *cellItem;
 
-- (IBAction)selectionCheckboxClicked:(id)sender;
+- (IBAction)selectionCheckboxClicked:(nullable id)sender;
 @end
 
 @implementation TVCChannelSelectionOutlineCellView
@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.selectedCheckbox.allowsMixedState = isGroupItem;
 }
 
-- (void)selectionCheckboxClicked:(id)sender
+- (void)selectionCheckboxClicked:(nullable id)sender
 {
 	[self.parentController selectionCheckboxClickedInCell:self];
 }

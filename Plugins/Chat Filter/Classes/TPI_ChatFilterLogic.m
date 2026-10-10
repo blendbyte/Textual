@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 		NSArray *filterLimitedToChannelsIDs = filter.filterLimitedToChannelsIDs;
 
 		if ([filterLimitedToClientsIDs containsObject:client.uniqueIdentifier] == NO &&
-			[filterLimitedToChannelsIDs containsObject:textDestination.uniqueIdentifier] == NO)
+			(textDestination == nil || [filterLimitedToChannelsIDs containsObject:textDestination.uniqueIdentifier] == NO))
 		{
 			/* Target channel is not covered by current filter. */
 

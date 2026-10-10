@@ -146,14 +146,14 @@ BOOL NSObjectIsNotEmpty(id _Nullable obj)
 #pragma mark -
 #pragma mark Grand Central Dispatch
 
-dispatch_queue_t XRCreateDispatchQueueWithPriority(const char *label, dispatch_queue_attr_t attributes, dispatch_qos_class_t priority)
+dispatch_queue_t XRCreateDispatchQueueWithPriority(const char *label, dispatch_queue_attr_t _Nullable attributes, dispatch_qos_class_t priority)
 {
 	dispatch_queue_attr_t queueAttributes = dispatch_queue_attr_make_with_qos_class(attributes, priority, 0);
 
 	return dispatch_queue_create(label, queueAttributes);
 }
 
-dispatch_queue_t XRCreateDispatchQueue(const char *label, dispatch_queue_attr_t attributes)
+dispatch_queue_t XRCreateDispatchQueue(const char *label, dispatch_queue_attr_t _Nullable attributes)
 {
 	return XRCreateDispatchQueueWithPriority(label, attributes, QOS_CLASS_UNSPECIFIED);
 }

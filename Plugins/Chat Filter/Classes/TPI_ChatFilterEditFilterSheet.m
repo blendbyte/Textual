@@ -97,15 +97,15 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 @property (nonatomic, copy) NSArray<NSString *> *filterActionAutoCompletedTokens;
 @property (nonatomic, strong) IBOutlet TVCChannelSelectionViewController *filterLimitToSelectionOutlineView;
 
-- (IBAction)viewFilterMatchHelpText:(id)sender;
-- (IBAction)viewFilterActionHelpText:(id)sender;
-- (IBAction)viewFilterSenderMatchHelpText:(id)sender;
-- (IBAction)viewFilterForwardToDestinationHelpText:(id)sender;
+- (IBAction)viewFilterMatchHelpText:(nullable id)sender;
+- (IBAction)viewFilterActionHelpText:(nullable id)sender;
+- (IBAction)viewFilterSenderMatchHelpText:(nullable id)sender;
+- (IBAction)viewFilterForwardToDestinationHelpText:(nullable id)sender;
 
-- (IBAction)filterLimitedToMatrixChanged:(id)sender;
-- (IBAction)filterIgnoreContentCheckChanged:(id)sender;
-- (IBAction)filterEventTypeChanged:(id)sender;
-- (IBAction)filterLimitedToMyselfChanged:(id)sender;
+- (IBAction)filterLimitedToMatrixChanged:(nullable id)sender;
+- (IBAction)filterIgnoreContentCheckChanged:(nullable id)sender;
+- (IBAction)filterEventTypeChanged:(nullable id)sender;
+- (IBAction)filterLimitedToMyselfChanged:(nullable id)sender;
 @end
 
 #pragma mark -
@@ -391,7 +391,7 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	return filterEvents;
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self okOrError] == NO) {
 		return;
@@ -691,7 +691,7 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	[self toggleOkButton];
 }
 
-- (void)validatedTextFieldTextDidChange:(id)sender
+- (void)validatedTextFieldTextDidChange:(nullable id)sender
 {
 	[self toggleOkButton];
 }
@@ -816,37 +816,37 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	self.filterLimitToSpecificItemsButton.state = (limitedTo == TPI_ChatFilterLimitToValueSpecificItems);
 }
 
-- (void)filterLimitedToMyselfChanged:(id)sender
+- (void)filterLimitedToMyselfChanged:(nullable id)sender
 {
 	[self updateEnabledStateOfSenderMatch];
 }
 
-- (void)filterEventTypeChanged:(id)sender
+- (void)filterEventTypeChanged:(nullable id)sender
 {
 	[self updateEnabledStateOfComponentsConstrainedByFilterEvents];
 }
 
-- (void)viewFilterMatchHelpText:(id)sender
+- (void)viewFilterMatchHelpText:(nullable id)sender
 {
 	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-1" inBackground:NO];
 }
 
-- (void)viewFilterActionHelpText:(id)sender
+- (void)viewFilterActionHelpText:(nullable id)sender
 {
 	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-2" inBackground:NO];
 }
 
-- (void)viewFilterSenderMatchHelpText:(id)sender
+- (void)viewFilterSenderMatchHelpText:(nullable id)sender
 {
 	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-3" inBackground:NO];
 }
 
-- (void)viewFilterForwardToDestinationHelpText:(id)sender
+- (void)viewFilterForwardToDestinationHelpText:(nullable id)sender
 {
 	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-4" inBackground:NO];
 }
 
-- (void)filterLimitedToMatrixChanged:(id)sender
+- (void)filterLimitedToMatrixChanged:(nullable id)sender
 {
 	self.filter.filterLimitedToValue = [sender tag];
 
@@ -855,7 +855,7 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	[self updateEnabledStateOfFilterEvents];
 }
 
-- (void)filterIgnoreContentCheckChanged:(id)sender
+- (void)filterIgnoreContentCheckChanged:(nullable id)sender
 {
 	[self updateEnableStateOfFilterActionTokenField];
 

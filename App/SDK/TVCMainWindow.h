@@ -140,10 +140,10 @@ TEXTUAL_EXTERN NSString * const TVCServerListDragType;
 
 - (void)selectNextServer:(NSEvent *)e;
 - (void)selectNextChannel:(NSEvent *)e;
-- (void)selectNextWindow:(NSEvent *)e;
+- (void)selectNextWindow:(nullable NSEvent *)e;
 - (void)selectPreviousServer:(NSEvent *)e;
 - (void)selectPreviousChannel:(NSEvent *)e;
-- (void)selectPreviousWindow:(NSEvent *)e;
+- (void)selectPreviousWindow:(nullable NSEvent *)e;
 - (void)selectNextActiveServer:(NSEvent *)e;
 - (void)selectNextUnreadChannel:(NSEvent *)e;
 - (void)selectNextActiveChannel:(NSEvent *)e;

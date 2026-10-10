@@ -413,7 +413,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	}
 }
 
-- (void)dateChanged:(id)sender
+- (void)dateChanged:(nullable id)sender
 {
 	/* We call the notifications in the timer so we do not have to
 	 ask for the current day components two times. */

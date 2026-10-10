@@ -49,7 +49,7 @@ typedef NSString * _Nullable (^TVCValidatedTextFieldValidationBlock)(NSString *c
 @property (nonatomic, assign) BOOL stringValueIsTrimmed; // Returned value is trimmed of whitespaces and newlines when returned. The value is returned trimmed by -value. It is also sent to the validation block as trimmed.
 @property (nonatomic, assign) BOOL stringValueIsInvalidOnEmpty; // Is an empty string considered invalid?
 @property (nonatomic, assign) BOOL performValidationWhenEmpty;
-@property (nonatomic, weak) id textDidChangeCallback; // Calls method "-(void)validatedTextFieldTextDidChange:(id)sender" whereas "sender" is the text field.
+@property (nonatomic, weak) id textDidChangeCallback; // Calls method "-(void)validatedTextFieldTextDidChange:(nullable id)sender" whereas "sender" is the text field.
 @property (nonatomic, copy, nullable) NSString *defaultValue; // A value to return from -value if the text field is empty. Only used if stringValueIsInvalidOnEmpty = NO
 
 @property (readonly, copy) NSString *value; /* The current value. */

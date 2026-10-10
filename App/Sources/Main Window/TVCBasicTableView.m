@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return class_respondsToSelector(self.class, aSelector);
 }
 
-- (void)copy:(id)sender
+- (void)copy:(nullable id)sender
 {
 	/* There is no need for a delegate response check here because it
 	 is assumed the only way we can lead to this path is if we responded

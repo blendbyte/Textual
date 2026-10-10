@@ -177,7 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self restoreSelectionDuringSetup];
 
 	/* Fake the delegate call */
-	[self outlineViewSelectionDidChange:nil];
+	[self outlineViewSelectionDidChange:[NSNotification notificationWithName:NSOutlineViewSelectionDidChangeNotification object:self.serverList]];
 
 	/* Populate navigation list */
 	[menuController() populateNavigationChannelList];
@@ -534,7 +534,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Server List Delegate
 
-- (void)outlineViewDoubleClicked:(id)sender
+- (void)outlineViewDoubleClicked:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;

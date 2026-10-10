@@ -54,12 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setUserInfo:(nullable NSString *)userInfo recursively:(BOOL)recursively; // Setting recursively to YES will apply userInfo to this menu item as well as all items within its submenu if it has one
 
 + (instancetype)menuItemWithTitle:(NSString *)aString
-				 target:(id)aTarget
-				 action:(SEL)aSelector;
+				 target:(nullable id)aTarget
+				 action:(nullable SEL)aSelector;
 
 + (instancetype)menuItemWithTitle:(NSString *)aString
-				 target:(id)aTarget
-				 action:(SEL)aSelector
+				 target:(nullable id)aTarget
+				 action:(nullable SEL)aSelector
 		  keyEquivalent:(NSString *)charCode
 	  keyEquivalentMask:(NSUInteger)mask;
 @end

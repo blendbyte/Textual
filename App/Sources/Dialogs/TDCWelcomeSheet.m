@@ -60,8 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSMutableArray<NSString *> *channelList;
 @property (nonatomic, strong) IRCNetworkList *networkList;
 
-- (IBAction)onAddChannel:(id)sender;
-- (IBAction)onDeleteChannel:(id)sender;
+- (IBAction)onAddChannel:(nullable id)sender;
+- (IBAction)onDeleteChannel:(nullable id)sender;
 @end
 
 @implementation TDCWelcomeSheet
@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[super cancel:nil];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	/* A channel name still being typed in the table is committed first */
 	if ([self.sheet makeFirstResponder:nil] == NO) {
@@ -242,7 +242,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
-- (void)onAddChannel:(id)sender
+- (void)onAddChannel:(nullable id)sender
 {
 	[self.channelList addObject:@""];
 
@@ -255,7 +255,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.channelTable editColumn:0 row:rowToEdit withEvent:nil select:YES];
 }
 
-- (void)onDeleteChannel:(id)sender
+- (void)onDeleteChannel:(nullable id)sender
 {
 	NSInteger selectedRow = self.channelTable.selectedRow;
 

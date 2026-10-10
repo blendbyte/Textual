@@ -88,8 +88,6 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 - (void)dealloc
 {
 	[self removeDocumentFile];
-
-	self.webViewBacking = nil;
 }
 
 - (void)removeDocumentFile

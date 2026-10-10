@@ -153,41 +153,41 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL reloadingThemeBySelection;
 @property (nonatomic, weak) IBOutlet NSView *notificationControllerHostView;
 @property (nonatomic, strong) IBOutlet TVCNotificationConfigurationViewController *notificationController;
-@property (nonatomic, strong) TDCPreferencesUserStyleSheet *userStyleSheet;
+@property (nonatomic, strong, nullable) TDCPreferencesUserStyleSheet *userStyleSheet;
 
-- (IBAction)onAddExcludeKeyword:(id)sender;
-- (IBAction)onAddHighlightKeyword:(id)sender; // changed
-- (IBAction)onChangedAppearance:(id)sender;
-- (IBAction)onChangedCheckForUpdates:(id)sender;
-- (IBAction)onChangedCheckForBetaUpdates:(id)sender;
-- (IBAction)onChangedChannelViewArrangement:(id)sender;
-- (IBAction)onChangedDisableNicknameColorHashing:(id)sender;
-- (IBAction)onChangedDockIconBadges:(id)sender;
-- (IBAction)onChangedForwardNoticeTo:(id)sender;
-- (IBAction)onChangedHighlightLogging:(id)sender;
-- (IBAction)onChangedHighlightType:(id)sender;
-- (IBAction)onChangedInlineMediaOption:(id)sender;
-- (IBAction)onChangedInputHistoryScheme:(id)sender;
-- (IBAction)onChangedMainInputTextViewFontSize:(id)sender; // changed
-- (IBAction)onChangedMainWindowSegmentedController:(id)sender;
-- (IBAction)onChangedScrollbackSaveLimit:(id)sender;
-- (IBAction)onChangedScrollbackVisibleLimit:(id)sender;
-- (IBAction)onChangedServerListUnreadBadgeColor:(id)sender;
-- (IBAction)onChangedTheme:(id)sender;
-- (IBAction)onChangedThemeSelection:(id)sender;  // changed
-- (IBAction)onChangedTranscriptFolder:(id)sender;
-- (IBAction)onChangedTransparency:(id)sender;
-- (IBAction)onChangedUserListModeColor:(id)sender;
-- (IBAction)onChangedUserListModeSortOrder:(id)sender;
-- (IBAction)onFileTransferDownloadDestinationFolderChanged:(id)sender;
-- (IBAction)onFileTransferIPAddressDetectionMethodChanged:(id)sender;
-- (IBAction)onModifyUserStyleSheetRules:(id)sender;
-- (IBAction)onOpenPathToScripts:(id)sender;
-- (IBAction)onOpenPathToTheme:(id)sender; // changed
-- (IBAction)onPrefPaneSelected:(id)sender;
-- (IBAction)onResetServerListUnreadBadgeColorsToDefault:(id)sender;
-- (IBAction)onResetUserListModeColorsToDefaults:(id)sender;
-- (IBAction)onSelectNewFont:(id)sender;
+- (IBAction)onAddExcludeKeyword:(nullable id)sender;
+- (IBAction)onAddHighlightKeyword:(nullable id)sender; // changed
+- (IBAction)onChangedAppearance:(nullable id)sender;
+- (IBAction)onChangedCheckForUpdates:(nullable id)sender;
+- (IBAction)onChangedCheckForBetaUpdates:(nullable id)sender;
+- (IBAction)onChangedChannelViewArrangement:(nullable id)sender;
+- (IBAction)onChangedDisableNicknameColorHashing:(nullable id)sender;
+- (IBAction)onChangedDockIconBadges:(nullable id)sender;
+- (IBAction)onChangedForwardNoticeTo:(nullable id)sender;
+- (IBAction)onChangedHighlightLogging:(nullable id)sender;
+- (IBAction)onChangedHighlightType:(nullable id)sender;
+- (IBAction)onChangedInlineMediaOption:(nullable id)sender;
+- (IBAction)onChangedInputHistoryScheme:(nullable id)sender;
+- (IBAction)onChangedMainInputTextViewFontSize:(nullable id)sender; // changed
+- (IBAction)onChangedMainWindowSegmentedController:(nullable id)sender;
+- (IBAction)onChangedScrollbackSaveLimit:(nullable id)sender;
+- (IBAction)onChangedScrollbackVisibleLimit:(nullable id)sender;
+- (IBAction)onChangedServerListUnreadBadgeColor:(nullable id)sender;
+- (IBAction)onChangedTheme:(nullable id)sender;
+- (IBAction)onChangedThemeSelection:(nullable id)sender;  // changed
+- (IBAction)onChangedTranscriptFolder:(nullable id)sender;
+- (IBAction)onChangedTransparency:(nullable id)sender;
+- (IBAction)onChangedUserListModeColor:(nullable id)sender;
+- (IBAction)onChangedUserListModeSortOrder:(nullable id)sender;
+- (IBAction)onFileTransferDownloadDestinationFolderChanged:(nullable id)sender;
+- (IBAction)onFileTransferIPAddressDetectionMethodChanged:(nullable id)sender;
+- (IBAction)onModifyUserStyleSheetRules:(nullable id)sender;
+- (IBAction)onOpenPathToScripts:(nullable id)sender;
+- (IBAction)onOpenPathToTheme:(nullable id)sender; // changed
+- (IBAction)onPrefPaneSelected:(nullable id)sender;
+- (IBAction)onResetServerListUnreadBadgeColorsToDefault:(nullable id)sender;
+- (IBAction)onResetUserListModeColorsToDefaults:(nullable id)sender;
+- (IBAction)onSelectNewFont:(nullable id)sender;
 
 @end
 
@@ -355,7 +355,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
- - (void)onPrefPaneSelected:(id)sender
+ - (void)onPrefPaneSelected:(nullable id)sender
 {
 #define _de(matchTag, view, selectionIndex)		\
 		case (matchTag): {	\
@@ -796,7 +796,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onFileTransferDownloadDestinationFolderChanged:(id)sender
+- (void)onFileTransferDownloadDestinationFolderChanged:(nullable id)sender
 {
 	TDCFileTransferDialog *transferController = [TXSharedApplication sharedFileTransferDialog];
 
@@ -874,7 +874,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onChangedTranscriptFolder:(id)sender
+- (void)onChangedTranscriptFolder:(nullable id)sender
 {
 	if (self.transcriptFolderButton.selectedTag == 2) {
 		NSOpenPanel *d = [NSOpenPanel openPanel];
@@ -969,7 +969,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.themeSelectionButton selectItemWithTag:100];
 }
 
-- (void)onChangedThemeSelection:(id)sender
+- (void)onChangedThemeSelection:(nullable id)sender
 {
 	NSMenuItem *selectedItem = self.themeSelectionButton.selectedItem;
 
@@ -1037,7 +1037,7 @@ NS_ASSUME_NONNULL_BEGIN
 				   completionBlock:nil];
 }
 
-- (void)onSelectNewFont:(id)sender
+- (void)onSelectNewFont:(nullable id)sender
 {
 	NSFont *currentFont = [TPCPreferences themeChannelViewFont];
 
@@ -1066,7 +1066,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self onChangedTheme:nil];
 }
 
-- (void)onChangedTransparency:(id)sender
+- (void)onChangedTransparency:(nullable id)sender
 {
 	[mainWindow() updateAlphaValueToReflectPreferences];
 }
@@ -1074,7 +1074,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark User Style Sheet Rules
 
-- (void)onModifyUserStyleSheetRules:(id)sender
+- (void)onModifyUserStyleSheetRules:(nullable id)sender
 {
 	TDCPreferencesUserStyleSheet *sheet = [[TDCPreferencesUserStyleSheet alloc] initWithWindow:self.window];
 
@@ -1107,7 +1107,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.forwardNoticeToQueryButton.state = (location == TXNoticeSendLocationQuery);
 }
 
-- (void)onChangedForwardNoticeTo:(id)sender
+- (void)onChangedForwardNoticeTo:(nullable id)sender
 {
 	[TPCPreferences setLocationToSendNotices:[sender tag]];
 }
@@ -1130,7 +1130,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 }
 
-- (void)onChangedCheckForUpdates:(id)sender
+- (void)onChangedCheckForUpdates:(nullable id)sender
 {
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	SPUUpdater *updater = masterController().updateController.updater;
@@ -1145,7 +1145,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 }
 
-- (void)onChangedCheckForBetaUpdates:(id)sender
+- (void)onChangedCheckForBetaUpdates:(nullable id)sender
 {
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionSparkleFrameworkFeedURL];
@@ -1159,12 +1159,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Actions
 
-- (void)onChangedDisableNicknameColorHashing:(id)sender
+- (void)onChangedDisableNicknameColorHashing:(nullable id)sender
 {
 	[self onChangedTheme:nil];
 }
 
-- (void)onChangedHighlightType:(id)sender
+- (void)onChangedHighlightType:(nullable id)sender
 {
 	[self willChangeValueForKey:@"highlightCurrentNickname"];
 	[self didChangeValueForKey:@"highlightCurrentNickname"];
@@ -1246,12 +1246,12 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO;
 }
 
-- (void)onAddHighlightKeyword:(id)sender
+- (void)onAddHighlightKeyword:(nullable id)sender
 {
 	[self addKeywordToArrayController:self.highlightKeywordsArrayController inTableView:self.highlightKeywordsTable];
 }
 
-- (void)onAddExcludeKeyword:(id)sender
+- (void)onAddExcludeKeyword:(nullable id)sender
 {
 	[self addKeywordToArrayController:self.excludeKeywordsArrayController inTableView:self.excludeKeywordsTable];
 }
@@ -1273,7 +1273,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onChangedInlineMediaOption:(id)sender
+- (void)onChangedInlineMediaOption:(nullable id)sender
 {
 	if (self.inlineMediaEnabledButton.state == NSControlStateValueOff) {
 		[TPCPreferences setShowInlineMedia:NO];
@@ -1294,7 +1294,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)onResetUserListModeColorsToDefaults:(id)sender
+- (void)onResetUserListModeColorsToDefaults:(nullable id)sender
 {
 	[self deactivateColorWells];
 
@@ -1314,7 +1314,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self onChangedUserListModeColor:nil];
 }
 
-- (void)onResetServerListUnreadBadgeColorsToDefault:(id)sender
+- (void)onResetServerListUnreadBadgeColorsToDefault:(nullable id)sender
 {
 	[self deactivateColorWells];
 
@@ -1327,17 +1327,17 @@ NS_ASSUME_NONNULL_BEGIN
 	[self onChangedServerListUnreadBadgeColor:sender];
 }
 
-- (void)onChangedInputHistoryScheme:(id)sender
+- (void)onChangedInputHistoryScheme:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionInputHistoryScope];
 }
 
-- (void)onChangedAppearance:(id)sender
+- (void)onChangedAppearance:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionAppearance];
 }
 
-- (void)onChangedTheme:(id)sender
+- (void)onChangedTheme:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:(TPCPreferencesReloadActionStyle | TPCPreferencesReloadActionTextDirection)];
 }
@@ -1364,17 +1364,17 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onChangedChannelViewArrangement:(id)sender
+- (void)onChangedChannelViewArrangement:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionChannelViewArrangement];
 }
 
-- (void)onChangedMainWindowSegmentedController:(id)sender
+- (void)onChangedMainWindowSegmentedController:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionTextFieldSegmentedControllerOrigin];
 }
 
-- (void)onChangedUserListModeColor:(id)sender
+- (void)onChangedUserListModeColor:(nullable id)sender
 {
 	static NSDictionary<NSNumber *, NSString *> *preferenceMap = nil;
 
@@ -1402,49 +1402,49 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onChangedMainInputTextViewFontSize:(id)sender
+- (void)onChangedMainInputTextViewFontSize:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionTextFieldFontSize];
 }
 
-- (void)onFileTransferIPAddressDetectionMethodChanged:(id)sender
+- (void)onFileTransferIPAddressDetectionMethodChanged:(nullable id)sender
 {
 	TXFileTransferIPAddressMethodDetection detectionMethod = [TPCPreferences fileTransferIPAddressDetectionMethod];
 
 	self.fileTransferManuallyEnteredIPAddressTextField.enabled = (detectionMethod == TXFileTransferIPAddressMethodManual);
 }
 
-- (void)onChangedDockIconBadges:(id)sender
+- (void)onChangedDockIconBadges:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionDockIconBadges];
 }
 
-- (void)onChangedHighlightLogging:(id)sender
+- (void)onChangedHighlightLogging:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionHighlightLogging];
 }
 
-- (void)onChangedUserListModeSortOrder:(id)sender
+- (void)onChangedUserListModeSortOrder:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionMemberListSortOrder];
 }
 
-- (void)onChangedServerListUnreadBadgeColor:(id)sender
+- (void)onChangedServerListUnreadBadgeColor:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionServerListUnreadBadges];
 }
 
-- (void)onChangedScrollbackSaveLimit:(id)sender
+- (void)onChangedScrollbackSaveLimit:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionScrollbackSaveLimit];
 }
 
-- (void)onChangedScrollbackVisibleLimit:(id)sender
+- (void)onChangedScrollbackVisibleLimit:(nullable id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionScrollbackVisibleLimit];
 }
 
-- (void)onOpenPathToScripts:(id)sender
+- (void)onOpenPathToScripts:(nullable id)sender
 {
 	[RZWorkspace() openURL:[TPCPathInfo applicationSupportURL]];
 }
@@ -1468,7 +1468,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onOpenPathToTheme:(id)sender
+- (void)onOpenPathToTheme:(nullable id)sender
 {
 	if (themeController().bundledTheme) {
 		[TDCAlert alertSheetWithWindow:self.window

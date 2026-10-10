@@ -182,48 +182,48 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) IRCServer *previousPrimaryServer;
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSString *> *channelSecretKeys; // channel ID → key, read once
 
-- (IBAction)proxyTypeChanged:(id)sender;
-- (IBAction)toggleAdvancedEncodings:(id)sender;
+- (IBAction)proxyTypeChanged:(nullable id)sender;
+- (IBAction)toggleAdvancedEncodings:(nullable id)sender;
 
-- (IBAction)addChannel:(id)sender;
-- (IBAction)editChannel:(id)sender;
-- (IBAction)deleteChannel:(id)sender;
+- (IBAction)addChannel:(nullable id)sender;
+- (IBAction)editChannel:(nullable id)sender;
+- (IBAction)deleteChannel:(nullable id)sender;
 
-- (IBAction)addHighlight:(id)sender;
-- (IBAction)editHighlight:(id)sender;
-- (IBAction)deleteHighlight:(id)sender;
+- (IBAction)addHighlight:(nullable id)sender;
+- (IBAction)editHighlight:(nullable id)sender;
+- (IBAction)deleteHighlight:(nullable id)sender;
 
-- (IBAction)addAddressBookEntry:(id)sender;
-- (IBAction)editAddressBookEntry:(id)sender;
-- (IBAction)deleteAddressBookEntry:(id)sender;
+- (IBAction)addAddressBookEntry:(nullable id)sender;
+- (IBAction)editAddressBookEntry:(nullable id)sender;
+- (IBAction)deleteAddressBookEntry:(nullable id)sender;
 
-- (IBAction)showAddAddressBookEntryMenu:(id)sender;
+- (IBAction)showAddAddressBookEntryMenu:(nullable id)sender;
 
-- (IBAction)openProxySettingsInSystemPreferences:(id)sender;
+- (IBAction)openProxySettingsInSystemPreferences:(nullable id)sender;
 
-- (IBAction)editSeverEndpoints:(id)sender;
+- (IBAction)editSeverEndpoints:(nullable id)sender;
 
-- (IBAction)useSSLCheckChanged:(id)sender;
+- (IBAction)useSSLCheckChanged:(nullable id)sender;
 
-- (IBAction)autojoinWaitsForNickServChanged:(id)sender;
+- (IBAction)autojoinWaitsForNickServChanged:(nullable id)sender;
 
-- (IBAction)onClientCertificateResetRequested:(id)sender;
-- (IBAction)onClientCertificateChangeRequested:(id)sender;
-- (IBAction)onClientCertificateFingerprintSHA512CopyRequested:(id)sender;
-- (IBAction)onClientCertificateFingerprintSHA2CopyRequested:(id)sender;
-- (IBAction)onClientCertificateFingerprintSHA1CopyRequested:(id)sender;
-- (IBAction)onClientCertificateFingerprintMD5CopyRequested:(id)sender;
+- (IBAction)onClientCertificateResetRequested:(nullable id)sender;
+- (IBAction)onClientCertificateChangeRequested:(nullable id)sender;
+- (IBAction)onClientCertificateFingerprintSHA512CopyRequested:(nullable id)sender;
+- (IBAction)onClientCertificateFingerprintSHA2CopyRequested:(nullable id)sender;
+- (IBAction)onClientCertificateFingerprintSHA1CopyRequested:(nullable id)sender;
+- (IBAction)onClientCertificateFingerprintMD5CopyRequested:(nullable id)sender;
 
-- (IBAction)onSASLECDSAKeyGenerateRequested:(id)sender;
-- (IBAction)onSASLECDSAKeyImportRequested:(id)sender;
-- (IBAction)onSASLECDSAKeyCopyPublicKeyRequested:(id)sender;
-- (IBAction)onSASLECDSAKeyCopyNickServCommandRequested:(id)sender;
-- (IBAction)onSASLECDSAKeyRemoveRequested:(id)sender;
+- (IBAction)onSASLECDSAKeyGenerateRequested:(nullable id)sender;
+- (IBAction)onSASLECDSAKeyImportRequested:(nullable id)sender;
+- (IBAction)onSASLECDSAKeyCopyPublicKeyRequested:(nullable id)sender;
+- (IBAction)onSASLECDSAKeyCopyNickServCommandRequested:(nullable id)sender;
+- (IBAction)onSASLECDSAKeyRemoveRequested:(nullable id)sender;
 
-- (IBAction)preferredCipherSuitesChanged:(id)sender;
-- (IBAction)preferredCipherSuitesViewList:(id)sender;
+- (IBAction)preferredCipherSuitesChanged:(nullable id)sender;
+- (IBAction)preferredCipherSuitesViewList:(nullable id)sender;
 
-- (IBAction)preferredInternetProtocolChanged:(id)sender;
+- (IBAction)preferredInternetProtocolChanged:(nullable id)sender;
 @end
 
 #pragma clang diagnostic push
@@ -510,11 +510,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self populateTabViewList];
 }
 
-- (void)dealloc
-{
-	self.connectCommandsField = nil;
-}
-
 - (void)populateTabViewList
 {
 #define _groupItem(_label_, _children_) 	\
@@ -624,7 +619,7 @@ NS_ASSUME_NONNULL_BEGIN
 			continue;
 		}
 
-		if ([encodingPrefix isEqualToString:encodingPrefixPrevious] == NO) {
+		if (encodingPrefixPrevious == nil || [encodingPrefix isEqualToString:encodingPrefixPrevious] == NO) {
 			encodingPrefixPrevious = encodingPrefix;
 
 			[self.primaryEncodingButton.menu addItem:[NSMenuItem separatorItem]];
@@ -698,7 +693,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self okOrError] == NO) {
 		return;
@@ -842,7 +837,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO;
 }
 
-- (void)cancel:(id)sender
+- (void)cancel:(nullable id)sender
 {
 	[self removeConfigurationDidChangeObserver];
 
@@ -1294,7 +1289,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.editHighlightButton.enabled = (selectedRow >= 0);
 }
 
-- (void)useSSLCheckChanged:(id)sender
+- (void)useSSLCheckChanged:(nullable id)sender
 {
 	NSInteger serverPort = self.serverPortTextField.integerValue;
 
@@ -1378,7 +1373,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)validatedTextFieldTextDidChange:(id)sender
+- (void)validatedTextFieldTextDidChange:(nullable id)sender
 {
 	if (sender == self.serverAddressComboBox) {
 		[self populateDefaultsForPreconfiguredNetwork];
@@ -1392,7 +1387,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Actions
 
-- (void)autojoinWaitsForNickServChanged:(id)sender
+- (void)autojoinWaitsForNickServChanged:(nullable id)sender
 {
 	[self updateIdentityPage];
 
@@ -1413,7 +1408,7 @@ NS_ASSUME_NONNULL_BEGIN
 					alternateButton:nil];
 }
 
-- (void)preferredCipherSuitesChanged:(id)sender
+- (void)preferredCipherSuitesChanged:(nullable id)sender
 {
 	NSInteger cipherSuites = self.preferredCipherSuitesButton.selectedTag;
 
@@ -1421,7 +1416,7 @@ NS_ASSUME_NONNULL_BEGIN
 	(cipherSuites != RCMCipherSuiteCollectionNone);
 }
 
-- (void)preferredCipherSuitesViewList:(id)sender
+- (void)preferredCipherSuitesViewList:(nullable id)sender
 {
 	NSInteger cipherSuites = self.preferredCipherSuitesButton.selectedTag;
 
@@ -1439,7 +1434,7 @@ NS_ASSUME_NONNULL_BEGIN
 					   otherButton:nil];
 }
 
-- (void)proxyTypeChanged:(id)sender
+- (void)proxyTypeChanged:(nullable id)sender
 {
 	NSInteger proxyType = self.proxyTypeButton.selectedTag;
 
@@ -1466,12 +1461,12 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.proxyPortTextField performValidation];
 }
 
-- (void)openProxySettingsInSystemPreferences:(id)sender
+- (void)openProxySettingsInSystemPreferences:(nullable id)sender
 {
 	[TDCPreferencesController openProxySettingsInSystemPreferences];
 }
 
-- (void)toggleAdvancedEncodings:(id)sender
+- (void)toggleAdvancedEncodings:(nullable id)sender
 {
 	NSString *primaryEncoding = self.primaryEncodingButton.titleOfSelectedItem;
 
@@ -1504,7 +1499,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.fallbackEncodingButton selectItemWithTitle:fallbackEncoding];
 }
 
-- (void)preferredInternetProtocolChanged:(id)sender
+- (void)preferredInternetProtocolChanged:(nullable id)sender
 {
 TEXTUAL_IGNORE_DEPRECATION_BEGIN
 	/* Changing the property triggers a deprecation log to console
@@ -1560,14 +1555,14 @@ TEXTUAL_IGNORE_DEPRECATION_END
 				   }];
 }
 
-- (void)onSASLECDSAKeyGenerateRequested:(id)sender
+- (void)onSASLECDSAKeyGenerateRequested:(nullable id)sender
 {
 	[self confirmReplacingSASLECDSAKey:^{
 		[self setSASLECDSAKey:[IRCSASLECDSAKey generatedKey]];
 	}];
 }
 
-- (void)onSASLECDSAKeyImportRequested:(id)sender
+- (void)onSASLECDSAKeyImportRequested:(nullable id)sender
 {
 	[self confirmReplacingSASLECDSAKey:^{
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1605,7 +1600,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}];
 }
 
-- (void)onSASLECDSAKeyCopyPublicKeyRequested:(id)sender
+- (void)onSASLECDSAKeyCopyPublicKeyRequested:(nullable id)sender
 {
 	NSString *publicKey = self.currentSASLECDSAKey.publicKey;
 
@@ -1616,7 +1611,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	RZPasteboard().stringContent = publicKey;
 }
 
-- (void)onSASLECDSAKeyCopyNickServCommandRequested:(id)sender
+- (void)onSASLECDSAKeyCopyNickServCommandRequested:(nullable id)sender
 {
 	NSString *publicKey = self.currentSASLECDSAKey.publicKey;
 
@@ -1627,7 +1622,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	RZPasteboard().stringContent = [NSString stringWithFormat:@"/msg NickServ SET PUBKEY %@", publicKey];
 }
 
-- (void)onSASLECDSAKeyRemoveRequested:(id)sender
+- (void)onSASLECDSAKeyRemoveRequested:(nullable id)sender
 {
 	[self confirmReplacingSASLECDSAKeyWithTitle:TXTLS(@"TDCServerPropertiesSheet[ek1-x0]")
 								  defaultButton:TXTLS(@"TDCServerPropertiesSheet[ek1-x2]")
@@ -1639,7 +1634,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 #pragma mark -
 #pragma mark SSL Certificate
 
-- (void)onClientCertificateFingerprintSHA512CopyRequested:(id)sender
+- (void)onClientCertificateFingerprintSHA512CopyRequested:(nullable id)sender
 {
     NSString *fingerprint = self.clientCertificateSHA512FingerprintField.stringValue;
 
@@ -1648,7 +1643,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
     RZPasteboard().stringContent = command;
 }
 
-- (void)onClientCertificateFingerprintSHA2CopyRequested:(id)sender
+- (void)onClientCertificateFingerprintSHA2CopyRequested:(nullable id)sender
 {
 	NSString *fingerprint = self.clientCertificateSHA2FingerprintField.stringValue;
 
@@ -1657,7 +1652,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	RZPasteboard().stringContent = command;
 }
 
-- (void)onClientCertificateFingerprintSHA1CopyRequested:(id)sender
+- (void)onClientCertificateFingerprintSHA1CopyRequested:(nullable id)sender
 {
 	NSString *fingerprint = self.clientCertificateSHA1FingerprintField.stringValue;
 
@@ -1666,7 +1661,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	RZPasteboard().stringContent = command;
 }
 
-- (void)onClientCertificateFingerprintMD5CopyRequested:(id)sender
+- (void)onClientCertificateFingerprintMD5CopyRequested:(nullable id)sender
 {
 	NSString *fingerprint = self.clientCertificateMD5FingerprintField.stringValue;
 
@@ -1810,14 +1805,14 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.clientCertificateMD5FingerprintCopyButton.enabled = (hasNoCertificate == NO);
 }
 
-- (void)onClientCertificateResetRequested:(id)sender
+- (void)onClientCertificateResetRequested:(nullable id)sender
 {
 	self.config.identityClientSideCertificate = nil;
 
 	[self updateClientCertificatePage];
 }
 
-- (void)onClientCertificateChangeRequested:(id)sender
+- (void)onClientCertificateChangeRequested:(nullable id)sender
 {
 	CFArrayRef identities = NULL;
 
@@ -1876,7 +1871,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 #pragma mark -
 #pragma mark Redundancy
 
-- (void)editSeverEndpoints:(id)sender
+- (void)editSeverEndpoints:(nullable id)sender
 {
 	TDCServerEndpointListSheet *sheet = [[TDCServerEndpointListSheet alloc] initWithWindow:self.sheet];
 
@@ -1901,7 +1896,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.serverEndpointSheet = nil;
 }
 
-- (void)rebuildMutableServerEndpointList:(id)sender
+- (void)rebuildMutableServerEndpointList:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -1946,7 +1941,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}
 }
 
-- (void)rebuildMutableServerEndpointListIfNeeded:(id)sender
+- (void)rebuildMutableServerEndpointListIfNeeded:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
@@ -1965,7 +1960,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 #pragma mark -
 #pragma mark Highlight Actions
 
-- (void)addHighlight:(id)sender
+- (void)addHighlight:(nullable id)sender
 {
 	TDCHighlightEntrySheet *sheet =
 	[[TDCHighlightEntrySheet alloc] initWithConfig:nil];
@@ -1979,7 +1974,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.highlightSheet = sheet;
 }
 
-- (void)editHighlight:(id)sender
+- (void)editHighlight:(nullable id)sender
 {
 	NSInteger selectedRow = self.highlightsTable.selectedRow;
 
@@ -2024,7 +2019,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.highlightSheet = nil;
 }
 
-- (void)deleteHighlight:(id)sender
+- (void)deleteHighlight:(nullable id)sender
 {
 	NSInteger selectedRow = self.highlightsTable.selectedRow;
 
@@ -2048,7 +2043,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 #pragma mark -
 #pragma mark Channel Actions
 
-- (void)addChannel:(id)sender
+- (void)addChannel:(nullable id)sender
 {
 	TDCChannelPropertiesSheet *sheet =
 	[[TDCChannelPropertiesSheet alloc] initWithWindow:self.sheet];
@@ -2060,7 +2055,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.channelSheet = sheet;
 }
 
-- (void)editChannel:(id)sender
+- (void)editChannel:(nullable id)sender
 {
 	NSInteger selectedRow = self.channelListTable.selectedRow;
 
@@ -2126,7 +2121,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.channelSheet = nil;
 }
 
-- (void)deleteChannel:(id)sender
+- (void)deleteChannel:(nullable id)sender
 {
 	NSInteger selectedRow = self.channelListTable.selectedRow;
 
@@ -2156,7 +2151,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 #pragma mark -
 #pragma mark Address Book Actions
 
-- (void)showAddAddressBookEntryMenu:(id)sender
+- (void)showAddAddressBookEntryMenu:(nullable id)sender
 {
 	[self.addAddressBookEntryMenu popUpMenuPositioningItem:nil atLocation:NSMakePoint(0, 0) inView:sender];
 }
@@ -2202,7 +2197,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.addressBookSheet = sheet;
 }
 
-- (void)addAddressBookEntry:(id)sender
+- (void)addAddressBookEntry:(nullable id)sender
 {
 	if ([sender tag] == 3) {
 		[self addIgnoreAddressBookEntry];
@@ -2224,7 +2219,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[self editAddressBookEntry:nil];
 }
 
-- (void)editAddressBookEntry:(id)sender
+- (void)editAddressBookEntry:(nullable id)sender
 {
 	NSInteger selectedRow = self.addressBookTable.selectedRow;
 
@@ -2269,7 +2264,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	self.addressBookSheet = nil;
 }
 
-- (void)deleteAddressBookEntry:(id)sender
+- (void)deleteAddressBookEntry:(nullable id)sender
 {
 	NSInteger selectedRow = self.addressBookTable.selectedRow;
 
@@ -2435,7 +2430,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}
 }
 
-- (void)tableViewDoubleClicked:(id)sender
+- (void)tableViewDoubleClicked:(nullable id)sender
 {
 	if (sender == self.channelListTable) {
 		[self editChannel:sender];

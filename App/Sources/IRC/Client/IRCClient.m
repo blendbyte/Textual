@@ -305,26 +305,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self.retryTimer stop];
 	[self.whoTimer stop];
 
-	self.autojoinTimer = nil;
-	self.autojoinNextJoinTimer = nil;
-	self.autojoinDelayedWarningTimer = nil;
-	self.isonTimer = nil;
-	self.pongTimer = nil;
-	self.reconnectTimer = nil;
-	self.retryTimer = nil;
-	self.whoTimer = nil;
-
-	self.addressBookMatchCache = nil;
-	self.batchMessages = nil;
-	self.cachedHighlights = nil;
-	self.channelListPrivate = nil;
 	self.channelsToAutojoin = nil;
 	self.logFile = nil;
 	self.socket = nil;
-	self.supportInfo = nil;
-	self.timedCommands = nil;
-	self.trackedUsers = nil;
-	self.requestedCommands = nil;
 	[self.knownUsers stopExpiryTimer];
 
 	self.knownUsers = nil;

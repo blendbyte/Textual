@@ -87,10 +87,10 @@ typedef NS_ENUM(NSUInteger, TDCChannelPropertiesSheetSelection)
 @property (nonatomic, strong) IBOutlet NSView *contentViewNotificationsHost;
 @property (nonatomic, strong) IBOutlet TVCNotificationConfigurationViewController *notificationsController;
 
-- (IBAction)onMenuBarItemChanged:(id)sender;
+- (IBAction)onMenuBarItemChanged:(nullable id)sender;
 
-- (IBAction)onInlineMediaCheckChanged:(id)sender;
-- (IBAction)onPushNotificationsCheckChanged:(id)sender;
+- (IBAction)onInlineMediaCheckChanged:(nullable id)sender;
+- (IBAction)onPushNotificationsCheckChanged:(nullable id)sender;
 @end
 
 @implementation TDCChannelPropertiesSheet
@@ -268,7 +268,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	[self updateNavigationEnabledState];
 }
 
-- (void)onMenuBarItemChanged:(id)sender
+- (void)onMenuBarItemChanged:(nullable id)sender
 {
 	[self _navigateToSelection:[sender indexOfSelectedItem]];
 }
@@ -386,7 +386,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 				   }];
 }
 
-- (void)onInlineMediaCheckChanged:(id)sender
+- (void)onInlineMediaCheckChanged:(nullable id)sender
 {
 	if (self.enableInlineMediaCheck.state != NSControlStateValueOn) {
 		return;
@@ -399,7 +399,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	}];
 }
 
-- (void)onPushNotificationsCheckChanged:(id)sender
+- (void)onPushNotificationsCheckChanged:(nullable id)sender
 {
 	[self updateNavigationEnabledState];
 }
@@ -407,14 +407,14 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 #pragma mark -
 #pragma mark Actions
 
-- (void)cancel:(id)sender
+- (void)cancel:(nullable id)sender
 {
 	[self removeConfigurationDidChangeObserver];
 
 	[super cancel:sender];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self okOrError] == NO) {
 		return;

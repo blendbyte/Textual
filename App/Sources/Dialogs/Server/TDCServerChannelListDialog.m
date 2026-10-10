@@ -66,10 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *channelListTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *channelListController;
 
-- (IBAction)onClose:(id)sender;
+- (IBAction)onClose:(nullable id)sender;
 
-- (IBAction)onUpdate:(id)sender;
-- (IBAction)onJoinChannels:(id)sender;
+- (IBAction)onUpdate:(nullable id)sender;
+- (IBAction)onJoinChannels:(nullable id)sender;
 @end
 
 @implementation TDCServerChannelListDialog
@@ -224,12 +224,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Actions
 
-- (void)onClose:(id)sender
+- (void)onClose:(nullable id)sender
 {
 	[self close];
 }
 
-- (void)onUpdate:(id)sender
+- (void)onUpdate:(nullable id)sender
 {
 	[self clear];
 
@@ -239,13 +239,13 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* onJoinChannels: handles join for selected items. */
-- (void)onJoinChannels:(id)sender
+- (void)onJoinChannels:(nullable id)sender
 {
 	[self onJoin:sender];
 }
 
 /* onJoin: is a legacy method. It handles join on double click. */
-- (void)onJoin:(id)sender
+- (void)onJoin:(nullable id)sender
 {
 	NSIndexSet *selectedRows = self.channelListTable.selectedRowIndexes;
 

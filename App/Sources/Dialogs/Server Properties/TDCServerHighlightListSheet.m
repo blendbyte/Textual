@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *highlightListTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *highlightListController;
 
-- (IBAction)onClearList:(id)sender;
+- (IBAction)onClearList:(nullable id)sender;
 @end
 
 @implementation TDCServerHighlightListSheet
@@ -133,14 +133,14 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)onClearList:(id)sender
+- (void)onClearList:(nullable id)sender
 {
 	self.highlightListController.content = nil;
 
 	[self.client clearCachedHighlights];
 }
 
-- (void)highlightDoubleClicked:(id)sender
+- (void)highlightDoubleClicked:(nullable id)sender
 {
 	NSInteger row = self.highlightListTable.clickedRow;
 
@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)copy:(id)sender
+- (void)copy:(nullable id)sender
 {
 	NSIndexSet *selectedRows = self.highlightListTable.selectedRowIndexes;
 

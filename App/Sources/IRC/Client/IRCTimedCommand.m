@@ -96,8 +96,6 @@ static NSUInteger IRCTimedCommandLastIdentifier = 0;
 - (void)dealloc
 {
 	[self.timer stop];
-
-	self.timer = nil;
 }
 
 - (void)assignIdentifier

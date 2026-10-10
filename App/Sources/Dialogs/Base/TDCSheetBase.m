@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.sheet close];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	[self endSheet];
 }
@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return ([comboBox showValidationErrorPopover] == NO);
 }
 
-- (void)cancel:(id)sender
+- (void)cancel:(nullable id)sender
 {
 	[self endSheet];
 }

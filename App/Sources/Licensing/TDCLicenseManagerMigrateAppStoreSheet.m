@@ -132,7 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self findTextualUsingLaunchServices];
 }
 
-- (void)ok:(id)sender
+- (void)ok:(nullable id)sender
 {
 	if ([self okOrError] == NO) {
 		return;

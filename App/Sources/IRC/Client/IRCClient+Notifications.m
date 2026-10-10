@@ -489,7 +489,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL postNotificationsWhileFocused = [TPCPreferences postNotificationsWhileInFocus];
 
-	BOOL targetIsSelected = [mainWindow() isItemSelected:target];
+	/* Events without a channel are shown in the server console */
+	BOOL targetIsSelected = [mainWindow() isItemSelected:((target) ?: self)];
 
 	BOOL onlySpeakEvent = (postNotificationsWhileFocused && mainWindowIsFocused && targetIsSelected);
 

@@ -67,7 +67,7 @@ typedef NS_ENUM(NSUInteger, TVCAlertLaunchedAs) {
 @property (nonatomic, copy, nullable) TVCAlertButtonClickedBlock secondButtonAction;
 @property (nonatomic, copy, nullable) TVCAlertButtonClickedBlock thirdButtonAction;
 
-- (IBAction)buttonPressed:(id)sender;
+- (IBAction)buttonPressed:(nullable id)sender;
 @end
 
 @implementation TVCAlert
@@ -310,7 +310,7 @@ typedef NS_ENUM(NSUInteger, TVCAlertLaunchedAs) {
 #pragma mark -
 #pragma mark Buttons
 
-- (void)buttonPressed:(id)sender
+- (void)buttonPressed:(nullable id)sender
 {
 	NSInteger buttonClicked = [sender tag];
 

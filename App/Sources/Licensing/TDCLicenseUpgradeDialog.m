@@ -51,10 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSButton *upgradeDialogContinueTrialButton;
 @property (nonatomic, weak) IBOutlet NSTextField *upgradeDialogTrialPeriodTextField;
 
-- (IBAction)actionLearnMore:(id)sender;
-- (IBAction)actionPurchaseUpgrade:(id)sender;
-- (IBAction)actionContinueTrial:(id)sender;
-- (IBAction)actionRemindMeLater:(id)sender;
+- (IBAction)actionLearnMore:(nullable id)sender;
+- (IBAction)actionPurchaseUpgrade:(nullable id)sender;
+- (IBAction)actionContinueTrial:(nullable id)sender;
+- (IBAction)actionRemindMeLater:(nullable id)sender;
 @end
 
 @implementation TDCLicenseUpgradeDialog
@@ -163,24 +163,24 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Upgrade Dialog Actions
 
-- (void)actionLearnMore:(id)sender
+- (void)actionLearnMore:(nullable id)sender
 {
 	[TDCLicenseUpgradeCommonActions learnMore];
 }
 
-- (void)actionPurchaseUpgrade:(id)sender
+- (void)actionPurchaseUpgrade:(nullable id)sender
 {
 	[self checkEligibility];
 }
 
-- (void)actionContinueTrial:(id)sender
+- (void)actionContinueTrial:(nullable id)sender
 {
 	[self.delegate licenseUpgradeDialogWRemindMeLater:self];
 
 	[self close];
 }
 
-- (void)actionRemindMeLater:(id)sender
+- (void)actionRemindMeLater:(nullable id)sender
 {
 	[self.delegate licenseUpgradeDialogWRemindMeLater:self];
 

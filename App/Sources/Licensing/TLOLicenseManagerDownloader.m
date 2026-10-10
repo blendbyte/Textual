@@ -74,7 +74,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 @property (nonatomic, weak) TLOLicenseManagerDownloader *delegate; // To be set by caller
 @property (nonatomic, assign) TLOLicenseManagerDownloaderRequestType requestType; // To be set by caller
 @property (nonatomic, copy) NSDictionary<NSString *, id> *requestContextInfo; // Information set by caller such as license key or e-mail address
-@property (nonatomic, strong) NSURLSessionTask *sessionTask;
+@property (nonatomic, strong, nullable) NSURLSessionTask *sessionTask;
 
 - (void)performRequest:(TLOLicenseManagerDownloaderConnectionCompletionBlock)completionBlock;
 
@@ -631,7 +631,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 @implementation TLOLicenseManagerDownloaderConnection
 
-- (NSURL *)requestURL
+- (nullable NSURL *)requestURL
 {
 	NSString *requestURLString = nil;
 
@@ -645,6 +645,10 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 		requestURLString = TLOLicenseManagerDownloaderLicenseAPILicenseUpgradeEligibilityURL;
 	} else if (self.requestType == TLOLicenseManagerDownloaderRequestTypeReceiptUpgradeEligibility) {
 		requestURLString = TLOLicenseManagerDownloaderLicenseAPIReceiptUpgradeEligibilityURL;
+	}
+
+	if (requestURLString == nil) {
+		return nil;
 	}
 
 	return [NSURL URLWithString:requestURLString];

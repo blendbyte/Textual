@@ -52,9 +52,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSButton *sheetEligibleDiscountSuppressionButton;
 @property (nonatomic, weak) IBOutlet NSButton *sheetEligibleFreeSuppressionButton;
 
-- (IBAction)actionActivateLicense:(id)sender;
-- (IBAction)actionPurchaseUpgrade:(id)sender;
-- (IBAction)actionCancel:(id)sender;
+- (IBAction)actionActivateLicense:(nullable id)sender;
+- (IBAction)actionPurchaseUpgrade:(nullable id)sender;
+- (IBAction)actionCancel:(nullable id)sender;
 @end
 
 @implementation TDCLicenseUpgradeActivateSheet
@@ -118,17 +118,17 @@ NS_ASSUME_NONNULL_BEGIN
 	[super startSheet];
 }
 
-- (void)actionActivateLicense:(id)sender
+- (void)actionActivateLicense:(nullable id)sender
 {
 	[self.delegate upgradeActivateSheetActivateLicense:self];
 }
 
-- (void)actionPurchaseUpgrade:(id)sender
+- (void)actionPurchaseUpgrade:(nullable id)sender
 {
 	[self.delegate upgradeActivateSheetPurchaseUpgrade:self];
 }
 
-- (void)actionCancel:(id)sender
+- (void)actionCancel:(nullable id)sender
 {
 	/* Only one of two sheets can ever be visible so just check if one is on. */
 	if (self.sheetEligibleDiscountSuppressionButton.state == NSControlStateValueOn ||
