@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 						   ofType:[NSString class]
 					  inHierarchy:nil
 						  fromURL:requestURL
+						  session:self.payload.session
 				  completionBlock:^(id object) {
 				if (object == nil) {
 					[self notifyUnableToPresentHTML];

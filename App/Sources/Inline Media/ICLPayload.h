@@ -84,6 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, readonly) NSString *viewIdentifier;
 
 /**
+ The URL session for requests about this payload: through the proxy of the
+ view's server when it has one.
+ */
+@property (readonly) NSURLSession *session;
+
+/**
  The line number associated with this payload.
  */
 @property (copy, readonly) NSString *lineNumber;

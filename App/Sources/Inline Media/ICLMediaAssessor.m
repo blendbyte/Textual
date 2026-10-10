@@ -48,6 +48,7 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 @property (nonatomic, copy, nullable) ICLMediaAssessorCompletionBlock completionBlock;
 @property (nonatomic, assign) ICLMediaType expectedType;
 @property (nonatomic, copy) NSURL *url;
+@property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong, nullable) NSURLSessionDataTask *task;
 @property (nonatomic, copy, nullable) ICLMediaAssessment *assessment;
 @property (nonatomic, copy, nullable) NSError *assessmentError;
@@ -66,17 +67,17 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 	return nil;
 }
 
-+ (instancetype)assessorForAddress:(NSString *)address completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
++ (instancetype)assessorForAddress:(NSString *)address session:(NSURLSession *)session completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
 {
-	return [self assessorForAddress:address withType:ICLMediaTypeUnknown completionBlock:completionBlock];
+	return [self assessorForAddress:address session:session withType:ICLMediaTypeUnknown completionBlock:completionBlock];
 }
 
-+ (instancetype)assessorForURL:(NSURL *)url completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
++ (instancetype)assessorForURL:(NSURL *)url session:(NSURLSession *)session completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
 {
-	return [self assessorForURL:url withType:ICLMediaTypeUnknown completionBlock:completionBlock];
+	return [self assessorForURL:url session:session withType:ICLMediaTypeUnknown completionBlock:completionBlock];
 }
 
-+ (instancetype)assessorForAddress:(NSString *)address withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
++ (instancetype)assessorForAddress:(NSString *)address session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
 {
 	NSParameterAssert(address != nil);
 
@@ -87,21 +88,24 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 		url = [NSURL URLWithString:@"invalid:"];
 	}
 
-	return [self assessorForURL:url withType:type completionBlock:completionBlock];
+	return [self assessorForURL:url session:session withType:type completionBlock:completionBlock];
 }
 
-+ (instancetype)assessorForURL:(NSURL *)url withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
++ (instancetype)assessorForURL:(NSURL *)url session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
 {
-	return [[self alloc] initWithURL:url withType:type completionBlock:completionBlock];
+	return [[self alloc] initWithURL:url session:session withType:type completionBlock:completionBlock];
 }
 
-- (instancetype)initWithURL:(NSURL *)url withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
+- (instancetype)initWithURL:(NSURL *)url session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
 {
 	NSParameterAssert(url != nil);
+	NSParameterAssert(session != nil);
 	NSParameterAssert(completionBlock != nil);
 
 	if ((self = [super init])) {
 		self.url = url;
+
+		self.session = session;
 
 		self.expectedType = type;
 
@@ -129,14 +133,14 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 		}
 
 		if (allowed == NO) {
-			[self _finishWithError:[self _errorWithDescription:@"Address is on the local network, unresolvable or not HTTP(S)" code:ICLMediaAssessorErrorCodeAddressNotAllowed]];
+			[self _finishWithError:[self _errorWithDescription:@"Address is on the local network, unresolvable or not HTTPS" code:ICLMediaAssessorErrorCodeAddressNotAllowed]];
 
 			return;
 		}
 
 		/* A GET request because many services refuse HEAD.
 		 It is cancelled as soon as the headers arrive. */
-		NSURLSessionDataTask *task = [[ICLURLSession sharedSession] dataTaskWithURL:self.url];
+		NSURLSessionDataTask *task = [self.session dataTaskWithURL:self.url];
 
 		task.delegate = self;
 

@@ -44,7 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 	   withUniqueIdentifier:(NSString *)uniqueIdentifier
 			   atLineNumber:(NSString *)lineNumber
 					  index:(NSUInteger)index
-					 inView:(NSString *)viewIdentifier;
+					 inView:(NSString *)viewIdentifier
+					session:(NSURLSession *)session;
 
 - (instancetype)initWithDeferredPayload:(ICLPayload *)payload;
 

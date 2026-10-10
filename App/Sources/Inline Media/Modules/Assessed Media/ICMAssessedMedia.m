@@ -53,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	ICLMediaAssessor *mediaAssessor =
 	[ICLMediaAssessor assessorForURL:url
+							 session:self.payload.session
 					 completionBlock:^(ICLMediaAssessment *assessment, NSError *error) {
 						 ICLMediaType type = ((assessment) ? assessment.type : ICLMediaTypeUnknown);
 						 

@@ -159,7 +159,6 @@ DQ
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <action selector="onInlineMediaCheckChanged:" target="-2" id="sZf-FM-EAV"/>
                         <binding destination="nwg-0t-IZ6" name="hidden" keyPath="values.DisplayEventInLogView -&gt; Inline Media" id="hta-DL-5Yo"/>
                     </connections>
                 </button>

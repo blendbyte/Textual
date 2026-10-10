@@ -38,6 +38,8 @@
 #import "WKWebViewPrivate.h"
 
 #import "IRCChannel.h"
+#import "IRCClient.h"
+#import "IRCConnectionProxyPrivate.h"
 #import "TXAppearance.h"
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
@@ -61,6 +63,10 @@ static WKUserContentController *_sharedUserContentController = nil;
 static WKWebViewConfiguration *_sharedWebViewConfiguration = nil;
 static TVCLogPolicy *_sharedWebPolicy = nil;
 static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
+
+/* Server identifier → that server's configuration. Each server has its own
+ website data store so its views load inline media through its proxy. */
+static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebViewConfigurations = nil;
 
 #pragma mark -
 #pragma mark Factory
@@ -128,7 +134,52 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 		_sharedWebViewConfiguration.userContentController = _sharedUserContentController;
 
 		_sharedWebPolicy = [TVCLogPolicy new];
+
+		_clientWebViewConfigurations = [NSMutableDictionary dictionary];
 	});
+}
+
++ (WKWebViewConfiguration *)_t_configurationForClient:(nullable IRCClient *)client
+{
+	if (client == nil) {
+		return _sharedWebViewConfiguration;
+	}
+
+	NSString *clientIdentifier = client.uniqueIdentifier;
+
+	WKWebViewConfiguration *configuration = _clientWebViewConfigurations[clientIdentifier];
+
+	if (configuration == nil) {
+		configuration = [_sharedWebViewConfiguration copy];
+
+		configuration.websiteDataStore = [WKWebsiteDataStore nonPersistentDataStore];
+
+		[IRCConnectionProxy applyClientConfig:client.config toWebsiteDataStore:configuration.websiteDataStore];
+
+		_clientWebViewConfigurations[clientIdentifier] = configuration;
+	}
+
+	return configuration;
+}
+
++ (void)applyProxyOfClient:(IRCClient *)client
+{
+	NSParameterAssert(client != nil);
+
+	WKWebViewConfiguration *configuration = _clientWebViewConfigurations[client.uniqueIdentifier];
+
+	if (configuration == nil) {
+		return;
+	}
+
+	[IRCConnectionProxy applyClientConfig:client.config toWebsiteDataStore:configuration.websiteDataStore];
+}
+
++ (void)forgetClient:(IRCClient *)client
+{
+	NSParameterAssert(client != nil);
+
+	[_clientWebViewConfigurations removeObjectForKey:client.uniqueIdentifier];
 }
 
 /* The core JavaScript every view needs, in order, before the template's own scripts
@@ -181,7 +232,9 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 {
 	[self.class _t_initialize];
 
-	if ((self = [self initWithFrame:NSZeroRect configuration:_sharedWebViewConfiguration])) {
+	WKWebViewConfiguration *configuration = [self.class _t_configurationForClient:hostView.viewController.associatedClient];
+
+	if ((self = [self initWithFrame:NSZeroRect configuration:configuration])) {
 		[self constructWebViewWithHostView:hostView];
 
 		return self;
@@ -288,10 +341,14 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 
 + (void)emptyCaches
 {
-	WKWebsiteDataStore *wk2WebsiteDataStore = _sharedWebViewConfiguration.websiteDataStore;
+	NSMutableArray<WKWebsiteDataStore *> *dataStores = [NSMutableArray array];
 
-	if (wk2WebsiteDataStore == nil) {
-		return;
+	if (_sharedWebViewConfiguration.websiteDataStore) {
+		[dataStores addObject:_sharedWebViewConfiguration.websiteDataStore];
+	}
+
+	for (WKWebViewConfiguration *configuration in _clientWebViewConfigurations.allValues) {
+		[dataStores addObject:configuration.websiteDataStore];
 	}
 
 	NSSet *itemsToRemove = [NSSet setWithArray:@[
@@ -299,11 +356,13 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
 		WKWebsiteDataTypeMemoryCache
 	]];
 
-	[wk2WebsiteDataStore removeDataOfTypes:itemsToRemove
-							 modifiedSince:[NSDate distantPast]
-						 completionHandler:^{
-		LogToConsoleDebug("WebKit2 cache cleared");
-	}];
+	for (WKWebsiteDataStore *dataStore in dataStores) {
+		[dataStore removeDataOfTypes:itemsToRemove
+					   modifiedSince:[NSDate distantPast]
+				   completionHandler:^{
+			LogToConsoleDebug("WebKit2 cache cleared");
+		}];
+	}
 }
 
 - (void)findString:(NSString *)searchString movingForward:(BOOL)movingForward

@@ -43,7 +43,6 @@
 #import "IRCISupportInfo.h"
 #import "TPCPreferencesLocal.h"
 #import "TLOLocalization.h"
-#import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCNotificationConfigurationViewControllerPrivate.h"
 #import "TVCValidatedTextField.h"
 #import "TDCAlert.h"
@@ -89,7 +88,6 @@ typedef NS_ENUM(NSUInteger, TDCChannelPropertiesSheetSelection)
 
 - (IBAction)onMenuBarItemChanged:(nullable id)sender;
 
-- (IBAction)onInlineMediaCheckChanged:(nullable id)sender;
 - (IBAction)onPushNotificationsCheckChanged:(nullable id)sender;
 @end
 
@@ -384,19 +382,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 						   [delegate channelPropertiesSheetWantsReload:self];
 					   }
 				   }];
-}
-
-- (void)onInlineMediaCheckChanged:(nullable id)sender
-{
-	if (self.enableInlineMediaCheck.state != NSControlStateValueOn) {
-		return;
-	}
-
-	[TVCLogControllerInlineMediaService askPermissionToEnableInlineMediaWithCompletionBlock:^(BOOL granted) {
-		if (granted == NO) {
-			self.enableInlineMediaCheck.state = NSControlStateValueOff;
-		}
-	}];
 }
 
 - (void)onPushNotificationsCheckChanged:(nullable id)sender

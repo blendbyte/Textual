@@ -83,52 +83,18 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 	}
 
 	/// The proxy this connection must go through, or nil for none and
-	/// "Automatic" (system settings). SOCKS4 is no longer supported and is
-	/// tried as SOCKS5.
+	/// "Automatic" (system settings).
 	fileprivate var constructedProxyConfiguration: (configuration: ProxyConfiguration, address: String, port: UInt16)?
 	{
-		var address: String
-		var port: UInt16
-
-		switch config.proxyType {
-			case .tor:
-				address = torProxyTypeAddress
-				port = torProxyTypePort
-			case .socks4, .socks5, .HTTP, .HTTPS:
-				guard let proxyAddress = config.proxyAddress, proxyAddress.isEmpty == false, config.proxyPort > 0 else {
-					return nil
-				}
-
-				address = proxyAddress
-				port = config.proxyPort
-			default:
-				return nil
+		guard let settings = ProxySettings(type: config.proxyType,
+										   address: config.proxyAddress,
+										   port: config.proxyPort,
+										   username: config.proxyUsername,
+										   password: config.proxyPassword) else {
+			return nil
 		}
 
-		let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(address), port: NWEndpoint.Port(integerLiteral: port))
-
-		var proxy: ProxyConfiguration
-
-		switch config.proxyType {
-			case .HTTP:
-				proxy = ProxyConfiguration(httpCONNECTProxy: endpoint, tlsOptions: nil)
-			case .HTTPS:
-				proxy = ProxyConfiguration(httpCONNECTProxy: endpoint, tlsOptions: NWProtocolTLS.Options())
-			default:
-				proxy = ProxyConfiguration(socksv5Proxy: endpoint)
-		}
-
-		/* Never fall back to a direct connection when the proxy fails */
-		proxy.allowFailover = false
-
-		if (config.proxyType != .tor),
-		   let username = config.proxyUsername, username.isEmpty == false,
-		   let password = config.proxyPassword
-		{
-			proxy.applyCredential(username: username, password: password)
-		}
-
-		return (proxy, address, port)
+		return (settings.configuration, settings.address, settings.port)
 	}
 
 	fileprivate var constructedTLSOptions: NWProtocolTLS.Options

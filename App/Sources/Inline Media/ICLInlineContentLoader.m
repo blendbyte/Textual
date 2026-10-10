@@ -134,7 +134,7 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 #pragma mark -
 #pragma mark Processing
 
-- (void)processURL:(NSURL *)url withUniqueIdentifier:(NSString *)uniqueIdentifier atLineNumber:(NSString *)lineNumber index:(NSUInteger)index inView:(NSString *)viewIdentifier
+- (void)processURL:(NSURL *)url withUniqueIdentifier:(NSString *)uniqueIdentifier atLineNumber:(NSString *)lineNumber index:(NSUInteger)index inView:(NSString *)viewIdentifier session:(NSURLSession *)session
 {
 	NSParameterAssert(url != nil);
 	NSParameterAssert(uniqueIdentifier != nil);
@@ -177,7 +177,8 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 					  withUniqueIdentifier:uniqueIdentifier
 							  atLineNumber:lineNumber
 									 index:index
-									inView:viewIdentifier];
+									inView:viewIdentifier
+								   session:session];
 
 	if ([self _processPayload:payload withModulesForDomain:urlHost]) {
 		return;
@@ -293,7 +294,7 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 		[NSError errorWithDomain:ICLInlineContentErrorDomain
 							code:1004
 						userInfo:@{
-			NSLocalizedDescriptionKey : @"-[ICLPayload urlToInline] is a local address or not HTTP(S)"
+			NSLocalizedDescriptionKey : @"-[ICLPayload urlToInline] is a local address or not HTTPS"
 		}];
 	}
 
@@ -390,11 +391,13 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 {
 	self.terminating = YES;
 
-	[[ICLURLSession sharedSession] getAllTasksWithCompletionHandler:^(NSArray<__kindof NSURLSessionTask *> *tasks) {
-		for (NSURLSessionTask *task in tasks) {
-			[task cancel];
-		}
-	}];
+	for (NSURLSession *session in [ICLURLSession allSessions]) {
+		[session getAllTasksWithCompletionHandler:^(NSArray<__kindof NSURLSessionTask *> *tasks) {
+			for (NSURLSessionTask *task in tasks) {
+				[task cancel];
+			}
+		}];
+	}
 }
 
 @end

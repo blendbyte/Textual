@@ -43,12 +43,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _requestTimeoutInterval			30.0
 
-@interface TLOInternetAddressLookup ()
+/* A plain-text address is a few dozen bytes */
+#define _maximumResponseLength			1024
+
+@interface TLOInternetAddressLookup () <NSURLSessionDataDelegate>
 @property (nonatomic, weak) id requestDelegate;
-@property (nonatomic, strong, nullable) NSURLConnection *connection;
-@property (nonatomic, strong, nullable) NSURLResponse *connectionResponse;
-@property (nonatomic, strong, nullable) NSMutableData *connectionResponseData;
-@property (nonatomic, copy, nullable) NSString *address;
+@property (nonatomic, strong, nullable) NSURLSession *session;
+@property (nonatomic, strong, nullable) NSURLSessionDataTask *task;
+@property (nonatomic, strong, nullable) NSMutableData *responseData;
+@property (nonatomic, copy) NSArray<NSURL *> *remainingSources;
 @end
 
 @implementation TLOInternetAddressLookup
@@ -73,6 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		self.requestDelegate = delegate;
 
+		self.remainingSources = @[];
+
 		return self;
 	}
 
@@ -81,88 +86,104 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performLookup
 {
-	[self setupConnectionRequest];
+	NSAssert((self.session == nil),
+		@"A lookup is already in progress");
+
+	NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+
+	configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+	configuration.URLCache = nil;
+	configuration.HTTPShouldSetCookies = NO;
+	configuration.timeoutIntervalForRequest = _requestTimeoutInterval;
+
+	/* The session keeps its delegate until it is invalidated (-_finish) */
+	self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+
+	self.remainingSources = [self.class addressSources];
+
+	[self requestNextSource];
 }
 
 - (void)cancelLookup
 {
-	[self _teardownConnectionRequest];
+	[self _finish];
 }
 
-- (void)setupConnectionRequest
+/* Textual's own service first, then public ones: a failed lookup leaves file
+ transfers behind NAT unable to work. With "Router and third party" chosen,
+ only the public ones, in random order. All HTTPS (App Transport Security). */
++ (NSArray<NSURL *> *)addressSources
 {
-	NSAssert((self.connection == nil),
-		@"A lookup is already in progress");
-
-	self.connectionResponseData = [NSMutableData data];
-
-	NSURL *requestURL = [NSURL URLWithString:[self addressSourceURL]];
-
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL
-														   cachePolicy:NSURLRequestReloadIgnoringCacheData
-													   timeoutInterval:_requestTimeoutInterval];
-
-	request.HTTPMethod = @"GET";
-
-	self.connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
-}
-
-- (void)_teardownConnectionRequest
-{
-	if (self.connection) {
-		[self.connection cancel];
-	}
-
-	self.connection = nil;
-	self.connectionResponse = nil;
-	self.connectionResponseData = nil;
-}
-
-- (void)teardownConnectionRequest
-{
-	[self _teardownConnectionRequest];
-
-	[self informDelegate];
-
-	self.address = nil;
-}
-
-- (NSString *)addressSourceURL
-{
-	if ([TPCPreferences fileTransferIPAddressDetectionMethod] == TXFileTransferIPAddressMethodRouterAndThirdParty) {
-		return [self thirdPartySourceURL];
-	}
-	
-	return @"https://myip.codeux.com/";
-}
-
-- (NSString *)thirdPartySourceURL
-{
-	NSArray *services = @[
-	  @"https://wtfismyip.com/text",
-	  @"https://canhazip.com/",
-	  @"http://ifconfig.me/ip",
-	  @"http://v4.ipv6-test.com/api/myip.php",
+	NSArray *thirdParty = @[
+		@"https://api.ipify.org/",
+		@"https://icanhazip.com/",
+		@"https://ifconfig.me/ip",
+		@"https://wtfismyip.com/text"
 	];
 
-	NSUInteger randomIndex = (arc4random() % services.count);
+	NSMutableArray<NSString *> *addresses = [NSMutableArray array];
 
-	return services[randomIndex];
+	if ([TPCPreferences fileTransferIPAddressDetectionMethod] == TXFileTransferIPAddressMethodRouterAndThirdParty) {
+		NSMutableArray *shuffled = [thirdParty mutableCopy];
+
+		for (NSUInteger i = shuffled.count; i > 1; i--) {
+			[shuffled exchangeObjectAtIndex:(i - 1) withObjectAtIndex:arc4random_uniform((uint32_t)i)];
+		}
+
+		[addresses addObjectsFromArray:shuffled];
+	} else {
+		[addresses addObject:@"https://myip.textualapp.com/"];
+
+		[addresses addObjectsFromArray:thirdParty];
+	}
+
+	NSMutableArray<NSURL *> *sources = [NSMutableArray arrayWithCapacity:addresses.count];
+
+	for (NSString *address in addresses) {
+		[sources addObject:[NSURL URLWithString:address]];
+	}
+
+	return [sources copy];
+}
+
+- (void)requestNextSource
+{
+	NSURL *source = self.remainingSources.firstObject;
+
+	if (source == nil) {
+		[self _finish];
+
+		[self informDelegateLookupFailed];
+
+		return;
+	}
+
+	self.remainingSources = [self.remainingSources subarrayWithRange:NSMakeRange(1, (self.remainingSources.count - 1))];
+
+	self.responseData = [NSMutableData data];
+
+	NSURLSessionDataTask *task = [self.session dataTaskWithURL:source];
+
+	self.task = task;
+
+	[task resume];
+}
+
+- (void)_finish
+{
+	[self.task cancel];
+
+	self.task = nil;
+
+	self.responseData = nil;
+
+	[self.session invalidateAndCancel];
+
+	self.session = nil;
 }
 
 #pragma mark -
-#pragma mark Connection Delegate
-
-- (void)informDelegate
-{
-	NSString *address = self.address;
-
-	if (address) {
-		[self informDelegateLookupReturnedAddress:address];
-	} else {
-		[self informDelegateLookupFailed];
-	}
-}
+#pragma mark Delegate
 
 - (void)informDelegateLookupReturnedAddress:(NSString *)address
 {
@@ -178,61 +199,70 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+#pragma mark -
+#pragma mark Session Delegate
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler
 {
-	id connectionResponse = self.connectionResponse;
+	BOOL acceptable = ([response isKindOfClass:[NSHTTPURLResponse class]] && ((NSHTTPURLResponse *)response).statusCode == 200);
 
-	// connectionResponse may not be NSHTTPURLResponse if the website
-	// requested performs a location redirect to a data resource.
-	if ([connectionResponse isKindOfClass:[NSHTTPURLResponse class]]) {
-		BOOL isValidResponse = ([connectionResponse statusCode] == 200);
+	completionHandler((acceptable) ? NSURLSessionResponseAllow : NSURLSessionResponseCancel);
+}
 
-		if (isValidResponse) {
-			NSData *addressData = self.connectionResponseData;
-
-			NSString *address = [NSString stringWithData:addressData encoding:NSUTF8StringEncoding];
-
-			address = [address stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-
-			if ((address.isIPv4Address && self.IPv4AddressIsValid) ||
-				(address.isIPv6Address && self.IPv6AddressIsValid))
-			{
-				self.address = address;
-			}
-		}
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
+{
+	if (dataTask != self.task) {
+		return;
 	}
 
-	[self teardownConnectionRequest];
-}
+	[self.responseData appendData:data];
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-	LogToConsole("Lookup failed with error: %{public}@", error.localizedDescription);
-
-	[self teardownConnectionRequest];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-	[self.connectionResponseData appendData:data];
-
-	// There is no reasonable explanation for the content of a request,
-	// without headers, to exceed this length when it's sent in plain text.
-	if (self.connectionResponseData.length > 1024) {
+	if (self.responseData.length > _maximumResponseLength) {
 		LogToConsoleError("Too much data has been received for this to be a valid request");
 
-		[self teardownConnectionRequest];
+		[dataTask cancel];
 	}
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask willCacheResponse:(NSCachedURLResponse *)proposedResponse completionHandler:(void (^)(NSCachedURLResponse * _Nullable))completionHandler
 {
-	self.connectionResponse = response;
+	completionHandler(nil);
 }
 
-- (nullable NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error
 {
-	return nil;
+	/* Cancelled by -cancelLookup, or an earlier source */
+	if (task != self.task) {
+		return;
+	}
+
+	self.task = nil;
+
+	NSString *address = nil;
+
+	if (error == nil && self.responseData.length <= _maximumResponseLength) {
+		address = [NSString stringWithData:self.responseData encoding:NSUTF8StringEncoding];
+
+		address = [address stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+		if ((address.isIPv4Address && self.IPv4AddressIsValid) == NO &&
+			(address.isIPv6Address && self.IPv6AddressIsValid) == NO)
+		{
+			address = nil;
+		}
+	} else if (error) {
+		LogToConsole("Lookup with %{public}@ failed: %{public}@", task.originalRequest.URL.host, error.localizedDescription);
+	}
+
+	if (address == nil) {
+		[self requestNextSource];
+
+		return;
+	}
+
+	[self _finish];
+
+	[self informDelegateLookupReturnedAddress:address];
 }
 
 @end

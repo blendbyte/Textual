@@ -65,9 +65,6 @@ class ConnectionSocket: NSObject
 
 	var alternateDisconnectError: ConnectionError?
 
-	final let torProxyTypeAddress = "127.0.0.1"
-	final let torProxyTypePort: UInt16 = 9150
-
 	/* IRC lines, tags included, stay under 9 KB. A server that sends
 	 more than this without a line break is broken or hostile. */
 	final let maximumLineLength = (64 * 1024) // 64 KiB

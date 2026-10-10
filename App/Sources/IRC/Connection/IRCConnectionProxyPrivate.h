@@ -34,38 +34,20 @@
  *
  *********************************************************************** */
 
+@class IRCClientConfig, WKWebsiteDataStore;
+
 NS_ASSUME_NONNULL_BEGIN
 
-/* One URL session for inline media requests (the media assessor, the
- JSON lookups, and later the link cards), and one more for each proxy a
- server uses: a server's previews go through its proxy. Ephemeral: no cookies, no
- cache, no credentials. Requests time out after 20 seconds, at most 5
- redirects are followed, and every address, including each redirect, is
- refused if it points at the local network (R1.7): loopback, private,
- link-local, unique local, multicast, .local and single-label names, and
- host names that resolve to any of these. Callbacks and completion blocks
- run on the main thread. Clicking a refused link still opens it. */
-@class IRCClient;
+/* Implemented in IRCConnectionProxy.swift: a server's proxy for its inline media */
+@interface IRCConnectionProxy : NSObject
+/* Equal for servers that use the same proxy, nil for those without one.
+ Holds the proxy password: only for use as a key in memory. */
++ (nullable NSString *)identifierForClientConfig:(IRCClientConfig *)config;
 
-@interface ICLURLSession : NSObject
-@property (readonly, class) NSURLSession *sharedSession;
++ (void)applyClientConfig:(IRCClientConfig *)config toSessionConfiguration:(NSURLSessionConfiguration *)sessionConfiguration;
 
-/* The session for a server's previews: through its proxy when it has one */
-+ (NSURLSession *)sessionForClient:(nullable IRCClient *)client;
-
-/* Every session, for cancelling their requests */
-@property (readonly, class) NSArray<NSURLSession *> *allSessions;
-
-/* YES for an HTTPS URL whose host is not a local address or name (App
- Transport Security refuses plain HTTP). Does not resolve the host name. */
-+ (BOOL)URLIsAllowed:(NSURL *)url;
-
-/* +URLIsAllowed: and, for host names, a lookup of their addresses */
-+ (void)checkURL:(NSURL *)url completionBlock:(void (^)(BOOL allowed))completionBlock;
-
-/* GET with a response size limit. data is nil when the address is refused,
- the request fails, the status is not 200 or the body exceeds maximumLength. */
-+ (void)requestDataFromURL:(NSURL *)url session:(NSURLSession *)session maximumLength:(NSUInteger)maximumLength completionBlock:(void (^)(NSData * _Nullable data))completionBlock;
+/* Back to the system settings when the server has no proxy; takes effect for new loads */
++ (void)applyClientConfig:(IRCClientConfig *)config toWebsiteDataStore:(WKWebsiteDataStore *)dataStore;
 @end
 
 NS_ASSUME_NONNULL_END

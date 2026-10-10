@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 						   ofType:[NSString class]
 					  inHierarchy:nil
 					  fromAddress:addressToRequest
+						  session:self.payload.session
 				  completionBlock:^(id object)
 	 {
 		 if (object == nil) {

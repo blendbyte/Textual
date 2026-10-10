@@ -37,7 +37,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogPolicy, TVCLogView;
+@class IRCClient, TVCLogPolicy, TVCLogView;
 
 @interface TVCLogViewInternalWK2 : WKWebView
 @property (nonatomic, weak) TVCLogView *t_parentView;
@@ -57,6 +57,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)findString:(NSString *)searchString movingForward:(BOOL)movingForward;
 
 + (void)emptyCaches;
+
+/* Inline media in a server's views goes through that server's proxy */
++ (void)applyProxyOfClient:(IRCClient *)client;
++ (void)forgetClient:(IRCClient *)client;
 @end
 
 NS_ASSUME_NONNULL_END

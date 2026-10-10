@@ -262,6 +262,16 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 	[TVCLogViewInternalWK2 emptyCaches];
 }
 
++ (void)applyProxyOfClient:(IRCClient *)client
+{
+	[TVCLogViewInternalWK2 applyProxyOfClient:client];
+}
+
++ (void)forgetClient:(IRCClient *)client
+{
+	[TVCLogViewInternalWK2 forgetClient:client];
+}
+
 - (void)recreateTemporaryCopyOfThemeIfNecessary
 {
 	if (mainWindow().reloadingTheme) {

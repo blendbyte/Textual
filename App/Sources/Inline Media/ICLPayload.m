@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_uniqueIdentifier;
 	NSString *_viewIdentifier;
 	NSUInteger _index;
+	NSURLSession *_session;
 }
 
 @end
@@ -90,8 +91,10 @@ NS_ASSUME_NONNULL_BEGIN
 			   atLineNumber:(NSString *)lineNumber
 					  index:(NSUInteger)index
 					 inView:(NSString *)viewIdentifier
+					session:(NSURLSession *)session
 {
 	NSParameterAssert(url != nil);
+	NSParameterAssert(session != nil);
 	NSParameterAssert(uniqueIdentifier != nil);
 	NSParameterAssert(lineNumber != nil);
 	NSParameterAssert(viewIdentifier != nil);
@@ -102,6 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self->_index = index;
 		self->_uniqueIdentifier = [uniqueIdentifier copy];
 		self->_viewIdentifier = [viewIdentifier copy];
+		self->_session = session;
 
 		[self populateDefaultsPostflight];
 
@@ -124,6 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self->_index = payload.index;
 		self->_uniqueIdentifier = payload.uniqueIdentifier;
 		self->_viewIdentifier = payload.viewIdentifier;
+		self->_session = payload.session;
 		self->_classAttribute = payload.classAttribute;
 
 		[self populateDefaultsPostflight];
@@ -180,6 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	object->_uniqueIdentifier = self->_uniqueIdentifier;
 	object->_viewIdentifier = self->_viewIdentifier;
+	object->_session = self->_session;
 
 	object->_index = self->_index;
 

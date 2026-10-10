@@ -47,6 +47,7 @@
 #import "TVCLogLine.h"
 
 // IRCConnectionTransport.swift, IRCConnectionSocket(NWF).swift
+#import "IRCClientConfig.h"
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionErrors.h"
 #import "IRCConnectionTransportPrivate.h"

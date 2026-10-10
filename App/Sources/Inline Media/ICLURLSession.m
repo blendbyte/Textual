@@ -36,6 +36,8 @@
 
 #import <netdb.h>
 
+#import "IRCClient.h"
+#import "IRCConnectionProxyPrivate.h"
 #import "ICLURLSessionPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -187,6 +189,35 @@ static BOOL ICLHostNameIsLocal(NSString *host)
 
 @implementation ICLURLSession
 
+/* Proxy identifier → session */
+static NSMutableDictionary<NSString *, NSURLSession *> *_proxySessions = nil;
+
++ (NSURLSessionConfiguration *)_sessionConfiguration
+{
+	NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+
+	config.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+	config.URLCache = nil;
+
+	config.HTTPShouldSetCookies = NO;
+	config.HTTPCookieAcceptPolicy = NSHTTPCookieAcceptPolicyNever;
+	config.HTTPCookieStorage = nil;
+
+	config.URLCredentialStorage = nil;
+
+	config.timeoutIntervalForRequest = _requestTimeout;
+	config.timeoutIntervalForResource = _requestTimeout;
+
+	return config;
+}
+
++ (NSURLSession *)_sessionWithConfiguration:(NSURLSessionConfiguration *)config
+{
+	return [NSURLSession sessionWithConfiguration:config
+										 delegate:[ICLURLSessionDelegate new]
+									delegateQueue:[NSOperationQueue mainQueue]];
+}
+
 + (NSURLSession *)sharedSession
 {
 	static NSURLSession *session = nil;
@@ -194,31 +225,59 @@ static BOOL ICLHostNameIsLocal(NSString *host)
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+		session = [self _sessionWithConfiguration:[self _sessionConfiguration]];
 
-		config.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-		config.URLCache = nil;
-
-		config.HTTPShouldSetCookies = NO;
-		config.HTTPCookieAcceptPolicy = NSHTTPCookieAcceptPolicyNever;
-		config.HTTPCookieStorage = nil;
-
-		config.URLCredentialStorage = nil;
-
-		config.timeoutIntervalForRequest = _requestTimeout;
-		config.timeoutIntervalForResource = _requestTimeout;
-
-		session = [NSURLSession sessionWithConfiguration:config
-												delegate:[ICLURLSessionDelegate new]
-										   delegateQueue:[NSOperationQueue mainQueue]];
+		_proxySessions = [NSMutableDictionary dictionary];
 	});
 
 	return session;
 }
 
++ (NSURLSession *)sessionForClient:(nullable IRCClient *)client
+{
+	NSURLSession *sharedSession = self.sharedSession;
+
+	IRCClientConfig *config = client.config;
+
+	NSString *proxyIdentifier = ((config) ? [IRCConnectionProxy identifierForClientConfig:config] : nil);
+
+	if (proxyIdentifier == nil) {
+		return sharedSession;
+	}
+
+	@synchronized (_proxySessions) {
+		NSURLSession *session = _proxySessions[proxyIdentifier];
+
+		if (session == nil) {
+			NSURLSessionConfiguration *sessionConfig = [self _sessionConfiguration];
+
+			[IRCConnectionProxy applyClientConfig:config toSessionConfiguration:sessionConfig];
+
+			session = [self _sessionWithConfiguration:sessionConfig];
+
+			_proxySessions[proxyIdentifier] = session;
+		}
+
+		return session;
+	}
+}
+
++ (NSArray<NSURLSession *> *)allSessions
+{
+	NSURLSession *sharedSession = self.sharedSession;
+
+	@synchronized (_proxySessions) {
+		return [@[sharedSession] arrayByAddingObjectsFromArray:_proxySessions.allValues];
+	}
+}
+
 + (BOOL)URLIsAllowed:(NSURL *)url
 {
 	NSParameterAssert(url != nil);
+
+	if ([url.scheme.lowercaseString isEqualToString:@"https"] == NO) {
+		return NO;
+	}
 
 	NSString *host = ICLHostForURL(url);
 
@@ -243,6 +302,11 @@ static BOOL ICLHostNameIsLocal(NSString *host)
 	NSParameterAssert(completionBlock != nil);
 
 	NSString *host = ICLHostForURL(url);
+
+	/* App Transport Security refuses plain HTTP */
+	if ([url.scheme.lowercaseString isEqualToString:@"https"] == NO) {
+		host = nil;
+	}
 
 	BOOL numeric = NO;
 
@@ -271,15 +335,16 @@ static BOOL ICLHostNameIsLocal(NSString *host)
 	});
 }
 
-+ (void)requestDataFromURL:(NSURL *)url maximumLength:(NSUInteger)maximumLength completionBlock:(void (^)(NSData * _Nullable data))completionBlock
++ (void)requestDataFromURL:(NSURL *)url session:(NSURLSession *)session maximumLength:(NSUInteger)maximumLength completionBlock:(void (^)(NSData * _Nullable data))completionBlock
 {
 	NSParameterAssert(url != nil);
+	NSParameterAssert(session != nil);
 	NSParameterAssert(maximumLength > 0);
 	NSParameterAssert(completionBlock != nil);
 
 	[self checkURL:url completionBlock:^(BOOL allowed) {
 		if (allowed == NO) {
-			LogToConsoleDebug("Refused request to a local or unresolvable address");
+			LogToConsoleDebug("Refused request to a local, unresolvable or plain HTTP address");
 
 			completionBlock(nil);
 
@@ -292,7 +357,7 @@ static BOOL ICLHostNameIsLocal(NSString *host)
 
 		request.completionBlock = completionBlock;
 
-		NSURLSessionDataTask *task = [self.sharedSession dataTaskWithURL:url];
+		NSURLSessionDataTask *task = [session dataTaskWithURL:url];
 
 		task.delegate = request;
 

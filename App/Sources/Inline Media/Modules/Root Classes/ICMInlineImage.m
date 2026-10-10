@@ -113,6 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	ICLMediaAssessor *imageCheck =
 	[ICLMediaAssessor assessorForURL:payload.urlToInline
+							 session:payload.session
 							withType:ICLMediaTypeImage
 					 completionBlock:^(ICLMediaAssessment *assessment, NSError *error) {
 						 BOOL safeToLoad = (error == nil);

@@ -60,6 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSURL *requestURL = requestComponents.URL;
 
 	[ICLHelpers requestJSONDataFromURL:requestURL
+							   session:self.payload.session
 					   completionBlock:^(BOOL success, NSDictionary<NSString *, id> *data) {
 						   if (success == NO) {
 							   [self _unsafeToLoadMedia];

@@ -111,14 +111,14 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 
 @implementation ICLHelpers (JSON)
 
-+ (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromURL:(NSURL *)url completionBlock:(void (^)(id _Nullable object))completionBlock
++ (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromURL:(NSURL *)url session:(NSURLSession *)session completionBlock:(void (^)(id _Nullable object))completionBlock
 {
 	NSParameterAssert(objectKey != nil);
 	NSParameterAssert(objectType != NULL);
 	NSParameterAssert(url != nil);
 	NSParameterAssert(completionBlock != nil);
 
-	[self requestJSONDataFromURL:url completionBlock:^(BOOL success, NSDictionary<NSString *,id> * _Nullable data) {
+	[self requestJSONDataFromURL:url session:session completionBlock:^(BOOL success, NSDictionary<NSString *,id> * _Nullable data) {
 		/* Return nothing if underlying request failed. */
 		if (success == NO) {
 			completionBlock(nil);
@@ -163,7 +163,7 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 	}];
 }
 
-+ (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromAddress:(NSString *)address completionBlock:(void (^)(id _Nullable object))completionBlock
++ (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromAddress:(NSString *)address session:(NSURLSession *)session completionBlock:(void (^)(id _Nullable object))completionBlock
 {
 	NSParameterAssert(objectKey != nil);
 	NSParameterAssert(objectType != NULL);
@@ -178,15 +178,15 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 		return;
 	}
 
-	[self requestJSONObject:objectKey ofType:objectType inHierarchy:hierarchy fromURL:url completionBlock:completionBlock];
+	[self requestJSONObject:objectKey ofType:objectType inHierarchy:hierarchy fromURL:url session:session completionBlock:completionBlock];
 }
 
-+ (void)requestJSONDataFromURL:(NSURL *)url completionBlock:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable data))completionBlock
++ (void)requestJSONDataFromURL:(NSURL *)url session:(NSURLSession *)session completionBlock:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable data))completionBlock
 {
 	NSParameterAssert(url != nil);
 	NSParameterAssert(completionBlock != nil);
 
-	[ICLURLSession requestDataFromURL:url maximumLength:_maximumJSONLength completionBlock:^(NSData * _Nullable data) {
+	[ICLURLSession requestDataFromURL:url session:session maximumLength:_maximumJSONLength completionBlock:^(NSData * _Nullable data) {
 		/* The session logs why a request failed */
 		if (data == nil) {
 			completionBlock(NO, nil);
@@ -219,7 +219,7 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 	}];
 }
 
-+ (void)requestJSONDataFromAddress:(NSString *)address completionBlock:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable data))completionBlock
++ (void)requestJSONDataFromAddress:(NSString *)address session:(NSURLSession *)session completionBlock:(void (^)(BOOL success, NSDictionary<NSString *, id> * _Nullable data))completionBlock
 {
 	NSParameterAssert(address != nil);
 	NSParameterAssert(completionBlock != nil);
@@ -232,7 +232,7 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 		return;
 	}
 
-	[self requestJSONDataFromURL:url completionBlock:completionBlock];
+	[self requestJSONDataFromURL:url session:session completionBlock:completionBlock];
 }
 
 @end

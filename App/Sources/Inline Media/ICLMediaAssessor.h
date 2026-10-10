@@ -56,13 +56,14 @@ typedef void (^ICLMediaAssessorCompletionBlock)(ICLMediaAssessment * _Nullable a
 - (instancetype)init NS_UNAVAILABLE;
 
 /* Use the following two methods to determine what type of media a URL is. */
-+ (instancetype)assessorForURL:(NSURL *)url completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
-+ (instancetype)assessorForAddress:(NSString *)address completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
+/* session is the payload's (-[ICLPayload session]) */
++ (instancetype)assessorForURL:(NSURL *)url session:(NSURLSession *)session completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
++ (instancetype)assessorForAddress:(NSString *)address session:(NSURLSession *)session completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
 
 /* Use the following two methods to determine whether the URL is the type of media. */
 /* If you are expecting the URL to be a specific type of media, these methods are better. */
-+ (instancetype)assessorForURL:(NSURL *)url withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
-+ (instancetype)assessorForAddress:(NSString *)address withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
++ (instancetype)assessorForURL:(NSURL *)url session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
++ (instancetype)assessorForAddress:(NSString *)address session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock;
 
 /* Suspend assessment */
 - (void)suspend;

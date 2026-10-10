@@ -99,10 +99,6 @@ Do you want to add these channels to that connection or would you rather create 
 "0hh-sl" = "Use Existing Connection";
 "sv9-8s" = "Create New Connection";
 
-"82q-zi" = "Are you sure you wish to enable inline media?";
-"vcq-sz" = "Inline media does not use the proxy you may have configured for connecting to IRC. Your IP address will be leaked without configuring a system-wide proxy. If you wish to configure a proxy before continuing, click the “Open System Settings” button.";
-"xkj-nw" = "Turn On";
-"x3e-ur" = "Open System Settings";
 
 
 

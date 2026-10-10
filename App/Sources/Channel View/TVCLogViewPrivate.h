@@ -39,7 +39,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogController, TVCLogPolicy;
+@class IRCClient, TVCLogController, TVCLogPolicy;
 
 @interface TVCLogView ()
 @property (nonatomic, weak) TVCLogController *viewController;
@@ -73,6 +73,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogView (TVCLogViewBackingViewProxy)
 + (void)emptyCaches;
+
++ (void)applyProxyOfClient:(IRCClient *)client;
++ (void)forgetClient:(IRCClient *)client;
 
 - (void)stopLoading;
 

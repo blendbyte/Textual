@@ -304,7 +304,7 @@ NS_ASSUME_NONNULL_BEGIN
 			videoId = [videoId substringToIndex:11];
 		}
 
-		return [NSString stringWithFormat:@"http://i.ytimg.com/vi/%@/mqdefault.jpg", videoId];
+		return [NSString stringWithFormat:@"https://i.ytimg.com/vi/%@/mqdefault.jpg", videoId];
 	}
 	else if ([urlHost isDomainOrSubdomain:@"speedtest.net"])
 	{
@@ -324,7 +324,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return nil;
 		}
 
-		return [NSString stringWithFormat:@"http://www.speedtest.net/result/%@.png", resultId];
+		return [NSString stringWithFormat:@"https://www.speedtest.net/result/%@.png", resultId];
 	}
 	else if ([urlHost isDomain:@"fuelrats.cloud"])
 	{

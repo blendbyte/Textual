@@ -540,6 +540,7 @@
 		4C32F2F0C8E5B567191A7F9B /* IRCConnectionTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */; };
 		4C766EC602CF8DBE08B09AAB /* IRCConnectionSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */; };
 		4C7380A292871C0CFE284130 /* IRCConnectionSocketNWF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */; };
+		4CF8BDA262BBD53A5E97C585 /* IRCConnectionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC8D2F35C5719E8B02A25E8 /* IRCConnectionProxy.swift */; };
 		4C089149ACB2ECE6EAD0FC4F /* ICLHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7A0118381FEF1688C409E8 /* ICLHelpers.m */; };
 		4CC8CABA1119CD8EE8C4CC0D /* ICLInlineContentLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C67F83C1490F0916EA47C93 /* ICLInlineContentLoader.m */; };
 		4C85C9BD5581B849ABA6BD6D /* ICLInlineContentModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2C9C53015C34937E305569 /* ICLInlineContentModule.m */; };
@@ -1317,6 +1318,8 @@
 		4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionTransport.swift; sourceTree = "<group>"; };
 		4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionSocket.swift; sourceTree = "<group>"; };
 		4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionSocketNWF.swift; sourceTree = "<group>"; };
+		4CEA016BA0F25576CDBFBEC6 /* IRCConnectionProxyPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCConnectionProxyPrivate.h; sourceTree = "<group>"; };
+		4CC8D2F35C5719E8B02A25E8 /* IRCConnectionProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCConnectionProxy.swift; sourceTree = "<group>"; };
 		4C0E3113CD372843D4140EAF /* IRCConnectionTransportPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCConnectionTransportPrivate.h; sourceTree = "<group>"; };
 		4C7A0118381FEF1688C409E8 /* ICLHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLHelpers.m; sourceTree = "<group>"; };
 		4C67F83C1490F0916EA47C93 /* ICLInlineContentLoader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICLInlineContentLoader.m; sourceTree = "<group>"; };
@@ -1978,6 +1981,8 @@
 				4C31522020EB673E00448776 /* IRCConnectionPrivate.h */,
 				4CDAA4AE111D799CAC35561F /* IRCConnectionSocket.swift */,
 				4CDC9E1FD3699CFB8520F907 /* IRCConnectionSocketNWF.swift */,
+				4CEA016BA0F25576CDBFBEC6 /* IRCConnectionProxyPrivate.h */,
+				4CC8D2F35C5719E8B02A25E8 /* IRCConnectionProxy.swift */,
 				4C87A2B8A7AF6A15C57294B3 /* IRCConnectionTransport.swift */,
 				4C0E3113CD372843D4140EAF /* IRCConnectionTransportPrivate.h */,
 			);
@@ -3498,6 +3503,7 @@
 				4C32F2F0C8E5B567191A7F9B /* IRCConnectionTransport.swift in Sources */,
 				4C766EC602CF8DBE08B09AAB /* IRCConnectionSocket.swift in Sources */,
 				4C7380A292871C0CFE284130 /* IRCConnectionSocketNWF.swift in Sources */,
+				4CF8BDA262BBD53A5E97C585 /* IRCConnectionProxy.swift in Sources */,
 				4C06E6B520EC55B90055D09A /* TPCPreferences.m in Sources */,
 				4C06E6B620EC55B90055D09A /* TPCPreferencesLocal.m in Sources */,
 				4C06E6B720EC55B90055D09A /* TPCPreferencesImportExport.m in Sources */,

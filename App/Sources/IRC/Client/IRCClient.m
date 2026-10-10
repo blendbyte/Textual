@@ -342,6 +342,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.config = config;
 
+	/* Inline media follows a changed proxy in views that are already open */
+	[TVCLogView applyProxyOfClient:self];
+
 	/* Update channel list */
 	{
 		NSMutableArray<IRCChannel *> *channelListOld = [self.channelList mutableCopy];
@@ -646,6 +649,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[[mainWindow() inputHistoryManager] destroy:self];
 
 	[self.viewController prepareForPermanentDestruction];
+
+	[TVCLogView forgetClient:self];
 }
 
 - (void)closeDialogs

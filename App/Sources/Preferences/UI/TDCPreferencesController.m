@@ -53,7 +53,6 @@
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
 #import "TVCMainWindowPrivate.h"
-#import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCNotificationConfigurationViewControllerPrivate.h"
 #import "TDCAlert.h"
 #import "TDCFileTransferDialogPrivate.h"
@@ -1283,15 +1282,10 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[TVCLogControllerInlineMediaService askPermissionToEnableInlineMediaWithCompletionBlock:^(BOOL granted) {
-		if (granted) {
-			[TPCPreferences setShowInlineMedia:YES];
+	/* Previews go through each server's proxy, so there is nothing to warn about */
+	[TPCPreferences setShowInlineMedia:YES];
 
-			[self onChangedTheme:nil];
-		} else {
-			self.inlineMediaEnabledButton.state = NSControlStateValueOff;
-		}
-	}];
+	[self onChangedTheme:nil];
 }
 
 - (void)onResetUserListModeColorsToDefaults:(nullable id)sender
