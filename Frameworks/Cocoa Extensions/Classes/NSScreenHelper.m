@@ -61,25 +61,30 @@ NS_ASSUME_NONNULL_BEGIN
 
     CGDirectDisplayID screenId = [screenDescription[@"NSScreenNumber"] unsignedIntValue];
 
+	/* Either call can fail (a display going away): unchecked, that crashed */
     CGDisplayModeRef screenMode = CGDisplayCopyDisplayMode(screenId);
 
-	CGFloat refreshRate = CGDisplayModeGetRefreshRate(screenMode);
+	CGFloat refreshRate = 0;
+
+	if (screenMode) {
+		refreshRate = CGDisplayModeGetRefreshRate(screenMode);
+
+		CGDisplayModeRelease(screenMode);
+	}
 
     if (refreshRate == 0) {
-		CVDisplayLinkRef link;
+		CVDisplayLinkRef link = NULL;
 
-		CVDisplayLinkCreateWithCGDisplay(screenId, &link);
+		if (CVDisplayLinkCreateWithCGDisplay(screenId, &link) == kCVReturnSuccess && link) {
+			CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
 
-		CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
+			if ((time.flags & kCVTimeIsIndefinite) == NO && time.timeValue > 0) {
+				refreshRate = ((CGFloat)time.timeScale / (CGFloat)time.timeValue);
+			}
 
-		if ((time.flags & kCVTimeIsIndefinite) == NO) {
-			refreshRate = (time.timeScale / time.timeValue);
+			CVDisplayLinkRelease(link);
 		}
-
-		CVDisplayLinkRelease(link);
     }
-
-    CGDisplayModeRelease(screenMode);
 
 	return refreshRate;
 }

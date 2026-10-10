@@ -32,12 +32,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* No setLong:forKey: or longForKey:: Foundation defines methods with those
+ names on NSUserDefaults, and a category replaced them for the whole process.
+ Use setInteger:forKey: and integerForKey:. */
 @interface NSUserDefaults (CSUserDefaultsHelper)
 - (void)setColor:(nullable NSColor *)value forKey:(NSString *)defaultName;
 - (void)setUnsignedInteger:(NSUInteger)value forKey:(NSString *)defaultName;
 - (void)setShort:(short)value forKey:(NSString *)defaultName;
 - (void)setUnsignedShort:(unsigned short)value forKey:(NSString *)defaultName;
-- (void)setLong:(long)value forKey:(NSString *)defaultName;
 - (void)setUnsignedLong:(unsigned long)value forKey:(NSString *)defaultName;
 - (void)setLongLong:(long long)value forKey:(NSString *)defaultName;
 - (void)setUnsignedLongLong:(unsigned long long)value forKey:(NSString *)defaultName;
@@ -46,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)unsignedIntegerForKey:(NSString *)defaultName;
 - (short)shortForKey:(NSString *)defaultName;
 - (unsigned short)unsignedShortForKey:(NSString *)defaultName;
-- (long)longForKey:(NSString *)defaultName;
 - (unsigned long)unsignedLongForKey:(NSString *)defaultName;
 - (long long)longLongForKey:(NSString *)defaultName;
 - (unsigned long long)unsignedLongLongForKey:(NSString *)defaultName;

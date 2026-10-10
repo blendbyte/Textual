@@ -35,10 +35,9 @@
 
 #include <sys/sysctl.h>
 
-#include <dlfcn.h>
-
-/* Private IOKit function */
-typedef uint32_t IOPMCapabilityBits;
+/* Between the workspace's will-sleep and did-wake notifications (public API
+ instead of a private IOKit function looked up at runtime) */
+static BOOL _systemIsSleeping = NO;
 
 static NSUInteger _highestRecognizedMajorOSVersion = 26; // macOS Tahoe
 
@@ -49,14 +48,19 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Public
 
+/* The machine, not this process: an Intel build running under Rosetta is on
+ Apple silicon too */
 + (BOOL)systemIsAppleSilicon
 {
-	/* I haven't tested this. Is it really this easy? */
-#if TARGET_CPU_ARM64
-	return YES;
-#endif
+	int isArm64 = 0;
 
-	return NO;
+	size_t size = sizeof(isArm64);
+
+	if (sysctlbyname("hw.optional.arm64", &isArm64, &size, NULL, 0) != 0) {
+		return NO;
+	}
+
+	return (isArm64 == 1);
 }
 
 + (nullable NSString *)formattedEthernetMacAddress
@@ -131,15 +135,24 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
++ (void)load
+{
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSNotificationCenter *center = [NSWorkspace sharedWorkspace].notificationCenter;
+
+		[center addObserverForName:NSWorkspaceWillSleepNotification object:nil queue:nil usingBlock:^(NSNotification *notification) {
+			_systemIsSleeping = YES;
+		}];
+
+		[center addObserverForName:NSWorkspaceDidWakeNotification object:nil queue:nil usingBlock:^(NSNotification *notification) {
+			_systemIsSleeping = NO;
+		}];
+	});
+}
+
 + (BOOL)systemIsSleeping
 {
-	IOPMCapabilityBits bits = [self systemPowerCapabilities];
-
-	if (bits == INT_MAX) {
-		return NO;
-	}
-
-	return ((bits & kIOPMSystemCapabilityCPU) == 0);
+	return _systemIsSleeping;
 }
 
 + (nullable NSString *)systemBuildVersion
@@ -194,25 +207,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 #pragma mark Private
-
-+ (IOPMCapabilityBits)systemPowerCapabilities
-{
-	static IOPMCapabilityBits (*_functionAddress) (void) = NULL;
-
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		NSString *managedName = [@"IOPM" stringByAppendingString:@"ConnectionGetSystemCapabilities"];
-
-		_functionAddress = dlsym(RTLD_DEFAULT, [managedName cStringUsingEncoding:NSASCIIStringEncoding]);
-	});
-
-	if (_functionAddress) {
-		return _functionAddress();
-	}
-
-	return INT_MAX;
-}
 
 + (nullable NSString *)systemModelToken
 {

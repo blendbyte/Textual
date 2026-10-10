@@ -74,11 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self setObject:@(value) forKey:defaultName];
 }
 
-- (void)setLong:(long)value forKey:(NSString *)defaultName
-{
-	[self setObject:@(value) forKey:defaultName];
-}
-
 - (void)setUnsignedLong:(unsigned long)value forKey:(NSString *)defaultName
 {
 	[self setObject:@(value) forKey:defaultName];
@@ -145,19 +140,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ([object isKindOfClass:[NSNumber class]]) {
 		return [object unsignedShortValue];
-	}
-
-	return 0;
-}
-
-- (long)longForKey:(NSString *)defaultName
-{
-	NSParameterAssert(defaultName != nil);
-
-	id object = [self objectForKey:defaultName];
-
-	if ([object isKindOfClass:[NSNumber class]]) {
-		return [object longValue];
 	}
 
 	return 0;

@@ -156,11 +156,6 @@ NSString * const TPCPreferencesUserDefaultsDidChangeNotification = @"TPCPreferen
 	[self setObject:@(value) forKey:defaultName];
 }
 
-- (void)setLong:(long)value forKey:(NSString *)defaultName
-{
-	[self setObject:@(value) forKey:defaultName];
-}
-
 - (void)setUnsignedLong:(unsigned long)value forKey:(NSString *)defaultName
 {
 	[self setObject:@(value) forKey:defaultName];

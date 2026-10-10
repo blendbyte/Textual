@@ -34,6 +34,7 @@
 
 #import <CocoaExtensions/NSFileManagerHelper.h>
 #import <CocoaExtensions/NSStringHelper.h>
+#import <CocoaExtensions/NSStringTokenizer.h>
 
 @interface CSStringHelperTests : XCTestCase
 @end
@@ -70,6 +71,49 @@
 	} else {
 		XCTAssertTrue([standardizedPath isEqualToString:path]);
 	}
+}
+
+/* Leading whitespace gave an empty token that deleted nothing, so taking
+ tokens until the string was empty never ended */
+- (void)testTokensWithLeadingWhitespace
+{
+	NSMutableString *string = [@"  first   second " mutableCopy];
+
+	XCTAssertEqualObjects(string.getToken, @"first");
+	XCTAssertEqualObjects(string.getToken, @"second");
+	XCTAssertEqualObjects(string.getToken, @"");
+	XCTAssertEqualObjects(string, @"");
+
+	NSMutableAttributedString *attributed = [[NSMutableAttributedString alloc] initWithString:@" one two"];
+
+	XCTAssertEqualObjects(attributed.getToken.string, @"one");
+	XCTAssertEqualObjects(attributed.string, @"two");
+}
+
+/* A regular expression that matches nothing (zero length) was found at the
+ same place for ever */
+- (void)testZeroLengthMatchesEnd
+{
+	__block NSUInteger matches = 0;
+
+	[@"xax" enumerateMatchesOfRegularExpression:@"a*" withBlock:^(NSRange range, BOOL *stop) {
+		matches += 1;
+
+		if (matches > 10) {
+			*stop = YES;
+		}
+	}];
+
+	XCTAssertLessThanOrEqual(matches, 4);
+}
+
+- (void)testNumberChecks
+{
+	XCTAssertTrue(@"42".isPositiveWholeNumber);
+	XCTAssertTrue(@"4.2".isPositiveDecimalNumber);
+	XCTAssertTrue([@"-42" contentsIsOfType:(CSStringTypeWholeNumber | CSStringTypeNegativeNumber)]);
+	XCTAssertFalse([@"-" contentsIsOfType:(CSStringTypeWholeNumber | CSStringTypeNegativeNumber)]);
+	XCTAssertFalse(@"4.2.1".isPositiveDecimalNumber);
 }
 
 @end

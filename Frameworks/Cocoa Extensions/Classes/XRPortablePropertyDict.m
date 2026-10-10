@@ -103,6 +103,12 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return [s1 isEqualToDictionary:s2];
 }
 
+/* Equal objects must hash alike (sets and dictionary keys use it) */
+- (NSUInteger)hash
+{
+	return self.dictionaryValue.hash;
+}
+
 #pragma mark -
 #pragma mark Getters
 

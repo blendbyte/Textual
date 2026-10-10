@@ -52,6 +52,16 @@ void XRExchangeInstanceMethod(NSString *className, NSString *originalMethod, NSS
 	Method originalMethodDcl = class_getInstanceMethod(class, originalSelector);
 	Method swizzledMethodDcl = class_getInstanceMethod(class, swizzledSelector);
 
+	/* A class or method that no longer exists (renamed in a macOS update)
+	 would exchange with NULL */
+	if (class == Nil || originalMethodDcl == NULL || swizzledMethodDcl == NULL) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Cannot exchange '%{public}@' with '%{public}@' on '%{public}@': not found",
+			originalMethod, replacementMethod, className);
+
+		return;
+	}
+
 	BOOL methodAdded =
 	class_addMethod(class,
 					originalSelector,
@@ -83,6 +93,16 @@ void XRExchangeClassMethod(NSString *className, NSString *originalMethod, NSStri
 
 	Method originalMethodDcl = class_getClassMethod(class, originalSelector);
 	Method swizzledMethodDcl = class_getClassMethod(class, swizzledSelector);
+
+	/* A class or method that no longer exists (renamed in a macOS update)
+	 would exchange with NULL */
+	if (class == Nil || originalMethodDcl == NULL || swizzledMethodDcl == NULL) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Cannot exchange '%{public}@' with '%{public}@' on '%{public}@': not found",
+			originalMethod, replacementMethod, className);
+
+		return;
+	}
 
 	BOOL methodAdded =
 	class_addMethod(class,
@@ -201,17 +221,32 @@ dispatch_source_t _Nullable XRScheduleBlockOnQueue(dispatch_queue_t queue, dispa
 
 	dispatch_source_set_event_handler(timerSource, block);
 
+	/* The context marks a source that was resumed: releasing a source that
+	 never was (cancelled before it started) crashes */
+	dispatch_set_context(timerSource, NULL);
+
 	return timerSource;
 }
 
+#define _XRScheduledBlockResumed		((void *)1)
+
 void XRResumeScheduledBlock(dispatch_source_t blockSource)
 {
+	if (dispatch_get_context(blockSource) == _XRScheduledBlockResumed) {
+		return;
+	}
+
+	dispatch_set_context(blockSource, _XRScheduledBlockResumed);
+
 	dispatch_resume(blockSource);
 }
 
 void XRCancelScheduledBlock(dispatch_source_t blockSource)
 {
 	dispatch_source_cancel(blockSource);
+
+	/* A cancelled source can be resumed; it only runs its cancel handler */
+	XRResumeScheduledBlock(blockSource);
 }
 
 NS_ASSUME_NONNULL_END

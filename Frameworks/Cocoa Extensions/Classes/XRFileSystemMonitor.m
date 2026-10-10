@@ -136,9 +136,26 @@ NS_ASSUME_NONNULL_BEGIN
 												   kFSEventStreamCreateFlagNoDefer |
 												   kFSEventStreamCreateFlagUseCFTypes));
 
-	FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+	if (stream == NULL) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Failed to create a file system event stream for: %{public}@", pathsToWatch);
 
-	FSEventStreamStart(stream);
+		return;
+	}
+
+	/* On the main queue: scheduled on the current run loop, a monitor
+	 started on a dispatch queue (which has none running) never delivered */
+	FSEventStreamSetDispatchQueue(stream, dispatch_get_main_queue());
+
+	if (FSEventStreamStart(stream) == false) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Failed to start the file system event stream for: %{public}@", pathsToWatch);
+
+		FSEventStreamInvalidate(stream);
+		FSEventStreamRelease(stream);
+
+		return;
+	}
 
 	self.eventStreamRef = stream;
 }

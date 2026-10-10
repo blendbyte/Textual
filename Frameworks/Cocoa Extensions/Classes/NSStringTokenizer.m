@@ -90,24 +90,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 	scanner.charactersToBeSkipped = nil;
 
+	NSCharacterSet *whitespace = [NSCharacterSet whitespaceCharacterSet];
+
+	/* Leading whitespace is skipped and deleted with the token: it gave an
+	 empty token that deleted nothing, so loops taking tokens until the
+	 string is empty never ended */
+	[scanner scanCharactersFromSet:whitespace intoString:nil];
+
+	NSUInteger tokenStart = scanner.scanLocation;
+
 	/* Scan up to first space. */
 	NSString *token = nil;
 
-	BOOL whitespaceFound = [scanner scanUpToCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&token];
+	[scanner scanUpToCharactersFromSet:whitespace intoString:&token];
 
-	NSRange tokenRange = NSMakeRange(0, token.length);
-
-	/* Scanner returning no means we scanned up to the end of the
-	 string without a whitespace. That effectively makes the token
-	 the entire string, and that its deletion range as well. */
-	if (whitespaceFound == NO) {
-		completionBlock(token, tokenRange, tokenRange);
-
-		return;
-	}
+	NSRange tokenRange = ((token) ? NSMakeRange(tokenStart, token.length) : NSEmptyRange());
 
 	/* Scan up to remaining whitespaces */
-	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:nil];
+	[scanner scanCharactersFromSet:whitespace intoString:nil];
 
 	NSRange deletionRange = NSMakeRange(0, scanner.scanLocation);
 
@@ -403,7 +403,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	id objectId = (id <CSStringTokenizerString>)self.trim;
 
-	[NSString _getTokenFromWhitespaceGroup:objectId withBlock:^(id token, NSRange tokenRange, NSRange deletionRange) {
+	[NSString _getTokenFromWhitespaceGroup:objectId withBlock:^(id _Nullable token, NSRange tokenRange, NSRange deletionRange) {
 		tokenOut = token;
 	}];
 
@@ -427,7 +427,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	__block NSRange deletionRangeOut;
 
-	[self getTokenFromQuoteGroupWithBlock:^(NSString *token, NSRange tokenRange, NSRange deletionRange) {
+	[self getTokenFromQuoteGroupWithBlock:^(NSString * _Nullable token, NSRange tokenRange, NSRange deletionRange) {
 		tokenOut = token;
 
 		deletionRangeOut = deletionRange;
@@ -450,7 +450,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	__block NSRange deletionRangeOut;
 
-	[self getTokenFromWhitespaceGroupWithBlock:^(NSString *token, NSRange tokenRange, NSRange deletionRange) {
+	[self getTokenFromWhitespaceGroupWithBlock:^(NSString * _Nullable token, NSRange tokenRange, NSRange deletionRange) {
 		tokenOut = token;
 
 		deletionRangeOut = deletionRange;
@@ -524,7 +524,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	__block NSRange deletionRangeOut;
 
-	[self getTokenFromQuoteGroupWithBlock:^(NSAttributedString *token, NSRange tokenRange, NSRange deletionRange) {
+	[self getTokenFromQuoteGroupWithBlock:^(NSAttributedString * _Nullable token, NSRange tokenRange, NSRange deletionRange) {
 		tokenOut = token;
 
 		deletionRangeOut = deletionRange;
@@ -560,14 +560,21 @@ NS_ASSUME_NONNULL_BEGIN
 	__block NSRange tokenRangeOut;
 	__block NSRange deletionRangeOut;
 
-	[self getTokenFromWhitespaceGroupWithBlock:^(NSString *token, NSRange tokenRange, NSRange deletionRange) {
+	[self getTokenFromWhitespaceGroupWithBlock:^(NSString * _Nullable token, NSRange tokenRange, NSRange deletionRange) {
 		tokenOut = token;
 
 		tokenRangeOut = tokenRange;
 		deletionRangeOut = deletionRange;
 	}];
 
-	if (deletionRangeOut.location != NSNotFound) {
+	/* Taken before the deletion: afterwards the range points elsewhere */
+	NSAttributedString *attributedToken = nil;
+
+	if (tokenOut != nil && asString == NO) {
+		attributedToken = [self attributedSubstringFromRange:tokenRangeOut];
+	}
+
+	if (deletionRangeOut.location != NSNotFound && deletionRangeOut.length > 0) {
 		[self deleteCharactersInRange:deletionRangeOut];
 	}
 
@@ -583,7 +590,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return tokenOut;
 	}
 
-	return [self attributedSubstringFromRange:tokenRangeOut];
+	return attributedToken;
 }
 
 @end

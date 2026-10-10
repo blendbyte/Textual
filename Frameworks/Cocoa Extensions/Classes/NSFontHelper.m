@@ -40,7 +40,9 @@ const CGFloat kRotationForItalicText = -14.0;
 { 
 	NSFont *theFont = [[NSFontManager sharedFontManager] convertFont:self toHaveTrait:NSItalicFontMask];
 	
-	if ([self fontTraitSet:NSItalicFontMask] == NO) {       
+	/* Slanted only when no italic face exists (the original font was checked,
+	 so a real italic face was slanted again) */
+	if ([theFont fontTraitSet:NSItalicFontMask] == NO) {       
 		NSAffineTransform *fontTransform = [NSAffineTransform transform];    
 		NSAffineTransform *italicTransform = [NSAffineTransform transform];  
 		

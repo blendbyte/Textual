@@ -17,6 +17,7 @@
 		4C8025761D1935FB00347366 /* AHHyperlinkScannerResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8025731D1935FB00347366 /* AHHyperlinkScannerResult.m */; };
 		4C8025771D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C8025741D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h */; };
 		4CA41C141AC1A7F500756137 /* COPYRIGHT.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CA41C121AC1A7F500756137 /* COPYRIGHT.txt */; };
+		4CA41C181AC1A80000756137 /* tlds-alpha-by-domain.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CA41C171AC1A80000756137 /* tlds-alpha-by-domain.txt */; };
 		4CA41C151AC1A7F500756137 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4CA41C131AC1A7F500756137 /* LICENSE.txt */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		4C8025741D1935FB00347366 /* AHHyperlinkScannerResultPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AHHyperlinkScannerResultPrivate.h; path = Classes/AHHyperlinkScannerResultPrivate.h; sourceTree = "<group>"; };
 		4CA41C121AC1A7F500756137 /* COPYRIGHT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYRIGHT.txt; sourceTree = "<group>"; };
 		4CA41C131AC1A7F500756137 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		4CA41C171AC1A80000756137 /* tlds-alpha-by-domain.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "tlds-alpha-by-domain.txt"; path = "Resources/tlds-alpha-by-domain.txt"; sourceTree = "<group>"; };
 		4CA41C161AC1A7FC00756137 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* AutoHyperlinks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -148,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				4CA41C161AC1A7FC00756137 /* Info.plist */,
+				4CA41C171AC1A80000756137 /* tlds-alpha-by-domain.txt */,
 			);
 			name = "Property Lists";
 			sourceTree = "<group>";
@@ -229,6 +232,7 @@
 			files = (
 				4CA41C151AC1A7F500756137 /* LICENSE.txt in Resources */,
 				4CA41C141AC1A7F500756137 /* COPYRIGHT.txt in Resources */,
+				4CA41C181AC1A80000756137 /* tlds-alpha-by-domain.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

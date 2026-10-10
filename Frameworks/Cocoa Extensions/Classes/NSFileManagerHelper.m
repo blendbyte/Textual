@@ -196,32 +196,22 @@ typedef NS_ENUM(NSUInteger, CSFileManagerRemoveItemResult) {
 	BOOL moveDestinationToTrash = ((options & CSFileManagerOptionsMoveToTrash) == CSFileManagerOptionsMoveToTrash);
 	BOOL removeIfExists = ((options & CSFileManagerOptionsRemoveIfExists) == CSFileManagerOptionsRemoveIfExists);
 
-	/* Remove destination if it exists */
-	if ([self fileExistsAtURL:destinationURL]) {
-		if (removeIfExists == NO) {
-			/* The method was purposely configured with the thought we wont
-			 override files so it shouldn't be a failure if we follow that rule. */
-			return YES;
-		}
+	/* An existing destination is only replaced once the new item is in place
+	 beside it: removed first, a failed copy lost it */
+	BOOL destinationExists = [self fileExistsAtURL:destinationURL];
 
-		NSError *removeFileError = nil;
+	if (destinationExists && removeIfExists == NO) {
+		/* The method was purposely configured with the thought we wont
+		 override files so it shouldn't be a failure if we follow that rule. */
+		return YES;
+	}
 
-		BOOL removeResult = NO;
+	NSURL *itemURL = destinationURL;
 
-		if (moveDestinationToTrash) {
-			removeResult = [self trashItemAtURL:destinationURL resultingItemURL:NULL error:&removeFileError];
-		} else {
-			removeResult = [self removeItemAtURL:destinationURL error:&removeFileError];
-		}
+	if (destinationExists) {
+		NSString *temporaryName = [NSString stringWithFormat:@".%@.%@", destinationURL.lastPathComponent, [NSUUID UUID].UUIDString];
 
-		if (removeResult == NO) {
-			LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
-				"Failed to remove file at destination: '%{public}@': %{public}@",
-				[destinationURL standardizedTildePath], removeFileError.localizedDescription);
-			LogStackTraceWithSubsystem(_CSFrameworkInternalLogSubsystem());
-
-			return NO;
-		}
+		itemURL = [destinationURL.URLByDeletingLastPathComponent URLByAppendingPathComponent:temporaryName];
 	}
 
 	/* Are we working with a symbolic link? */
@@ -255,17 +245,59 @@ typedef NS_ENUM(NSUInteger, CSFileManagerRemoveItemResult) {
 			return NO;
 		}
 
-		copyResult = [self createSymbolicLinkAtURL:destinationURL withDestinationURL:symlinkDestination error:&copyFileError];
+		copyResult = [self createSymbolicLinkAtURL:itemURL withDestinationURL:symlinkDestination error:&copyFileError];
 	} else if (moveToDestination) {
-		copyResult = [self moveItemAtURL:sourceURL toURL:destinationURL error:&copyFileError];
+		copyResult = [self moveItemAtURL:sourceURL toURL:itemURL error:&copyFileError];
 	} else {
-		copyResult = [self copyItemAtURL:sourceURL toURL:destinationURL error:&copyFileError];
+		copyResult = [self copyItemAtURL:sourceURL toURL:itemURL error:&copyFileError];
 	}
 
 	if (copyResult == NO) {
 		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
 			"Failed to copy file to destination: '%{public}@' -> '%{public}@': %{public}@",
-			sourceURL.standardizedTildePath, destinationURL.standardizedTildePath, copyFileError.localizedDescription);
+			sourceURL.standardizedTildePath, itemURL.standardizedTildePath, copyFileError.localizedDescription);
+		LogStackTraceWithSubsystem(_CSFrameworkInternalLogSubsystem());
+
+		return NO;
+	}
+
+	if (destinationExists == NO) {
+		return YES;
+	}
+
+	/* Remove the destination, then move the new item into its place */
+	NSError *removeFileError = nil;
+
+	BOOL removeResult = NO;
+
+	if (moveDestinationToTrash) {
+		removeResult = [self trashItemAtURL:destinationURL resultingItemURL:NULL error:&removeFileError];
+	} else {
+		removeResult = [self removeItemAtURL:destinationURL error:&removeFileError];
+	}
+
+	if (removeResult == NO) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Failed to remove file at destination: '%{public}@': %{public}@",
+			[destinationURL standardizedTildePath], removeFileError.localizedDescription);
+		LogStackTraceWithSubsystem(_CSFrameworkInternalLogSubsystem());
+
+		/* The destination is untouched; a moved source goes back */
+		if (moveToDestination && createSymbolicLink == NO) {
+			(void)[self moveItemAtURL:itemURL toURL:sourceURL error:NULL];
+		} else {
+			(void)[self removeItemAtURL:itemURL error:NULL];
+		}
+
+		return NO;
+	}
+
+	NSError *moveError = nil;
+
+	if ([self moveItemAtURL:itemURL toURL:destinationURL error:&moveError] == NO) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Failed to move new item into place: '%{public}@' -> '%{public}@': %{public}@",
+			itemURL.standardizedTildePath, destinationURL.standardizedTildePath, moveError.localizedDescription);
 		LogStackTraceWithSubsystem(_CSFrameworkInternalLogSubsystem());
 
 		return NO;
@@ -445,6 +477,21 @@ typedef NS_ENUM(NSUInteger, CSFileManagerRemoveItemResult) {
 	return YES;
 }
 
+/* By resolved path: comparing URLs missed the same item written another way
+ (a trailing slash, a symbolic link), so an excluded item could be deleted */
+- (BOOL)URL:(NSURL *)url isInURLs:(NSArray<NSURL *> *)urls
+{
+	NSString *path = url.URLByResolvingSymlinksInPath.URLByStandardizingPath.path;
+
+	for (NSURL *otherURL in urls) {
+		if ([otherURL.URLByResolvingSymlinksInPath.URLByStandardizingPath.path isEqualToString:path]) {
+			return YES;
+		}
+	}
+
+	return NO;
+}
+
 - (BOOL)removeContentsOfDirectoryAtURL:(NSURL *)url options:(CSFileManagerOptions)options
 {
 	return [self removeContentsOfDirectoryAtURL:url excludingURLs:nil options:options];
@@ -474,7 +521,7 @@ typedef NS_ENUM(NSUInteger, CSFileManagerRemoveItemResult) {
 	/* Check for exclusion. Depth doesn't matter here.
 	 If user wants to exclude the source URL who are we
 	 to really care? */
-	if (excludedURLs && [excludedURLs containsObject:url]) {
+	if (excludedURLs && [self URL:url isInURLs:excludedURLs]) {
 #ifdef DEBUG
 		LogToConsoleDebugWithSubsystem(_CSFrameworkInternalLogSubsystem(),
 			"URL is excluded: %{public}@", url.standardizedTildePath);

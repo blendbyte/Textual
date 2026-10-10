@@ -76,6 +76,7 @@ static NSString * _Nullable StringFromIPv4Addr(UInt32 ipv4Addr)
 @property (assign) UInt32 rawPublicAddress;
 @property (copy, readwrite, nullable) NSString *publicAddress;
 @property (readonly, nullable) void *service;
+@property (nonatomic, strong, nullable) dispatch_semaphore_t statusSemaphore;
 @end
 
 #pragma mark -
@@ -141,6 +142,12 @@ static NSString * _Nullable StringFromIPv4Addr(UInt32 ipv4Addr)
 	/* Post notice of change. */
 	[[NSNotificationCenter defaultCenter] postNotificationName:XRPortMapperDidChangedNotification
 														object:self];
+
+	dispatch_semaphore_t statusSemaphore = self.statusSemaphore;
+
+	if (statusSemaphore) {
+		dispatch_semaphore_signal(statusSemaphore);
+	}
 }
 
 /** Asynchronous callback from DNSServiceNATPortMappingCreate.
@@ -164,12 +171,16 @@ static void portMapCallback (
 
 - (BOOL)open
 {
-	/* Do not continue if we are already doing something. */
-	if (self.serviceIsRunning == NO) {
-		self.serviceIsRunning = YES;
-	} else {
-		NSAssert(NO, @"Port mapping already in progress.");
+	/* Do not continue if we are already doing something (a second service
+	 replaced the first, which was never deallocated) */
+	if (self.serviceIsRunning) {
+		LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+			"Port mapping already in progress");
+
+		return NO;
 	}
+
+	self.serviceIsRunning = YES;
 
 	/* Create the DNS service. */
 	DNSServiceProtocol protocol = 0;
@@ -217,13 +228,31 @@ static void portMapCallback (
 		}
 	}
 
-	while (self.error == 0 && self.publicAddress == nil) {
-		if ([[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]] == NO) {
-			break;
+	/* The status arrives on the main queue: the main thread runs its run
+	 loop for it, other threads wait. Either way for at most 30 seconds (the
+	 current run loop of another thread never received it, and waiting for
+	 ever on the main thread could hang). */
+	NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30.0];
+
+	if ([NSThread isMainThread]) {
+		while (self.error == 0 && self.publicAddress == nil && timeout.timeIntervalSinceNow > 0) {
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeout];
 		}
+	} else {
+		dispatch_semaphore_t statusSemaphore = dispatch_semaphore_create(0);
+
+		self.statusSemaphore = statusSemaphore;
+
+		while (self.error == 0 && self.publicAddress == nil) {
+			if (dispatch_semaphore_wait(statusSemaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout.timeIntervalSinceNow * NSEC_PER_SEC))) != 0) {
+				break;
+			}
+		}
+
+		self.statusSemaphore = nil;
 	}
 
-	return (self.error == 0);
+	return (self.error == 0 && self.publicAddress != nil);
 }
 
 // Close down, but _without_ clearing the 'error' property

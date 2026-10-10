@@ -131,14 +131,14 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_isEncrypted = [aDecoder decodeBoolForKey:@"isEncrypted"];
 	self->_isFirstForDay = [aDecoder decodeBoolForKey:@"isFirstForDay"];
 
-	self->_command = [aDecoder decodeStringForKey:@"command"];
-	self->_messageBody = [aDecoder decodeStringForKey:@"messageBody"];
-	self->_nickname = [aDecoder decodeStringForKey:@"nickname"];
+	self->_command = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"command"];
+	self->_messageBody = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"messageBody"];
+	self->_nickname = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"nickname"];
 
 	self->_lineType = [aDecoder decodeIntegerForKey:@"lineType"];
 	self->_memberType = [aDecoder decodeIntegerForKey:@"memberType"];
 
-	self->_uniqueIdentifier = [aDecoder decodeStringForKey:@"uniqueIdentifier"];
+	self->_uniqueIdentifier = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"uniqueIdentifier"];
 
 	self->_sessionIdentifier = [aDecoder decodeIntegerForKey:@"sessionIdentifier"];
 

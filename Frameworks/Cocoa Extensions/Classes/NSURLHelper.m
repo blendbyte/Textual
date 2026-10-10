@@ -116,7 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(url.isFileURL);
 
 	id left = [self resourceValueForKey:NSURLFileResourceIdentifierKey];
-	id right = [self resourceValueForKey:NSURLFileResourceIdentifierKey];
+	id right = [url resourceValueForKey:NSURLFileResourceIdentifierKey];
 
 	return NSObjectsAreEqual(left, right);
 }

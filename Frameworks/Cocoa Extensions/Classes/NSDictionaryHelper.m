@@ -63,6 +63,26 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Numbers stored as strings (imported or hand-edited property lists, e.g. a
+ port) are read as numbers: NSString answers longLongValue but not shortValue,
+ unsignedShortValue and the like, so asking it for those crashed */
+static NSNumber * _Nullable _CSNumberFromObject(id _Nullable object, BOOL floatingPoint)
+{
+	if ([object isKindOfClass:[NSNumber class]]) {
+		return object;
+	}
+
+	if ([object isKindOfClass:[NSString class]]) {
+		if (floatingPoint) {
+			return @([object doubleValue]);
+		}
+
+		return @([object longLongValue]);
+	}
+
+	return nil;
+}
+
 @implementation NSDictionary (CSDictionaryHelper)
 
 - (BOOL)boolForKey:(id)key
@@ -230,10 +250,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(integerValue)]) {
-			return [object integerValue];
+		if (number) {
+			return [number integerValue];
 		}
 
 		return defaultValue;
@@ -245,10 +265,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(unsignedIntegerValue)]) {
-			return [object unsignedIntegerValue];
+		if (number) {
+			return [number unsignedIntegerValue];
 		}
 
 		return defaultValue;
@@ -260,10 +280,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object shortValue];
+		if (number) {
+			return [number shortValue];
 		}
 
 		return defaultValue;
@@ -275,10 +295,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object unsignedShortValue];
+		if (number) {
+			return [number unsignedShortValue];
 		}
 
 		return defaultValue;
@@ -290,10 +310,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object longValue];
+		if (number) {
+			return [number longValue];
 		}
 
 		return defaultValue;
@@ -305,10 +325,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object unsignedLongValue];
+		if (number) {
+			return [number unsignedLongValue];
 		}
 
 		return defaultValue;
@@ -320,10 +340,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object longLongValue];
+		if (number) {
+			return [number longLongValue];
 		}
 
 		return defaultValue;
@@ -335,10 +355,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object unsignedLongLongValue];
+		if (number) {
+			return [number unsignedLongLongValue];
 		}
 
 		return defaultValue;
@@ -350,10 +370,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], YES);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object doubleValue];
+		if (number) {
+			return [number doubleValue];
 		}
 
 		return defaultValue;
@@ -365,10 +385,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(key != nil);
 
 	@synchronized(self) {
-		id object = self[key];
+		NSNumber *number = _CSNumberFromObject(self[key], YES);
 
-		if ([object respondsToSelector:@selector(floatValue)]) {
-			return [object floatValue];
+		if (number) {
+			return [number floatValue];
 		}
 
 		return defaultValue;

@@ -626,7 +626,8 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 		return nil;
 	}
 
-	return [self descriptionForErrorCode:error.code];
+	/* Only certificate errors, like the error code variant */
+	return [self descriptionForBadCertificateErrorCode:error.code];
 }
 
 + (nullable NSString *)descriptionForBadCertificateErrorCode:(NSInteger)errorCode
@@ -783,14 +784,17 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 			if (CFGetTypeID(properties) == CFDictionaryGetTypeID()) {
 				CFStringRef name = CFDictionaryGetValue(properties, kSecPolicyName);
 
+				/* Copied: the dictionary that owns it is released below */
 				if (name && CFGetTypeID(name) == CFStringGetTypeID()) {
-					policyName = (__bridge NSString *)(name);
+					policyName = [(__bridge NSString *)(name) copy];
 				}
 			}
 
 			CFRelease(properties);
 		}
 	}
+
+	CFRelease(trustPolicies);
 
 	return policyName;
 }

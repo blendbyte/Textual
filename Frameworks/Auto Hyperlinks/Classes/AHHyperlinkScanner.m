@@ -45,7 +45,7 @@ extern void						AH_delete_buffer(AH_BUFFER_STATE, yyscan_t scanner);
 extern YY_EXTRA_TYPE			AHget_extra(yyscan_t scanner);
 extern AH_BUFFER_STATE			AH_scan_string(const char *, yyscan_t scanner);
 
-#define DEFAULT_URL_SCHEME	@"http://"
+#define DEFAULT_URL_SCHEME	@"https://"
 
 #define ENC_INDEX_KEY		@"encIndex"
 #define ENC_CHAR_KEY		@"encChar"
@@ -176,10 +176,6 @@ static NSCharacterSet *s_startCharacterSet = nil;
 
 	long scannerLength = AHget_leng(scanner);
 
-	if ( scanLocationIn) {
-		*scanLocationIn += scannerLength;
-	}
-
 	if (validStatus != AHParserURLInvalid && scannerLength != strlen(CScanString))
 	{
 		validStatus = AHParserURLInvalid;
@@ -189,6 +185,10 @@ static NSCharacterSet *s_startCharacterSet = nil;
 		if ([self _isPermittedSchemeInString:scanString] == NO) {
 			validStatus = AHParserURLInvalid;
 		}
+	}
+	else if (validStatus == AHParserURLWithoutScheme && [self _hasRecognizedTopLevelDomain:scanString] == NO)
+	{
+		validStatus = AHParserURLInvalid;
 	}
 	else if (validStatus != AHParserURLPreconfigured && strictMatch)
 	{
@@ -201,7 +201,85 @@ static NSCharacterSet *s_startCharacterSet = nil;
 
 	AHlex_destroy(scanner);
 
+	/* The whole string is the URL: past it, in UTF-16 units (the lexer's
+	 length is in UTF-8 bytes, so after a link with non-ASCII characters the
+	 next link was missed or cut). Nothing moves for an invalid string; the
+	 caller steps past it. */
+	if (scanLocationIn && validStatus != AHParserURLInvalid) {
+		*scanLocationIn += scanString.length;
+	}
+
 	return validStatus;
+}
+
+/* IANA's top-level domains (updated with Scripts/UpdateTopLevelDomains.sh), plus
+ .local */
++ (NSSet<NSString *> *)_topLevelDomains
+{
+	static NSSet<NSString *> *topLevelDomains = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		NSURL *listURL = [[NSBundle bundleForClass:self] URLForResource:@"tlds-alpha-by-domain" withExtension:@"txt"];
+
+		NSString *list = [NSString stringWithContentsOfURL:listURL encoding:NSUTF8StringEncoding error:NULL];
+
+		NSMutableSet<NSString *> *domains = [NSMutableSet setWithObject:@"local"];
+
+		for (NSString *line in [list componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]) {
+			if (line.length == 0 || [line hasPrefix:@"#"]) {
+				continue;
+			}
+
+			[domains addObject:line.lowercaseString];
+		}
+
+		topLevelDomains = [domains copy];
+	});
+
+	return topLevelDomains;
+}
+
+/* Country codes that are also file extensions: "main.rs" or "readme.md" in a
+ message is a file name, unless the address starts with www. */
++ (NSSet<NSString *> *)_fileExtensionTopLevelDomains
+{
+	static NSSet<NSString *> *extensions = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		extensions = [NSSet setWithArray:@[@"md", @"mov", @"py", @"rs", @"sh", @"zip"]];
+	});
+
+	return extensions;
+}
+
+/* For an address without a scheme: its host ends in a real top-level domain */
++ (BOOL)_hasRecognizedTopLevelDomain:(NSString *)url
+{
+	NSRange hostEnd = [url rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@":/?"]];
+
+	NSString *host = ((hostEnd.location == NSNotFound) ? url : [url substringToIndex:hostEnd.location]).lowercaseString;
+
+	NSRange lastDot = [host rangeOfString:@"." options:NSBackwardsSearch];
+
+	if (lastDot.location == NSNotFound) {
+		return NO;
+	}
+
+	NSString *topLevelDomain = [host substringFromIndex:NSMaxRange(lastDot)];
+
+	if ([[self _topLevelDomains] containsObject:topLevelDomain] == NO) {
+		return NO;
+	}
+
+	if ([[self _fileExtensionTopLevelDomains] containsObject:topLevelDomain] && [host hasPrefix:@"www."] == NO) {
+		return NO;
+	}
+
+	return YES;
 }
 
 + (BOOL)_isPermittedSchemeInString:(NSString *)scanString
@@ -219,36 +297,64 @@ static NSCharacterSet *s_startCharacterSet = nil;
 	return [self _isPermittedScheme:urlScheme];
 }
 
+/* Read from the defaults once, and again when they change: every candidate
+ read all three keys */
++ (NSDictionary<NSString *, id> *)_permittedSchemes
+{
+	static NSDictionary<NSString *, id> *permittedSchemes = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		[[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *notification) {
+			@synchronized (self) {
+				permittedSchemes = nil;
+			}
+		}];
+	});
+
+	@synchronized (self) {
+		if (permittedSchemes == nil) {
+			NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+			NSMutableSet<NSString *> *schemes = [NSMutableSet set];
+
+			for (NSString *key in @[@"com.adiumX.AutoHyperlinks.permittedSchemesDefault", @"com.adiumX.AutoHyperlinks.permittedSchemes"]) {
+				for (id scheme in [defaults arrayForKey:key]) {
+					if ([scheme isKindOfClass:[NSString class]]) {
+						[schemes addObject:[scheme lowercaseString]];
+					}
+				}
+			}
+
+			permittedSchemes = @{
+				@"any" : @([defaults boolForKey:@"com.adiumX.AutoHyperlinks.permittedSchemesAny"]),
+				@"schemes" : [schemes copy]
+			};
+		}
+
+		return permittedSchemes;
+	}
+}
+
+/* Schemes are case-insensitive (HTTPS:// was not linked) */
 + (BOOL)_isPermittedScheme:(NSString *)scheme
 {
+	scheme = scheme.lowercaseString;
+
 	if ([scheme isEqualToString:@"http"] ||
 		[scheme isEqualToString:@"https"])
 	{
 		return YES;
 	}
 
-	NSNumber *permittedSchemesAny = [[NSUserDefaults standardUserDefaults] objectForKey:@"com.adiumX.AutoHyperlinks.permittedSchemesAny"];
+	NSDictionary *permittedSchemes = [self _permittedSchemes];
 
-	if (permittedSchemesAny.boolValue) {
+	if ([permittedSchemes[@"any"] boolValue]) {
 		return YES;
 	}
 
-	/* Two separate arrays exist so an app can specify its own defaults in
-	 NSUserDefaults while allowing a user to whitelist additional schemes,
-	 without having to respecify the app's original. */
-	NSArray<NSString *> *permittedSchemesDefaults = [[NSUserDefaults standardUserDefaults] arrayForKey:@"com.adiumX.AutoHyperlinks.permittedSchemesDefault"];
-
-	if ([permittedSchemesDefaults containsObject:scheme]) {
-		return YES;
-	}
-
-	NSArray<NSString *> *permittedSchemes = [[NSUserDefaults standardUserDefaults] arrayForKey:@"com.adiumX.AutoHyperlinks.permittedSchemes"];
-
-	if ([permittedSchemes containsObject:scheme]) {
-		return YES;
-	}
-
-	return NO;
+	return [permittedSchemes[@"schemes"] containsObject:scheme];
 }
 
 + (nullable AHHyperlinkScannerResult *)_nextURLInContext:(AHHyperlinkScannerContext *)context
@@ -274,37 +380,32 @@ static NSCharacterSet *s_startCharacterSet = nil;
 			continue;
 		}
 
-		// Check for and filter enclosures. We can't add (, [, etc. to the skipSet as they may be in a URL.
+		/* Enclosures around a link: "(see https://example.com)" over several
+		 words. A closing bracket is only taken off when it has no opening one
+		 in the word, so "https://en.wikipedia.org/wiki/Foo_(bar)" keeps its
+		 own; an unrelated "(" earlier in the message took it off. */
+		NSString *firstCharacter = [scanString substringWithRange:NSMakeRange(scanRange.location, 1)];
+
+		NSUInteger openingIndex = [s_enclosureStartArray indexOfObject:firstCharacter];
+
 		NSString *topEncChar = openEnclosures.lastObject;
 
-		if (topEncChar || [s_enclosureCharacterSet characterIsMember:[scanString characterAtIndex:scanRange.location]]) {
-			NSUInteger encIndex = 0;
+		if (openingIndex != NSNotFound) {
+			scanRange.location++;
+			scanRange.length--;
 
-			if (topEncChar) {
-				encIndex = [s_enclosureStartArray indexOfObject:topEncChar];
-			} else {
-				encIndex = [s_enclosureStartArray indexOfObject:[scanString substringWithRange:NSMakeRange(scanRange.location, 1)]];
+			if ([self _removeUnbalancedClosing:s_enclosureStopArray[openingIndex] opening:s_enclosureStartArray[openingIndex] fromRange:&scanRange inString:scanString] == NO) {
+				if (openEnclosures.count < 16) {
+					[openEnclosures addObject:s_enclosureStartArray[openingIndex]];
+				}
 			}
+		} else if (topEncChar) {
+			NSUInteger encIndex = [s_enclosureStartArray indexOfObject:topEncChar];
 
-			NSRange encRange;
-
-			if (encIndex != NSNotFound) {
-				encRange = [scanString rangeOfString:s_enclosureStopArray[encIndex] options:NSBackwardsSearch range:scanRange];
-
-				if (encRange.location != NSNotFound) {
-					scanRange.length--;
-
-					if (topEncChar) {
-						[openEnclosures removeLastObject];
-					} else {
-						scanRange.location++;
-						scanRange.length--;
-					}
-				} else {
-					[openEnclosures addObject:s_enclosureStartArray[encIndex]];
-				} // encRange
-			} // encIndex
-		} // topEncChar
+			if ([self _removeUnbalancedClosing:s_enclosureStopArray[encIndex] opening:topEncChar fromRange:&scanRange inString:scanString]) {
+				[openEnclosures removeLastObject];
+			}
+		}
 
 		if (scanRange.length == 0) {
 			break;
@@ -315,8 +416,11 @@ static NSCharacterSet *s_startCharacterSet = nil;
 
 		NSUInteger longestEnclosureMax = NSMaxRange(longestEnclosure);
 
+		/* Trailing punctuation goes unless it closes a balanced enclosure (the
+		 last character's index is compared: the length was, so nothing was
+		 trimmed for links after the start of the message) */
 		while (scanRange.length > 2 && [s_endCharacterSet characterIsMember:[scanString characterAtIndex:(NSMaxRange(scanRange) - 1)]]) {
-			if (longestEnclosureMax < scanRange.length) {
+			if (longestEnclosureMax < NSMaxRange(scanRange)) {
 				scanRange.length--;
 			} else {
 				break;
@@ -411,6 +515,30 @@ static NSCharacterSet *s_startCharacterSet = nil;
 	[urlProper stringByReplacingOccurrencesOfString:@"\"" withString:@"%22"];
 
 	return urlProper;
+}
+
+/* Cuts the range at its last closing bracket when the range has more closing
+ than opening ones. Returns whether it did. */
++ (BOOL)_removeUnbalancedClosing:(NSString *)closing opening:(NSString *)opening fromRange:(NSRange *)range inString:(NSString *)scanString
+{
+	if (range->length == 0) {
+		return NO;
+	}
+
+	NSString *word = [scanString substringWithRange:*range];
+
+	NSUInteger openingCount = ([word componentsSeparatedByString:opening].count - 1);
+	NSUInteger closingCount = ([word componentsSeparatedByString:closing].count - 1);
+
+	if (closingCount <= openingCount) {
+		return NO;
+	}
+
+	NSRange lastClosing = [word rangeOfString:closing options:NSBackwardsSearch];
+
+	range->length = lastClosing.location;
+
+	return YES;
 }
 
 + (NSRange)_longestBalancedEnclosureInString:(NSString *)scanString range:(NSRange)range

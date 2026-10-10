@@ -481,10 +481,12 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 				mutableSelf = [self mutableCopy];
 			}
 			
+			/* The one character found (the replacement's length was used as
+			 the range, so longer replacements ate the characters after it) */
 			if (replacementLength == 0) {
 				[mutableSelf deleteCharactersInRange:NSMakeRange(i, 1)];
 			} else {
-				[mutableSelf replaceCharactersInRange:NSMakeRange(i, replacementLength) withString:replacement];
+				[mutableSelf replaceCharactersInRange:NSMakeRange(i, 1) withString:replacement];
 			}
 		}
 	}
@@ -658,10 +660,20 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 			break;
 		}
 
+		/* A zero-length match (a regular expression such as "a*") would be
+		 found at the same place for ever: move one character on */
 		if (searchBackwards) {
-			searchLength = range.location;
+			if (range.length == 0) {
+				if (range.location == 0) {
+					break;
+				}
+
+				searchLength = (range.location - 1);
+			} else {
+				searchLength = range.location;
+			}
 		} else {
-			currentPosition = NSMaxRange(range);
+			currentPosition = (NSMaxRange(range) + ((range.length == 0) ? 1 : 0));
 		}
 	}
 }
@@ -715,10 +727,20 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 			break;
 		}
 
+		/* A zero-length match (a regular expression such as "a*") would be
+		 found at the same place for ever: move one character on */
 		if (searchBackwards) {
-			searchLength = range.location;
+			if (range.length == 0) {
+				if (range.location == 0) {
+					break;
+				}
+
+				searchLength = (range.location - 1);
+			} else {
+				searchLength = range.location;
+			}
 		} else {
-			currentPosition = NSMaxRange(range);
+			currentPosition = (NSMaxRange(range) + ((range.length == 0) ? 1 : 0));
 		}
 	}
 }
@@ -881,6 +903,8 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 	BOOL decimalMatched = NO;
 
+	BOOL digitMatched = NO;
+
 	CFStringRef cfSelf = (__bridge CFStringRef)self;
 
 	CFIndex cfSelfLength = CFStringGetLength(cfSelf);
@@ -899,6 +923,9 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 					if (matchNegativeNumber == NO) {
 						return NO;
 					}
+
+					/* Accepted: it isn't a digit, so the check below refused it */
+					continue;
 				} else {
 					if (matchPositiveNumber == NO) {
 						return NO;
@@ -919,8 +946,14 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 				} else {
 					return NO;
 				}
+
+				continue;
 			} // c == '.'
 		} // matchNumber
+
+		if (CS_StringIsBase10Numeric(c)) {
+			digitMatched = YES;
+		}
 
 		/* All other conditions */
 		if ((CS_StringIsAlphabetic(c) && matchAlphabet) ||
@@ -935,6 +968,11 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 		 was one that we are not interested in. */
 		return NO;
 	} // for
+
+	/* A sign or a point alone is not a number */
+	if (matchNumber && matchAlphabet == NO && digitMatched == NO) {
+		return NO;
+	}
 
 	/* If we never matched a decimal place, that might be a problem. */
 	if (matchPositiveNumber == NO && matchDecimalNumber && decimalMatched == NO) {
@@ -1393,7 +1431,17 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 			lines = [NSMutableArray array];
 		}
         
-        NSRange rangeToDelete = NSMakeRange(0, ((lineRange.location - rangeStartIn) + 1));
+		/* CRLF is one line break (it gave an empty line in between) */
+		NSUInteger terminatorLength = 1;
+
+		if ([string characterAtIndex:lineRange.location] == '\r' &&
+			(lineRange.location + 1) < stringLength &&
+			[string characterAtIndex:(lineRange.location + 1)] == '\n')
+		{
+			terminatorLength = 2;
+		}
+
+        NSRange rangeToDelete = NSMakeRange(0, ((lineRange.location - rangeStartIn) + terminatorLength));
 
 		NSRange rangeToSubstring = NSMakeRange(rangeStartIn, (lineRange.location - rangeStartIn));
         
@@ -1403,7 +1451,7 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 		
         [mutableSelf deleteCharactersInRange:rangeToDelete];
 
-        rangeStartIn = NSMaxRange(lineRange);
+        rangeStartIn = (lineRange.location + terminatorLength);
     }
 
 	if (lines) {
@@ -1444,9 +1492,32 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 	return [self isAttributeSet:attribute inRange:range attributeValue:NULL];
 }
 
+/* Anywhere in the range (only its first character was checked) */
 - (BOOL)isAttributeSet:(NSString *)attribute inRange:(NSRange)range attributeValue:(id _Nonnull * _Nullable)attributeValue
 {
-	return [self isAttributeSet:attribute atIndex:range.location attributeValue:attributeValue];
+	NSParameterAssert(attribute != nil);
+
+	__block id foundValue = nil;
+
+	[self enumerateAttribute:attribute inRange:range options:0 usingBlock:^(id value, NSRange valueRange, BOOL *stop) {
+		if (value == nil) {
+			return;
+		}
+
+		foundValue = value;
+
+		*stop = YES;
+	}];
+
+	if (foundValue == nil) {
+		return NO;
+	}
+
+	if (attributeValue) {
+		*attributeValue = foundValue;
+	}
+
+	return YES;
 }
 
 @end

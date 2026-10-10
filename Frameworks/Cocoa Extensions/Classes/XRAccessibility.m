@@ -36,7 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)isVoiceOverEnabled
 {
-	return (CFPreferencesGetAppBooleanValue(CFSTR("voiceOverOnOffKey"), CFSTR("com.apple.universalaccess"), NULL) == true);
+	/* Public API instead of reading the accessibility domain's private preference */
+	return [NSWorkspace sharedWorkspace].voiceOverEnabled;
 }
 
 @end

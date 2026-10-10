@@ -136,8 +136,9 @@ NS_ASSUME_NONNULL_BEGIN
 			return NO;
 		}
 	}
-	
-	return YES;
+
+	/* Data that ends inside a character is not valid */
+	return (rest == 0);
 }
 
 - (NSString *)sha1
@@ -237,10 +238,12 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 			break;
 		}
 
+		/* Right after the match (one byte later skipped a match that follows
+		 directly) */
 		if (searchBackwards) {
 			searchLength = range.location;
 		} else {
-			currentPosition = (NSMaxRange(range) + 1);
+			currentPosition = (NSMaxRange(range) + ((range.length == 0) ? 1 : 0));
 		}
 	}
 }

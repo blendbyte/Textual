@@ -162,27 +162,34 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 		 string = [string substringFromIndex:1];
 	}
 
-	if (string.length == 0 ||
-		string.length > 8 ||
-		(string.length % 2) != 0)
-	{
+	/* RRGGBB or RRGGBBAA, hexadecimal digits only (strtol stopped at the
+	 first other character, so garbage gave a colour) */
+	if (string.length != 6 && string.length != 8) {
 		return nil;
 	}
 
-	long colorTotal = strtol(string.UTF8String, NULL, 16);
+	NSCharacterSet *nonHexadecimal = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"] invertedSet];
 
-	if (string.length < 8) {
+	if ([string rangeOfCharacterFromSet:nonHexadecimal].location != NSNotFound) {
+		return nil;
+	}
+
+	unsigned long colorTotal = strtoul(string.UTF8String, NULL, 16);
+
+	if (string.length == 6) {
 		colorTotal <<= 8;
 
 		colorTotal |= 0xFF;
 	}
 
-	NSInteger r = ((colorTotal & 0xff000000) >> 24);
-	NSInteger g = ((colorTotal & 0x00ff0000) >> 16);
-	NSInteger b = ((colorTotal & 0x0000ff00) >> 8);
-	NSInteger a =  (colorTotal & 0x000000ff);
+	/* As fractions: the 0-255 helper only divides values above 1, so a
+	 channel of 01 was full intensity (#010101 rendered white) */
+	CGFloat r = (((colorTotal & 0xff000000) >> 24) / 255.0);
+	CGFloat g = (((colorTotal & 0x00ff0000) >> 16) / 255.0);
+	CGFloat b = (((colorTotal & 0x0000ff00) >> 8) / 255.0);
+	CGFloat a = ((colorTotal & 0x000000ff) / 255.0);
 
-	return [NSColor calibratedDeviceColorWithRed:r green:g blue:b alpha:a];
+	return [NSColor colorWithDeviceRed:r green:g blue:b alpha:a];
 }
 
 - (BOOL)isShadeOfGray

@@ -34,6 +34,26 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Numbers stored as strings (imported or hand-edited property lists, e.g. a
+ port) are read as numbers: NSString answers longLongValue but not shortValue,
+ unsignedShortValue and the like, so asking it for those crashed */
+static NSNumber * _Nullable _CSNumberFromObject(id _Nullable object, BOOL floatingPoint)
+{
+	if ([object isKindOfClass:[NSNumber class]]) {
+		return object;
+	}
+
+	if ([object isKindOfClass:[NSString class]]) {
+		if (floatingPoint) {
+			return @([object doubleValue]);
+		}
+
+		return @([object longLongValue]);
+	}
+
+	return nil;
+}
+
 @implementation NSArray (CSArrayHelper)
 
 - (BOOL)boolAtIndex:(NSUInteger)n
@@ -91,10 +111,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSInteger)integerAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(integerValue)]) {
-			return [object integerValue];
+		if (number) {
+			return [number integerValue];
 		}
 
 		return 0;
@@ -104,10 +124,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)unsignedIntegerAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(unsignedIntegerValue)]) {
-			return [object unsignedIntegerValue];
+		if (number) {
+			return [number unsignedIntegerValue];
 		}
 
 		return 0;
@@ -117,10 +137,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (short)shortAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object shortValue];
+		if (number) {
+			return [number shortValue];
 		}
 
 		return 0;
@@ -130,10 +150,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (unsigned short)unsignedShortAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object unsignedShortValue];
+		if (number) {
+			return [number unsignedShortValue];
 		}
 
 		return 0;
@@ -143,10 +163,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (long)longAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object longValue];
+		if (number) {
+			return [number longValue];
 		}
 
 		return 0;
@@ -156,10 +176,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (unsigned long)unsignedLongAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object unsignedLongValue];
+		if (number) {
+			return [number unsignedLongValue];
 		}
 
 		return 0;
@@ -169,10 +189,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (long long)longLongAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(longLongValue)]) {
-			return [object longLongValue];
+		if (number) {
+			return [number longLongValue];
 		}
 
 		return 0;
@@ -182,10 +202,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (unsigned long long)unsignedLongLongAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], NO);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object unsignedLongLongValue];
+		if (number) {
+			return [number unsignedLongLongValue];
 		}
 
 		return 0;
@@ -195,10 +215,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (double)doubleAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], YES);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object doubleValue];
+		if (number) {
+			return [number doubleValue];
 		}
 
 		return 0;
@@ -208,10 +228,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (float)floatAtIndex:(NSUInteger)n
 {
 	@synchronized(self) {
-		id object = self[n];
+		NSNumber *number = _CSNumberFromObject(self[n], YES);
 
-		if ([object respondsToSelector:@selector(doubleValue)]) {
-			return [object floatValue];
+		if (number) {
+			return [number floatValue];
 		}
 
 		return 0;
@@ -412,20 +432,25 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 	NSMutableArray *subarray = [NSMutableArray arrayWithCapacity:subarraySize];
 
+	__block BOOL stopped = NO;
+
 	@synchronized(self) {
 		[self enumerateObjectsWithOptions:options usingBlock:^(id object, NSUInteger index, BOOL *stop) {
 			[subarray addObject:object];
 
 			if (subarray.count == subarraySize) {
-				block([subarray copy], stop);
+				block([subarray copy], &stopped);
 
 				[subarray removeAllObjects];
+
+				*stop = stopped;
 			}
 		}];
 	}
 
-	if (subarray.count > 0) {
-		block([subarray copy], NULL);
+	/* The rest, unless the block stopped (it got NULL as its stop pointer) */
+	if (subarray.count > 0 && stopped == NO) {
+		block([subarray copy], &stopped);
 	}
 }
 

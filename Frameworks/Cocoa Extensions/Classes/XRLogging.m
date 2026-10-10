@@ -38,7 +38,9 @@ static os_log_t XRLogToConsoleDefaultSubsystem = nil;
 
 os_log_t _Nullable _CSFrameworkInternalLogSubsystem(void)
 {
-	__block os_log_t subsystem = nil;
+	/* static: as a local it was nil after the first call, so the framework
+	 logged to the default subsystem (and Swift callers force-unwrapped nil) */
+	static os_log_t subsystem = nil;
 
 	static dispatch_once_t onceToken;
 

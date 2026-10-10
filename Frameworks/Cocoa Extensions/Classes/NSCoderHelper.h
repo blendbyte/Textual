@@ -32,27 +32,27 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* No decodeStringForKey:, decodeLongForKey:, encodeLong:forKey: or
+ encodeDictionary:forKey:: Apple's frameworks define methods with those names
+ on NSCoder, and a category replaced them for the whole process. Use
+ decodeObjectOfClass:forKey: and encodeObject:forKey:. */
 @interface NSCoder (CSCoderHelper)
 - (nullable NSArray *)decodeArrayForKey:(NSString *)key;
 - (nullable NSDictionary *)decodeDictionaryForKey:(NSString *)key;
 - (nullable NSData *)decodeDataForKey:(NSString *)key;
-- (nullable NSString *)decodeStringForKey:(NSString *)key;
 - (NSUInteger)decodeUnsignedIntegerForKey:(NSString *)key;
 - (short)decodeShortForKey:(NSString *)key;
 - (unsigned short)decodeUnsignedShortForKey:(NSString *)key;
-- (long)decodeLongForKey:(NSString *)key;
 - (unsigned long)decodeUnsignedLongForKey:(NSString *)key;
 - (long long)decodeLongLongForKey:(NSString *)key;
 - (unsigned long long)decodeUnsignedLongLongForKey:(NSString *)key;
 
 - (void)encodeArray:(NSArray *)value forKey:(NSString *)key;
-- (void)encodeDictionary:(NSDictionary *)value forKey:(NSString *)key;
 - (void)encodeData:(NSData *)value forKey:(NSString *)key;
 - (void)encodeString:(NSString *)value forKey:(NSString *)key;
 - (void)encodeUnsignedInteger:(NSUInteger)value forKey:(NSString *)key;
 - (void)encodeShort:(short)value forKey:(NSString *)key;
 - (void)encodeUnsignedShort:(unsigned short)value forKey:(NSString *)key;
-- (void)encodeLong:(long)value forKey:(NSString *)key;
 - (void)encodeUnsignedLong:(unsigned long)value forKey:(NSString *)key;
 - (void)encodeLongLong:(long long)value forKey:(NSString *)key;
 - (void)encodeUnsignedLongLong:(unsigned long long)value forKey:(NSString *)key;

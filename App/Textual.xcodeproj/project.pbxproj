@@ -533,6 +533,7 @@
 		4CB88F3501E8522FE1EEFA7F /* THOPluginItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */; };
 		4CB88F3501E8522FE1EEFA80 /* TLOKeychainTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */; };
 		4CC7246C1007EA34E0ED6804 /* IRCMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */; };
+		4C0316F31527C367C5E98F99 /* AHHyperlinkScannerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1560075456941B0D119C99 /* AHHyperlinkScannerTests.m */; };
 		4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1560075456941B0D119C32 /* TLOLinkParserTests.m */; };
 		4CC5003E4997F22C192B99CB /* TestHostTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */; };
 		4C9C2DCF311FD2AE36EE722D /* HistoricLogFileStorageModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4CE59F136760C3C11FA8F04C /* HistoricLogFileStorageModel.xcdatamodeld */; };
@@ -1307,6 +1308,7 @@
 		4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = THOPluginItemTests.m; sourceTree = "<group>"; };
 		4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOKeychainTests.m; sourceTree = "<group>"; };
 		4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCMessageTests.m; sourceTree = "<group>"; };
+		4C1560075456941B0D119C99 /* AHHyperlinkScannerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AHHyperlinkScannerTests.m; sourceTree = "<group>"; };
 		4C1560075456941B0D119C32 /* TLOLinkParserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLinkParserTests.m; sourceTree = "<group>"; };
 		4C0F30C914D29E55CE7C8EC7 /* TextualTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextualTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TestHostTests.m; sourceTree = "<group>"; };
@@ -2682,6 +2684,7 @@
 				4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */,
+				4C1560075456941B0D119C99 /* AHHyperlinkScannerTests.m */,
 				4C1560075456941B0D119C32 /* TLOLinkParserTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3E /* TPCPreferencesImportTests.m */,
 				4C3DD6E28CF65FC9230DE707 /* TPCPreferencesTests.m */,
@@ -3609,6 +3612,7 @@
 				4CB88F3501E8522FE1EEFA7F /* THOPluginItemTests.m in Sources */,
 				4CB88F3501E8522FE1EEFA80 /* TLOKeychainTests.m in Sources */,
 				4CC7246C1007EA34E0ED6804 /* IRCMessageTests.m in Sources */,
+				4C0316F31527C367C5E98F99 /* AHHyperlinkScannerTests.m in Sources */,
 				4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */,
 				4CC5003E4997F22C192B99CB /* TestHostTests.m in Sources */,
 			);

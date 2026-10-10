@@ -35,8 +35,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define LogToConsoleTypeDefault 	OS_LOG_TYPE_DEFAULT
-#define LogToConsoleTypeInfo 		OS_LOG_TYPE_DEBUG
-#define LogToConsoleTypeDebug 		OS_LOG_TYPE_INFO
+#define LogToConsoleTypeInfo 		OS_LOG_TYPE_INFO
+#define LogToConsoleTypeDebug 		OS_LOG_TYPE_DEBUG
 #define LogToConsoleTypeError 		OS_LOG_TYPE_ERROR
 #define LogToConsoleTypeFault 		OS_LOG_TYPE_FAULT
 
