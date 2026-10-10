@@ -36,9 +36,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) SecTrustRef trustRef;
 @property (nonatomic, copy) RCMTrustPanelCompletionBlock completionBlock;
 @property (nonatomic, strong, nullable) id contextInfo;
+@property (nonatomic, assign) BOOL finished;
+@property (nonatomic, weak, nullable) NSWindow *hostWindow;
 @end
 
 @implementation RCMTrustPanel
+
+/* Panels waiting for an answer → their context (kept alive here, so a panel
+ closed without its callback leaks nothing). Main thread only. */
++ (NSMapTable<SFCertificateTrustPanel *, RCMTrustPanelContext *> *)_openPanels
+{
+	static NSMapTable *openPanels = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		openPanels = [NSMapTable strongToStrongObjectsMapTable];
+	});
+
+	return openPanels;
+}
 
 + (SFCertificateTrustPanel *)presentTrustPanelInWindow:(nullable NSWindow *)window
 												  body:(NSString *)bodyText
@@ -113,32 +130,89 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[panel setInformativeText:bodyText];
 
+	[[self _openPanels] setObject:promptObject forKey:panel];
+
+	NSWindow *modalWindowBefore = NSApp.modalWindow;
+
 	[panel beginSheetForWindow:window
 				 modalDelegate:[self class]
-				didEndSelector:@selector(_trustPanelCallback_stage1:returnCode:contextInfo:)
-				   contextInfo:(void *)CFBridgingRetain(promptObject)
+				didEndSelector:@selector(_trustPanelCallback:returnCode:contextInfo:)
+				   contextInfo:NULL
 						 trust:trustRef
 					   message:titleText];
+
+	/* Shown on its own (no window), the panel stays hidden and its content
+	 appears in a window that runs as the modal window: remembered so the
+	 panel can be closed */
+	NSWindow *modalWindowAfter = NSApp.modalWindow;
+
+	if (window == nil && modalWindowAfter != nil && modalWindowAfter != modalWindowBefore) {
+		promptObject.hostWindow = modalWindowAfter;
+	}
 
 	return panel;
 }
 
-+ (void)_trustPanelCallback_stage1:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+/* Found through the panel: a panel closed by -dismissTrustPanel: is no
+ longer listed, so a late callback for it does nothing */
++ (void)_trustPanelCallback:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	RCMTrustPanelContext *panelData = (RCMTrustPanelContext *)CFBridgingRelease(contextInfo);
+	SFCertificateTrustPanel *panel = (SFCertificateTrustPanel *)sheet;
 
-	[self _trustPanelCallback_stage2:sheet returnCode:returnCode contextInfo:panelData];
+	RCMTrustPanelContext *context = [[self _openPanels] objectForKey:panel];
+
+	if (context == nil) {
+		return;
+	}
+
+	[self _finishPanel:panel context:context trusted:(returnCode == NSModalResponseOK)];
 }
 
-+ (void)_trustPanelCallback_stage2:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(RCMTrustPanelContext *)contextInfo
++ (void)_finishPanel:(SFCertificateTrustPanel *)panel context:(RCMTrustPanelContext *)context trusted:(BOOL)trusted
 {
-	SecTrustRef trustRef = contextInfo.trustRef;
+	/* Answered once: a dismissed panel's late callback is ignored */
+	if (context.finished) {
+		return;
+	}
 
-	BOOL trusted = (returnCode == NSModalResponseOK);
+	context.finished = YES;
 
-	contextInfo.completionBlock(trustRef, trusted, contextInfo.contextInfo);
+	[[self _openPanels] removeObjectForKey:panel];
+
+	SecTrustRef trustRef = context.trustRef;
+
+	context.completionBlock(trustRef, trusted, context.contextInfo);
 
 	CFRelease(trustRef);
+}
+
++ (void)dismissTrustPanel:(SFCertificateTrustPanel *)panel
+{
+	NSParameterAssert(panel != nil);
+
+	RCMTrustPanelContext *context = [[self _openPanels] objectForKey:panel];
+
+	if (context == nil) {
+		return;
+	}
+
+	NSWindow *sheetParent = panel.sheetParent;
+
+
+	NSWindow *hostWindow = context.hostWindow;
+
+	if (sheetParent) {
+		/* Calls back with the cancel response */
+		[sheetParent endSheet:panel returnCode:NSModalResponseCancel];
+	} else if (hostWindow != nil && NSApp.modalWindow == hostWindow) {
+		[NSApp stopModalWithCode:NSModalResponseCancel];
+
+		[hostWindow orderOut:nil];
+	} else {
+		[panel orderOut:nil];
+	}
+
+	[self _finishPanel:panel context:context trusted:NO];
 }
 
 @end

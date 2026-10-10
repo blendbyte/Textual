@@ -55,6 +55,10 @@ typedef void (^RCMTrustPanelCompletionBlock)(SecTrustRef trustRef, BOOL trusted,
 											  trustRef:(SecTrustRef)trustRef
 									   completionBlock:(RCMTrustPanelCompletionBlock)completionBlock
 										   contextInfo:(nullable id)contextInfo;
+
+/* Closes a panel that is still open, as if the user declined: the completion
+ block runs (not trusted). Does nothing for a panel already answered. */
++ (void)dismissTrustPanel:(SFCertificateTrustPanel *)panel;
 @end
 
 NS_ASSUME_NONNULL_END

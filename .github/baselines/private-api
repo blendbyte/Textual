@@ -1,0 +1,6 @@
+# Private Apple interfaces still in use (private-api-scan.py). D11 allows none:
+# entries here are waiting for their replacement, and new ones fail CI.
+# NSThemeFrameHelper's title bar positioning (8.8, title bar rebuild):
+class NSThemeFrame
+selector _maxTitlebarTitleRect
+string _defaultTitlebarTitleRect

@@ -343,23 +343,10 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	SEL dismissSelector = NSSelectorFromString(@"_dismissWithCode:");
+	self.trustPanelDoNotInvokeCompletionBlock = YES;
 
-	if ([self.trustPanel respondsToSelector:dismissSelector]) {
-		self.trustPanelDoNotInvokeCompletionBlock = YES;
-
-		NSMethodSignature *signature = [self.trustPanel methodSignatureForSelector:dismissSelector];
-
-		NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-
-		[invocation setTarget:self.trustPanel];
-		[invocation setSelector:dismissSelector];
-
-		NSModalResponse cancel = NSModalResponseCancel;
-		[invocation setArgument:&cancel atIndex:2];
-
-		[invocation invoke];
-	}
+	/* Runs the completion block (not trusted), which clears trustPanel */
+	[RCMTrustPanel dismissTrustPanel:self.trustPanel];
 }
 
 #pragma mark -

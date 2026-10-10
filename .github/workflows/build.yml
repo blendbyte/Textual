@@ -164,6 +164,10 @@ jobs:
           done
           ls "$RUNNER_TEMP/Samples/Release"
 
+      - name: Check for private API
+        if: matrix.configuration == 'App Store'
+        run: .github/scripts/private-api-scan.py "$RUNNER_TEMP/DerivedData/Build/Products/App Store/Textual.app" .github/baselines/private-api
+
       - name: Verify the App Store build has no Sparkle
         if: matrix.configuration == 'App Store'
         run: |
