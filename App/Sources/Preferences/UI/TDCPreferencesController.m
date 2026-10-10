@@ -162,6 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)onChangedCheckForBetaUpdates:(id)sender;
 - (IBAction)onChangedChannelViewArrangement:(id)sender;
 - (IBAction)onChangedDisableNicknameColorHashing:(id)sender;
+- (IBAction)onChangedDockIconBadges:(id)sender;
 - (IBAction)onChangedForwardNoticeTo:(id)sender;
 - (IBAction)onChangedHighlightLogging:(id)sender;
 - (IBAction)onChangedHighlightType:(id)sender;
@@ -194,8 +195,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init
 {
-	if ((self = [super init])) {
-		[self prepareInitialState];
+	if ((self = [super initWithWindowNibName:@"TDCPreferences" owner:self])) {
+		(void)self.window; // Loads the nib
 
 		return self;
 	}
@@ -203,14 +204,9 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
-- (void)prepareInitialState
+- (void)windowDidLoad
 {
-	[RZMainBundle() loadNibNamed:@"TDCPreferences" owner:self topLevelObjects:nil];
-}
-
-- (void)awakeFromNib
-{
-	[super awakeFromNib];
+	[super windowDidLoad];
 
 	NSMutableArray *notifications = [NSMutableArray array];
 
@@ -332,7 +328,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self firstPane:view selectedItem:selectedItem];
 
-	[super show];
+	[self.window makeKeyAndOrderFront:nil];
 }
 
 #pragma mark -
@@ -670,6 +666,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setLogTranscript:(BOOL)logTranscript
 {
 	[TPCPreferences setLogToDisk:logTranscript];
+
+	/* Turned off: closes the log files that are open */
+	[TPCPreferences performReloadAction:TPCPreferencesReloadActionLogTranscripts];
 }
 
 - (BOOL)inlineMediaLimitToBasics
@@ -828,9 +827,12 @@ NS_ASSUME_NONNULL_BEGIN
 											   relativeToURL:nil
 													   error:&bookmarkError];
 
+			/* Keep the folder that was set */
 			if (bookmark == nil) {
 				LogToConsoleError("Error creating bookmark for URL ('%{public}@'): %{public}@",
 					path.standardizedTildePath, bookmarkError.localizedDescription);
+
+				return;
 			}
 
 			[transferController setDownloadDestinationBookmark:bookmark];
@@ -1024,7 +1026,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *themeName = [TPCThemeController extractThemeName:currentTheme];
 
-	[TDCAlert alertSheetWithWindow:[NSApp keyWindow]
+	[TDCAlert alertSheetWithWindow:self.window
 							  body:TXTLS(@"TDCPreferencesController[q4o-2f]", themeName, forcedValues)
 							 title:TXTLS(@"TDCPreferencesController[uc0-z7]")
 					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
@@ -1113,15 +1115,18 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Updates
 
+/* One choice over two settings: download implies checking */
 - (void)updateCheckForUpdatesMatrix
 {
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	SPUUpdater *updater = masterController().updateController.updater;
 
-	self.checkForUpdatesAutomaticallyDownload.state = updater.automaticallyDownloadsUpdates;
-	self.checkForUpdatesAutomaticallyCheck.state = updater.automaticallyChecksForUpdates;
-	self.checkForUpdatesDontCheck.state = (updater.automaticallyDownloadsUpdates == NO &&
-										   updater.automaticallyChecksForUpdates == NO);
+	BOOL checks = updater.automaticallyChecksForUpdates;
+	BOOL downloads = (checks && updater.automaticallyDownloadsUpdates);
+
+	self.checkForUpdatesAutomaticallyDownload.state = downloads;
+	self.checkForUpdatesAutomaticallyCheck.state = (checks && downloads == NO);
+	self.checkForUpdatesDontCheck.state = (checks == NO);
 #endif
 }
 
@@ -1130,8 +1135,13 @@ NS_ASSUME_NONNULL_BEGIN
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	SPUUpdater *updater = masterController().updateController.updater;
 
-	updater.automaticallyChecksForUpdates = (self.checkForUpdatesAutomaticallyCheck.state == NSControlStateValueOn);
-	updater.automaticallyDownloadsUpdates = (self.checkForUpdatesAutomaticallyDownload.state == NSControlStateValueOn);
+	BOOL downloads = (sender == self.checkForUpdatesAutomaticallyDownload);
+	BOOL checks = (downloads || sender == self.checkForUpdatesAutomaticallyCheck);
+
+	updater.automaticallyChecksForUpdates = checks;
+	updater.automaticallyDownloadsUpdates = downloads;
+
+	[self updateCheckForUpdatesMatrix];
 #endif
 }
 
@@ -1190,13 +1200,27 @@ NS_ASSUME_NONNULL_BEGIN
 			   alternateButton:nil];
 }
 
-- (void)editTableView:(NSTableView *)tableView
+/* add: only takes effect on a later pass of the run loop, so editing started
+ before the row existed and the new empty row looked like nothing happened */
+- (void)addKeywordToArrayController:(NSArrayController *)arrayController inTableView:(NSTableView *)tableView
 {
-	NSInteger rowSelection = (tableView.numberOfRows - 1);
+	[arrayController addObject:[arrayController newObject]];
 
-	[tableView scrollRowToVisible:rowSelection];
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		NSInteger row = arrayController.selectionIndex;
 
-	[tableView editColumn:0 row:rowSelection withEvent:nil select:YES];
+		if (row == NSNotFound || row >= tableView.numberOfRows) {
+			row = (tableView.numberOfRows - 1);
+		}
+
+		if (row < 0) {
+			return;
+		}
+
+		[tableView scrollRowToVisible:row];
+
+		[tableView editColumn:0 row:row withEvent:nil select:YES];
+	});
 }
 
 /* With regular expression matching, a keyword that doesn't compile would never match */
@@ -1224,45 +1248,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)onAddHighlightKeyword:(id)sender
 {
-	[self.highlightKeywordsArrayController add:nil];
-
-	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[self editTableView:self.highlightKeywordsTable];
-	});
+	[self addKeywordToArrayController:self.highlightKeywordsArrayController inTableView:self.highlightKeywordsTable];
 }
 
 - (void)onAddExcludeKeyword:(id)sender
 {
-	[self.excludeKeywordsArrayController add:nil];
-
-	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[self editTableView:self.excludeKeywordsTable];
-	});
+	[self addKeywordToArrayController:self.excludeKeywordsArrayController inTableView:self.excludeKeywordsTable];
 }
 
+/* Opens Network → (current service) Details → Proxies */
 + (void)openProxySettingsInSystemPreferences
 {
-	AEDesc aeDesc = { typeNull, NULL };
+	NSURL *settingsURL = [NSURL URLWithString:@"x-apple.systempreferences:com.apple.Network-Settings.extension?Proxies"];
 
-	OSStatus aeDescStatus = AECreateDesc('ptru', "Proxies", 7,  &aeDesc);
-
-	if (aeDescStatus != noErr) {
-		LogToConsoleError("aeDescStatus returned value other than noErr: %{public}i", aeDescStatus);
-
-		return;
-	}
-
-	NSURL *prefPaneURL = [NSURL fileURLWithPath:@"/System/Library/PreferencePanes/Network.prefPane"];
-
-	LSLaunchURLSpec launchSpec = { 0 };
-
-	launchSpec.appURL = NULL;
-	launchSpec.asyncRefCon = NULL;
-	launchSpec.itemURLs = (__bridge CFArrayRef)@[prefPaneURL];
-	launchSpec.launchFlags = (kLSLaunchAsync | kLSLaunchDontAddToRecents);
-	launchSpec.passThruParams = &aeDesc;
-
-	(void)LSOpenFromURLSpec(&launchSpec, NULL);
+	[RZWorkspace() openURL:settingsURL];
 }
 
 - (void)updateInlineMediaEnabled
@@ -1297,6 +1296,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)onResetUserListModeColorsToDefaults:(id)sender
 {
+	[self deactivateColorWells];
+
+	/* The other colour wells are bound to the defaults; this one goes through a property */
+	[self willChangeValueForKey:@"userListNoModeColor"];
+
 	[RZUserDefaults() setObject:nil forKey:@"User List Mode Badge Colors -> +y"];
 	[RZUserDefaults() setObject:nil forKey:@"User List Mode Badge Colors -> +q"];
 	[RZUserDefaults() setObject:nil forKey:@"User List Mode Badge Colors -> +a"];
@@ -1305,11 +1309,15 @@ NS_ASSUME_NONNULL_BEGIN
 	[RZUserDefaults() setObject:nil forKey:@"User List Mode Badge Colors -> +v"];
 	[RZUserDefaults() setObject:nil forKey:@"User List Mode Badge Colors -> no mode"];
 
+	[self didChangeValueForKey:@"userListNoModeColor"];
+
 	[self onChangedUserListModeColor:nil];
 }
 
 - (void)onResetServerListUnreadBadgeColorsToDefault:(id)sender
 {
+	[self deactivateColorWells];
+
 	[self willChangeValueForKey:@"serverListUnreadCountBadgeHighlightColor"];
 
 	[RZUserDefaults() setObject:nil forKey:@"Server List Unread Message Count Badge Colors -> Highlight"];
@@ -1342,6 +1350,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onThemeReloadComplete:(NSNotification *)notification
 {
 	self.reloadingTheme = NO;
+
+	/* A style can force its own font */
+	[self willChangeValueForKey:@"themeChannelViewFontName"];
+	[self willChangeValueForKey:@"themeChannelViewFontSize"];
+	[self didChangeValueForKey:@"themeChannelViewFontName"];
+	[self didChangeValueForKey:@"themeChannelViewFontSize"];
 
 	if (self.reloadingThemeBySelection) {
 		self.reloadingThemeBySelection = NO;
@@ -1400,6 +1414,11 @@ NS_ASSUME_NONNULL_BEGIN
 	self.fileTransferManuallyEnteredIPAddressTextField.enabled = (detectionMethod == TXFileTransferIPAddressMethodManual);
 }
 
+- (void)onChangedDockIconBadges:(id)sender
+{
+	[TPCPreferences performReloadAction:TPCPreferencesReloadActionDockIconBadges];
+}
+
 - (void)onChangedHighlightLogging:(id)sender
 {
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionHighlightLogging];
@@ -1452,7 +1471,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onOpenPathToTheme:(id)sender
 {
 	if (themeController().bundledTheme) {
-		[TDCAlert alertSheetWithWindow:NSApp.keyWindow
+		[TDCAlert alertSheetWithWindow:self.window
 								  body:TXTLS(@"TDCPreferencesController[ojj-ap]")
 								 title:TXTLS(@"TDCPreferencesController[5jv-aw]")
 						 defaultButton:TXTLS(@"TDCPreferencesController[6ws-av]")
@@ -1480,12 +1499,51 @@ NS_ASSUME_NONNULL_BEGIN
 	[self updateThemeSelection];
 }
 
+/* An active well keeps its colour from the colour panel, so a reset didn't show */
+- (void)deactivateColorWells
+{
+	NSArray<NSView *> *panes = @[
+		self.contentViewGeneral, self.contentViewHighlights, self.contentViewNotifications,
+		self.contentViewBehavior, self.contentViewControls, self.contentViewInterface,
+		self.contentViewStyle, self.contentViewInstalledAddons, self.contentViewChannelManagement,
+		self.contentViewCommandScope, self.contentViewFloodControl, self.contentViewIncomingData,
+		self.contentViewFileTransfers, self.contentViewInlineMedia, self.contentViewLogLocation,
+		self.contentViewDefaultIdentity, self.contentViewDefaultIRCopMessages, self.contentViewHiddenPreferences
+	];
+
+	for (NSView *pane in panes) {
+		[self deactivateColorWellsInView:pane];
+	}
+}
+
+- (void)deactivateColorWellsInView:(NSView *)view
+{
+	if ([view isKindOfClass:[NSColorWell class]]) {
+		[(NSColorWell *)view deactivate];
+
+		return;
+	}
+
+	for (NSView *subview in view.subviews) {
+		[self deactivateColorWellsInView:subview];
+	}
+}
+
 #pragma mark -
 #pragma mark NSWindow Delegate
 
 - (void)windowWillClose:(NSNotification *)note
 {
 	[RZNotificationCenter() removeObserver:self];
+
+	/* The window is released when it closes: the colour panel would
+	 still send its changes to an active well in it */
+	[self deactivateColorWells];
+
+	/* The font panel is shared: give it back its normal action */
+	if (RZFontManager().action == @selector(onChangedChannelViewFont:)) {
+		RZFontManager().action = @selector(changeFont:);
+	}
 
 	[self saveWindowFrame];
 

@@ -784,6 +784,7 @@
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
                                                 <connections>
+                                                    <action selector="onChangedDockIconBadges:" target="-2" id="k7a-Tr-c03"/>
                                                     <binding destination="G2Q-fc-ddg" name="value" keyPath="values.DisplayDockBadges" id="64Q-Jk-rUE"/>
                                                 </connections>
                                             </button>
@@ -794,6 +795,7 @@
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
                                                 <connections>
+                                                    <action selector="onChangedDockIconBadges:" target="-2" id="k7a-Tr-c04"/>
                                                     <binding destination="G2Q-fc-ddg" name="value" keyPath="values.DisplayPublicMessageCountInDockBadge" id="EAo-gX-afc"/>
                                                 </connections>
                                             </button>
@@ -2635,6 +2637,7 @@ Messages are not saved between app launches unless “Restore scrollback from pr
                                                             <string key="NSValueTransformerName">NSNegateBoolean</string>
                                                         </dictionary>
                                                     </binding>
+                                                    <action selector="onChangedTheme:" target="-2" id="k7a-Tr-c01"/>
                                                     <binding destination="G2Q-fc-ddg" name="value" keyPath="values.ConversationTrackingIncludesUserModeSymbol" id="0aI-pn-dxf"/>
                                                 </connections>
                                             </button>
@@ -3454,6 +3457,7 @@ A lower value is always better especially when in a large number of channels.</s
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
+                        <action selector="onChangedTheme:" target="-2" id="k7a-Tr-c02"/>
                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.AutomaticallyFilterUnicodeTextSpam" id="N77-BH-TuM"/>
                     </connections>
                 </button>
@@ -4669,7 +4673,7 @@ You should therefore not rely solely on this preference.</string>
         </arrayController>
         <userDefaultsController id="G2Q-fc-ddg" userLabel="Preferences User Defaults Controller" customClass="TPCPreferencesUserDefaultsController"/>
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="dAH-Sl-d77" userLabel="Hidden Preferences">
-            <rect key="frame" x="0.0" y="0.0" width="670" height="466"/>
+            <rect key="frame" x="0.0" y="0.0" width="670" height="437"/>
             <subviews>
                 <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V0L-wf-MX5">
                     <rect key="frame" x="151" y="30" width="369" height="15"/>
@@ -4753,8 +4757,7 @@ You should therefore not rely solely on this preference.</string>
                             <constraints>
                                 <constraint firstAttribute="height" constant="19" id="FM9-g5-NsI"/>
                                 <constraint firstAttribute="width" constant="100" id="TjQ-Vb-9kU"/>
-                                <constraint firstItem="84h-O7-xuk" firstAttribute="top" secondItem="Xl2-g8-NiZ" secondAttribute="bottom" constant="20" id="T8w-k2-L1c"/>
-            </constraints>
+                            </constraints>
                             <comboBoxCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" completes="NO" numberOfVisibleItems="5" id="8gE-fC-w0O">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -4891,6 +4894,7 @@ You should therefore not rely solely on this preference.</string>
                 <constraint firstItem="wM2-5T-Kcv" firstAttribute="top" secondItem="r5x-9F-a6i" secondAttribute="bottom" constant="14" id="yJy-do-LTO"/>
                 <constraint firstItem="r5x-9F-a6i" firstAttribute="top" secondItem="1g9-Qk-YQN" secondAttribute="bottom" constant="14" id="T8w-k2-L1a"/>
                 <constraint firstItem="r5x-9F-a6i" firstAttribute="leading" secondItem="1g9-Qk-YQN" secondAttribute="leading" id="T8w-k2-L1b"/>
+                <constraint firstItem="84h-O7-xuk" firstAttribute="top" secondItem="Xl2-g8-NiZ" secondAttribute="bottom" constant="20" id="T8w-k2-L1c"/>
             </constraints>
             <point key="canvasLocation" x="318" y="395"/>
         </customView>

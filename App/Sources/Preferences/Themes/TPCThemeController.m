@@ -49,6 +49,7 @@
 #import "TPCResourceManager.h"
 #import "TPCThemePrivate.h"
 #import "TPCThemeControllerPrivate.h"
+#import "TVCMainWindow.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -1202,9 +1203,15 @@ typedef NSMutableDictionary	<NSString *, TPCTheme *> 	*TPCThemeControllerThemeLi
 
 - (void)beginOperation
 {
-	/* Setup progress indicator. */
-	  TDCProgressIndicatorSheet *progressIndicator =
-	[[TDCProgressIndicatorSheet alloc] initWithWindow:[NSApp keyWindow]];
+	/* Setup progress indicator: on the window it was asked from, if any is key */
+	NSWindow *window = NSApp.keyWindow;
+
+	if (window == nil) {
+		window = mainWindow();
+	}
+
+	TDCProgressIndicatorSheet *progressIndicator =
+	[[TDCProgressIndicatorSheet alloc] initWithWindow:window];
 
 	self.progressIndicator = progressIndicator;
 

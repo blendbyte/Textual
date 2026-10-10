@@ -36,8 +36,6 @@
  *
  *********************************************************************** */
 
-#import "TDCWindowBase.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, TDCPreferencesControllerSelection) {
@@ -49,7 +47,12 @@ typedef NS_ENUM(NSUInteger, TDCPreferencesControllerSelection) {
 
 @protocol TDCPreferencesControllerDelegate;
 
-@interface TDCPreferencesController : TDCWindowBase
+/* A window controller, not a TDCWindowBase: the XIB binds 35 controls to its
+ owner, and only a window controller (or view controller) as owner keeps those
+ bindings from retaining it, so the window goes away when it closes. */
+@interface TDCPreferencesController : NSWindowController
+@property (nonatomic, weak, nullable) id delegate;
+
 + (void)openProxySettingsInSystemPreferences;
 
 - (void)show:(TDCPreferencesControllerSelection)selection;

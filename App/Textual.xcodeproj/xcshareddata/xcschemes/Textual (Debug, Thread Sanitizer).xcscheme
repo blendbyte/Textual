@@ -46,7 +46,7 @@
                BlueprintIdentifier = "4C1144752C289575008CD785"
                BuildableName = "CocoaExtensionsTests.xctest"
                BlueprintName = "CocoaExtensionsTests"
-               ReferencedContainer = "container:../../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj">
+               ReferencedContainer = "container:../Frameworks/Cocoa Extensions/Cocoa Extensions.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

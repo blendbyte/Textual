@@ -46,10 +46,15 @@ NS_ASSUME_NONNULL_BEGIN
 		NSData *archivedValue = [NSKeyedArchiver archivedDataWithRootObject:value
 													  requiringSecureCoding:YES
 																	  error:&error];
-		
-		NSAssert((error != nil), @"Failed to write contents of '%@': %@",
-				 defaultName, error.description);
-		
+
+		/* The check was inverted: every successful save raised in Debug builds,
+		 which crashed the app when the colour panel set a colour */
+		if (archivedValue == nil) {
+			NSAssert(NO, @"Failed to write contents of '%@': %@", defaultName, error.description);
+
+			return;
+		}
+
 		[self setObject:archivedValue forKey:defaultName];
 	}
 }

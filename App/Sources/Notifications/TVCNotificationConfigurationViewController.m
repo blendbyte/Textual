@@ -324,7 +324,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[activeAlert addObserver:self forKeyPath:@"alertSound" options:NSKeyValueObservingOptionNew context:NULL];
 	[activeAlert addObserver:self forKeyPath:@"speakEvent" options:NSKeyValueObservingOptionNew context:NULL];
 	[activeAlert addObserver:self forKeyPath:@"pushNotification" options:NSKeyValueObservingOptionNew context:NULL];
-	[activeAlert addObserver:self forKeyPath:@"disableWhileAway" options:NSKeyValueObservingOptionNew context:NULL];
+	[activeAlert addObserver:self forKeyPath:@"disabledWhileAway" options:NSKeyValueObservingOptionNew context:NULL];
 	[activeAlert addObserver:self forKeyPath:@"bounceDockIcon" options:NSKeyValueObservingOptionNew context:NULL];
 	[activeAlert addObserver:self forKeyPath:@"bounceDockIconRepeatedly" options:NSKeyValueObservingOptionNew context:NULL];
 }
@@ -340,7 +340,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[activeAlert removeObserver:self forKeyPath:@"alertSound"];
 	[activeAlert removeObserver:self forKeyPath:@"speakEvent"];
 	[activeAlert removeObserver:self forKeyPath:@"pushNotification"];
-	[activeAlert removeObserver:self forKeyPath:@"disableWhileAway"];
+	[activeAlert removeObserver:self forKeyPath:@"disabledWhileAway"];
 	[activeAlert removeObserver:self forKeyPath:@"bounceDockIcon"];
 	[activeAlert removeObserver:self forKeyPath:@"bounceDockIconRepeatedly"];
 }

@@ -72,7 +72,10 @@ static NSInteger _cachedMessageCount = (-1);
 
 + (void)_updateDockIconNow
 {
+	/* Turning the badges off clears the one shown */
 	if ([TPCPreferences displayDockBadge] == NO) {
+		[self drawWithoutCount];
+
 		return;
 	}
 
@@ -128,7 +131,8 @@ static NSInteger _cachedMessageCount = (-1);
  cannot be mistaken for an installed copy of Textual in the Dock. */
 + (NSImage *)developmentIconWithIcon:(NSImage *)icon
 {
-	return [NSImage imageWithSize:NSMakeSize(512, 512) flipped:NO drawingHandler:^BOOL(NSRect rect) {
+	/* The icon's own size: the badges are sized for it */
+	return [NSImage imageWithSize:icon.size flipped:NO drawingHandler:^BOOL(NSRect rect) {
 		[icon drawInRect:rect];
 
 		NSRect ribbonRect = NSMakeRect(NSWidth(rect) * 0.15, NSHeight(rect) * 0.05, NSWidth(rect) * 0.70, NSHeight(rect) * 0.22);
