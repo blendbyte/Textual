@@ -67,14 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	CFDataRef macAddressRef = nil;
 
-	/* Mach port used to initiate communication with IOKit. */
-	mach_port_t masterPort;
-
-	kern_return_t machPortResult = IOMasterPort(MACH_PORT_NULL, &masterPort);
-
-	if (machPortResult != KERN_SUCCESS) {
-		return nil;
-	}
+	/* The default port used to communicate with IOKit */
+	mach_port_t masterPort = kIOMainPortDefault;
 
 	/* Create a matching dictionary */
 	CFMutableDictionaryRef matchingDict = IOBSDNameMatching(masterPort, 0, "en0");

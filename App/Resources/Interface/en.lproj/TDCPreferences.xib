@@ -1885,7 +1885,7 @@
                                                         <action selector="onChangedUserListModeColor:" target="-2" id="IXq-I3-M72"/>
                                                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.User List Mode Badge Colors -&gt; +y" id="GzY-Ki-kDQ">
                                                             <dictionary key="options">
-                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                                <string key="NSValueTransformerName">TDCPreferencesColorTransformer</string>
                                                             </dictionary>
                                                         </binding>
                                                     </connections>
@@ -1914,7 +1914,7 @@
                                                         <action selector="onChangedUserListModeColor:" target="-2" id="meL-e3-Oab"/>
                                                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.User List Mode Badge Colors -&gt; +q" id="jNB-MT-zjP">
                                                             <dictionary key="options">
-                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                                <string key="NSValueTransformerName">TDCPreferencesColorTransformer</string>
                                                             </dictionary>
                                                         </binding>
                                                     </connections>
@@ -1943,7 +1943,7 @@
                                                         <action selector="onChangedUserListModeColor:" target="-2" id="qyJ-DW-aTf"/>
                                                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.User List Mode Badge Colors -&gt; +a" id="OpN-Q4-qQT">
                                                             <dictionary key="options">
-                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                                <string key="NSValueTransformerName">TDCPreferencesColorTransformer</string>
                                                             </dictionary>
                                                         </binding>
                                                     </connections>
@@ -1972,7 +1972,7 @@
                                                         <action selector="onChangedUserListModeColor:" target="-2" id="d9J-XE-tNi"/>
                                                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.User List Mode Badge Colors -&gt; +o" id="Dbp-qa-FSS">
                                                             <dictionary key="options">
-                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                                <string key="NSValueTransformerName">TDCPreferencesColorTransformer</string>
                                                             </dictionary>
                                                         </binding>
                                                     </connections>
@@ -2001,7 +2001,7 @@
                                                         <action selector="onChangedUserListModeColor:" target="-2" id="Y7e-RA-FfC"/>
                                                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.User List Mode Badge Colors -&gt; +h" id="AnD-Pz-Jld">
                                                             <dictionary key="options">
-                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                                <string key="NSValueTransformerName">TDCPreferencesColorTransformer</string>
                                                             </dictionary>
                                                         </binding>
                                                     </connections>
@@ -2030,7 +2030,7 @@
                                                         <action selector="onChangedUserListModeColor:" target="-2" id="jdM-Ar-u3T"/>
                                                         <binding destination="G2Q-fc-ddg" name="value" keyPath="values.User List Mode Badge Colors -&gt; +v" id="LGN-uw-k3a">
                                                             <dictionary key="options">
-                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                                <string key="NSValueTransformerName">TDCPreferencesColorTransformer</string>
                                                             </dictionary>
                                                         </binding>
                                                     </connections>

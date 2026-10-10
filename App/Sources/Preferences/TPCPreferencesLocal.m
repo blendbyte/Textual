@@ -1320,13 +1320,10 @@ static NSArray<NSString *> *_matchKeywords = nil;
 
 	[dynamicDefaults setBool:[TPCApplicationInfo sandboxEnabled]						forKey:@"Security -> Sandbox Enabled"];
 
-	[dynamicDefaults setBool:NO									forKey:@"System -> Running Mac OS Mountain Lion Or Newer"];
-	[dynamicDefaults setBool:TEXTUAL_RUNNING_ON_MAVERICKS		forKey:@"System -> Running Mac OS Mavericks Or Newer"];
-	[dynamicDefaults setBool:TEXTUAL_RUNNING_ON_YOSEMITE		forKey:@"System -> Running Mac OS Yosemite Or Newer"];
-	[dynamicDefaults setBool:TEXTUAL_RUNNING_ON_ELCAPITAN		forKey:@"System -> Running Mac OS El Capitan Or Newer"];
-	[dynamicDefaults setBool:TEXTUAL_RUNNING_ON_SIERRA			forKey:@"System -> Running Mac OS Sierra Or Newer"];
-	[dynamicDefaults setBool:TEXTUAL_RUNNING_ON_HIGHSIERRA		forKey:@"System -> Running Mac OS High Sierra Or Newer"];
-	[dynamicDefaults setBool:TEXTUAL_RUNNING_ON_MOJAVE			forKey:@"System -> Running Mac OS Mojave Or Newer"];
+	/* Nothing reads these any more (13.2 removes them); always true on macOS 14 */
+	for (NSString *systemName in @[@"Mountain Lion", @"Mavericks", @"Yosemite", @"El Capitan", @"Sierra", @"High Sierra", @"Mojave"]) {
+		[dynamicDefaults setBool:YES forKey:[NSString stringWithFormat:@"System -> Running Mac OS %@ Or Newer", systemName]];
+	}
 
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	[dynamicDefaults setBool:YES forKey:@"System -> 3rd-party Services -> Built with Sparkle Framework"];

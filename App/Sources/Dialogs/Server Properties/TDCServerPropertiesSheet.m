@@ -65,7 +65,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define _tableDragToken		@"TDCServerPropertiesSheetTableDragToken"
+#define _tableDragToken		@"com.textualapp.server-properties.row" // A UTI: drags of NSPasteboardItems need one
 
 @interface TDCServerPropertiesSheet () <NSControlTextEditingDelegate>
 @property (nonatomic, strong, readwrite, nullable) IRCClient *client;
@@ -2441,15 +2441,14 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}
 }
 
-- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pasteboard
+/* The dragged row's index, read back on drop */
+- (nullable id <NSPasteboardWriting>)tableView:(NSTableView *)tableView pasteboardWriterForRow:(NSInteger)row
 {
-	NSData *draggedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+	NSPasteboardItem *item = [NSPasteboardItem new];
 
-	[pasteboard declareTypes:@[_tableDragToken] owner:self];
+	[item setString:@(row).stringValue forType:_tableDragToken];
 
-	[pasteboard setData:draggedData forType:_tableDragToken];
-
-	return YES;
+	return item;
 }
 
 /* Rows move within their own table only: a row dragged from one of the
@@ -2475,11 +2474,9 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	NSPasteboard *pasteboard = [info draggingPasteboard];
 
-	NSData *draggedData = [pasteboard dataForType:_tableDragToken];
+	NSString *draggedRow = [pasteboard stringForType:_tableDragToken];
 
-	NSIndexSet *draggedRowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:draggedData];
-
-	NSUInteger draggedRowIndex = draggedRowIndexes.firstIndex;
+	NSUInteger draggedRowIndex = ((draggedRow.length > 0) ? (NSUInteger)draggedRow.integerValue : NSNotFound);
 
 	NSInteger numberOfRows = tableView.numberOfRows;
 

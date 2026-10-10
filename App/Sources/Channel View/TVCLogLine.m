@@ -82,8 +82,17 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_BEGIN
 {
 	NSParameterAssert(data != nil);
 
-	/* The decoded line takes the place of self */
-	return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+	/* The decoded line takes the place of self. Secure decoding: every
+	 field names its classes (-populateWithDecoder:), older archives too */
+	NSError *decodeError = nil;
+
+	TVCLogLine *logLine = [NSKeyedUnarchiver unarchivedObjectOfClass:[TVCLogLine class] fromData:data error:&decodeError];
+
+	if (logLine == nil) {
+		LogToConsoleError("Failed to unarchive a log line: %{public}@", decodeError.localizedDescription);
+	}
+
+	return logLine;
 }
 DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
@@ -125,7 +134,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_highlightKeywords = [aDecoder decodeObjectOfClasses:[NSSet setWithObjects:[NSArray class], [NSString class], nil]
 													 forKey:@"highlightKeywords"];
 
-	self->_rendererAttributes = [aDecoder decodeDictionaryForKey:@"rendererAttributes"];
+	id rendererAttributes = [aDecoder decodeObjectOfClasses:[NSSet setWithObjects:[NSDictionary class], [NSString class], [NSNumber class], nil]
+													 forKey:@"rendererAttributes"];
+
+	self->_rendererAttributes = ([rendererAttributes isKindOfClass:[NSDictionary class]] ? rendererAttributes : nil);
 
 	self->_isEncrypted = [aDecoder decodeBoolForKey:@"isEncrypted"];
 	self->_isFirstForDay = [aDecoder decodeBoolForKey:@"isFirstForDay"];
@@ -214,7 +226,15 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (nullable NSData *)archivedData
 {
-	return [NSKeyedArchiver archivedDataWithRootObject:self];
+	NSError *encodeError = nil;
+
+	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:YES error:&encodeError];
+
+	if (data == nil) {
+		LogToConsoleError("Failed to archive a log line: %{public}@", encodeError.localizedDescription);
+	}
+
+	return data;
 }
 
 + (NSString *)newUniqueIdentifier

@@ -42,7 +42,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define _filterTableDragToken			@"filterTableDragToken"
+#define _filterTableDragToken			@"com.textualapp.chat-filter.row" // A UTI: drags of NSPasteboardItems need one
 
 #define _filterListUserDefaultsKey		@"Textual Chat Filter Extension -> Filters"
 
@@ -371,19 +371,27 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Table View Delegate
 
-- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pasteboard
+/* The dragged row's index, read back on drop */
+- (nullable id <NSPasteboardWriting>)tableView:(NSTableView *)tableView pasteboardWriterForRow:(NSInteger)row
 {
-	NSData *draggedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+	NSPasteboardItem *item = [NSPasteboardItem new];
 
-	[pasteboard declareTypes:@[_filterTableDragToken] owner:self];
+	[item setString:@(row).stringValue forType:_filterTableDragToken];
 
-	[pasteboard setData:draggedData forType:_filterTableDragToken];
-
-	return YES;
+	return item;
 }
 
+/* Only rows of this table, between rows */
 - (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id<NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)dropOperation
 {
+	if (info.draggingSource != tableView) {
+		return NSDragOperationNone;
+	}
+
+	if (dropOperation == NSTableViewDropOn) {
+		[tableView setDropRow:row dropOperation:NSTableViewDropAbove];
+	}
+
 	return NSDragOperationGeneric;
 }
 
@@ -391,11 +399,15 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSPasteboard *pasteboard = [info draggingPasteboard];
 
-	NSData *draggedData = [pasteboard dataForType:_filterTableDragToken];
+	NSString *draggedRow = [pasteboard stringForType:_filterTableDragToken];
 
-	NSIndexSet *draggedRowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:draggedData];
+	NSUInteger draggedRowIndex = ((draggedRow.length > 0) ? (NSUInteger)draggedRow.integerValue : NSNotFound);
 
-	NSUInteger draggedRowIndex = draggedRowIndexes.firstIndex;
+	NSInteger numberOfRows = tableView.numberOfRows;
+
+	if (info.draggingSource != tableView || draggedRowIndex == NSNotFound || draggedRowIndex >= numberOfRows || row < 0 || row > numberOfRows) {
+		return NO;
+	}
 
 	[self.filterArrayController moveObjectAtArrangedObjectIndex:draggedRowIndex toIndex:row];
 

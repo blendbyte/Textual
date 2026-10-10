@@ -89,17 +89,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[super rightMouseDown:e];
 }
 
-- (void)textDidEndEditing:(NSNotification *)note
-{
-	if ([self.textEditingDelegate respondsToSelector:@selector(textDidEndEditing:)]) {
-		[self.textEditingDelegate textDidEndEditing:note];
-
-		return;
-	}
-
-	[super textDidEndEditing:note];
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

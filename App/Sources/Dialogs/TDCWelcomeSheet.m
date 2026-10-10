@@ -126,8 +126,6 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Setup others */
 	self.channelList = [NSMutableArray new];
 
-	self.channelTable.textEditingDelegate = self;
-
 	[self updateDeleteChannelButton];
 
 	self.nicknameTextField.stringValue = [TPCPreferences defaultNickname];
@@ -290,21 +288,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark NSTableView Delegate
 
-- (void)textDidEndEditing:(NSNotification *)note
+/* A channel name typed into the list */
+- (void)tableView:(NSTableView *)tableView setObjectValue:(nullable id)object forTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row
 {
-	NSInteger editedRow = self.channelTable.editedRow;
-
-	if (editedRow < 0) {
+	if (row < 0 || row >= self.channelList.count || [object isKindOfClass:[NSString class]] == NO) {
 		return;
 	}
 
-	NSString *editedString = [note.object textStorage].string;
-
-	self.channelList[editedRow] = [editedString copy];
-
-	[self.channelTable reloadData];
-
-	[self.channelTable selectItemAtIndex:editedRow];
+	self.channelList[row] = [object copy];
 
 	[self updateDeleteChannelButton];
 }

@@ -190,7 +190,56 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/* The colour wells' bindings: reads both formats colours are stored in
+ (keyed archives, and NSArchiver data in older defaults, as
+ -[NSUserDefaults colorForKey:] does) and writes a secure keyed archive */
+@interface TDCPreferencesColorTransformer : NSValueTransformer
+@end
+
+@implementation TDCPreferencesColorTransformer
+
++ (Class)transformedValueClass
+{
+	return [NSColor class];
+}
+
++ (BOOL)allowsReverseTransformation
+{
+	return YES;
+}
+
+- (nullable id)transformedValue:(nullable id)value
+{
+	if ([value isKindOfClass:[NSData class]] == NO) {
+		return nil;
+	}
+
+	return [NSKeyedUnarchiver legacyCompatUnarchivedObjectOfClass:[NSColor class] fromData:value];
+}
+
+- (nullable id)reverseTransformedValue:(nullable id)value
+{
+	if ([value isKindOfClass:[NSColor class]] == NO) {
+		return nil;
+	}
+
+	return [NSKeyedArchiver archivedDataWithRootObject:value requiringSecureCoding:YES error:NULL];
+}
+
+@end
+
 @implementation TDCPreferencesController
+
++ (void)initialize
+{
+	if (self != [TDCPreferencesController class]) {
+		return;
+	}
+
+	/* Before the nib, whose colour wells name it */
+	[NSValueTransformer setValueTransformer:[TDCPreferencesColorTransformer new]
+									forName:@"TDCPreferencesColorTransformer"];
+}
 
 - (instancetype)init
 {

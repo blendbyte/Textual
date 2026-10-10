@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCBasicTableView : NSTableView
 @property (nonatomic, weak) id pasteboardDelegate;
-@property (nonatomic, weak) id textEditingDelegate;
+@property (nonatomic, weak) id textEditingDelegate TEXTUAL_DEPRECATED("Has no effect. Implement -tableView:setObjectValue:forTableColumn:row: in the data source");
 
 @property (readonly, assign) BOOL presentMenuForEmptySelection;
 @end

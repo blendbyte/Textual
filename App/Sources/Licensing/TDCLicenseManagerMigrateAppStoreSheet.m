@@ -35,6 +35,7 @@
  *
  *********************************************************************** */
 
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <CoreServices/CoreServices.h>
 
 #import "TPCPathInfo.h"
@@ -227,7 +228,7 @@ NS_ASSUME_NONNULL_BEGIN
 		d.directoryURL = applicationsPath;
 	}
 
-	d.allowedFileTypes = @[@"app"];
+	d.allowedContentTypes = @[UTTypeApplicationBundle];
 
 	d.delegate = (id)self;
 

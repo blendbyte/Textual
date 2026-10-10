@@ -679,9 +679,9 @@ NS_ASSUME_NONNULL_BEGIN
 	   @"nicknames" : nicknames
 	};
 
-	NSData *pasteboardData = [NSKeyedArchiver archivedDataWithRootObject:pasteboardDictionary];
+	NSData *pasteboardData = [NSKeyedArchiver archivedDataWithRootObject:pasteboardDictionary requiringSecureCoding:YES error:NULL];
 
-	return pasteboardData;
+	return (pasteboardData ?: [NSData data]);
 }
 
 + (BOOL)readNicknamesFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<NSString *> *nicknames))callbackBlock
@@ -689,16 +689,19 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(pasteboardData != nil);
 	NSParameterAssert(callbackBlock != nil);
 
-	/* This is a private method which means that we are very lazy about
-	 validating the input, but this is a TODO to myself: add strict type
-	 checks if you end up making this method public. */
-	NSDictionary *pasteboardDictionary = [NSKeyedUnarchiver unarchiveObjectWithData:pasteboardData];
+	NSSet *allowedClasses = [NSSet setWithObjects:[NSDictionary class], [NSArray class], [NSString class], nil];
+
+	NSDictionary *pasteboardDictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses fromData:pasteboardData error:NULL];
 
 	if ([pasteboardDictionary isKindOfClass:[NSDictionary class]] == NO) {
 		return NO;
 	}
 
 	NSString *channelId = pasteboardDictionary[@"channelId"];
+
+	if ([channelId isKindOfClass:[NSString class]] == NO) {
+		return NO;
+	}
 
 	IRCChannel *channel = (IRCChannel *)[worldController() findItemWithId:channelId];
 
@@ -707,6 +710,10 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	NSArray *nicknames = pasteboardDictionary[@"nicknames"];
+
+	if ([nicknames isKindOfClass:[NSArray class]] == NO) {
+		return NO;
+	}
 
 	callbackBlock(channel, nicknames);
 

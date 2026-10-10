@@ -57,36 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (CGFloat)screenRefreshRate
 {
-    NSDictionary *screenDescription = self.deviceDescription;
-
-    CGDirectDisplayID screenId = [screenDescription[@"NSScreenNumber"] unsignedIntValue];
-
-	/* Either call can fail (a display going away): unchecked, that crashed */
-    CGDisplayModeRef screenMode = CGDisplayCopyDisplayMode(screenId);
-
-	CGFloat refreshRate = 0;
-
-	if (screenMode) {
-		refreshRate = CGDisplayModeGetRefreshRate(screenMode);
-
-		CGDisplayModeRelease(screenMode);
-	}
-
-    if (refreshRate == 0) {
-		CVDisplayLinkRef link = NULL;
-
-		if (CVDisplayLinkCreateWithCGDisplay(screenId, &link) == kCVReturnSuccess && link) {
-			CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
-
-			if ((time.flags & kCVTimeIsIndefinite) == NO && time.timeValue > 0) {
-				refreshRate = ((CGFloat)time.timeScale / (CGFloat)time.timeValue);
-			}
-
-			CVDisplayLinkRelease(link);
-		}
-    }
-
-	return refreshRate;
+	/* The display's highest refresh rate (CVDisplayLink is deprecated) */
+	return (CGFloat)self.maximumFramesPerSecond;
 }
 
 @end

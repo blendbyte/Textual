@@ -41,7 +41,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define _endpointEntryTableDragToken		@"TDCServerEndpointListSheetEntryTableDragToken"
+#define _endpointEntryTableDragToken		@"com.textualapp.server-address-list.row" // A UTI: drags of NSPasteboardItems need one
 
 @interface TDCServerEndpointListSheet ()
 @property (nonatomic, strong) IBOutlet NSArrayController *entryTableController;
@@ -173,15 +173,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Table View Delegate
 
-- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pasteboard
+/* The dragged row's index, read back on drop */
+- (nullable id <NSPasteboardWriting>)tableView:(NSTableView *)tableView pasteboardWriterForRow:(NSInteger)row
 {
-	NSData *draggedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+	NSPasteboardItem *item = [NSPasteboardItem new];
 
-	[pasteboard declareTypes:@[_endpointEntryTableDragToken] owner:self];
+	[item setString:@(row).stringValue forType:_endpointEntryTableDragToken];
 
-	[pasteboard setData:draggedData forType:_endpointEntryTableDragToken];
-
-	return YES;
+	return item;
 }
 
 /* Only rows of this table, between rows, within its bounds */
@@ -206,11 +205,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSPasteboard *pasteboard = [info draggingPasteboard];
 
-	NSData *draggedData = [pasteboard dataForType:_endpointEntryTableDragToken];
+	NSString *draggedRow = [pasteboard stringForType:_endpointEntryTableDragToken];
 
-	NSIndexSet *draggedRowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:draggedData];
-
-	NSUInteger draggedRowIndex = draggedRowIndexes.firstIndex;
+	NSUInteger draggedRowIndex = ((draggedRow.length > 0) ? (NSUInteger)draggedRow.integerValue : NSNotFound);
 
 	NSInteger numberOfRows = tableView.numberOfRows;
 

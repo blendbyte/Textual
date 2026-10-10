@@ -132,12 +132,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<NSString *> *)readablePasteboardTypes
 {
-	return @[NSPasteboardTypeString, NSFilenamesPboardType];
+	return @[NSPasteboardTypeString, NSPasteboardTypeFileURL];
 }
 
 - (NSArray<NSString *> *)acceptableDragTypes
 {
-	return @[NSPasteboardTypeString, NSFilenamesPboardType];
+	return @[NSPasteboardTypeString, NSPasteboardTypeFileURL];
 }
 
 - (NSString *)stringValue
