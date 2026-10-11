@@ -73,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.contactAddressTextField.textDidChangeCallback = self;
 
-	self.contactAddressTextField.stringValue = [XRAddressBook myEmailAddress];
+	self.contactAddressTextField.stringValue = ([XRAddressBook myEmailAddress] ?: @"");
 
 	self.contactAddressTextField.validationBlock = ^NSString *(NSString *currentValue) {
 		if ([currentValue containsCharactersFromCharacterSet:[NSCharacterSet newlineCharacterSet]]) {

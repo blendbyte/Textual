@@ -211,7 +211,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case TDCFileTransferDialogTransferStatusFatalError:
 		case TDCFileTransferDialogTransferStatusRecoverableError:
 		{
-			self.transferProgressTextField.stringValue = self.errorMessageDescription;
+			self.transferProgressTextField.stringValue = (self.errorMessageDescription ?: @"");
 
 			break;
 		}

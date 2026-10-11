@@ -187,9 +187,9 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		NSString *licenseKeyOwner = TLOLicenseManagerLicenseOwnerName();
 		NSString *licenseKeyCreationDate = TLOLicenseManagerLicenseCreationDateFormatted();
 
-		self.registeredViewLicenseKeyTextField.stringValue = licenseKey;
-		self.registeredViewLicenseOwnerTextField.stringValue = licenseKeyOwner;
-		self.registeredViewLicensePurchaseDateTextField.stringValue = licenseKeyCreationDate;
+		self.registeredViewLicenseKeyTextField.stringValue = (licenseKey ?: @"");
+		self.registeredViewLicenseOwnerTextField.stringValue = (licenseKeyOwner ?: @"");
+		self.registeredViewLicensePurchaseDateTextField.stringValue = (licenseKeyCreationDate ?: @"");
 
 		contentView = self.contentViewRegisteredTextualView;
 	}

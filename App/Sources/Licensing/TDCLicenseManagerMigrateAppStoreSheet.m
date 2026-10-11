@@ -90,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.licenseOwnerContactAddressTextField.textDidChangeCallback = self;
 
-	self.licenseOwnerContactAddressTextField.stringValue = [XRAddressBook myEmailAddress];
+	self.licenseOwnerContactAddressTextField.stringValue = ([XRAddressBook myEmailAddress] ?: @"");
 
 	self.licenseOwnerContactAddressTextField.validationBlock = ^NSString *(NSString *currentValue) {
 		if ([currentValue containsCharactersFromCharacterSet:[NSCharacterSet newlineCharacterSet]]) {
@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.licenseOwnerNameTextField.textDidChangeCallback = self;
 
-	self.licenseOwnerNameTextField.stringValue = [XRAddressBook myName];
+	self.licenseOwnerNameTextField.stringValue = ([XRAddressBook myName] ?: @"");
 
 	self.licenseOwnerNameTextField.validationBlock = ^NSString *(NSString *currentValue) {
 		if ([currentValue containsCharactersFromCharacterSet:[NSCharacterSet newlineCharacterSet]]) {

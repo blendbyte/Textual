@@ -114,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.kCheck.state = kModeInfo.modeIsSet;
 
 	if (kModeInfo.modeIsSet) {
-		self.kText.stringValue = kModeInfo.modeParameter;
+		self.kText.stringValue = (kModeInfo.modeParameter ?: @"");
 	}
 
 	IRCModeInfo *lModeInfo = [self.modes modeInfoFor:@"l"];

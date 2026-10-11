@@ -246,12 +246,12 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self.channelNameTextField.stringValue = self.config.channelName;
 	self.channelNameTextField.editable = (self.config.channelName.length == 0);
 
-	self.labelTextField.stringValue = self.config.label;
+	self.labelTextField.stringValue = (self.config.label ?: @"");
 
-	self.defaultModesTextField.stringValue = self.config.defaultModes;
-	self.defaultTopicTextField.stringValue = self.config.defaultTopic;
+	self.defaultModesTextField.stringValue = (self.config.defaultModes ?: @"");
+	self.defaultTopicTextField.stringValue = (self.config.defaultTopic ?: @"");
 
-	self.secretKeyTextField.stringValue = self.config.secretKey;
+	self.secretKeyTextField.stringValue = (self.config.secretKey ?: @"");
 
 	self.autoJoinCheck.state = self.config.autoJoin;
 	self.pushNotificationsCheck.state = self.config.pushNotifications;

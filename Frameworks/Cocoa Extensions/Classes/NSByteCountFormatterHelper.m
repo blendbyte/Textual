@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSByteCountFormatter (CSByteCountFormatterHelper)
 
-+ (nullable NSString *)stringFromByteCountWithPaddedDigits:(long long)byteCount
++ (NSString *)stringFromByteCountWithPaddedDigits:(long long)byteCount
 {
 	NSByteCountFormatter *formatter = [NSByteCountFormatter new];
 

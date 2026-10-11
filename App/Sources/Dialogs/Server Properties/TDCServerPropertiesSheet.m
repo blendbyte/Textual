@@ -925,7 +925,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.nicknameTextField.stringValue = [TPCPreferences defaultNickname];
 	}
 
-	self.awayNicknameTextField.stringValue = self.config.awayNickname;
+	self.awayNicknameTextField.stringValue = (self.config.awayNickname ?: @"");
 
 	NSString *alternateNicknamesString = [self.config.alternateNicknames componentsJoinedByString:@" "];
 
@@ -943,7 +943,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.realNameTextField.stringValue = [TPCPreferences defaultRealName];
 	}
 
-	self.nicknamePasswordTextField.stringValue = self.config.nicknamePassword;
+	self.nicknamePasswordTextField.stringValue = (self.config.nicknamePassword ?: @"");
 
 	self.nickServHostTextField.stringValue = (self.config.nickServHost ?: @"");
 
@@ -974,10 +974,10 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Proxy Server */
 	[self.proxyTypeButton selectItemWithTag:self.config.proxyType];
 
-	self.proxyAddressTextField.stringValue = self.config.proxyAddress;
+	self.proxyAddressTextField.stringValue = (self.config.proxyAddress ?: @"");
 	self.proxyPortTextField.integerValue = self.config.proxyPort;
-	self.proxyUsernameTextField.stringValue = self.config.proxyUsername;
-	self.proxyPasswordTextField.stringValue = self.config.proxyPassword;
+	self.proxyUsernameTextField.stringValue = (self.config.proxyUsername ?: @"");
+	self.proxyPasswordTextField.stringValue = (self.config.proxyPassword ?: @"");
 
 	/* Connect Commands */
 	NSString *loginCommandsString = [self.config.loginCommands componentsJoinedByString:@"\n"];
@@ -1036,7 +1036,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.prefersSecuredConnectionCheck.state = server.prefersSecuredConnection;
 
-	self.serverPasswordTextField.stringValue = server.serverPassword;
+	self.serverPasswordTextField.stringValue = (server.serverPassword ?: @"");
 
 	self.populatingPrimaryServer = NO;
 }
@@ -1791,10 +1791,10 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	} else {
 		self.clientCertificateCommonNameField.stringValue = commonName;
 
-		self.clientCertificateSHA512FingerprintField.stringValue = sha512Fingerprint.uppercaseString;
-		self.clientCertificateSHA2FingerprintField.stringValue = sha2Fingerprint.uppercaseString;
-		self.clientCertificateSHA1FingerprintField.stringValue = sha1Fingerprint.uppercaseString;
-		self.clientCertificateMD5FingerprintField.stringValue = md5Fingerprint.uppercaseString;
+		self.clientCertificateSHA512FingerprintField.stringValue = (sha512Fingerprint.uppercaseString ?: @"");
+		self.clientCertificateSHA2FingerprintField.stringValue = (sha2Fingerprint.uppercaseString ?: @"");
+		self.clientCertificateSHA1FingerprintField.stringValue = (sha1Fingerprint.uppercaseString ?: @"");
+		self.clientCertificateMD5FingerprintField.stringValue = (md5Fingerprint.uppercaseString ?: @"");
 	}
 
 	self.clientCertificateResetCertificateButton.enabled = (hasNoCertificate == NO || certificateMissing);

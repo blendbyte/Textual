@@ -32,15 +32,6 @@
 
 @implementation NSTextField (CSTextFieldHelper)
 
-+ (void)load
-{
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		XRExchangeInstanceMethod(@"NSTextField", @"setStringValue:", @"ce_priv_setStringValue:");
-	});
-}
-
 - (NSString *)trimmedStringValue
 {
 	NSString *value = super.stringValue;
@@ -59,15 +50,6 @@
 	}
 
 	return value;
-}
-
-- (void)ce_priv_setStringValue:(NSString *)stringValue
-{
-	if (stringValue) {
-		[self ce_priv_setStringValue:stringValue];
-	} else {
-		[self ce_priv_setStringValue:@""];
-	}
 }
 
 @end
