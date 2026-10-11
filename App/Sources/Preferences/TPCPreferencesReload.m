@@ -342,7 +342,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Sparkle framework update feed URL */
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	if (_reloads(TPCPreferencesReloadActionSparkleFrameworkFeedURL)) {
-		[masterController() prepareThirdPartyServiceSparkleFramework];
+		[masterController() updateChannelsChanged];
 	}
 #endif
 

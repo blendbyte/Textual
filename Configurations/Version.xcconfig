@@ -7,6 +7,8 @@
 // and the App Store compare. It is a plain integer that only ever goes up:
 // the release script increments it and commits the change for every
 // release, so development builds carry the number of the last release.
+// Textual 8 starts at 300000, above Textual 7's date-based numbers (7.2.7 is
+// 260703.02), so no comparison ever ranks a Textual 7 build as newer.
 
-MARKETING_VERSION = 7.2.7
-CURRENT_PROJECT_VERSION = 8000
+MARKETING_VERSION = 8.0
+CURRENT_PROJECT_VERSION = 300000

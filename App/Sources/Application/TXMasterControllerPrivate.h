@@ -45,7 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationWakeStepOne;
 - (void)applicationWakeStepTwo;
 
-- (void)prepareThirdPartyServiceSparkleFramework;
+/* The beta updates setting changed: the updater asks for the allowed
+ channels again (there is one updater; making another broke updating) */
+- (void)updateChannelsChanged;
 @end
 
 NS_ASSUME_NONNULL_END

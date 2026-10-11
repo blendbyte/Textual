@@ -260,11 +260,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	SPUUpdater *updater = controller.updater;
 
-	if ([updater respondsToSelector:@selector(clearFeedURLFromUserDefaults)]) {
-		[updater performSelector:@selector(clearFeedURLFromUserDefaults)];
-	} else {
-		[RZUserDefaults() removeObjectForKey:@"SUFeedURL"];
-	}
+	/* Textual 7 could store a feed in the user defaults; the Info.plist decides */
+	(void)[updater clearFeedURLFromUserDefaults];
 
 	NSError *error;
 
@@ -273,6 +270,13 @@ NS_ASSUME_NONNULL_BEGIN
 	if (error) {
 		LogToConsoleError("Sparkle failed to start updater: %{public}@", error.description);
 	}
+#endif
+}
+
+- (void)updateChannelsChanged
+{
+#if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
+	[self.updateController.updater resetUpdateCycle];
 #endif
 }
 
