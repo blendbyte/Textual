@@ -565,66 +565,22 @@ body div.line[data-line-type=action][data-highlight=true] {
 }
 
 /* Shamelessly steal the background colors from Tomorrow Night */
-.effect[data-foreground-color='0'] {
-  color: #EAEAEA !important;
+:root {
+	--mirc-foreground-color-0: #EAEAEA;
+	--mirc-foreground-color-1: #515151;
+	--mirc-foreground-color-2: #6699CC;
+	--mirc-foreground-color-3: #99CC99;
+	--mirc-foreground-color-4: #F2777A;
+	--mirc-foreground-color-5: #FF9DA4;
+	--mirc-foreground-color-6: #CC99CC;
+	--mirc-foreground-color-7: #F99157;
+	--mirc-foreground-color-8: #FFCC66;
+	--mirc-foreground-color-9: #B9CA4A;
+	--mirc-foreground-color-10: #66CCCC;
+	--mirc-foreground-color-11: #99FFFF;
+	--mirc-foreground-color-12: #7AA6DA;
+	--mirc-foreground-color-13: #C397D8;
+	--mirc-foreground-color-14: #999999;
+	--mirc-foreground-color-15: #CCCCCC;
 }
 
-.effect[data-foreground-color='1'] {
-  color: #515151 !important;
-}
-
-.effect[data-foreground-color='2'] {
-  color: #6699CC !important;
-}
-
-.effect[data-foreground-color='3'] {
-  color: #99CC99 !important;
-}
-
-.effect[data-foreground-color='4'] {
-  color: #F2777A !important;
-}
-
-.effect[data-foreground-color='5'] {
-  color: #FF9DA4 !important;
-}
-
-.effect[data-foreground-color='6'] {
-  color: #CC99CC !important;
-}
-
-.effect[data-foreground-color='7'] {
-  color: #F99157 !important;
-}
-
-.effect[data-foreground-color='8'] {
-  color: #FFCC66 !important;
-}
-
-.effect[data-foreground-color='9'] {
-  color: #B9CA4A !important;
-}
-
-.effect[data-foreground-color='10'] {
-  color: #66CCCC !important;
-}
-
-.effect[data-foreground-color='11'] {
-  color: #99FFFF !important;
-}
-
-.effect[data-foreground-color='12'] {
-  color: #7AA6DA !important;
-}
-
-.effect[data-foreground-color='13'] {
-  color: #C397D8 !important;
-}
-
-.effect[data-foreground-color='14'] {
-  color: #999999 !important;
-}
-
-.effect[data-foreground-color='15'] {
-  color: #CCCCCC !important;
-}

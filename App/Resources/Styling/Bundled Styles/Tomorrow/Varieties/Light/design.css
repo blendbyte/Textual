@@ -424,141 +424,24 @@ div[data-member-type="myself"] {
 
 /* @group mIRC Color Codes */
 
-/* @group Foreground Colors */
-
-.effect[data-foreground-color="0"] {
-	color: #D6D6D6 !important; /* Tomorrow: Selection */
+:root {
+	--mirc-color-0: #D6D6D6; /* Tomorrow: Selection */
+	--mirc-color-1: #4D4D4C; /* Tomorrow: Foreground */
+	--mirc-color-2: #4271AE; /* Tomorrow: Blue */
+	--mirc-color-3: #718C00; /* Tomorrow: Green */
+	--mirc-color-4: #C82829; /* Tomorrow: Red */
+	--mirc-color-5: #DE935F; /* Tomorrow Night: Red */
+	--mirc-color-6: #8959A8; /* Tomorrow: Purple */
+	--mirc-color-7: #F5871F; /* Tomorrow: Orange */
+	--mirc-color-8: #EAB700; /* Tomorrow: Yellow */
+	--mirc-color-9: #B9CA4A; /* Tomorrow Night Bright: Green */
+	--mirc-color-10: #3E999F; /* Tomorrow: Aqua */
+	--mirc-color-11: #66CCCC; /* Tomorrow Night Eighties: Aqua */
+	--mirc-color-12: #7AA6DA; /* Tomorrow Night Bright: Blue */
+	--mirc-color-13: #C397D8; /* Tomorrow Night Bright: Purple */
+	--mirc-color-14: #8E908C; /* Tomorrow: Comment */
+	--mirc-color-15: #C5C8C6; /* Tomorrow Night: Foreground */
 }
-
-.effect[data-foreground-color="1"] {
-	color: #4D4D4C !important; /* Tomorrow: Foreground */
-}
-
-.effect[data-foreground-color="2"] {
-	color: #4271AE !important; /* Tomorrow: Blue */
-}
-
-.effect[data-foreground-color="3"] {
-	color: #718C00 !important; /* Tomorrow: Green */
-}
-
-.effect[data-foreground-color="4"] {
-	color: #C82829 !important; /* Tomorrow: Red */
-}
-
-.effect[data-foreground-color="5"] {
-	color: #DE935F !important; /* Tomorrow Night: Red */
-}
-
-.effect[data-foreground-color="6"] {
-	color: #8959A8 !important; /* Tomorrow: Purple */
-}
-
-.effect[data-foreground-color="7"] {
-	color: #F5871F !important; /* Tomorrow: Orange */
-}
-
-.effect[data-foreground-color="8"] {
-	color: #EAB700 !important; /* Tomorrow: Yellow */
-}
-
-.effect[data-foreground-color="9"] {
-	color: #B9CA4A !important; /* Tomorrow Night Bright: Green */
-}
-
-.effect[data-foreground-color="10"] {
-	color: #3E999F !important; /* Tomorrow: Aqua */
-}
-
-.effect[data-foreground-color="11"] {
-	color: #66CCCC !important; /* Tomorrow Night Eighties: Aqua */
-}
-
-.effect[data-foreground-color="12"] {
-	color: #7AA6DA !important; /* Tomorrow Night Bright: Blue */
-}
-
-.effect[data-foreground-color="13"] {
-	color: #C397D8 !important; /* Tomorrow Night Bright: Purple */
-}
-
-.effect[data-foreground-color="14"] {
-	color: #8E908C !important; /* Tomorrow: Comment */
-}
-
-.effect[data-foreground-color="15"] {
-	color: #C5C8C6 !important; /* Tomorrow Night: Foreground */
-}
-
-/* @end */
-
-/* @group Background Colors */
-
-.effect[data-background-color="0"] {
-	background-color: #D6D6D6 !important; /* Tomorrow: Selection */
-}
-
-.effect[data-background-color="1"] {
-	background-color: #4D4D4C !important; /* Tomorrow: Foreground */
-}
-
-.effect[data-background-color="2"] {
-	background-color: #4271AE !important; /* Tomorrow: Blue */
-}
-
-.effect[data-background-color="3"] {
-	background-color: #718C00 !important; /* Tomorrow: Green */
-}
-
-.effect[data-background-color="4"] {
-	background-color: #C82829 !important; /* Tomorrow: Red */
-}
-
-.effect[data-background-color="5"] {
-	background-color: #DE935F !important; /* Tomorrow Night: Red */
-}
-
-.effect[data-background-color="6"] {
-	background-color: #8959A8 !important; /* Tomorrow: Purple */
-}
-
-.effect[data-background-color="7"] {
-	background-color: #F5871F !important; /* Tomorrow: Orange */
-}
-
-.effect[data-background-color="8"] {
-	background-color: #EAB700 !important; /* Tomorrow: Yellow */
-}
-
-.effect[data-background-color="9"] {
-	background-color: #B9CA4A !important; /* Tomorrow Night Bright: Green */
-}
-
-.effect[data-background-color="10"] {
-	background-color: #3E999F !important; /* Tomorrow: Aqua */
-}
-
-.effect[data-background-color="11"] {
-	background-color: #66CCCC !important; /* Tomorrow Night Eighties: Aqua */
-}
-
-.effect[data-background-color="12"] {
-	background-color: #7AA6DA !important; /* Tomorrow Night Bright: Blue */
-}
-
-.effect[data-background-color="13"] {
-	background-color: #C397D8 !important; /* Tomorrow Night Bright: Purple */
-}
-
-.effect[data-background-color="14"] {
-	background-color: #8E908C !important; /* Tomorrow: Comment */
-}
-
-.effect[data-background-color="15"] {
-	background-color: #C5C8C6 !important; /* Tomorrow Night: Foreground */
-}
-
-/* @end */
 
 /* @end */
 
