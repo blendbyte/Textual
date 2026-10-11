@@ -48,7 +48,7 @@ Copyright (c) 2008-2010 Satoshi Nakagawa
 Copyright (c) 2010-2020 Codeux Software, LLC & respective contributors
 Copyright (c) 2026 Blendbyte GmbH & respective contributors
 
-Both licenses require preserving copyright notices in source and binary distributions. The names of the copyright holders may not be used to promote products derived from this software without prior written permission. Additional attributions are listed in [Acknowledgements.pdf](Acknowledgements.pdf).
+Both licenses require preserving copyright notices in source and binary distributions. The names of the copyright holders may not be used to promote products derived from this software without prior written permission. Every notice is shown in the app (Help → Acknowledgements), built from [Acknowledgements/Components.txt](Acknowledgements/Components.txt).
 
 ### Third-party software
 
@@ -61,6 +61,7 @@ Textual bundles or links against the following third-party components:
 | [Reachability](https://github.com/tonymillion/Reachability) | BSD | (c) 2011 Tony Million |
 | [AutoHyperlinks Framework](https://github.com/Codeux-Software/AutoHyperlinks) | BSD 3-Clause | (c) 2005-2011 The Adium Team, (c) 2011 Codeux Software, LLC |
 | [CocoaAsyncSocket](https://github.com/robbiehanson/CocoaAsyncSocket) (`GCDAsyncSocket`) | Public Domain | Originally by Robbie Hanson; maintained by Deusty LLC |
+| [LimeChat](https://github.com/psychs/limechat) | BSD 2-Clause | (c) 2008-2010 Satoshi Nakagawa |
 | [Colloquy](https://github.com/Colloquy/colloquy) (Chat Core) | BSD-style | (c) 2000-2012 the Colloquy IRC Client |
 | [Sparkle](https://github.com/sparkle-project/Sparkle) | MIT | (c) 2006-2017 Andy Matuschak and contributors |
 

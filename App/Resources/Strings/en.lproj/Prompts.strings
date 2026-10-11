@@ -288,3 +288,5 @@ Information encrypted using: %2$@";
 "d7f-f2" = "Textual sends single files (DCC). Compress a folder into a .zip file first.";
 "d7f-o1" = "Not connected to %@";
 "d7f-o2" = "Connect to the server to send files to %@.";
+"a8k-t1" = "Acknowledgements";
+"a8k-t2" = "Textual is built on the work of the people and projects below. Their licences ask for these notices to come with the app.";

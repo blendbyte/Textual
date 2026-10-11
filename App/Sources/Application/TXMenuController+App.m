@@ -59,6 +59,7 @@
 #import "TLOpenLink.h"
 #import "TPCApplicationInfo.h"
 #import "TXWebsiteLinks.h"
+#import "TDCAcknowledgementsWindowPrivate.h"
 #import "TDCAlert.h"
 #import "TDCChannelInviteSheetPrivate.h"
 #import "TDCChannelModifyModesSheetPrivate.h"
@@ -97,9 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)openAcknowledgements:(nullable id)sender
 {
-	NSURL *Acknowledgements = [RZMainBundle() URLForResource:@"Acknowledgements" withExtension:@"pdf" subdirectory:@"Documentation"];
-
-	[RZWorkspace() openURL:Acknowledgements];
+	[TDCAcknowledgementsWindow show];
 }
 
 - (void)openHelpMenuItem:(nullable id)sender

@@ -1,0 +1,25 @@
+# Everything Textual ships that comes with a copyright notice. The build turns
+# this list into the app's Acknowledgements window (Scripts/GenerateAcknowledgements.sh)
+# and fails when a licence file, a vendored source file or a bundled style has no
+# entry here, or a third-party component is missing from README.md.
+#
+# kind | title | notice files, relative to the repository (";" between files) | build: all, or direct (not in the App Store build) | files the entry covers (";")
+
+textual | Textual | LICENSE | all |
+# LimeChat's notice is part of LICENSE (Textual began as a fork of it)
+textual | Cocoa Extensions | Frameworks/Cocoa Extensions/LICENSE.txt; Frameworks/Cocoa Extensions/ACKNOWLEDGEMENT.txt | all |
+code | Colloquy | Acknowledgements/Colloquy.txt | all |
+code | AutoHyperlinks Framework | Frameworks/Auto Hyperlinks/COPYRIGHT.txt; Frameworks/Auto Hyperlinks/LICENSE.txt | all |
+code | GRMustache | Frameworks/Vendor/GRMustache/LICENSE.txt | all |
+code | Sparkle | Frameworks/Vendor/Sparkle/LICENSE.txt | direct |
+code | Reachability | Acknowledgements/Reachability.txt | all | App/Sources/Vendor/OELReachability.h; App/Sources/Vendor/OELReachability.m
+code | Google Toolbox for Mac | Acknowledgements/GoogleToolboxForMac.txt; Acknowledgements/Apache-2.0.txt | all | App/Sources/Vendor/GTMEncodeHTML.h; App/Sources/Vendor/GTMEncodeHTML.m
+code | CocoaAsyncSocket | Acknowledgements/CocoaAsyncSocket.txt | all | App/Sources/Vendor/GCDAsyncSocket.h; App/Sources/Vendor/GCDAsyncSocket.m
+style | Astria style | App/Resources/Styling/Bundled Styles/Astria/copyright.txt | all |
+style | Equinox style | App/Resources/Styling/Bundled Styles/Equinox/LICENSE.txt | all |
+style | Sapientia style | App/Resources/Styling/Bundled Styles/Sapientia/copyright.txt | all |
+style | Simplified style | App/Resources/Styling/Bundled Styles/Simplified/copyright.txt | all |
+style | Sulaco style | App/Resources/Styling/Bundled Styles/Sulaco/LICENSE.txt | all |
+style | Tomorrow style | App/Resources/Styling/Bundled Styles/Tomorrow/copyright.txt | all |
+style | Total Sublime style | App/Resources/Styling/Bundled Styles/Total Sublime/copyright.txt | all |
+assets | Contributed work | Acknowledgements/ContributedWork.txt | all |

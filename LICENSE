@@ -71,6 +71,6 @@ are not superseded by the license above. Notable examples:
 
    * Bundled styles include their own copyright and license files.
 
-See the "Third-party software" section of README.md and Acknowledgements.pdf
-for the complete list of components, their licenses, and their copyright
-holders.
+See the "Third-party software" section of README.md, and Help >
+Acknowledgements in the app (built from Acknowledgements/Components.txt), for
+the complete list of components, their licenses, and their copyright holders.

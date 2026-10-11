@@ -1,0 +1,22 @@
+Application icon
+
+The application icon, three white speech bubbles surrounded by purple, was
+created by Brandon Rodriguez, with modifications by Daniel to modernize its
+appearance.
+
+Preferences toolbar images
+
+Copyright © 2015 Reda Lemeden. The images of the Preferences window's
+sections (Addons, Advanced, Controls, General, Highlights, Interface,
+Notifications, Style) were contributed by Reda Lemeden.
+
+Other image assets
+
+Unless stated otherwise, the image assets of Textual are Copyright © 2010 -
+2020 Codeux Software, LLC. They may not be redistributed or modified without
+the permission of their authors.
+
+April King
+
+April King contributed the "Equinox" style and parts of the logic that
+chooses the color of each nickname in a channel.
