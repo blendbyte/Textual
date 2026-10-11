@@ -134,6 +134,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSWindow *modalWindowBefore = NSApp.modalWindow;
 
+	NSArray<NSWindow *> *sheetsBefore = window.sheets;
+
 	[panel beginSheetForWindow:window
 				 modalDelegate:[self class]
 				didEndSelector:@selector(_trustPanelCallback:returnCode:contextInfo:)
@@ -141,13 +143,21 @@ NS_ASSUME_NONNULL_BEGIN
 						 trust:trustRef
 					   message:titleText];
 
-	/* Shown on its own (no window), the panel stays hidden and its content
-	 appears in a window that runs as the modal window: remembered so the
-	 panel can be closed */
+	/* Shown on its own (no window, which the API doesn't allow), the panel
+	 stays hidden and its content runs in a modal window of its own: closing
+	 that from here is best effort (Textual always passes a window) */
 	NSWindow *modalWindowAfter = NSApp.modalWindow;
 
 	if (window == nil && modalWindowAfter != nil && modalWindowAfter != modalWindowBefore) {
 		promptObject.hostWindow = modalWindowAfter;
+	}
+
+	/* On a window, the sheet is a window AppKit makes around the panel
+	 (the panel itself is never attached), remembered so it can be ended */
+	for (NSWindow *sheet in window.sheets) {
+		if ([sheetsBefore containsObject:sheet] == NO) {
+			promptObject.hostWindow = sheet;
+		}
 	}
 
 	return panel;
@@ -196,14 +206,12 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSWindow *sheetParent = panel.sheetParent;
-
-
 	NSWindow *hostWindow = context.hostWindow;
 
-	if (sheetParent) {
-		/* Calls back with the cancel response */
-		[sheetParent endSheet:panel returnCode:NSModalResponseCancel];
+	if (panel.sheetParent) {
+		[panel.sheetParent endSheet:panel returnCode:NSModalResponseCancel];
+	} else if (hostWindow.sheetParent) {
+		[hostWindow.sheetParent endSheet:hostWindow returnCode:NSModalResponseCancel];
 	} else if (hostWindow != nil && NSApp.modalWindow == hostWindow) {
 		[NSApp stopModalWithCode:NSModalResponseCancel];
 

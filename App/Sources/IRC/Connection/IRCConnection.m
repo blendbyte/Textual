@@ -39,6 +39,8 @@
 #import "NSObjectHelperPrivate.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocalPrivate.h"
+#import "TXMasterController.h"
+#import "TVCMainWindow.h"
 #import "IRCClient.h"
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionErrors.h"
@@ -257,7 +259,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		(void)
-		[RCMTrustPanel presentTrustPanelInWindow:[NSApp keyWindow]
+		[RCMTrustPanel presentTrustPanelInWindow:mainWindow()
 											body:promptInformativeText
 										   title:promptTitleText
 								   defaultButton:defaultButtonTitle
@@ -300,8 +302,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 		__weak typeof(self) weakSelf = self;
 
+		/* A sheet on the main window: shown without a window, the panel
+		 runs a modal session in a hidden window that only the panel itself
+		 can end, so closing it from here left the app blocked */
 		self.trustPanel =
-		[RCMTrustPanel presentTrustPanelInWindow:nil
+		[RCMTrustPanel presentTrustPanelInWindow:mainWindow()
 											body:promptInformativeText
 										   title:promptTitleText
 								   defaultButton:defaultButtonTitle
