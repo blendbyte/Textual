@@ -213,7 +213,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self addTitlebarAccessoryViewController:accessoryView];
 
-	[self updateTitlebarTitleMargin];
+	/* Hides the button until a secured server is selected (the XIB's
+	 "Not Private" placeholder showed before the first selection) */
+	[self updateAccessoryViewLockButton];
 }
 
 - (void)setTitle:(NSString *)title
