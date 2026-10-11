@@ -9,6 +9,8 @@ Third-party frameworks Textual ships as prebuilt binaries, unmodified. Everythin
 SHA-256 of the release archive: `c2bf58aa8387266ac179357b1415d6f2635f044da8be41042af32425dae6da0c` (as published on GitHub).
 SHA-256 of `Sparkle.framework/Versions/B/Sparkle`: `a4b35bf38c12044686d0910dcb680560f1ff000061fbe19541c0b5e41c6c6008`
 
-When updating, use an official release archive, check it against the checksum GitHub publishes, and record the version and both checksums here. `Scripts/PostprocessSparkle.sh` removes the downloader service and re-signs the helpers with Textual's identity.
+`bin/sign_update` (SHA-256 `43c249771bafc3aa581228abae00731a012d324691b8292860896635050be76b`) is the release archive's tool for signing update zips; `Scripts/release/Release.sh` uses it.
+
+When updating, use an official release archive, check it against the checksum GitHub publishes, and record the version and the checksums here (and replace `bin/sign_update` from the same archive). `Scripts/PostprocessSparkle.sh` removes the downloader service and re-signs the helpers with Textual's identity.
 
 Sparkle is used only by the direct-download build. The App Store build neither links nor embeds it.

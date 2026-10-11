@@ -1290,7 +1290,6 @@
 		4CC70202171E1CB400BDFAE0 /* BuildConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Textual Generated/Build Headers/BuildConfig.h"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CCD93FC1CA7291300335381 /* JavaScript */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JavaScript; sourceTree = "<group>"; };
 		4CCE521A18C7BE0600D49601 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		4CD6F7BB1CA7747600842597 /* ExportArchive.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = ../Scripts/release/ExportArchive.sh; sourceTree = SOURCE_ROOT; };
 		4CEFEDAF22B4B6E8002CEE19 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCPreferencesUserStyleSheet.strings; sourceTree = "<group>"; };
 		4CF4D6B619837C1700FB5AF0 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AutoHyperlinks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2745,7 +2744,6 @@
 			isa = PBXGroup;
 			children = (
 				5D9B8EB9170A10F200919CB0 /* BuildExtensions.sh */,
-				4CD6F7BB1CA7747600842597 /* ExportArchive.sh */,
 				4C2BEB622C385189008F8F0D /* PostprocessSparkle.sh */,
 				4C7961C6267D25B400D37F07 /* UpdateFeatureFlags.sh */,
 				5D9B8EB8170A0EB400919CB0 /* GenerateBuildHeaders.sh */,
