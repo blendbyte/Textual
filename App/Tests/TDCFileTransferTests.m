@@ -122,6 +122,35 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([TDCFileTransferDialogTransferController filenameForOfferedFilename:@"photo.jpg"], @"photo.jpg");
 }
 
+/* A dropped or pasted file is only ever offered for sending to one person
+ who can be reached: never to a channel or the console, never a folder,
+ never while disconnected. */
+- (void)testDroppedFilesAreOnlyOfferedToAReachablePerson
+{
+	NSString *folder = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSUUID UUID].UUIDString];
+	NSString *file = [folder stringByAppendingPathComponent:@"notes.txt"];
+	NSString *subfolder = [folder stringByAppendingPathComponent:@"photos"];
+	NSString *missing = [folder stringByAppendingPathComponent:@"gone.txt"];
+
+	XCTAssertTrue([[NSFileManager defaultManager] createDirectoryAtPath:subfolder withIntermediateDirectories:YES attributes:nil error:NULL]);
+	XCTAssertTrue([[NSData dataWithBytes:"hello" length:5] writeToFile:file atomically:NO]);
+
+	XCTAssertEqualObjects([TDCFileTransferDialog sendableFilePaths:(@[file, subfolder, missing])], @[file]);
+
+	[[NSFileManager defaultManager] removeItemAtPath:folder error:NULL];
+
+	TDCFileTransferDropAnswer (^answer)(NSUInteger, NSString * _Nullable, BOOL) = ^(NSUInteger count, NSString * _Nullable recipient, BOOL connected) {
+		return [TDCFileTransferDialog dropAnswerForSendableFileCount:count recipient:recipient connected:connected];
+	};
+
+	XCTAssertEqual(answer(2, @"alice", YES), TDCFileTransferDropAnswerSend);
+	XCTAssertEqual(answer(2, @"alice", NO), TDCFileTransferDropAnswerNotConnected);
+	XCTAssertEqual(answer(0, @"alice", YES), TDCFileTransferDropAnswerNothingToSend);
+	XCTAssertEqual(answer(2, nil, YES), TDCFileTransferDropAnswerNoRecipient, @"a channel or the console");
+	XCTAssertEqual(answer(2, @"", YES), TDCFileTransferDropAnswerNoRecipient);
+	XCTAssertEqual(answer(0, nil, NO), TDCFileTransferDropAnswerNoRecipient);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

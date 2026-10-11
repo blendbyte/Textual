@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logViewWebViewFailedLoading;
 - (void)logViewWebViewFinishedLoading;
 - (void)logViewWebViewKeyDown:(NSEvent *)e;
-- (void)logViewWebViewReceivedDropWithFile:(NSString *)filename;
+- (void)logViewWebViewReceivedDropWithFiles:(NSArray<NSString *> *)files;
 
 - (nullable TVCLogLine *)lastLine;
 @end

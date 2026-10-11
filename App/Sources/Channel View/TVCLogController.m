@@ -2039,9 +2039,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	[self.attachedWindow redirectKeyDown:e];
 }
 
-- (void)logViewWebViewReceivedDropWithFile:(NSString *)filename
+- (void)logViewWebViewReceivedDropWithFiles:(NSArray<NSString *> *)files
 {
-	[menuController() memberSendDroppedFilesToSelectedChannel:@[filename]];
+	[menuController() answerDroppedFiles:files];
 }
 
 @end

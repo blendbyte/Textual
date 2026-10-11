@@ -67,6 +67,14 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDialogSelection) {
 
 @class TDCFileTransferDialogTransferController;
 
+/* What files dropped or pasted somewhere can do there */
+typedef NS_ENUM(NSUInteger, TDCFileTransferDropAnswer) {
+	TDCFileTransferDropAnswerSend = 0, // To the recipient by DCC
+	TDCFileTransferDropAnswerNoRecipient, // A channel or the server console
+	TDCFileTransferDropAnswerNothingToSend, // Only folders, or files that are gone
+	TDCFileTransferDropAnswerNotConnected
+};
+
 @interface TDCFileTransferDialog : TDCWindowBase
 @property (readonly, weak) TVCBasicTableView *fileTransferTable;
 @property (readonly, copy, nullable) NSString *IPAddress;
@@ -107,6 +115,16 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDialogSelection) {
 																	   port:(uint16_t)port;
 
 - (nullable TDCFileTransferDialogTransferController *)fileTransferWithUniqueIdentifier:(NSString *)identifier;
+
+/* The paths of the files on a pasteboard (drag or clipboard), in order */
++ (NSArray<NSString *> *)filePathsOnPasteboard:(NSPasteboard *)pasteboard;
+
+/* The paths that DCC can send: existing files, no folders */
++ (NSArray<NSString *> *)sendableFilePaths:(NSArray<NSString *> *)paths;
+
++ (TDCFileTransferDropAnswer)dropAnswerForSendableFileCount:(NSUInteger)sendableFileCount
+												  recipient:(nullable NSString *)recipient
+												  connected:(BOOL)connected;
 @end
 
 #pragma mark -

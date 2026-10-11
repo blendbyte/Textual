@@ -561,7 +561,10 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			NSString *currentPasteboard = RZPasteboard().stringContent;
 
-			if (currentPasteboard.length == 0) {
+			/* Files pasted in the main window get the dropped files sheet */
+			BOOL filesOnPasteboard = (mainWindow().keyWindow && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
+
+			if (currentPasteboard.length == 0 && filesOnPasteboard == NO) {
 				return NO;
 			}
 
@@ -987,7 +990,10 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			NSString *currentPasteboard = RZPasteboard().stringContent;
 
-			if (currentPasteboard.length == 0) {
+			/* Files pasted in the main window get the dropped files sheet */
+			BOOL filesOnPasteboard = (mainWindow().keyWindow && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
+
+			if (currentPasteboard.length == 0 && filesOnPasteboard == NO) {
 				return NO;
 			}
 

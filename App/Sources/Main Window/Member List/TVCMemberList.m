@@ -404,7 +404,7 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 {
 	NSArray *files = [self draggedFiles:sender];
 
-	if (files.count > 0 && [self draggedRow:sender] >= 0) {
+	if (files.count > 0) {
 		return NSDragOperationCopy;
 	} else {
 		return NSDragOperationNone;
@@ -415,24 +415,28 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 {
 	NSArray *files = [self draggedFiles:sender];
 
-	return (files.count > 0 && [self draggedRow:sender] >= 0);
+	return (files.count > 0);
 }
 
+/* On someone: offered to them. Below the names: the channel's answer
+ (it accepted nothing there, which looked like a broken drop). */
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
 	NSArray *files = [self draggedFiles:sender];
 
-	if (files.count > 0) {
-		NSInteger row = [self draggedRow:sender];
-
-		if (row >= 0) {
-			[menuController() memberSendDroppedFiles:files row:row];
-
-			return YES;
-		}
+	if (files.count == 0) {
+		return NO;
 	}
 
-	return NO;
+	NSInteger row = [self draggedRow:sender];
+
+	if (row >= 0) {
+		[menuController() memberSendDroppedFiles:files row:row];
+	} else {
+		[menuController() answerDroppedFiles:files];
+	}
+
+	return YES;
 }
 
 #pragma mark -

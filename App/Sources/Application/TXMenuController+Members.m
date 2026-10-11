@@ -757,26 +757,30 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)memberSendDroppedFilesToSelectedChannel:(NSArray<NSString *> *)files
+- (void)answerDroppedFiles:(NSArray<NSString *> *)files
 {
+	NSParameterAssert(files != nil);
+
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
-	if (u == nil || c == nil || u.isLoggedIn == NO || c.isPrivateMessage == NO) {
+	if (u == nil) {
 		return;
 	}
 
-	[self memberSendDroppedFiles:files to:c.name];
+	NSString *recipient = ((c.isPrivateMessage) ? c.name : nil);
+
+	[self answerDroppedFiles:files recipient:recipient onClient:u inChannel:c];
 }
 
-/* Files dropped on someone in the member list, which only channels have
- (this required a query, so nothing was ever sent) */
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row
 {
+	NSParameterAssert(files != nil);
+
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
-	if (u == nil || c == nil || u.isLoggedIn == NO || c.isChannel == NO) {
+	if (u == nil || c == nil || c.isChannel == NO) {
 		return;
 	}
 
@@ -786,32 +790,127 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[self memberSendDroppedFiles:files to:member.user.nickname];
+	[self answerDroppedFiles:files recipient:member.user.nickname onClient:u inChannel:c];
 }
 
-- (void)memberSendDroppedFiles:(NSArray<NSString *> *)files to:(NSString *)nickname
+- (void)answerDroppedFiles:(NSArray<NSString *> *)files recipient:(nullable NSString *)recipient onClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel
+{
+	NSParameterAssert(files != nil);
+	NSParameterAssert(client != nil);
+
+	if (files.count == 0) {
+		return;
+	}
+
+	NSArray *sendableFiles = [TDCFileTransferDialog sendableFilePaths:files];
+
+	TDCFileTransferDropAnswer answer =
+	[TDCFileTransferDialog dropAnswerForSendableFileCount:sendableFiles.count
+												recipient:recipient
+												connected:client.isLoggedIn];
+
+	NSString *title = nil;
+	NSString *body = nil;
+
+	NSString *defaultButton = TXTLS(@"Prompts[d7f-p1]"); // Insert Path
+	NSString *alternateButton = TXTLS(@"Prompts[d7f-c4]"); // Cancel
+	NSString *otherButton = nil;
+
+	switch (answer) {
+		case TDCFileTransferDropAnswerSend:
+		{
+			if (sendableFiles.count == 1) {
+				title = TXTLS(@"Prompts[d7f-s1]", [sendableFiles.firstObject lastPathComponent], recipient);
+			} else {
+				title = TXTLS(@"Prompts[d7f-s2]", (unsigned long)sendableFiles.count, recipient);
+			}
+
+			body = TXTLS(@"Prompts[d7f-s3]", recipient);
+
+			if (sendableFiles.count < files.count) {
+				body = [body stringByAppendingFormat:@" %@", TXTLS(@"Prompts[d7f-s4]")];
+			}
+
+			defaultButton = TXTLS(@"Prompts[d7f-s5]"); // Send
+			otherButton = TXTLS(@"Prompts[d7f-p1]"); // Insert Path
+
+			break;
+		}
+		case TDCFileTransferDropAnswerNoRecipient:
+		{
+			if (channel == nil) {
+				title = TXTLS(@"Prompts[d7f-n2]");
+			} else {
+				title = TXTLS(@"Prompts[d7f-n1]");
+			}
+
+			body = TXTLS(@"Prompts[d7f-n3]");
+
+			break;
+		}
+		case TDCFileTransferDropAnswerNothingToSend:
+		{
+			title = TXTLS(@"Prompts[d7f-f1]");
+
+			body = TXTLS(@"Prompts[d7f-f2]");
+
+			break;
+		}
+		case TDCFileTransferDropAnswerNotConnected:
+		{
+			title = TXTLS(@"Prompts[d7f-o1]", client.networkNameAlt);
+
+			body = TXTLS(@"Prompts[d7f-o2]", recipient);
+
+			break;
+		}
+	}
+
+	[TDCAlert alertSheetWithWindow:mainWindow()
+							  body:body
+							 title:title
+					 defaultButton:defaultButton
+				   alternateButton:alternateButton
+					   otherButton:otherButton
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					   BOOL insertPath = ((answer == TDCFileTransferDropAnswerSend) ?
+										  (buttonClicked == TDCAlertResponseOther) :
+										  (buttonClicked == TDCAlertResponseDefault));
+
+					   if (insertPath) {
+						   [self insertDroppedFilePaths:files];
+					   } else if (answer == TDCFileTransferDropAnswerSend && buttonClicked == TDCAlertResponseDefault) {
+						   [self sendDroppedFiles:sendableFiles to:recipient onClient:client];
+					   }
+				   }];
+}
+
+- (void)insertDroppedFilePaths:(NSArray<NSString *> *)files
+{
+	NSParameterAssert(files != nil);
+
+	TVCMainWindowTextView *textField = mainWindowTextField();
+
+	[textField focus];
+
+	[textField insertText:[files componentsJoinedByString:@" "] replacementRange:textField.selectedRange];
+}
+
+- (void)sendDroppedFiles:(NSArray<NSString *> *)files to:(NSString *)nickname onClient:(IRCClient *)client
 {
 	NSParameterAssert(files != nil);
 	NSParameterAssert(nickname != nil);
+	NSParameterAssert(client != nil);
 
-	IRCClient *u = self.selectedClient;
-
-	if (u == nil || u.isLoggedIn == NO) {
+	/* Disconnected while the sheet was open */
+	if (client.isLoggedIn == NO) {
 		return;
 	}
 
 	[self.fileTransferController.fileTransferTable beginUpdates];
 
 	for (NSString *file in files) {
-		BOOL isDirectory = NO;
-
-		if ([RZFileManager() fileExistsAtPath:file isDirectory:&isDirectory] == NO) {
-			continue;
-		} else if (isDirectory) {
-			continue;
-		}
-
-		[self.fileTransferController addSenderForClient:u nickname:nickname path:file autoOpen:YES];
+		[self.fileTransferController addSenderForClient:client nickname:nickname path:file autoOpen:YES];
 	}
 
 	[self.fileTransferController.fileTransferTable endUpdates];

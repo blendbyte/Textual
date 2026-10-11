@@ -42,6 +42,7 @@
 #import "TPCThemeControllerPrivate.h"
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
+#import "TDCFileTransferDialogPrivate.h"
 #import "TVCLogControllerPrivate.h"
 #import "TVCLogScriptEventSinkPrivate.h"
 #import "TVCLogViewPrivate.h"
@@ -170,17 +171,18 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
+
 	NSParameterAssert(sender != nil);
 
-	NSURL *fileURL = [NSURL URLFromPasteboard:[sender draggingPasteboard]];
+	NSArray *files = [TDCFileTransferDialog filePathsOnPasteboard:[sender draggingPasteboard]];
 
-	if (fileURL) {
-		NSString *filename = fileURL.path;
-
-		[self.viewController logViewWebViewReceivedDropWithFile:filename];
+	if (files.count == 0) {
+		return NO;
 	}
 
-	return NO;
+	[self.viewController logViewWebViewReceivedDropWithFiles:files];
+
+	return YES;
 }
 
 - (void)informDelegateWebViewFinishedLoading

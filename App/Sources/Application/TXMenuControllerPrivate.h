@@ -57,9 +57,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)memberInChannelViewDoubleClicked:(nullable id)sender;
 - (void)memberInMemberListDoubleClicked:(nullable id)sender;
 
-- (void)memberSendDroppedFiles:(NSArray<NSString *> *)files to:(NSString *)nickname;
+/* Files dropped or pasted: a sheet says what can be done with them there
+ and nothing is sent without it. On the chat view or the input field the
+ selection decides (a private message sends to its nickname); in the member
+ list, the member in that row. */
+- (void)answerDroppedFiles:(NSArray<NSString *> *)files;
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row;
-- (void)memberSendDroppedFilesToSelectedChannel:(NSArray<NSString *> *)files; // Only works if -selectedChannel is a private message
 @end
 
 @interface TXMenuController (WindowPrivate)

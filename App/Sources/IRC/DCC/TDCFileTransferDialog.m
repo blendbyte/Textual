@@ -783,6 +783,66 @@ NS_ASSUME_NONNULL_BEGIN
 	[self close];
 }
 
+#pragma mark -
+#pragma mark Dropped Files
+
++ (NSArray<NSString *> *)filePathsOnPasteboard:(NSPasteboard *)pasteboard
+{
+	NSParameterAssert(pasteboard != nil);
+
+	NSArray<NSURL *> *fileURLs =
+	[pasteboard readObjectsForClasses:@[[NSURL class]]
+							  options:@{NSPasteboardURLReadingFileURLsOnlyKey : @(YES)}];
+
+	NSMutableArray<NSString *> *paths = [NSMutableArray arrayWithCapacity:fileURLs.count];
+
+	for (NSURL *fileURL in fileURLs) {
+		[paths addObject:fileURL.path];
+	}
+
+	return [paths copy];
+}
+
++ (NSArray<NSString *> *)sendableFilePaths:(NSArray<NSString *> *)paths
+{
+	NSParameterAssert(paths != nil);
+
+	NSMutableArray<NSString *> *sendablePaths = [NSMutableArray arrayWithCapacity:paths.count];
+
+	for (NSString *path in paths) {
+		BOOL isDirectory = NO;
+
+		if ([RZFileManager() fileExistsAtPath:path isDirectory:&isDirectory] == NO || isDirectory) {
+			continue;
+		}
+
+		[sendablePaths addObject:path];
+	}
+
+	return [sendablePaths copy];
+}
+
++ (TDCFileTransferDropAnswer)dropAnswerForSendableFileCount:(NSUInteger)sendableFileCount
+												  recipient:(nullable NSString *)recipient
+												  connected:(BOOL)connected
+{
+	/* DCC goes to one person: a channel or the console is never a target,
+	 whatever was dropped and whether connected or not */
+	if (recipient.length == 0) {
+		return TDCFileTransferDropAnswerNoRecipient;
+	}
+
+	if (sendableFileCount == 0) {
+		return TDCFileTransferDropAnswerNothingToSend;
+	}
+
+	if (connected == NO) {
+		return TDCFileTransferDropAnswerNotConnected;
+	}
+
+	return TDCFileTransferDropAnswerSend;
+}
+
 @end
 
 #pragma mark -

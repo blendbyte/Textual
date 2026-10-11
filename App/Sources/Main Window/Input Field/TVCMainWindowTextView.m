@@ -41,6 +41,9 @@
 #import "TPCResourceManagerPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
+#import "TDCFileTransferDialogPrivate.h"
+#import "TXMasterController.h"
+#import "TXMenuControllerPrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindow.h"
 #import "TVCMainWindowSegmentedControllerPrivate.h"
@@ -230,9 +233,35 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paste:(nullable id)sender
 {
+	/* Files copied in Finder */
+	NSArray *files = [TDCFileTransferDialog filePathsOnPasteboard:[NSPasteboard generalPasteboard]];
+
+	if (files.count > 0) {
+		[menuController() answerDroppedFiles:files];
+
+		return;
+	}
+
 	[super paste:self];
 
 	[self recalculateTextViewSize];
+}
+
+/* Dropped files get the sheet; with Option held, their paths are inserted
+ as before */
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+	BOOL optionHeld = ((NSEvent.modifierFlags & NSEventModifierFlagOption) == NSEventModifierFlagOption);
+
+	NSArray *files = [TDCFileTransferDialog filePathsOnPasteboard:[sender draggingPasteboard]];
+
+	if (files.count > 0 && optionHeld == NO) {
+		[menuController() answerDroppedFiles:files];
+
+		return YES;
+	}
+
+	return [super performDragOperation:sender];
 }
 
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector

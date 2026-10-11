@@ -50,6 +50,7 @@
 #import "TVCLogScriptEventSinkPrivate.h"
 #import "TVCLogViewPrivate.h"
 #import "TVCLogViewInternalWK2.h"
+#import "TDCFileTransferDialogPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -257,6 +258,11 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 
 	self.UIDelegate = (id)self;
 
+	/* WebKit registers the old file name type only; added to its types */
+	if ([self.registeredDraggedTypes containsObject:NSPasteboardTypeFileURL] == NO) {
+		[self registerForDraggedTypes:[self.registeredDraggedTypes arrayByAddingObject:NSPasteboardTypeFileURL]];
+	}
+
 	[self applyThemeBackgroundColor];
 
 	[self applyDeveloperMode];
@@ -354,9 +360,70 @@ static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebView
 	[super keyDown:e];
 }
 
+/* Files dragged in from elsewhere are Textual's (the dropped files sheet):
+ WebKit refuses them unless the page takes drops, so it never sees them.
+ Drags that start in the view itself stay WebKit's. */
+- (BOOL)isFileDragFromElsewhere:(nullable id <NSDraggingInfo>)sender
+{
+	if (sender == nil || sender.draggingSource == self) {
+		return NO;
+	}
+
+	return ([TDCFileTransferDialog filePathsOnPasteboard:[sender draggingPasteboard]].count > 0);
+}
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+	if ([self isFileDragFromElsewhere:sender]) {
+		return NSDragOperationCopy;
+	}
+
+	return [super draggingEntered:sender];
+}
+
+- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender
+{
+	if ([self isFileDragFromElsewhere:sender]) {
+		return NSDragOperationCopy;
+	}
+
+	return [super draggingUpdated:sender];
+}
+
+- (void)draggingExited:(nullable id <NSDraggingInfo>)sender
+{
+	if ([self isFileDragFromElsewhere:sender]) {
+		return;
+	}
+
+	[super draggingExited:sender];
+}
+
+- (BOOL)prepareForDragOperation:(id <NSDraggingInfo>)sender
+{
+	if ([self isFileDragFromElsewhere:sender]) {
+		return YES;
+	}
+
+	return [super prepareForDragOperation:sender];
+}
+
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
-	return [self.t_parentView performDragOperation:sender];
+	if ([self isFileDragFromElsewhere:sender]) {
+		return [self.t_parentView performDragOperation:sender];
+	}
+
+	return [super performDragOperation:sender];
+}
+
+- (void)concludeDragOperation:(nullable id <NSDraggingInfo>)sender
+{
+	if ([self isFileDragFromElsewhere:sender]) {
+		return;
+	}
+
+	[super concludeDragOperation:sender];
 }
 
 #pragma mark -
