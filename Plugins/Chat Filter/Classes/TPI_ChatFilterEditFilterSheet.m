@@ -828,22 +828,22 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 
 - (void)viewFilterMatchHelpText:(nullable id)sender
 {
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-1" inBackground:NO];
+	[TLOpenLink openWithString:@"https://www.textualapp.com/docs/customization/chat-filters#section-create-a-simple-filter" inBackground:NO];
 }
 
 - (void)viewFilterActionHelpText:(nullable id)sender
 {
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-2" inBackground:NO];
+	[TLOpenLink openWithString:@"https://www.textualapp.com/docs/customization/chat-filters#section-automatic-commands" inBackground:NO];
 }
 
 - (void)viewFilterSenderMatchHelpText:(nullable id)sender
 {
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-3" inBackground:NO];
+	[TLOpenLink openWithString:@"https://www.textualapp.com/docs/customization/chat-filters#section-scope-and-sender-rules" inBackground:NO];
 }
 
 - (void)viewFilterForwardToDestinationHelpText:(nullable id)sender
 {
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Introduction-to-the-Chat-Filter-Addon.kb#faq-entry-4" inBackground:NO];
+	[TLOpenLink openWithString:@"https://www.textualapp.com/docs/customization/chat-filters#section-scope-and-sender-rules" inBackground:NO];
 }
 
 - (void)filterLimitedToMatrixChanged:(nullable id)sender

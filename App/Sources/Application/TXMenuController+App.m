@@ -57,7 +57,8 @@
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
-#import "TDCAboutDialogPrivate.h"
+#import "TPCApplicationInfo.h"
+#import "TXWebsiteLinks.h"
 #import "TDCAlert.h"
 #import "TDCChannelInviteSheetPrivate.h"
 #import "TDCChannelModifyModesSheetPrivate.h"
@@ -106,20 +107,12 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(sender != nil);
 
 	NSDictionary *_helpMenuLinks = @{
-	   @(MTMMHelpLicenseAgreement) 					: @"https://help.codeux.com/textual/End-User-License-Agreement.kb",
-	   @(MTMMHelpPrivacyPolicy) 					: @"https://help.codeux.com/textual/Privacy-Policy.kb",
-	   @(MTMMHelpFrequentlyAskedQuestions) 			: @"https://help.codeux.com/textual/Frequently-Asked-Questions.kb",
-	   @(MTMMHelpKBMenuKnowledgeBaseHome) 			: @"https://help.codeux.com/textual/home.kb",
-	   @(MTMMHelpKBMenuCommandReference) 			: @"https://help.codeux.com/textual/Command-Reference.kb",
-	   @(MTMMHelpKBMenuFeatureRequests) 			: @"https://help.codeux.com/textual/Support.kb",
-	   @(MTMMHelpKBMenuKeyboardShortcuts) 			: @"https://help.codeux.com/textual/Keyboard-Shortcuts.kb",
-	   @(MTMMHelpKBMenuMemoryManagement) 			: @"https://help.codeux.com/textual/Memory-Management.kb",
-	   @(MTMMHelpKBMenuNetworkTimeouts)				: @"https://help.codeux.com/textual/Network-Timeouts.kb",
-	   @(MTMMHelpKBMenuTextFormatting) 				: @"https://help.codeux.com/textual/Text-Formatting.kb",
-	   @(MTMMHelpKBMenuStylingInformation) 			: @"https://help.codeux.com/textual/Styles.kb",
-	   @(MTMMHelpKBMenuConnectingWithCertificate) 	: @"https://help.codeux.com/textual/Using-CertFP.kb",
-	   @(MTMMHelpKBMenuConnectingToBouncer)			: @"https://help.codeux.com/textual/Connecting-to-ZNC-Bouncer.kb",
-	   @(MTMMHelpKBMenuDCCFileTransferInformation) 	: @"https://help.codeux.com/textual/DCC-File-Transfer-Information.kb"
+	   @(MTMMHelpTextualHelp)			: TXWebsiteDocumentation,
+	   @(MTMMHelpKeyboardShortcuts)		: TXWebsiteKeyboardShortcuts,
+	   @(MTMMHelpWhatsNew)				: TXWebsiteReleaseNotes,
+	   @(MTMMHelpIdeasAndQuestions)		: TXGitHubDiscussions,
+	   @(MTMMHelpPrivacyPolicy)			: TXWebsitePrivacyPolicy,
+	   @(MTMMHelpLicenseAgreement)		: TXWebsiteTerms
 	};
 
 	NSString *link = _helpMenuLinks[@([sender tag])];
@@ -129,12 +122,42 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)openStandaloneStoreWebpage:(nullable id)sender
 {
-	[TLOpenLink openWithString:@"https://www.textualapp.com/standalone-store" inBackground:NO];
+	[TLOpenLink openWithString:TXWebsiteBuy inBackground:NO];
 }
 
 - (void)contactSupport:(nullable id)sender
 {
-	[TLOpenLink openWithString:@"https://contact.codeux.com/" inBackground:NO];
+	[TLOpenLink openWithString:TXWebsiteContact inBackground:NO];
+}
+
+/* GitHub's bug report form, with the version, macOS and build filled in
+ (the form's field ids and build choices are in .github/ISSUE_TEMPLATE) */
+- (void)reportBug:(nullable id)sender
+{
+	NSString *buildScheme = [TPCApplicationInfo applicationBuildScheme];
+
+	NSString *build = nil;
+
+	if ([buildScheme isEqualToString:@"appstore"]) {
+		build = @"Textual 8 from the Mac App Store";
+	} else if ([buildScheme isEqualToString:@"devid"]) {
+		build = @"Textual 8 (from textualapp.com)";
+	} else {
+		build = @"Textual 8 development build";
+	}
+
+	NSString *version = [NSString stringWithFormat:@"%@ (%@)", [TPCApplicationInfo applicationVersionShort], [TPCApplicationInfo applicationVersion]];
+
+	NSURLComponents *components = [NSURLComponents componentsWithString:TXGitHubNewBugReport];
+
+	components.queryItems = @[
+		[NSURLQueryItem queryItemWithName:@"template" value:@"bug_report.yml"],
+		[NSURLQueryItem queryItemWithName:@"build" value:build],
+		[NSURLQueryItem queryItemWithName:@"version" value:version],
+		[NSURLQueryItem queryItemWithName:@"macos" value:RZProcessInfo().operatingSystemVersionString]
+	];
+
+	[TLOpenLink open:components.URL inBackground:NO];
 }
 
 - (void)connectToTextualHelpChannel:(nullable id)sender

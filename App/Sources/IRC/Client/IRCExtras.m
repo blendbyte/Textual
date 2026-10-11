@@ -58,6 +58,7 @@
 #import "IRCServer.h"
 #import "IRCWorldPrivate.h"
 #import "IRCExtrasPrivate.h"
+#import "TXWebsiteLinks.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -133,19 +134,15 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else if ([action isEqualToString:@"knowledge-base"])
 	{
-		[TLOpenLink openWithString:@"https://help.codeux.com/textual/" inBackground:NO];
+		[TLOpenLink openWithString:TXWebsiteDocumentation inBackground:NO];
 	}
 	else if ([action isEqualToString:@"newsletter"])
 	{
-		[TLOpenLink openWithString:@"https://www.codeux.com/textual/newsletter/" inBackground:NO];
+		[TLOpenLink openWithString:TXWebsiteNews inBackground:NO];
 	}
 	else if ([action isEqualToString:@"support-channel"])
 	{
 		[menuController() connectToTextualHelpChannel:nil];
-	}
-	else if ([action isEqualToString:@"testing-channel"])
-	{
-		[menuController() connectToTextualTestingChannel:nil];
 	}
 }
 

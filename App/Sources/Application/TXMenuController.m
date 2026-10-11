@@ -57,7 +57,6 @@
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
-#import "TDCAboutDialogPrivate.h"
 #import "TDCAlert.h"
 #import "TDCChannelInviteSheetPrivate.h"
 #import "TDCChannelModifyModesSheetPrivate.h"
@@ -279,23 +278,19 @@ NS_ASSUME_NONNULL_BEGIN
 			case MTMMEditPaste: // "Paste"
 			case MTMMViewToggleFullscreen: // "Toggle Fullscreen"
 			case MTMMWindowMainWindow: // "Main Window"
-			case MTMMHelpAcknowledgements: // "Acknowledgements"
-			case MTMMHelpLicenseAgreement: // "License Agreement"
+			case MTMMHelpTextualHelp: // "Textual Help"
+			case MTMMHelpKeyboardShortcuts: // "Keyboard Shortcuts"
+			case MTMMHelpWhatsNew: // "What's New in Textual 8"
+			case MTMMHelpReportBug: // "Report a Bug…"
+			case MTMMHelpIdeasAndQuestions: // "Ideas & Questions"
+			case MTMMHelpContactSupport: // "Contact Support"
 			case MTMMHelpPrivacyPolicy: // "Privacy Policy"
-			case MTMMHelpFrequentlyAskedQuestions: // "Frequently Asked Questions"
-			case MTMMHelpKnowledgeBaseMenu: // "Knowledge Base"
+			case MTMMHelpLicenseAgreement: // "Terms"
+			case MTMMHelpAcknowledgements: // "Acknowledgements"
 			case MTMMHelpAdvancedMenu: // "Advanced"
 			case MTMMHelpAdvancedMenuExportPreferences: // "Export Preferences"
 			{
 				validationResult = YES;
-
-				break;
-			}
-			default:
-			{
-				if (menuItem.parentItem.tag == MTMMHelpKnowledgeBaseMenu) {
-					validationResult = YES;
-				}
 
 				break;
 			}

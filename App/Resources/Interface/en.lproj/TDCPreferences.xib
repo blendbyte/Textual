@@ -3627,7 +3627,7 @@ A lower value is always better especially when in a large number of channels.</s
                                     <menu key="menu" title="OtherViews" id="faJ-I4-ysS">
                                         <items>
                                             <menuItem title="Ask router with no fallback" state="on" tag="3" id="PpR-MQ-ujy"/>
-                                            <menuItem title="Ask router with myip.codeux.com as fallback" tag="1" id="C0d-vg-gP1"/>
+                                            <menuItem title="Ask router with myip.textualapp.com as fallback" tag="1" id="C0d-vg-gP1"/>
                                             <menuItem title="Ask router with 3rd-party website as fallback" tag="4" id="x7k-y5-Qhz"/>
                                             <menuItem title="Manually Enter Address" tag="2" id="Pp5-Ci-F1D"/>
                                         </items>

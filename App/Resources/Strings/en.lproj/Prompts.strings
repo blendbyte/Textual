@@ -167,7 +167,6 @@ Create this folder if it does not exist.";
 "b7o-v4" = "Textual is unable to access the folder that's configured for your log location because the resource is 'stale'";
 "atn-1c" = "Navigate to Preferences \U279C Advanced \U279C Log Location to repair this preference";
 
-"h99-3q" = "The process responsible for managing scrollback is not working correctly. Please report this problem to support@codeux.com";
 "nlz-um" = "Last known error message: %@";
 
 "d22-76" = "A query named “%@“ already exists. Do you want to delete this query?";

@@ -48,6 +48,7 @@
 #import "TVCLogViewPrivate.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMainWindowPrivate.h"
+#import "TXWebsiteLinks.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -62,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCLogView
 
-NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+https://help.codeux.com/textual/Inline-Media-Scanner-User-Agent.kb)";
+NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+" TXWebsiteLinkPreviews @")";
 
 - (instancetype)init
 {

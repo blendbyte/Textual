@@ -39,6 +39,7 @@
 #import "TXMenuControllerPrivate.h"
 #import "TLOpenLink.h"
 #import "TDCLicenseUpgradeCommonActionsPrivate.h"
+#import "TXWebsiteLinks.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -61,16 +62,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(licenseKey != nil);
 
-	NSString *linkToOpen = [NSString stringWithFormat:@"https://www.codeux.com/textual/version-7-upgrade/upgradeLicense/%@", licenseKey];
-
-	[TLOpenLink openWithString:linkToOpen inBackground:NO];
+	/* The upgrade page for a key is gone; 12.1 replaces this flow */
+	[TLOpenLink openWithString:TXWebsiteBuy inBackground:NO];
 }
 
 + (void)learnMore
 {
-	NSURL *urlToOpen = [NSURL URLWithString:@"https://www.codeux.com/textual/version-7-upgrade/learnMore"];
-
-	[TLOpenLink open:urlToOpen inBackground:NO];
+	[TLOpenLink openWithString:TXWebsiteExistingPurchases inBackground:NO];
 }
 
 + (void)openStandaloneStore

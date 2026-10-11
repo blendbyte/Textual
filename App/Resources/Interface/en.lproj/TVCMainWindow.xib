@@ -12,7 +12,7 @@
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <window title="Textual 7" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingMode="disallowed" id="21" userLabel="Window" customClass="TVCMainWindow">
+        <window title="Textual" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingMode="disallowed" id="21" userLabel="Window" customClass="TVCMainWindow">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="515" y="206" width="800" height="477"/>

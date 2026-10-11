@@ -5,8 +5,7 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
- * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
- *       Please see Acknowledgements.pdf for additional information.
+ * Copyright (c) 2026 Blendbyte GmbH & respective contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,19 +34,23 @@
  *
  *********************************************************************** */
 
-#import "TDCWindowBase.h"
+/* Every page of textualapp.com and GitHub the app opens, in one place, so
+ a change on the website is made here. The bundled plugins keep their own. */
 
-NS_ASSUME_NONNULL_BEGIN
+#define TXWebsiteHome						@"https://www.textualapp.com"
+#define TXWebsiteDocumentation				@"https://www.textualapp.com/docs"
+#define TXWebsiteKeyboardShortcuts			@"https://www.textualapp.com/docs/reference/keyboard-shortcuts"
+#define TXWebsiteCommands					@"https://www.textualapp.com/docs/reference/commands"
+#define TXWebsiteReleaseNotes				@"https://www.textualapp.com/docs/release-notes/textual-8"
+#define TXWebsiteClientCertificates			@"https://www.textualapp.com/docs/connections/certificates-and-security#section-identify-with-a-client-certificate"
+#define TXWebsiteExistingPurchases			@"https://www.textualapp.com/docs/getting-started/licenses-and-app-store#section-existing-purchases"
+#define TXWebsiteLinkPreviews				@"https://www.textualapp.com/docs/legacy/guides/inline-media-scanner-user-agent"
+#define TXWebsiteBuy						@"https://www.textualapp.com/buy"
+#define TXWebsiteContact					@"https://www.textualapp.com/contact"
+#define TXWebsiteNews						@"https://www.textualapp.com/news"
+#define TXWebsitePrivacyPolicy				@"https://www.textualapp.com/privacy"
+#define TXWebsiteTerms						@"https://www.textualapp.com/terms"
 
-@protocol TDCAboutDialogDelegate;
-
-@interface TDCAboutDialog : TDCWindowBase
-@end
-
-@protocol TDCAboutDialogDelegate <NSObject>
-@required
-
-- (void)aboutDialogWillClose:(TDCAboutDialog *)sender;
-@end
-
-NS_ASSUME_NONNULL_END
+#define TXGitHubRepository					@"https://github.com/blendbyte/Textual"
+#define TXGitHubNewBugReport				@"https://github.com/blendbyte/Textual/issues/new"
+#define TXGitHubDiscussions					@"https://github.com/blendbyte/Textual/discussions"

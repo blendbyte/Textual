@@ -57,7 +57,6 @@
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
-#import "TDCAboutDialogPrivate.h"
 #import "TDCAlert.h"
 #import "TDCChannelInviteSheetPrivate.h"
 #import "TDCChannelModifyModesSheetPrivate.h"

@@ -23,7 +23,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2026 Blendbyte GmbH. Copyright © 2010 - 2020 Codeux Software, LLC. All rights reserved.</string>
+	<string>© 2026 Blendbyte GmbH</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleInfoDictionaryVersion</key>

@@ -929,127 +929,69 @@ CQ
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="1385">
                         <items>
-                            <menuItem title="Acknowledgements" tag="900" id="1796">
+                            <menuItem title="Textual Help" tag="911" id="Kql-ck-sLI">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="openAcknowledgements:" target="267" id="2556"/>
+                                    <action selector="openHelpMenuItem:" target="267" id="jiE-nC-4t9"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="License Agreement" tag="901" id="BrC-PS-U3X">
+                            <menuItem title="Keyboard Shortcuts" tag="912" id="QCT-L0-JfI">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="openHelpMenuItem:" target="267" id="ell-Ij-llA"/>
+                                    <action selector="openHelpMenuItem:" target="267" id="yt5-hb-jTZ"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="What’s New in Textual 8" tag="913" id="gtt-cp-dHy">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="openHelpMenuItem:" target="267" id="EU6-yQ-pSG"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="914" id="ndF-Le-8uo"/>
+                            <menuItem title="Report a Bug…" tag="915" id="694-Ra-LJb">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="reportBug:" target="267" id="Yc7-bb-XpG"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Ideas &amp; Questions" tag="916" id="t1Q-5M-BJ7">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="openHelpMenuItem:" target="267" id="oAI-qD-PMl"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Contact Support" tag="917" id="wgG-97-s6s">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="contactSupport:" target="267" id="Ao2-jC-Oby"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Join #textual on Libera.Chat" tag="907" id="1392">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="connectToTextualHelpChannel:" target="267" id="2568"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="909" id="1795"/>
                             <menuItem title="Privacy Policy" tag="902" id="1710">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="openHelpMenuItem:" target="267" id="7cF-3R-5pW"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="903" id="1661"/>
-                            <menuItem title="Frequently Asked Questions" tag="904" id="gkX-Of-Y5Q">
+                            <menuItem title="Terms" tag="901" id="BrC-PS-U3X">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="openHelpMenuItem:" target="267" id="G7o-2j-dES"/>
+                                    <action selector="openHelpMenuItem:" target="267" id="ell-Ij-llA"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Knowledge Base" tag="905" id="1686">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Knowledge Base" id="1687">
-                                    <items>
-                                        <menuItem title="Knowledge Base Home" tag="9050000" id="01c-Ny-YrB">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="ujf-rz-QKO"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" tag="9050001" id="VTu-dA-PTE"/>
-                                        <menuItem title="Command Reference" tag="9050005" id="1667">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="fkh-AP-nEH"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Feature Requests" tag="9050006" id="1689">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="kbI-Gd-aBG"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Keyboard Shortcuts" tag="9050007" id="3080">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="EcI-bN-kg9"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Memory Management" tag="9050008" id="1691">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="yKU-Kd-2sX"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Network Timeouts" tag="9050016" id="tGD-xh-GnJ">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="yNp-EX-dir"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Text Formatting" tag="9050009" id="1693">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="VqO-jK-WsS"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Styling Information" tag="9050010" id="1695">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="F9h-mt-chQ"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" tag="9050011" id="3079"/>
-                                        <menuItem title="Connecting with a Certificate" tag="9050012" id="o9J-hu-dKA">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="6Ax-wH-9h7"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Connecting to a ZNC Bouncer" tag="9050013" id="VQN-Rg-JZ0">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="QOa-Cc-r8n"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" tag="9050014" id="e0i-mT-GT6"/>
-                                        <menuItem title="DCC File Transfer Information" tag="9050015" id="3064">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openHelpMenuItem:" target="267" id="qfF-bN-57R"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                    <connections>
-                                        <outlet property="delegate" destination="267" id="Hme-Rb-WrG"/>
-                                    </connections>
-                                </menu>
-                                <connections>
-                                    <action selector="emptyAction:" target="267" id="brg-bn-EbZ"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="906" id="Ws1-vl-bOl"/>
-                            <menuItem title="Connect to Help Channel" tag="907" id="1392">
+                            <menuItem title="Acknowledgements" tag="900" id="1796">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="connectToTextualHelpChannel:" target="267" id="2568"/>
+                                    <action selector="openAcknowledgements:" target="267" id="2556"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Connect to Testing Channel" tag="908" id="2706">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="connectToTextualTestingChannel:" target="267" id="2708"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="909" id="1795"/>
+                            <menuItem isSeparatorItem="YES" tag="918" id="fXV-9Y-PrA"/>
                             <menuItem title="Advanced" tag="910" id="2718">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Advanced" id="2719">

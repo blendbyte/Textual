@@ -14,9 +14,11 @@ body:
     attributes:
       label: Which build are you using?
       options:
-        - Textual 7 release (from textualapp.com)
+        - Textual 7 (from textualapp.com)
         - Textual 7 from the Mac App Store
-        - Development build from main (Textual 8)
+        - Textual 8 development build
+        - Textual 8 (from textualapp.com)
+        - Textual 8 from the Mac App Store
         - Other
     validations:
       required: true

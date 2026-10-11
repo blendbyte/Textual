@@ -109,6 +109,7 @@
 #import "IRCWorldPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
 #import "IRCClientInternal.h"
+#import "TXWebsiteLinks.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -748,7 +749,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Present list of features */
 	else if ([action isEqualToString:@"features"])
 	{
-		[TLOpenLink openWithString:@"https://help.codeux.com/textual/Command-Reference.kb#cr=defaults" inBackground:NO];
+		[TLOpenLink openWithString:TXWebsiteCommands inBackground:NO];
 
 		return;
 	}

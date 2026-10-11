@@ -62,6 +62,7 @@
 #import "TDCPreferencesControllerPrivate.h"
 #import "TDCServerEndpointListSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
+#import "TXWebsiteLinks.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -1836,7 +1837,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 					   otherButton:TXTLS(@"TDCServerPropertiesSheet[3ju-lo]")
 				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
 			if (buttonClicked == TDCAlertResponseOther) {
-				[TLOpenLink openWithString:@"https://help.codeux.com/textual/Using-CertFP.kb" inBackground:NO];
+				[TLOpenLink openWithString:TXWebsiteClientCertificates inBackground:NO];
 			}
 		}];
 

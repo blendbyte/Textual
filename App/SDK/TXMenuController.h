@@ -215,31 +215,39 @@ enum
 	MTMMWindowBrightAllToFront = 819, // "Bring All to Front"
 
 	/* Main menu - Help menu */
-	MTMMHelpAcknowledgements = 900, // "Acknowledgements"
-	MTMMHelpLicenseAgreement = 901, // "License Agreement"
-	MTMMHelpPrivacyPolicy = 902, // "Privacy Policy"
-	MTMMHelpPrivacyPolicySeparator = 903, // "-"
-	MTMMHelpFrequentlyAskedQuestions = 904, // "Frequently Asked Questions"
-	MTMMHelpKnowledgeBaseMenu = 905, // "Knowledge Base"
-	/* Highest: 9050016 */
-	MTMMHelpKBMenuKnowledgeBaseHome = 9050000, // "Knowledge Base Home"
-	MTMMHelpKBMenuKnowledgeBaseHomeSeparator = 9050001, // "-"
-	MTMMHelpKBMenuCommandReference = 9050005, // "Command Reference"
-	MTMMHelpKBMenuFeatureRequests = 9050006, // "Feature Requests"
-	MTMMHelpKBMenuKeyboardShortcuts = 9050007, // "Keyboard Shortcuts"
-	MTMMHelpKBMenuMemoryManagement = 9050008, // "Memory Management"
-	MTMMHelpKBMenuNetworkTimeouts = 9050016, // "Network Timeouts"
-	MTMMHelpKBMenuTextFormatting = 9050009, // "Text Formatting"
-	MTMMHelpKBMenuStylingInformation = 9050010, // "Styling Information"
-	MTMMHelpKBMenuStylingInformationSeparator = 9050011, // "-"
-	MTMMHelpKBMenuConnectingWithCertificate = 9050012, // "Connecting with Certificate"
-	MTMMHelpKBMenuConnectingToBouncer = 9050013, // "Connecting to a ZNC Bouncer"
-	MTMMHelpKBMenuConnectingToBouncerSeparator = 9050014, // "-"
-	MTMMHelpKBMenuDCCFileTransferInformation = 9050015, // "DCC File Transfer Information"
-	MTMMHelpKnowledgeBaseMenuSeparator = 906, // "-"
-	MTMMHelpConnectToHelpChannel = 907, // "Connect to Help Channel"
-	MTMMHelpConnectToTestingChannel = 908, // "Connect to Testing Channel"
+	MTMMHelpTextualHelp = 911, // "Textual Help"
+	MTMMHelpKeyboardShortcuts = 912, // "Keyboard Shortcuts"
+	MTMMHelpWhatsNew = 913, // "What's New in Textual 8"
+	MTMMHelpWhatsNewSeparator = 914, // "-"
+	MTMMHelpReportBug = 915, // "Report a Bug…"
+	MTMMHelpIdeasAndQuestions = 916, // "Ideas & Questions"
+	MTMMHelpContactSupport = 917, // "Contact Support"
+	MTMMHelpConnectToHelpChannel = 907, // "Join #textual on Libera.Chat"
 	MTMMHelpConnectToTestingChannelSeparator = 909, // "-"
+	MTMMHelpPrivacyPolicy = 902, // "Privacy Policy"
+	MTMMHelpLicenseAgreement = 901, // "Terms"
+	MTMMHelpAcknowledgements = 900, // "Acknowledgements"
+	MTMMHelpAcknowledgementsSeparator = 918, // "-"
+	/* No longer in the menu (Textual 8 has the documentation instead) */
+	MTMMHelpPrivacyPolicySeparator = 903,
+	MTMMHelpFrequentlyAskedQuestions = 904,
+	MTMMHelpKnowledgeBaseMenu = 905,
+	MTMMHelpKBMenuKnowledgeBaseHome = 9050000,
+	MTMMHelpKBMenuKnowledgeBaseHomeSeparator = 9050001,
+	MTMMHelpKBMenuCommandReference = 9050005,
+	MTMMHelpKBMenuFeatureRequests = 9050006,
+	MTMMHelpKBMenuKeyboardShortcuts = 9050007,
+	MTMMHelpKBMenuMemoryManagement = 9050008,
+	MTMMHelpKBMenuNetworkTimeouts = 9050016,
+	MTMMHelpKBMenuTextFormatting = 9050009,
+	MTMMHelpKBMenuStylingInformation = 9050010,
+	MTMMHelpKBMenuStylingInformationSeparator = 9050011,
+	MTMMHelpKBMenuConnectingWithCertificate = 9050012,
+	MTMMHelpKBMenuConnectingToBouncer = 9050013,
+	MTMMHelpKBMenuConnectingToBouncerSeparator = 9050014,
+	MTMMHelpKBMenuDCCFileTransferInformation = 9050015,
+	MTMMHelpKnowledgeBaseMenuSeparator = 906,
+	MTMMHelpConnectToTestingChannel = 908,
 	MTMMHelpAdvancedMenu = 910, // "Advanced"
 	MTMMHelpAdvancedMenuEnableDeveloperMode = 9100000, // "Enable Developer Mode"
 	MTMMHelpAdvancedMenuEnableDeveloperModeSeparator = 9100001, // "-"
@@ -471,7 +479,8 @@ enum
 - (IBAction)contactSupport:(nullable id)sender;
 
 - (IBAction)connectToTextualHelpChannel:(nullable id)sender;
-- (IBAction)connectToTextualTestingChannel:(nullable id)sender;
+- (IBAction)connectToTextualTestingChannel:(nullable id)sender; // No longer in the Help menu
+- (IBAction)reportBug:(nullable id)sender;
 
 - (IBAction)exportPreferences:(nullable id)sender;
 - (IBAction)importPreferences:(nullable id)sender;
