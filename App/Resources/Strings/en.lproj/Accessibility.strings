@@ -46,6 +46,7 @@
 "q8m-d8" = "Address %@";
 "q8m-r9" = "Real Name %@";
 "q8m-a0" = "Logged In as %@";
+"q8m-n0" = "Not Logged In";
 
 "bmy-d2" = "Connection %@, Connected";
 "tu4-8u" = "Connection %@, Disconnected";

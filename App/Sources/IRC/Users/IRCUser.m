@@ -233,6 +233,8 @@ NS_ASSUME_NONNULL_BEGIN
 			((self.account == nil && objectCast.account == nil) ||
 			 [self.account isEqualToString:objectCast.account]) &&
 
+			self.accountKnown == objectCast.accountKnown &&
+
 			self.isAway == objectCast.isAway &&
 			self.isIRCop == objectCast.isIRCop);
 }
@@ -257,6 +259,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	object->_realName = self->_realName;
 	object->_account = self->_account;
+	object->_accountKnown = self->_accountKnown;
 
 	object->_isAway = self->_isAway;
 	object->_isIRCop = self->_isIRCop;
@@ -344,6 +347,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic address;
 @dynamic realName;
 @dynamic account;
+@dynamic accountKnown;
 @dynamic isAway;
 @dynamic isIRCop;
 
@@ -396,6 +400,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_account != account) {
 		self->_account = [account copy];
+	}
+}
+
+- (void)setAccountKnown:(BOOL)accountKnown
+{
+	if (self->_accountKnown != accountKnown) {
+		self->_accountKnown = accountKnown;
 	}
 }
 

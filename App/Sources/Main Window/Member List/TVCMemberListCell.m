@@ -41,7 +41,7 @@
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 #import "IRCChannelUser.h"
-#import "IRCUser.h"
+#import "IRCUserPrivate.h"
 #import "TVCMainWindow.h"
 #import "TVCMemberListAppearance.h"
 #import "TVCMemberListPrivate.h"
@@ -174,6 +174,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (user.account.length > 0) {
 		[details addObject:TXTLS(@"Accessibility[q8m-a0]", user.account)];
+	} else if (user.accountKnown) {
+		[details addObject:TXTLS(@"Accessibility[q8m-n0]")];
 	}
 
 	NSString *help = ((details.count > 0) ? [details componentsJoinedByString:@", "] : nil);
@@ -273,6 +275,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (controlColor) {
 		[mutableStringValue addAttribute:NSForegroundColorAttributeName value:controlColor	range:stringValueRange];
+	}
+
+	/* Not logged in to an account (10.2): a faint dot after the name, only
+	 when that is known for this person (most members of an established
+	 channel are logged in, so the exception is marked) */
+	if (cellItem.user.accountKnown && cellItem.user.account.length == 0) {
+		NSColor *markerColor = ((isSelected) ? [controlColor colorWithAlphaComponent:0.6] : [NSColor tertiaryLabelColor]);
+
+		NSDictionary *markerAttributes = @{
+			NSFontAttributeName : ((controlFont) ?: [NSFont systemFontOfSize:12.0]),
+			NSForegroundColorAttributeName : ((markerColor) ?: [NSColor tertiaryLabelColor])
+		};
+
+		[mutableStringValue appendAttributedString:[[NSAttributedString alloc] initWithString:TXLocalizationNotNeeded(@" \u2022") attributes:markerAttributes]];
 	}
 
 	[mutableStringValue endEditing];
@@ -489,6 +505,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 		userInfoPopover.realNameField.attributedStringValue = realNameFormatted;
 	}
+
+	/* =============================================== */
+
+	NSString *account = cellItem.user.account;
+
+	if (account.length == 0) {
+		if (cellItem.user.accountKnown) {
+			account = TXTLS(@"TVCMainWindow[acc-n1]");
+		} else {
+			account = TXTLS(@"TVCMainWindow[d85-9n]");
+		}
+	}
+
+	userInfoPopover.accountField.stringValue = account;
 
 	/* =============================================== */
 

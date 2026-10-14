@@ -36,6 +36,7 @@
  *
  *********************************************************************** */
 
+#import "TLOLocalization.h"
 #import "TVCMemberListUserInfoPopoverPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,9 +48,51 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readwrite) IBOutlet NSTextField *realNameField;
 @property (nonatomic, weak, readwrite) IBOutlet NSTextField *privilegesField;
 @property (nonatomic, weak, readwrite) IBOutlet NSTextField *awayStatusField;
+@property (nonatomic, strong, nullable) NSTextField *accountFieldStorage;
 @end
 
 @implementation TVCMemberListUserInfoPopover
+
+/* Added in code, like the other rows: a label and a value in the grid */
+- (NSTextField *)accountField
+{
+	if (self.accountFieldStorage) {
+		return self.accountFieldStorage;
+	}
+
+	NSTextField *realNameField = self.realNameField;
+
+	NSGridView *grid = (NSGridView *)realNameField.superview;
+
+	NSTextField *valueField = [NSTextField labelWithString:@""];
+
+	/* Looks like the other values */
+	valueField.font = realNameField.font;
+	valueField.textColor = realNameField.textColor;
+	valueField.lineBreakMode = NSLineBreakByTruncatingTail;
+
+	self.accountFieldStorage = valueField;
+
+	if ([grid isKindOfClass:[NSGridView class]] == NO) {
+		return valueField;
+	}
+
+	NSInteger realNameRow = [grid indexOfRow:[grid cellForView:realNameField].row];
+
+	NSTextField *realNameLabel = (NSTextField *)[grid cellAtColumnIndex:0 rowIndex:realNameRow].contentView;
+
+	NSTextField *labelField = [NSTextField labelWithString:TXTLS(@"TVCMainWindow[acc-l1]")];
+
+	labelField.font = realNameLabel.font;
+	labelField.textColor = realNameLabel.textColor;
+	labelField.alignment = NSTextAlignmentRight;
+
+	valueField.accessibilityTitleUIElement = labelField;
+
+	[grid insertRowAtIndex:(realNameRow + 1) withViews:@[labelField, valueField]];
+
+	return valueField;
+}
 
 - (void)mouseDown:(NSEvent *)event
 {

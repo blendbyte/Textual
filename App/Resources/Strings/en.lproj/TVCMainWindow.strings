@@ -100,3 +100,5 @@
 "icp-ex" = "From an extension";
 "icp-sc" = "Your script";
 "icp-al" = "Your alias: %@";
+"acc-l1" = "Account:";
+"acc-n1" = "Not logged in";

@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_address;
 	NSString *_realName;
 	NSString *_account;
+	BOOL _accountKnown;
 	BOOL _isAway;
 	BOOL _isIRCop;
 }

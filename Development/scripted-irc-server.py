@@ -1980,6 +1980,98 @@ async def scenario_mass(client):
 		await client.send(f":bob!b@bob.test PRIVMSG #one :{round}: {me}: are you there? (highlight)")
 
 
+async def scenario_accounts(client):
+	"""Account markers (10.2): account-notify, extended-join and WHOX. #acc: the
+	WHOX answer has alice and carl logged in, bob and dave not. #noinfo: its
+	WHO is never answered, so nothing is known there. Saying "go" anywhere:
+	bob logs in, carl logs out, eve joins logged in and frank joins logged out
+	(extended-join). "go2": grace joins logged in; "go3": henry (logged in) and ivy (not)
+	join one after the other. Stays connected."""
+	if not await client.register_with_capabilities("account-notify extended-join server-time"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{SERVER} 005 {me} WHOX :are supported by this server")
+
+	for channel, names in (("#acc", f"@{me} alice bob carl dave"), ("#noinfo", f"@{me} alice bob")):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel} * :Textual User")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{names}")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	accounts = {"alice": "alice", "bob": "0", "carl": "carl", "dave": "0"}
+
+	seen = 0
+
+	while await client.collect(1):
+		lines = client.received[seen:]
+		seen = len(client.received)
+
+		for line in lines:
+			if line.upper().startswith("WHO #ACC"):
+				for nick, account in accounts.items():
+					await client.send(f":{SERVER} 354 {me} 152 #acc ~{nick} {nick}.test {nick} H {account} :{nick.capitalize()}")
+				await client.send(f":{SERVER} 354 {me} 152 #acc ~u client.textual.test {me} H@ 0 :Textual User")
+				await client.send(f":{SERVER} 315 {me} #acc :End of /WHO list.")
+
+			if line.upper().startswith("PRIVMSG ") and line.endswith(" :go"):
+				accounts.update({"bob": "bob", "carl": "0", "eve": "eve", "frank": "0"})
+
+				await client.send(":bob!~bob@bob.test ACCOUNT bob")
+				await client.send(":carl!~carl@carl.test ACCOUNT *")
+				await client.send(":eve!~eve@eve.test JOIN #acc eve :Eve")
+				await client.send(":frank!~frank@frank.test JOIN #acc * :Frank")
+
+			if line.upper().startswith("PRIVMSG ") and line.endswith(" :go2"):
+				accounts.update({"grace": "grace"})
+
+				await client.send(":grace!~grace@grace.test JOIN #acc grace :Grace")
+
+			if line.upper().startswith("PRIVMSG ") and line.endswith(" :go3"):
+				accounts.update({"henry": "henry", "ivy": "0"})
+
+				await client.send(":henry!~henry@henry.test JOIN #acc henry :Henry")
+				await client.send(":ivy!~ivy@ivy.test JOIN #acc * :Ivy")
+
+
+async def scenario_legacy_accounts(client):
+	"""Account markers on a legacy network (10.2), like QuakeNet: WHOX but no
+	IRCv3 capabilities. #legacy: the WHOX answer has alice and carl logged in,
+	bob not. Saying "go" anywhere: bob logs in (nothing tells the client) and
+	dave joins (a plain JOIN, account unknown); both show at the next WHO,
+	which Textual sends every 2 minutes. Stays connected."""
+	if not await client.register_with_capabilities(""):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{SERVER} 005 {me} WHOX :are supported by this server")
+
+	await client.send(f":{me}!user@client.textual.test JOIN #legacy")
+	await client.send(f":{SERVER} 353 {me} = #legacy :@{me} alice bob carl")
+	await client.send(f":{SERVER} 366 {me} #legacy :End of /NAMES list.")
+
+	accounts = {"alice": "alice", "bob": "0", "carl": "carl"}
+
+	seen = 0
+
+	while await client.collect(1):
+		lines = client.received[seen:]
+		seen = len(client.received)
+
+		for line in lines:
+			if line.upper().startswith("WHO #LEGACY"):
+				for nick, account in accounts.items():
+					await client.send(f":{SERVER} 354 {me} 152 #legacy ~{nick} {nick}.test {nick} H {account} :{nick.capitalize()}")
+				await client.send(f":{SERVER} 354 {me} 152 #legacy ~u client.textual.test {me} H@ 0 :Textual User")
+				await client.send(f":{SERVER} 315 {me} #legacy :End of /WHO list.")
+
+			if line.upper().startswith("PRIVMSG ") and line.endswith(" :go"):
+				accounts.update({"bob": "bob", "dave": "0"})
+
+				await client.send(":dave!~dave@dave.test JOIN #legacy")
+
+
 async def scenario_silent(client):
 	"""Accept the connection and never answer (not even a TLS handshake): connect
 	with ircs:// or irc:// and Textual Dev must give up after 30 seconds."""
@@ -1999,6 +2091,8 @@ SCENARIOS = {
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
 	"mass": scenario_mass,
+	"accounts": scenario_accounts,
+	"legacy-accounts": scenario_legacy_accounts,
 	"idle": scenario_idle,
 	"review-crashes": scenario_review_crashes,
 	"review-irc": scenario_review_irc,
@@ -2040,7 +2134,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "mute", "keywords", "mass", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

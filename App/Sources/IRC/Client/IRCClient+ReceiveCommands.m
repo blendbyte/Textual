@@ -2268,6 +2268,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	userMutable.account = [self accountNameFromValue:[m paramAt:1]];
+	userMutable.accountKnown = YES;
 
 	userMutable.realName = [m sequence:2];
 }
@@ -2287,7 +2288,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self modifyUserUserWithNickname:m.senderNickname withBlock:^(IRCUserMutable *userMutable) {
 		userMutable.account = account;
+		userMutable.accountKnown = YES;
 	}];
+
+	/* The member list marks people who aren't logged in (10.2) */
+	IRCUser *user = [self findUser:m.senderNickname];
+
+	if (user) {
+		[mainWindow() updateDrawingForUserInUserList:user];
+	}
 }
 
 - (void)receiveSetName:(IRCMessage *)m
@@ -2335,9 +2344,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *account = [self accountNameFromValue:accountTag];
 
-	[self modifyUserUserWithNickname:nickname withBlock:^(IRCUserMutable *userMutable) {
+	IRCUser *user = [self findUser:nickname];
+
+	if (user == nil) {
+		return;
+	}
+
+	/* Every message carries it: only a change is stored and redrawn */
+	if (user.accountKnown && NSObjectsAreEqual(user.account, account)) {
+		return;
+	}
+
+	[self modifyUser:user withBlock:^(IRCUserMutable *userMutable) {
 		userMutable.account = account;
+		userMutable.accountKnown = YES;
 	}];
+
+	/* The member list marks people who aren't logged in (10.2) */
+	IRCUser *userChanged = [self findUser:nickname];
+
+	if (userChanged) {
+		[mainWindow() updateDrawingForUserInUserList:userChanged];
+	}
 }
 
 #pragma mark -

@@ -1722,6 +1722,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (reply.accountKnown) {
 		userMutable.account = reply.account;
+		userMutable.accountKnown = YES;
 
 		if (channel.receivedWhoxAccountData == NO) {
 			channel.receivedWhoxAccountData = YES;
@@ -1768,7 +1769,9 @@ NS_ASSUME_NONNULL_BEGIN
 							resort:YES
 			  replaceInAllChannels:replaceInAllChannels];
 		}
-		else if (user.isAway != userAdded.isAway || NSObjectsAreEqual(user.account, userAdded.account) == NO)
+		else if (user.isAway != userAdded.isAway ||
+				 user.accountKnown != userAdded.accountKnown ||
+				 NSObjectsAreEqual(user.account, userAdded.account) == NO)
 		{
 			[mainWindow() updateDrawingForUserInUserList:userAdded];
 		}

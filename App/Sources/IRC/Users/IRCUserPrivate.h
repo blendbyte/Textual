@@ -45,6 +45,15 @@ NS_ASSUME_NONNULL_BEGIN
 /* When the user stopped sharing a channel with us; 0 while they share one.
  IRCUserList forgets users unused for a while. */
 @property (readonly) CFAbsoluteTime unusedSince;
+
+/* Whether account is this person's real state (10.2): set by a WHOX answer,
+ extended-join, account-notify or account-tag, so a nil account then means
+ logged out rather than unknown */
+@property (readonly) BOOL accountKnown;
+@end
+
+@interface IRCUserMutable ()
+@property (nonatomic, assign, readwrite) BOOL accountKnown;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -260,11 +260,25 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 	 we do not try to show a popover. We only want to show a popover if the
 	 user has some intention of being in the list. */
 
+	/* Where the mouse is now: the last move event may be from before it
+	 entered (a click or a window opening under it moves no mouse), and
+	 its zero point was the first row, showing that person's details */
 	if (self.userPopoverMouseIsInView) {
-		[self popUserInfoExpansionFrameAtPoint:self.userPopoverLastKnownLocalPoint ignoreTimerCheck:YES];
+		[self popUserInfoExpansionFrameAtPoint:[self _localMouseLocation] ignoreTimerCheck:YES];
 	}
 
 	self.userPopoverTimerIsActive = NO;
+}
+
+- (NSPoint)_localMouseLocation
+{
+	NSPoint mouseLocation = [NSEvent mouseLocation];
+
+	NSRect mouseLocationFaked = NSMakeRect(mouseLocation.x, mouseLocation.y, 1.0, 1.0);
+
+	NSRect remotePoint = [self.window convertRectFromScreen:mouseLocationFaked];
+
+	return [self convertPoint:remotePoint.origin fromView:nil];
 }
 
 #pragma mark -
@@ -280,15 +294,7 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 		return;
 	}
 
-	NSPoint mouseLocation = [NSEvent mouseLocation];
-
-	NSRect mouseLocationFaked = NSMakeRect(mouseLocation.x, mouseLocation.y, 1.0, 1.0);
-
-	NSRect remotePoint = [self.window convertRectFromScreen:mouseLocationFaked];
-
-	NSPoint localPoint = [self convertPoint:remotePoint.origin fromView:nil];
-
-	[self popUserInfoExpansionFrameAtPoint:localPoint ignoreTimerCheck:YES];
+	[self popUserInfoExpansionFrameAtPoint:[self _localMouseLocation] ignoreTimerCheck:YES];
 }
 
 - (id)scrollViewContentView
