@@ -135,6 +135,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger labelingDepth; // > 0 while a typed command runs
 @property (nonatomic, weak, nullable) IRCChannel *labelingChannel; // its window; nil = the console
 @property (nonatomic, strong, nullable) IRCClientLabeledRequest *labeledReplyRequest; // while its reply is processed
+@property (nonatomic, assign) NSUInteger multilineMaxBytes; // draft/multiline limits from the CAP value
+@property (nonatomic, assign) NSUInteger multilineMaxLines; // 0: no line limit
+@property (nonatomic, assign) NSUInteger multilineBatchCount;
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
 @property (nonatomic, strong) TLOTimer *autojoinTimer;
 @property (nonatomic, strong) TLOTimer *autojoinNextJoinTimer;
@@ -356,6 +359,36 @@ NS_ASSUME_NONNULL_BEGIN
  printed in its window instead of "Hidden Responses" or taken as our own polling */
 - (BOOL)processingLabeledReplyToCommand:(NSString *)command;
 @property (readonly) BOOL processingLabeledReplyToListCommand; // NAMES, WHO, ISON, WATCH or MONITOR
+@end
+
+/* draft/multiline (IRCClient+Multiline.m) */
+@interface IRCClientMultilinePart : NSObject
+@property (readonly, copy) NSString *text;
+@property (readonly) BOOL concat; // joined to the part before without a line break
+
++ (instancetype)partWithText:(NSString *)text concat:(BOOL)concat;
+@end
+
+@interface IRCClient (MultilineInternal)
+/* Takes "max-bytes=4096,max-lines=24"; NO (don't request it) without max-bytes */
+- (BOOL)processMultilineCapabilityValue:(nullable NSString *)value;
+
+@property (readonly) BOOL multilineUsable;
+
+/* Typed or pasted lines (no commands) for one or more batches within the
+ server's limits; nil when they can't go as multi-line messages */
+- (nullable NSArray<NSArray<IRCClientMultilinePart *> *> *)multilineBatchesForLines:(NSArray<NSAttributedString *> *)lines target:(NSString *)target lineType:(TVCLogLineType)lineType;
+
+/* Packs parts into batches of at most maxBytes (text and line breaks) and maxLines (0: any) */
++ (NSArray<NSArray<IRCClientMultilinePart *> *> *)multilineBatchesOfParts:(NSArray<IRCClientMultilinePart *> *)parts maxBytes:(NSUInteger)maxBytes maxLines:(NSUInteger)maxLines;
+
+/* "line one\nline two" from the parts as a receiver puts them together */
++ (NSString *)multilineTextOfParts:(NSArray<IRCClientMultilinePart *> *)parts;
+
+- (void)sendMultilineBatch:(NSArray<IRCClientMultilinePart *> *)parts command:(NSString *)command target:(NSString *)target;
+
+/* A received draft/multiline batch as the one message it stands for */
+- (nullable IRCMessage *)messageCombiningMultilineBatch:(IRCMessageBatchMessage *)batch;
 @end
 
 @interface IRCClient (CapabilitiesInternal) <IRCCapabilityNegotiatorDelegate>

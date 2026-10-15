@@ -272,6 +272,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
 	if (aSelector == @selector(insertNewline:)) {
+		/* Shift-Return starts a new line in the message, Return sends it */
+		NSEventModifierFlags modifiers = ([NSApp currentEvent].modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask);
+
+		if (modifiers == NSEventModifierFlagShift) {
+			[aTextView insertNewlineIgnoringFieldEditor:nil];
+
+			return YES;
+		}
+
 		[self.mainWindow textEntered];
 
 		return YES;

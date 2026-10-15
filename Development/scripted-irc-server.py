@@ -2073,6 +2073,73 @@ async def scenario_labels(client):
 		seen = len(client.received)
 
 
+async def scenario_multiline(client):
+	"""draft/multiline (9.16): #one and #two with batch, labeled-response,
+	echo-message and draft/multiline (max-bytes=4096, max-lines=10) offered.
+	The client's multiline batches are echoed as batches; alice sends a
+	multi-line message with a joined piece. "go" in #one repeats alice's.
+	Stays connected."""
+	if not await client.register_with_capabilities("batch echo-message server-time draft/multiline=max-bytes=4096,max-lines=10"):
+		return
+
+	me = client.nickname
+
+	for channel in ("#one", "#two"):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{me} @alice bob")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	count = 0
+
+	async def alice_multiline():
+		nonlocal count
+		count += 1
+		await client.send(f"@msgid=alice{count} :alice!a@alice.test BATCH +a{count} draft/multiline #one")
+		await client.send(f"@batch=a{count} :alice!a@alice.test PRIVMSG #one :Here is a list:")
+		await client.send(f"@batch=a{count} :alice!a@alice.test PRIVMSG #one :- first item")
+		await client.send(f"@batch=a{count} :alice!a@alice.test PRIVMSG #one :- second item, which is long and ")
+		await client.send(f"@batch=a{count};draft/multiline-concat :alice!a@alice.test PRIVMSG #one :continues on the same line")
+		await client.send(f"@batch=a{count} :alice!a@alice.test PRIVMSG #one :")
+		await client.send(f"@batch=a{count} :alice!a@alice.test PRIVMSG #one :That's all, {me}.")
+		await client.send(f":alice!a@alice.test BATCH -a{count}")
+
+	await client.collect(1)
+	await alice_multiline()
+
+	open_batches = {}
+	seen = 0
+
+	while await client.collect(0.5):
+		for line in client.received[seen:]:
+			tags = ""
+			rest = line
+			if line.startswith("@"):
+				tags, _, rest = line.partition(" ")
+			parts = rest.split(" ")
+			command = parts[0].upper() if parts else ""
+			tagdict = dict((t.split("=", 1) + [""])[:2] for t in tags[1:].split(";")) if tags else {}
+
+			if command == "BATCH" and parts[1].startswith("+") and len(parts) > 3 and parts[2] == "draft/multiline":
+				open_batches[parts[1][1:]] = {"target": parts[3], "lines": [], "label": tagdict.get("label")}
+			elif command == "BATCH" and parts[1].startswith("-"):
+				batch = open_batches.pop(parts[1][1:], None)
+				if batch:
+					count += 1
+					label = f"label={batch['label']};" if batch["label"] else ""
+					await client.send(f"@{label}msgid=me{count} :{me}!user@client.textual.test BATCH +e{count} draft/multiline {batch['target']}")
+					for btags, bline in batch["lines"]:
+						await client.send(f"@batch=e{count}{btags} :{me}!user@client.textual.test {bline}")
+					await client.send(f":{SERVER} BATCH -e{count}")
+			elif "batch" in tagdict and tagdict["batch"] in open_batches:
+				concat = ";draft/multiline-concat" if "draft/multiline-concat" in tagdict else ""
+				open_batches[tagdict["batch"]]["lines"].append((concat, rest))
+			elif command == "PRIVMSG" and rest.endswith(" :go"):
+				await alice_multiline()
+			elif command in ("PRIVMSG", "NOTICE"):
+				await client.send(f":{me}!user@client.textual.test {rest}")
+		seen = len(client.received)
+
+
 async def scenario_keywords(client):
 	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
@@ -2260,6 +2327,7 @@ SCENARIOS = {
 	"sorting": scenario_sorting,
 	"events": scenario_events,
 	"labels": scenario_labels,
+	"multiline": scenario_multiline,
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
 	"mass": scenario_mass,
@@ -2306,7 +2374,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

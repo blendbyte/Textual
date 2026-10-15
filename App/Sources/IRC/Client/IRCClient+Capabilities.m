@@ -175,6 +175,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "batch",					ClientIRCv3SupportedCapabilityBatch,				ClientIRCv3SupportedCapabilityBatch },
 	{ "chghost",				ClientIRCv3SupportedCapabilityChangeHost,			ClientIRCv3SupportedCapabilityChangeHost },
 	{ "draft/chathistory",		ClientIRCv3SupportedCapabilityChatHistory,			ClientIRCv3SupportedCapabilityChatHistory },
+	{ "draft/multiline",		ClientIRCv3SupportedCapabilityMultiline,			ClientIRCv3SupportedCapabilityMultiline },
 	{ "draft/read-marker",		ClientIRCv3SupportedCapabilityReadMarker,			ClientIRCv3SupportedCapabilityReadMarker },
 	{ "echo-message",			ClientIRCv3SupportedCapabilityEchoMessage,			ClientIRCv3SupportedCapabilityEchoMessage },
 	{ "extended-join",			ClientIRCv3SupportedCapabilityExtendedJoin,			ClientIRCv3SupportedCapabilityExtendedJoin },
@@ -338,6 +339,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
 	appendValue(ClientIRCv3SupportedCapabilityChatHistory, @"draft/chathistory");
+	appendValue(ClientIRCv3SupportedCapabilityMultiline, @"draft/multiline");
 	appendValue(ClientIRCv3SupportedCapabilityReadMarker, @"draft/read-marker");
 	appendValue(ClientIRCv3SupportedCapabilityEchoMessage, @"echo-message");
 	appendValue(ClientIRCv3SupportedCapabilityExtendedJoin, @"extended-join");
@@ -427,6 +429,11 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	/* Already enabled (a repeated LS or NEW) */
 	if ([self isCapabilityEnabled:entry->enables]) {
 		return NO;
+	}
+
+	/* Multi-line messages only with a size limit to keep to (max-bytes is required) */
+	if (entry->request == ClientIRCv3SupportedCapabilityMultiline) {
+		return [self processMultilineCapabilityValue:value];
 	}
 
 	/* SASL only with a mechanism Textual can use */

@@ -2170,6 +2170,9 @@ NS_ASSUME_NONNULL_BEGIN
 			newBatchMessage.label = m.messageTags[@"label"];
 		}
 
+		/* A multi-line message takes its tags (msgid, time, account) from here */
+		newBatchMessage.openingMessage = m;
+
 		[self.batchMessages queueEntry:newBatchMessage];
 
 		/* A nested batch is processed in its place in the parent, when
@@ -2470,6 +2473,13 @@ NS_ASSUME_NONNULL_BEGIN
 		if ([queuedEntry isKindOfClass:[IRCMessage class]]) {
 			[self processIncomingMessage:queuedEntry];
 		} else if ([queuedEntry isKindOfClass:[IRCMessageBatchMessage class]]) {
+			/* A multi-line message in history (chathistory, playback) */
+			if ([((IRCMessageBatchMessage *)queuedEntry).batchType isEqualToString:@"draft/multiline"]) {
+				[self processMultilineBatchMessage:queuedEntry];
+
+				continue;
+			}
+
 			[self recursivelyProcessBatchMessage:queuedEntry depth:(recursionDepth + 1)];
 		}
 	}
@@ -2478,12 +2488,36 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.batchMessages dequeueEntry:batchMessage];
 }
 
+- (void)processMultilineBatchMessage:(IRCMessageBatchMessage *)batchMessage
+{
+	NSParameterAssert(batchMessage != nil);
+
+	batchMessage.batchIsOpen = NO;
+
+	IRCMessage *combinedMessage = [self messageCombiningMultilineBatch:batchMessage];
+
+	[self.batchMessages dequeueEntry:batchMessage];
+
+	if (combinedMessage) {
+		[self processIncomingMessage:combinedMessage];
+	}
+}
+
 /* Processes a closed top-level batch and resets the vendor states it set */
 - (void)finishBatchMessage:(IRCMessageBatchMessage *)batchMessage
 {
 	NSParameterAssert(batchMessage != nil);
 
 	NSString *batchType = batchMessage.batchType;
+
+	/* A multi-line message: its lines are one message */
+	if ([batchType isEqualToString:@"draft/multiline"]) {
+		[self processMultilineBatchMessage:batchMessage];
+
+		[self labeledBatchFinished:batchMessage];
+
+		return;
+	}
 
 	/* Process queued entries for this batch message. */
 	/* The method used for processing queued entries will

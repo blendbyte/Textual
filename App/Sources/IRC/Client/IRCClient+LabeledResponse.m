@@ -154,15 +154,20 @@ NS_ASSUME_NONNULL_BEGIN
 		return line;
 	}
 
-	/* A /raw line with a label of its own keeps it */
+	/* A /raw line with a label of its own keeps it; the lines of a batch we
+	 send carry no other tags (draft/multiline), only its opening is labeled */
 	if ([line hasPrefix:@"@"]) {
 		NSString *tags = [[line substringFromIndex:1] componentsSeparatedByString:@" "].firstObject;
 
 		for (NSString *tag in [tags componentsSeparatedByString:@";"]) {
-			if ([tag hasPrefix:@"label="]) {
+			if ([tag hasPrefix:@"label="] || [tag hasPrefix:@"batch="]) {
 				return line;
 			}
 		}
+	}
+
+	if ([command isEqualToString:@"BATCH"] && [line rangeOfString:@"BATCH -"].location != NSNotFound) {
+		return line;
 	}
 
 	[self _removeExpiredLabeledRequests];

@@ -1019,8 +1019,12 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 
 	// --- //
 
-	/* Escape spaces that are prefix and suffix characters */
+	/* Escape spaces that are prefix and suffix characters; a multi-line
+	 message's line breaks (draft/multiline) stay breaks, which the template's
+	 render would otherwise remove */
 	if (escapeBody) {
+		html = [html stringByReplacingOccurrencesOfString:@"\n" withString:@"<br>"];
+
 		if ([html hasPrefix:@" "]) {
 			html = [html stringByReplacingCharactersInRange:NSMakeRange(0, 1)
 												 withString:@"&nbsp;"];

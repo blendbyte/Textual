@@ -37,6 +37,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class IRCMessage;
+
 /* Each IRCClient is assigned a single instance of
  IRCMessageBatchMessageContainer which acts as a container for
  all BATCH command events that the client may receive. */
@@ -60,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSArray *queuedEntries;
 @property (nonatomic, weak) IRCMessageBatchMessage *parentBatchMessage;
 @property (nonatomic, copy, nullable) NSString *label; // labeled-response: the label of the command it answers
+@property (nonatomic, strong, nullable) IRCMessage *openingMessage; // the BATCH line (draft/multiline: its tags)
 
 - (void)queueEntry:(id)entry;
 - (void)dequeueEntry:(id)entry;

@@ -216,6 +216,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSArray *lines = ((NSAttributedString *)stringIn).splitIntoLines;
 
+	/* Several lines, or one too long for a line, as one message where the
+	 server takes them (draft/multiline) */
+	if ([self sendMultilineText:lines asCommand:command destination:destination]) {
+		return;
+	}
+
 	/* Warn if the split value is above 4 lines or if the total string 
 	 length exceeds TXMaximumIRCBodyLength times 4. */
 	if (lines.count > 4 || (stringIn.length > (TXMaximumIRCBodyLength * 4))) {
@@ -262,6 +268,90 @@ NS_ASSUME_NONNULL_BEGIN
 			[self sendText:line asCommand:command toChannel:channel];
 		}
 	}
+}
+
+/* NO when the lines can't go as a multi-line message: no draft/multiline, an
+ action, the console, a command among them, or one line that fits */
+- (BOOL)sendMultilineText:(NSArray<NSAttributedString *> *)lines asCommand:(IRCRemoteCommand)command destination:(IRCTreeItem *)destination
+{
+	NSParameterAssert(lines != nil);
+	NSParameterAssert(destination != nil);
+
+	if (self.multilineUsable == NO || destination.isClient || command == IRCRemoteCommandPrivmsgAction) {
+		return NO;
+	}
+
+	IRCChannel *channel = (IRCChannel *)destination;
+
+	if (channel.isUtility) {
+		return NO;
+	}
+
+	/* "//text" sends "/text" */
+	NSMutableArray<NSAttributedString *> *textLines = [NSMutableArray arrayWithCapacity:lines.count];
+
+	for (NSAttributedString *line in lines) {
+		NSString *lineString = line.string;
+
+		if ([lineString hasPrefix:@"//"]) {
+			[textLines addObject:[line attributedSubstringFromIndex:1]];
+		} else if ([lineString hasPrefix:@"/"] && lineString.length > 1) {
+			return NO;
+		} else {
+			[textLines addObject:line];
+		}
+	}
+
+	BOOL isNotice = (command == IRCRemoteCommandNotice);
+
+	NSString *commandToSend = ((isNotice) ? @"NOTICE" : @"PRIVMSG");
+
+	TVCLogLineType lineType = ((isNotice) ? TVCLogLineTypeNotice : TVCLogLineTypePrivateMessage);
+
+	NSArray *batches = [self multilineBatchesForLines:textLines target:channel.name lineType:lineType];
+
+	if (batches == nil) {
+		return NO;
+	}
+
+	/* More than the server takes in one message: several, after the usual warning */
+	if (batches.count > 1) {
+		BOOL continueInput = [TDCAlert modalAlertWithMessage:TXTLS(@"IRC[lql-8i]")
+													   title:TXTLS(@"IRC[u4c-7i]")
+											   defaultButton:TXTLS(@"Prompts[mvh-ms]")
+											 alternateButton:TXTLS(@"Prompts[99q-gg]")
+											  suppressionKey:@"input_text_possible_flood_warning"
+											 suppressionText:nil];
+
+		if (continueInput == NO) {
+			return YES;
+		}
+	}
+
+	BOOL printLocally = ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO);
+
+	for (NSArray<IRCClientMultilinePart *> *batch in batches) {
+		if (printLocally) {
+			[self print:[self.class multilineTextOfParts:batch]
+					 by:self.userNickname
+			  inChannel:channel
+				 asType:lineType
+				command:commandToSend
+			 receivedAt:[NSDate date]];
+		}
+
+		[self sendMultilineBatch:batch command:commandToSend target:channel.name];
+	}
+
+	NSMutableArray *lineStrings = [NSMutableArray arrayWithCapacity:textLines.count];
+
+	for (NSAttributedString *line in textLines) {
+		[lineStrings addObject:line.string];
+	}
+
+	[self processBundlesUserMessage:[lineStrings componentsJoinedByString:@"\n"] command:commandToSend inChannel:channel];
+
+	return YES;
 }
 
 - (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel withEncryption:(BOOL)encryptText
