@@ -45,6 +45,7 @@
 #import "IRCNetworkList.h"
 #import "IRCSASLECDSAPrivate.h"
 #import "IRCServer.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 #import "TLOKeychainPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
@@ -74,6 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL populatingPrimaryServer;
 @property (nonatomic, copy, nullable) NSString *lastServerAddressValue;
 @property (nonatomic, copy, nullable) IRCServer *previousPrimaryServer;
+@property (nonatomic, strong, nullable) NSGridRow *strictTransportSecurityRow;
+@property (nonatomic, strong, nullable) NSTextField *strictTransportSecurityField;
 
 - (IBAction)useSSLCheckChanged:(nullable id)sender;
 @end
@@ -133,7 +136,113 @@ NS_ASSUME_NONNULL_BEGIN
 
 		return nil;
 	};
+
+	[self addStrictTransportSecurityRow];
 }
+
+#pragma mark -
+#pragma mark Strict Transport Security
+
+/* 10.7 (from 9.4): under the port, whether a server told Textual to connect
+ only securely and until when, with Forget (what /sts clear does) */
+- (void)addStrictTransportSecurityRow
+{
+	NSView *portRowView = self.prefersSecuredConnectionCheck;
+
+	while (portRowView.superview && [portRowView.superview isKindOfClass:[NSGridView class]] == NO) {
+		portRowView = portRowView.superview;
+	}
+
+	NSGridView *grid = (NSGridView *)portRowView.superview;
+
+	if (grid == nil) {
+		return;
+	}
+
+	NSInteger portRow = [grid indexOfRow:[grid cellForView:portRowView].row];
+
+	NSTextField *field = [NSTextField wrappingLabelWithString:@""];
+
+	field.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	field.textColor = [NSColor secondaryLabelColor];
+
+	[field.widthAnchor constraintLessThanOrEqualToConstant:300].active = YES;
+
+	NSButton *forgetButton = [NSButton buttonWithTitle:TXTLS(@"TDCServerPropertiesSheet[sts-b1]") target:self action:@selector(forgetStrictTransportSecurity:)];
+
+	forgetButton.controlSize = NSControlSizeSmall;
+	forgetButton.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+
+	NSStackView *stack = [NSStackView stackViewWithViews:@[field, forgetButton]];
+
+	stack.alignment = NSLayoutAttributeFirstBaseline;
+	stack.spacing = 8;
+
+	NSGridRow *row = [grid insertRowAtIndex:(portRow + 1) withViews:@[[NSGridCell emptyContentView], stack]];
+
+	[row cellAtIndex:1].xPlacement = NSGridCellPlacementLeading;
+
+	row.hidden = YES;
+
+	self.strictTransportSecurityRow = row;
+	self.strictTransportSecurityField = field;
+}
+
+- (NSArray<NSString *> *)_serverHosts
+{
+	NSMutableOrderedSet<NSString *> *hosts = [NSMutableOrderedSet orderedSet];
+
+	for (IRCServer *server in self.serverList) {
+		NSString *host = server.serverAddress.lowercaseString;
+
+		if (host.length > 0) {
+			[hosts addObject:host];
+		}
+	}
+
+	return hosts.array;
+}
+
+- (void)updateStrictTransportSecurityRow
+{
+	IRCStrictTransportSecurity *policies = [IRCStrictTransportSecurity sharedPolicies];
+
+	NSDate *expiry = nil;
+	uint16_t port = 0;
+
+	for (NSString *host in [self _serverHosts]) {
+		expiry = [policies expiryForHost:host];
+
+		if (expiry) {
+			port = [policies portForHost:host];
+
+			break;
+		}
+	}
+
+	self.strictTransportSecurityRow.hidden = (expiry == nil);
+
+	if (expiry == nil) {
+		return;
+	}
+
+	NSString *expiryString = [NSDateFormatter localizedStringFromDate:expiry dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterNoStyle];
+
+	self.strictTransportSecurityField.stringValue = TXTLS(@"TDCServerPropertiesSheet[sts-l1]", port, expiryString);
+}
+
+- (void)forgetStrictTransportSecurity:(nullable id)sender
+{
+	IRCStrictTransportSecurity *policies = [IRCStrictTransportSecurity sharedPolicies];
+
+	for (NSString *host in [self _serverHosts]) {
+		[policies removePolicyForHost:host];
+	}
+
+	[self updateStrictTransportSecurityRow];
+}
+
+#pragma mark -
 
 - (void)loadFromConfig:(IRCClientConfig *)config
 {
@@ -217,6 +326,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.serverPasswordTextField.stringValue = (server.serverPassword ?: @"");
 
 	self.populatingPrimaryServer = NO;
+
+	[self updateStrictTransportSecurityRow];
 }
 
 - (void)restorePreviousValuesForPrimaryServer
@@ -418,6 +529,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self rebuildPrimaryServerIfNeeded];
+
+	[self updateStrictTransportSecurityRow];
 }
 
 #pragma mark -

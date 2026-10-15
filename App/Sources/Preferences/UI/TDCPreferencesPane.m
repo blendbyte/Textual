@@ -46,6 +46,8 @@
 #import "TLOLocalization.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "IRCAliasPrivate.h"
+#import "IRCClientPrivate.h"
+#import "IRCWorld.h"
 #import "IRCCommandIndex.h"
 #import "TPCSecurityScopedFolderPrivate.h"
 #import "TDCPreferencesPanePrivate.h"
@@ -581,6 +583,19 @@ NS_ASSUME_NONNULL_BEGIN
 	[rows addObject:markdownButton];
 	[rows addObject:markdownNote];
 
+	/* Typing notifications (10.7, from 9.10) */
+	NSButton *typingButton = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[typ-c1]") target:self action:@selector(onChangedSendTypingNotifications:)];
+
+	typingButton.state = [TPCPreferences sendTypingNotifications];
+
+	NSTextField *typingNote = [NSTextField wrappingLabelWithString:TXTLS(@"TDCPreferencesController[typ-n1]")];
+
+	typingNote.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	typingNote.textColor = [NSColor secondaryLabelColor];
+
+	[rows addObject:typingButton];
+	[rows addObject:typingNote];
+
 	NSStackView *column = [NSStackView stackViewWithViews:rows];
 
 	column.orientation = NSUserInterfaceLayoutOrientationVertical;
@@ -595,6 +610,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[note.widthAnchor constraintLessThanOrEqualToConstant:520].active = YES;
 	[markdownNote.widthAnchor constraintLessThanOrEqualToConstant:520].active = YES;
+	[typingNote.widthAnchor constraintLessThanOrEqualToConstant:520].active = YES;
+
+	[column setCustomSpacing:18 afterView:markdownNote];
 	[separator.widthAnchor constraintEqualToConstant:520].active = YES;
 
 	NSView *itemView = [NSView new];
@@ -613,6 +631,23 @@ NS_ASSUME_NONNULL_BEGIN
 	item.view = itemView;
 
 	return item;
+}
+
+/* Turned off while typing somewhere: "done" goes out first, instead of the
+ others seeing it until their timeout */
+- (void)onChangedSendTypingNotifications:(NSButton *)sender
+{
+	BOOL send = (sender.state == NSControlStateValueOn);
+
+	if (send == NO) {
+		for (IRCClient *client in worldController().clientList) {
+			for (IRCChannel *channel in client.channelList) {
+				[client sendTypingDoneToChannel:channel];
+			}
+		}
+	}
+
+	[TPCPreferences setSendTypingNotifications:send];
 }
 
 - (void)onChangedInputMarkdown:(NSButton *)sender

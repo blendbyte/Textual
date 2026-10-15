@@ -125,3 +125,5 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "hkw-m2" = "from %@";
 "msh-c1" = "Not when a message names";
 "msh-c2" = "or more people";
+"typ-c1" = "Let others see when I’m typing";
+"typ-n1" = "In channels and private messages, on servers that support it. Typing a command doesn’t count.";

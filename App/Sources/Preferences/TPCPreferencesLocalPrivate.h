@@ -167,6 +167,8 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)cleanUpHighlightKeywords;
 
++ (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
+
 /* The keyword lists with their limits and sounds (E3, D-E3.8) */
 @property (class, readonly, copy, nullable) NSArray<IRCHighlightKeyword *> *highlightMatchKeywordEntries;
 @property (class, readonly, copy, nullable) NSArray<IRCHighlightKeyword *> *highlightExcludeKeywordEntries;

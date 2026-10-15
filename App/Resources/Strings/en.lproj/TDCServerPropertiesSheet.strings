@@ -107,3 +107,5 @@ Certificates must meet the following criteria:
 /* Cloud changes */
 "bzh-il" = "This connection's configuration has changed. Do you want to reload the Server Properties dialog?";
 "oz4-kb" = "You will loose unsaved changes if you click “Yes”";
+"sts-l1" = "The server asked for secure connections only (port %1$hu) until %2$@.";
+"sts-b1" = "Forget";

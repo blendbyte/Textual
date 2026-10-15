@@ -700,6 +700,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"Typing Notifications -> Send"];
 }
 
++ (void)setSendTypingNotifications:(BOOL)sendTypingNotifications
+{
+	[RZUserDefaults() setBool:sendTypingNotifications forKey:@"Typing Notifications -> Send"];
+}
+
 + (BOOL)inputHistoryIsChannelSpecific
 {
 	return [RZUserDefaults() boolForKey:@"SaveInputHistoryPerSelection"];
