@@ -96,6 +96,86 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil(context.exception);
 }
 
+/* scroller/state.js and scroller/automatic.js over a stand-in page: a view 500
+ high, timers that run when runTimers() is called, user() for a scroll by the
+ user and lineArrives() for a line added at the bottom */
+- (JSContext *)automaticScrollerContext
+{
+	JSContext *context = [JSContext new];
+
+	[context evaluateScript:@"function HTMLDocument() {} function Element() {} function Event(name) { this.name = name; }"
+							"var timers = []; function setTimeout(f) { timers.push(f); return timers.length; } function clearTimeout(id) { timers[id - 1] = null; }"
+							"function runTimers() { var pending = timers; timers = []; pending.forEach(function(f) { if (f) { f(); } }); }"
+							"var view = new Element(); view.clientHeight = 500; view.scrollHeight = 2000; view._top = 1500;"
+							"Object.defineProperty(view, 'scrollTop', { get: function() { return this._top; }, set: function(v) { this._top = Math.max(0, Math.min(v, this.scrollHeight - this.clientHeight)); } });"
+							"var document = new HTMLDocument(); document.hidden = false; document.addEventListener = function() {}; document.dispatchEvent = function() {};"
+							"var window = { addEventListener: function() {} };"];
+
+	for (NSString *name in @[@"state", @"automatic"]) {
+		NSString *path = [[TPCPathInfo applicationResources] stringByAppendingPathComponent:[NSString stringWithFormat:@"JavaScript/API/private/scroller/%@.js", name]];
+
+		NSString *source = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
+
+		XCTAssertNotNil(source);
+
+		/* automatic.js scrolls on load, so the view is there first */
+		if ([name isEqualToString:@"automatic"]) {
+			[context evaluateScript:@"_TextualScroller._scrolledElement = view;"];
+		}
+
+		[context evaluateScript:(source ?: @"")];
+	}
+
+	[context evaluateScript:@"function scrolled() { _TextualScroller._documentScrolledCallback(); }"
+							"function user(top) { view.scrollTop = top; scrolled(); }"
+							"function lineArrives() { document.prepareForMutation(); view.scrollHeight += 100; TextualScroller.performScroll(); }"
+							"function atBottom() { return (view.scrollTop === view.scrollHeight - view.clientHeight); }"
+							"scrolled();"];
+
+	XCTAssertNil(context.exception);
+
+	return context;
+}
+
+- (BOOL)evaluate:(NSString *)script inContext:(JSContext *)context
+{
+	JSValue *value = [context evaluateScript:script];
+
+	XCTAssertNil(context.exception);
+
+	return value.toBool;
+}
+
+/* At the bottom, new lines are followed */
+- (void)testFollowsNewLinesAtTheBottom
+{
+	JSContext *context = [self automaticScrollerContext];
+
+	XCTAssertTrue([self evaluate:@"lineArrives(); runTimers(); scrolled(); lineArrives(); runTimers(); atBottom()" inContext:context]);
+}
+
+/* Scrolling up while lines and previews keep arriving keeps the view where the
+ user put it: a scroll planned just before is dropped */
+- (void)testScrollingUpCancelsAPlannedScroll
+{
+	JSContext *context = [self automaticScrollerContext];
+
+	XCTAssertTrue([self evaluate:@"lineArrives(); user(800); runTimers(); view.scrollTop === 800" inContext:context]);
+
+	XCTAssertTrue([self evaluate:@"lineArrives(); runTimers(); view.scrollTop === 800" inContext:context]);
+}
+
+/* A plan whose change never came doesn't pull the view down later; back at the
+ bottom, following resumes */
+- (void)testStalePlanDoesNotPullTheViewDown
+{
+	JSContext *context = [self automaticScrollerContext];
+
+	XCTAssertTrue([self evaluate:@"document.prepareForMutation(); user(700); lineArrives(); runTimers(); view.scrollTop === 700" inContext:context]);
+
+	XCTAssertTrue([self evaluate:@"user(view.scrollHeight - view.clientHeight); lineArrives(); runTimers(); atBottom()" inContext:context]);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

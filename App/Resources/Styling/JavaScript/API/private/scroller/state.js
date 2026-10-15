@@ -72,6 +72,10 @@ TextualScroller.scrollPositionPreviousValue = 0; /* PUBLIC */
 TextualScroller.scrollHeightCurrentValue = 0; /* PUBLIC */
 TextualScroller.scrollHeightPreviousValue = 0; /* PUBLIC */
 
+/* How often the user scrolled away from the bottom: an automatic scroll
+planned before one of these is dropped (automatic.js) */
+_TextualScroller._userScrolledAwayCount = 0; /* PRIVATE */
+
 /* Height of the visible area when the last scroll event came */
 _TextualScroller._clientHeightPreviousValue = undefined; /* PRIVATE */
 
@@ -172,6 +176,10 @@ _TextualScroller._documentScrolledCallback = function() /* PRIVATE */
 	var userScrolled = ((scrollHeightCurrent - scrollPositionCurrent) > _TextualScroller._userScrolledMinimum);
 
 	TextualScroller.userScrolled = userScrolled;
+
+	if (userScrolled && scrolledUpwards) {
+		_TextualScroller._userScrolledAwayCount += 1;
+	}
 
 	/* Post custom scroll event */
 	if (scrolledUpwards) {
