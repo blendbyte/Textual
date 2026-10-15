@@ -2280,13 +2280,16 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"reloadingTheme" : @(self.pendingThemeReload),
 			  @"textSizeMultiplier" : @(textSizeMultiplier),
 			  @"scrollbackLimit" : @(scrollbackLimit),
-			  @"collapseGeneralEvents" : @((BOOL)([TPCPreferences generalEventDisplay] == TXGeneralEventDisplayCollapse)),
+			  @"collapseGeneralEvents" : @([TPCPreferences collapseEvents]),
+			  @"eventDisplay" : [TPCPreferences eventDisplayByLineType],
 			  /* "%@" stays for the count, which the view fills in */
 			  @"generalEventStrings" : @{
 				  @"joined" : TXTLS(@"TVCMainWindow[e7g-j1]", @"%@"),
 				  @"left" : TXTLS(@"TVCMainWindow[e7g-p1]", @"%@"),
 				  @"quit" : TXTLS(@"TVCMainWindow[e7g-q1]", @"%@"),
 				  @"nickname" : TXTLS(@"TVCMainWindow[e7g-n1]", @"%@"),
+				  @"away" : TXTLS(@"TVCMainWindow[e7g-w1]", @"%@"),
+				  @"back" : TXTLS(@"TVCMainWindow[e7g-b1]", @"%@"),
 				  @"nicknameChange" : TXTLS(@"TVCMainWindow[e7g-n2]", @"%1$@", @"%2$@"),
 				  @"listPair" : TXTLS(@"TVCMainWindow[e7g-a1]", @"%1$@", @"%2$@"),
 				  @"listMore" : TXTLS(@"TVCMainWindow[e7g-a2]", @"%1$@", @"%2$@"),

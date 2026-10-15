@@ -294,6 +294,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		_dv(TVCLogLineTypeQuit, @"quit")
 		_dv(TVCLogLineTypeTopic, @"topic")
 		_dv(TVCLogLineTypeWebsite, @"website")
+		_dv(TVCLogLineTypeAway, @"away")
+		_dv(TVCLogLineTypeBack, @"back")
 
 		default:
 		{

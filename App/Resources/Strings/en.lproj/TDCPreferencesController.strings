@@ -130,3 +130,18 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 
 "srt-c1" = "Keep channels and private messages sorted by name";
 "srt-t1" = "New channels and private messages go in their place in the server list, the order of Window → Sort Channel List. Dragging them to another place is off while this is on.";
+
+"evt-t1" = "Events";
+"evt-k0" = "Joins:";
+"evt-k1" = "Parts:";
+"evt-k2" = "Quits:";
+"evt-k3" = "Nickname changes:";
+"evt-k4" = "Away and back:";
+"evt-k5" = "Kicks:";
+"evt-k6" = "Mode changes:";
+"evt-k7" = "Topic changes:";
+"evt-d0" = "Show";
+"evt-d1" = "Dim";
+"evt-d2" = "Hide";
+"evt-c1" = "Collapse joins, parts, quits, nickname and away changes in a row into one line";
+"evt-n1" = "Hidden events are kept, so showing them again brings back the earlier ones too. Away and back appear on servers that report them.";

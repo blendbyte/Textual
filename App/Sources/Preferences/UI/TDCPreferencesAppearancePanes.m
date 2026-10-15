@@ -689,10 +689,115 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self updateThemeSelection];
 
+	[self addEventsTab];
+
 	[RZNotificationCenter() addObserver:self
 							   selector:@selector(themeListDidChange:)
 								   name:TPCThemeControllerThemeListDidChangeNotification
 								 object:nil];
+}
+
+#pragma mark -
+#pragma mark Events
+
+/* Each kind of event shown, dimmed or hidden, and collapsing (E1); second tab */
+- (void)addEventsTab
+{
+	NSTabView *tabView = nil;
+
+	for (NSView *subview in self.view.subviews) {
+		if ([subview isKindOfClass:[NSTabView class]]) {
+			tabView = (NSTabView *)subview;
+
+			break;
+		}
+	}
+
+	if (tabView == nil) {
+		return;
+	}
+
+	NSGridView *grid = [NSGridView gridViewWithNumberOfColumns:2 rows:0];
+
+	grid.rowSpacing = 4;
+	grid.columnSpacing = 8;
+	grid.rowAlignment = NSGridRowAlignmentFirstBaseline;
+
+	for (NSUInteger kind = 0; kind < TPCEventKindCount; kind++) {
+		NSTextField *label = [NSTextField labelWithString:TXTLS([NSString stringWithFormat:@"TDCPreferencesController[evt-k%lu]", kind])];
+
+		NSPopUpButton *popUp = [NSPopUpButton new];
+
+		/* Item tags are TPCEventDisplay values, the button's tag the kind */
+		for (NSUInteger display = TPCEventDisplayShow; display <= TPCEventDisplayHide; display++) {
+			[popUp addItemWithTitle:TXTLS([NSString stringWithFormat:@"TDCPreferencesController[evt-d%lu]", display])];
+
+			popUp.lastItem.tag = display;
+		}
+
+		popUp.tag = kind;
+
+		[popUp selectItemWithTag:[TPCPreferences eventDisplayForKind:kind]];
+
+		popUp.target = self;
+		popUp.action = @selector(onChangedEventDisplay:);
+
+		[popUp setAccessibilityTitleUIElement:label];
+
+		[grid addRowWithViews:@[label, popUp]];
+	}
+
+	[grid columnAtIndex:0].xPlacement = NSGridCellPlacementTrailing;
+
+	NSButton *collapseCheck = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[evt-c1]") target:self action:@selector(onChangedCollapseEvents:)];
+
+	collapseCheck.state = (([TPCPreferences collapseEvents]) ? NSControlStateValueOn : NSControlStateValueOff);
+
+	NSTextField *note = [NSTextField wrappingLabelWithString:TXTLS(@"TDCPreferencesController[evt-n1]")];
+
+	note.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	note.textColor = [NSColor secondaryLabelColor];
+
+	NSStackView *column = [NSStackView stackViewWithViews:@[grid, collapseCheck, note]];
+
+	column.orientation = NSUserInterfaceLayoutOrientationVertical;
+	column.alignment = NSLayoutAttributeLeading;
+	column.spacing = 8;
+	column.translatesAutoresizingMaskIntoConstraints = NO;
+
+	[column setCustomSpacing:12 afterView:grid];
+
+	[note.widthAnchor constraintLessThanOrEqualToConstant:440].active = YES;
+
+	NSView *itemView = [NSView new];
+
+	[itemView addSubview:column];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[column.centerXAnchor constraintEqualToAnchor:itemView.centerXAnchor],
+		[column.topAnchor constraintEqualToAnchor:itemView.topAnchor constant:16]
+	]];
+
+	NSTabViewItem *item = [NSTabViewItem new];
+
+	item.label = TXTLS(@"TDCPreferencesController[evt-t1]");
+	item.view = itemView;
+
+	[tabView insertTabViewItem:item atIndex:1];
+}
+
+- (void)onChangedEventDisplay:(NSPopUpButton *)sender
+{
+	[TPCPreferences setEventDisplay:sender.selectedTag forKind:sender.tag];
+
+	[self onChangedTheme:nil];
+}
+
+- (void)onChangedCollapseEvents:(NSButton *)sender
+{
+	[TPCPreferences setCollapseEvents:(sender.state == NSControlStateValueOn)];
+
+	[self onChangedTheme:nil];
 }
 
 - (void)paneWillClose

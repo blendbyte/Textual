@@ -275,6 +275,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveWallops:(IRCMessage *)m;
 - (void)receiveCertInfo:(IRCMessage *)m;
 - (void)receiveChangeHost:(IRCMessage *)m;
+- (void)printAwayChangeOfUser:(IRCUser *)user toAway:(BOOL)away message:(IRCMessage *)m;
 - (void)processStrictTransportSecurityValue:(nullable NSString *)value;
 
 /* Typing notifications (IRCClient+Typing.m) */

@@ -70,8 +70,24 @@
 	<true/>
 	<key>DisplayEventInLogView -&gt; Inline Media</key>
 	<true/>
-	<key>DisplayEventInLogView -&gt; Join, Part, Quit Display</key>
-	<integer>1</integer>
+	<key>Event Display -&gt; Collapse</key>
+	<true/>
+	<key>Event Display -&gt; Joins</key>
+	<integer>0</integer>
+	<key>Event Display -&gt; Parts</key>
+	<integer>0</integer>
+	<key>Event Display -&gt; Quits</key>
+	<integer>0</integer>
+	<key>Event Display -&gt; Nickname Changes</key>
+	<integer>0</integer>
+	<key>Event Display -&gt; Away Changes</key>
+	<integer>2</integer>
+	<key>Event Display -&gt; Kicks</key>
+	<integer>0</integer>
+	<key>Event Display -&gt; Mode Changes</key>
+	<integer>0</integer>
+	<key>Event Display -&gt; Topic Changes</key>
+	<integer>0</integer>
 	<key>DisplayEventInLogView -&gt; Message Grouping Style</key>
 	<integer>0</integer>
 	<key>DisplayPublicMessageCountInDockBadge</key>

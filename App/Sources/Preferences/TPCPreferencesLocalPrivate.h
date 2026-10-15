@@ -138,6 +138,38 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setMessageGroupingStyle:(TVCLogLineGroupingStyle)messageGroupingStyle;
 
+/* Event messages, per kind (Preferences → Style → Events): shown, dimmed or
+ hidden in the chat view (hidden ones are still printed and stored, so showing
+ them again brings the earlier ones back), and runs of joins, parts, quits,
+ nickname and away changes collapsed into one line */
+typedef NS_ENUM(NSUInteger, TPCEventKind) {
+	TPCEventKindJoins = 0,
+	TPCEventKindParts,
+	TPCEventKindQuits,
+	TPCEventKindNicknameChanges,
+	TPCEventKindAwayChanges,
+	TPCEventKindKicks,
+	TPCEventKindModeChanges,
+	TPCEventKindTopicChanges,
+	TPCEventKindCount
+};
+
+typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
+	TPCEventDisplayShow = 0,
+	TPCEventDisplayDim,
+	TPCEventDisplayHide
+};
+
++ (TPCEventDisplay)eventDisplayForKind:(TPCEventKind)kind;
++ (void)setEventDisplay:(TPCEventDisplay)display forKind:(TPCEventKind)kind;
+
+@property (class, readonly) BOOL collapseEvents;
++ (void)setCollapseEvents:(BOOL)collapseEvents;
+
+/* For the chat view: line type ("join", "away", …) → "show", "dim" or "hide" */
+@property (class, readonly, copy) NSDictionary<NSString *, NSString *> *eventDisplayByLineType;
+
+/* Show / Collapse / Hide as the one setting before (10.13), onto the kinds */
 + (void)setGeneralEventDisplay:(TXGeneralEventDisplay)generalEventDisplay;
 
 + (void)migrateGeneralEventPreference;

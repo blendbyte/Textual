@@ -1954,6 +1954,54 @@ async def scenario_sorting(client):
 			await client.send(coloured(channel, round))
 
 
+async def scenario_events(client):
+	"""Event messages per kind (E1): #events with alice, bob, carol, dave and erin,
+	away-notify on. Saying "go" anywhere sends one of each kind: joins, a part, a
+	quit, a nickname change, two people away and back, a mode
+	change, a topic change and a kick, then a message; "go" again repeats it
+	(new joiners each time). Stays connected."""
+	if not await client.register_with_capabilities("server-time away-notify"):
+		return
+
+	me = client.nickname
+	channel = "#events"
+
+	await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+	await client.send(f":{SERVER} 353 {me} = {channel} :{me} @alice bob carol dave erin")
+	await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	round = 0
+	seen = 0
+
+	while await client.collect(1):
+		said = [line for line in client.received[seen:] if line.upper().startswith("PRIVMSG ") and line.endswith(" :go")]
+		seen = len(client.received)
+
+		if not said:
+			continue
+
+		round += 1
+
+		for line in [
+			f":frank{round}!f@frank.test JOIN {channel}",
+			f":gina{round}!g@gina.test JOIN {channel}",
+			f":carol!c@carol.test PART {channel} :bye",
+			f":dave!d@dave.test QUIT :gone",
+			f":erin!e@erin.test NICK :erin{round}",
+			f":alice!a@alice.test AWAY :lunch",
+			f":bob!b@bob.test AWAY :brb",
+			f":alice!a@alice.test AWAY",
+			f":alice!a@alice.test MODE {channel} +v frank{round}",
+			f":alice!a@alice.test TOPIC {channel} :Topic number {round}",
+			f":alice!a@alice.test KICK {channel} gina{round} :out",
+			f":alice!a@alice.test PRIVMSG {channel} :a real message, round {round}",
+			f":bob!b@bob.test AWAY",
+			f":carol!c@carol.test JOIN {channel}",
+			f":dave!d@dave.test JOIN {channel}",
+		]:
+			await client.send(line)
+
+
 async def scenario_keywords(client):
 	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
@@ -2139,6 +2187,7 @@ SCENARIOS = {
 	"previews-short": scenario_previews_short,
 	"drafts": scenario_drafts,
 	"sorting": scenario_sorting,
+	"events": scenario_events,
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
 	"mass": scenario_mass,
@@ -2185,7 +2234,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

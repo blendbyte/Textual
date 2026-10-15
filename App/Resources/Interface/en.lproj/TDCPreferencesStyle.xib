@@ -251,69 +251,16 @@
                                                     <binding destination="G2Q-fc-ddg" name="value" keyPath="values.DisplayEventInLogView -&gt; Date Changes" id="hWe-E5-KIU"/>
                                                 </connections>
                                             </button>
-                                            <stackView distribution="fill" orientation="horizontal" alignment="firstBaseline" horizontalStackHuggingPriority="250" verticalStackHuggingPriority="250" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7LB-4e-2Po">
-                                                <rect key="frame" x="0.0" y="-4" width="251" height="25"/>
-                                                <subviews>
-                                                    <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Gv8-lB-3jQ">
-                                                        <rect key="frame" x="-2" y="5" width="110" height="16"/>
-                                                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Join, part, quit:" id="Gv8-lC-3jQ">
-                                                            <font key="font" metaFont="system"/>
-                                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                        </textFieldCell>
-                                                    </textField>
-                                                    <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Gv8-pU-3jQ">
-                                                        <rect key="frame" x="111" y="-4" width="110" height="25"/>
-                                                        <popUpButtonCell key="cell" type="push" title="Collapse" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Gv8-mI-c02" id="Gv8-pC-3jQ">
-                                                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                            <font key="font" metaFont="system"/>
-                                                            <menu key="menu" id="Gv8-mN-3jQ">
-                                                                <items>
-                                                                    <menuItem title="Show" id="Gv8-mI-c01"/>
-                                                                    <menuItem title="Collapse" state="on" tag="1" id="Gv8-mI-c02"/>
-                                                                    <menuItem title="Hide" tag="2" id="Gv8-mI-c03"/>
-                                                                </items>
-                                                            </menu>
-                                                        </popUpButtonCell>
-                                                        <connections>
-                                                            <accessibilityConnection property="title" destination="Gv8-lB-3jQ" id="Gv8-aX-3jQ"/>
-                                                            <action selector="onChangedTheme:" target="-2" id="Gv8-aC-3jQ"/>
-                                                            <binding destination="G2Q-fc-ddg" name="selectedTag" keyPath="values.DisplayEventInLogView -&gt; Join, Part, Quit Display" id="Jwb-Rk-nuD"/>
-                                                        </connections>
-                                                    </popUpButton>
-                                                </subviews>
-                                                <visibilityPriorities>
-                                                    <integer value="1000"/>
-                                                    <integer value="1000"/>
-                                                </visibilityPriorities>
-                                                <customSpacing>
-                                                    <real value="3.4028234663852886e+38"/>
-                                                    <real value="3.4028234663852886e+38"/>
-                                                </customSpacing>
-                                            </stackView>
                                         </subviews>
                                         <visibilityPriorities>
-                                            <integer value="1000"/>
                                             <integer value="1000"/>
                                             <integer value="1000"/>
                                         </visibilityPriorities>
                                         <customSpacing>
                                             <real value="3.4028234663852886e+38"/>
                                             <real value="3.4028234663852886e+38"/>
-                                            <real value="3.4028234663852886e+38"/>
                                         </customSpacing>
                                     </stackView>
-                                    <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="I3x-2t-PYn">
-                                        <rect key="frame" x="187" y="36" width="400" height="15"/>
-                                        <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="Collapse puts several in a row on one line you can open. Hide also hides kicks and mode changes." id="Lfm-fL-lVE">
-                                            <font key="font" metaFont="cellTitle"/>
-                                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                        </textFieldCell>
-                                        <connections>
-                                            <accessibilityConnection property="link" destination="Gv8-pU-3jQ" id="Bd1-he-n9U"/>
-                                        </connections>
-                                    </textField>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="Mpf-VK-Ftr" firstAttribute="top" secondItem="bCO-56-p1h" secondAttribute="top" constant="30" id="0vd-Yj-7tF"/>
@@ -330,12 +277,9 @@
                                     <constraint firstItem="Dq4-nT-7mA" firstAttribute="leading" secondItem="Dq4-pU-7mA" secondAttribute="trailing" constant="8" symbolic="YES" id="Dq4-c5-7mA"/>
                                     <constraint firstItem="Dq4-nT-7mA" firstAttribute="firstBaseline" secondItem="Dq4-pU-7mA" secondAttribute="firstBaseline" id="Dq4-c6-7mA"/>
                                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Dq4-nT-7mA" secondAttribute="trailing" constant="20" id="Dq4-c7-7mA"/>
-                                    <constraint firstItem="I3x-2t-PYn" firstAttribute="leading" secondItem="7LB-4e-2Po" secondAttribute="leading" id="I7d-gL-zJK"/>
                                     <constraint firstItem="yk4-L0-S54" firstAttribute="top" secondItem="FAp-of-4TG" secondAttribute="bottom" constant="18" id="L1x-hg-vqa"/>
-                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="I3x-2t-PYn" secondAttribute="trailing" constant="20" id="MnT-ef-fUY"/>
                                     <constraint firstItem="FAp-of-4TG" firstAttribute="leading" secondItem="j2v-v4-NVg" secondAttribute="leading" id="aNx-3X-Uc8"/>
                                     <constraint firstItem="j2v-v4-NVg" firstAttribute="centerX" secondItem="bCO-56-p1h" secondAttribute="centerX" id="gL6-or-0Xm"/>
-                                    <constraint firstItem="I3x-2t-PYn" firstAttribute="top" secondItem="7LB-4e-2Po" secondAttribute="bottom" constant="8" symbolic="YES" id="l21-wT-1fL"/>
                                     <constraint firstItem="EC4-0b-hiq" firstAttribute="leading" secondItem="bCO-56-p1h" secondAttribute="leading" constant="170" id="l3l-8q-kwa"/>
                                     <constraint firstItem="EC4-0b-hiq" firstAttribute="top" secondItem="j2v-v4-NVg" secondAttribute="bottom" constant="17.5" id="lrG-6c-jOZ"/>
                                     <constraint firstItem="FAp-of-4TG" firstAttribute="trailing" secondItem="j2v-v4-NVg" secondAttribute="trailing" id="rUN-Oi-OMq"/>

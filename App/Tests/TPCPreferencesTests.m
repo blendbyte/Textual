@@ -71,32 +71,63 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual([TPCPreferences reloadActionForKeys:@[]], TPCPreferencesReloadActionPreferencesChanged);
 }
 
-/* The "Join, Part, Quit" checkbox carries over once as Show or Hide, then its key
- is gone; without it the default (Collapse) stays */
+/* Textual 7's "Join, Part, Quit" checkbox and the Show / Collapse / Hide setting
+ that followed it carry over once onto the kinds of events, then their keys are
+ gone: off (Hide) hides joins, parts, quits, nickname changes, kicks and mode
+ changes; Show and Collapse show them, with collapsing off or on. Away changes
+ and topic changes keep their own settings. */
 - (void)testGeneralEventMigration
 {
 	NSString *checkboxKey = TPCPreferencesGeneralEventCheckboxDefaultsKey;
 	NSString *displayKey = TPCPreferencesGeneralEventDisplayDefaultsKey;
 
-	id savedDisplay = [RZUserDefaults() objectForKey:displayKey];
+	NSArray *keys = @[checkboxKey, displayKey, @"Event Display -> Collapse",
+					  @"Event Display -> Joins", @"Event Display -> Parts", @"Event Display -> Quits",
+					  @"Event Display -> Nickname Changes", @"Event Display -> Away Changes",
+					  @"Event Display -> Kicks", @"Event Display -> Mode Changes", @"Event Display -> Topic Changes"];
 
-	[RZUserDefaults() removeObjectForKey:displayKey];
+	NSMutableDictionary *saved = [NSMutableDictionary dictionary];
 
+	for (NSString *key in keys) {
+		saved[key] = [RZUserDefaults() objectForKey:key];
+
+		[RZUserDefaults() removeObjectForKey:key];
+	}
+
+	/* Nothing to carry over: a new install's defaults */
+	[TPCPreferences migrateGeneralEventPreference];
+
+	XCTAssertEqual([TPCPreferences eventDisplayForKind:TPCEventKindJoins], TPCEventDisplayShow);
+	XCTAssertEqual([TPCPreferences eventDisplayForKind:TPCEventKindAwayChanges], TPCEventDisplayHide);
+	XCTAssertTrue([TPCPreferences collapseEvents]);
+
+	/* Textual 7, turned off */
 	[RZUserDefaults() setBool:NO forKey:checkboxKey];
 
 	[TPCPreferences migrateGeneralEventPreference];
 
-	XCTAssertEqual([TPCPreferences generalEventDisplay], TXGeneralEventDisplayHide);
+	for (NSNumber *kind in @[@(TPCEventKindJoins), @(TPCEventKindParts), @(TPCEventKindQuits),
+							 @(TPCEventKindNicknameChanges), @(TPCEventKindKicks), @(TPCEventKindModeChanges)])
+	{
+		XCTAssertEqual([TPCPreferences eventDisplayForKind:kind.unsignedIntegerValue], TPCEventDisplayHide);
+	}
+
+	XCTAssertEqual([TPCPreferences eventDisplayForKind:TPCEventKindTopicChanges], TPCEventDisplayShow);
 	XCTAssertFalse([TPCPreferences showJoinLeave]);
 	XCTAssertNil([RZUserDefaults() objectForKey:checkboxKey]);
 
-	[RZUserDefaults() setBool:YES forKey:checkboxKey];
+	/* Show / Collapse / Hide (what a Textual 7 import writes too) */
+	[RZUserDefaults() setInteger:TXGeneralEventDisplayShow forKey:displayKey];
 
 	[TPCPreferences migrateGeneralEventPreference];
 
+	XCTAssertEqual([TPCPreferences eventDisplayForKind:TPCEventKindJoins], TPCEventDisplayShow);
+	XCTAssertEqual([TPCPreferences eventDisplayForKind:TPCEventKindModeChanges], TPCEventDisplayShow);
+	XCTAssertFalse([TPCPreferences collapseEvents]);
 	XCTAssertEqual([TPCPreferences generalEventDisplay], TXGeneralEventDisplayShow);
+	XCTAssertNil([RZUserDefaults() objectForKey:displayKey]);
 
-	[RZUserDefaults() removeObjectForKey:displayKey];
+	[RZUserDefaults() setInteger:TXGeneralEventDisplayCollapse forKey:displayKey];
 
 	[TPCPreferences migrateGeneralEventPreference];
 
@@ -105,8 +136,12 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Textual 7 showed them when the checkbox was never changed (no key) */
 	XCTAssertEqual([TPCPreferences generalEventDisplayForCheckboxValue:nil], TXGeneralEventDisplayShow);
 
-	if (savedDisplay) {
-		[RZUserDefaults() setObject:savedDisplay forKey:displayKey];
+	for (NSString *key in keys) {
+		if (saved[key]) {
+			[RZUserDefaults() setObject:saved[key] forKey:key];
+		} else {
+			[RZUserDefaults() removeObjectForKey:key];
+		}
 	}
 }
 

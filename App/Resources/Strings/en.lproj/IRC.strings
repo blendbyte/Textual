@@ -488,3 +488,7 @@ The identifier for a timer can be found using “/timer list”";
 "mut-u1" = "%@ is no longer muted";
 "mut-a1" = "%@ is already muted";
 "mut-a2" = "%@ isn’t muted";
+
+"awy-a1" = "\002%1$@\002 is away: %2$@";
+"awy-a2" = "\002%@\002 is away";
+"awy-b1" = "\002%@\002 is back";

@@ -136,6 +136,34 @@ NS_ASSUME_NONNULL_BEGIN
 						  @"1 [2 joined, 1 quit] 2- 3- 4- 5 6 date_indicator [2 changed nickname] 7- 8- 9 [1 joined, 1 left] 10- 11-");
 }
 
+/* A kind hidden in Preferences counts nowhere and doesn't split a run (the
+ view's stylesheet hides it); away and back changes collapse too; a summary is
+ dimmed only when all of its lines are (E1) */
+- (void)testHiddenKindsArePassedOver
+{
+	JSContext *context = [self eventGroupsContext];
+
+	[context evaluateScript:@"_EventGroups.configure(true, { joined: '%@ joined', left: '%@ left', quit: '%@ quit', nickname: '%@ changed nickname', away: '%@ went away', back: '%@ came back',"
+							"  separator: ', ', nicknameChange: '%1$@ is now %2$@', listPair: '%1$@ and %2$@', listMore: '%1$@, %2$@' },"
+							"  { quit: 'hide', mode: 'hide', join: 'dim', part: 'dim' });"];
+
+	XCTAssertEqualObjects([self shapeInContext:context afterScript:
+						   @"line(1, 'join', 'alice'); line(2, 'quit', 'bob'); line(3, 'mode'); line(4, 'away', 'carol'); other('message');"
+							"line(5, 'join', 'dave'); line(6, 'quit', 'erin'); other('message');"
+							"line(7, 'join', 'gina'); line(8, 'part', 'hank'); other('message');"
+							"line(9, 'back', 'carol'); line(10, 'back', 'ivan');"
+							"_EventGroups.regroupAll();"],
+						  @"[alice joined, carol went away] 1- 2 3 4- message "
+						   "5 6 message "
+						   "[gina joined, hank left] 7- 8- message "
+						   "[carol and ivan came back] 9- 10-");
+
+	XCTAssertEqualObjects([context evaluateScript:@"summaryAbove(1).getAttribute('data-dimmed')"].toString, @"false");
+	XCTAssertEqualObjects([context evaluateScript:@"summaryAbove(7).getAttribute('data-dimmed')"].toString, @"true");
+
+	XCTAssertNil(context.exception);
+}
+
 /* Up to three events name the people; more, or lines saved without names, count them */
 - (void)testSmallGroupsNameThePeople
 {

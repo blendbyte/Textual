@@ -74,6 +74,8 @@
 "e7g-p1" = "%@ left";
 "e7g-q1" = "%@ quit";
 "e7g-n1" = "%@ changed nickname";
+"e7g-w1" = "%@ went away";
+"e7g-b1" = "%@ came back";
 "e7g-s1" = ", ";
 
 /* The same with names, for up to three: "alice and bob joined, carol is now carl" */

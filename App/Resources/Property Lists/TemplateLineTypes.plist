@@ -4,6 +4,10 @@
 <dict>
 	<key>action</key>
 	<string>newMessagePostedWithSender</string>
+	<key>away</key>
+	<string>newMessagePostedWithoutSender</string>
+	<key>back</key>
+	<string>newMessagePostedWithoutSender</string>
 	<key>ctcp</key>
 	<string>newMessagePostedWithSender</string>
 	<key>dcc-file-transfer</key>

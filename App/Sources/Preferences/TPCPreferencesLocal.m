@@ -592,42 +592,145 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	}
 }
 
+/* Joins, parts and quits all hidden */
 + (BOOL)showJoinLeave
 {
-	return ([self generalEventDisplay] != TXGeneralEventDisplayHide);
+	return ([self eventDisplayForKind:TPCEventKindJoins] != TPCEventDisplayHide ||
+			[self eventDisplayForKind:TPCEventKindParts] != TPCEventDisplayHide ||
+			[self eventDisplayForKind:TPCEventKindQuits] != TPCEventDisplayHide);
 }
 
 + (TXGeneralEventDisplay)generalEventDisplay
 {
-	NSUInteger generalEventDisplay = [RZUserDefaults() unsignedIntegerForKey:TPCPreferencesGeneralEventDisplayDefaultsKey];
-
-	if (generalEventDisplay > TXGeneralEventDisplayHide) {
-		return TXGeneralEventDisplayCollapse;
+	if ([self showJoinLeave] == NO) {
+		return TXGeneralEventDisplayHide;
 	}
 
-	return (TXGeneralEventDisplay)generalEventDisplay;
+	return (([self collapseEvents]) ? TXGeneralEventDisplayCollapse : TXGeneralEventDisplayShow);
 }
 
++ (NSString *)_defaultsKeyForEventKind:(TPCEventKind)kind
+{
+	static NSArray<NSString *> *keys = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		keys = @[
+			@"Event Display -> Joins",
+			@"Event Display -> Parts",
+			@"Event Display -> Quits",
+			@"Event Display -> Nickname Changes",
+			@"Event Display -> Away Changes",
+			@"Event Display -> Kicks",
+			@"Event Display -> Mode Changes",
+			@"Event Display -> Topic Changes"
+		];
+	});
+
+	NSParameterAssert(kind < keys.count);
+
+	return keys[kind];
+}
+
++ (TPCEventDisplay)eventDisplayForKind:(TPCEventKind)kind
+{
+	NSUInteger display = [RZUserDefaults() unsignedIntegerForKey:[self _defaultsKeyForEventKind:kind]];
+
+	if (display > TPCEventDisplayHide) {
+		return TPCEventDisplayShow;
+	}
+
+	return (TPCEventDisplay)display;
+}
+
++ (void)setEventDisplay:(TPCEventDisplay)display forKind:(TPCEventKind)kind
+{
+	[RZUserDefaults() setUnsignedInteger:display forKey:[self _defaultsKeyForEventKind:kind]];
+}
+
++ (BOOL)collapseEvents
+{
+	return [RZUserDefaults() boolForKey:@"Event Display -> Collapse"];
+}
+
++ (void)setCollapseEvents:(BOOL)collapseEvents
+{
+	[RZUserDefaults() setBool:collapseEvents forKey:@"Event Display -> Collapse"];
+}
+
++ (NSDictionary<NSString *, NSString *> *)eventDisplayByLineType
+{
+	NSArray *displayNames = @[@"show", @"dim", @"hide"];
+
+	NSDictionary<NSString *, NSNumber *> *kindsByLineType = @{
+		@"join" : @(TPCEventKindJoins),
+		@"part" : @(TPCEventKindParts),
+		@"quit" : @(TPCEventKindQuits),
+		@"nick" : @(TPCEventKindNicknameChanges),
+		@"away" : @(TPCEventKindAwayChanges),
+		@"back" : @(TPCEventKindAwayChanges),
+		@"kick" : @(TPCEventKindKicks),
+		@"mode" : @(TPCEventKindModeChanges),
+		@"topic" : @(TPCEventKindTopicChanges)
+	};
+
+	NSMutableDictionary<NSString *, NSString *> *displayByLineType = [NSMutableDictionary dictionary];
+
+	[kindsByLineType enumerateKeysAndObjectsUsingBlock:^(NSString *lineType, NSNumber *kind, BOOL *stop) {
+		displayByLineType[lineType] = displayNames[[self eventDisplayForKind:kind.unsignedIntegerValue]];
+	}];
+
+	return [displayByLineType copy];
+}
+
+/* The one setting covered joins, parts, quits, nickname changes, kicks and
+ mode changes: Hide hid them all, Show and Collapse showed them */
 + (void)setGeneralEventDisplay:(TXGeneralEventDisplay)generalEventDisplay
 {
-	[RZUserDefaults() setUnsignedInteger:generalEventDisplay forKey:TPCPreferencesGeneralEventDisplayDefaultsKey];
+	TPCEventDisplay display = ((generalEventDisplay == TXGeneralEventDisplayHide) ? TPCEventDisplayHide : TPCEventDisplayShow);
+
+	for (NSNumber *kind in @[@(TPCEventKindJoins), @(TPCEventKindParts), @(TPCEventKindQuits),
+							 @(TPCEventKindNicknameChanges), @(TPCEventKindKicks), @(TPCEventKindModeChanges)])
+	{
+		[self setEventDisplay:display forKind:kind.unsignedIntegerValue];
+	}
+
+	if (generalEventDisplay != TXGeneralEventDisplayHide) {
+		[self setCollapseEvents:(generalEventDisplay == TXGeneralEventDisplayCollapse)];
+	}
 }
 
-/* The "Join, Part, Quit" checkbox became Show / Collapse / Hide (10.13): a
- setting someone made carries over once, then its key is gone */
+/* Textual 7's "Join, Part, Quit" checkbox and the Show / Collapse / Hide
+ setting that followed it (10.13; also what a Textual 7 import writes) become
+ the per-kind settings, once; their keys are gone afterwards */
 + (void)migrateGeneralEventPreference
 {
 	NSString *checkboxKey = TPCPreferencesGeneralEventCheckboxDefaultsKey;
 
 	id checkboxValue = [RZUserDefaults() objectForKey:checkboxKey];
 
-	if (checkboxValue == nil) {
-		return;
+	if (checkboxValue) {
+		[self setGeneralEventDisplay:[self generalEventDisplayForCheckboxValue:checkboxValue]];
+
+		[RZUserDefaults() removeObjectForKey:checkboxKey];
 	}
 
-	[self setGeneralEventDisplay:[self generalEventDisplayForCheckboxValue:checkboxValue]];
+	NSString *displayKey = TPCPreferencesGeneralEventDisplayDefaultsKey;
 
-	[RZUserDefaults() removeObjectForKey:checkboxKey];
+	id displayValue = [RZUserDefaults() objectForKey:displayKey];
+
+	if ([displayValue respondsToSelector:@selector(unsignedIntegerValue)]) {
+		NSUInteger generalEventDisplay = [displayValue unsignedIntegerValue];
+
+		if (generalEventDisplay <= TXGeneralEventDisplayHide) {
+			[self setGeneralEventDisplay:(TXGeneralEventDisplay)generalEventDisplay];
+		}
+	}
+
+	if (displayValue) {
+		[RZUserDefaults() removeObjectForKey:displayKey];
+	}
 }
 
 /* The member list's default width went from 120 (its minimum) to 190 (10.5).

@@ -36,11 +36,15 @@
 
 "use strict";
 
-/* Collapsed join, part, quit and nickname change runs: two or more such lines
- in a row get a summary line above them ("▸ 3 joined, 1 quit") that shows or
- hides them on a click. The lines themselves stay where they are, so styles,
+/* Collapsed join, part, quit, nickname and away change runs: two or more such
+ lines in a row get a summary line above them ("▸ 3 joined, 1 quit") that shows
+ or hides them on a click. The lines themselves stay where they are, so styles,
  trimming and line lookups see them as before; only the summary is added
- (a div.line without an id, data-line-type="event-group"). */
+ (a div.line without an id, data-line-type="event-group").
+
+ Each kind of event is also shown, dimmed or hidden (Preferences → Style →
+ Events): a stylesheet added here does that by line type, so it works with every
+ style, and a hidden line is passed over by the runs as if it weren't there. */
 
 var _EventGroups = {};
 
@@ -50,20 +54,29 @@ _EventGroups.enabled = false; /* PRIVATE */
  separator, nicknameChange, listPair, listMore ("%1$@" and "%2$@") */
 _EventGroups.strings = null; /* PRIVATE */
 
-_EventGroups._collapsibleLineTypes = ["join", "part", "quit", "nick"]; /* PRIVATE */
+/* Line type → "show", "dim" or "hide" (missing: show) */
+_EventGroups.display = {}; /* PRIVATE */
+
+_EventGroups._collapsibleLineTypes = ["join", "part", "quit", "nick", "away", "back"]; /* PRIVATE */
 
 _EventGroups._summaryStringKeys = { /* PRIVATE */
 	"join" : "joined",
 	"part" : "left",
 	"quit" : "quit",
-	"nick" : "nickname"
+	"nick" : "nickname",
+	"away" : "away",
+	"back" : "back"
 };
 
-_EventGroups.configure = function(enabled, strings) /* PRIVATE */
+_EventGroups.configure = function(enabled, strings, display) /* PRIVATE */
 {
 	_EventGroups.enabled = ((enabled) ? true : false); // the app may send 1
 
 	_EventGroups.strings = strings;
+
+	_EventGroups.display = (display || {});
+
+	_EventGroups._applyDisplay();
 
 	/* Lines added before the view finished loading */
 	if (_EventGroups.enabled) {
@@ -72,12 +85,60 @@ _EventGroups.configure = function(enabled, strings) /* PRIVATE */
 };
 
 /* ************************************************** */
+/*                Shown, dimmed, hidden               */
+/* ************************************************** */
+
+_EventGroups._applyDisplay = function() /* PRIVATE */
+{
+	if (!document.head) {
+		return;
+	}
+
+	var rules = [];
+
+	for (var lineType in _EventGroups.display) {
+		var selector = "div.line[id][data-line-type=\"" + lineType + "\"]";
+
+		if (_EventGroups.display[lineType] === "hide") {
+			rules.push(selector + " { display: none !important; }");
+		} else if (_EventGroups.display[lineType] === "dim") {
+			rules.push(":where(" + selector + ") { opacity: 0.5; }");
+		}
+	}
+
+	rules.push(":where(div.line.eventGroupSummary[data-dimmed=\"true\"]) { opacity: 0.5; }");
+
+	var style = document.getElementById("eventDisplayRules");
+
+	if (!style) {
+		style = document.createElement("style");
+
+		style.id = "eventDisplayRules";
+
+		document.head.appendChild(style);
+	}
+
+	style.textContent = rules.join("\n");
+};
+
+/* ************************************************** */
 /*                     Elements                       */
 /* ************************************************** */
 
+_EventGroups._isLine = function(element) /* PRIVATE */
+{
+	return Boolean(element && element.id && element.id.indexOf("line-") === 0);
+};
+
+/* Hidden by its kind: not part of any count, and no gap in a run either */
+_EventGroups.isHiddenLine = function(element) /* PRIVATE */
+{
+	return (_EventGroups._isLine(element) && _EventGroups.display[element.getAttribute("data-line-type")] === "hide");
+};
+
 _EventGroups.isCollapsibleLine = function(element) /* PRIVATE */
 {
-	if (!element || !element.id || element.id.indexOf("line-") !== 0) {
+	if (_EventGroups._isLine(element) === false || _EventGroups.isHiddenLine(element)) {
 		return false;
 	}
 
@@ -91,7 +152,7 @@ _EventGroups.isSummary = function(element) /* PRIVATE */
 
 _EventGroups._isPartOfRun = function(element) /* PRIVATE */
 {
-	return (_EventGroups.isCollapsibleLine(element) || _EventGroups.isSummary(element));
+	return (_EventGroups.isCollapsibleLine(element) || _EventGroups.isSummary(element) || _EventGroups.isHiddenLine(element));
 };
 
 /* The summary above a line it hides, if any */
@@ -104,7 +165,7 @@ _EventGroups._summaryOfLine = function(line) /* PRIVATE */
 			return element;
 		}
 
-		if (_EventGroups.isCollapsibleLine(element) === false) {
+		if (_EventGroups.isCollapsibleLine(element) === false && _EventGroups.isHiddenLine(element) === false) {
 			return null;
 		}
 
@@ -120,8 +181,10 @@ _EventGroups._linesOfSummary = function(summary) /* PRIVATE */
 
 	var element = summary.nextElementSibling;
 
-	while (_EventGroups.isCollapsibleLine(element)) {
-		lines.push(element);
+	while (_EventGroups.isCollapsibleLine(element) || _EventGroups.isHiddenLine(element)) {
+		if (_EventGroups.isCollapsibleLine(element)) {
+			lines.push(element);
+		}
 
 		element = element.nextElementSibling;
 	}
@@ -178,7 +241,7 @@ _EventGroups._regroupRunStartingAt = function(first) /* PRIVATE */
 	while (_EventGroups._isPartOfRun(element)) {
 		if (_EventGroups.isSummary(element)) {
 			summaries.push(element);
-		} else {
+		} else if (_EventGroups.isCollapsibleLine(element)) {
 			lines.push(element);
 		}
 
@@ -377,6 +440,13 @@ _EventGroups._updateSummary = function(summary, lines) /* PRIVATE */
 
 	summary.setAttribute("data-first-line", firstLineId);
 	summary.setAttribute("data-summary", text);
+
+	/* Dimmed with its lines when they all are */
+	var dimmed = lines.every(function(line) {
+		return (_EventGroups.display[line.getAttribute("data-line-type")] === "dim");
+	});
+
+	summary.setAttribute("data-dimmed", ((dimmed) ? "true" : "false"));
 
 	var paragraph = document.createElement("p");
 

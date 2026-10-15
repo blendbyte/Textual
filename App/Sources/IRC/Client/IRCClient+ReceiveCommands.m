@@ -1170,16 +1170,13 @@ NS_ASSUME_NONNULL_BEGIN
 	 receivedAt:m.receivedAt];
 }
 
-/* Whether a join, part, kick, quit, nickname change or mode change by
- someone else is printed: the "show join and leave" preference, then the
- channel's setting, then the user's address book entry, if there is one */
+/* Whether a join, part, kick, quit, nickname, mode or away change by someone
+ else is printed: the channel's setting, then the user's address book entry, if
+ there is one. Events hidden in Preferences are printed and hidden by the chat
+ view, so showing them again brings them back. */
 - (BOOL)shouldPrintGeneralEventInChannel:(IRCChannel *)channel addressBookEntry:(nullable IRCAddressBookEntry *)addressBookEntry
 {
 	NSParameterAssert(channel != nil);
-
-	if ([TPCPreferences showJoinLeave] == NO) {
-		return NO;
-	}
 
 	if (channel.config.ignoreGeneralEventMessages) {
 		return NO;
@@ -1190,6 +1187,49 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return YES;
+}
+
+/* An event line in each channel shared with them (Preferences → Style →
+ Events: hidden unless shown there) */
+- (void)printAwayChangeOfUser:(IRCUser *)user toAway:(BOOL)away message:(IRCMessage *)m
+{
+	NSParameterAssert(user != nil);
+	NSParameterAssert(m != nil);
+
+	NSString *nickname = user.nickname;
+
+	if ([self nicknameIsMyself:nickname]) {
+		return;
+	}
+
+	NSString *message = nil;
+
+	if (away == NO) {
+		message = TXTLS(@"IRC[awy-b1]", nickname);
+	} else if (m.sequence.length > 0) {
+		message = TXTLS(@"IRC[awy-a1]", nickname, m.sequence.stringByAppendingIRCFormattingStop);
+	} else {
+		message = TXTLS(@"IRC[awy-a2]", nickname);
+	}
+
+	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+
+	for (IRCChannel *channel in self.channelList) {
+		if (channel.isChannel == NO || [user userAssociatedWithChannel:channel] == nil) {
+			continue;
+		}
+
+		if ([self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo] == NO) {
+			continue;
+		}
+
+		[self printGeneralEvent:message
+				 aboutNicknames:@[nickname]
+					  inChannel:channel
+						 asType:((away) ? TVCLogLineTypeAway : TVCLogLineTypeBack)
+						command:m.command
+					 receivedAt:m.receivedAt];
+	}
 }
 
 - (void)receiveJoin:(IRCMessage *)m

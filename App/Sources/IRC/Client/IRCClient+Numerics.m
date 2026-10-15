@@ -145,7 +145,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *nickname = m.senderNickname;
 
+	IRCUser *user = [self findUser:nickname];
+
+	BOOL changed = (user != nil && user.isAway != away);
+
 	[self modifyUserWithNickname:nickname asAway:away];
+
+	/* A new away message while still away isn't a change */
+	if (changed) {
+		[self printAwayChangeOfUser:user toAway:away message:m];
+	}
 }
 
 - (void)receiveInit:(IRCMessage *)m // Raw numeric = 001

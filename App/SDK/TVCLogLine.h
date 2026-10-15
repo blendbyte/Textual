@@ -71,6 +71,8 @@ typedef NS_ENUM(NSUInteger, TVCLogLineType) {
 	TVCLogLineTypeQuit,
 	TVCLogLineTypeTopic,
 	TVCLogLineTypeWebsite,
+	TVCLogLineTypeAway, // someone in the channel went away (away-notify)
+	TVCLogLineTypeBack, // and came back
 };
 
 typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {

@@ -179,7 +179,7 @@ _Textual.viewFinishedLoading = function(configuration) /* PRIVATE */
 		_MessageBuffer.setBufferLimit(scrollbackLimit);
 	}
 
-	_EventGroups.configure(collapseGeneralEvents, generalEventStrings);
+	_EventGroups.configure(collapseGeneralEvents, generalEventStrings, configuration.eventDisplay);
 };
 
 _Textual.viewFinishedLoadingHistory = function() /* PRIVATE */
