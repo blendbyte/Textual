@@ -203,7 +203,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		result.textField.attributedStringValue =
 		[entryItem.formattedMessage attributedStringWithIRCFormatting:[NSTableView preferredGlobalTableViewFont]
-												   preferredFontColor:[NSColor controlTextColor]];
+												   preferredFontColor:[NSColor controlTextColor]
+											honorFormattingPreference:YES];
 	}
 
 	return result;

@@ -73,6 +73,7 @@ typedef NS_ENUM(NSUInteger, TDCChannelPropertiesSheetSelection)
 @property (nonatomic, weak) IBOutlet NSButton *showTreeBadgeCountCheck;
 @property (nonatomic, weak) IBOutlet NSButton *ignoreHighlightsCheck;
 @property (nonatomic, weak) IBOutlet NSButton *ignoreGeneralEventMessagesCheck;
+@property (nonatomic, strong) NSPopUpButton *formattingPopUp;
 @property (nonatomic, weak) IBOutlet NSSegmentedControl *contentViewTabView;
 @property (nonatomic, weak) IBOutlet TVCValidatedTextField *channelNameTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *labelTextField;
@@ -211,9 +212,60 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		return nil;
 	};
 
+	[self addFormattingRow];
+
 	[self addConfigurationDidChangeObserver];
 
 	[self setupNotificationsController];
+}
+
+/* "Colors and formatting:" below the last checkbox of the General pane (10.10) */
+- (void)addFormattingRow
+{
+	NSView *generalView = self.contentViewGeneralView;
+
+	NSView *lastCheck = self.ignoreHighlightsCheck;
+
+	for (NSLayoutConstraint *constraint in generalView.constraints) {
+		if (constraint.firstItem == generalView && constraint.firstAttribute == NSLayoutAttributeBottom && constraint.secondItem == lastCheck) {
+			constraint.active = NO;
+		}
+	}
+
+	NSTextField *label = [NSTextField labelWithString:TXTLS(@"TDCChannelPropertiesSheet[fmt-l1]")];
+
+	NSPopUpButton *popUp = [NSPopUpButton new];
+
+	NSString *globalChoice = (([TPCPreferences removeAllFormatting]) ? TXTLS(@"TDCChannelPropertiesSheet[fmt-p2]") : TXTLS(@"TDCChannelPropertiesSheet[fmt-p3]"));
+
+	/* Item tags are IRCChannelFormatting values */
+	[popUp addItemWithTitle:TXTLS(@"TDCChannelPropertiesSheet[fmt-p1]", globalChoice)];
+	popUp.lastItem.tag = IRCChannelFormattingGlobal;
+
+	[popUp.menu addItem:[NSMenuItem separatorItem]];
+
+	[popUp addItemWithTitle:TXTLS(@"TDCChannelPropertiesSheet[fmt-p2]")];
+	popUp.lastItem.tag = IRCChannelFormattingRemove;
+
+	[popUp addItemWithTitle:TXTLS(@"TDCChannelPropertiesSheet[fmt-p3]")];
+	popUp.lastItem.tag = IRCChannelFormattingShow;
+
+	NSStackView *row = [NSStackView stackViewWithViews:@[label, popUp]];
+
+	row.alignment = NSLayoutAttributeFirstBaseline;
+	row.spacing = 8;
+	row.translatesAutoresizingMaskIntoConstraints = NO;
+
+	[generalView addSubview:row];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[row.topAnchor constraintEqualToAnchor:lastCheck.bottomAnchor constant:13],
+		[row.leadingAnchor constraintEqualToAnchor:lastCheck.leadingAnchor],
+		[row.trailingAnchor constraintLessThanOrEqualToAnchor:generalView.trailingAnchor constant:-20],
+		[generalView.bottomAnchor constraintEqualToAnchor:row.bottomAnchor constant:18]
+	]];
+
+	self.formattingPopUp = popUp;
 }
 
 - (void)setupNotificationsController
@@ -263,6 +315,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	self.disableInlineMediaCheck.state = self.config.inlineMediaDisabled;
 	self.enableInlineMediaCheck.state = self.config.inlineMediaEnabled;
+
+	[self.formattingPopUp selectItemWithTag:self.config.formatting];
 
 	[self updateNavigationEnabledState];
 }
@@ -426,6 +480,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	self.config.inlineMediaDisabled = self.disableInlineMediaCheck.state;
 	self.config.inlineMediaEnabled = self.enableInlineMediaCheck.state;
+
+	self.config.formatting = self.formattingPopUp.selectedTag;
 
 	if ([self.delegate respondsToSelector:@selector(channelPropertiesSheet:onOk:)]) {
 		[self.delegate channelPropertiesSheet:self onOk:[self.config copy]];

@@ -1848,6 +1848,8 @@ static NSUInteger _aliasDepth = 0;
 
 	[mainWindow() reloadTreeItem:targetChannel];
 
+	[self moveChannelToSortedPosition:targetChannel];
+
 	[mainWindow() updateTitleFor:targetChannel];
 }
 

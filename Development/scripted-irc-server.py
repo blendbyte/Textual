@@ -1904,6 +1904,56 @@ async def scenario_mute(client):
 		await client.send(f":carol!c@carol.test PRIVMSG {me} :private message {round} from carol")
 
 
+async def scenario_sorting(client):
+	"""Per-channel formatting and a channel list kept sorted (10.10): the server
+	joins #zulu, #alpha and #mike in that order, coloured lines arrive in #alpha
+	and #mike, and zoe and bob send private messages. Saying "go" anywhere:
+	zoe becomes abby, the server joins #bravo, and #alpha, #mike and #bravo get
+	another coloured line. Stays connected."""
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	async def join(channel):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{me} @alice bob zoe")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	def coloured(channel, round):
+		return f":alice!a@alice.test PRIVMSG {channel} :\x02bold\x02 \x034red\x03 \x0312blue\x03 \x1ditalic\x1d line {round} in {channel}"
+
+	for channel in ("#zulu", "#alpha", "#mike"):
+		await join(channel)
+
+	await client.collect(1)
+
+	for channel in ("#alpha", "#mike"):
+		await client.send(coloured(channel, 1))
+
+	await client.send(f":zoe!z@zoe.test PRIVMSG {me} :hi from zoe")
+	await client.send(f":bob!b@bob.test PRIVMSG {me} :hi from bob")
+
+	round = 1
+	seen = 0
+
+	while await client.collect(1):
+		said = [line for line in client.received[seen:] if line.upper().startswith("PRIVMSG ") and line.endswith(" :go")]
+		seen = len(client.received)
+
+		if not said:
+			continue
+
+		round += 1
+
+		if round == 2:
+			await client.send(":zoe!z@zoe.test NICK :abby")
+			await join("#bravo")
+
+		for channel in ("#alpha", "#mike", "#bravo"):
+			await client.send(coloured(channel, round))
+
+
 async def scenario_keywords(client):
 	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
@@ -2088,6 +2138,7 @@ SCENARIOS = {
 	"previews": scenario_previews,
 	"previews-short": scenario_previews_short,
 	"drafts": scenario_drafts,
+	"sorting": scenario_sorting,
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
 	"mass": scenario_mass,
@@ -2134,7 +2185,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

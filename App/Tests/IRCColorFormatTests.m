@@ -37,6 +37,10 @@
 #import <XCTest/XCTest.h>
 
 #import "NSStringHelper.h"
+#import "TPCPreferencesLocal.h"
+#import "TPCPreferencesUserDefaults.h"
+#import "IRCChannelConfig.h"
+#import "IRCChannelPrivate.h"
 #import "IRCClientPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCColorFormatPrivate.h"
@@ -138,6 +142,39 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertGreaterThan(messageCount, 1);
 
 	XCTAssertEqualObjects(joined, expected);
+}
+
+/* A channel's own colors and formatting choice wins over the global one, both
+ ways, and is kept when the configuration is saved (10.10) */
+- (void)testChannelFormattingChoiceOverridesGlobal
+{
+	BOOL savedRemove = [TPCPreferences removeAllFormatting];
+
+	IRCChannelConfigMutable *config = [IRCChannelConfigMutable new];
+
+	config.channelName = @"#textual";
+
+	for (NSNumber *globalRemove in @[@NO, @YES]) {
+		[RZUserDefaults() setBool:globalRemove.boolValue forKey:@"RemoveIRCTextFormatting"];
+
+		config.formatting = IRCChannelFormattingGlobal;
+
+		XCTAssertEqual([[IRCChannel alloc] initWithConfig:config].removesFormatting, globalRemove.boolValue);
+
+		config.formatting = IRCChannelFormattingRemove;
+
+		XCTAssertTrue([[IRCChannel alloc] initWithConfig:config].removesFormatting);
+
+		config.formatting = IRCChannelFormattingShow;
+
+		XCTAssertFalse([[IRCChannel alloc] initWithConfig:config].removesFormatting);
+	}
+
+	[RZUserDefaults() setBool:savedRemove forKey:@"RemoveIRCTextFormatting"];
+
+	IRCChannelConfig *saved = [[IRCChannelConfig alloc] initWithDictionary:config.dictionaryValue];
+
+	XCTAssertEqual(saved.formatting, IRCChannelFormattingShow);
 }
 
 @end

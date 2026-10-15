@@ -48,7 +48,7 @@
 #import "THOPluginManagerPrivate.h"
 #import "THOPluginProtocolPrivate.h"
 #import "IRCClient.h"
-#import "IRCChannel.h"
+#import "IRCChannelPrivate.h"
 #import "TPCNicknameColorStyleGeneratorPrivate.h"
 #import "IRCWorld.h"
 #import "TVCMainWindow.h"
@@ -160,6 +160,15 @@ NS_ASSUME_NONNULL_BEGIN
 								   inWebView:context.webView, [methodName description]];
 
 		context.completionBlock(nil);
+
+		return;
+	}
+
+	/* A channel's own choice for colors and formatting (10.10) */
+	IRCChannel *channel = context.associatedChannel;
+
+	if (channel && [methodName isEqualToString:@"removeAllFormatting"]) {
+		context.completionBlock(@(channel.removesFormatting));
 
 		return;
 	}

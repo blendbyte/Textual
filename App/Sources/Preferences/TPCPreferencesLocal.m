@@ -705,6 +705,16 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	[RZUserDefaults() setBool:sendTypingNotifications forKey:@"Typing Notifications -> Send"];
 }
 
++ (BOOL)keepChannelListSorted
+{
+	return [RZUserDefaults() boolForKey:@"Server List -> Keep Channels Sorted"];
+}
+
++ (void)setKeepChannelListSorted:(BOOL)keepChannelListSorted
+{
+	[RZUserDefaults() setBool:keepChannelListSorted forKey:@"Server List -> Keep Channels Sorted"];
+}
+
 + (BOOL)inputHistoryIsChannelSpecific
 {
 	return [RZUserDefaults() boolForKey:@"SaveInputHistoryPerSelection"];

@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self->_defaults = @{
 	  @"autoJoin" : @(YES),
 	  @"channelType" : @(IRCChannelTypeChannel),
+	  @"formatting" : @(IRCChannelFormattingGlobal),
 	  @"ignoreGeneralEventMessages"	: @(NO),
 	  @"ignoreHighlights" : @(NO),
 	  @"inlineMediaEnabled" : @(NO),
@@ -131,6 +132,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignStringTo:&self->_uniqueIdentifier forKey:@"uniqueIdentifier"];
 
 	[defaultsMutable assignUnsignedIntegerTo:&self->_type forKey:@"channelType"];
+
+	[defaultsMutable assignUnsignedIntegerTo:&self->_formatting forKey:@"formatting"];
 
 	if (self->_type != IRCChannelTypeChannel) {
 		return;
@@ -227,6 +230,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[dic maybeSetObject:self.uniqueIdentifier forKey:@"uniqueIdentifier"];
 
 	[dic setUnsignedInteger:self.type forKey:@"channelType"];
+
+	[dic setUnsignedInteger:self.formatting forKey:@"formatting"];
 
 	if (target == XRPortablePropertyDictTargetCopy ||
 		target == XRPortablePropertyDictTargetMutableCopy)
@@ -438,6 +443,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation IRCChannelConfigMutable
 
 @dynamic type;
+@dynamic formatting;
 @dynamic autoJoin;
 @dynamic channelName;
 @dynamic label;
@@ -466,6 +472,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_type != type) {
 		self->_type = type;
+	}
+}
+
+- (void)setFormatting:(IRCChannelFormatting)formatting
+{
+	if (self->_formatting != formatting) {
+		self->_formatting = formatting;
 	}
 }
 

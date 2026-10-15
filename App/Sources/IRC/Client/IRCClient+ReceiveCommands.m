@@ -731,13 +731,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.serverHasNickServ = YES;
 
-	NSString *textIn = nil;
-
-	if ([TPCPreferences removeAllFormatting] == NO) {
-		textIn = (*text).stripIRCEffects;
-	} else {
-		textIn = (*text);
-	}
+	NSString *textIn = (*text).stripIRCEffects;
 
 	/* If we are not waiting for a response from NickServ, 
 	 then try sending our password if that's what it requested. */
@@ -1758,6 +1752,8 @@ NS_ASSUME_NONNULL_BEGIN
 					channel.name = newNickname;
 
 					[mainWindow() reloadTreeItem:channel];
+
+					[self moveChannelToSortedPosition:channel];
 
 					[mainWindow() updateTitleFor:channel]; // Refresh hostmask
 

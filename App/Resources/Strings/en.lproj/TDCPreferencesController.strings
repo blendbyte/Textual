@@ -127,3 +127,6 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "msh-c2" = "or more people";
 "typ-c1" = "Let others see when I’m typing";
 "typ-n1" = "In channels and private messages, on servers that support it. Typing a command doesn’t count.";
+
+"srt-c1" = "Keep channels and private messages sorted by name";
+"srt-t1" = "New channels and private messages go in their place in the server list, the order of Window → Sort Channel List. Dragging them to another place is off while this is on.";

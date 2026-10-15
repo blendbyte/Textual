@@ -483,10 +483,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self rawDataLogIncomingTraffic:data];
 
-	if ([TPCPreferences removeAllFormatting]) {
-		data = data.stripIRCEffects;
-	}
-
 	IRCMessage *message = [[IRCMessage alloc] initWithLine:data onClient:self];
 
 	if (message == nil) {

@@ -46,6 +46,13 @@ typedef NS_ENUM(NSUInteger, IRCChannelType) {
 	IRCChannelTypeUtility,
 };
 
+/* Colors and formatting in a channel's messages */
+typedef NS_ENUM(NSUInteger, IRCChannelFormatting) {
+	IRCChannelFormattingGlobal = 0, // the global preference decides
+	IRCChannelFormattingRemove,
+	IRCChannelFormattingShow,
+};
+
 #pragma mark -
 #pragma mark Immutable Object
 
@@ -59,6 +66,7 @@ typedef NS_ENUM(NSUInteger, IRCChannelType) {
 @property (readonly) BOOL pushNotifications;
 @property (readonly) BOOL showTreeBadgeCount;
 @property (readonly) IRCChannelType type;
+@property (readonly) IRCChannelFormatting formatting;
 @property (readonly, copy) NSString *channelName;
 @property (readonly, copy) NSString *uniqueIdentifier;
 @property (readonly, copy, nullable) NSString *label;
@@ -90,6 +98,7 @@ typedef NS_ENUM(NSUInteger, IRCChannelType) {
 
 @interface IRCChannelConfigMutable : IRCChannelConfig
 @property (nonatomic, assign, readwrite) IRCChannelType type;
+@property (nonatomic, assign, readwrite) IRCChannelFormatting formatting;
 @property (nonatomic, assign, readwrite) BOOL autoJoin;
 @property (nonatomic, assign, readwrite) BOOL ignoreGeneralEventMessages;
 @property (nonatomic, assign, readwrite) BOOL ignoreHighlights;

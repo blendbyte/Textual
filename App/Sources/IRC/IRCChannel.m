@@ -206,6 +206,18 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	return (self.config.type == IRCChannelTypeUtility);
 }
 
+- (BOOL)removesFormatting
+{
+	switch (self.config.formatting) {
+		case IRCChannelFormattingRemove:
+			return YES;
+		case IRCChannelFormattingShow:
+			return NO;
+		default:
+			return [TPCPreferences removeAllFormatting];
+	}
+}
+
 - (BOOL)isPrivateMessageForZNCUser
 {
 	if (self.isPrivateMessage == NO) {

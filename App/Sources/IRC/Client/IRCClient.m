@@ -1113,9 +1113,14 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			return;
 		}
 
+		/* In sorted position while the list is kept sorted (10.10) */
+		if ([TPCPreferences keepChannelListSorted])
+		{
+			[self.channelListPrivate insertObject:channel atIndex:[self _sortedIndexForChannel:channel]];
+		}
 		/* Add channels atop of the first non-channel (private message).
 		 Private messages can be add to the bottom of the array. */
-		if (channel.isChannel == NO)
+		else if (channel.isChannel == NO)
 		{
 			[self.channelListPrivate addObject:channel];
 		}
@@ -1137,6 +1142,91 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		[self updateStoredChannelList];
 	}
+}
+
++ (NSComparisonResult)compareChannel:(IRCChannel *)channel1 toChannel:(IRCChannel *)channel2
+{
+	NSParameterAssert(channel1 != nil);
+	NSParameterAssert(channel2 != nil);
+
+	/* Channels before private messages */
+	if (channel1.isChannel != channel2.isChannel) {
+		return ((channel1.isChannel) ? NSOrderedAscending : NSOrderedDescending);
+	}
+
+	NSString *name1 = channel1.name.lowercaseString;
+	NSString *name2 = channel2.name.lowercaseString;
+
+	return [name1 compare:name2];
+}
+
+/* After the last entry that doesn't sort after it; call with the list locked */
+- (NSUInteger)_sortedIndexForChannel:(IRCChannel *)channel
+{
+	NSUInteger index = self.channelListPrivate.count;
+
+	while (index > 0 && [self.class compareChannel:self.channelListPrivate[(index - 1)] toChannel:channel] == NSOrderedDescending) {
+		index -= 1;
+	}
+
+	return index;
+}
+
+- (BOOL)sortChannelList
+{
+	NSMutableArray *channelList = [self.channelList mutableCopy];
+
+	[channelList sortUsingComparator:^NSComparisonResult(IRCChannel *channel1, IRCChannel *channel2) {
+		return [IRCClient compareChannel:channel1 toChannel:channel2];
+	}];
+
+	if ([channelList isEqualToArray:self.channelList]) {
+		return NO;
+	}
+
+	self.channelList = channelList;
+
+	[self reloadServerListItems];
+
+	return YES;
+}
+
+- (void)moveChannelToSortedPosition:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if ([TPCPreferences keepChannelListSorted] == NO) {
+		return;
+	}
+
+	NSUInteger oldIndex = NSNotFound;
+	NSUInteger newIndex = NSNotFound;
+
+	@synchronized(self.channelListPrivate) {
+		oldIndex = [self.channelListPrivate indexOfObjectIdenticalTo:channel];
+
+		if (oldIndex == NSNotFound) {
+			return;
+		}
+
+		[self.channelListPrivate removeObjectAtIndex:oldIndex];
+
+		newIndex = [self _sortedIndexForChannel:channel];
+
+		[self.channelListPrivate insertObject:channel atIndex:newIndex];
+
+		if (newIndex == oldIndex) {
+			return;
+		}
+
+		self.channelMap = nil;
+
+		[self updateStoredChannelList];
+	}
+
+	[mainWindowServerList() moveItemAtIndex:oldIndex inParent:self toIndex:newIndex inParent:self];
+
+	[menuController() populateNavigationChannelList];
 }
 
 - (void)addChannel:(IRCChannel *)channel atPosition:(NSUInteger)position
@@ -1315,9 +1405,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		return NO;
 	}
 
-	if ([TPCPreferences removeAllFormatting] == NO) {
-		message = message.stripIRCEffects;
-	}
+	message = message.stripIRCEffects;
 
 	for (THOPluginOutputSuppressionRule *rule in rules) {
 		if ([XRRegularExpression string:message isMatchedByRegex:rule.match] == NO) {

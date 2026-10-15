@@ -7,6 +7,7 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TDCPreferencesInterfacePane">
             <connections>
+                <outlet property="generalOptionsStack" destination="5Ks-KS-pKv" id="kcs-o1-stk"/>
                 <outlet property="view" destination="2Th-u8-aIC" id="Gix-Hj-gcJ"/>
             </connections>
         </customObject>

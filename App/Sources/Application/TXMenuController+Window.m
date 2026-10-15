@@ -189,29 +189,9 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL listChanged = NO;
 
 	for (IRCClient *u in worldController().clientList) {
-		NSMutableArray *channelList = [u.channelList mutableCopy];
-
-		[channelList sortUsingComparator:^NSComparisonResult(IRCChannel *channel1, IRCChannel *channel2) {
-			/* Channels before private messages */
-			if (channel1.isChannel != channel2.isChannel) {
-				return ((channel1.isChannel) ? NSOrderedAscending : NSOrderedDescending);
-			}
-
-			NSString *name1 = channel1.name.lowercaseString;
-			NSString *name2 = channel2.name.lowercaseString;
-
-			return [name1 compare:name2];
-		}];
-
-		if ([channelList isEqualToArray:u.channelList]) {
-			continue;
+		if ([u sortChannelList]) {
+			listChanged = YES;
 		}
-
-		u.channelList = channelList;
-
-		[u reloadServerListItems];
-
-		listChanged = YES;
 	}
 
 	if (listChanged == NO) {

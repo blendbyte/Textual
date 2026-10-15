@@ -42,3 +42,8 @@
 
 "mvl-r5" = "This channel's configuration has changed. Do you want to reload the Channel Properties dialog?";
 "qby-hi" = "You will loose unsaved changes if you click “Yes”";
+
+"fmt-l1" = "Colors and formatting:";
+"fmt-p1" = "Use global setting (%@)";
+"fmt-p2" = "Remove";
+"fmt-p3" = "Show";

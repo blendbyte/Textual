@@ -61,7 +61,7 @@
 #import "TVCTextViewIRCFormattingMenuPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TPCApplicationInfo.h"
-#import "TPCPreferencesLocal.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TPCThemeControllerPrivate.h"
 #import "TPCTheme.h"
@@ -823,6 +823,11 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else
 	{
+		/* Manual order and automatic sorting would fight (10.10) */
+		if ([TPCPreferences keepChannelListSorted]) {
+			return NSDragOperationNone;
+		}
+
 		IRCChannel *channel = (IRCChannel *)draggedItem;
 
 		if (channel.associatedClient != item) {

@@ -41,7 +41,7 @@
 #import "NSStringHelper.h"
 #import "IRCClientConfig.h"
 #import "IRCClient.h"
-#import "IRCChannel.h"
+#import "IRCChannelPrivate.h"
 #import "IRCChannelUser.h"
 #import "IRCColorFormat.h"
 #import "IRCISupportInfo.h"
@@ -310,6 +310,21 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 - (BOOL)scanForKeywords
 {
 	return ([self isRenderingPRIVMSG] && self->_memberType == TVCLogLineMemberTypeNormal);
+}
+
+/* Colors and formatting removed by the channel's choice or, without a
+ channel (the server console), the global preference */
+- (void)stripFormattingFromBodyIfRemoved
+{
+	IRCChannel *channel = self->_viewController.associatedChannel;
+
+	BOOL removeFormatting = ((channel) ? channel.removesFormatting : [TPCPreferences removeAllFormatting]);
+
+	if (removeFormatting == NO) {
+		return;
+	}
+
+	self->_body = self->_body.stripIRCEffects;
 }
 
 - (void)stripDangerousUnicodeCharactersFromBody
@@ -1291,6 +1306,8 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 
 	/* Call -stripDangerousUnicodeCharactersFromBody first because it modifies the body. */
 	[renderer stripDangerousUnicodeCharactersFromBody];
+
+	[renderer stripFormattingFromBodyIfRemoved];
 
 	[renderer buildEffectsDictionary];
 

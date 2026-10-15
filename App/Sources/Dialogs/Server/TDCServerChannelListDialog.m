@@ -314,7 +314,8 @@ NS_ASSUME_NONNULL_BEGIN
 		if (topic.length > 0) {
 			topicFormatted =
 			[topic attributedStringWithIRCFormatting:[NSTableView preferredGlobalTableViewFont]
-								  preferredFontColor:[NSColor controlTextColor]];
+								  preferredFontColor:[NSColor controlTextColor]
+						   honorFormattingPreference:YES];
 		}
 
 		self->_channelTopicFormatted = (topicFormatted ?: [NSAttributedString attributedString]);

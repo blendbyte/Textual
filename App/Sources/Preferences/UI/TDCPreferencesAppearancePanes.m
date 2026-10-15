@@ -39,6 +39,7 @@
 
 #import "NSViewHelper.h"
 #import "TXMasterController.h"
+#import "TXMenuController.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesReload.h"
@@ -497,6 +498,8 @@ NS_ASSUME_NONNULL_BEGIN
 /* Bound in the nib (clear: the appearance's own colour) */
 @property (nonatomic, copy) NSColor *serverListUnreadCountBadgeHighlightColor;
 
+@property (nonatomic, weak) IBOutlet NSStackView *generalOptionsStack;
+
 - (IBAction)onChangedAppearance:(nullable id)sender;
 - (IBAction)onChangedTransparency:(nullable id)sender;
 - (IBAction)onChangedChannelViewArrangement:(nullable id)sender;
@@ -508,6 +511,37 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation TDCPreferencesInterfacePane
+
+- (void)viewDidLoad
+{
+	[super viewDidLoad];
+
+	[self addKeepChannelListSortedCheck];
+}
+
+/* First of the General tab's options (10.10) */
+- (void)addKeepChannelListSortedCheck
+{
+	NSButton *check = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[srt-c1]") target:self action:@selector(onChangedKeepChannelListSorted:)];
+
+	check.state = (([TPCPreferences keepChannelListSorted]) ? NSControlStateValueOn : NSControlStateValueOff);
+
+	check.toolTip = TXTLS(@"TDCPreferencesController[srt-t1]");
+
+	[self.generalOptionsStack insertView:check atIndex:0 inGravity:NSStackViewGravityTop];
+}
+
+- (void)onChangedKeepChannelListSorted:(NSButton *)sender
+{
+	BOOL keepSorted = (sender.state == NSControlStateValueOn);
+
+	[TPCPreferences setKeepChannelListSorted:keepSorted];
+
+	/* Sorted at once, not only from the next change */
+	if (keepSorted) {
+		[menuController() sortChannelListNames:nil];
+	}
+}
 
 - (NSColor *)serverListUnreadCountBadgeHighlightColor
 {

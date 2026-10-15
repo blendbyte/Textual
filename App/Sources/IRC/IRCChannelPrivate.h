@@ -89,6 +89,9 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 
 - (NSDictionary<NSString *, id> *)configurationDictionary;
 
+/* The channel's own choice, or the global preference (10.10) */
+@property (readonly) BOOL removesFormatting;
+
 - (void)writeToLogLineToLogFile:(TVCLogLine *)logLine;
 - (void)logFileWriteSessionBegin;
 - (void)logFileWriteSessionEnd;

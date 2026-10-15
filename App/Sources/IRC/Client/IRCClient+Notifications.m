@@ -136,11 +136,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *text = notification.text;
 
 	if (text) {
-		text = text.trim;
-
-		if ([TPCPreferences removeAllFormatting] == NO) {
-			text = text.stripIRCEffects;
-		}
+		text = text.trim.stripIRCEffects;
 	}
 
 	switch (eventType) {

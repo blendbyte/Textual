@@ -339,9 +339,7 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 		}
 	}
 
-	if ([TPCPreferences removeAllFormatting] == NO) {
-		eventDescription = eventDescription.stripIRCEffects;
-	}
+	eventDescription = eventDescription.stripIRCEffects;
 
 	NSString *categoryIdentifier = nil;
 

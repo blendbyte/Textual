@@ -36,6 +36,7 @@
 
 #import <XCTest/XCTest.h>
 
+#import "TPCPreferencesLocalPrivate.h"
 #import "IRCChannelConfig.h"
 #import "IRCChannelPrivate.h"
 #import "IRCClientConfig.h"
@@ -112,6 +113,40 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual([self.client findChannel:@"#TEXTUAL"], channel);
 	XCTAssertNil([self.client findChannel:@"#other"]);
 	XCTAssertNil([self.client findChannel:@"robert"]);
+}
+
+- (NSArray<NSString *> *)channelNames
+{
+	return [self.client.channelList valueForKey:@"name"];
+}
+
+/* Kept sorted: new channels and private messages, and a renamed query, land
+ in Window → Sort Channel List's order (10.10) */
+- (void)testKeptSortedListPlacesNewAndRenamedEntries
+{
+	BOOL savedKeepSorted = [TPCPreferences keepChannelListSorted];
+
+	[TPCPreferences setKeepChannelListSorted:YES];
+
+	(void)[self addChannelNamed:@"#delta" type:IRCChannelTypeChannel];
+	(void)[self addChannelNamed:@"#bravo" type:IRCChannelTypeChannel];
+	IRCChannel *query = [self addChannelNamed:@"zed" type:IRCChannelTypePrivateMessage];
+	(void)[self addChannelNamed:@"Amy" type:IRCChannelTypePrivateMessage];
+	(void)[self addChannelNamed:@"#Charlie" type:IRCChannelTypeChannel];
+
+	NSArray *expected = @[@"#bravo", @"#Charlie", @"#delta", @"Amy", @"zed"];
+
+	XCTAssertEqualObjects([self channelNames], expected);
+
+	query.name = @"aaron";
+
+	[self.client moveChannelToSortedPosition:query];
+
+	expected = @[@"#bravo", @"#Charlie", @"#delta", @"aaron", @"Amy"];
+
+	XCTAssertEqualObjects([self channelNames], expected);
+
+	[TPCPreferences setKeepChannelListSorted:savedKeepSorted];
 }
 
 @end

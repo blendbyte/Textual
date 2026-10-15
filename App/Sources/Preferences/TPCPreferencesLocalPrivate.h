@@ -169,6 +169,10 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
 
+/* Channels and private messages kept in Window → Sort Channel List's order (10.10) */
+@property (class, readonly) BOOL keepChannelListSorted;
++ (void)setKeepChannelListSorted:(BOOL)keepChannelListSorted;
+
 /* The keyword lists with their limits and sounds (E3, D-E3.8) */
 @property (class, readonly, copy, nullable) NSArray<IRCHighlightKeyword *> *highlightMatchKeywordEntries;
 @property (class, readonly, copy, nullable) NSArray<IRCHighlightKeyword *> *highlightExcludeKeywordEntries;

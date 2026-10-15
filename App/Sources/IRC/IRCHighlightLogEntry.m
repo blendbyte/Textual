@@ -120,7 +120,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSAttributedString *)renderedMessage
 {
 	return [self.formattedMessage attributedStringWithIRCFormatting:[NSTableView preferredGlobalTableViewFont]
-												 preferredFontColor:[NSColor controlTextColor]];
+												 preferredFontColor:[NSColor controlTextColor]
+										  honorFormattingPreference:YES];
 }
 
 - (NSString *)lineNumber

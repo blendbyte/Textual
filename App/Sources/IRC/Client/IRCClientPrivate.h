@@ -72,6 +72,12 @@ enum {
 - (void)addChannel:(IRCChannel *)channel;
 - (void)addChannel:(IRCChannel *)channel atPosition:(NSUInteger)position;
 
+/* Window → Sort Channel List's order: channels before private messages, by name */
++ (NSComparisonResult)compareChannel:(IRCChannel *)channel1 toChannel:(IRCChannel *)channel2;
+
+- (BOOL)sortChannelList; // NO when already sorted
+- (void)moveChannelToSortedPosition:(IRCChannel *)channel; // a renamed query, with "Keep channel list sorted" on
+
 - (void)removeChannel:(IRCChannel *)channel; // This only removes the channel from channel array. Use world controller to properly destroy a channel.
 
 - (void)channelNameChanged; // A query was renamed; drops the name lookup map
