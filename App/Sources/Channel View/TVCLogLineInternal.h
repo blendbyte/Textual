@@ -45,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _isEncrypted;
 	BOOL _isFirstForDay;
 	BOOL _nicknameColorStyleOverride;
+	BOOL _senderIsBot;
+	BOOL _isPrivateInChannel;
 	NSArray<NSString *> *_excludeKeywords;
 	NSArray<NSString *> *_highlightKeywords;
 	NSArray<NSString *> *_eventNicknames;

@@ -492,3 +492,11 @@ The identifier for a timer can be found using “/timer list”";
 "awy-a1" = "\002%1$@\002 is away: %2$@";
 "awy-a2" = "\002%@\002 is away";
 "awy-b1" = "\002%@\002 is back";
+
+"spl-q1" = "Netsplit between %1$@ and %2$@: %3$@ quit";
+"spl-q2" = "Netsplit: %@ quit";
+"spl-j1" = "Netsplit between %1$@ and %2$@ is over: %3$@ came back";
+"spl-j2" = "Netsplit over: %@ came back";
+"spl-n1" = "%@ people";
+"spl-n2" = "%1$@ and %2$@";
+"spl-n3" = "%1$@, %2$@ and %3$@";

@@ -50,10 +50,14 @@ NS_ASSUME_NONNULL_BEGIN
  extended-join, account-notify or account-tag, so a nil account then means
  logged out rather than unknown */
 @property (readonly) BOOL accountKnown;
+
+/* Marked as a bot by the server (bot mode: the WHO flag, the bot tag, WHOIS) */
+@property (readonly) BOOL isBot;
 @end
 
 @interface IRCUserMutable ()
 @property (nonatomic, assign, readwrite) BOOL accountKnown;
+@property (nonatomic, assign, readwrite) BOOL isBot;
 @end
 
 NS_ASSUME_NONNULL_END

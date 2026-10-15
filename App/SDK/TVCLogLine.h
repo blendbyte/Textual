@@ -102,6 +102,8 @@ typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {
 @property (readonly, copy, nullable) NSDictionary<NSString *, id> *rendererAttributes;
 @property (readonly) NSUInteger sessionIdentifier;
 @property (readonly, copy, nullable) NSArray<NSString *> *eventNicknames; // who a join, part or quit is about; for a nickname change, the old and the new nickname
+@property (readonly) BOOL senderIsBot; // the server marked the sender as a bot (bot mode)
+@property (readonly) BOOL isPrivateInChannel; // a private message shown in the channel it is about (+channel-context)
 
 - (nullable instancetype)initWithData:(NSData *)data NS_DESIGNATED_INITIALIZER;
 
@@ -133,6 +135,8 @@ typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {
 @property (nonatomic, copy, readwrite, nullable) NSArray<NSString *> *excludeKeywords;
 @property (nonatomic, copy, readwrite, nullable) NSDictionary<NSString *, id> *rendererAttributes;
 @property (nonatomic, copy, readwrite, nullable) NSArray<NSString *> *eventNicknames;
+@property (nonatomic, assign, readwrite) BOOL senderIsBot;
+@property (nonatomic, assign, readwrite) BOOL isPrivateInChannel;
 @end
 
 NS_ASSUME_NONNULL_END

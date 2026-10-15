@@ -415,6 +415,38 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *sender = m.senderNickname;
 
+	/* A private reply about a channel (+channel-context), such as a bot's
+	 answer to !help there: shown in that channel, marked "only you" */
+	IRCChannel *contextChannel = [self channelForChannelContextOfMessage:m];
+
+	if (contextChannel && [self nicknameIsMyself:sender] == NO) {
+		if ([self chatHistoryShouldSkipMessage:m inChannel:contextChannel]) {
+			return;
+		}
+
+		[self print:text
+				 by:sender
+		  inChannel:contextChannel
+			 asType:lineType
+			command:m.command
+		 receivedAt:m.receivedAt
+		isEncrypted:NO
+   referenceMessage:m
+	completionBlock:^(TVCLogControllerPrintOperationContext *context) {
+		BOOL postEvent = YES;
+
+		if ([self isSafeToPostNotificationForMessage:m inChannel:contextChannel]) {
+			postEvent = [self notifyPrintedText:TXNotificationTypePrivateMessage lineType:lineType target:contextChannel nickname:sender text:text];
+		}
+
+		if (postEvent) {
+			[self setUnreadStateForChannel:contextChannel];
+		}
+	}];
+
+		return;
+	}
+
 	TVCLogControllerPrintOperationCompletionBlock printCompletionBlock = nil;
 
 	BOOL isPlainText = (lineType != TVCLogLineTypeNotice);
@@ -1329,6 +1361,13 @@ NS_ASSUME_NONNULL_BEGIN
 		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
 
+	/* Back after a netsplit: one line for all of them */
+	BOOL netjoin = (myself == NO && [self collectNetsplitNickname:sender inChannel:channel forMessage:m]);
+
+	if (netjoin) {
+		printMessage = NO;
+	}
+
 	if (printMessage) {
 		NSString *message = TXTLS(@"IRC[ziu-p9]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
 
@@ -1350,7 +1389,7 @@ NS_ASSUME_NONNULL_BEGIN
 		if (self.config.sendWhoCommandRequestsToChannels && self.isBrokenIRCd_aka_Twitch == NO) {
 			[self requestModesForChannel:channel];
 		}
-	} else {
+	} else if (netjoin == NO) {
 		[self notifyEvent:TXNotificationTypeUserJoined lineType:TVCLogLineTypeJoin target:channel nickname:sender text:nil];
 	}
 }
@@ -1602,6 +1641,11 @@ NS_ASSUME_NONNULL_BEGIN
 			[mainWindow() updateTitleFor:channel];
 
 			if (printMessage == NO) {
+				return;
+			}
+
+			/* Lost in a netsplit: one line for all of them */
+			if (myself == NO && [self collectNetsplitNickname:sender inChannel:channel forMessage:m]) {
 				return;
 			}
 		}
@@ -2417,6 +2461,179 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+- (void)markUserWithNickname:(NSString *)nickname asBot:(BOOL)isBot
+{
+	NSParameterAssert(nickname != nil);
+
+	IRCUser *user = [self findUser:nickname];
+
+	if (user == nil || user.isBot == isBot) {
+		return;
+	}
+
+	[self modifyUser:user withBlock:^(IRCUserMutable *userMutable) {
+		userMutable.isBot = isBot;
+	}];
+
+	IRCUser *userChanged = [self findUser:nickname];
+
+	if (userChanged) {
+		[mainWindow() updateDrawingForUserInUserList:userChanged];
+	}
+}
+
+/* The server tags every command of a bot (bot mode); a live message without
+ the tag means the sender isn't one (any more) */
+- (void)processBotTagInMessage:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if (self.supportInfo.botModeCharacter == nil || [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMessageTags] == NO) {
+		return;
+	}
+
+	if (m.isPrintOnlyMessage || m.senderIsServer || m.isHistoric) {
+		return;
+	}
+
+	NSString *command = m.command.uppercaseString;
+
+	if ([command isEqualToString:@"PRIVMSG"] == NO && [command isEqualToString:@"NOTICE"] == NO && [command isEqualToString:@"JOIN"] == NO) {
+		return;
+	}
+
+	NSString *nickname = m.senderNickname;
+
+	if (nickname.length == 0) {
+		return;
+	}
+
+	[self markUserWithNickname:nickname asBot:(m.messageTags[@"bot"] != nil)];
+}
+
+- (BOOL)collectNetsplitNickname:(NSString *)nickname inChannel:(IRCChannel *)channel forMessage:(IRCMessage *)m
+{
+	NSParameterAssert(nickname != nil);
+	NSParameterAssert(channel != nil);
+	NSParameterAssert(m != nil);
+
+	IRCMessageBatchMessage *netsplitBatch = self.netsplitBatch;
+
+	if (netsplitBatch == nil || m.parentBatchMessage != netsplitBatch || m.isPrintOnlyMessage) {
+		return NO;
+	}
+
+	NSMutableArray *nicknames = self.netsplitNicknames[channel.name];
+
+	if (nicknames == nil) {
+		nicknames = [NSMutableArray array];
+
+		self.netsplitNicknames[channel.name] = nicknames;
+	}
+
+	if ([nicknames containsObject:nickname] == NO) {
+		[nicknames addObject:nickname];
+	}
+
+	return YES;
+}
+
++ (NSString *)netsplitSummaryForNicknames:(NSArray<NSString *> *)nicknames servers:(NSArray<NSString *> *)servers joined:(BOOL)joined
+{
+	NSParameterAssert(nicknames != nil);
+	NSParameterAssert(servers != nil);
+
+	/* Up to three by name, more counted */
+	NSString *who = nil;
+
+	if (nicknames.count > 3) {
+		who = TXTLS(@"IRC[spl-n1]", TXFormattedNumber(nicknames.count));
+	} else if (nicknames.count == 3) {
+		who = TXTLS(@"IRC[spl-n3]", nicknames[0], nicknames[1], nicknames[2]);
+	} else if (nicknames.count == 2) {
+		who = TXTLS(@"IRC[spl-n2]", nicknames[0], nicknames[1]);
+	} else {
+		who = nicknames.firstObject;
+	}
+
+	/* Servers that hide their links send *.net *.split */
+	BOOL namedServers = (servers.count == 2 && [servers[0] hasPrefix:@"*."] == NO);
+
+	if (joined) {
+		return ((namedServers) ? TXTLS(@"IRC[spl-j1]", servers[0], servers[1], who) : TXTLS(@"IRC[spl-j2]", who));
+	}
+
+	return ((namedServers) ? TXTLS(@"IRC[spl-q1]", servers[0], servers[1], who) : TXTLS(@"IRC[spl-q2]", who));
+}
+
+- (void)processNetsplitBatchMessage:(IRCMessageBatchMessage *)batchMessage
+{
+	NSParameterAssert(batchMessage != nil);
+
+	BOOL joined = [batchMessage.batchType isEqualToString:@"netjoin"];
+
+	IRCMessage *openingMessage = batchMessage.openingMessage;
+
+	NSArray *servers = @[];
+
+	if (openingMessage.paramsCount >= 4) {
+		servers = @[[openingMessage paramAt:2], [openingMessage paramAt:3]];
+	}
+
+	self.netsplitBatch = batchMessage;
+	self.netsplitNicknames = [NSMutableDictionary dictionary];
+
+	[self recursivelyProcessBatchMessage:batchMessage];
+
+	NSDictionary *nicknamesByChannel = [self.netsplitNicknames copy];
+
+	self.netsplitBatch = nil;
+	self.netsplitNicknames = nil;
+
+	NSDate *receivedAt = ((openingMessage) ? openingMessage.receivedAt : [NSDate date]);
+
+	[nicknamesByChannel enumerateKeysAndObjectsUsingBlock:^(NSString *channelName, NSArray<NSString *> *nicknames, BOOL *stop) {
+		IRCChannel *channel = [self findChannel:channelName];
+
+		if (channel == nil) {
+			return;
+		}
+
+		[self printGeneralEvent:[self.class netsplitSummaryForNicknames:nicknames servers:servers joined:joined]
+				 aboutNicknames:nicknames
+					  inChannel:channel
+						 asType:((joined) ? TVCLogLineTypeJoin : TVCLogLineTypeQuit)
+						command:((joined) ? @"NETJOIN" : @"NETSPLIT")
+					 receivedAt:receivedAt];
+	}];
+}
+
+- (nullable IRCChannel *)channelForChannelContextOfMessage:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	NSString *channelName = (m.messageTags[@"+channel-context"] ?: m.messageTags[@"+draft/channel-context"]);
+
+	if (channelName.length == 0 || [self stringIsChannelName:channelName] == NO) {
+		return nil;
+	}
+
+	IRCChannel *channel = [self findChannel:channelName];
+
+	if (channel == nil || channel.isChannel == NO || channel.isActive == NO) {
+		return nil;
+	}
+
+	/* Only from someone in that channel: anyone else could make a message look like it belongs there */
+	NSString *sender = m.senderNickname;
+
+	if (sender.length == 0 || [channel findMember:sender] == nil) {
+		return nil;
+	}
+
+	return channel;
+}
+
 #pragma mark -
 #pragma mark BATCH Command
 
@@ -2509,6 +2726,15 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(batchMessage != nil);
 
 	NSString *batchType = batchMessage.batchType;
+
+	/* A netsplit or its end: one line per channel instead of a quit or join each */
+	if ([batchType isEqualToString:@"netsplit"] || [batchType isEqualToString:@"netjoin"]) {
+		[self processNetsplitBatchMessage:batchMessage];
+
+		[self labeledBatchFinished:batchMessage];
+
+		return;
+	}
 
 	/* A multi-line message: its lines are one message */
 	if ([batchType isEqualToString:@"draft/multiline"]) {

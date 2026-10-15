@@ -1960,6 +1960,15 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		classAttribute = @"event";
 	}
 
+	/* Labelled "bot" and "only you" by the view (eventGroups.js) */
+	if (logLine.senderIsBot) {
+		classAttribute = [classAttribute stringByAppendingString:@" bot"];
+	}
+
+	if (logLine.isPrivateInChannel) {
+		classAttribute = [classAttribute stringByAppendingString:@" private"];
+	}
+
 	templateAttributes[@"lineClassAttribute"] = classAttribute;
 
 	// ---- //
@@ -2290,6 +2299,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 				  @"nickname" : TXTLS(@"TVCMainWindow[e7g-n1]", @"%@"),
 				  @"away" : TXTLS(@"TVCMainWindow[e7g-w1]", @"%@"),
 				  @"back" : TXTLS(@"TVCMainWindow[e7g-b1]", @"%@"),
+				  @"botLabel" : TXTLS(@"TVCMainWindow[bot-l1]"),
+				  @"privateLabel" : TXTLS(@"TVCMainWindow[prv-l1]"),
 				  @"nicknameChange" : TXTLS(@"TVCMainWindow[e7g-n2]", @"%1$@", @"%2$@"),
 				  @"listPair" : TXTLS(@"TVCMainWindow[e7g-a1]", @"%1$@", @"%2$@"),
 				  @"listMore" : TXTLS(@"TVCMainWindow[e7g-a2]", @"%1$@", @"%2$@"),

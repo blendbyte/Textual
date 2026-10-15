@@ -589,6 +589,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 	logLine.eventNicknames = eventNicknames;
 
+	/* Bot mode: the server's bot tag on the message */
+	logLine.senderIsBot = (referenceMessage.messageTags[@"bot"] != nil);
+
+	/* Sent to us, shown in a channel (+channel-context) */
+	logLine.isPrivateInChannel = (channel.isChannel && referenceMessage != nil &&
+								  [self stringIsChannelName:[referenceMessage paramAt:0]] == NO);
+
 	logLine.messageBody = messageBody;
 
 	/* Has the date changed */

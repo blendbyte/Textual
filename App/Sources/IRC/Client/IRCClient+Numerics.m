@@ -582,6 +582,11 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			NSAssertReturnR([m paramsCount] > 2, YES);
 
+			/* Bot mode: the member list marks them */
+			if (numeric == RPL_WHOISBOT) {
+				[self markUserWithNickname:[m paramAt:1] asBot:YES];
+			}
+
 			if (printMessage) {
 				[self printReply:m inChannel:self.selectedChannelForReplies];
 			}
@@ -1701,6 +1706,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL isAway = NO;
 	BOOL isIRCop = NO;
+	BOOL isBot = NO;
+
+	NSString *botFlag = self.supportInfo.botModeCharacter;
 
 	NSMutableString *userModes = [NSMutableString string];
 
@@ -1713,6 +1721,10 @@ NS_ASSUME_NONNULL_BEGIN
 			continue;
 		} else if ([character isEqualToString:@"*"]) {
 			isIRCop = YES;
+
+			continue;
+		} else if (botFlag && [character isEqualToString:botFlag]) {
+			isBot = YES;
 
 			continue;
 		}
@@ -1743,6 +1755,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	userMutable.isAway = isAway;
 	userMutable.isIRCop = isIRCop;
+
+	/* On servers with bot mode, WHO says who is one */
+	if (botFlag) {
+		userMutable.isBot = isBot;
+	}
 
 	if (reply.realName) {
 		userMutable.realName = reply.realName;
@@ -1798,6 +1815,7 @@ NS_ASSUME_NONNULL_BEGIN
 			  replaceInAllChannels:replaceInAllChannels];
 		}
 		else if (user.isAway != userAdded.isAway ||
+				 user.isBot != userAdded.isBot ||
 				 user.accountKnown != userAdded.accountKnown ||
 				 NSObjectsAreEqual(user.account, userAdded.account) == NO)
 		{

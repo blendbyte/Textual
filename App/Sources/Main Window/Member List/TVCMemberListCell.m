@@ -178,6 +178,10 @@ NS_ASSUME_NONNULL_BEGIN
 		[details addObject:TXTLS(@"Accessibility[q8m-n0]")];
 	}
 
+	if (user.isBot) {
+		[details addObject:TXTLS(@"Accessibility[q8m-b1]")];
+	}
+
 	NSString *help = ((details.count > 0) ? [details componentsJoinedByString:@", "] : nil);
 
 	if (help != self.accessibilityHelp && [help isEqualToString:self.accessibilityHelp] == NO) {
@@ -289,6 +293,22 @@ NS_ASSUME_NONNULL_BEGIN
 		};
 
 		[mutableStringValue appendAttributedString:[[NSAttributedString alloc] initWithString:TXLocalizationNotNeeded(@" \u2022") attributes:markerAttributes]];
+	}
+
+	/* A bot (bot mode): "bot" after the name, smaller and faint */
+	if (cellItem.user.isBot) {
+		NSColor *markerColor = ((isSelected) ? [controlColor colorWithAlphaComponent:0.6] : [NSColor secondaryLabelColor]);
+
+		CGFloat fontSize = (((controlFont) ? controlFont.pointSize : 12.0) - 2.0);
+
+		NSDictionary *markerAttributes = @{
+			NSFontAttributeName : [NSFont systemFontOfSize:fontSize weight:NSFontWeightSemibold],
+			NSForegroundColorAttributeName : ((markerColor) ?: [NSColor secondaryLabelColor])
+		};
+
+		NSString *marker = [@" " stringByAppendingString:TXTLS(@"TVCMainWindow[bot-l1]")];
+
+		[mutableStringValue appendAttributedString:[[NSAttributedString alloc] initWithString:marker attributes:markerAttributes]];
 	}
 
 	[mutableStringValue endEditing];

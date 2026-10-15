@@ -108,6 +108,21 @@ _EventGroups._applyDisplay = function() /* PRIVATE */
 
 	rules.push(":where(div.line.eventGroupSummary[data-dimmed=\"true\"]) { opacity: 0.5; }");
 
+	/* "bot" after the name of a bot (bot mode), "only you" before a private
+	 message shown in the channel it is about (+channel-context) */
+	var strings = (_EventGroups.strings || {});
+
+	var label = "margin: 0 0.35em; padding: 0 0.3em; border: 1px solid currentColor; border-radius: 0.3em; " +
+				"font-size: 0.75em; font-weight: 600; opacity: 0.6; vertical-align: 0.08em;";
+
+	if (strings.botLabel) {
+		rules.push(":where(div.line.bot .sender)::after { content: " + JSON.stringify(strings.botLabel) + "; " + label + " }");
+	}
+
+	if (strings.privateLabel) {
+		rules.push(":where(div.line.private .message)::before { content: " + JSON.stringify(strings.privateLabel) + "; " + label + " margin-left: 0; }");
+	}
+
 	var style = document.getElementById("eventDisplayRules");
 
 	if (!style) {
@@ -139,6 +154,13 @@ _EventGroups.isHiddenLine = function(element) /* PRIVATE */
 _EventGroups.isCollapsibleLine = function(element) /* PRIVATE */
 {
 	if (_EventGroups._isLine(element) === false || _EventGroups.isHiddenLine(element)) {
+		return false;
+	}
+
+	/* A netsplit's summary line is a line of its own */
+	var command = element.getAttribute("data-command");
+
+	if (command === "netsplit" || command === "netjoin") {
 		return false;
 	}
 

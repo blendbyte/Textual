@@ -2196,6 +2196,52 @@ async def scenario_multiline(client):
 		seen = len(client.received)
 
 
+async def scenario_bots(client):
+	"""Bot mode, netsplit/netjoin and channel-context (9.19 B): BOT=B, message-tags
+	and batch. #one with helpbot (a bot: WHO flag B, bot tag), alice and 6 others.
+	"go" anywhere: helpbot talks in #one (bot tag) and answers privately with
+	+channel-context=#one; a stranger not in #one sends a private message claiming
+	#one (shown as a query); a netsplit batch takes 6 people, a netjoin brings 4
+	back. Stays connected."""
+	if not await client.register_with_capabilities("batch message-tags server-time"):
+		return
+
+	me = client.nickname
+	others = ["user1", "user2", "user3", "user4", "user5", "user6"]
+
+	await client.send(f":{SERVER} 005 {me} BOT=B WHOX :are supported by this server")
+	await client.send(f":{me}!user@client.textual.test JOIN #one")
+	await client.send(f":{SERVER} 353 {me} = #one :{me} @alice helpbot " + " ".join(others))
+	await client.send(f":{SERVER} 366 {me} #one :End of /NAMES list.")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() == "WHO" and rest.startswith("#one"):
+				token = "0"
+				if "%" in rest and "," in rest:
+					token = rest.rsplit(",", 1)[1]
+				for nick, flags, account in [("alice", "H@", "alice"), ("helpbot", "HB", "helpbot")] + [(o, "H", "0") for o in others] + [(me, "H", "0")]:
+					await client.send(f":{SERVER} 354 {me} {token} #one {nick} {nick}.test {nick} {flags} {account} :{nick.capitalize()}")
+				await client.send(f":{SERVER} 315 {me} #one :End of /WHO list.")
+			elif command.upper() == "PRIVMSG" and rest.endswith(" :go"):
+				await client.send(f"@bot :helpbot!h@helpbot.test PRIVMSG #one :Type !help for the list of commands.")
+				await client.send(f"@bot;+channel-context=#one :helpbot!h@helpbot.test NOTICE {me} :Commands: !help, !rules, !seen <nick>")
+				await client.send(f"@+channel-context=#one :stranger!s@stranger.test PRIVMSG {me} :I am not in #one but say I am")
+				await client.send(f":{SERVER} BATCH +ns1 netsplit irc1.test irc2.test")
+				for o in others:
+					await client.send(f"@batch=ns1 :{o}!{o[0]}@{o}.test QUIT :irc1.test irc2.test")
+				await client.send(f":{SERVER} BATCH -ns1")
+				await asyncio.sleep(2)
+				await client.send(f":{SERVER} BATCH +nj1 netjoin irc1.test irc2.test")
+				for o in others[:4]:
+					await client.send(f"@batch=nj1 :{o}!{o[0]}@{o}.test JOIN #one")
+				await client.send(f":{SERVER} BATCH -nj1")
+		seen = len(client.received)
+
+
 async def scenario_keywords(client):
 	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
@@ -2383,6 +2429,7 @@ SCENARIOS = {
 	"sorting": scenario_sorting,
 	"events": scenario_events,
 	"labels": scenario_labels,
+	"bots": scenario_bots,
 	"multiline": scenario_multiline,
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
@@ -2432,7 +2479,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

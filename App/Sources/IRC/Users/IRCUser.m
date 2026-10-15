@@ -234,6 +234,7 @@ NS_ASSUME_NONNULL_BEGIN
 			 [self.account isEqualToString:objectCast.account]) &&
 
 			self.accountKnown == objectCast.accountKnown &&
+			self.isBot == objectCast.isBot &&
 
 			self.isAway == objectCast.isAway &&
 			self.isIRCop == objectCast.isIRCop);
@@ -260,6 +261,7 @@ NS_ASSUME_NONNULL_BEGIN
 	object->_realName = self->_realName;
 	object->_account = self->_account;
 	object->_accountKnown = self->_accountKnown;
+	object->_isBot = self->_isBot;
 
 	object->_isAway = self->_isAway;
 	object->_isIRCop = self->_isIRCop;
@@ -348,6 +350,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic realName;
 @dynamic account;
 @dynamic accountKnown;
+@dynamic isBot;
 @dynamic isAway;
 @dynamic isIRCop;
 
@@ -407,6 +410,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_accountKnown != accountKnown) {
 		self->_accountKnown = accountKnown;
+	}
+}
+
+- (void)setIsBot:(BOOL)isBot
+{
+	if (self->_isBot != isBot) {
+		self->_isBot = isBot;
 	}
 }
 

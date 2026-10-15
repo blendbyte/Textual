@@ -140,6 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger multilineMaxBytes; // draft/multiline limits from the CAP value
 @property (nonatomic, assign) NSUInteger multilineMaxLines; // 0: no line limit
 @property (nonatomic, assign) NSUInteger multilineBatchCount;
+@property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
 @property (nonatomic, strong) TLOTimer *autojoinTimer;
 @property (nonatomic, strong) TLOTimer *autojoinNextJoinTimer;
@@ -337,6 +339,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveAccount:(IRCMessage *)m;
 - (void)receiveSetName:(IRCMessage *)m;
 - (void)processAccountTagInMessage:(IRCMessage *)m;
+- (void)processBotTagInMessage:(IRCMessage *)m; // bot mode: the bot tag marks the sender
+- (void)markUserWithNickname:(NSString *)nickname asBot:(BOOL)isBot;
+
+/* A quit or join of a netsplit or netjoin batch: noted for the batch's summary
+ line instead of a line of its own */
+- (BOOL)collectNetsplitNickname:(NSString *)nickname inChannel:(IRCChannel *)channel forMessage:(IRCMessage *)m;
+
+/* "Netsplit between a and b: alice, bob and 40 others quit" */
++ (NSString *)netsplitSummaryForNicknames:(NSArray<NSString *> *)nicknames servers:(NSArray<NSString *> *)servers joined:(BOOL)joined;
+
+/* +channel-context: the channel a private message to us is about, when we and
+ the sender are both in it */
+- (nullable IRCChannel *)channelForChannelContextOfMessage:(IRCMessage *)m;
 - (void)updateUser:(IRCUserMutable *)userMutable fromExtendedJoin:(IRCMessage *)m;
 @end
 

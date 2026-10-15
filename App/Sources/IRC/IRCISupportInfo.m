@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) NSUInteger maximumAwayLength;
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
+@property (nonatomic, copy, readwrite, nullable) NSString *botModeCharacter;
 @property (nonatomic, assign, readwrite) BOOL whoxSupported;
 @property (nonatomic, copy) NSArray<NSString *> *clientTagDenyList;
 @property (nonatomic, assign, readwrite) NSUInteger maximumChannelNameLength;
@@ -118,6 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.chatHistoryLimit = 0;
 
 	self.utf8Only = NO;
+
+	self.botModeCharacter = nil;
 
 	self.whoxSupported = NO;
 
@@ -195,6 +198,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 				if (awayLength > 0) {
 					self.maximumAwayLength = awayLength;
+				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"BOT"]) {
+				if (segmentValue.length == 1) {
+					self.botModeCharacter = segmentValue;
 				}
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
 				self.clientTagDenyList = [segmentValue componentsSeparatedByString:@","];

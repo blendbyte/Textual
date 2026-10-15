@@ -570,6 +570,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self processAccountTagInMessage:message];
 
+	[self processBotTagInMessage:message];
+
 	if (message.commandNumeric > 0) {
 		[self receiveNumericReply:message];
 	} else {

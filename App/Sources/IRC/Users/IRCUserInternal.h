@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_realName;
 	NSString *_account;
 	BOOL _accountKnown;
+	BOOL _isBot;
 	BOOL _isAway;
 	BOOL _isIRCop;
 }

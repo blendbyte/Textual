@@ -145,6 +145,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_eventNicknames = ([eventNicknames isKindOfClass:[NSArray class]] ? eventNicknames : nil);
 
 	self->_isEncrypted = [aDecoder decodeBoolForKey:@"isEncrypted"];
+	self->_senderIsBot = [aDecoder decodeBoolForKey:@"senderIsBot"];
+	self->_isPrivateInChannel = [aDecoder decodeBoolForKey:@"isPrivateInChannel"];
 	self->_isFirstForDay = [aDecoder decodeBoolForKey:@"isFirstForDay"];
 
 	self->_command = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"command"];
@@ -210,6 +212,14 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	[aCoder maybeEncodeObject:self.highlightKeywords forKey:@"highlightKeywords"];
 	[aCoder maybeEncodeObject:self.rendererAttributes forKey:@"rendererAttributes"];
 	[aCoder maybeEncodeObject:self.eventNicknames forKey:@"eventNicknames"];
+
+	if (self.senderIsBot) {
+		[aCoder encodeBool:YES forKey:@"senderIsBot"];
+	}
+
+	if (self.isPrivateInChannel) {
+		[aCoder encodeBool:YES forKey:@"isPrivateInChannel"];
+	}
 	[aCoder maybeEncodeObject:self.nickname forKey:@"nickname"];
 
 	[aCoder encodeBool:self.isEncrypted forKey:@"isEncrypted"];
@@ -442,6 +452,9 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	object->_eventNicknames = self->_eventNicknames;
 
+	object->_senderIsBot = self->_senderIsBot;
+	object->_isPrivateInChannel = self->_isPrivateInChannel;
+
 	object->_receivedAt = self->_receivedAt;
 
 	object->_command = self->_command;
@@ -479,6 +492,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic messageBody;
 @dynamic nickname;
 @dynamic eventNicknames;
+@dynamic senderIsBot;
+@dynamic isPrivateInChannel;
 @dynamic receivedAt;
 
 + (BOOL)isMutable
@@ -566,6 +581,20 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	if (self->_eventNicknames != eventNicknames) {
 		self->_eventNicknames = [eventNicknames copy];
+	}
+}
+
+- (void)setSenderIsBot:(BOOL)senderIsBot
+{
+	if (self->_senderIsBot != senderIsBot) {
+		self->_senderIsBot = senderIsBot;
+	}
+}
+
+- (void)setIsPrivateInChannel:(BOOL)isPrivateInChannel
+{
+	if (self->_isPrivateInChannel != isPrivateInChannel) {
+		self->_isPrivateInChannel = isPrivateInChannel;
 	}
 }
 
