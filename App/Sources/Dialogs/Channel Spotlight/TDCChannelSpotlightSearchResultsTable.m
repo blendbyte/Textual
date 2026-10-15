@@ -81,6 +81,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setInitialValues
 {
 	[self channelNameChanged];
+
+	/* A command has no counts whose observation would fill it */
+	[self unreadCountDescriptionChanged];
 }
 
 - (void)updateLayer
@@ -139,7 +142,11 @@ NS_ASSUME_NONNULL_BEGIN
 		paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
 	}
 
-	NSString *channelName = searchResult.channel.name;
+	NSString *channelName = ((searchResult.isMenuAction) ? searchResult.menuItem.title : searchResult.channel.name);
+
+	if (channelName == nil) {
+		return [NSAttributedString attributedString];
+	}
 
 	NSFont *channelNameFieldFont = self.channelNameField.font;
 
@@ -162,6 +169,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 											[resultString addAttribute:NSFontAttributeName value:boldFont range:range];
 										} options:NSCaseInsensitiveSearch];
+
+	/* A command's menu is on the second line */
+	if (searchResult.isMenuAction) {
+		return resultString;
+	}
 
 	NSString *networkName = searchResult.channel.associatedClient.networkNameAlt;
 
@@ -219,6 +231,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (searchResult == nil) {
 		return @"";
+	}
+
+	/* "Channel menu" or "Channel menu · ⇧⌘M" */
+	if (searchResult.isMenuAction) {
+		NSString *menuDescription = TXTLS(@"TDCChannelSpotlightController[mnu-p1]", searchResult.menuPath);
+
+		NSString *keyEquivalent = searchResult.keyEquivalentDescription;
+
+		if (keyEquivalent == nil) {
+			return menuDescription;
+		}
+
+		return TXTLS(@"TDCChannelSpotlightController[mnu-p2]", menuDescription, keyEquivalent);
 	}
 
 	NSUInteger nicknameHighlightCount = searchResult.channel.nicknameHighlightCount;

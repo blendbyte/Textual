@@ -38,12 +38,16 @@
 #import "NSObjectHelperPrivate.h"
 #import "IRCClient.h"
 #import "IRCChannel.h"
+#import "TLOLocalization.h"
 #import "TDCChannelSpotlightSearchResultPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TDCChannelSpotlightSearchResult ()
-@property (nonatomic, weak, readwrite) IRCChannel *channel;
+@property (nonatomic, weak, readwrite, nullable) IRCChannel *channel;
+@property (nonatomic, weak, readwrite, nullable) NSMenuItem *menuItem;
+@property (nonatomic, copy, readwrite, nullable) NSString *menuPath;
+@property (nonatomic, assign, readwrite) BOOL isMenuAction;
 @property (nonatomic, copy, readwrite) NSNumber *distance;
 @end
 
@@ -62,6 +66,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ((self = [super init])) {
 		self.channel = channel;
+
+		[self prepareInitialState];
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (instancetype)initWithMenuItem:(NSMenuItem *)menuItem path:(NSString *)menuPath
+{
+	NSParameterAssert(menuItem != nil);
+	NSParameterAssert(menuPath != nil);
+
+	if ((self = [super init])) {
+		self.menuItem = menuItem;
+		self.menuPath = menuPath;
+		self.isMenuAction = YES;
 
 		[self prepareInitialState];
 
@@ -101,16 +123,158 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSString *searchableString = self.channel.name;
+	NSString *searchableString = ((self.isMenuAction) ? self.menuItem.title : self.channel.name);
+
+	if (searchableString == nil) {
+		self.distance = @(0.0);
+
+		return;
+	}
 
 	double distance = [searchableString compareWithWord:searchString lengthPenaltyWeight:1.0];
 
 	self.distance = @(distance);
 }
 
-- (NSString *)clientId
+- (nullable NSString *)clientId
 {
 	return self.channel.associatedClient.uniqueIdentifier;
+}
+
+#pragma mark -
+#pragma mark Menu Commands
+
++ (NSArray<TDCChannelSpotlightSearchResult *> *)searchResultsForActionsInMenu:(NSMenu *)menu
+{
+	NSParameterAssert(menu != nil);
+
+	NSMutableArray<TDCChannelSpotlightSearchResult *> *searchResults = [NSMutableArray array];
+
+	[self _addSearchResultsForActionsInMenu:menu path:nil to:searchResults];
+
+	return [searchResults copy];
+}
+
++ (void)_addSearchResultsForActionsInMenu:(NSMenu *)menu path:(nullable NSString *)menuPath to:(NSMutableArray<TDCChannelSpotlightSearchResult *> *)searchResults
+{
+	NSParameterAssert(menu != nil);
+	NSParameterAssert(searchResults != nil);
+
+	if (menu == NSApp.servicesMenu) {
+		return;
+	}
+
+	/* Enables the items as the menu would when it opens */
+	[menu update];
+
+	/* Listed elsewhere (channels) or of no use here (this box, the window list) */
+	static NSSet<NSString *> *excludedActions = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		excludedActions = [NSSet setWithArray:@[
+			@"showChannelSpotlightWindow:",
+			@"emptyAction:",
+			@"_navigateToChannelInNavigationList:",
+			@"makeKeyAndOrderFront:"
+		]];
+	});
+
+	for (NSMenuItem *item in menu.itemArray) {
+		if (item.separatorItem || item.hidden || item.alternate || item.view != nil) {
+			continue;
+		}
+
+		NSString *title = item.title;
+
+		if (item.submenu) {
+			/* Top-level menus give their name; an item without a title uses its menu's */
+			NSString *submenuTitle = ((title.length > 0) ? title : item.submenu.title);
+
+			NSString *submenuPath = ((menuPath) ? [NSString stringWithFormat:TXLocalizationNotNeeded(@"%@ \u203A %@"), menuPath, submenuTitle] : submenuTitle);
+
+			[self _addSearchResultsForActionsInMenu:item.submenu path:submenuPath to:searchResults];
+
+			continue;
+		}
+
+		if (title.length == 0) {
+			continue;
+		}
+
+		if (menuPath == nil || item.action == NULL || item.enabled == NO) {
+			continue;
+		}
+
+		if ([excludedActions containsObject:NSStringFromSelector(item.action)]) {
+			continue;
+		}
+
+		[searchResults addObject:[[self alloc] initWithMenuItem:item path:menuPath]];
+	}
+}
+
+- (nullable NSString *)keyEquivalentDescription
+{
+	NSMenuItem *item = self.menuItem;
+
+	NSString *key = item.keyEquivalent;
+
+	if (key.length == 0) {
+		return nil;
+	}
+
+	static NSDictionary<NSString *, NSString *> *specialKeys = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		specialKeys = @{
+			@"\r" : TXLocalizationNotNeeded(@"\u21A9"),					// return
+			@"\b" : TXLocalizationNotNeeded(@"\u232B"),					// delete
+			@"\x7f" : TXLocalizationNotNeeded(@"\u232B"),
+			@"\x1b" : TXLocalizationNotNeeded(@"\u238B"),				// escape
+			@"\t" : TXLocalizationNotNeeded(@"\u21E5"),					// tab
+			@" " : TXLocalizationNotNeeded(@"\u2423"),
+			[NSString stringWithFormat:@"%C", (unichar)NSUpArrowFunctionKey] : TXLocalizationNotNeeded(@"\u2191"),
+			[NSString stringWithFormat:@"%C", (unichar)NSDownArrowFunctionKey] : TXLocalizationNotNeeded(@"\u2193"),
+			[NSString stringWithFormat:@"%C", (unichar)NSLeftArrowFunctionKey] : TXLocalizationNotNeeded(@"\u2190"),
+			[NSString stringWithFormat:@"%C", (unichar)NSRightArrowFunctionKey] : TXLocalizationNotNeeded(@"\u2192"),
+			[NSString stringWithFormat:@"%C", (unichar)NSDeleteFunctionKey] : TXLocalizationNotNeeded(@"\u2326"),
+			[NSString stringWithFormat:@"%C", (unichar)NSPageUpFunctionKey] : TXLocalizationNotNeeded(@"\u21DE"),
+			[NSString stringWithFormat:@"%C", (unichar)NSPageDownFunctionKey] : TXLocalizationNotNeeded(@"\u21DF")
+		};
+	});
+
+	NSEventModifierFlags modifiers = item.keyEquivalentModifierMask;
+
+	/* An uppercase key means Shift */
+	if ([key isEqualToString:key.lowercaseString] == NO) {
+		modifiers |= NSEventModifierFlagShift;
+	}
+
+	NSMutableString *description = [NSMutableString string];
+
+	if (modifiers & NSEventModifierFlagControl) {
+		[description appendString:TXLocalizationNotNeeded(@"\u2303")];
+	}
+
+	if (modifiers & NSEventModifierFlagOption) {
+		[description appendString:TXLocalizationNotNeeded(@"\u2325")];
+	}
+
+	if (modifiers & NSEventModifierFlagShift) {
+		[description appendString:TXLocalizationNotNeeded(@"\u21E7")];
+	}
+
+	if (modifiers & NSEventModifierFlagCommand) {
+		[description appendString:TXLocalizationNotNeeded(@"\u2318")];
+	}
+
+	[description appendString:(specialKeys[key] ?: key.uppercaseString)];
+
+	return [description copy];
 }
 
 @end

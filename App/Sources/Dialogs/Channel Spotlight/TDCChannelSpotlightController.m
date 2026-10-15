@@ -65,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSTableView *searchResultsTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *searchResultsController;
 @property (nonatomic, strong, nullable) id mouseEventMonitor;
+@property (nonatomic, copy) NSArray<TDCChannelSpotlightSearchResult *> *menuActionResults;
 @end
 
 @implementation TDCChannelSpotlightController
@@ -95,9 +96,15 @@ NS_ASSUME_NONNULL_BEGIN
 											  return [self respondToKeyDownEvent:event];
 										  }];
 
+	/* Channels before commands that match as well */
 	self.searchResultsController.sortDescriptors = @[
-		[NSSortDescriptor sortDescriptorWithKey:@"distance" ascending:NO selector:@selector(compare:)]
+		[NSSortDescriptor sortDescriptorWithKey:@"distance" ascending:NO selector:@selector(compare:)],
+		[NSSortDescriptor sortDescriptorWithKey:@"isMenuAction" ascending:YES]
 	];
+
+	/* Taken now, while the main window is still the key window, so the
+	 commands are enabled for what it shows (10.17 idea 3) */
+	self.menuActionResults = [TDCChannelSpotlightSearchResult searchResultsForActionsInMenu:NSApp.mainMenu];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(applicationAppearanceChanged:) name:TXApplicationAppearanceChangedNotification object:nil];
 	[RZNotificationCenter() addObserver:self selector:@selector(channelListChanged:) name:IRCClientChannelListWasModifiedNotification object:nil];
@@ -334,9 +341,48 @@ NS_ASSUME_NONNULL_BEGIN
 
 	TDCChannelSpotlightSearchResult *searchResult = searchResults[searchResultIndex];
 
+	if (searchResult.isMenuAction) {
+		[self performMenuItem:searchResult.menuItem];
+
+		return;
+	}
+
 	IRCChannel *channel = searchResult.channel;
 
+	if (channel == nil) {
+		return;
+	}
+
 	[self delegatePostSelectChannel:channel];
+}
+
+/* As if chosen in the menu, once this window has closed and the main window
+ is the key window again */
+- (void)performMenuItem:(nullable NSMenuItem *)menuItem
+{
+	[self close];
+
+	if (menuItem == nil) {
+		return;
+	}
+
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSMenu *menu = menuItem.menu;
+
+		NSInteger itemIndex = [menu indexOfItem:menuItem];
+
+		if (itemIndex < 0) {
+			return;
+		}
+
+		[menu update];
+
+		if (menuItem.enabled == NO) {
+			return;
+		}
+
+		[menu performActionForItemAtIndex:itemIndex];
+	});
 }
 
 - (void)delegatePostSelectChannel:(IRCChannel *)channel
@@ -423,7 +469,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if ([TPCPreferences channelNavigationIsServerSpecific]) {
 		NSString *clientId = mainWindow().selectedClient.uniqueIdentifier;
 
-		self.searchResultsController.filterPredicate = [NSPredicate predicateWithFormat:@"distance >= 0.5 && clientId LIKE[c] %@", clientId];
+		self.searchResultsController.filterPredicate = [NSPredicate predicateWithFormat:@"distance >= 0.5 && (isMenuAction == YES || clientId LIKE[c] %@)", clientId];
 	} else {
 		self.searchResultsController.filterPredicate = [NSPredicate predicateWithFormat:@"distance >= 0.5"];
 	}
@@ -498,6 +544,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[searchResults addObject:searchResult];
 		}
+	}
+
+	for (TDCChannelSpotlightSearchResult *searchResult in self.menuActionResults) {
+		[searchResult recalculateDistanceWith:searchString];
+
+		[searchResults addObject:searchResult];
 	}
 
 	[self.searchResultsController removeAllArrangedObjects];

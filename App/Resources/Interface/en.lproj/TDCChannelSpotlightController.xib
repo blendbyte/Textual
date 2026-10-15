@@ -46,7 +46,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" constant="32" id="twL-Dm-bZc"/>
                                 </constraints>
-                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" focusRingType="none" placeholderString="Search for channel" usesSingleLineMode="YES" id="xLW-8e-ask">
+                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" focusRingType="none" placeholderString="Search channels and actions" usesSingleLineMode="YES" id="xLW-8e-ask">
                                     <font key="font" metaFont="systemLight" size="26"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>

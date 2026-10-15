@@ -812,7 +812,7 @@ CQ
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="715" id="rFI-Dq-HBe"/>
-                            <menuItem title="Search channels…" tag="716" keyEquivalent="d" id="J3M-kj-Pa7">
+                            <menuItem title="Search Channels and Actions…" tag="716" keyEquivalent="d" id="J3M-kj-Pa7">
                                 <connections>
                                     <action selector="showChannelSpotlightWindow:" target="267" id="ttM-ud-1xT"/>
                                 </connections>

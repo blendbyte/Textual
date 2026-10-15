@@ -39,13 +39,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCChannel, TDCChannelSpotlightController;
 
+/* A channel, or a menu command (10.17 idea 3) */
 @interface TDCChannelSpotlightSearchResult : NSObject
-@property (readonly, weak) IRCChannel *channel;
-@property (readonly, copy) NSString *clientId;
+@property (readonly, weak, nullable) IRCChannel *channel;
+@property (readonly, weak, nullable) NSMenuItem *menuItem;
+@property (readonly, copy, nullable) NSString *menuPath; // "Channel", "View › Theme"
+@property (readonly) BOOL isMenuAction;
+@property (readonly, copy, nullable) NSString *clientId; // nil for menu commands
 @property (readonly, copy) NSNumber *distance;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithChannel:(IRCChannel *)channel NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithChannel:(IRCChannel *)channel;
+- (instancetype)initWithMenuItem:(NSMenuItem *)menuItem path:(NSString *)menuPath;
+
+/* The commands of menu and its submenus that can be chosen now: enabled,
+ visible, with an action; not the channels and windows the menus list */
++ (NSArray<TDCChannelSpotlightSearchResult *> *)searchResultsForActionsInMenu:(NSMenu *)menu;
+
+/* "⇧⌘K", or nil without a shortcut */
+@property (readonly, copy, nullable) NSString *keyEquivalentDescription;
 
 - (void)recalculateDistanceWith:(NSString *)searchString;
 @end
