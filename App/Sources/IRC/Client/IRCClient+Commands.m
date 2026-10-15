@@ -896,6 +896,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[self send:@"AWAY", nil];
 	}
 
+	/* Kept for a reconnect */
+	self.awayMessageToRestore = ((setAway) ? comment : nil);
+
 	NSString *newNickname = nil;
 
 	if (setAway) {
@@ -918,6 +921,32 @@ NS_ASSUME_NONNULL_BEGIN
 	if (newNickname) {
 		[self changeNickname:newNickname];
 	}
+}
+
+/* Away when the connection dropped: away again after the reconnect, before
+ registration ends where the server allows it (draft/pre-away) */
+- (void)restoreAwayStatusBeforeRegistration
+{
+	NSString *awayMessage = self.awayMessageToRestore;
+
+	if (awayMessage.length == 0 || self.isLoggedIn) {
+		return;
+	}
+
+	[self send:@"AWAY", awayMessage, nil];
+
+	self.awayRestoredBeforeRegistration = YES;
+}
+
+- (void)restoreAwayStatusAfterRegistration
+{
+	NSString *awayMessage = self.awayMessageToRestore;
+
+	if (awayMessage.length == 0 || self.awayRestoredBeforeRegistration) {
+		return;
+	}
+
+	[self send:@"AWAY", awayMessage, nil];
 }
 
 - (void)presentCertificateTrustInformation

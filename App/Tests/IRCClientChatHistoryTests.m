@@ -42,6 +42,8 @@
 #import "IRCClientInternal.h"
 #import "IRCISupportInfoPrivate.h"
 #import "IRCMessage.h"
+#import "IRCMessageBatchPrivate.h"
+#import "IRCTreeItemPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -111,6 +113,66 @@ NS_ASSUME_NONNULL_BEGIN
 				  @"Sent before the connection ended: already shown");
 	XCTAssertFalse([self.client chatHistoryShouldSkipMessage:[self message:@"d" from:@"me" at:50] inChannel:self.channel fromHistory:YES],
 				   @"Sent from another client while we were away");
+}
+
+/* draft/event-playback: an event in history is printed only (never applied to
+ the members of now) in the history's channel, QUIT and NICK naming it first;
+ events from before the drop, since the request, ours or already seen are left out */
+- (void)testHistoryEventsArePrintedOnly
+{
+	[self.client enableCapability:ClientIRCv3SupportedCapabilityBatch];
+
+	self.channel.associatedClient = self.client;
+
+	[self.client addChannel:self.channel];
+
+	IRCMessageBatchMessage *batch = [IRCMessageBatchMessage new];
+
+	batch.batchToken = @"h1";
+	batch.batchType = @"chathistory";
+	batch.batchIsOpen = YES;
+	batch.openingMessage = [[IRCMessage alloc] initWithLine:@":irc.test BATCH +h1 chathistory #textual" onClient:self.client];
+
+	[(IRCMessageBatchMessageContainer *)[self.client valueForKey:@"batchMessages"] queueEntry:batch];
+
+	self.client.chatHistoryDisconnectTime = [NSDate dateWithTimeIntervalSince1970:(1700000000 + 40)];
+
+	self.channel.chatHistoryRequestTime = [NSDate dateWithTimeIntervalSince1970:(1700000000 + 100)];
+
+	NSISO8601DateFormatter *formatter = [NSISO8601DateFormatter new];
+
+	formatter.formatOptions = (NSISO8601DateFormatWithInternetDateTime | NSISO8601DateFormatWithFractionalSeconds);
+
+	IRCMessage *(^event)(NSString *, NSTimeInterval, NSString *) = ^IRCMessage *(NSString *msgid, NSTimeInterval seconds, NSString *rest) {
+		NSString *time = [formatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:(1700000000 + seconds)]];
+
+		NSString *line = [NSString stringWithFormat:@"@batch=h1;msgid=%@;time=%@ %@", msgid, time, rest];
+
+		return [[IRCMessage alloc] initWithLine:line onClient:self.client];
+	};
+
+	IRCMessage *quit = [self.client chatHistoryEventMessage:event(@"e1", 50, @":bob!b@bob.test QUIT :gone")];
+
+	XCTAssertTrue(quit.isPrintOnlyMessage);
+
+	NSArray *expected = @[@"#textual", @"gone"];
+
+	XCTAssertEqualObjects(quit.params, expected);
+
+	XCTAssertNil([self.client chatHistoryEventMessage:event(@"e1", 50, @":bob!b@bob.test QUIT :gone")], @"Already shown");
+	XCTAssertNil([self.client chatHistoryEventMessage:event(@"e2", 30, @":early!e@early.test JOIN #textual")], @"Before the drop: seen live");
+	XCTAssertNil([self.client chatHistoryEventMessage:event(@"e3", 120, @":frank!f@frank.test JOIN #textual")], @"Since the request: seen live");
+	XCTAssertNil([self.client chatHistoryEventMessage:event(@"e4", 60, @":me!u@me.test JOIN #textual")], @"Our own coming back");
+
+	IRCMessage *join = [self.client chatHistoryEventMessage:event(@"e5", 60, @":carol!c@carol.test JOIN #textual")];
+
+	XCTAssertTrue(join.isPrintOnlyMessage);
+	XCTAssertEqualObjects(join.params, @[@"#textual"]);
+
+	/* A message isn't an event: as it was */
+	IRCMessage *message = event(@"m1", 60, @":gina!g@gina.test PRIVMSG #textual :hi");
+
+	XCTAssertEqual([self.client chatHistoryEventMessage:message], message);
 }
 
 @end

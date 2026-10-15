@@ -175,7 +175,9 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "batch",					ClientIRCv3SupportedCapabilityBatch,				ClientIRCv3SupportedCapabilityBatch },
 	{ "chghost",				ClientIRCv3SupportedCapabilityChangeHost,			ClientIRCv3SupportedCapabilityChangeHost },
 	{ "draft/chathistory",		ClientIRCv3SupportedCapabilityChatHistory,			ClientIRCv3SupportedCapabilityChatHistory },
+	{ "draft/event-playback",	ClientIRCv3SupportedCapabilityEventPlayback,		ClientIRCv3SupportedCapabilityEventPlayback },
 	{ "draft/multiline",		ClientIRCv3SupportedCapabilityMultiline,			ClientIRCv3SupportedCapabilityMultiline },
+	{ "draft/pre-away",			ClientIRCv3SupportedCapabilityPreAway,				ClientIRCv3SupportedCapabilityPreAway },
 	{ "draft/read-marker",		ClientIRCv3SupportedCapabilityReadMarker,			ClientIRCv3SupportedCapabilityReadMarker },
 	{ "echo-message",			ClientIRCv3SupportedCapabilityEchoMessage,			ClientIRCv3SupportedCapabilityEchoMessage },
 	{ "extended-join",			ClientIRCv3SupportedCapabilityExtendedJoin,			ClientIRCv3SupportedCapabilityExtendedJoin },
@@ -339,7 +341,9 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
 	appendValue(ClientIRCv3SupportedCapabilityChatHistory, @"draft/chathistory");
+	appendValue(ClientIRCv3SupportedCapabilityEventPlayback, @"draft/event-playback");
 	appendValue(ClientIRCv3SupportedCapabilityMultiline, @"draft/multiline");
+	appendValue(ClientIRCv3SupportedCapabilityPreAway, @"draft/pre-away");
 	appendValue(ClientIRCv3SupportedCapabilityReadMarker, @"draft/read-marker");
 	appendValue(ClientIRCv3SupportedCapabilityEchoMessage, @"echo-message");
 	appendValue(ClientIRCv3SupportedCapabilityExtendedJoin, @"extended-join");
@@ -451,6 +455,15 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	const IRCClientCapabilityTableEntry *entry = IRCClientCapabilityTableEntryNamed(capability);
 
 	if (entry == NULL) {
+		return;
+	}
+
+	/* Away from before the connection dropped, set before registration ends */
+	if (entry->request == ClientIRCv3SupportedCapabilityPreAway) {
+		[self enableCapability:entry->enables];
+
+		[self restoreAwayStatusBeforeRegistration];
+
 		return;
 	}
 

@@ -37,6 +37,7 @@ class Client:
 		self.writer = writer
 		self.nickname = "*"
 		self.received = []  # lines from the client after registration
+		self.registration_lines = []  # lines from the client until registration
 
 	async def send(self, line):
 		log(">>", line)
@@ -90,6 +91,8 @@ class Client:
 			line = await self.read_line()
 			if line is None:
 				return False
+
+			self.registration_lines.append(line)
 
 			command, _, rest = line.partition(" ")
 			command = command.upper()
@@ -1405,6 +1408,59 @@ async def scenario_chathistory(client):
 	pass
 
 
+async def scenario_event_playback(client):
+	"""draft/event-playback and draft/pre-away (E4 9.19). Connection 1: #ch with
+	gina, bob, dave and erin, line 1 (msgid m1); say "drop" (after /away, to
+	test pre-away) and the server drops the connection. Connection 2: AWAY before
+	CAP END is noted; the CHATHISTORY batch holds line 1 again, an event from
+	before the drop, the client's own JOIN, events from the gap (carol joins, bob
+	parts, dave quits, erin is now erin2, the topic, +o, a kick), line 2 (missed)
+	and an event after the request. Only the gap's events and line 2 must show;
+	the member list stays NAMES' (no carol). Runs for five minutes."""
+	pass
+
+
+async def scenario_sasl_new(client):
+	"""SASL 3.2 (set nicknamePassword=textual-new first): registration without
+	sasl; two seconds later the server sends CAP NEW :sasl=PLAIN. The client
+	must request it and log in with PLAIN (AUTHENTICATE after registration).
+	Stays connected."""
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	await client.collect(2)
+	await client.send(f":{SERVER} CAP {me} NEW :sasl=PLAIN,EXTERNAL")
+
+	authenticated = False
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "CAP" and rest.upper().startswith("REQ"):
+				await client.send(f":{SERVER} CAP {me} ACK :{rest.split(' ', 1)[1].lstrip(':')}")
+			elif command == "AUTHENTICATE" and rest == "PLAIN":
+				await client.send("AUTHENTICATE +")
+			elif command == "AUTHENTICATE" and rest not in ("PLAIN", "*", "+"):
+				import base64
+				try:
+					parts = base64.b64decode(rest).split(b"\0")
+				except Exception:
+					parts = []
+				ok = len(parts) == 3 and parts[2] == b"textual-new"
+				result(ok, f"PLAIN after registration with {parts[1:2]!r}")
+				if ok:
+					await client.send(f":{SERVER} 900 {me} {me}!user@client.textual.test {parts[1].decode()} :You are now logged in as {parts[1].decode()}")
+					await client.send(f":{SERVER} 903 {me} :SASL authentication successful")
+					authenticated = True
+				else:
+					await client.send(f":{SERVER} 904 {me} :SASL authentication failed")
+		seen = len(client.received)
+
+
 async def scenario_utf8only(client):
 	"""UTF8ONLY (set the server's primary encoding to Latin-1 first, e.g. config
 	primaryEncoding=5). The server advertises UTF8ONLY and NETWORK=UTF8\\x20Test;
@@ -2363,6 +2419,8 @@ SCENARIOS = {
 	"sts": scenario_sts,
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
+	"event-playback": scenario_event_playback,
+	"sasl-new": scenario_sasl_new,
 	"utf8only": scenario_utf8only,
 	"whox": scenario_whox,
 	"sasl-scram-fallback": scenario_sasl_scram_fallback,
@@ -2374,7 +2432,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 
@@ -2445,6 +2503,96 @@ async def run_chathistory_scenario(port):
 	stamps = {}
 	server = await asyncio.start_server(handle, "127.0.0.1", port)
 	print(f"Scenario 'chathistory' waiting on irc://127.0.0.1:{port}", flush=True)
+	await asyncio.sleep(300)
+	server.close()
+
+
+async def run_event_playback_scenario(port):
+	capabilities = "batch server-time message-tags draft/chathistory draft/event-playback draft/pre-away"
+	connections = 0
+	moments = {}
+
+	def stamp_at(moment):
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	def now():
+		return datetime.datetime.now(datetime.timezone.utc)
+
+	async def join(client, nick):
+		await client.send(f":{nick}!user@client.textual.test JOIN #ch")
+		await client.send(f":{SERVER} 353 {nick} = #ch :{nick} @gina bob dave erin")
+		await client.send(f":{SERVER} 366 {nick} #ch :End of /NAMES list.")
+
+	async def handle(reader, writer):
+		nonlocal connections
+		connections += 1
+		number = connections
+		client = Client(reader, writer)
+
+		if not await client.register_with_capabilities(capabilities):
+			writer.close()
+			return
+
+		nick = client.nickname
+
+		if number == 1:
+			await join(client, nick)
+			await client.collect(1)
+			moments["line1"] = now()
+			await client.send(f"@msgid=m1;time={stamp_at(moments['line1'])} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop")
+			seen = 0
+			while await client.collect(1):
+				said = [line for line in client.received[seen:] if line.upper().startswith("PRIVMSG ") and line.endswith(" :drop")]
+				seen = len(client.received)
+				if said:
+					break
+			moments["early"] = now() - datetime.timedelta(seconds=1)
+			moments["drop"] = now()
+			log("<<", "dropping the connection")
+			writer.close()
+			return
+
+		result(any(line.upper().startswith("AWAY") for line in client.registration_lines), "AWAY sent before registration ended (pre-away)")
+
+		end = time.monotonic() + 60
+		while time.monotonic() < end:
+			try:
+				line = await asyncio.wait_for(client.read_line(), 1)
+			except asyncio.TimeoutError:
+				continue
+			if line is None:
+				break
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+			elif command == "JOIN":
+				await join(client, nick)
+			elif command == "CHATHISTORY":
+				gap = moments["drop"] + datetime.timedelta(milliseconds=300)
+				def at(offset):
+					return stamp_at(gap + datetime.timedelta(milliseconds=offset))
+				await client.send(f":{SERVER} BATCH +h1 chathistory #ch")
+				await client.send(f"@batch=h1;msgid=m1;time={stamp_at(moments['line1'])} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop")
+				await client.send(f"@batch=h1;msgid=e0;time={stamp_at(moments['early'])} :early!e@early.test JOIN #ch")
+				await client.send(f"@batch=h1;msgid=e1;time={at(0)} :carol!c@carol.test JOIN #ch")
+				await client.send(f"@batch=h1;msgid=e2;time={at(10)} :bob!b@bob.test PART #ch :bye")
+				await client.send(f"@batch=h1;msgid=e3;time={at(20)} :dave!d@dave.test QUIT :gone home")
+				await client.send(f"@batch=h1;msgid=e4;time={at(30)} :erin!e@erin.test NICK :erin2")
+				await client.send(f"@batch=h1;msgid=e5;time={at(40)} :gina!g@friend.test TOPIC #ch :Topic set while you were away")
+				await client.send(f"@batch=h1;msgid=e6;time={at(50)} :gina!g@friend.test MODE #ch +o carol")
+				await client.send(f"@batch=h1;msgid=e7;time={at(60)} :gina!g@friend.test KICK #ch carol :no reason")
+				await client.send(f"@batch=h1;msgid=m2;time={at(70)} :gina!g@friend.test PRIVMSG #ch :2 missed while disconnected")
+				await client.send(f"@batch=h1;msgid=e8;time={at(80)} :{nick}!user@client.textual.test JOIN #ch")
+				await client.send(f"@batch=h1;msgid=e9;time={stamp_at(now() + datetime.timedelta(seconds=5))} :frank!f@frank.test JOIN #ch")
+				await client.send(f":{SERVER} BATCH -h1")
+				break
+
+		await client.collect(240)
+		writer.close()
+
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'event-playback' waiting on irc://127.0.0.1:{port}", flush=True)
 	await asyncio.sleep(300)
 	server.close()
 
@@ -2561,6 +2709,10 @@ async def main():
 
 	if arguments.scenario == "chathistory":
 		await run_chathistory_scenario(arguments.port)
+		return
+
+	if arguments.scenario == "event-playback":
+		await run_event_playback_scenario(arguments.port)
 		return
 
 	servers = [await asyncio.start_server(handle, "127.0.0.1", arguments.port, ssl=tls_context)]

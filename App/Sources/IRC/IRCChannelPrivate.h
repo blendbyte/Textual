@@ -51,6 +51,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 
 /* draft/chathistory, for this run of the app only (IRCClient+ChatHistory) */
 @property (nonatomic, copy, nullable) NSString *chatHistoryAnchorMessageId; // newest message seen
+@property (nonatomic, copy, nullable) NSDate *chatHistoryRequestTime; // when history was last asked for: later events were seen live
 @property (nonatomic, copy, nullable) NSDate *chatHistoryAnchorTime;
 @property (nonatomic, strong, nullable) NSMutableOrderedSet<NSString *> *chatHistoryRecentMessageIds;
 

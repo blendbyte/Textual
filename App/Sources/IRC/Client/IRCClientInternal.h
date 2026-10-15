@@ -124,6 +124,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, null_resettable) NSString *userNickname; // nil falls back to the configured nickname
 @property (nonatomic, copy, readwrite) NSString *serverAddress;
 @property (nonatomic, copy, readwrite, nullable) NSString *preAwayUserNickname;
+@property (nonatomic, copy, nullable) NSString *awayMessageToRestore; // set by us; sent again after a reconnect
+@property (nonatomic, assign) BOOL awayRestoredBeforeRegistration; // draft/pre-away
 @property (nonatomic, assign, readwrite) NSUInteger logFileSessionCount;
 
 // Properties private
@@ -308,6 +310,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)readMarkerNoteMessageAt:(NSDate *)receivedAt inChannel:(IRCChannel *)channel;
 - (nullable NSString *)readMarkerRequestForChannel:(IRCChannel *)channel;
 - (BOOL)applyReadMarker:(IRCMessage *)m;
+
+/* draft/event-playback: an event (JOIN, QUIT, …) from history as one to print
+ only, in the channel the history is for; nil when it was seen live, is ours
+ or has nowhere to go; other messages unchanged */
+- (nullable IRCMessage *)chatHistoryEventMessage:(IRCMessage *)m;
+
+/* Away kept across reconnects: before registration ends (draft/pre-away) or after */
+- (void)restoreAwayStatusBeforeRegistration;
+- (void)restoreAwayStatusAfterRegistration;
 - (void)receiveMarkRead:(IRCMessage *)m;
 + (nullable NSString *)readMarkerTimestampForDate:(NSDate *)date;
 

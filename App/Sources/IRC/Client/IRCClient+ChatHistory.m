@@ -169,6 +169,8 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 
 	[self.chatHistoryPendingTargets addObject:[self.supportInfo foldedString:channel.name]];
 
+	channel.chatHistoryRequestTime = [NSDate date];
+
 	[self sendLine:request];
 }
 
@@ -179,6 +181,74 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 			[self requestChatHistoryForChannel:channel];
 		}
 	}
+}
+
+- (nullable IRCMessage *)chatHistoryEventMessage:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	static NSSet<NSString *> *eventCommands = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		eventCommands = [NSSet setWithArray:@[@"JOIN", @"PART", @"QUIT", @"NICK", @"KICK", @"MODE", @"TOPIC"]];
+	});
+
+	if ([eventCommands containsObject:m.command.uppercaseString] == NO) {
+		return m;
+	}
+
+	/* The channel the history is for: BATCH +ref chathistory #channel */
+	NSString *target = nil;
+
+	for (IRCMessageBatchMessage *batch = m.parentBatchMessage; batch != nil; batch = batch.parentBatchMessage) {
+		if ([batch.batchType isEqualToString:@"chathistory"] || [batch.batchType isEqualToString:@"draft/chathistory"]) {
+			target = [batch.openingMessage paramAt:2];
+
+			break;
+		}
+	}
+
+	IRCChannel *channel = ((target.length > 0) ? [self findChannel:target] : nil);
+
+	if (channel == nil || channel.isChannel == NO) {
+		return nil;
+	}
+
+	/* Our own leaving and coming back were shown as they happened */
+	if ([self nicknameIsMyself:m.senderNickname]) {
+		return nil;
+	}
+
+	/* Only what happened while we were away: before that and since asking it was seen live */
+	NSDate *disconnectTime = self.chatHistoryDisconnectTime;
+	NSDate *requestTime = channel.chatHistoryRequestTime;
+
+	if (disconnectTime && [m.receivedAt compare:disconnectTime] != NSOrderedDescending) {
+		return nil;
+	}
+
+	if (requestTime && [m.receivedAt compare:requestTime] != NSOrderedAscending) {
+		return nil;
+	}
+
+	if ([self chatHistoryShouldSkipMessage:m inChannel:channel fromHistory:YES]) {
+		return nil;
+	}
+
+	/* Printed, never applied to the members of now; QUIT and NICK name the channel first */
+	IRCMessageMutable *event = [m mutableCopy];
+
+	event.isPrintOnlyMessage = YES;
+
+	NSString *command = m.command.uppercaseString;
+
+	if ([command isEqualToString:@"QUIT"] || [command isEqualToString:@"NICK"]) {
+		event.params = @[channel.name, (m.params.firstObject ?: @"")];
+	}
+
+	return [event copy];
 }
 
 - (void)chatHistoryBatchOpenedForTarget:(nullable NSString *)target

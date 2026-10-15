@@ -157,6 +157,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.secretMessageTargets = nil;
 
 	self.userIsAway = NO;
+	self.awayRestoredBeforeRegistration = NO;
 	self.userIsIRCop = NO;
 
 	self.isConnectedToZNC = NO;
@@ -553,6 +554,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_processIncomingMessage:(IRCMessage *)message
 {
 	NSParameterAssert(message != nil);
+
+	/* Events in history (draft/event-playback) are printed, not applied */
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEventPlayback] && [self isChatHistoryMessage:message]) {
+		IRCMessage *event = [self chatHistoryEventMessage:message];
+
+		if (event == nil) {
+			return;
+		}
+
+		message = event;
+	}
 
 	[self processIncomingMessageAttributes:message];
 

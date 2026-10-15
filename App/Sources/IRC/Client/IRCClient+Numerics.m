@@ -182,6 +182,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.userNickname = [m paramAt:0];
 
+	/* Away when the last connection dropped */
+	[self restoreAwayStatusAfterRegistration];
+
 	self.successfulConnects += 1;
 
 	/* Begin enforcing flood control */
@@ -470,6 +473,11 @@ NS_ASSUME_NONNULL_BEGIN
 			BOOL away = (numeric == RPL_NOWAWAY);
 
 			self.userIsAway = away;
+
+			/* Back (here or from another client of a bouncer): nothing to restore */
+			if (away == NO) {
+				self.awayMessageToRestore = nil;
+			}
 			
 			[mainWindow() updateTitle];
 
