@@ -184,6 +184,7 @@
 		4C06E68920EC55B90055D09A /* IRCHighlightMatchCondition.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31512A20EB673E00448776 /* IRCHighlightMatchCondition.m */; };
 		4C3614BEB78C374590C2FC99 /* IRCHighlightKeyword.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6B65A09213BD938609E130 /* IRCHighlightKeyword.m */; };
 		4CD9967A3456DDFEB208E332 /* IRCHighlightKeywordTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C90177E4FF69483A56EFC35 /* IRCHighlightKeywordTests.m */; };
+		4C4CB4C2E7FE0E942CDB242F /* IRCClientLabeledResponseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE483843FCB79C64907DDE1 /* IRCClientLabeledResponseTests.m */; };
 		4CB4523DFD9DB49B1B25F70D /* TDCChannelSpotlightSearchResultTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0995115EA7A7CC859BFC31 /* TDCChannelSpotlightSearchResultTests.m */; };
 		4C06E68A20EC55B90055D09A /* IRCISupportInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514120EB673E00448776 /* IRCISupportInfo.m */; };
 		4C06E68B20EC55B90055D09A /* IRCMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31512D20EB673E00448776 /* IRCMessage.m */; };
@@ -700,6 +701,7 @@
 		4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2FA6EB7E48EABB4607298A /* IRCWhoReply.m */; };
 		4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */; };
 		4CB9788CF63607DBC7AEAEAE /* IRCClient+Typing.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */; };
+		4CA1CED1BEDF81EC8090105A /* IRCClient+LabeledResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD690C30A33D2339D99FAFE /* IRCClient+LabeledResponse.m */; };
 		4C26F4ADBA3A82BEF397F9E4 /* IRCClientTypingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */; };
 		4C246D05EAB84C45AC09734B /* IRCSASLECDSA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4BA1780BC4C9206C7E2321 /* IRCSASLECDSA.swift */; };
 		4C3DF3322874E104305061D9 /* IRCSASLECDSATests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1B22A75314CEB59C12CEE9 /* IRCSASLECDSATests.m */; };
@@ -968,6 +970,7 @@
 		4C6B65A09213BD938609E130 /* IRCHighlightKeyword.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCHighlightKeyword.m; sourceTree = "<group>"; };
 		4C92C104117A1BED4EAF8438 /* IRCHighlightKeywordPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCHighlightKeywordPrivate.h; sourceTree = "<group>"; };
 		4C90177E4FF69483A56EFC35 /* IRCHighlightKeywordTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCHighlightKeywordTests.m; sourceTree = "<group>"; };
+		4CE483843FCB79C64907DDE1 /* IRCClientLabeledResponseTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientLabeledResponseTests.m; sourceTree = "<group>"; };
 		4C0995115EA7A7CC859BFC31 /* TDCChannelSpotlightSearchResultTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelSpotlightSearchResultTests.m; sourceTree = "<group>"; };
 		4C31512B20EB673E00448776 /* IRCAddressBookMatchCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAddressBookMatchCache.m; sourceTree = "<group>"; };
 		4C31512C20EB673E00448776 /* IRCSendingMessage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSendingMessage.m; sourceTree = "<group>"; };
@@ -1604,6 +1607,7 @@
 		4CFA6BF73C6D752213A4B9C4 /* IRCWhoReplyPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCWhoReplyPrivate.h; sourceTree = "<group>"; };
 		4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCWhoReplyTests.m; sourceTree = "<group>"; };
 		4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Typing.m"; sourceTree = "<group>"; };
+		4CD690C30A33D2339D99FAFE /* IRCClient+LabeledResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+LabeledResponse.m"; sourceTree = "<group>"; };
 		4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientTypingTests.m; sourceTree = "<group>"; };
 		4C4BA1780BC4C9206C7E2321 /* IRCSASLECDSA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCSASLECDSA.swift; sourceTree = "<group>"; };
 		4C877F0D2D3B59C90ABEA2A8 /* IRCSASLECDSAPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCSASLECDSAPrivate.h; sourceTree = "<group>"; };
@@ -2201,6 +2205,7 @@
 				4CA17C786A4284B8DC4A8561 /* IRCClient+Sending.m */,
 				4C01C22E7F90ADA6C7447A97 /* IRCClient+TimedCommands.m */,
 				4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */,
+				4CD690C30A33D2339D99FAFE /* IRCClient+LabeledResponse.m */,
 				4CC09B56304AD18920BFA48C /* IRCClient+Users.m */,
 				4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */,
 				4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */,
@@ -3000,6 +3005,7 @@
 				4C722724ADF9DDCE8BB13442 /* TVCInputMarkdownTests.m */,
 				4C870CA064CDF0587168CD01 /* IRCAliasTests.m */,
 				4C90177E4FF69483A56EFC35 /* IRCHighlightKeywordTests.m */,
+				4CE483843FCB79C64907DDE1 /* IRCClientLabeledResponseTests.m */,
 				4C0995115EA7A7CC859BFC31 /* TDCChannelSpotlightSearchResultTests.m */,
 				4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3C /* TVCLogViewSecurityTests.m */,
@@ -3652,6 +3658,7 @@
 			files = (
 				4C246D05EAB84C45AC09734B /* IRCSASLECDSA.swift in Sources */,
 				4CB9788CF63607DBC7AEAEAE /* IRCClient+Typing.m in Sources */,
+				4CA1CED1BEDF81EC8090105A /* IRCClient+LabeledResponse.m in Sources */,
 				4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */,
 				4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */,
 				4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */,
@@ -3952,6 +3959,7 @@
 				4CE9F00465BB5D17F16D8988 /* TVCInputMarkdownTests.m in Sources */,
 				4C03ABFF9E2EFDF00767BBCD /* IRCAliasTests.m in Sources */,
 				4CD9967A3456DDFEB208E332 /* IRCHighlightKeywordTests.m in Sources */,
+				4C4CB4C2E7FE0E942CDB242F /* IRCClientLabeledResponseTests.m in Sources */,
 				4CB4523DFD9DB49B1B25F70D /* TDCChannelSpotlightSearchResultTests.m in Sources */,
 				4C25AC984F529FACD80D31C3 /* HLSHistoricLogManagerTests.m in Sources */,
 				4CACA1915D50ECEEE616CC47 /* TPCPreferencesTests.m in Sources */,

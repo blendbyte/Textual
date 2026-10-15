@@ -535,7 +535,7 @@ NS_ASSUME_NONNULL_BEGIN
 			NSString *message = TXTLS(@"IRC[c1h-fq]", awayNickname, awayComment);
 
 			if (channel == nil) {
-				channel = [mainWindow() selectedChannelOn:self];
+				channel = self.selectedChannelForReplies;
 			}
 
 			IRCUser *user = [self findUser:awayNickname];
@@ -575,7 +575,7 @@ NS_ASSUME_NONNULL_BEGIN
 			NSAssertReturnR([m paramsCount] > 2, YES);
 
 			if (printMessage) {
-				[self printReply:m inChannel:[mainWindow() selectedChannelOn:self]];
+				[self printReply:m inChannel:self.selectedChannelForReplies];
 			}
 
 			break;
@@ -600,7 +600,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self print:message
 					 by:nil
-			  inChannel:[mainWindow() selectedChannelOn:self]
+			  inChannel:self.selectedChannelForReplies
 				 asType:TVCLogLineTypeDebug
 				command:m.command
 			 receivedAt:m.receivedAt];
@@ -646,7 +646,7 @@ NS_ASSUME_NONNULL_BEGIN
 			if (message) {
 				[self print:message
 						 by:nil
-				  inChannel:[mainWindow() selectedChannelOn:self]
+				  inChannel:self.selectedChannelForReplies
 					 asType:TVCLogLineTypeDebug
 					command:m.command
 				 receivedAt:m.receivedAt];
@@ -680,7 +680,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self print:message
 					 by:nil
-			  inChannel:[mainWindow() selectedChannelOn:self]
+			  inChannel:self.selectedChannelForReplies
 				 asType:TVCLogLineTypeDebug
 				command:m.command
 			 receivedAt:m.receivedAt];
@@ -707,7 +707,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self print:message
 					 by:nil
-			  inChannel:[mainWindow() selectedChannelOn:self]
+			  inChannel:self.selectedChannelForReplies
 				 asType:TVCLogLineTypeDebug
 				command:m.command
 			 receivedAt:m.receivedAt];
@@ -727,7 +727,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self print:message
 					 by:nil
-			  inChannel:[mainWindow() selectedChannelOn:self]
+			  inChannel:self.selectedChannelForReplies
 				 asType:TVCLogLineTypeDebug
 				command:m.command
 			 receivedAt:m.receivedAt];
@@ -744,7 +744,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self print:message
 					 by:nil
-			  inChannel:[mainWindow() selectedChannelOn:self]
+			  inChannel:self.selectedChannelForReplies
 				 asType:TVCLogLineTypeDebug
 				command:m.command
 			 receivedAt:m.receivedAt];
@@ -756,7 +756,7 @@ NS_ASSUME_NONNULL_BEGIN
 			self.inWhoisResponse = NO;
 
 /*			if (printMessage) {
-				[self printReply:m inChannel:[mainWindow() selectedChannelOn:self]];
+				[self printReply:m inChannel:self.selectedChannelForReplies];
 			} */
 
 			break;
@@ -766,7 +766,7 @@ NS_ASSUME_NONNULL_BEGIN
 			self.inWhowasResponse = NO;
 
 /*			if (printMessage) {
-				[self printReply:m inChannel:[mainWindow() selectedChannelOn:self]];
+				[self printReply:m inChannel:self.selectedChannelForReplies];
 			} */
 
 			break;
@@ -931,8 +931,9 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_WHOREPLY:
 		case RPL_WHOSPCRPL:
 		{
-			/* Present reply to the user if we have destination */
-			if (self.requestedCommands.visibleWhoRequest) {
+			/* Present reply to the user if we have destination (a labeled
+			 reply answers a /who typed by the user, never our own polling) */
+			if ([self processingLabeledReplyToCommand:@"WHO"] || self.requestedCommands.visibleWhoRequest) {
 				if (printMessage) {
 					[self printReplyToHiddenCommandResponsesQuery:m];
 				}
@@ -962,9 +963,14 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_ENDOFWHO:
 		{
-			BOOL visibleWhoRequest = self.requestedCommands.visibleWhoRequest;
+			/* A labeled /who was never recorded as a request */
+			BOOL labeledWhoRequest = [self processingLabeledReplyToCommand:@"WHO"];
 
-			[self.requestedCommands recordWhoRequestClosed];
+			BOOL visibleWhoRequest = (labeledWhoRequest || self.requestedCommands.visibleWhoRequest);
+
+			if (labeledWhoRequest == NO) {
+				[self.requestedCommands recordWhoRequestClosed];
+			}
 
 			/* The first WHOX answer for a channel makes its accounts known: redraw its members */
 			if ([m paramsCount] > 1) {
@@ -1382,11 +1388,16 @@ NS_ASSUME_NONNULL_BEGIN
 	switch (numeric) {
 		case RPL_ISON:
 		{
-			/* Present reply to the user if we have destination */
-			BOOL visibleIsonRequest = self.requestedCommands.visibleIsonRequest;
+			/* Present reply to the user if we have destination (a labeled
+			 /ison was never recorded as a request) */
+			BOOL labeledIsonRequest = [self processingLabeledReplyToCommand:@"ISON"];
+
+			BOOL visibleIsonRequest = (labeledIsonRequest || self.requestedCommands.visibleIsonRequest);
 
 			if (visibleIsonRequest) {
-				[self.requestedCommands recordIsonRequestClosed];
+				if (labeledIsonRequest == NO) {
+					[self.requestedCommands recordIsonRequestClosed];
+				}
 
 				if (printMessage) {
 					[self printReplyToHiddenCommandResponsesQuery:m];
@@ -1933,7 +1944,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (printMessage) {
 		/* Output custom WHOIS response to proper target */
 		if (self.inWhoisResponse && m.paramsCount > 2) {
-			[self printUnknownReply:m inChannel:[mainWindow() selectedChannelOn:self]];
+			[self printUnknownReply:m inChannel:self.selectedChannelForReplies];
 
 			return;
 		}

@@ -126,6 +126,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	string = [self lineByLabelingLine:string];
+
 	[self.socket sendLine:string];
 
 	worldController().bandwidthOut += string.length;

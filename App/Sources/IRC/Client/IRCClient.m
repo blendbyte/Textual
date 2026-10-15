@@ -215,6 +215,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	self.batchMessages = [IRCMessageBatchMessageContainer new];
 
+	self.labeledRequests = [NSMutableDictionary dictionary];
+
 	self.supportInfo = [[IRCISupportInfo alloc] initWithClient:self];
 
 	self.connectType = IRCClientConnectModeNormal;
@@ -1733,6 +1735,14 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 - (void)printReplyToHiddenCommandResponsesQuery:(IRCMessage *)message
 {
+	/* The answer to a labeled /names, /who, … goes to the window it was typed
+	 in (a NAMES list answering a labeled JOIN isn't printed) */
+	if (self.processingLabeledReplyToListCommand) {
+		[self printReply:message];
+
+		return;
+	}
+
 	IRCChannel *query = self.hiddenCommandResponsesQuery;
 
 	if (query == nil) {

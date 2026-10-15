@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *batchType;
 @property (readonly, copy) NSArray *queuedEntries;
 @property (nonatomic, weak) IRCMessageBatchMessage *parentBatchMessage;
+@property (nonatomic, copy, nullable) NSString *label; // labeled-response: the label of the command it answers
 
 - (void)queueEntry:(id)entry;
 - (void)dequeueEntry:(id)entry;

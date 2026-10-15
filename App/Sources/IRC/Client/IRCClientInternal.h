@@ -43,7 +43,7 @@
 #import "IRCCapabilityNegotiatorPrivate.h"
 #import "IRCISupportInfo.h"
 
-@class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessageContainer;
+@class IRCAddressBookMatchCache, IRCClientRequestedCommands, IRCConnection, IRCMessageBatchMessage, IRCMessageBatchMessageContainer;
 @class TDCServerChannelListDialog, TLOFileLogger, TLOTimer;
 @class IRCSASLECDSAKey, IRCSASLSCRAM;
 @class IRCUserList;
@@ -63,11 +63,24 @@ NS_ASSUME_NONNULL_BEGIN
 #define _timeoutInterval			360
 #define _whoCheckInterval			120
 #define _batchFlushTimeout			60 // a batch that never closes is processed after this many seconds
+#define _labeledRequestTimeout		300 // a labeled command whose reply never came is forgotten after this many seconds
 #define _isonLineMaximumLength		400 // bytes of nicknames per ISON line (lines are limited to 512)
 
 #define _CTCPReplyLimit				5 // replies per _CTCPReplyLimitInterval
 #define _CTCPReplyLimitPerSender	2 // replies to one host per _CTCPReplyLimitInterval
 #define _CTCPReplyLimitInterval		10
+
+/* labeled-response (IRCClient+LabeledResponse.m): a command typed in a window,
+ waiting for its reply */
+@interface IRCClientLabeledRequest : NSObject
+@property (readonly, copy) NSString *label;
+@property (readonly, copy) NSString *command; // uppercase: "WHO", "JOIN", …
+@property (readonly, weak, nullable) IRCChannel *channel;
+@property (readonly) BOOL toConsole; // typed in the console (or another server's window)
+@property (readonly, copy) NSDate *sentAt;
+
+- (instancetype)initWithLabel:(NSString *)label command:(NSString *)command channel:(nullable IRCChannel *)channel;
+@end
 
 @interface IRCClient ()
 {
@@ -117,6 +130,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL configurationIsStale;
 @property (nonatomic, strong, nullable) IRCConnection *socket;
 @property (nonatomic, strong) IRCMessageBatchMessageContainer *batchMessages;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, IRCClientLabeledRequest *> *labeledRequests; // label → request
+@property (nonatomic, assign) NSUInteger labeledRequestCount;
+@property (nonatomic, assign) NSUInteger labelingDepth; // > 0 while a typed command runs
+@property (nonatomic, weak, nullable) IRCChannel *labelingChannel; // its window; nil = the console
+@property (nonatomic, strong, nullable) IRCClientLabeledRequest *labeledReplyRequest; // while its reply is processed
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
 @property (nonatomic, strong) TLOTimer *autojoinTimer;
 @property (nonatomic, strong) TLOTimer *autojoinNextJoinTimer;
@@ -306,6 +324,38 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)receiveSetName:(IRCMessage *)m;
 - (void)processAccountTagInMessage:(IRCMessage *)m;
 - (void)updateUser:(IRCUserMutable *)userMutable fromExtendedJoin:(IRCMessage *)m;
+@end
+
+@interface IRCClient (LabeledResponseInternal)
+/* labeled-response and batch are on: typed commands carry a label */
+@property (readonly) BOOL labeledResponsesUsable;
+
+/* Lines sent while block runs carry labels; their replies go to channel (nil: the console) */
+- (void)performLabeledCommandFromChannel:(nullable IRCChannel *)channel block:(void (NS_NOESCAPE ^)(void))block;
+
+/* line with a label, if a typed command is sending it; the request is remembered */
+- (NSString *)lineByLabelingLine:(NSString *)line;
+
+/* "@label=x CMD", or the label added to the tags already there */
++ (NSString *)line:(NSString *)line withLabel:(NSString *)label;
+
+/* The request a message answers: its own label, or its batch's */
+- (nullable IRCClientLabeledRequest *)labeledRequestForMessage:(IRCMessage *)m;
+
+- (void)labeledMessageProcessed:(IRCMessage *)m; // a single reply or ACK: the request is done
+- (void)labeledBatchFinished:(IRCMessageBatchMessage *)batch;
+- (void)removeLabeledRequests;
+
+/* While a labeled reply is processed: the window its command came from (nil
+ for the console); otherwise fallback */
+- (nullable IRCChannel *)channelForReplyWithFallback:(nullable IRCChannel *)fallback;
+@property (readonly, nullable) IRCChannel *selectedChannelForReplies; // fallback: the selected channel of this server
+@property (readonly) BOOL processingLabeledReply;
+
+/* Processing the answer to this command, typed by the user (WHO, ISON, …):
+ printed in its window instead of "Hidden Responses" or taken as our own polling */
+- (BOOL)processingLabeledReplyToCommand:(NSString *)command;
+@property (readonly) BOOL processingLabeledReplyToListCommand; // NAMES, WHO, ISON, WATCH or MONITOR
 @end
 
 @interface IRCClient (CapabilitiesInternal) <IRCCapabilityNegotiatorDelegate>

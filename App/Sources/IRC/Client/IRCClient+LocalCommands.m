@@ -198,7 +198,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 	void (*performHandler)(id, SEL, IRCLocalCommandContext *) = (void *)[self methodForSelector:handler];
 
-	performHandler(self, handler, context);
+	/* What the server answers goes to this window (labeled-response); typed
+	 in another server's window, to this server's console */
+	IRCChannel *window = ((selectedClient == self) ? selectedChannel : nil);
+
+	[self performLabeledCommandFromChannel:window block:^{
+		performHandler(self, handler, context);
+	}];
 }
 
 /* The handler of every local command; commands not listed go to
@@ -1205,9 +1211,13 @@ static NSUInteger _aliasDepth = 0;
 		return;
 	}
 
-	[self createHiddenCommandResponses];
+	/* With labels the answer comes back to this window, otherwise to "Hidden
+	 Responses" in the order asked */
+	if (self.labeledResponsesUsable == NO) {
+		[self createHiddenCommandResponses];
 
-	[self.requestedCommands recordIsonRequestOpenedAsVisible];
+		[self.requestedCommands recordIsonRequestOpenedAsVisible];
+	}
 
 	[self send:@"ISON", stringIn.string, nil];
 }
@@ -1752,7 +1762,9 @@ static NSUInteger _aliasDepth = 0;
 		return;
 	}
 
-	[self createHiddenCommandResponses];
+	if (self.labeledResponsesUsable == NO) {
+		[self createHiddenCommandResponses];
+	}
 
 	[self send:@"NAMES", stringIn.string, nil];
 }
@@ -2268,7 +2280,7 @@ static NSUInteger _aliasDepth = 0;
 	}
 
 	/* The clear command doesn't produce a result */
-	if (isClearCommand == NO) {
+	if (isClearCommand == NO && self.labeledResponsesUsable == NO) {
 		[self createHiddenCommandResponses];
 	}
 
@@ -2289,9 +2301,11 @@ static NSUInteger _aliasDepth = 0;
 		return;
 	}
 
-	[self createHiddenCommandResponses];
+	if (self.labeledResponsesUsable == NO) {
+		[self createHiddenCommandResponses];
 
-	[self.requestedCommands recordWhoRequestOpenedAsVisible];
+		[self.requestedCommands recordWhoRequestOpenedAsVisible];
+	}
 
 	[self send:@"WHO", stringIn.string, nil];
 }

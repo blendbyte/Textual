@@ -124,6 +124,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.batchMessages dequeueEntries];
 
+	[self removeLabeledRequests];
+
 	self.connectDelay = 0;
 
 	self.invokingISONCommandForFirstTime = NO;
@@ -535,7 +537,16 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(message != nil);
 
 	XRPerformBlockSynchronouslyOnMainQueue(^{
+		/* An answer to a labeled command goes to the window it was typed in */
+		IRCClientLabeledRequest *previousRequest = self.labeledReplyRequest;
+
+		self.labeledReplyRequest = [self labeledRequestForMessage:message];
+
 		[self _processIncomingMessage:message];
+
+		[self labeledMessageProcessed:message];
+
+		self.labeledReplyRequest = previousRequest;
 	});
 }
 

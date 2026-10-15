@@ -2002,6 +2002,77 @@ async def scenario_events(client):
 			await client.send(line)
 
 
+async def scenario_labels(client):
+	"""labeled-response (9.17): #one and #two, batch and labeled-response offered.
+	Labeled commands are answered 3 seconds late, so the window can be changed
+	in between: WHOIS (a labeled batch), WHO and NAMES (batches, the old Hidden
+	Responses), VERSION (one labeled line), JOIN (at once: the join and its
+	NAMES list, which aren't printed raw), anything else ACK. Stays connected."""
+	if not await client.register_with_capabilities("batch labeled-response server-time"):
+		return
+
+	me = client.nickname
+
+	for channel in ("#one", "#two"):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{me} @alice bob")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	batches = 0
+
+	async def answer(label, lines, delay):
+		nonlocal batches
+		await asyncio.sleep(delay)
+		if len(lines) == 1:
+			await client.send(f"@label={label} {lines[0]}")
+			return
+		batches += 1
+		token = f"lr{batches}"
+		await client.send(f"@label={label} :{SERVER} BATCH +{token} labeled-response")
+		for line in lines:
+			await client.send(f"@batch={token} {line}")
+		await client.send(f":{SERVER} BATCH -{token}")
+
+	seen = 0
+
+	while await client.collect(0.5):
+		for line in client.received[seen:]:
+			if not line.startswith("@"):
+				continue
+			tags, _, rest = line.partition(" ")
+			label = dict(tag.split("=", 1) for tag in tags[1:].split(";") if "=" in tag).get("label")
+			if not label:
+				continue
+			command, _, params = rest.partition(" ")
+			command = command.upper()
+			target = params.split(" ")[0].lstrip(":")
+
+			if command == "WHOIS":
+				lines = [f":{SERVER} 311 {me} {target} {target[0]} {target}.test * :{target.capitalize()} Example",
+						 f":{SERVER} 312 {me} {target} {SERVER} :Scripted test server",
+						 f":{SERVER} 318 {me} {target} :End of /WHOIS list."]
+				asyncio.create_task(answer(label, lines, 3))
+			elif command == "WHO":
+				lines = [f":{SERVER} 352 {me} {target} a alice.test {SERVER} alice H@ :0 Alice",
+						 f":{SERVER} 352 {me} {target} b bob.test {SERVER} bob H :0 Bob",
+						 f":{SERVER} 315 {me} {target} :End of /WHO list."]
+				asyncio.create_task(answer(label, lines, 3))
+			elif command == "NAMES":
+				lines = [f":{SERVER} 353 {me} = {target} :{me} @alice bob",
+						 f":{SERVER} 366 {me} {target} :End of /NAMES list."]
+				asyncio.create_task(answer(label, lines, 3))
+			elif command == "VERSION":
+				asyncio.create_task(answer(label, [f":{SERVER} 351 {me} scripted-1.0 {SERVER} :Scripted test server"], 3))
+			elif command == "JOIN":
+				lines = [f":{me}!user@client.textual.test JOIN {target}",
+						 f":{SERVER} 353 {me} = {target} :{me} carol",
+						 f":{SERVER} 366 {me} {target} :End of /NAMES list."]
+				asyncio.create_task(answer(label, lines, 0))
+			else:
+				asyncio.create_task(answer(label, [f":{SERVER} ACK"], 0))
+		seen = len(client.received)
+
+
 async def scenario_keywords(client):
 	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
@@ -2188,6 +2259,7 @@ SCENARIOS = {
 	"drafts": scenario_drafts,
 	"sorting": scenario_sorting,
 	"events": scenario_events,
+	"labels": scenario_labels,
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
 	"mass": scenario_mass,
@@ -2234,7 +2306,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

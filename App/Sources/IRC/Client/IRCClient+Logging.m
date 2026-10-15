@@ -644,9 +644,14 @@ NS_ASSUME_NONNULL_BEGIN
 	[self printReply:message inChannel:channel withSequence:1];
 }
 
+/* Without a channel: the console, or the window a labeled command came from */
 - (void)printReply:(IRCMessage *)message inChannel:(nullable IRCChannel *)channel withSequence:(NSUInteger)sequence
 {
 	NSParameterAssert(message != nil);
+
+	if (channel == nil) {
+		channel = [self channelForReplyWithFallback:nil];
+	}
 
 	[self print:[message sequence:sequence] by:nil inChannel:channel asType:TVCLogLineTypeDebug command:message.command receivedAt:message.receivedAt];
 }
@@ -689,6 +694,10 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	NSString *errorMessage = TXTLS(@"IRC[3yo-gw]", message.commandNumeric, sequenceMessage);
+
+	if (channel == nil) {
+		channel = [self channelForReplyWithFallback:nil];
+	}
 
 	[self printDebugInformation:errorMessage inChannel:channel asCommand:message.command escapeMessage:YES];
 }
@@ -742,7 +751,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)printDebugInformation:(NSString *)message asCommand:(NSString *)command escapeMessage:(BOOL)escapeMessage
 {
-	IRCChannel *channel = [mainWindow() selectedChannelOn:self];
+	IRCChannel *channel = self.selectedChannelForReplies;
 
 	[self printDebugInformation:message inChannel:channel asCommand:command escapeMessage:escapeMessage];
 }

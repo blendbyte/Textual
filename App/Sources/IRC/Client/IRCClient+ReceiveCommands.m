@@ -2165,6 +2165,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 		newBatchMessage.parentBatchMessage = parentBatchMessage;
 
+		/* The answer to a labeled command: its lines go to that command's window */
+		if (self.labeledResponsesUsable) {
+			newBatchMessage.label = m.messageTags[@"label"];
+		}
+
 		[self.batchMessages queueEntry:newBatchMessage];
 
 		/* A nested batch is processed in its place in the parent, when
@@ -2241,7 +2246,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* In a channel the context names, otherwise in the console */
+	/* In a channel the context names, otherwise in the console (or the
+	 window of the labeled command it answers) */
 	IRCChannel *channel = nil;
 
 	for (NSUInteger i = 2; i < (m.paramsCount - 1); i++) {
@@ -2252,6 +2258,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+	}
+
+	if (channel == nil) {
+		channel = [self channelForReplyWithFallback:nil];
 	}
 
 	[self printDebugInformation:[self standardReplyText:m] inChannel:channel asCommand:m.command];
@@ -2479,6 +2489,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The method used for processing queued entries will
 	 also remove it from queue once completed. */
 	[self recursivelyProcessBatchMessage:batchMessage];
+
+	[self labeledBatchFinished:batchMessage];
 
 	/* Set vendor specific flags based on BATCH command values */
 	if ([batchType isEqualToString:@"znc.in/playback"]) {
