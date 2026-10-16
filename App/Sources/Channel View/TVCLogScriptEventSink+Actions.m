@@ -285,6 +285,18 @@ NS_ASSUME_NONNULL_BEGIN
 	[channel.associatedClient sendReaction:arguments[1] toMessage:arguments[0] inChannel:channel removing:[arguments[2] boolValue]];
 }
 
+/* Delete (9.15 C): after asking */
+- (void)_deleteMessage:(TVCLogScriptEventSinkContext *)context
+{
+	IRCChannel *channel = context.associatedChannel;
+
+	if (channel == nil) {
+		return;
+	}
+
+	[mainWindow() confirmDeletingMessage:context.arguments[0] inChannel:channel];
+}
+
 /* More…: any emoji, from the macOS picker */
 - (void)_pickReaction:(TVCLogScriptEventSinkContext *)context
 {

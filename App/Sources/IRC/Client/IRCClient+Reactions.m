@@ -50,7 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
 /* Reactions (https://ircv3.net/specs/client-tags/react): a TAGMSG with
  +draft/react (or +draft/unreact) and +reply naming the message. They are
  shown under that message, and sent the same way (tag-only, decided
- 2026-10-16: no text for clients without them). */
+ 2026-10-16: no text for clients without them).
+
+ Deleting (https://ircv3.net/specs/extensions/message-redaction): REDACT
+ <target> <msgid> [reason]; the message stays as "Message deleted", with
+ who did it when that wasn't its sender. Without a reason: the spec asks
+ clients not to make one up. */
 
 #define _reactionMaximumLength		64
 
@@ -123,6 +128,71 @@ NS_ASSUME_NONNULL_BEGIN
 	[self printDebugInformationToConsole:note];
 }
 
+- (BOOL)canDeleteMessages
+{
+	return [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMessageRedaction];
+}
+
+/* A channel, or the query: with the sender, or ours (echoed) with the target */
+- (nullable IRCChannel *)channelForMessageAction:(IRCMessage *)m
+{
+	NSString *sender = m.senderNickname;
+
+	NSString *target = [m paramAt:0];
+
+	if ([self stringIsChannelName:target]) {
+		return [self findChannel:target];
+	} else if ([self nicknameIsMyself:sender]) {
+		return [self findChannel:target];
+	}
+
+	return [self findChannel:sender];
+}
+
+- (void)receiveRedact:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if (m.paramsCount < 2 || m.senderNickname.length == 0) {
+		return;
+	}
+
+	NSString *msgid = [IRCMessage validatedMessageIdentifier:[m paramAt:1]];
+
+	if (msgid == nil) {
+		return;
+	}
+
+	NSString *reason = ((m.paramsCount > 2) ? [m paramAt:2].trim : nil);
+
+	if (reason.length == 0) {
+		reason = nil;
+	}
+
+	IRCChannel *channel = [self channelForMessageAction:m];
+
+	if (channel == nil) {
+		return;
+	}
+
+	[channel.viewController deleteMessage:msgid byNickname:m.senderNickname reason:reason];
+}
+
+/* The server sends REDACT back when it is done (or FAIL REDACT, shown as any standard reply) */
+- (void)deleteMessage:(NSString *)msgid inChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(msgid != nil);
+	NSParameterAssert(channel != nil);
+
+	msgid = [IRCMessage validatedMessageIdentifier:msgid];
+
+	if (msgid == nil || self.canDeleteMessages == NO || self.isLoggedIn == NO || channel.isUtility) {
+		return;
+	}
+
+	[self send:@"REDACT", channel.name, msgid, nil];
+}
+
 - (BOOL)receiveReactionTagmsg:(IRCMessage *)m
 {
 	NSParameterAssert(m != nil);
@@ -144,18 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return YES;
 	}
 
-	/* A channel, or the query: with the sender, or ours (echoed) with the target */
-	NSString *target = [m paramAt:0];
-
-	IRCChannel *channel = nil;
-
-	if ([self stringIsChannelName:target]) {
-		channel = [self findChannel:target];
-	} else if ([self nicknameIsMyself:sender]) {
-		channel = [self findChannel:target];
-	} else {
-		channel = [self findChannel:sender];
-	}
+	IRCChannel *channel = [self channelForMessageAction:m];
 
 	if (channel == nil) {
 		return YES;

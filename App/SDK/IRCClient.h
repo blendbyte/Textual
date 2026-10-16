@@ -73,7 +73,8 @@ typedef NS_ENUM(NSUInteger, IRCClientDisconnectMode) {
   34     public: draft/event-playback
   35     public: draft/pre-away
   36     public: draft/account-registration
-  37+    new values, written as 1ULL << n (1 << 31 overflows an int) */
+  37     public: draft/message-redaction
+  38+    new values, written as 1ULL << n (1 << 31 overflows an int) */
 typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityAwayNotify			= 1 << 0, // YES if away-notify CAP supported
 	ClientIRCv3SupportedCapabilityBatch					= 1 << 1, // YES if batch CAP supported
@@ -105,7 +106,8 @@ typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityMultiline				= 1ULL << 33, // YES if draft/multiline CAP supported
 	ClientIRCv3SupportedCapabilityEventPlayback			= 1ULL << 34, // YES if draft/event-playback CAP supported
 	ClientIRCv3SupportedCapabilityPreAway				= 1ULL << 35, // YES if draft/pre-away CAP supported
-	ClientIRCv3SupportedCapabilityAccountRegistration	= 1ULL << 36 // YES if draft/account-registration CAP supported
+	ClientIRCv3SupportedCapabilityAccountRegistration	= 1ULL << 36, // YES if draft/account-registration CAP supported
+	ClientIRCv3SupportedCapabilityMessageRedaction		= 1ULL << 37 // YES if draft/message-redaction CAP supported
 };
 
 TEXTUAL_EXTERN NSNotificationName const IRCClientConfigurationWasUpdatedNotification;

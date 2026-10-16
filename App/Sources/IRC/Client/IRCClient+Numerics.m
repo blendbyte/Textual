@@ -1147,6 +1147,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[channel.memberInfo endNamesBatch];
 
+			/* Whether we are an operator here is known now */
+			[channel.viewController updateMessageActions];
+
 			/* People in private messages they started may be here too */
 			[self updateQueryInfoBarsForNickname:nil];
 

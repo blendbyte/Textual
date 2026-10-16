@@ -177,6 +177,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "draft/account-registration",	ClientIRCv3SupportedCapabilityAccountRegistration,	ClientIRCv3SupportedCapabilityAccountRegistration },
 	{ "draft/chathistory",		ClientIRCv3SupportedCapabilityChatHistory,			ClientIRCv3SupportedCapabilityChatHistory },
 	{ "draft/event-playback",	ClientIRCv3SupportedCapabilityEventPlayback,		ClientIRCv3SupportedCapabilityEventPlayback },
+	{ "draft/message-redaction",	ClientIRCv3SupportedCapabilityMessageRedaction,	ClientIRCv3SupportedCapabilityMessageRedaction },
 	{ "draft/multiline",		ClientIRCv3SupportedCapabilityMultiline,			ClientIRCv3SupportedCapabilityMultiline },
 	{ "draft/pre-away",			ClientIRCv3SupportedCapabilityPreAway,				ClientIRCv3SupportedCapabilityPreAway },
 	{ "draft/read-marker",		ClientIRCv3SupportedCapabilityReadMarker,			ClientIRCv3SupportedCapabilityReadMarker },
@@ -354,6 +355,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
 	appendValue(ClientIRCv3SupportedCapabilityAccountRegistration, @"draft/account-registration");
+	appendValue(ClientIRCv3SupportedCapabilityMessageRedaction, @"draft/message-redaction");
 	appendValue(ClientIRCv3SupportedCapabilityChatHistory, @"draft/chathistory");
 	appendValue(ClientIRCv3SupportedCapabilityEventPlayback, @"draft/event-playback");
 	appendValue(ClientIRCv3SupportedCapabilityMultiline, @"draft/multiline");

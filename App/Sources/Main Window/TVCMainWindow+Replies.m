@@ -76,6 +76,7 @@
 #import "TLONicknameCompletionStatusPrivate.h"
 #import "TLONotificationControllerPrivate.h"
 #import "TLOSpeechSynthesizerPrivate.h"
+#import "TDCAlert.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TVCInputCompletionPrivate.h"
 #import "TVCMainWindowTextViewInternal.h"
@@ -416,6 +417,34 @@ static TVCReactionPickerController * _Nullable _reactionPicker = nil;
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[NSApp orderFrontCharacterPalette:picker.field];
 	});
+}
+
+- (void)confirmDeletingMessage:(NSString *)msgid inChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(msgid != nil);
+	NSParameterAssert(channel != nil);
+
+	if (channel.associatedClient.canDeleteMessages == NO || self.attachedSheet != nil) {
+		return;
+	}
+
+	__weak IRCChannel *weakChannel = channel;
+
+	[TDCAlert alertSheetWithWindow:self
+							  body:TXTLS(@"TVCMainWindow[del-q2]")
+							 title:TXTLS(@"TVCMainWindow[del-q1]")
+					 defaultButton:TXTLS(@"TVCMainWindow[del-q3]")
+				   alternateButton:TXTLS(@"Prompts[qso-2g]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+		IRCChannel *deletingChannel = weakChannel;
+
+		if (buttonClicked != TDCAlertResponseDefault || deletingChannel == nil) {
+			return;
+		}
+
+		[deletingChannel.associatedClient deleteMessage:msgid inChannel:deletingChannel];
+	}];
 }
 
 - (void)cancelReplyButtonClicked:(id)sender

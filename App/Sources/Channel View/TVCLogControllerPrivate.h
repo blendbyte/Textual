@@ -59,6 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
  shown under it and saved with it */
 - (void)setReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid added:(BOOL)added;
 
+/* Deleting (9.15 C): the message becomes "Message deleted" (by whom, why),
+ in the view and in what is saved */
+- (void)deleteMessage:(NSString *)msgid byNickname:(NSString *)nickname reason:(nullable NSString *)reason;
+
 - (instancetype)initWithClient:(IRCClient *)client inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithChannel:(IRCChannel *)channel inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 

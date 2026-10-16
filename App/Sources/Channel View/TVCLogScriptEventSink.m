@@ -98,6 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@"nicknameDoubleClicked" : @"",
 			@"openImageViewer" : @"ssnn",
 			@"openVideoPlayer" : @"snss",
+			@"deleteMessage" : @"s",
 			@"pickReaction" : @"s",
 			@"replyToMessage" : @"sss",
 			@"toggleReaction" : @"ssn",

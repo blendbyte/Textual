@@ -44,6 +44,7 @@
 #import "ICLPayloadPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
+#import "IRCChannelUser.h"
 #import "IRCChannel.h"
 #import "IRCChannelPrivate.h"
 #import "THOPluginDispatcherPrivate.h"
@@ -103,6 +104,7 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @property (nonatomic, copy, nullable, readwrite) NSString *newestLineNumber;
 @property (atomic, strong, nullable) TVCLogLine *lastLine; // atomic: history results set it off the main thread
 @property (nonatomic, strong) NSMutableArray<TVCLogLine *> *unsavedLogLines; // printed but not yet in the historic log; guarded by itself
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *pendingLineChanges; // line number → changes for when it is saved; guarded by unsavedLogLines
 @property (atomic, assign) NSUInteger historyGeneration; // raised by every clear; history fetches from before it are dropped
 @property (nonatomic, strong) NSMutableArray<NSString *> *highlightedLineNumbers;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *messageReferences; // msgid → line number, nickname, excerpt (replies); guarded by itself
@@ -207,6 +209,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.jumpToLineCallbacks = [NSMutableDictionary dictionary];
 
 	self.unsavedLogLines = [NSMutableArray array];
+
+	self.pendingLineChanges = [NSMutableDictionary dictionary];
 
 	self.messageReferences = [NSMutableDictionary dictionary];
 	self.messageReferenceOrder = [NSMutableArray array];
@@ -755,9 +759,22 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	BOOL inConversation = (channel != nil && channel.isUtility == NO && client.isLoggedIn);
 
+	BOOL canDelete = (inConversation && client.canDeleteMessages);
+
+	/* Others' messages: an operator's to try (the server decides; decided 2026-10-16) */
+	BOOL canDeleteOthers = NO;
+
+	if (canDelete && channel.isChannel) {
+		IRCChannelUser *member = [channel findMember:client.userNickname];
+
+		canDeleteOthers = (member.op || member.halfOp);
+	}
+
 	return @{
 		@"reply" : @(inConversation && client.canSendReplies),
-		@"react" : @(inConversation && client.canSendReactions)
+		@"react" : @(inConversation && client.canSendReactions),
+		@"delete" : @(canDelete),
+		@"deleteOthers" : @(canDeleteOthers)
 	};
 }
 
@@ -1605,6 +1622,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		[self.unsavedLogLines addObject:logLine];
 	}
 
+	/* Known by its ID right away: a reaction or a deletion can come before the line is drawn */
+	TVCLogLineType printedLineType = logLine.lineType;
+
+	if (printedLineType == TVCLogLineTypePrivateMessage || printedLineType == TVCLogLineTypeAction || printedLineType == TVCLogLineTypeNotice) {
+		[self rememberMessageReferenceForLine:logLine];
+	}
+
 	/* Unread counts, highlights and notifications don't wait for the document:
 	 views in the background load a few at a time, which held them back for
 	 tens of seconds. The line itself still waits, so it is shown once. */
@@ -1633,6 +1657,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 			/* Never shown, so not saved later either */
 			[self takeUnsavedLogLine:logLine];
+
+			(void)[self logLineApplyingPendingChanges:logLine];
 
 			return;
 		}
@@ -1691,8 +1717,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 				[self processInlineMedia:listOfLinks atLineNumber:lineNumber];
 			}
 
-			/* Log this log line */
-			[sharedHistoricLog() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
+			/* Log this log line, with what changed since it was printed */
+			[sharedHistoricLog() writeNewEntryWithLogLine:[self logLineApplyingPendingChanges:logLine] forItem:self.associatedItem];
 
 			if (notifiedEarly) {
 				return;
@@ -1732,12 +1758,40 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	if (save == NO) {
+		for (TVCLogLine *logLine in logLines) {
+			(void)[self logLineApplyingPendingChanges:logLine];
+		}
+
 		return;
 	}
 
 	for (TVCLogLine *logLine in logLines) {
-		[sharedHistoricLog() writeNewEntryWithLogLine:logLine forItem:self.associatedItem];
+		[sharedHistoricLog() writeNewEntryWithLogLine:[self logLineApplyingPendingChanges:logLine] forItem:self.associatedItem];
 	}
+}
+
+/* The line with the changes made while it waited to be saved (reactions, deleting) */
+- (TVCLogLine *)logLineApplyingPendingChanges:(TVCLogLine *)logLine
+{
+	NSParameterAssert(logLine != nil);
+
+	NSArray *changes = nil;
+
+	@synchronized (self.unsavedLogLines) {
+		changes = self.pendingLineChanges[logLine.uniqueIdentifier];
+
+		[self.pendingLineChanges removeObjectForKey:logLine.uniqueIdentifier];
+	}
+
+	for (TVCLogLine * _Nullable (^change)(TVCLogLine *) in changes) {
+		TVCLogLine *changedLine = change(logLine);
+
+		if (changedLine) {
+			logLine = changedLine;
+		}
+	}
+
+	return logLine;
 }
 
 /* Renders only the message body (for its highlight and nicknames) on a serial
@@ -1925,12 +1979,19 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	NSDictionary *reference = @{
 		@"lineNumber" : logLine.uniqueIdentifier,
 		@"nickname" : (logLine.nickname ?: @""),
-		@"excerpt" : (excerpt ?: @"")
+		@"excerpt" : (excerpt ?: @""),
+		@"receivedAt" : logLine.receivedAt
 	};
 
 	@synchronized (self.messageReferences) {
-		if (self.messageReferences[msgid] == nil) {
+		NSDictionary *existing = self.messageReferences[msgid];
+
+		if (existing == nil) {
 			[self.messageReferenceOrder addObject:msgid];
+		} else if ([existing[@"receivedAt"] compare:logLine.receivedAt] == NSOrderedDescending) {
+			/* Older history loaded later (scrolling up) doesn't take the place
+			 of the newer message with the same ID */
+			return;
 		}
 
 		self.messageReferences[msgid] = reference;
@@ -1953,6 +2014,59 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	@synchronized (self.messageReferences) {
 		return self.messageReferences[msgid];
 	}
+}
+
+#pragma mark -
+#pragma mark Deleting
+
+- (void)deleteMessage:(NSString *)msgid byNickname:(NSString *)nickname reason:(nullable NSString *)reason
+{
+	NSParameterAssert(msgid != nil);
+	NSParameterAssert(nickname != nil);
+
+	NSDictionary *reference = [self messageReferenceForMsgid:msgid];
+
+	/* "by …" only when someone else deleted it */
+	NSString *sender = reference[@"nickname"];
+
+	BOOL bySender = (sender.length == 0 || [sender caseInsensitiveCompare:nickname] == NSOrderedSame);
+
+	NSString *note = nil;
+
+	if (bySender) {
+		note = ((reason) ? TXTLS(@"TVCMainWindow[del-n3]", reason) : TXTLS(@"TVCMainWindow[del-n1]"));
+	} else {
+		note = ((reason) ? TXTLS(@"TVCMainWindow[del-n4]", nickname, reason) : TXTLS(@"TVCMainWindow[del-n2]", nickname));
+	}
+
+	@synchronized (self.messageReferences) {
+		[self.messageReactions removeObjectForKey:msgid];
+
+		if (reference) {
+			NSMutableDictionary *changedReference = [reference mutableCopy];
+
+			changedReference[@"excerpt"] = note;
+
+			self.messageReferences[msgid] = [changedReference copy];
+		}
+	}
+
+	[self evaluateFunction:@"_MessageActions.deleteMessage" withArguments:@[msgid, note]];
+
+	/* Out of what is saved too: the text is gone, the line says why */
+	[self updateSavedLineForMessage:msgid usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
+		TVCLogLineMutable *changedLine = [logLine mutableCopy];
+
+		changedLine.messageBody = note;
+
+		changedLine.isRedacted = YES;
+
+		changedLine.reactions = nil;
+
+		changedLine.highlightKeywords = nil;
+
+		return [changedLine copy];
+	}];
 }
 
 #pragma mark -
@@ -2106,6 +2220,24 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	[self evaluateFunction:@"_MessageActions.setReactions" withArguments:@[msgid, [self reactionsForView:snapshot]]];
 
 	/* Saved with the line, so they are there after a restart */
+	NSArray *savedReactions = ((snapshot.count > 0) ? snapshot : nil);
+
+	[self updateSavedLineForMessage:msgid usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
+		TVCLogLineMutable *changedLine = [logLine mutableCopy];
+
+		changedLine.reactions = savedReactions;
+
+		return [changedLine copy];
+	}];
+}
+
+/* A message printed a moment ago may not be saved yet (it is, once drawn):
+ the change then waits and is saved with it; otherwise the saved line changes */
+- (void)updateSavedLineForMessage:(NSString *)msgid usingBlock:(TVCLogLine * _Nullable (^)(TVCLogLine *logLine))block
+{
+	NSParameterAssert(msgid != nil);
+	NSParameterAssert(block != nil);
+
 	NSString *lineNumber = [self messageReferenceForMsgid:msgid][@"lineNumber"];
 
 	IRCTreeItem *item = self.associatedItem;
@@ -2114,15 +2246,27 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		return;
 	}
 
-	NSArray *savedReactions = ((snapshot.count > 0) ? snapshot : nil);
+	@synchronized (self.unsavedLogLines) {
+		NSUInteger index = [self.unsavedLogLines indexOfObjectPassingTest:^BOOL(TVCLogLine *object, NSUInteger objectIndex, BOOL *stop) {
+			return [object.uniqueIdentifier isEqualToString:lineNumber];
+		}];
 
-	[sharedHistoricLog() updateEntryWithUniqueIdentifier:lineNumber forItem:item usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
-		TVCLogLineMutable *changedLine = [logLine mutableCopy];
+		if (index != NSNotFound) {
+			NSMutableArray *changes = self.pendingLineChanges[lineNumber];
 
-		changedLine.reactions = savedReactions;
+			if (changes == nil) {
+				changes = [NSMutableArray array];
 
-		return [changedLine copy];
-	}];
+				self.pendingLineChanges[lineNumber] = changes;
+			}
+
+			[changes addObject:[block copy]];
+
+			return;
+		}
+	}
+
+	[sharedHistoricLog() updateEntryWithUniqueIdentifier:lineNumber forItem:item usingBlock:block];
 }
 
 - (nullable NSString *)renderLogLine:(TVCLogLine *)logLine previousLine:(nullable TVCLogLine *)previousLine resultInfo:(NSDictionary<NSString *, id> ** _Nullable)resultInfo
@@ -2225,6 +2369,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		classAttribute = [classAttribute stringByAppendingString:@" private"];
 	}
 
+	/* Deleted: messageBody already says so */
+	if (logLine.isRedacted) {
+		classAttribute = [classAttribute stringByAppendingString:@" redacted"];
+	}
+
 	templateAttributes[@"lineClassAttribute"] = classAttribute;
 
 	/* Replies, reactions and deleting (9.15): a message's ID, and for a reply
@@ -2240,7 +2389,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 			[self rememberMessageReferenceForLine:logLine];
 
-			NSArray *reactions = [self reactionsForLine:logLine];
+			NSArray *reactions = ((logLine.isRedacted) ? nil : [self reactionsForLine:logLine]);
 
 			if (reactions) {
 				NSData *reactionsData = [NSJSONSerialization dataWithJSONObject:reactions options:0 error:NULL];
@@ -2591,6 +2740,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 				  @"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),
 				  @"react" : TXTLS(@"TVCMainWindow[rct-b1]"),
 				  @"moreReactions" : TXTLS(@"TVCMainWindow[rct-b2]"),
+				  @"delete" : TXTLS(@"TVCMainWindow[del-b1]"),
 				  @"earlierMessage" : TXTLS(@"TVCMainWindow[rpl-e1]")
 			  },
 			  /* "%@" stays for the count, which the view fills in */

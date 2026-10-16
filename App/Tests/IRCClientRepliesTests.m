@@ -37,6 +37,7 @@
 #import <XCTest/XCTest.h>
 
 #import "IRCClientConfig.h"
+#import "IRCCommandIndex.h"
 #import "IRCClientPrivate.h"
 #import "IRCISupportInfoPrivate.h"
 #import "IRCMessagePrivate.h"
@@ -106,6 +107,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertFalse(client.canSendReactions);
 	XCTAssertTrue(client.canSendReplies);
+}
+
+/* REDACT reaches its handler; deleting needs draft/message-redaction */
+- (void)testDeleting
+{
+	XCTAssertEqual([IRCCommandIndex indexOfRemoteCommand:@"REDACT"], (NSUInteger)IRCRemoteCommandRedact);
+
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	XCTAssertFalse(client.canDeleteMessages);
+
+	[client enableCapability:ClientIRCv3SupportedCapabilityMessageRedaction];
+
+	XCTAssertTrue(client.canDeleteMessages);
 }
 
 @end

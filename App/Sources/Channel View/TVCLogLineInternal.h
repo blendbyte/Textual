@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _nicknameColorStyleOverride;
 	BOOL _senderIsBot;
 	BOOL _isPrivateInChannel;
+	BOOL _isRedacted;
 	NSArray<NSString *> *_excludeKeywords;
 	NSArray<NSString *> *_highlightKeywords;
 	NSArray<NSString *> *_eventNicknames;

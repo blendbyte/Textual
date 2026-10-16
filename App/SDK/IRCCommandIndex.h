@@ -185,6 +185,7 @@ typedef NS_ENUM(NSUInteger, IRCRemoteCommand) {
 	IRCRemoteCommandPrivmsg = 1035,
 	IRCRemoteCommandPrivmsgAction = 1002,
 	IRCRemoteCommandQuit = 1036,
+	IRCRemoteCommandRedact = 1067,
 	IRCRemoteCommandRegister = 1065,
 	IRCRemoteCommandSetname = 1059,
 	IRCRemoteCommandShun = 1045,

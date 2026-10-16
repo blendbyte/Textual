@@ -152,6 +152,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_isEncrypted = [aDecoder decodeBoolForKey:@"isEncrypted"];
 	self->_senderIsBot = [aDecoder decodeBoolForKey:@"senderIsBot"];
 	self->_isPrivateInChannel = [aDecoder decodeBoolForKey:@"isPrivateInChannel"];
+	self->_isRedacted = [aDecoder decodeBoolForKey:@"isRedacted"];
 	self->_isFirstForDay = [aDecoder decodeBoolForKey:@"isFirstForDay"];
 
 	self->_command = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"command"];
@@ -227,6 +228,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	if (self.isPrivateInChannel) {
 		[aCoder encodeBool:YES forKey:@"isPrivateInChannel"];
+	}
+
+	if (self.isRedacted) {
+		[aCoder encodeBool:YES forKey:@"isRedacted"];
 	}
 
 	[aCoder maybeEncodeObject:self.msgid forKey:@"msgid"];
@@ -468,6 +473,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	object->_senderIsBot = self->_senderIsBot;
 	object->_isPrivateInChannel = self->_isPrivateInChannel;
+	object->_isRedacted = self->_isRedacted;
 
 	object->_msgid = self->_msgid;
 	object->_replyToMsgid = self->_replyToMsgid;
@@ -514,6 +520,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic msgid;
 @dynamic replyToMsgid;
 @dynamic reactions;
+@dynamic isRedacted;
 @dynamic receivedAt;
 
 + (BOOL)isMutable
@@ -622,6 +629,13 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	if (self->_eventNicknames != eventNicknames) {
 		self->_eventNicknames = [eventNicknames copy];
+	}
+}
+
+- (void)setIsRedacted:(BOOL)isRedacted
+{
+	if (self->_isRedacted != isRedacted) {
+		self->_isRedacted = isRedacted;
 	}
 }
 

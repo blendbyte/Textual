@@ -136,6 +136,9 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 /* Reactions (9.15 B): a small field near the pointer with the macOS emoji
  picker open; what is chosen (or typed and Return) is sent as the reaction */
 - (void)showReactionPickerForMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
+
+/* Deleting (9.15 C): asks first, as it can't be undone */
+- (void)confirmDeletingMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 @end
 
 @interface TVCMainWindow (TitleAndWindowPrivate)

@@ -1468,9 +1468,28 @@ async def scenario_replies(client):
 	is echoed with a new msgid and its client tags (so a reply shows its quote);
 	"more" makes alice say another line (msgid a2). Reactions (9.15 B): bob and
 	carol 👍 alice's question, alice 🎉 bob's answer; "unreact" takes carol's 👍
-	back. Stays connected; the log shows the tags of each message."""
-	if not await client.register_with_capabilities("message-tags echo-message server-time batch"):
+	back. Deleting (9.15 C, draft/message-redaction): the client's own messages
+	are deleted (REDACT sent back), others' refused (FAIL REDACT) unless "op"
+	made it an operator; "bobdel" has bob delete his last answer, "moddel" has
+	dave delete carol's last line with a reason. Stays connected; the log
+	shows the tags of each message."""
+	if not await client.register_with_capabilities("message-tags echo-message server-time batch draft/message-redaction standard-replies"):
 		return
+
+	# New message IDs every run, as a real server gives (a1 → a1.<run>)
+	import re
+	run = format(int(time.time()) % 0xfffff, "x")
+
+	def unique(line):
+		line = re.sub(r"(msgid|\+reply)=([A-Za-z0-9]+)", lambda m: f"{m.group(1)}={m.group(2)}.{run}", line)
+		return re.sub(r" REDACT (\S+) ([A-Za-z0-9]+)(?= |$)", lambda m: f" REDACT {m.group(1)} {m.group(2)}.{run}", line)
+
+	plain_send = client.send
+
+	async def send(line, raw=None):
+		await plain_send(unique(line))
+
+	client.send = send
 
 	me = client.nickname
 
@@ -1495,6 +1514,7 @@ async def scenario_replies(client):
 
 	seen = 0
 	echoed = 0
+	operator = False
 
 	while await client.collect(1):
 		for line in client.received[seen:]:
@@ -1503,17 +1523,32 @@ async def scenario_replies(client):
 			if line.startswith("@"):
 				tags, _, rest_of_line = line[1:].partition(" ")
 			command, _, rest = rest_of_line.partition(" ")
+			if command.upper() == "REDACT":
+				target, _, msgid = rest.partition(" ")
+				msgid = msgid.split(" ")[0].lstrip(":")
+				if msgid.startswith("me") or operator:
+					await plain_send(f":{me}!user@client.textual.test REDACT {target} {msgid}")
+				else:
+					await plain_send(f":{SERVER} FAIL REDACT REDACT_FORBIDDEN {target} {msgid} :You are not allowed to delete this message")
+				continue
 			if command.upper() not in ("PRIVMSG", "NOTICE", "TAGMSG"):
 				continue
 			client_tags = [tag for tag in tags.split(";") if tag.startswith("+")]
 			log("··", f"client tags: {';'.join(client_tags) or 'none'}")
 			echoed += 1
-			echo_tags = ";".join([f"msgid=me{echoed}"] + client_tags)
-			await client.send(f"@{echo_tags} :{me}!user@client.textual.test {command.upper()} {rest}")
+			echo_tags = ";".join([f"msgid=me{echoed}.{run}"] + client_tags)
+			await plain_send(f"@{echo_tags} :{me}!user@client.textual.test {command.upper()} {rest}")
 			if command.upper() == "PRIVMSG" and rest.endswith(" :more"):
 				await client.send("@msgid=a2 :alice!a@alice.test PRIVMSG #replies :Another question: does it run on macOS 14?")
 			elif command.upper() == "PRIVMSG" and rest.endswith(" :unreact"):
 				await client.send("@+draft/unreact=👍;+reply=a1 :carol!c@carol.test TAGMSG #replies")
+			elif command.upper() == "PRIVMSG" and rest.endswith(" :op"):
+				operator = True
+				await client.send(f":ChanServ!ChanServ@services.textual.test MODE #replies +o {me}")
+			elif command.upper() == "PRIVMSG" and rest.endswith(" :bobdel"):
+				await client.send(":bob!b@bob.test REDACT #replies b2")
+			elif command.upper() == "PRIVMSG" and rest.endswith(" :moddel"):
+				await client.send(":dave!d@dave.test REDACT #replies c2 :Off topic")
 		seen = len(client.received)
 
 

@@ -85,6 +85,14 @@
 "rct-b2" = "More…";
 "rct-p1" = "Emoji";
 "rct-a1" = "Reaction";
+"del-b1" = "Delete";
+"del-n1" = "Message deleted";
+"del-n2" = "Message deleted by %@";
+"del-n3" = "Message deleted: %@";
+"del-n4" = "Message deleted by %1$@: %2$@";
+"del-q1" = "Delete this message for everyone?";
+"del-q2" = "It is removed for everyone in the conversation, and can't be brought back.";
+"del-q3" = "Delete";
 "prv-l1" = "only you";
 "bac-t1" = "Ban Account %@";
 "e7g-s1" = ", ";

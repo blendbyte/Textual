@@ -229,6 +229,13 @@ enum {
 
 /* After registration: why Reply and React are missing on this network, once */
 - (void)noteUnavailableMessageActions;
+
+/* Deleting (9.15 C): draft/message-redaction */
+@property (readonly) BOOL canDeleteMessages;
+
+- (void)receiveRedact:(IRCMessage *)m;
+
+- (void)deleteMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 @end
 
 @interface IRCClient (TimedCommandsPrivate)

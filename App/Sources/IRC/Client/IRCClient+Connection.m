@@ -729,6 +729,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 				break;
 			}
+			case IRCRemoteCommandRedact: // Command: REDACT (draft/message-redaction)
+			{
+				[self receiveRedact:message];
+
+				break;
+			}
 			case IRCRemoteCommandFail: // Commands: FAIL, WARN, NOTE (standard-replies)
 			case IRCRemoteCommandWarn:
 			case IRCRemoteCommandNote:

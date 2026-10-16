@@ -1982,6 +1982,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (isPrintOnlyMessage == NO) {
 		[mainWindow() updateTitleFor:channel];
+
+		/* Becoming or no longer being an operator: Delete on others' messages */
+		[channel.viewController updateMessageActions];
 	}
 }
 

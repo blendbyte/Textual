@@ -103,6 +103,7 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 			"line-height: 1.6; color: inherit; cursor: pointer; border: 1px solid rgba(128, 128, 128, 0.35); background: rgba(128, 128, 128, 0.08); }",
 		":where(div.line .reactions.inline) { display: inline-flex; flex-wrap: nowrap; gap: 3px; margin: 0 0 0 0.5em; vertical-align: baseline; }",
 		":where(div.line .reactions.inline .reaction) { font-size: 0.8em; line-height: 1.35; padding: 0 5px; }",
+		":where(div.line.redacted .redactedNote, div.line.redacted .innerMessage) { font-style: italic; opacity: 0.6; }",
 		":where(div.line .reaction.mine) { border-color: rgba(0, 122, 255, 0.6); background: rgba(0, 122, 255, 0.14); }",
 		":where(div.line .reaction .reactionCount) { margin-left: 0.3em; font-variant-numeric: tabular-nums; }"
 	];
@@ -449,13 +450,74 @@ _MessageActions._showReactionChoices = function(line) /* PRIVATE */
 };
 
 /* ************************************************** */
+/*                     Deleting                       */
+/* ************************************************** */
+
+/* From the app: the message's text becomes the note ("Message deleted…");
+ its reactions go, and replies quoting it say so too */
+_MessageActions.deleteMessage = function(msgid, note) /* PRIVATE */
+{
+	var lines = document.querySelectorAll("div.line[data-msgid=\"" + CSS.escape(msgid) + "\"]");
+
+	for (var i = 0; i < lines.length; i++) {
+		var line = lines[i];
+
+		if (line === _MessageActions._toolbarLine) {
+			_MessageActions._hideToolbar();
+		}
+
+		line.classList.add("redacted");
+
+		delete line.dataset.reactions;
+
+		var reactions = line.querySelector(".reactions");
+
+		if (reactions) {
+			reactions.remove();
+		}
+
+		var text = (line.querySelector(".innerMessage") || line.querySelector(".message"));
+
+		if (text) {
+			var noteElement = document.createElement("span");
+
+			noteElement.className = "redactedNote";
+
+			noteElement.textContent = note;
+
+			text.replaceChildren(noteElement);
+		}
+	}
+
+	var replies = document.querySelectorAll("div.line[data-reply-to=\"" + CSS.escape(msgid) + "\"]");
+
+	for (var j = 0; j < replies.length; j++) {
+		var reply = replies[j];
+
+		var quote = reply.querySelector(":scope > .replyQuote");
+
+		var parent = _MessageActions._lineWithMessageIdentifier(msgid);
+
+		if (!reply.dataset.replyNickname && parent) {
+			reply.dataset.replyNickname = _MessageActions._senderOfLine(parent);
+		}
+
+		reply.dataset.replyExcerpt = note;
+
+		if (quote) {
+			_MessageActions._fillQuote(quote, reply);
+		}
+	}
+};
+
+/* ************************************************** */
 /*                     Actions                        */
 /* ************************************************** */
 
-/* The message under the pointer: a line with an ID, not an event */
+/* The message under the pointer: a line with an ID, not an event or a deleted one */
 _MessageActions._messageLineForElement = function(element) /* PRIVATE */
 {
-	var line = ((element && element.closest) ? element.closest("div.line.text[data-msgid]") : null);
+	var line = ((element && element.closest) ? element.closest("div.line.text[data-msgid]:not(.redacted)") : null);
 
 	return line;
 };
@@ -487,6 +549,15 @@ _MessageActions._showToolbar = function(line) /* PRIVATE */
 
 	if (_MessageActions.available.react) {
 		buttons.push({label: "☺ " + (_MessageActions.strings.react || ""), keepOpen: true, action: _MessageActions._showReactionChoices});
+	}
+
+	/* Ours, or anyone's for an operator (the server decides) */
+	var mine = (line.dataset.memberType === "myself");
+
+	if (_MessageActions.available.delete && (mine || _MessageActions.available.deleteOthers)) {
+		buttons.push({label: "🗑 " + (_MessageActions.strings.delete || ""), action: function(target) {
+			appPrivate.deleteMessage(target.dataset.msgid);
+		}});
 	}
 
 	if (buttons.length === 0) {
