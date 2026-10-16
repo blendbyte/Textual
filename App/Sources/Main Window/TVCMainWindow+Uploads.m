@@ -89,7 +89,9 @@ NS_ASSUME_NONNULL_BEGIN
  field shows which and how far, with Cancel. Each link is put in the input
  field of the channel the files were meant for (its draft when another is
  selected). A paperclip button beside the input field chooses files, shown
- while the selected server offers uploads. */
+ while the selected server offers uploads. Long pastes (9.18 D) go the same
+ way as a text file, and their link is sent; if they can't go, their text
+ comes back to the input field. */
 
 #define _uploadBarHeight		24.0
 
@@ -97,6 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *path;
 @property (nonatomic, weak) IRCClient *client;
 @property (nonatomic, weak) IRCTreeItem *item;
+@property (nonatomic, copy, nullable) NSString *pastedText; // a long paste: path is its text file
+@property (nonatomic, assign) IRCRemoteCommand command;
 @end
 
 @implementation TVCMainWindowUpload
@@ -496,6 +500,92 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+- (void)sendText:(NSString *)text asLinkOnClient:(IRCClient *)client toItem:(IRCTreeItem *)item asCommand:(IRCRemoteCommand)command
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(client != nil);
+	NSParameterAssert(item != nil);
+
+	NSString *folder = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"Textual Pastes/%@", [NSUUID UUID].UUIDString]];
+
+	NSString *path = [folder stringByAppendingPathComponent:@"paste.txt"];
+
+	BOOL written = ([RZFileManager() createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:NULL] &&
+					[text writeToFile:path atomically:NO encoding:NSUTF8StringEncoding error:NULL]);
+
+	TVCMainWindowUpload *upload = [TVCMainWindowUpload new];
+
+	upload.path = path;
+	upload.client = client;
+	upload.item = item;
+	upload.pastedText = text;
+	upload.command = command;
+
+	if (written == NO) {
+		[self returnPastedTextOfUpload:upload];
+
+		return;
+	}
+
+	[self.uploadQueue addObject:upload];
+
+	if (self.currentUpload == nil) {
+		self.uploadsDone = 0;
+
+		[self startNextUpload];
+	} else {
+		[self updateUploadBar];
+	}
+}
+
+/* A paste that didn't go: its text back where it was typed, its file gone */
+- (void)returnPastedTextOfUpload:(TVCMainWindowUpload *)upload
+{
+	NSParameterAssert(upload != nil);
+
+	NSString *text = upload.pastedText;
+
+	if (text == nil) {
+		return;
+	}
+
+	[RZFileManager() removeItemAtPath:upload.path.stringByDeletingLastPathComponent error:NULL];
+
+	IRCTreeItem *item = upload.item;
+
+	if (item == nil) {
+		return;
+	}
+
+	if (item != self.selectedItem) {
+		[self.inputHistoryManager appendText:text toDraftForTreeItem:item];
+
+		return;
+	}
+
+	TVCMainWindowTextView *textField = self.inputTextField;
+
+	[textField focus];
+
+	if (textField.string.length == 0) {
+		textField.stringValue = text;
+	} else {
+		[textField insertText:[@"\n" stringByAppendingString:text] replacementRange:NSMakeRange(textField.string.length, 0)];
+	}
+}
+
+/* The queue given up (a failure, Cancel): pastes still in it come back */
+- (void)discardUploadQueue
+{
+	NSArray *queue = [self.uploadQueue copy];
+
+	[self.uploadQueue removeAllObjects];
+
+	for (TVCMainWindowUpload *upload in queue) {
+		[self returnPastedTextOfUpload:upload];
+	}
+}
+
 - (void)startNextUpload
 {
 	TVCMainWindowUpload *next = self.uploadQueue.firstObject;
@@ -515,10 +605,12 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCTreeItem *item = next.item;
 
 	/* The network's address withdrawn (disconnected), or the user's own removed, since */
-	IRCFileUpload *upload = [client fileUploadForPath:next.path];
+	IRCFileUpload *upload = ((next.pastedText) ? [client textUploadForPath:next.path] : [client fileUploadForPath:next.path]);
 
 	if (upload == nil || item == nil) {
-		[self.uploadQueue removeAllObjects];
+		[self returnPastedTextOfUpload:next];
+
+		[self discardUploadQueue];
 
 		self.currentUpload = nil;
 
@@ -538,13 +630,14 @@ NS_ASSUME_NONNULL_BEGIN
 	[self updateUploadBar];
 
 	[upload startWithCompletionBlock:^(IRCFileUpload *finishedUpload) {
-		[weakSelf uploadFinished:finishedUpload forItem:item];
+		[weakSelf uploadFinished:finishedUpload ofQueuedUpload:next];
 	}];
 }
 
-- (void)uploadFinished:(IRCFileUpload *)upload forItem:(nullable IRCTreeItem *)item
+- (void)uploadFinished:(IRCFileUpload *)upload ofQueuedUpload:(TVCMainWindowUpload *)queuedUpload
 {
 	NSParameterAssert(upload != nil);
+	NSParameterAssert(queuedUpload != nil);
 
 	if (upload != self.currentUpload) {
 		return;
@@ -554,8 +647,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSURL *link = upload.link;
 
+	IRCTreeItem *item = queuedUpload.item;
+
+	IRCClient *client = queuedUpload.client;
+
 	if (link && item) {
-		[self insertUploadedLink:link.absoluteString forItem:item];
+		if (queuedUpload.pastedText) {
+			[RZFileManager() removeItemAtPath:queuedUpload.path.stringByDeletingLastPathComponent error:NULL];
+		}
+
+		/* A paste's link goes instead of its lines (if disconnected meanwhile,
+		 it waits in the input field like a file's) */
+		if (queuedUpload.pastedText && client.isLoggedIn) {
+			[client inputText:link.absoluteString asCommand:queuedUpload.command destination:item];
+		} else {
+			[self insertUploadedLink:link.absoluteString forItem:item];
+		}
 
 		[self startNextUpload];
 
@@ -563,7 +670,11 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Cancelled, or failed: the rest stay where they are */
-	[self.uploadQueue removeAllObjects];
+	BOOL wasPaste = (queuedUpload.pastedText != nil);
+
+	[self returnPastedTextOfUpload:queuedUpload];
+
+	[self discardUploadQueue];
 
 	self.currentUpload = nil;
 
@@ -575,7 +686,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[TDCAlert alertSheetWithWindow:self
 							  body:upload.failureReason
-							 title:TXTLS(@"TVCMainWindow[upl-e1]", upload.fileName)
+							 title:((wasPaste) ? TXTLS(@"TVCMainWindow[upl-e2]") : TXTLS(@"TVCMainWindow[upl-e1]", upload.fileName))
 					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
 				   alternateButton:nil
 					   otherButton:nil
@@ -584,7 +695,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)cancelUploadsButtonClicked:(id)sender
 {
-	[self.uploadQueue removeAllObjects];
+	[self discardUploadQueue];
 
 	[self.currentUpload cancel];
 }

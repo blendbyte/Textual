@@ -51,6 +51,7 @@ typedef NS_ENUM(NSUInteger, TLOUploadDestinationBody) {
 @property (nonatomic, copy) NSString *method; // POST or PUT
 @property (nonatomic, assign) TLOUploadDestinationBody body;
 @property (nonatomic, copy) NSString *fileFieldName; // "file" unless set
+@property (nonatomic, assign) BOOL sendsFileAsTextField; // a form field without a file name (paste services; not kept)
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *headers;
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *parameters; // added to the address
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *arguments; // form fields
@@ -77,6 +78,10 @@ typedef NS_ENUM(NSUInteger, TLOUploadDestinationBody) {
 
 /* Hide the paperclip where no upload address applies (an option of the setup) */
 @property (class, nonatomic, assign) BOOL hidesUploadButtonWithoutDestination;
+
+/* Long pastes (9.18 D): dpaste.com where no upload address applies, if the user turned it on */
+@property (class, nonatomic, assign) BOOL sendsLongPastesToPasteService;
+@property (class, readonly, copy) TLOUploadDestination *pasteServiceDestination;
 
 /* The request for a file: the body to send is written to folder for a form */
 - (nullable NSMutableURLRequest *)requestForFileAtURL:(NSURL *)fileURL

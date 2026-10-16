@@ -787,19 +787,11 @@ NS_ASSUME_NONNULL_BEGIN
 		/* The user's own: no IRC login goes along */
 		TLOUploadDestination *destination = self.customUploadDestination;
 
-		NSURL *requestAddress = [NSURL URLWithString:destination.requestAddress];
-
-		if (destination == nil || destination.problem || requestAddress == nil) {
+		if (destination == nil) {
 			return nil;
 		}
 
-		IRCFileUpload *upload = [[IRCFileUpload alloc] initWithPath:path address:requestAddress];
-
-		upload.destination = destination;
-
-		[IRCConnectionProxy applyClientConfig:self.config toSessionConfiguration:upload.sessionConfiguration];
-
-		return upload;
+		return [self fileUploadForPath:path destination:destination];
 	}
 
 	IRCFileUpload *upload = [[IRCFileUpload alloc] initWithPath:path address:address];
@@ -824,6 +816,54 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return upload;
+}
+
+/* An uploader's address (the user's own, or the paste service): no IRC login goes along */
+- (nullable IRCFileUpload *)fileUploadForPath:(NSString *)path destination:(TLOUploadDestination *)destination
+{
+	NSParameterAssert(path != nil);
+	NSParameterAssert(destination != nil);
+
+	NSURL *requestAddress = [NSURL URLWithString:destination.requestAddress];
+
+	if (destination.problem || requestAddress == nil) {
+		return nil;
+	}
+
+	IRCFileUpload *upload = [[IRCFileUpload alloc] initWithPath:path address:requestAddress];
+
+	upload.destination = destination;
+
+	[IRCConnectionProxy applyClientConfig:self.config toSessionConfiguration:upload.sessionConfiguration];
+
+	return upload;
+}
+
+- (BOOL)pasteServiceUsable
+{
+	return (self.fileUploadsAvailable == NO &&
+			self.config.uploadDestinationMode != IRCClientUploadDestinationModeOff &&
+			[TLOUploadDestination sendsLongPastesToPasteService]);
+}
+
+- (nullable NSString *)textUploadDestinationDescription
+{
+	if (self.pasteServiceUsable) {
+		return [TLOUploadDestination pasteServiceDestination].name;
+	}
+
+	return self.fileUploadDestinationDescription;
+}
+
+- (nullable IRCFileUpload *)textUploadForPath:(NSString *)path
+{
+	NSParameterAssert(path != nil);
+
+	if (self.pasteServiceUsable) {
+		return [self fileUploadForPath:path destination:[TLOUploadDestination pasteServiceDestination]];
+	}
+
+	return [self fileUploadForPath:path];
 }
 
 @end

@@ -140,8 +140,22 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 
 	[note.widthAnchor constraintLessThanOrEqualToConstant:300].active = YES;
 
+	/* Long pastes (9.18 D): dpaste.com, off unless chosen */
+	NSButton *pasteServiceCheckbox = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[upl-c1]") target:self action:@selector(togglePasteService:)];
+
+	pasteServiceCheckbox.state = (([TLOUploadDestination sendsLongPastesToPasteService]) ? NSControlStateValueOn : NSControlStateValueOff);
+
+	NSTextField *pasteServiceNote = [NSTextField wrappingLabelWithString:TXTLS(@"TDCPreferencesController[upl-n2]")];
+
+	pasteServiceNote.font = note.font;
+	pasteServiceNote.textColor = note.textColor;
+
+	[pasteServiceNote.widthAnchor constraintLessThanOrEqualToConstant:300].active = YES;
+
 	[grid addRowWithViews:@[titleLabel, stack]];
 	[grid addRowWithViews:@[[NSGridCell emptyContentView], note]];
+	[grid addRowWithViews:@[[NSGridCell emptyContentView], pasteServiceCheckbox]];
+	[grid addRowWithViews:@[[NSGridCell emptyContentView], pasteServiceNote]];
 
 	self.uploadDestinationLabel = label;
 	self.uploadDestinationButton = button;
@@ -162,6 +176,11 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 
 		self.uploadDestinationButton.title = TXTLS(@"TDCPreferencesController[upl-b1]");
 	}
+}
+
+- (void)togglePasteService:(NSButton *)sender
+{
+	[TLOUploadDestination setSendsLongPastesToPasteService:(sender.state == NSControlStateValueOn)];
 }
 
 - (void)editUploadDestination:(nullable id)sender

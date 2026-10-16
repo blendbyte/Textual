@@ -130,6 +130,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)updateUploadButton; // shown while the selected server offers uploads
 
 - (void)uploadFiles:(NSArray<NSString *> *)paths onClient:(IRCClient *)client toItem:(IRCTreeItem *)item;
+- (void)sendText:(NSString *)text asLinkOnClient:(IRCClient *)client toItem:(IRCTreeItem *)item asCommand:(IRCRemoteCommand)command; // a long paste (9.18 D)
 
 - (void)chooseFilesToUpload:(nullable id)sender;
 

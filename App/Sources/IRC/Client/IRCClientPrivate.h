@@ -281,6 +281,10 @@ enum {
 @property (readonly) BOOL customUploadDestinationConfigured; // without reading the Keychain
 @property (readonly, copy, nullable) TLOUploadDestination *customUploadDestination; // with its tokens
 @property (readonly, copy, nullable) NSString *fileUploadDestinationDescription; // "files.example.org (offered by the network)"
+
+/* Long pastes as a link (9.18 D): where file uploads go, else dpaste.com if turned on (not where uploads are off) */
+- (nullable IRCFileUpload *)textUploadForPath:(NSString *)path;
+@property (readonly, copy, nullable) NSString *textUploadDestinationDescription;
 @end
 
 /* Failed sends (IRCClient+FailedSends.m) */

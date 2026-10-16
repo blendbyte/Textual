@@ -136,6 +136,7 @@
 "upl-p1" = "Upload";
 "upl-p2" = "The files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
 "upl-e1" = "Couldn't upload “%@”";
+"upl-e2" = "Couldn't send the text as a link. It's back in the input field.";
 "upl-s1" = "Uploads aren't set up";
 "upl-s2" = "%@ doesn't offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
 "upl-s3" = "Set Up Upload Address…";

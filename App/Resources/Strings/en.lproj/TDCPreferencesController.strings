@@ -150,3 +150,5 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "upl-b1" = "Set Up…";
 "upl-b2" = "Change…";
 "upl-n1" = "Where files you drop, paste or attach are uploaded on networks that don't offer uploads. A server can use its own or none (Server Properties).";
+"upl-c1" = "Use dpaste.com for long pastes";
+"upl-n2" = "Where no upload address applies, “Send as Link” puts many lines on dpaste.com for 30 days and sends the link. Anyone with the link can read them.";

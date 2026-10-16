@@ -288,6 +288,42 @@ NS_ASSUME_NONNULL_BEGIN
 	[[NSFileManager defaultManager] removeItemAtURL:folder error:NULL];
 }
 
+/* Long pastes (9.18 D): dpaste.com gets the text as the "content" field, not a file */
+- (void)testPasteServiceRequest
+{
+	NSURL *folder = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[NSUUID UUID].UUIDString isDirectory:YES];
+
+	XCTAssertTrue([[NSFileManager defaultManager] createDirectoryAtURL:folder withIntermediateDirectories:YES attributes:nil error:NULL]);
+
+	NSURL *fileURL = [folder URLByAppendingPathComponent:@"paste.txt"];
+
+	[@"line 1\nline 2" writeToURL:fileURL atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+
+	TLOUploadDestination *destination = [TLOUploadDestination pasteServiceDestination];
+
+	XCTAssertNil(destination.problem);
+
+	NSURL *bodyURL = nil;
+
+	NSMutableURLRequest *request = [destination requestForFileAtURL:fileURL fileName:@"paste.txt" contentType:@"text/plain" temporaryFolder:folder bodyFileURL:&bodyURL];
+
+	XCTAssertEqualObjects(request.URL.absoluteString, @"https://dpaste.com/api/v2/");
+	XCTAssertEqualObjects(request.HTTPMethod, @"POST");
+
+	NSString *body = [NSString stringWithContentsOfURL:bodyURL encoding:NSUTF8StringEncoding error:NULL];
+
+	XCTAssertTrue([body containsString:@"name=\"content\"\r\n\r\nline 1\nline 2\r\n--"]);
+	XCTAssertTrue([body containsString:@"name=\"expiry_days\"\r\n\r\n30\r\n"]);
+	XCTAssertFalse([body containsString:@"filename="]);
+
+	/* Its answer: the link in Location */
+	NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:request.URL statusCode:201 HTTPVersion:@"HTTP/1.1" headerFields:@{@"Location" : @"https://dpaste.com/ABC123"}];
+
+	XCTAssertEqualObjects([destination linkFromResponse:response data:[@"https://dpaste.com/ABC123\n" dataUsingEncoding:NSUTF8StringEncoding]].absoluteString, @"https://dpaste.com/ABC123");
+
+	[[NSFileManager defaultManager] removeItemAtURL:folder error:NULL];
+}
+
 @end
 
 

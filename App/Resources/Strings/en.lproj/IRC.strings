@@ -522,5 +522,7 @@ The identifier for a timer can be found using “/timer list”";
 "upl-e5" = "The server didn't say where the file is.";
 "upl-e6" = "Its location and camera details couldn't be removed, so it wasn't uploaded.";
 "upl-e7" = "The upload address couldn't be used. Check it in Preferences or Server Properties.";
+"pst-b1" = "Send as Link";
+"pst-n1" = "“Send as Link” puts the text on %@ instead and sends its link. Anyone with the link can read it.";
 "upl-d1" = "%@ (offered by the network)";
 "upl-d2" = "%@ (your upload address)";

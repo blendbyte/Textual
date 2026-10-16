@@ -225,14 +225,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Warn if the split value is above 4 lines or if the total string 
 	 length exceeds TXMaximumIRCBodyLength times 4. */
 	if (lines.count > 4 || (stringIn.length > (TXMaximumIRCBodyLength * 4))) {
-		BOOL continueInput = [TDCAlert modalAlertWithMessage:TXTLS(@"IRC[lql-8i]")
-													   title:TXTLS(@"IRC[u4c-7i]")
-											   defaultButton:TXTLS(@"Prompts[mvh-ms]")
-											 alternateButton:TXTLS(@"Prompts[99q-gg]")
-											  suppressionKey:@"input_text_possible_flood_warning"
-											 suppressionText:nil];
-
-		if (continueInput == NO) {
+		if ([self confirmSendingLongText:stringIn asCommand:command destination:destination] == NO) {
 			return;
 		}
 	}
@@ -268,6 +261,45 @@ NS_ASSUME_NONNULL_BEGIN
 			[self sendText:line asCommand:command toChannel:channel];
 		}
 	}
+}
+
+/* Text that becomes many messages: send it (YES), not (NO), or, where text can
+ go up (9.18 D), as a link instead (NO here; the link is sent once it's up) */
+- (BOOL)confirmSendingLongText:(NSAttributedString *)text asCommand:(IRCRemoteCommand)command destination:(IRCTreeItem *)destination
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(destination != nil);
+
+	NSString *linkDestination = ((destination.isClient) ? nil : self.textUploadDestinationDescription);
+
+	if (linkDestination == nil) {
+		return [TDCAlert modalAlertWithMessage:TXTLS(@"IRC[lql-8i]")
+										 title:TXTLS(@"IRC[u4c-7i]")
+								 defaultButton:TXTLS(@"Prompts[mvh-ms]")
+							   alternateButton:TXTLS(@"Prompts[99q-gg]")
+								suppressionKey:@"input_text_possible_flood_warning"
+							   suppressionText:nil];
+	}
+
+	NSString *body = [NSString stringWithFormat:@"%@\n\n%@", TXTLS(@"IRC[lql-8i]"), TXTLS(@"IRC[pst-n1]", linkDestination)];
+
+	TDCAlertResponse response = [TDCAlert modalAlertWithMessage:body
+														   title:TXTLS(@"IRC[u4c-7i]")
+												   defaultButton:TXTLS(@"Prompts[mvh-ms]")
+												 alternateButton:TXTLS(@"Prompts[99q-gg]")
+													 otherButton:TXTLS(@"IRC[pst-b1]")
+												  suppressionKey:@"input_text_possible_flood_warning"
+												 suppressionText:nil
+												   accessoryView:nil
+											 suppressionResponse:NULL];
+
+	if (response == TDCAlertResponseOther) {
+		[mainWindow() sendText:text.string asLinkOnClient:self toItem:destination asCommand:command];
+
+		return NO;
+	}
+
+	return (response == TDCAlertResponseDefault);
 }
 
 /* NO when the lines can't go as a multi-line message: no draft/multiline, an
@@ -316,14 +348,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* More than the server takes in one message: several, after the usual warning */
 	if (batches.count > 1) {
-		BOOL continueInput = [TDCAlert modalAlertWithMessage:TXTLS(@"IRC[lql-8i]")
-													   title:TXTLS(@"IRC[u4c-7i]")
-											   defaultButton:TXTLS(@"Prompts[mvh-ms]")
-											 alternateButton:TXTLS(@"Prompts[99q-gg]")
-											  suppressionKey:@"input_text_possible_flood_warning"
-											 suppressionText:nil];
+		NSAttributedString *text = [[NSAttributedString alloc] initWithString:[[lines valueForKey:@"string"] componentsJoinedByString:@"\n"]];
 
-		if (continueInput == NO) {
+		if ([self confirmSendingLongText:text asCommand:command destination:destination] == NO) {
 			return YES;
 		}
 	}

@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const _globalDestinationKey = @"Uploads -> Destination";
 static NSString * const _hideButtonKey = @"Uploads -> Hide Upload Button Without Destination";
+static NSString * const _pasteServiceKey = @"Uploads -> Send Long Pastes To dpaste.com";
 static NSString * const _globalSecretsIdentifier = @"global";
 
 @implementation TLOUploadDestination
@@ -75,6 +76,7 @@ static NSString * const _globalSecretsIdentifier = @"global";
 	object.method = self.method;
 	object.body = self.body;
 	object.fileFieldName = self.fileFieldName;
+	object.sendsFileAsTextField = self.sendsFileAsTextField;
 	object.headers = self.headers;
 	object.parameters = self.parameters;
 	object.arguments = self.arguments;
@@ -387,6 +389,32 @@ static NSString * const _globalSecretsIdentifier = @"global";
 	[RZUserDefaults() setBool:hidesUploadButtonWithoutDestination forKey:_hideButtonKey];
 }
 
++ (BOOL)sendsLongPastesToPasteService
+{
+	return [RZUserDefaults() boolForKey:_pasteServiceKey];
+}
+
++ (void)setSendsLongPastesToPasteService:(BOOL)sendsLongPastesToPasteService
+{
+	[RZUserDefaults() setBool:sendsLongPastesToPasteService forKey:_pasteServiceKey];
+}
+
+/* dpaste.com's API (dpaste.com/api): the text in "content", kept 30 days;
+ the link comes back as Location. Their rules: one request a second at most,
+ 1 MB a paste, a User-Agent naming the app (NSURLSession's does) */
++ (TLOUploadDestination *)pasteServiceDestination
+{
+	TLOUploadDestination *destination = [TLOUploadDestination new];
+
+	destination.name = @"dpaste.com";
+	destination.requestAddress = @"https://dpaste.com/api/v2/";
+	destination.fileFieldName = @"content";
+	destination.sendsFileAsTextField = YES;
+	destination.arguments = @{@"expiry_days" : @"30"};
+
+	return destination;
+}
+
 #pragma mark -
 #pragma mark Request
 
@@ -495,8 +523,12 @@ static NSString * const _globalSecretsIdentifier = @"global";
 		[head appendFormat:@"--%@\r\nContent-Disposition: form-data; name=\"%@\"\r\n\r\n%@\r\n", boundary, [self.class formQuotedString:key], arguments[key]];
 	}
 
-	[head appendFormat:@"--%@\r\nContent-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: %@\r\n\r\n",
-		boundary, [self.class formQuotedString:self.fileFieldName], [self.class formQuotedString:fileName], contentType];
+	if (self.sendsFileAsTextField) {
+		[head appendFormat:@"--%@\r\nContent-Disposition: form-data; name=\"%@\"\r\n\r\n", boundary, [self.class formQuotedString:self.fileFieldName]];
+	} else {
+		[head appendFormat:@"--%@\r\nContent-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: %@\r\n\r\n",
+			boundary, [self.class formQuotedString:self.fileFieldName], [self.class formQuotedString:fileName], contentType];
+	}
 
 	BOOL written = [output writeData:[head dataUsingEncoding:NSUTF8StringEncoding] error:NULL];
 
