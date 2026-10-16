@@ -58,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
 @property (nonatomic, copy, readwrite, nullable) NSString *botModeCharacter;
 @property (nonatomic, copy, readwrite, nullable) NSString *networkIconAddress;
+@property (nonatomic, copy, readwrite, nullable) NSString *fileHostAddress;
 @property (nonatomic, copy, nullable) NSString *extendedBanPrefix; // EXTBAN's prefix ("$", "~"; empty for none)
 @property (nonatomic, copy, nullable) NSString *accountExtendedBanName; // ACCOUNTEXTBAN's first name ("R", "account")
 @property (nonatomic, assign, readwrite) BOOL whoxSupported;
@@ -126,6 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.botModeCharacter = nil;
 
 	self.networkIconAddress = nil;
+	self.fileHostAddress = nil;
 
 	self.extendedBanPrefix = nil;
 	self.accountExtendedBanName = nil;
@@ -227,6 +229,12 @@ NS_ASSUME_NONNULL_BEGIN
 					   [segmentKey isEqualToStringIgnoringCase:@"ICON"])
 			{
 				self.networkIconAddress = segmentValue;
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"draft/FILEHOST"] ||
+					   [segmentKey isEqualToStringIgnoringCase:@"soju.im/FILEHOST"] ||
+					   [segmentKey isEqualToStringIgnoringCase:@"FILEHOST"])
+			{
+				/* An early draft allowed several, space separated: the first */
+				self.fileHostAddress = [segmentValue componentsSeparatedByString:@" "].firstObject;
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
 				self.clientTagDenyList = [segmentValue componentsSeparatedByString:@","];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
@@ -403,6 +411,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.whoxSupported = NO;
 	} else if ([token isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
 		self.clientTagDenyList = @[];
+	} else if ([token isEqualToStringIgnoringCase:@"draft/FILEHOST"] || [token isEqualToStringIgnoringCase:@"soju.im/FILEHOST"] || [token isEqualToStringIgnoringCase:@"FILEHOST"]) {
+		self.fileHostAddress = nil;
 	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"] || [token isEqualToStringIgnoringCase:@"draft/CHATHISTORY"]) {
 		self.chatHistoryLimit = 0;
 	} else if ([token isEqualToStringIgnoringCase:@"CASEMAPPING"]) {

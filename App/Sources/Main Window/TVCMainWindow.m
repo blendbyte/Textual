@@ -171,6 +171,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 	[self setUpReplyBar];
 
+	[self setUpUploads];
+
 	[self addFormattingMenuToInputTextField];
 
 	[worldController() setupConfiguration];

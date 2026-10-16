@@ -225,6 +225,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.supportInfo reset];
 
+	if (isTerminating == NO) {
+		[mainWindow() updateUploadButton];
+	}
+
 	[self clearAddressBookCache];
 
 	[self clearTrackedUsers];

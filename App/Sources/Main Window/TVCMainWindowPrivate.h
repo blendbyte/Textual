@@ -124,6 +124,16 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)redirectKeyDown:(NSEvent *)e;
 @end
 
+/* File uploads (9.18): one after another, each link put in its channel's input field */
+@interface TVCMainWindow (UploadsPrivate)
+- (void)setUpUploads;
+- (void)updateUploadButton; // shown while the selected server offers uploads
+
+- (void)uploadFiles:(NSArray<NSString *> *)paths onClient:(IRCClient *)client toItem:(IRCTreeItem *)item;
+
+- (void)chooseFilesToUpload:(nullable id)sender;
+@end
+
 /* Replies (9.15): the message being answered is kept per channel and shown
  above the input field until the next message is sent or it is cancelled */
 @interface TVCMainWindow (RepliesPrivate)

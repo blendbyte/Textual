@@ -247,6 +247,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* A picture without text (a screenshot): offered for upload (9.18) */
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+
+	if (pasteboard.stringContent.length == 0 && [NSImage canInitWithPasteboard:pasteboard]) {
+		[menuController() answerPastedPictureOnPasteboard:pasteboard];
+
+		return;
+	}
+
 	[super paste:self];
 
 	[self recalculateTextViewSize];

@@ -574,7 +574,10 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Files pasted in the main window get the dropped files sheet */
 			BOOL filesOnPasteboard = (mainWindow().keyWindow && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
 
-			if (currentPasteboard.length == 0 && filesOnPasteboard == NO) {
+			/* And a picture (a screenshot): uploaded where the network offers it (9.18) */
+			BOOL pictureOnPasteboard = (mainWindow().keyWindow && [NSImage canInitWithPasteboard:RZPasteboard()]);
+
+			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
 				return NO;
 			}
 
@@ -1001,7 +1004,10 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Files pasted in the main window get the dropped files sheet */
 			BOOL filesOnPasteboard = (mainWindow().keyWindow && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
 
-			if (currentPasteboard.length == 0 && filesOnPasteboard == NO) {
+			/* And a picture (a screenshot): uploaded where the network offers it (9.18) */
+			BOOL pictureOnPasteboard = (mainWindow().keyWindow && [NSImage canInitWithPasteboard:RZPasteboard()]);
+
+			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
 				return NO;
 			}
 

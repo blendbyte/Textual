@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* The unsent text kept for an item that isn't selected, or nil */
 - (nullable NSAttributedString *)draftForTreeItem:(IRCTreeItem *)treeItem;
 
+/* Added at the end of the draft of a channel that isn't selected (an uploaded file's link) */
+- (void)appendText:(NSString *)text toDraftForTreeItem:(IRCTreeItem *)treeItem;
+
 - (void)destroy:(IRCTreeItem *)treeItem;
 
 - (void)noteInputHistoryObjectScopeDidChange;

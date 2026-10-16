@@ -80,6 +80,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSView *replyBar; // "Replying to …" above the input field (9.15)
 @property (nonatomic, strong, nullable) NSTextField *replyBarLabel;
 @property (nonatomic, strong, nullable) NSLayoutConstraint *replyBarHeightConstraint;
+@property (nonatomic, strong, nullable) NSView *uploadBar; // "Uploading …" above the reply bar (9.18)
+@property (nonatomic, strong, nullable) NSTextField *uploadBarLabel;
+@property (nonatomic, strong, nullable) NSProgressIndicator *uploadBarProgress;
+@property (nonatomic, strong, nullable) NSLayoutConstraint *uploadBarHeightConstraint;
+@property (nonatomic, strong, nullable) NSButton *uploadButton; // the paperclip beside the input field
+@property (nonatomic, strong, nullable) NSLayoutConstraint *uploadButtonTrailingConstraint;
+@property (nonatomic, strong, nullable) NSLayoutConstraint *uploadButtonBesideConstraint;
+@property (nonatomic, strong, nullable) NSMutableArray *uploadQueue; // waiting, oldest first
+@property (nonatomic, strong, nullable) IRCFileUpload *currentUpload;
+@property (nonatomic, assign) NSUInteger uploadsDone; // of this round
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
 @end

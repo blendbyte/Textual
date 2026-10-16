@@ -86,6 +86,7 @@ typedef NS_ENUM(NSUInteger, IRCISupportInfoCaseMapping)
 @property (readonly) BOOL whoxSupported; // WHOX: extended WHO with selectable fields
 @property (readonly, copy, nullable) NSString *botModeCharacter; // BOT: the user mode and WHO flag of bots ("B")
 @property (readonly, copy, nullable) NSString *networkIconAddress; // draft/ICON: the address of the network's icon, may contain "{size}"
+@property (readonly, copy, nullable) NSString *fileHostAddress; // draft/FILEHOST (or soju.im/FILEHOST): where files can be uploaded
 
 /* ACCOUNTEXTBAN with EXTBAN: the ban mask for an account ("$R:bob",
  "~account:bob"), nil where the server has no account bans */

@@ -826,7 +826,137 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *recipient = ((c.isPrivateMessage) ? c.name : nil);
 
+	if ([self offerToUploadFiles:files recipient:recipient onClient:u inChannel:c]) {
+		return;
+	}
+
 	[self answerDroppedFiles:files recipient:recipient onClient:u inChannel:c];
+}
+
+/* Where the network offers uploads (9.18): Upload, and DCC (a private
+ message) or Insert Path as the other choice. NO when it doesn't. */
+- (BOOL)offerToUploadFiles:(NSArray<NSString *> *)files recipient:(nullable NSString *)recipient onClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel
+{
+	NSParameterAssert(files != nil);
+	NSParameterAssert(client != nil);
+
+	NSURL *address = client.fileUploadAddress;
+
+	NSArray *sendableFiles = [TDCFileTransferDialog sendableFilePaths:files];
+
+	if (client.isLoggedIn == NO || address == nil || sendableFiles.count == 0) {
+		return NO;
+	}
+
+	IRCTreeItem *item = ((channel) ?: client);
+
+	NSString *title = nil;
+
+	if (sendableFiles.count == 1) {
+		title = TXTLS(@"Prompts[d7f-u1]", [sendableFiles.firstObject lastPathComponent]);
+	} else {
+		title = TXTLS(@"Prompts[d7f-u2]", (unsigned long)sendableFiles.count);
+	}
+
+	NSString *body = TXTLS(@"Prompts[d7f-u3]", address.host);
+
+	if (sendableFiles.count < files.count) {
+		body = [body stringByAppendingFormat:@" %@", TXTLS(@"Prompts[d7f-s4]")];
+	}
+
+	NSString *otherButton = ((recipient) ? TXTLS(@"Prompts[d7f-u5]") : TXTLS(@"Prompts[d7f-p1]")); // Send by DCC, Insert Path
+
+	[TDCAlert alertSheetWithWindow:mainWindow()
+							  body:body
+							 title:title
+					 defaultButton:TXTLS(@"Prompts[d7f-u4]") // Upload
+				   alternateButton:TXTLS(@"Prompts[d7f-c4]") // Cancel
+					   otherButton:otherButton
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					   if (buttonClicked == TDCAlertResponseDefault) {
+						   [mainWindow() uploadFiles:sendableFiles onClient:client toItem:item];
+					   } else if (buttonClicked == TDCAlertResponseOther) {
+						   if (recipient) {
+							   [self sendDroppedFiles:sendableFiles to:recipient onClient:client];
+						   } else {
+							   [self insertDroppedFilePaths:files];
+						   }
+					   }
+				   }];
+
+	return YES;
+}
+
+- (void)answerPastedPictureOnPasteboard:(NSPasteboard *)pasteboard
+{
+	NSParameterAssert(pasteboard != nil);
+
+	IRCClient *u = self.selectedClient;
+	IRCChannel *c = self.selectedChannel;
+
+	if (u == nil) {
+		return;
+	}
+
+	NSURL *address = u.fileUploadAddress;
+
+	if (u.isLoggedIn == NO || address == nil) {
+		[TDCAlert alertSheetWithWindow:mainWindow()
+								  body:TXTLS(@"Prompts[d7f-i2]", u.networkNameAlt)
+								 title:TXTLS(@"Prompts[d7f-i1]")
+						 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+					   alternateButton:nil
+						   otherButton:nil
+					   completionBlock:nil];
+
+		return;
+	}
+
+	/* A PNG of it, named after now */
+	NSData *data = [pasteboard dataForType:NSPasteboardTypePNG];
+
+	if (data == nil) {
+		NSImage *image = [[NSImage alloc] initWithPasteboard:pasteboard];
+
+		NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:image.TIFFRepresentation];
+
+		data = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
+	}
+
+	if (data == nil) {
+		return;
+	}
+
+	NSDateFormatter *formatter = [NSDateFormatter new];
+
+	formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+	formatter.dateFormat = @"yyyy-MM-dd 'at' HH.mm.ss";
+
+	NSString *folder = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"Textual Pasted Pictures/%@", [NSUUID UUID].UUIDString]];
+
+	if ([RZFileManager() createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:NULL] == NO) {
+		return;
+	}
+
+	NSString *path = [folder stringByAppendingPathComponent:TXTLS(@"Prompts[d7f-i3]", [formatter stringFromDate:[NSDate date]])];
+
+	if ([data writeToFile:path atomically:YES] == NO) {
+		return;
+	}
+
+	IRCTreeItem *item = ((c) ?: u);
+
+	[TDCAlert alertSheetWithWindow:mainWindow()
+							  body:TXTLS(@"Prompts[d7f-u3]", address.host)
+							 title:TXTLS(@"Prompts[d7f-i4]")
+					 defaultButton:TXTLS(@"Prompts[d7f-u4]") // Upload
+				   alternateButton:TXTLS(@"Prompts[d7f-c4]") // Cancel
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					   if (buttonClicked == TDCAlertResponseDefault) {
+						   [mainWindow() uploadFiles:@[path] onClient:u toItem:item];
+					   }
+				   }];
 }
 
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row

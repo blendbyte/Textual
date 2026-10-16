@@ -177,6 +177,28 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 	}
 }
 
+- (void)appendText:(NSString *)text toDraftForTreeItem:(IRCTreeItem *)treeItem
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(treeItem != nil);
+
+	NSString *itemId = treeItem.uniqueIdentifier;
+
+	@synchronized (self.historyObjects) {
+		NSMutableAttributedString *draft = [self.drafts[itemId] mutableCopy];
+
+		if (draft == nil) {
+			draft = [NSMutableAttributedString new];
+		}
+
+		NSString *separator = ((draft.length > 0 && [draft.string hasSuffix:@" "] == NO) ? @" " : @"");
+
+		[draft appendAttributedString:[NSAttributedString attributedStringWithString:[NSString stringWithFormat:@"%@%@ ", separator, text]]];
+
+		self.drafts[itemId] = [draft copy];
+	}
+}
+
 - (void)noteInputHistoryObjectScopeDidChange
 {
 	@synchronized(self.historyObjects) {

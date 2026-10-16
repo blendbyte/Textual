@@ -238,6 +238,43 @@ enum {
 - (void)deleteMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 @end
 
+/* File uploads (9.18, IRCClient+FileUpload.m): one file to the network's upload address */
+@interface IRCFileUpload : NSObject
+@property (readonly, copy) NSString *filePath;
+@property (readonly, copy) NSString *fileName;
+@property (readonly, copy) NSURL *address;
+@property (readonly) double progress; // 0 to 1, of sending
+@property (readonly, copy, nullable) NSURL *link; // once uploaded
+@property (readonly, copy, nullable) NSString *failureReason; // nil and no link: cancelled
+@property (nonatomic, copy, nullable) void (^progressBlock)(IRCFileUpload *upload);
+
+- (void)startWithCompletionBlock:(void (^)(IRCFileUpload *upload))completionBlock; // on the main thread
+- (void)cancel;
+
++ (NSString *)contentDispositionForFileName:(NSString *)fileName;
++ (nullable NSURL *)linkFromLocation:(nullable NSString *)location relativeToAddress:(NSURL *)address;
+
+/* A copy without location, camera and capture details (the orientation stays); nil if not a picture */
++ (nullable NSURL *)copyOfImageWithoutMetadataAtURL:(NSURL *)url inFolder:(NSURL *)folder;
++ (BOOL)imageHasMetadataAtURL:(NSURL *)url;
+@end
+
+@interface IRCClient (FileUploadPrivate)
+@property (readonly, copy, nullable) NSURL *fileUploadAddress; // the network's (draft/FILEHOST), if this connection may use it
+
+/* The login only goes to the server's own domain: irc.example.org → example.org and *.example.org */
++ (BOOL)uploadHost:(NSString *)uploadHost sharesDomainWithHost:(NSString *)serverHost;
+
+/* "Basic …" for a password login (PLAIN, SCRAM) to an HTTPS address on the server's domain; otherwise nil */
++ (nullable NSString *)fileUploadAuthorizationForAddress:(NSURL *)address
+											  serverHost:(nullable NSString *)serverHost
+											   mechanism:(nullable NSString *)mechanism
+												username:(nullable NSString *)username
+												password:(nullable NSString *)password;
+
+- (nullable IRCFileUpload *)fileUploadForPath:(NSString *)path; // nil without an upload address
+@end
+
 /* Failed sends (IRCClient+FailedSends.m) */
 @interface IRCClient (FailedSendsPrivate)
 /* Resend on a message the server refused: NO when it can't be sent now */

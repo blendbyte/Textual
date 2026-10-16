@@ -446,6 +446,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Each channel keeps the message it is answering, as it keeps its draft */
 	[self updateReplyBar];
+
+	[self updateUploadButton];
 }
 
 - (void)inputTextDidChange

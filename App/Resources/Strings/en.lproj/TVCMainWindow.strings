@@ -129,3 +129,10 @@
 "icp-al" = "Your alias: %@";
 "acc-l1" = "Account:";
 "acc-n1" = "Not logged in";
+"upl-c1" = "Cancel Upload";
+"upl-b1" = "Upload Files";
+"upl-l1" = "Uploading “%1$@” to %2$@";
+"upl-l2" = "(%1$lu of %2$lu)";
+"upl-p1" = "Upload";
+"upl-p2" = "The files are uploaded to %@ and their links put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
+"upl-e1" = "Couldn't upload “%@”";

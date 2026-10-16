@@ -107,6 +107,19 @@ class Client:
 			elif command == "CAP" and rest.upper().startswith("END"):
 				if "NICK" in seen and "USER" in seen:
 					break
+			elif command == "AUTHENTICATE":
+				# Any SASL PLAIN login succeeds (offer "sasl" to get here)
+				if rest.upper() == "PLAIN":
+					await self.send("AUTHENTICATE +")
+				else:
+					import base64
+					try:
+						account = base64.b64decode(rest).split(b"\0")[1].decode()
+					except Exception:
+						account = "user"
+					self.sasl_account = account
+					await self.send(f":{server_name} 900 {self.nickname} {self.nickname}!user@client.textual.test {account} :You are now logged in as {account}")
+					await self.send(f":{server_name} 903 {self.nickname} :SASL authentication successful")
 			elif command == "NICK":
 				self.nickname = rest.lstrip(":")
 
@@ -1620,6 +1633,117 @@ async def scenario_failed_sends_echo(client):
 	await run_failed_sends(client, "message-tags echo-message server-time standard-replies")
 
 
+class UploadHost:
+	"""A draft/FILEHOST upload address (HTTP, on the scenario's port + 20):
+	OPTIONS answers with Accept-Post, POST /upload keeps the file and answers
+	201 with a relative Location, GET serves it back. Logs each upload's
+	headers, the account in Authorization, and whether a JPEG still has
+	metadata (Exif or GPS). A file whose name has "toolarge" gets 413, one
+	with "slow" is read at about 1 MB a second."""
+	def __init__(self):
+		self.files = {}
+		self.count = 0
+
+	async def listen(self, port):
+		self.server = await asyncio.start_server(self.handle, "127.0.0.1", port)
+
+	async def handle(self, reader, writer):
+		try:
+			while True:
+				request = await reader.readline()
+				if not request:
+					break
+				method, path, _ = request.decode("latin-1").split(" ", 2)
+				headers = {}
+				while True:
+					line = (await reader.readline()).decode("latin-1").rstrip("\r\n")
+					if not line:
+						break
+					name, _, value = line.partition(":")
+					headers[name.strip().lower()] = value.strip()
+				length = int(headers.get("content-length", "0"))
+				if "slow" in headers.get("content-disposition", ""):
+					# A file named "slow…" arrives at about 1 MB a second (progress, Cancel)
+					body = b""
+					while len(body) < length:
+						body += await reader.readexactly(min(65536, length - len(body)))
+						await asyncio.sleep(0.06)
+				else:
+					body = await reader.readexactly(length)
+				await self.answer(writer, method, path, headers, body)
+		except (asyncio.IncompleteReadError, ConnectionError, ValueError):
+			pass
+		writer.close()
+
+	async def answer(self, writer, method, path, headers, body):
+		def respond(status, extra=None, content=b""):
+			lines = [f"HTTP/1.1 {status}", f"Content-Length: {len(content)}"] + (extra or [])
+			writer.write(("\r\n".join(lines) + "\r\n\r\n").encode() + content)
+
+		if method == "OPTIONS":
+			log("http", f"OPTIONS {path}")
+			respond("204 No Content", ["Allow: OPTIONS, POST", "Accept-Post: */*"])
+		elif method == "POST":
+			import base64, re
+			authorization = headers.get("authorization", "")
+			account = "none"
+			if authorization.startswith("Basic "):
+				account = base64.b64decode(authorization[6:]).decode("utf-8", "replace").split(":")[0] + " (with password)"
+			disposition = headers.get("content-disposition", "")
+			name = (re.search(r'filename="([^"]*)"', disposition) or re.search(r"filename\*=UTF-8''(\S+)", disposition))
+			name = name.group(1) if name else "file"
+			metadata = "-"
+			if headers.get("content-type", "").startswith("image/"):
+				metadata = "Exif/GPS present" if (b"Exif\0\0" in body or b"GPS" in body) else "no Exif/GPS"
+			log("http", f"POST {path} {headers.get('content-type')} {len(body)} bytes, name {name}, account {account}, {metadata}")
+			if "toolarge" in name:
+				respond("413 Content Too Large")
+				return
+			self.count += 1
+			stored = f"/files/{self.count}-{name}"
+			self.files[stored] = (headers.get("content-type", "application/octet-stream"), body)
+			respond("201 Created", [f"Location: {stored}"])
+		elif method in ("GET", "HEAD") and path in self.files:
+			content_type, content = self.files[path]
+			respond("200 OK", [f"Content-Type: {content_type}"], content if method == "GET" else b"")
+		else:
+			respond("404 Not Found")
+		await writer.drain()
+
+
+async def run_uploads(client, capabilities):
+	"""Uploads (9.18): the welcome names draft/FILEHOST (an HTTP address on
+	the port + 20, see UploadHost). #uploads with alice. Stays connected."""
+	host = UploadHost()
+	port = Events.redirect_port - 1 + 20
+	await host.listen(port)
+
+	client.isupport_extra = f"draft/FILEHOST=http://127.0.0.1:{port}/upload"
+
+	if not await client.register_with_capabilities(capabilities):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #uploads")
+	await client.send(f":{SERVER} 353 {me} = #uploads :{me} alice")
+	await client.send(f":{SERVER} 366 {me} #uploads :End of /NAMES list.")
+	await client.send(":alice!a@alice.test PRIVMSG #uploads :Drop a picture in here!")
+
+	while await client.collect(1):
+		pass
+
+
+async def scenario_uploads(client):
+	"""Uploads (9.18) without signing in: draft/FILEHOST over HTTP; see run_uploads."""
+	await run_uploads(client, "message-tags server-time")
+
+
+async def scenario_uploads_sasl(client):
+	"""Uploads (9.18) after SASL PLAIN (any login works): the upload should carry it."""
+	await run_uploads(client, "message-tags server-time sasl")
+
+
 async def scenario_sasl_new(client):
 	"""SASL 3.2 (set nicknamePassword=textual-new first): registration without
 	sasl; two seconds later the server sends CAP NEW :sasl=PLAIN. The client
@@ -2666,6 +2790,8 @@ SCENARIOS = {
 	"websocket": scenario_websocket,
 	"replies": scenario_replies,
 	"failed": scenario_failed_sends,
+	"uploads": scenario_uploads,
+	"uploads-sasl": scenario_uploads_sasl,
 	"failed-plain": scenario_failed_sends_plain,
 	"failed-echo": scenario_failed_sends_echo,
 	"register": scenario_register,
@@ -2718,7 +2844,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

@@ -338,6 +338,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self updateNetworkIcon];
 
+			[mainWindow() updateUploadButton];
+
 			if (printMessage) {
 				NSString *configurationFormatted = self.supportInfo.stringValueForLastUpdate;
 

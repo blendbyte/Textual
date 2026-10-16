@@ -67,6 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
  selection decides (a private message sends to its nickname); in the member
  list, the member in that row. */
 - (void)answerDroppedFiles:(NSArray<NSString *> *)files;
+- (void)answerPastedPictureOnPasteboard:(NSPasteboard *)pasteboard; // uploaded where the network offers it (9.18)
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row;
 @end
 
