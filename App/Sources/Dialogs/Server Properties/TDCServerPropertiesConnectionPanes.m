@@ -38,6 +38,7 @@
  *********************************************************************** */
 
 #import <SecurityInterface/SFChooseIdentityPanel.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #import "NSStringHelper.h"
 #import "IRCClientConfigPrivate.h"
@@ -77,6 +78,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) IRCServer *previousPrimaryServer;
 @property (nonatomic, strong, nullable) NSGridRow *strictTransportSecurityRow;
 @property (nonatomic, strong, nullable) NSTextField *strictTransportSecurityField;
+@property (nonatomic, copy, nullable) NSData *customIcon;
+@property (nonatomic, strong, nullable) NSImageView *iconWell;
+@property (nonatomic, strong, nullable) NSButton *iconRemoveButton;
+@property (nonatomic, strong, nullable) NSTextField *iconNoteField;
 
 - (IBAction)useSSLCheckChanged:(nullable id)sender;
 @end
@@ -138,6 +143,201 @@ NS_ASSUME_NONNULL_BEGIN
 	};
 
 	[self addStrictTransportSecurityRow];
+
+	[self addIconRow];
+}
+
+#pragma mark -
+#pragma mark Icon
+
+/* Under the connection name: the icon in front of the server's name in the
+ server list, chosen here (a file, or a picture dropped on the well) or else
+ the network's own (draft/ICON) */
+- (void)addIconRow
+{
+	NSView *nameRowView = self.connectionNameTextField;
+
+	while (nameRowView.superview && [nameRowView.superview isKindOfClass:[NSGridView class]] == NO) {
+		nameRowView = nameRowView.superview;
+	}
+
+	NSGridView *grid = (NSGridView *)nameRowView.superview;
+
+	if (grid == nil) {
+		return;
+	}
+
+	NSInteger nameRow = [grid indexOfRow:[grid cellForView:nameRowView].row];
+
+	NSTextField *label = [NSTextField labelWithString:TXTLS(@"TDCServerPropertiesSheet[icn-l1]")];
+
+	label.alignment = NSTextAlignmentRight;
+
+	NSImageView *well = [NSImageView new];
+
+	well.translatesAutoresizingMaskIntoConstraints = NO;
+
+	well.imageFrameStyle = NSImageFrameGrayBezel;
+	well.imageScaling = NSImageScaleProportionallyUpOrDown;
+	well.editable = YES;
+
+	well.target = self;
+	well.action = @selector(iconWellChanged:);
+
+	well.toolTip = TXTLS(@"TDCServerPropertiesSheet[icn-t1]");
+
+	well.accessibilityLabel = TXTLS(@"TDCServerPropertiesSheet[icn-a1]");
+
+	[well.widthAnchor constraintEqualToConstant:40].active = YES;
+	[well.heightAnchor constraintEqualToConstant:40].active = YES;
+
+	NSButton *chooseButton = [NSButton buttonWithTitle:TXTLS(@"TDCServerPropertiesSheet[icn-b1]") target:self action:@selector(chooseIcon:)];
+
+	NSButton *removeButton = [NSButton buttonWithTitle:TXTLS(@"TDCServerPropertiesSheet[icn-b2]") target:self action:@selector(removeIcon:)];
+
+	NSTextField *note = [NSTextField labelWithString:@""];
+
+	note.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	note.textColor = [NSColor secondaryLabelColor];
+
+	NSStackView *buttons = [NSStackView stackViewWithViews:@[chooseButton, removeButton]];
+
+	buttons.spacing = 8;
+
+	NSStackView *column = [NSStackView stackViewWithViews:@[buttons, note]];
+
+	column.orientation = NSUserInterfaceLayoutOrientationVertical;
+	column.alignment = NSLayoutAttributeLeading;
+	column.spacing = 4;
+
+	NSStackView *stack = [NSStackView stackViewWithViews:@[well, column]];
+
+	stack.alignment = NSLayoutAttributeCenterY;
+	stack.spacing = 10;
+
+	NSGridRow *row = [grid insertRowAtIndex:(nameRow + 1) withViews:@[label, stack]];
+
+	row.rowAlignment = NSGridRowAlignmentNone;
+	row.yPlacement = NSGridCellPlacementCenter;
+
+	[row cellAtIndex:1].xPlacement = NSGridCellPlacementLeading;
+
+	self.iconWell = well;
+	self.iconRemoveButton = removeButton;
+	self.iconNoteField = note;
+}
+
+/* The well shows what the server list will: the chosen icon, else the network's */
+- (void)updateIconRow
+{
+	NSData *customIcon = self.customIcon;
+
+	NSImage *icon = nil;
+
+	NSString *note = nil;
+
+	if (customIcon) {
+		icon = [[NSImage alloc] initWithData:customIcon];
+
+		note = TXTLS(@"TDCServerPropertiesSheet[icn-n1]");
+	} else {
+		icon = self.propertiesSheet.client.networkProvidedIcon;
+
+		if (icon) {
+			note = TXTLS(@"TDCServerPropertiesSheet[icn-n2]");
+		} else {
+			note = TXTLS(@"TDCServerPropertiesSheet[icn-n3]");
+		}
+	}
+
+	self.iconWell.image = icon;
+
+	self.iconNoteField.stringValue = note;
+
+	self.iconRemoveButton.enabled = (customIcon != nil);
+}
+
+- (void)setCustomIconFromImageData:(NSData *)data fileName:(nullable NSString *)fileName
+{
+	NSParameterAssert(data != nil);
+
+	NSData *iconData = [IRCClient customIconDataFromImageData:data];
+
+	if (iconData) {
+		self.customIcon = iconData;
+
+		[self updateIconRow];
+
+		return;
+	}
+
+	[self updateIconRow];
+
+	if (fileName == nil) {
+		NSBeep();
+
+		return;
+	}
+
+	[TDCAlert alertSheetWithWindow:self.propertiesSheet.sheet
+							  body:TXTLS(@"TDCServerPropertiesSheet[icn-e2]")
+							 title:TXTLS(@"TDCServerPropertiesSheet[icn-e1]", fileName)
+					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+				   alternateButton:nil
+					   otherButton:nil];
+}
+
+- (void)chooseIcon:(nullable id)sender
+{
+	NSWindow *window = self.propertiesSheet.sheet;
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+	panel.canChooseDirectories = NO;
+	panel.canChooseFiles = YES;
+	panel.allowsMultipleSelection = NO;
+
+	panel.allowedContentTypes = @[UTTypeImage];
+
+	panel.message = TXTLS(@"TDCServerPropertiesSheet[icn-m1]");
+
+	[panel beginSheetModalForWindow:window completionHandler:^(NSModalResponse response) {
+		NSURL *url = panel.URL;
+
+		if (response != NSModalResponseOK || url == nil) {
+			return;
+		}
+
+		/* After the panel is gone, so an alert can take its place */
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			NSData *data = [NSData dataWithContentsOfURL:url];
+
+			[self setCustomIconFromImageData:((data) ?: [NSData data]) fileName:url.lastPathComponent];
+		});
+	}];
+}
+
+- (void)removeIcon:(nullable id)sender
+{
+	self.customIcon = nil;
+
+	[self updateIconRow];
+}
+
+/* A picture dropped or pasted on the well, or the well emptied (Delete) */
+- (void)iconWellChanged:(nullable id)sender
+{
+	NSImage *image = self.iconWell.image;
+
+	NSData *data = image.TIFFRepresentation;
+
+	if (data == nil) {
+		[self removeIcon:nil];
+
+		return;
+	}
+
+	[self setCustomIconFromImageData:data fileName:nil];
 }
 
 #pragma mark -
@@ -255,6 +455,12 @@ NS_ASSUME_NONNULL_BEGIN
 	self.serverList = config.serverList;
 
 	[self loadPrimaryServerEndpoint];
+
+	NSData *customIcon = config.customIcon;
+
+	self.customIcon = (([customIcon isKindOfClass:[NSData class]]) ? customIcon : nil);
+
+	[self updateIconRow];
 }
 
 - (void)saveToConfig:(IRCClientConfigMutable *)config
@@ -266,6 +472,8 @@ NS_ASSUME_NONNULL_BEGIN
 	config.autoSleepModeDisconnect = (self.autoDisconnectOnSleepCheck.state == NSControlStateValueOn);
 
 	config.serverList = self.serverList;
+
+	config.customIcon = self.customIcon;
 }
 
 - (nullable NSControl *)firstInvalidField

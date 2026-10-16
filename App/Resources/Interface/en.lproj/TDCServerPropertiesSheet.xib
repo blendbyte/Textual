@@ -328,7 +328,7 @@ Gw
             <point key="canvasLocation" x="449" y="232"/>
         </window>
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="1469" userLabel="General View">
-            <rect key="frame" x="0.0" y="0.0" width="520" height="314"/>
+            <rect key="frame" x="0.0" y="0.0" width="520" height="368"/>
             <subviews>
                 <gridView xPlacement="trailing" yPlacement="fill" rowAlignment="firstBaseline" rowSpacing="14" columnSpacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eEd-eF-L1L">
                     <rect key="frame" x="80" y="149" width="360" height="130"/>

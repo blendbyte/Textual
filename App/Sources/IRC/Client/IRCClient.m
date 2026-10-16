@@ -473,6 +473,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	/* Update main window title */
 	[mainWindow() updateTitleFor:self];
 
+	/* The icon may have been chosen or removed */
+	[mainWindow() reloadTreeItem:self];
+
 	/* Rebuild list of users that are ignored and/or tracked */
 	[self clearAddressBookCache];
 
@@ -644,6 +647,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self.config destroySASLECDSAKeyKeychainItem];
 
 	[self destroyServerPasswordsKeychainItems];
+
+	[self removeNetworkIconFile];
 
 	for (IRCChannel *c in self.channelList) {
 		[c prepareForPermanentDestruction];

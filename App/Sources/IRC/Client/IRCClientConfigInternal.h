@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<NSString *> *_loginCommands;
 	NSArray<IRCServer *> *_serverList;
 	NSData *_identityClientSideCertificate;
+	NSData *_customIcon;
 	NSString *_awayNickname;
 	NSString *_connectionName;
 	NSString *_nickname;

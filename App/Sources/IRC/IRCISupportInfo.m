@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
 @property (nonatomic, copy, readwrite, nullable) NSString *botModeCharacter;
+@property (nonatomic, copy, readwrite, nullable) NSString *networkIconAddress;
 @property (nonatomic, copy, nullable) NSString *extendedBanPrefix; // EXTBAN's prefix ("$", "~"; empty for none)
 @property (nonatomic, copy, nullable) NSString *accountExtendedBanName; // ACCOUNTEXTBAN's first name ("R", "account")
 @property (nonatomic, assign, readwrite) BOOL whoxSupported;
@@ -123,6 +124,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.utf8Only = NO;
 
 	self.botModeCharacter = nil;
+
+	self.networkIconAddress = nil;
 
 	self.extendedBanPrefix = nil;
 	self.accountExtendedBanName = nil;
@@ -220,6 +223,10 @@ NS_ASSUME_NONNULL_BEGIN
 				if (segmentValue.length == 1) {
 					self.botModeCharacter = segmentValue;
 				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"draft/ICON"] ||
+					   [segmentKey isEqualToStringIgnoringCase:@"ICON"])
+			{
+				self.networkIconAddress = segmentValue;
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
 				self.clientTagDenyList = [segmentValue componentsSeparatedByString:@","];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CASEMAPPING"]) {

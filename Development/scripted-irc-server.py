@@ -38,6 +38,7 @@ class Client:
 		self.nickname = "*"
 		self.received = []  # lines from the client after registration
 		self.registration_lines = []  # lines from the client until registration
+		self.isupport_extra = ""  # more ISUPPORT tokens for the welcome
 
 	async def send(self, line):
 		log(">>", line)
@@ -119,7 +120,7 @@ class Client:
 			f":{SERVER} 002 {self.nickname} :Your host is {SERVER}",
 			f":{SERVER} 003 {self.nickname} :This server was created today",
 			f":{SERVER} 004 {self.nickname} {SERVER} scripted io bklov",
-			f":{SERVER} 005 {self.nickname} CHANTYPES=# PREFIX=(ov)@+ NETWORK=TextualScripted :are supported by this server",
+			f":{SERVER} 005 {self.nickname} CHANTYPES=# PREFIX=(ov)@+ NETWORK=TextualScripted {self.isupport_extra}".rstrip() + " :are supported by this server",
 			f":{SERVER} 422 {self.nickname} :MOTD File is missing",
 		]:
 			await self.send(line)
@@ -1420,6 +1421,36 @@ async def scenario_event_playback(client):
 	pass
 
 
+async def scenario_network_icon(client):
+	"""Network icon (9.19 E): the welcome names draft/ICON (Ergo's GitHub picture,
+	with {size}). Say "other" anywhere for a 005 naming another icon (IRCv3's),
+	"plain" for one with an http:// address (ignored, the icon stays). Connect to
+	a scenario without an icon (e.g. bots) to see it removed. Stays connected."""
+	client.isupport_extra = "draft/ICON=https://github.com/ergochat.png?size={size}"
+
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #icons")
+	await client.send(f":{SERVER} 353 {me} = #icons :{me} alice")
+	await client.send(f":{SERVER} 366 {me} #icons :End of /NAMES list.")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() != "PRIVMSG":
+				continue
+			if rest.endswith(" :other"):
+				await client.send(f":{SERVER} 005 {me} draft/ICON=https://github.com/ircv3.png?size={{size}} :are supported by this server")
+			elif rest.endswith(" :plain"):
+				await client.send(f":{SERVER} 005 {me} draft/ICON=http://example.com/icon.png :are supported by this server")
+		seen = len(client.received)
+
+
 async def scenario_sasl_new(client):
 	"""SASL 3.2 (set nicknamePassword=textual-new first): registration without
 	sasl; two seconds later the server sends CAP NEW :sasl=PLAIN. The client
@@ -2462,6 +2493,7 @@ SCENARIOS = {
 	"events": scenario_events,
 	"labels": scenario_labels,
 	"bots": scenario_bots,
+	"network-icon": scenario_network_icon,
 	"register": scenario_register,
 	"multiline": scenario_multiline,
 	"mute": scenario_mute,
@@ -2512,7 +2544,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

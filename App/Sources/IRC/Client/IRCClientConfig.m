@@ -276,6 +276,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[defaultsMutable assignDoubleTo:&self->_lastMessageServerTime forKey:@"cachedLastServerTimeCapabilityReceivedAtTimestamp"];
 	[defaultsMutable assignObjectTo:&self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
+	[defaultsMutable assignObjectTo:&self->_customIcon forKey:@"customIcon"];
 	[defaultsMutable assignStringTo:&self->_awayNickname forKey:@"awayNickname"];
 	[defaultsMutable assignStringTo:&self->_nickServHost forKey:@"nickServHost"];
 	[defaultsMutable assignStringTo:&self->_connectionName forKey:@"connectionName"];
@@ -734,6 +735,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	/* These are items that cannot be synced over iCloud because they access data specific to 
 	 this device or only contain state information which is not useful to other devices. */
 	[dic maybeSetObject:self.identityClientSideCertificate forKey:@"identityClientSideCertificate"];
+	[dic maybeSetObject:self.customIcon forKey:@"customIcon"];
 
 	[dic setBool:self.sidebarItemExpanded forKey:@"sidebarItemExpanded"];
 
@@ -1006,6 +1008,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic hideNetworkUnavailabilityNotices;
 @dynamic highlightList;
 @dynamic identityClientSideCertificate;
+@dynamic customIcon;
 @dynamic ignoreList;
 @dynamic lastMessageServerTime;
 @dynamic loginCommands;
@@ -1268,6 +1271,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_identityClientSideCertificate != identityClientSideCertificate) {
 		self->_identityClientSideCertificate = [identityClientSideCertificate copy];
+	}
+}
+
+- (void)setCustomIcon:(nullable NSData *)customIcon
+{
+	if (self->_customIcon != customIcon) {
+		self->_customIcon = [customIcon copy];
 	}
 }
 

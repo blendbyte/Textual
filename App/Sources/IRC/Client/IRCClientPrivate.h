@@ -195,6 +195,19 @@ enum {
 - (void)notifyFileTransfer:(TXNotificationType)type nickname:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize requestIdentifier:(NSString *)identifier;
 @end
 
+@interface IRCClient (NetworkIconPrivate)
+/* The icon in front of the server's name in the server list, 16 points:
+ the one chosen in Server Properties, else the network's (draft/ICON); nil for none */
+@property (readonly, nullable) NSImage *networkIcon;
+
+@property (readonly, nullable) NSImage *networkProvidedIcon; // draft/ICON only
+
+/* A picture as config.customIcon (a PNG square, see-through parts on white); nil if it isn't one */
++ (nullable NSData *)customIconDataFromImageData:(NSData *)data;
+
++ (nullable NSImage *)serverListIconWithData:(NSData *)data; // 16 points
+@end
+
 @interface IRCClient (TimedCommandsPrivate)
 - (void)onTimedCommand:(IRCTimedCommand *)timedCommand;
 @end

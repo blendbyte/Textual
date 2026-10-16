@@ -334,6 +334,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self.supportInfo processConfigurationData:configuration];
 
+			[self updateNetworkIcon];
+
 			if (printMessage) {
 				NSString *configurationFormatted = self.supportInfo.stringValueForLastUpdate;
 
@@ -428,6 +430,10 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_ENDOFMOTD:
 		case ERR_NOMOTD:
 		{
+			if (numeric == RPL_ENDOFMOTD || numeric == ERR_NOMOTD) {
+				[self finishNetworkIconAfterRegistration];
+			}
+
 			NSAssertReturnR(printMessage, YES);
 
 			if ([TPCPreferences displayServerMOTD] == NO) {

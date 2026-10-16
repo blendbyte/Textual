@@ -105,6 +105,55 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([client.supportInfo accountBanMaskForAccount:@"bob"], @"~account:bob");
 }
 
+/* draft/ICON names the network's icon; {size} becomes the pixel size, and only HTTPS is fetched */
+- (void)testNetworkIconAddress
+{
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	XCTAssertNil(client.supportInfo.networkIconAddress);
+
+	[client.supportInfo processConfigurationData:@"me NETWORK=Example draft/ICON=https://example.net/icon.png?size={size} :are supported by this server"];
+
+	NSString *address = client.supportInfo.networkIconAddress;
+
+	XCTAssertEqualObjects(address, @"https://example.net/icon.png?size={size}");
+
+	NSURL *url = [IRCClient networkIconURLForAddress:address pixelSize:32];
+
+	XCTAssertEqualObjects(url.absoluteString, @"https://example.net/icon.png?size=32");
+
+	XCTAssertNil([IRCClient networkIconURLForAddress:@"http://example.net/icon.png" pixelSize:32]);
+
+	[client.supportInfo reset];
+
+	XCTAssertNil(client.supportInfo.networkIconAddress);
+}
+
+/* A chosen picture becomes a 64 px PNG square; see-through parts go on white; data that isn't a picture is refused */
+- (void)testCustomIconData
+{
+	NSBitmapImageRep *picture =
+	[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL pixelsWide:10 pixelsHigh:10 bitsPerSample:8 samplesPerPixel:4 hasAlpha:YES isPlanar:NO colorSpaceName:NSDeviceRGBColorSpace bytesPerRow:0 bitsPerPixel:0];
+
+	NSData *pictureData = [picture representationUsingType:NSBitmapImageFileTypePNG properties:@{}]; // all see-through
+
+	NSData *iconData = [IRCClient customIconDataFromImageData:pictureData];
+
+	NSBitmapImageRep *icon = [NSBitmapImageRep imageRepWithData:iconData];
+
+	XCTAssertEqual(icon.pixelsWide, 64);
+	XCTAssertEqual(icon.pixelsHigh, 64);
+
+	NSColor *corner = [[icon colorAtX:0 y:0] colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
+
+	XCTAssertEqualWithAccuracy(corner.alphaComponent, 1.0, 0.01);
+	XCTAssertEqualWithAccuracy(corner.redComponent, 1.0, 0.01);
+
+	NSData *text = [@"not a picture" dataUsingEncoding:NSUTF8StringEncoding];
+
+	XCTAssertNil([IRCClient customIconDataFromImageData:text]);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

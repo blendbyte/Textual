@@ -705,6 +705,7 @@
 		4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */; };
 		4CB9788CF63607DBC7AEAEAE /* IRCClient+Typing.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */; };
 		4C123E8AC4BC9D93F5C53EF0 /* IRCClient+AccountRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CAA801674E1A7133F6E8BC8 /* IRCClient+AccountRegistration.m */; };
+		4C1C0F11E0A0000000000A01 /* IRCClient+NetworkIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A02 /* IRCClient+NetworkIcon.m */; };
 		4CFA10B3E99F735E2413CB5C /* IRCClient+Multiline.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC5E458C2F6E1EDBBEB8107 /* IRCClient+Multiline.m */; };
 		4CA1CED1BEDF81EC8090105A /* IRCClient+LabeledResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD690C30A33D2339D99FAFE /* IRCClient+LabeledResponse.m */; };
 		4C26F4ADBA3A82BEF397F9E4 /* IRCClientTypingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */; };
@@ -1616,6 +1617,7 @@
 		4CD10A754C4F2D95606D9F1A /* IRCWhoReplyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCWhoReplyTests.m; sourceTree = "<group>"; };
 		4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Typing.m"; sourceTree = "<group>"; };
 		4CAA801674E1A7133F6E8BC8 /* IRCClient+AccountRegistration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+AccountRegistration.m"; sourceTree = "<group>"; };
+		4C1C0F11E0A0000000000A02 /* IRCClient+NetworkIcon.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+NetworkIcon.m"; sourceTree = "<group>"; };
 		4CC5E458C2F6E1EDBBEB8107 /* IRCClient+Multiline.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Multiline.m"; sourceTree = "<group>"; };
 		4CD690C30A33D2339D99FAFE /* IRCClient+LabeledResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+LabeledResponse.m"; sourceTree = "<group>"; };
 		4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientTypingTests.m; sourceTree = "<group>"; };
@@ -2216,6 +2218,7 @@
 				4C01C22E7F90ADA6C7447A97 /* IRCClient+TimedCommands.m */,
 				4C1CA5D0ABC14810C8B637DD /* IRCClient+Typing.m */,
 				4CAA801674E1A7133F6E8BC8 /* IRCClient+AccountRegistration.m */,
+				4C1C0F11E0A0000000000A02 /* IRCClient+NetworkIcon.m */,
 				4CC5E458C2F6E1EDBBEB8107 /* IRCClient+Multiline.m */,
 				4CD690C30A33D2339D99FAFE /* IRCClient+LabeledResponse.m */,
 				4CC09B56304AD18920BFA48C /* IRCClient+Users.m */,
@@ -3674,6 +3677,7 @@
 				4C246D05EAB84C45AC09734B /* IRCSASLECDSA.swift in Sources */,
 				4CB9788CF63607DBC7AEAEAE /* IRCClient+Typing.m in Sources */,
 				4C123E8AC4BC9D93F5C53EF0 /* IRCClient+AccountRegistration.m in Sources */,
+				4C1C0F11E0A0000000000A01 /* IRCClient+NetworkIcon.m in Sources */,
 				4CFA10B3E99F735E2413CB5C /* IRCClient+Multiline.m in Sources */,
 				4CA1CED1BEDF81EC8090105A /* IRCClient+LabeledResponse.m in Sources */,
 				4CC4A21221B611192945F8CE /* IRCWhoReply.m in Sources */,

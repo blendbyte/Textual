@@ -562,6 +562,13 @@ NS_ASSUME_NONNULL_BEGIN
 	switch (tag) {
 		case MTMMEditPaste: // "Paste"
 		{
+			/* An editable picture well (the server icon in Server Properties) takes a picture */
+			id keyFirstResponder = [NSApp keyWindow].firstResponder;
+
+			if (mainWindow().keyWindow == NO && [keyFirstResponder isKindOfClass:[NSImageView class]]) {
+				return ([keyFirstResponder isEditable] && [NSImage canInitWithPasteboard:RZPasteboard()]);
+			}
+
 			NSString *currentPasteboard = RZPasteboard().stringContent;
 
 			/* Files pasted in the main window get the dropped files sheet */
@@ -575,10 +582,8 @@ NS_ASSUME_NONNULL_BEGIN
 				return mainWindowTextField().editable;
 			}
 
-			id firstResponder = [NSApp keyWindow].firstResponder;
-
-			if ([firstResponder respondsToSelector:@selector(isEditable)]) {
-				return [firstResponder isEditable];
+			if ([keyFirstResponder respondsToSelector:@selector(isEditable)]) {
+				return [keyFirstResponder isEditable];
 			}
 
 			return NO;

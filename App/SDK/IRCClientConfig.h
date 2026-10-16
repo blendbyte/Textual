@@ -89,6 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSString *uniqueIdentifier;
 @property (readonly, copy) NSString *username;
 @property (readonly, copy, nullable) NSData *identityClientSideCertificate;
+@property (readonly, copy, nullable) NSData *customIcon; // a PNG chosen in Server Properties, shown in the server list instead of the network's icon
 @property (readonly, copy, nullable) NSString *awayNickname;
 @property (readonly, copy, nullable) NSString *nicknamePassword;
 @property (readonly, copy, nullable) NSString *nickServHost; // Host NickServ must have before the password is sent; nil = built-in host for known networks
@@ -151,6 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite) NSString *sleepModeLeavingComment;
 @property (nonatomic, copy, readwrite) NSString *username;
 @property (nonatomic, copy, readwrite, nullable) NSData *identityClientSideCertificate;
+@property (nonatomic, copy, readwrite, nullable) NSData *customIcon;
 @property (nonatomic, copy, readwrite, nullable) NSString *awayNickname;
 @property (nonatomic, copy, readwrite, nullable) NSString *nicknamePassword;
 @property (nonatomic, copy, readwrite, nullable) NSString *nickServHost;

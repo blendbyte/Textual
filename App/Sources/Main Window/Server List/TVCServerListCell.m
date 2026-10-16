@@ -40,7 +40,7 @@
 #import "TXGlobalModels.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
-#import "IRCClient.h"
+#import "IRCClientPrivate.h"
 #import "IRCChannel.h"
 #import "IRCClientConfig.h"
 #import "IRCChannelConfig.h"
@@ -615,11 +615,86 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCServerListCellGroupItem
 
+/* The network's icon (draft/ICON) goes in front of the name */
+#define _networkIconSize		16.0
+#define _networkIconSpacing		5.0
+
 - (void)defineConstraints
 {
 	TVCServerListAppearance *appearance = self.userInterfaceObjects;
 
-	self.cellTextFieldLeftMarginConstraint.constant = appearance.serverLabelLeftMargin;
+	CGFloat leftMargin = appearance.serverLabelLeftMargin;
+
+	NSImageView *iconView = self.networkIconView;
+
+	if (iconView && iconView.hidden == NO) {
+		leftMargin += (_networkIconSize + _networkIconSpacing);
+	}
+
+	self.cellTextFieldLeftMarginConstraint.constant = leftMargin;
+}
+
+- (void)updateDrawingForWithAppearance:(TVCServerListAppearance *)appearance inContext:(TVCServerListCellDrawingContext *)drawingContext
+{
+	[super updateDrawingForWithAppearance:appearance inContext:drawingContext];
+
+	[self updateNetworkIconWithAppearance:appearance inContext:drawingContext];
+}
+
+- (void)updateNetworkIconWithAppearance:(TVCServerListAppearance *)appearance inContext:(TVCServerListCellDrawingContext *)drawingContext
+{
+	NSImage *icon = ((IRCClient *)self.cellItem).networkIcon;
+
+	NSImageView *iconView = self.networkIconView;
+
+	if (icon && iconView == nil) {
+		iconView = [NSImageView imageViewWithImage:icon];
+
+		iconView.translatesAutoresizingMaskIntoConstraints = NO;
+
+		iconView.imageScaling = NSImageScaleProportionallyUpOrDown;
+
+		iconView.wantsLayer = YES;
+		iconView.layer.cornerRadius = 3.0;
+		iconView.layer.masksToBounds = YES;
+
+		/* The row is read as one element */
+		[iconView.cell setAccessibilityElement:NO];
+
+		iconView.hidden = YES; // shown below, with the margin
+
+		[self addSubview:iconView];
+
+		[NSLayoutConstraint activateConstraints:@[
+			[iconView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:appearance.serverLabelLeftMargin],
+			[iconView.centerYAnchor constraintEqualToAnchor:self.cellTextField.centerYAnchor],
+			[iconView.widthAnchor constraintEqualToConstant:_networkIconSize],
+			[iconView.heightAnchor constraintEqualToConstant:_networkIconSize]
+		]];
+
+		self.networkIconView = iconView;
+	}
+
+	BOOL hidden = (icon == nil);
+
+	if (iconView.image != icon) {
+		iconView.image = icon;
+	}
+
+	/* Faded while disconnected, as the name is */
+	CGFloat alphaValue = self.cellTextField.alphaValue;
+
+	if (drawingContext.isActive == NO && drawingContext.isSelected == NO) {
+		alphaValue *= 0.5;
+	}
+
+	iconView.alphaValue = alphaValue;
+
+	if (iconView && iconView.hidden != hidden) {
+		iconView.hidden = hidden;
+
+		[self defineConstraints];
+	}
 }
 
 - (void)applicationAppearanceChanged

@@ -144,6 +144,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL accountRegistrationAllowsCustomName;
 @property (nonatomic, copy, nullable) NSString *accountRegistrationAccount; // a REGISTER sent, until it succeeds or fails
 @property (nonatomic, copy, nullable) NSString *accountRegistrationPassword;
+@property (nonatomic, strong, nullable) NSImage *networkIconImage; // draft/ICON: the icon shown, from the caches folder or downloaded
+@property (nonatomic, copy, nullable) NSString *networkIconSavedAddress; // the address it came from
+@property (nonatomic, copy, nullable) NSString *networkIconRequestAddress; // being downloaded
+@property (nonatomic, assign) BOOL networkIconLoaded; // the caches folder was read
+@property (nonatomic, strong, nullable) NSImage *customIconImage; // config.customIcon, drawn
+@property (nonatomic, copy, nullable) NSData *customIconSourceData; // the data it was drawn from
 @property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
@@ -441,6 +447,16 @@ typedef NS_ENUM(NSUInteger, IRCClientAccountRegistrationProblem) {
 
 - (void)receiveAccountRegistrationReply:(IRCMessage *)m;
 - (void)noteAccountRegistrationStandardReply:(IRCMessage *)m;
+@end
+
+/* draft/ICON (IRCClient+NetworkIcon.m) */
+@interface IRCClient (NetworkIconInternal)
+/* The address with {size} filled in; nil unless it's HTTPS */
++ (nullable NSURL *)networkIconURLForAddress:(NSString *)address pixelSize:(NSUInteger)pixelSize;
+
+- (void)updateNetworkIcon; // after each ISUPPORT line
+- (void)finishNetworkIconAfterRegistration; // at the end of the MOTD
+- (void)removeNetworkIconFile;
 @end
 
 @interface IRCClient (CapabilitiesInternal) <IRCCapabilityNegotiatorDelegate>
