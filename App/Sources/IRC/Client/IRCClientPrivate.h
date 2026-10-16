@@ -238,6 +238,8 @@ enum {
 - (void)deleteMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 @end
 
+@class TLOUploadDestination;
+
 /* File uploads (9.18, IRCClient+FileUpload.m): one file to the network's upload address */
 @interface IRCFileUpload : NSObject
 @property (readonly, copy) NSString *filePath;
@@ -273,6 +275,12 @@ enum {
 												password:(nullable NSString *)password;
 
 - (nullable IRCFileUpload *)fileUploadForPath:(NSString *)path; // nil without an upload address
+
+/* The network's, else the user's own (9.18 B: the server's choice, or the one in Preferences) */
+@property (readonly) BOOL fileUploadsAvailable;
+@property (readonly) BOOL customUploadDestinationConfigured; // without reading the Keychain
+@property (readonly, copy, nullable) TLOUploadDestination *customUploadDestination; // with its tokens
+@property (readonly, copy, nullable) NSString *fileUploadDestinationDescription; // "files.example.org (offered by the network)"
 @end
 
 /* Failed sends (IRCClient+FailedSends.m) */

@@ -63,6 +63,8 @@ static BOOL _reportsFailures = YES;
 			return @"Textual (Channel JOIN Key)";
 		case TLOKeychainItemKindSASLECDSAKey:
 			return @"Textual (SASL Login Key)";
+		case TLOKeychainItemKindUploadSecrets:
+			return @"Textual (Upload Address)";
 	}
 }
 
@@ -87,6 +89,9 @@ static BOOL _reportsFailures = YES;
 			break;
 		case TLOKeychainItemKindSASLECDSAKey:
 			prefix = @"textual.sasl-ecdsa-key";
+			break;
+		case TLOKeychainItemKindUploadSecrets:
+			prefix = @"textual.upload-address";
 			break;
 	}
 
@@ -163,6 +168,9 @@ static BOOL _reportsFailures = YES;
 			break;
 		case TLOKeychainItemKindSASLECDSAKey:
 			kindName = TXTLS(@"Prompts[k3y-n5]");
+			break;
+		case TLOKeychainItemKindUploadSecrets:
+			kindName = TXTLS(@"Prompts[k3y-n6]");
 			break;
 	}
 

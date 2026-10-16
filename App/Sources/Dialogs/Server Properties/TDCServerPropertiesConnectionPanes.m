@@ -37,6 +37,8 @@
  *
  *********************************************************************** */
 
+#import "TLOUploadDestinationPrivate.h"
+#import "TDCUploadDestinationSheetPrivate.h"
 #import <SecurityInterface/SFChooseIdentityPanel.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
@@ -1473,6 +1475,188 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.clientCertificateSelectCertificatePanel = nil;
+}
+
+@end
+
+#pragma mark -
+#pragma mark Uploads
+
+/* Where files go on this network if it offers no uploads (9.18 B): the
+ address in Preferences, none, or this server's own */
+@interface TDCServerPropertiesUploadsPane ()
+@property (nonatomic, strong) NSPopUpButton *uploadModeButton;
+@property (nonatomic, strong) NSButton *uploadEditButton;
+@property (nonatomic, strong) NSTextField *ownDestinationLabel;
+@property (nonatomic, strong) NSGridRow *ownDestinationRow;
+@property (nonatomic, copy, nullable) TLOUploadDestination *ownUploadDestination;
+@end
+
+@implementation TDCServerPropertiesUploadsPane
+
+- (instancetype)init
+{
+	if ((self = [super init])) {
+		[self buildView];
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (void)buildView
+{
+	NSView *view = [NSView new];
+
+	/* Pinned to the sheet's content area with constraints */
+	view.translatesAutoresizingMaskIntoConstraints = NO;
+
+	NSTextField *label = [NSTextField labelWithString:TXTLS(@"TDCServerPropertiesSheet[upl-l1]")];
+
+	NSPopUpButton *modeButton = [NSPopUpButton new];
+
+	[modeButton addItemsWithTitles:@[
+		TXTLS(@"TDCServerPropertiesSheet[upl-m1]"), // IRCClientUploadDestinationModeDefault
+		TXTLS(@"TDCServerPropertiesSheet[upl-m2]"), // …Off
+		TXTLS(@"TDCServerPropertiesSheet[upl-m3]") // …Own
+	]];
+
+	modeButton.target = self;
+	modeButton.action = @selector(uploadModeChanged:);
+
+	NSTextField *ownLabel = [NSTextField labelWithString:@""];
+
+	ownLabel.textColor = [NSColor secondaryLabelColor];
+
+	NSButton *editButton = [NSButton buttonWithTitle:TXTLS(@"TDCServerPropertiesSheet[upl-b1]") target:self action:@selector(editOwnUploadDestination:)];
+
+	NSStackView *ownRow = [NSStackView stackViewWithViews:@[ownLabel, editButton]];
+
+	ownRow.spacing = 8;
+
+	NSTextField *note = [NSTextField wrappingLabelWithString:TXTLS(@"TDCServerPropertiesSheet[upl-n1]")];
+
+	note.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	note.textColor = [NSColor secondaryLabelColor];
+
+	[note.widthAnchor constraintLessThanOrEqualToConstant:340].active = YES;
+
+	NSGridView *grid = [NSGridView gridViewWithViews:@[
+		@[label, modeButton],
+		@[[NSGridCell emptyContentView], ownRow],
+		@[[NSGridCell emptyContentView], note]
+	]];
+
+	grid.translatesAutoresizingMaskIntoConstraints = NO;
+	grid.rowSpacing = 8;
+	grid.columnSpacing = 8;
+	grid.rowAlignment = NSGridRowAlignmentFirstBaseline;
+
+	[grid columnAtIndex:0].xPlacement = NSGridCellPlacementTrailing;
+
+	[view addSubview:grid];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[grid.topAnchor constraintEqualToAnchor:view.topAnchor constant:20],
+		[grid.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
+		[grid.leadingAnchor constraintGreaterThanOrEqualToAnchor:view.leadingAnchor constant:20],
+		[grid.bottomAnchor constraintLessThanOrEqualToAnchor:view.bottomAnchor constant:-20]
+	]];
+
+	self.view = view;
+
+	self.uploadModeButton = modeButton;
+	self.uploadEditButton = editButton;
+	self.ownDestinationLabel = ownLabel;
+	self.ownDestinationRow = [grid rowAtIndex:1];
+}
+
+- (void)updateUploadRow
+{
+	BOOL own = (self.uploadModeButton.indexOfSelectedItem == IRCClientUploadDestinationModeOwn);
+
+	TLOUploadDestination *destination = self.ownUploadDestination;
+
+	self.ownDestinationRow.hidden = (own == NO);
+
+	self.ownDestinationLabel.stringValue = ((destination) ? destination.name : TXTLS(@"TDCServerPropertiesSheet[upl-o1]"));
+
+	self.uploadEditButton.title = ((destination) ? TXTLS(@"TDCServerPropertiesSheet[upl-b1]") : TXTLS(@"TDCServerPropertiesSheet[upl-b2]"));
+}
+
+- (void)uploadModeChanged:(nullable id)sender
+{
+	[self updateUploadRow];
+
+	/* Own, but none yet: set it up now */
+	if (self.uploadModeButton.indexOfSelectedItem == IRCClientUploadDestinationModeOwn && self.ownUploadDestination == nil) {
+		[self editOwnUploadDestination:nil];
+	}
+}
+
+- (void)editOwnUploadDestination:(nullable id)sender
+{
+	NSWindow *window = self.view.window;
+
+	if (window == nil) {
+		return;
+	}
+
+	[TDCUploadDestinationSheet editDestination:self.ownUploadDestination
+									  inWindow:window
+							   showsHideOption:NO
+							   completionBlock:^(TLOUploadDestination * _Nullable destination) {
+								   self.ownUploadDestination = destination;
+
+								   /* Removed: back to the one in Preferences */
+								   if (destination == nil) {
+									   [self.uploadModeButton selectItemAtIndex:IRCClientUploadDestinationModeDefault];
+								   }
+
+								   [self updateUploadRow];
+							   }];
+}
+
+- (void)loadFromConfig:(IRCClientConfig *)config
+{
+	NSDictionary *uploadDestination = config.uploadDestination;
+
+	self.ownUploadDestination = ((uploadDestination) ? [TLOUploadDestination destinationWithPropertyList:uploadDestination secretsIdentifier:config.uniqueIdentifier] : nil);
+
+	IRCClientUploadDestinationMode uploadMode = config.uploadDestinationMode;
+
+	if (uploadMode > IRCClientUploadDestinationModeOwn || (uploadMode == IRCClientUploadDestinationModeOwn && self.ownUploadDestination == nil)) {
+		uploadMode = IRCClientUploadDestinationModeDefault;
+	}
+
+	[self.uploadModeButton selectItemAtIndex:uploadMode];
+
+	[self updateUploadRow];
+}
+
+- (void)saveToConfig:(IRCClientConfigMutable *)config
+{
+	/* The tokens go to the Keychain now, the rest with the server */
+	TLOUploadDestination *ownUploadDestination = self.ownUploadDestination;
+
+	if (ownUploadDestination) {
+		[ownUploadDestination saveSecretsWithIdentifier:config.uniqueIdentifier];
+
+		config.uploadDestination = ownUploadDestination.propertyList;
+	} else {
+		[TLOUploadDestination removeSecretsWithIdentifier:config.uniqueIdentifier];
+
+		config.uploadDestination = nil;
+	}
+
+	IRCClientUploadDestinationMode uploadMode = self.uploadModeButton.indexOfSelectedItem;
+
+	if (uploadMode == IRCClientUploadDestinationModeOwn && ownUploadDestination == nil) {
+		uploadMode = IRCClientUploadDestinationModeDefault;
+	}
+
+	config.uploadDestinationMode = uploadMode;
 }
 
 @end

@@ -37,6 +37,8 @@
  *
  *********************************************************************** */
 
+#import "TLOUploadDestinationPrivate.h"
+#import "TDCUploadDestinationSheetPrivate.h"
 #import "NSViewHelper.h"
 #import "TXMasterController.h"
 #import "TPCPathInfoPrivate.h"
@@ -74,6 +76,8 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 
 @interface TDCPreferencesFileTransfersPane ()
 @property (nonatomic, weak) IBOutlet NSPopUpButton *downloadFolderButton;
+@property (nonatomic, strong, nullable) NSTextField *uploadDestinationLabel;
+@property (nonatomic, strong, nullable) NSButton *uploadDestinationButton;
 @property (nonatomic, weak) IBOutlet NSTextField *manualIPAddressTextField;
 
 /* Bound in the nib */
@@ -93,6 +97,78 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 	[self updateDownloadFolder];
 
 	[self onFileTransferIPAddressDetectionMethodChanged:nil];
+
+	[self addUploadDestinationRow];
+}
+
+/* Uploads (9.18 B): the address used on networks without one of their own */
+- (void)addUploadDestinationRow
+{
+	NSGridView *grid = nil;
+
+	for (NSView *subview in self.view.subviews) {
+		if ([subview isKindOfClass:[NSGridView class]]) {
+			grid = (NSGridView *)subview;
+
+			break;
+		}
+	}
+
+	if (grid == nil) {
+		return;
+	}
+
+	NSTextField *titleLabel = [NSTextField labelWithString:TXTLS(@"TDCPreferencesController[upl-t1]")];
+
+	NSTextField *label = [NSTextField labelWithString:@""];
+
+	label.lineBreakMode = NSLineBreakByTruncatingTail;
+
+	[label setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+	NSButton *button = [NSButton buttonWithTitle:@"" target:self action:@selector(editUploadDestination:)];
+
+	NSStackView *stack = [NSStackView stackViewWithViews:@[label, button]];
+
+	stack.alignment = NSLayoutAttributeFirstBaseline;
+	stack.spacing = 8;
+
+	NSTextField *note = [NSTextField wrappingLabelWithString:TXTLS(@"TDCPreferencesController[upl-n1]")];
+
+	note.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	note.textColor = [NSColor secondaryLabelColor];
+
+	[note.widthAnchor constraintLessThanOrEqualToConstant:300].active = YES;
+
+	[grid addRowWithViews:@[titleLabel, stack]];
+	[grid addRowWithViews:@[[NSGridCell emptyContentView], note]];
+
+	self.uploadDestinationLabel = label;
+	self.uploadDestinationButton = button;
+
+	[self updateUploadDestination];
+}
+
+- (void)updateUploadDestination
+{
+	TLOUploadDestination *destination = [TLOUploadDestination globalDestination];
+
+	if (destination) {
+		self.uploadDestinationLabel.stringValue = destination.name;
+
+		self.uploadDestinationButton.title = TXTLS(@"TDCPreferencesController[upl-b2]");
+	} else {
+		self.uploadDestinationLabel.stringValue = TXTLS(@"TDCPreferencesController[upl-l1]");
+
+		self.uploadDestinationButton.title = TXTLS(@"TDCPreferencesController[upl-b1]");
+	}
+}
+
+- (void)editUploadDestination:(nullable id)sender
+{
+	[TDCUploadDestinationSheet editGlobalDestinationInWindow:self.view.window completionBlock:^{
+		[self updateUploadDestination];
+	}];
 }
 
 - (void)updateDownloadFolder

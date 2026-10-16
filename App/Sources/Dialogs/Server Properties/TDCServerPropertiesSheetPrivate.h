@@ -59,6 +59,7 @@ typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
 	TDCServerPropertiesSheetSelectionNetworkSocket = 14,
 	TDCServerPropertiesSheetSelectionProxyServer = 15,
 	TDCServerPropertiesSheetSelectionRedundancy = 16,
+	TDCServerPropertiesSheetSelectionUploads = 17,
 
 	TDCServerPropertiesSheetSelectionNewIgnoreEntry = 200
 };

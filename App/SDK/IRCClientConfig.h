@@ -43,6 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
 @class IRCAddressBookEntry, IRCChannelConfig, IRCHighlightMatchCondition;
 @class IRCNetwork, IRCServer;
 
+/* File uploads (9.18) where the network offers none */
+typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
+	IRCClientUploadDestinationModeDefault = 0, // the upload address in Preferences
+	IRCClientUploadDestinationModeOff, // none
+	IRCClientUploadDestinationModeOwn // this server's own (uploadDestination)
+};
+
 #pragma mark -
 #pragma mark Immutable Object
 
@@ -90,6 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSString *username;
 @property (readonly, copy, nullable) NSData *identityClientSideCertificate;
 @property (readonly, copy, nullable) NSData *customIcon; // a PNG chosen in Server Properties, shown in the server list instead of the network's icon
+@property (readonly) IRCClientUploadDestinationMode uploadDestinationMode;
+@property (readonly, copy, nullable) NSDictionary<NSString *, id> *uploadDestination; // this server's own upload address, without its tokens (in the Keychain)
 @property (readonly, copy, nullable) NSString *awayNickname;
 @property (readonly, copy, nullable) NSString *nicknamePassword;
 @property (readonly, copy, nullable) NSString *nickServHost; // Host NickServ must have before the password is sent; nil = built-in host for known networks
@@ -153,6 +162,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite) NSString *username;
 @property (nonatomic, copy, readwrite, nullable) NSData *identityClientSideCertificate;
 @property (nonatomic, copy, readwrite, nullable) NSData *customIcon;
+@property (nonatomic, assign, readwrite) IRCClientUploadDestinationMode uploadDestinationMode;
+@property (nonatomic, copy, readwrite, nullable) NSDictionary<NSString *, id> *uploadDestination;
 @property (nonatomic, copy, readwrite, nullable) NSString *awayNickname;
 @property (nonatomic, copy, readwrite, nullable) NSString *nicknamePassword;
 @property (nonatomic, copy, readwrite, nullable) NSString *nickServHost;

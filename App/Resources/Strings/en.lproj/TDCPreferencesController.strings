@@ -145,3 +145,8 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "evt-d2" = "Hide";
 "evt-c1" = "Collapse joins, parts, quits, nickname and away changes in a row into one line";
 "evt-n1" = "Hidden events are kept, so showing them again brings back the earlier ones too. Away and back appear on servers that report them.";
+"upl-t1" = "Uploads:";
+"upl-l1" = "Not set up";
+"upl-b1" = "Set Up…";
+"upl-b2" = "Change…";
+"upl-n1" = "Where files you drop, paste or attach are uploaded on networks that don't offer uploads. A server can use its own or none (Server Properties).";

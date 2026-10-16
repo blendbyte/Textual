@@ -40,6 +40,7 @@
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
 #import "IRCISupportInfoPrivate.h"
+#import "TLOUploadDestinationPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -178,6 +179,116 @@ NS_ASSUME_NONNULL_BEGIN
 	[[NSFileManager defaultManager] removeItemAtURL:folder error:NULL];
 }
 
+/* A ShareX uploader: its parts, and what Textual can't use */
+- (void)testShareXImport
+{
+	NSString *zipline = @"{\"Version\": \"15.0.0\", \"Name\": \"My Zipline\", \"DestinationType\": \"ImageUploader, FileUploader\", "
+		"\"RequestMethod\": \"POST\", \"RequestURL\": \"https://files.example.org/api/upload\", "
+		"\"Headers\": {\"Authorization\": \"secret-token\"}, \"Body\": \"MultipartFormData\", \"FileFormName\": \"file\", "
+		"\"URL\": \"{json:files[0].url}\"}";
+
+	TLOUploadDestination *destination = [TLOUploadDestination destinationWithShareXData:[zipline dataUsingEncoding:NSUTF8StringEncoding] failureReason:NULL];
+
+	XCTAssertEqualObjects(destination.name, @"My Zipline");
+	XCTAssertEqualObjects(destination.headers[@"Authorization"], @"secret-token");
+	XCTAssertEqual(destination.body, TLOUploadDestinationBodyMultipart);
+	XCTAssertEqualObjects(destination.linkTemplate, @"{json:files[0].url}");
+
+	/* The token stays out of what goes to the preferences */
+	XCTAssertFalse([destination.propertyList.description containsString:@"secret-token"]);
+
+	NSString *failureReason = nil;
+
+	NSString *shortener = @"{\"DestinationType\": \"URLShortener\", \"RequestURL\": \"https://s.example.org/\"}";
+
+	XCTAssertNil([TLOUploadDestination destinationWithShareXData:[shortener dataUsingEncoding:NSUTF8StringEncoding] failureReason:&failureReason]);
+	XCTAssertNotNil(failureReason);
+
+	NSString *plain = @"{\"DestinationType\": \"FileUploader\", \"RequestURL\": \"http://files.example.org/up\"}";
+
+	XCTAssertNil([TLOUploadDestination destinationWithShareXData:[plain dataUsingEncoding:NSUTF8StringEncoding] failureReason:NULL]);
+
+	XCTAssertTrue([TLOUploadDestination addressIsAllowed:[NSURL URLWithString:@"http://127.0.0.1:6700/up"]]);
+	XCTAssertFalse([TLOUploadDestination addressIsAllowed:[NSURL URLWithString:@"ftp://files.example.org/"]]);
+}
+
+/* The link from the answer, in ShareX's syntax (old and new) */
+- (void)testLinkFromAnswer
+{
+	NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://files.example.org/api/upload"]
+															  statusCode:200
+															 HTTPVersion:@"HTTP/1.1"
+															headerFields:@{@"Location" : @"/f/abc.png", @"X-Delete" : @"https://files.example.org/d/1"}];
+
+	NSData *json = [@"{\"files\": [{\"url\": \"https://files.example.org/u/abc.png\"}], \"data\": {\"link\": \"https://i.example.org/x\"}}" dataUsingEncoding:NSUTF8StringEncoding];
+
+	NSArray *regexes = @[@"\"url\": \"([^\"]+)\""];
+
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"$json:files[0].url$" response:response data:json regexes:@[] fileName:nil], @"https://files.example.org/u/abc.png");
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"{json:data.link}" response:response data:json regexes:@[] fileName:nil], @"https://i.example.org/x");
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"$header:X-Delete$" response:response data:json regexes:@[] fileName:nil], @"https://files.example.org/d/1");
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"$regex:1|1$" response:response data:json regexes:regexes fileName:nil], @"https://files.example.org/u/abc.png");
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"name-$filename$" response:nil data:nil regexes:@[] fileName:@"a.png"], @"name-a.png");
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"{unknown}" response:nil data:nil regexes:@[] fileName:nil], @"{unknown}");
+
+	/* Without a template: Location (relative to the address), else the text */
+	TLOUploadDestination *destination = [TLOUploadDestination new];
+
+	destination.requestAddress = @"https://files.example.org/api/upload";
+
+	XCTAssertEqualObjects([destination linkFromResponse:response data:json].absoluteString, @"https://files.example.org/f/abc.png");
+
+	NSHTTPURLResponse *plainResponse = [[NSHTTPURLResponse alloc] initWithURL:response.URL statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:@{}];
+
+	XCTAssertEqualObjects([destination linkFromResponse:plainResponse data:[@"https://t.example.org/1\n" dataUsingEncoding:NSUTF8StringEncoding]].absoluteString, @"https://t.example.org/1");
+	XCTAssertNil([destination linkFromResponse:plainResponse data:[@"<html>error</html>" dataUsingEncoding:NSUTF8StringEncoding]]);
+}
+
+/* A form: the fields, then the file, in the body written to the folder */
+- (void)testFormRequest
+{
+	NSURL *folder = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[NSUUID UUID].UUIDString isDirectory:YES];
+
+	XCTAssertTrue([[NSFileManager defaultManager] createDirectoryAtURL:folder withIntermediateDirectories:YES attributes:nil error:NULL]);
+
+	NSURL *fileURL = [folder URLByAppendingPathComponent:@"notes.txt"];
+
+	[@"hello" writeToURL:fileURL atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+
+	TLOUploadDestination *destination = [TLOUploadDestination new];
+
+	destination.requestAddress = @"https://files.example.org/upload";
+	destination.fileFieldName = @"fileToUpload";
+	destination.arguments = @{@"reqtype" : @"fileupload", @"name" : @"$filename$"};
+	destination.parameters = @{@"key" : @"abc"};
+	destination.headers = @{@"Authorization" : @"Bearer t"};
+
+	NSURL *bodyURL = nil;
+
+	NSMutableURLRequest *request = [destination requestForFileAtURL:fileURL fileName:@"notes.txt" contentType:@"text/plain" temporaryFolder:folder bodyFileURL:&bodyURL];
+
+	XCTAssertEqualObjects(request.URL.absoluteString, @"https://files.example.org/upload?key=abc");
+	XCTAssertEqualObjects([request valueForHTTPHeaderField:@"Authorization"], @"Bearer t");
+	XCTAssertTrue([[request valueForHTTPHeaderField:@"Content-Type"] hasPrefix:@"multipart/form-data; boundary="]);
+
+	NSString *body = [NSString stringWithContentsOfURL:bodyURL encoding:NSUTF8StringEncoding error:NULL];
+
+	XCTAssertTrue([body containsString:@"name=\"reqtype\"\r\n\r\nfileupload\r\n"]);
+	XCTAssertTrue([body containsString:@"name=\"name\"\r\n\r\nnotes.txt\r\n"]);
+	XCTAssertTrue([body containsString:@"name=\"fileToUpload\"; filename=\"notes.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--"]);
+
+	/* The file itself: as it is */
+	destination.body = TLOUploadDestinationBodyBinary;
+
+	request = [destination requestForFileAtURL:fileURL fileName:@"notes.txt" contentType:@"text/plain" temporaryFolder:folder bodyFileURL:&bodyURL];
+
+	XCTAssertEqualObjects(bodyURL, fileURL);
+	XCTAssertEqualObjects([request valueForHTTPHeaderField:@"Content-Type"], @"text/plain");
+
+	[[NSFileManager defaultManager] removeItemAtURL:folder error:NULL];
+}
+
 @end
+
 
 NS_ASSUME_NONNULL_END

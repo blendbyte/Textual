@@ -840,11 +840,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(files != nil);
 	NSParameterAssert(client != nil);
 
-	NSURL *address = client.fileUploadAddress;
+	NSString *destination = client.fileUploadDestinationDescription;
 
 	NSArray *sendableFiles = [TDCFileTransferDialog sendableFilePaths:files];
 
-	if (client.isLoggedIn == NO || address == nil || sendableFiles.count == 0) {
+	if (destination == nil || sendableFiles.count == 0) {
 		return NO;
 	}
 
@@ -858,7 +858,7 @@ NS_ASSUME_NONNULL_BEGIN
 		title = TXTLS(@"Prompts[d7f-u2]", (unsigned long)sendableFiles.count);
 	}
 
-	NSString *body = TXTLS(@"Prompts[d7f-u3]", address.host);
+	NSString *body = TXTLS(@"Prompts[d7f-u3]", destination);
 
 	if (sendableFiles.count < files.count) {
 		body = [body stringByAppendingFormat:@" %@", TXTLS(@"Prompts[d7f-s4]")];
@@ -898,16 +898,10 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSURL *address = u.fileUploadAddress;
+	NSString *destination = u.fileUploadDestinationDescription;
 
-	if (u.isLoggedIn == NO || address == nil) {
-		[TDCAlert alertSheetWithWindow:mainWindow()
-								  body:TXTLS(@"Prompts[d7f-i2]", u.networkNameAlt)
-								 title:TXTLS(@"Prompts[d7f-i1]")
-						 defaultButton:TXTLS(@"Prompts[c7s-dq]")
-					   alternateButton:nil
-						   otherButton:nil
-					   completionBlock:nil];
+	if (destination == nil) {
+		[mainWindow() offerUploadSetupForClient:u];
 
 		return;
 	}
@@ -947,7 +941,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCTreeItem *item = ((c) ?: u);
 
 	[TDCAlert alertSheetWithWindow:mainWindow()
-							  body:TXTLS(@"Prompts[d7f-u3]", address.host)
+							  body:TXTLS(@"Prompts[d7f-u3]", destination)
 							 title:TXTLS(@"Prompts[d7f-i4]")
 					 defaultButton:TXTLS(@"Prompts[d7f-u4]") // Upload
 				   alternateButton:TXTLS(@"Prompts[d7f-c4]") // Cancel
@@ -1032,6 +1026,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 			body = TXTLS(@"Prompts[d7f-n3]");
 
+			/* Uploads would do (9.18): offered unless turned off */
+			if (client.fileUploadsAvailable == NO && client.config.uploadDestinationMode != IRCClientUploadDestinationModeOff) {
+				body = [body stringByAppendingFormat:@" %@", TXTLS(@"Prompts[d7f-n4]")];
+
+				otherButton = TXTLS(@"TVCMainWindow[upl-s3]"); // Set Up Upload Address…
+			}
+
 			break;
 		}
 		case TDCFileTransferDropAnswerNothingToSend:
@@ -1065,6 +1066,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 					   if (insertPath) {
 						   [self insertDroppedFilePaths:files];
+					   } else if (answer == TDCFileTransferDropAnswerNoRecipient && buttonClicked == TDCAlertResponseOther) {
+						   XRPerformBlockAsynchronouslyOnMainQueue(^{
+							   [mainWindow() editUploadDestinationForClient:client];
+						   });
 					   } else if (answer == TDCFileTransferDropAnswerSend && buttonClicked == TDCAlertResponseDefault) {
 						   [self sendDroppedFiles:sendableFiles to:recipient onClient:client];
 					   }

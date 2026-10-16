@@ -79,6 +79,8 @@
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TVCInputCompletionPrivate.h"
 #import "TVCMainWindowTextViewInternal.h"
+#import "TLOUploadDestinationPrivate.h"
+#import "TDCUploadDestinationSheetPrivate.h"
 #import "TVCMainWindowInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -298,7 +300,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCClient *client = self.selectedClient;
 
-	BOOL hidden = (client.isLoggedIn == NO || client.fileUploadAddress == nil);
+	/* Shown where uploads work, and elsewhere to offer setting them up unless that's turned off */
+	BOOL hidden = (client == nil || (client.fileUploadsAvailable == NO && [TLOUploadDestination hidesUploadButtonWithoutDestination]));
 
 	if (button.hidden == hidden) {
 		return;
@@ -356,9 +359,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCTreeItem *item = self.selectedItem;
 
-	NSURL *address = client.fileUploadAddress;
+	if (client == nil || item == nil) {
+		return;
+	}
 
-	if (client == nil || item == nil || address == nil) {
+	NSString *destination = client.fileUploadDestinationDescription;
+
+	if (destination == nil) {
+		[self offerUploadSetupForClient:client];
+
 		return;
 	}
 
@@ -370,7 +379,7 @@ NS_ASSUME_NONNULL_BEGIN
 	openPanel.resolvesAliases = YES;
 
 	openPanel.prompt = TXTLS(@"TVCMainWindow[upl-p1]");
-	openPanel.message = TXTLS(@"TVCMainWindow[upl-p2]", address.host);
+	openPanel.message = TXTLS(@"TVCMainWindow[upl-p2]", destination);
 
 	[openPanel beginSheetModalForWindow:self completionHandler:^(NSModalResponse returnCode) {
 		if (returnCode != NSModalResponseOK) {
@@ -385,6 +394,78 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[self uploadFiles:paths onClient:client toItem:item];
 	}];
+}
+
+#pragma mark -
+#pragma mark Setting Up
+
+/* No upload address applies: why, and setting one up (the server's own, or the one in Preferences) */
+- (void)offerUploadSetupForClient:(IRCClient *)client
+{
+	NSParameterAssert(client != nil);
+
+	if (client.config.uploadDestinationMode == IRCClientUploadDestinationModeOff) {
+		[TDCAlert alertSheetWithWindow:self
+								  body:TXTLS(@"TVCMainWindow[upl-s4]", client.networkNameAlt)
+								 title:TXTLS(@"TVCMainWindow[upl-s1]")
+						 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+					   alternateButton:nil
+						   otherButton:nil
+					   completionBlock:nil];
+
+		return;
+	}
+
+	[TDCAlert alertSheetWithWindow:self
+							  body:TXTLS(@"TVCMainWindow[upl-s2]", client.networkNameAlt)
+							 title:TXTLS(@"TVCMainWindow[upl-s1]")
+					 defaultButton:TXTLS(@"TVCMainWindow[upl-s3]")
+				   alternateButton:TXTLS(@"Prompts[d7f-c4]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					   if (buttonClicked != TDCAlertResponseDefault) {
+						   return;
+					   }
+
+					   /* After the alert's sheet is gone */
+					   XRPerformBlockAsynchronouslyOnMainQueue(^{
+						   [self editUploadDestinationForClient:client];
+					   });
+				   }];
+}
+
+- (void)editUploadDestinationForClient:(IRCClient *)client
+{
+	NSParameterAssert(client != nil);
+
+	if (client.config.uploadDestinationMode != IRCClientUploadDestinationModeOwn) {
+		[TDCUploadDestinationSheet editGlobalDestinationInWindow:self completionBlock:nil];
+
+		return;
+	}
+
+	[TDCUploadDestinationSheet editDestination:client.customUploadDestination
+									  inWindow:self
+							   showsHideOption:NO
+							   completionBlock:^(TLOUploadDestination * _Nullable destination) {
+								   NSString *identifier = client.config.uniqueIdentifier;
+
+								   IRCClientConfigMutable *config = [client.config mutableCopy];
+
+								   if (destination) {
+									   [destination saveSecretsWithIdentifier:identifier];
+
+									   config.uploadDestination = destination.propertyList;
+								   } else {
+									   [TLOUploadDestination removeSecretsWithIdentifier:identifier];
+
+									   config.uploadDestination = nil;
+								   }
+
+								   [client updateConfig:config];
+
+								   [self updateUploadButton];
+							   }];
 }
 
 #pragma mark -
@@ -433,8 +514,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCTreeItem *item = next.item;
 
-	/* Disconnected, or the address withdrawn, since */
-	IRCFileUpload *upload = ((client.isLoggedIn) ? [client fileUploadForPath:next.path] : nil);
+	/* The network's address withdrawn (disconnected), or the user's own removed, since */
+	IRCFileUpload *upload = [client fileUploadForPath:next.path];
 
 	if (upload == nil || item == nil) {
 		[self.uploadQueue removeAllObjects];

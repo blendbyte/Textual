@@ -277,6 +277,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignDoubleTo:&self->_lastMessageServerTime forKey:@"cachedLastServerTimeCapabilityReceivedAtTimestamp"];
 	[defaultsMutable assignObjectTo:&self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
 	[defaultsMutable assignObjectTo:&self->_customIcon forKey:@"customIcon"];
+	[defaultsMutable assignObjectTo:&self->_uploadDestination forKey:@"uploadDestination"];
 	[defaultsMutable assignStringTo:&self->_awayNickname forKey:@"awayNickname"];
 	[defaultsMutable assignStringTo:&self->_nickServHost forKey:@"nickServHost"];
 	[defaultsMutable assignStringTo:&self->_connectionName forKey:@"connectionName"];
@@ -297,6 +298,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignUnsignedIntegerTo:&self->_floodControlMaximumMessages forKey:@"floodControlMaximumMessages"];
 	[defaultsMutable assignUnsignedIntegerTo:&self->_primaryEncoding forKey:@"primaryEncoding"];
 	[defaultsMutable assignUnsignedIntegerTo:&self->_proxyType forKey:@"proxyType"];
+	[defaultsMutable assignUnsignedIntegerTo:&self->_uploadDestinationMode forKey:@"uploadDestinationMode"];
 
 	/* SOCKS4 was removed in Textual 8; most SOCKS servers also speak SOCKS5 */
 	if (self->_proxyType == IRCConnectionProxyTypeSocks4) {
@@ -736,6 +738,9 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	 this device or only contain state information which is not useful to other devices. */
 	[dic maybeSetObject:self.identityClientSideCertificate forKey:@"identityClientSideCertificate"];
 	[dic maybeSetObject:self.customIcon forKey:@"customIcon"];
+	[dic maybeSetObject:self.uploadDestination forKey:@"uploadDestination"];
+
+	[dic setUnsignedInteger:self.uploadDestinationMode forKey:@"uploadDestinationMode"];
 
 	[dic setBool:self.sidebarItemExpanded forKey:@"sidebarItemExpanded"];
 
@@ -1009,6 +1014,8 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic highlightList;
 @dynamic identityClientSideCertificate;
 @dynamic customIcon;
+@dynamic uploadDestinationMode;
+@dynamic uploadDestination;
 @dynamic ignoreList;
 @dynamic lastMessageServerTime;
 @dynamic loginCommands;
@@ -1278,6 +1285,20 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_customIcon != customIcon) {
 		self->_customIcon = [customIcon copy];
+	}
+}
+
+- (void)setUploadDestinationMode:(IRCClientUploadDestinationMode)uploadDestinationMode
+{
+	if (self->_uploadDestinationMode != uploadDestinationMode) {
+		self->_uploadDestinationMode = uploadDestinationMode;
+	}
+}
+
+- (void)setUploadDestination:(nullable NSDictionary<NSString *, id> *)uploadDestination
+{
+	if (self->_uploadDestination != uploadDestination) {
+		self->_uploadDestination = [uploadDestination copy];
 	}
 }
 

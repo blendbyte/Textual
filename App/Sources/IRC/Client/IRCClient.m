@@ -78,6 +78,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#import "TLOUploadDestinationPrivate.h"
 #import <objc/message.h>
 
 #import "NSObjectHelperPrivate.h"
@@ -349,6 +350,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	/* Inline media follows a changed proxy in views that are already open */
 	[TVCLogView applyProxyOfClient:self];
+
+	/* The server's upload address may have changed (9.18 B) */
+	[mainWindow() updateUploadButton];
 
 	/* Update channel list */
 	{
@@ -647,6 +651,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self.config destroyNicknamePasswordKeychainItem];
 	[self.config destroyProxyPasswordKeychainItem];
 	[self.config destroySASLECDSAKeyKeychainItem];
+
+	[TLOUploadDestination removeSecretsWithIdentifier:self.config.uniqueIdentifier];
 
 	[self destroyServerPasswordsKeychainItems];
 

@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _zncOnlyPlaybackLatest;
 	IRCConnectionAddressType _addressType;
 	IRCConnectionProxyType _proxyType;
+	IRCClientUploadDestinationMode _uploadDestinationMode;
 	NSArray<IRCAddressBookEntry *> *_ignoreList;
 	NSArray<IRCChannelConfig *> *_channelList;
 	NSArray<IRCHighlightMatchCondition *> *_highlightList;
@@ -74,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<IRCServer *> *_serverList;
 	NSData *_identityClientSideCertificate;
 	NSData *_customIcon;
+	NSDictionary<NSString *, id> *_uploadDestination;
 	NSString *_awayNickname;
 	NSString *_connectionName;
 	NSString *_nickname;

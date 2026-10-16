@@ -1683,6 +1683,25 @@ class UploadHost:
 		if method == "OPTIONS":
 			log("http", f"OPTIONS {path}")
 			respond("204 No Content", ["Allow: OPTIONS, POST", "Accept-Post: */*"])
+		elif method == "POST" and path.startswith("/custom"):
+			# Like a typical file host (9.18 B): a form with the file in "file",
+			# "Authorization: Bearer test-token", the link in a JSON answer
+			import re
+			authorization = headers.get("authorization", "")
+			field = re.search(rb'name="([^"]*)"; filename="([^"]*)"', body)
+			log("http", f"POST {path} {headers.get('content-type', '').split(';')[0]} {len(body)} bytes, authorization {authorization or 'none'}, field {field.group(1).decode() if field else '-'}, name {field.group(2).decode() if field else '-'}")
+			if authorization != "Bearer test-token":
+				respond("401 Unauthorized", ["Content-Type: application/json"], b'{"error": "Missing or wrong token"}')
+				return
+			name = field.group(2).decode() if field else "file"
+			self.count += 1
+			stored = f"/files/{self.count}-{name}"
+			start = body.find(b"\r\n\r\n", field.end()) + 4 if field else 0
+			end = body.rfind(b"\r\n--")
+			self.files[stored] = ("application/octet-stream", body[start:end])
+			host = headers.get("host", "127.0.0.1")
+			answer = f'{{"files": [{{"url": "http://{host}{stored}"}}]}}'.encode()
+			respond("200 OK", ["Content-Type: application/json"], answer)
 		elif method == "POST":
 			import base64, re
 			authorization = headers.get("authorization", "")
@@ -1711,14 +1730,16 @@ class UploadHost:
 		await writer.drain()
 
 
-async def run_uploads(client, capabilities):
+async def run_uploads(client, capabilities, offer=True):
 	"""Uploads (9.18): the welcome names draft/FILEHOST (an HTTP address on
-	the port + 20, see UploadHost). #uploads with alice. Stays connected."""
+	the port + 20, see UploadHost) unless offer is False. #uploads with alice.
+	Stays connected."""
 	host = UploadHost()
 	port = Events.redirect_port - 1 + 20
 	await host.listen(port)
 
-	client.isupport_extra = f"draft/FILEHOST=http://127.0.0.1:{port}/upload"
+	if offer:
+		client.isupport_extra = f"draft/FILEHOST=http://127.0.0.1:{port}/upload"
 
 	if not await client.register_with_capabilities(capabilities):
 		return
@@ -1737,6 +1758,13 @@ async def run_uploads(client, capabilities):
 async def scenario_uploads(client):
 	"""Uploads (9.18) without signing in: draft/FILEHOST over HTTP; see run_uploads."""
 	await run_uploads(client, "message-tags server-time")
+
+
+async def scenario_uploads_own(client):
+	"""Uploads (9.18 B) where the network offers none: set up your own address,
+	http://127.0.0.1:<port + 20>/custom with "Authorization: Bearer test-token"
+	and the link from $json:files[0].url$ (see UploadHost)."""
+	await run_uploads(client, "message-tags server-time", offer=False)
 
 
 async def scenario_uploads_sasl(client):
@@ -2792,6 +2820,7 @@ SCENARIOS = {
 	"failed": scenario_failed_sends,
 	"uploads": scenario_uploads,
 	"uploads-sasl": scenario_uploads_sasl,
+	"uploads-own": scenario_uploads_own,
 	"failed-plain": scenario_failed_sends_plain,
 	"failed-echo": scenario_failed_sends_echo,
 	"register": scenario_register,
@@ -2844,7 +2873,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

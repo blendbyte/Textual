@@ -67,6 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *networkSocketPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *proxyServerPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *redundancyPane;
+@property (nonatomic, strong) TDCServerPropertiesUploadsPane *uploadsPane; // built in code (9.18 B)
 @property (nonatomic, copy) NSArray<TDCServerPropertiesPane *> *panes;
 @end
 
@@ -115,6 +116,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSMutableArray<TDCServerPropertiesPane *> *panes = [NSMutableArray array];
 
+	self.uploadsPane = [TDCServerPropertiesUploadsPane new];
+
+	self.uploadsPane.propertiesSheet = self;
+
 #define _groupItem(_label_, _children_) 	\
 	[[TVCContentNavigationOutlineViewItem alloc] initWithLabel:TXTLS(_label_) identifier:0 view:nil firstResponder:nil children:(_children_)]
 
@@ -129,6 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
 		_paneItem(@"TDCServerPropertiesSheet[ehx-4d]", General, self.generalPane),
 		_paneItem(@"TDCServerPropertiesSheet[8ik-qo]", Identity, self.identityPane),
 		_paneItem(@"TDCServerPropertiesSheet[j34-yr]", DisconnectMessages, self.messagesPane),
+		_paneItem(@"TDCServerPropertiesSheet[upl-p1]", Uploads, self.uploadsPane),
 	];
 
 	NSArray *vendorSectionChildren = @[

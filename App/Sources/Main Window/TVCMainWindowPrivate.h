@@ -132,6 +132,10 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)uploadFiles:(NSArray<NSString *> *)paths onClient:(IRCClient *)client toItem:(IRCTreeItem *)item;
 
 - (void)chooseFilesToUpload:(nullable id)sender;
+
+/* No upload address applies here: says why and offers to set one up */
+- (void)offerUploadSetupForClient:(IRCClient *)client;
+- (void)editUploadDestinationForClient:(IRCClient *)client; // the server's own, or the one in Preferences
 @end
 
 /* Replies (9.15): the message being answered is kept per channel and shown

@@ -134,5 +134,9 @@
 "upl-l1" = "Uploading “%1$@” to %2$@";
 "upl-l2" = "(%1$lu of %2$lu)";
 "upl-p1" = "Upload";
-"upl-p2" = "The files are uploaded to %@ and their links put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
+"upl-p2" = "The files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
 "upl-e1" = "Couldn't upload “%@”";
+"upl-s1" = "Uploads aren't set up";
+"upl-s2" = "%@ doesn't offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
+"upl-s3" = "Set Up Upload Address…";
+"upl-s4" = "%@ doesn't offer uploads, and your own upload address is turned off for this server in Server Properties.";

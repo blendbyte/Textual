@@ -121,3 +121,12 @@ Certificates must meet the following criteria:
 "icn-t1" = "Shown in front of the server's name in the server list. Choose a picture, or drop one here. Without one, the network's own icon is shown, if it names one.";
 "icn-e1" = "“%@” can't be used as an icon";
 "icn-e2" = "Choose a picture file, such as PNG, JPEG, HEIC or SVG.";
+"upl-l1" = "Where files go:";
+"upl-m1" = "Upload address in Preferences";
+"upl-m2" = "None";
+"upl-m3" = "This server's own";
+"upl-b1" = "Edit…";
+"upl-b2" = "Set Up…";
+"upl-n1" = "Where files go if the network doesn't offer uploads itself. If it does, its own is used.";
+"upl-p1" = "Uploads";
+"upl-o1" = "Not set up";

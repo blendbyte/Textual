@@ -40,6 +40,8 @@
 #import "NSStringHelper.h"
 #import "TLOKeychainPrivate.h"
 #import "TLOLocalization.h"
+#import "TLOUploadDestinationPrivate.h"
+#import "TPCPreferencesUserDefaultsLocal.h"
 #import "IRCClientConfig.h"
 #import "IRCConnectionPrivate.h"
 #import "IRCConnectionProxyPrivate.h"
@@ -68,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *failureReason;
 @property (nonatomic, copy, nullable) NSString *authorization;
 @property (nonatomic, copy, nullable) NSData *clientCertificateReference;
+@property (nonatomic, copy, nullable) TLOUploadDestination *destination; // the user's own; nil: the network's
 @property (nonatomic, copy) NSURLSessionConfiguration *sessionConfiguration;
 @property (nonatomic, strong, nullable) NSURLSession *session;
 @property (nonatomic, strong, nullable) NSURLSessionUploadTask *task;
@@ -350,7 +353,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		BOOL isPicture = [[UTType typeWithFilenameExtension:path.pathExtension] conformsToType:UTTypeImage];
 
-		if (isPicture && [RZFileManager() createDirectoryAtURL:folder withIntermediateDirectories:YES attributes:nil error:NULL]) {
+		BOOL haveFolder = [RZFileManager() createDirectoryAtURL:folder withIntermediateDirectories:YES attributes:nil error:NULL];
+
+		if (isPicture && haveFolder) {
 			NSURL *copyURL = [self.class copyOfImageWithoutMetadataAtURL:uploadedURL inFolder:folder];
 
 			if (copyURL) {
@@ -385,20 +390,43 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(fileURL != nil);
 
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.address];
+	NSMutableURLRequest *request = nil;
 
-	request.HTTPMethod = @"POST";
+	NSURL *bodyURL = fileURL;
 
-	[request setValue:[self.class contentTypeForPath:self.fileName] forHTTPHeaderField:@"Content-Type"];
-	[request setValue:[self.class contentDispositionForFileName:self.fileName] forHTTPHeaderField:@"Content-Disposition"];
+	if (self.destination) {
+		/* The user's own: as its uploader says (a form is written to the folder) */
+		NSURL *formBodyURL = nil;
 
-	if (self.authorization) {
-		[request setValue:self.authorization forHTTPHeaderField:@"Authorization"];
+		request = [self.destination requestForFileAtURL:fileURL
+											   fileName:self.fileName
+											contentType:[self.class contentTypeForPath:self.fileName]
+										temporaryFolder:self.temporaryFolder
+											bodyFileURL:&formBodyURL];
+
+		if (request == nil || formBodyURL == nil) {
+			[self finishWithFailureReason:TXTLS(@"IRC[upl-e7]")];
+
+			return;
+		}
+
+		bodyURL = formBodyURL;
+	} else {
+		request = [NSMutableURLRequest requestWithURL:self.address];
+
+		request.HTTPMethod = @"POST";
+
+		[request setValue:[self.class contentTypeForPath:self.fileName] forHTTPHeaderField:@"Content-Type"];
+		[request setValue:[self.class contentDispositionForFileName:self.fileName] forHTTPHeaderField:@"Content-Disposition"];
+
+		if (self.authorization) {
+			[request setValue:self.authorization forHTTPHeaderField:@"Authorization"];
+		}
 	}
 
 	self.session = [NSURLSession sessionWithConfiguration:self.sessionConfiguration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
 
-	self.task = [self.session uploadTaskWithRequest:request fromFile:fileURL];
+	self.task = [self.session uploadTaskWithRequest:request fromFile:bodyURL];
 
 	[self.task resume];
 }
@@ -476,8 +504,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-	/* Only the answer's headers matter; a little of the body for logs */
-	if (self.responseData.length < 4096) {
+	/* The network's: only the headers matter (a little of the body for logs);
+	 the user's own may put the link in the body */
+	if (self.responseData.length < ((self.destination) ? (1024 * 1024) : 4096)) {
 		[self.responseData appendData:data];
 	}
 }
@@ -532,16 +561,26 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	if (response.statusCode != 201) {
+	BOOL succeeded = ((self.destination) ? (response.statusCode >= 200 && response.statusCode < 300) : (response.statusCode == 201));
+
+	if (succeeded == NO) {
 		LogToConsoleError("Upload refused (%ld): %{public}@", (long)response.statusCode,
 			[[NSString alloc] initWithData:self.responseData encoding:NSUTF8StringEncoding]);
 
-		[self finishWithFailureReason:[self.class failureReasonForStatusCode:response.statusCode]];
+		NSString *serverReason = [self.destination errorFromResponse:response data:self.responseData];
+
+		[self finishWithFailureReason:(serverReason ?: [self.class failureReasonForStatusCode:response.statusCode])];
 
 		return;
 	}
 
-	NSURL *link = [self.class linkFromLocation:[response valueForHTTPHeaderField:@"Location"] relativeToAddress:self.address];
+	NSURL *link = nil;
+
+	if (self.destination) {
+		link = [self.destination linkFromResponse:response data:self.responseData];
+	} else {
+		link = [self.class linkFromLocation:[response valueForHTTPHeaderField:@"Location"] relativeToAddress:self.address];
+	}
 
 	if (link == nil) {
 		[self finishWithFailureReason:TXTLS(@"IRC[upl-e5]")];
@@ -669,6 +708,75 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self uploadHost:address.host sharesDomainWithHost:serverHost];
 }
 
+/* Where the network offers none: the server's choice (9.18 B) */
+- (BOOL)customUploadDestinationConfigured
+{
+	IRCClientConfig *config = self.config;
+
+	switch (config.uploadDestinationMode) {
+		case IRCClientUploadDestinationModeOff:
+		{
+			return NO;
+		}
+		case IRCClientUploadDestinationModeOwn:
+		{
+			return (config.uploadDestination != nil);
+		}
+		default:
+		{
+			return ([RZUserDefaults() dictionaryForKey:@"Uploads -> Destination"] != nil);
+		}
+	}
+}
+
+- (nullable TLOUploadDestination *)customUploadDestination
+{
+	IRCClientConfig *config = self.config;
+
+	switch (config.uploadDestinationMode) {
+		case IRCClientUploadDestinationModeOff:
+		{
+			return nil;
+		}
+		case IRCClientUploadDestinationModeOwn:
+		{
+			NSDictionary *propertyList = config.uploadDestination;
+
+			return ((propertyList) ? [TLOUploadDestination destinationWithPropertyList:propertyList secretsIdentifier:config.uniqueIdentifier] : nil);
+		}
+		default:
+		{
+			return [TLOUploadDestination globalDestination];
+		}
+	}
+}
+
+- (BOOL)fileUploadsAvailable
+{
+	return (self.fileUploadAddress != nil || self.customUploadDestinationConfigured);
+}
+
+- (nullable NSString *)fileUploadDestinationDescription
+{
+	NSURL *address = self.fileUploadAddress;
+
+	if (address) {
+		return TXTLS(@"IRC[upl-d1]", address.host);
+	}
+
+	if (self.customUploadDestinationConfigured == NO) {
+		return nil;
+	}
+
+	TLOUploadDestination *destination = self.customUploadDestination;
+
+	if (destination == nil) {
+		return nil;
+	}
+
+	return TXTLS(@"IRC[upl-d2]", destination.name);
+}
+
 - (nullable IRCFileUpload *)fileUploadForPath:(NSString *)path
 {
 	NSParameterAssert(path != nil);
@@ -676,7 +784,22 @@ NS_ASSUME_NONNULL_BEGIN
 	NSURL *address = self.fileUploadAddress;
 
 	if (address == nil) {
-		return nil;
+		/* The user's own: no IRC login goes along */
+		TLOUploadDestination *destination = self.customUploadDestination;
+
+		NSURL *requestAddress = [NSURL URLWithString:destination.requestAddress];
+
+		if (destination == nil || destination.problem || requestAddress == nil) {
+			return nil;
+		}
+
+		IRCFileUpload *upload = [[IRCFileUpload alloc] initWithPath:path address:requestAddress];
+
+		upload.destination = destination;
+
+		[IRCConnectionProxy applyClientConfig:self.config toSessionConfiguration:upload.sessionConfiguration];
+
+		return upload;
 	}
 
 	IRCFileUpload *upload = [[IRCFileUpload alloc] initWithPath:path address:address];
