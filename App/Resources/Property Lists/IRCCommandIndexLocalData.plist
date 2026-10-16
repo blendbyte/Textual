@@ -5,7 +5,7 @@
 	<key>Reserved Information</key>
 	<dict>
 		<key>Next Index Value</key>
-		<real>5124</real>
+		<real>5126</real>
 	</dict>
 	<key>adchat</key>
 	<dict>
@@ -652,6 +652,15 @@
 		<key>arguments</key>
 		<string>&lt;input&gt;</string>
 	</dict>
+	<key>register</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5124</integer>
+		<key>arguments</key>
+		<string>[account] &lt;email or *&gt; &lt;password&gt;</string>
+	</dict>
 	<key>rejoin</key>
 	<dict>
 		<key>developerModeOnly</key>
@@ -834,6 +843,15 @@
 		<integer>5108</integer>
 		<key>arguments</key>
 		<string>[channel] &lt;nickname&gt;</string>
+	</dict>
+	<key>verify</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5125</integer>
+		<key>arguments</key>
+		<string>[account] &lt;code&gt;</string>
 	</dict>
 	<key>voice</key>
 	<dict>

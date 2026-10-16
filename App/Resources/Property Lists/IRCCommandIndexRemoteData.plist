@@ -5,7 +5,7 @@
 	<key>Reserved Information</key>
 	<dict>
 		<key>Next Index Value</key>
-		<real>1065</real>
+		<real>1067</real>
 	</dict>
 	<key>account</key>
 	<dict>
@@ -182,6 +182,11 @@
 		<key>indexValue</key>
 		<integer>1036</integer>
 	</dict>
+	<key>register</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1065</integer>
+	</dict>
 	<key>setname</key>
 	<dict>
 		<key>indexValue</key>
@@ -211,6 +216,11 @@
 	<dict>
 		<key>indexValue</key>
 		<integer>1037</integer>
+	</dict>
+	<key>verify</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1066</integer>
 	</dict>
 	<key>wallops</key>
 	<dict>

@@ -174,6 +174,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "away-notify",			ClientIRCv3SupportedCapabilityAwayNotify,			ClientIRCv3SupportedCapabilityAwayNotify },
 	{ "batch",					ClientIRCv3SupportedCapabilityBatch,				ClientIRCv3SupportedCapabilityBatch },
 	{ "chghost",				ClientIRCv3SupportedCapabilityChangeHost,			ClientIRCv3SupportedCapabilityChangeHost },
+	{ "draft/account-registration",	ClientIRCv3SupportedCapabilityAccountRegistration,	ClientIRCv3SupportedCapabilityAccountRegistration },
 	{ "draft/chathistory",		ClientIRCv3SupportedCapabilityChatHistory,			ClientIRCv3SupportedCapabilityChatHistory },
 	{ "draft/event-playback",	ClientIRCv3SupportedCapabilityEventPlayback,		ClientIRCv3SupportedCapabilityEventPlayback },
 	{ "draft/multiline",		ClientIRCv3SupportedCapabilityMultiline,			ClientIRCv3SupportedCapabilityMultiline },
@@ -322,6 +323,11 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	self.saslECDSAKey = nil;
 	self.saslIncomingData = nil;
 
+	self.accountRegistrationRequiresEmail = NO;
+	self.accountRegistrationAllowsCustomName = NO;
+	self.accountRegistrationAccount = nil;
+	self.accountRegistrationPassword = nil;
+
 	[self.capabilityNegotiator reset];
 }
 
@@ -340,6 +346,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityAwayNotify, @"away-notify");
 	appendValue(ClientIRCv3SupportedCapabilityBatch, @"batch");
 	appendValue(ClientIRCv3SupportedCapabilityChangeHost, @"chghost");
+	appendValue(ClientIRCv3SupportedCapabilityAccountRegistration, @"draft/account-registration");
 	appendValue(ClientIRCv3SupportedCapabilityChatHistory, @"draft/chathistory");
 	appendValue(ClientIRCv3SupportedCapabilityEventPlayback, @"draft/event-playback");
 	appendValue(ClientIRCv3SupportedCapabilityMultiline, @"draft/multiline");
@@ -438,6 +445,11 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	/* Multi-line messages only with a size limit to keep to (max-bytes is required) */
 	if (entry->request == ClientIRCv3SupportedCapabilityMultiline) {
 		return [self processMultilineCapabilityValue:value];
+	}
+
+	/* What REGISTER needs (an email address, a name of one's own) */
+	if (entry->request == ClientIRCv3SupportedCapabilityAccountRegistration) {
+		[self processAccountRegistrationCapabilityValue:value];
 	}
 
 	/* SASL only with a mechanism Textual can use */

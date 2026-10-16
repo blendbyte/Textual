@@ -438,6 +438,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-quote" = "Send a raw line to the server";
 "cmd-raw" = "Send a raw line to the server";
 "cmd-recv" = "Act as if the server sent a line (for testing)";
+"cmd-register" = "Create an account on this network";
 "cmd-rejoin" = "Leave and rejoin this channel";
 "cmd-remove" = "Remove someone from the channel (if the server allows)";
 "cmd-server" = "Connect to another server";
@@ -459,6 +460,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-unignore" = "Stop ignoring someone";
 "cmd-unmute" = "Unmute this channel, private message or network (“all”: every sound)";
 "cmd-unquiet" = "Let someone speak again";
+"cmd-verify" = "Finish creating an account with the code you were sent";
 "cmd-voice" = "Give voice (+v)";
 "cmd-wallops" = "Send a message to users with wallops on";
 "cmd-watch" = "Show whom you follow online and offline";
@@ -500,3 +502,12 @@ The identifier for a timer can be found using “/timer list”";
 "spl-n1" = "%@ people";
 "spl-n2" = "%1$@ and %2$@";
 "spl-n3" = "%1$@, %2$@ and %3$@";
+
+/* /register and /verify (draft/account-registration, 9.19) */
+"acr-n1" = "This server doesn’t offer account registration. On many networks, accounts are created with: /msg NickServ REGISTER <password> <email>";
+"acr-u1" = "Usage: /register [account] <email or *> <password>. Without an account name, your current nickname is registered; * means no email address.";
+"acr-u2" = "Usage: /verify [account] <code>";
+"acr-e1" = "This server needs an email address: /register <email> <password>";
+"acr-c1" = "This server only registers your current nickname (%@): /register <email or *> <password>";
+"acr-v1" = "To finish, type /verify followed by the code you were sent.";
+"acr-k1" = "Account %@ saved in this server’s settings: Textual logs in with it from now on.";

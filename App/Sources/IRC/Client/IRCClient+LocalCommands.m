@@ -308,6 +308,8 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandVoice) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandWallops) : NSStringFromSelector(@selector(_handleLocalCommandWallops:)),
 			@(IRCLocalCommandSts) : NSStringFromSelector(@selector(_handleLocalCommandSts:)),
+			@(IRCLocalCommandRegister) : NSStringFromSelector(@selector(_handleLocalCommandRegister:)),
+			@(IRCLocalCommandVerify) : NSStringFromSelector(@selector(_handleLocalCommandVerify:)),
 			@(IRCLocalCommandWatch) : NSStringFromSelector(@selector(_handleLocalCommandWatch:)),
 			@(IRCLocalCommandWeights) : NSStringFromSelector(@selector(_handleLocalCommandWeights:)),
 			@(IRCLocalCommandWho) : NSStringFromSelector(@selector(_handleLocalCommandWho:)),
@@ -699,6 +701,24 @@ static NSUInteger _aliasDepth = 0;
 	}
 
 	[self connect];
+}
+
+/* REGISTER and VERIFY (draft/account-registration, IRCClient+AccountRegistration.m) */
+- (NSArray<NSString *> *)_accountRegistrationArgumentsOfContext:(IRCLocalCommandContext *)context
+{
+	NSArray *tokens = [context.stringIn.string.trim componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+	return [tokens filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
+}
+
+- (void)_handleLocalCommandRegister:(IRCLocalCommandContext *)context
+{
+	[self registerAccountWithArguments:[self _accountRegistrationArgumentsOfContext:context]];
+}
+
+- (void)_handleLocalCommandVerify:(IRCLocalCommandContext *)context
+{
+	[self verifyAccountWithArguments:[self _accountRegistrationArgumentsOfContext:context]];
 }
 
 /* STS: the strict transport security policies of this server's addresses; "clear" removes them */

@@ -140,6 +140,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger multilineMaxBytes; // draft/multiline limits from the CAP value
 @property (nonatomic, assign) NSUInteger multilineMaxLines; // 0: no line limit
 @property (nonatomic, assign) NSUInteger multilineBatchCount;
+@property (nonatomic, assign) BOOL accountRegistrationRequiresEmail; // draft/account-registration flags from the CAP value
+@property (nonatomic, assign) BOOL accountRegistrationAllowsCustomName;
+@property (nonatomic, copy, nullable) NSString *accountRegistrationAccount; // a REGISTER sent, until it succeeds or fails
+@property (nonatomic, copy, nullable) NSString *accountRegistrationPassword;
 @property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
@@ -417,8 +421,31 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable IRCMessage *)messageCombiningMultilineBatch:(IRCMessageBatchMessage *)batch;
 @end
 
+/* draft/account-registration (IRCClient+AccountRegistration.m) */
+typedef NS_ENUM(NSUInteger, IRCClientAccountRegistrationProblem) {
+	IRCClientAccountRegistrationProblemNone = 0,
+	IRCClientAccountRegistrationProblemSyntax,
+	IRCClientAccountRegistrationProblemEmailRequired,
+	IRCClientAccountRegistrationProblemCustomNameNotAllowed
+};
+
+@interface IRCClient (AccountRegistrationInternal)
+- (void)processAccountRegistrationCapabilityValue:(nullable NSString *)value;
+
+/* /register's arguments ([account] <email or *> <password>) as REGISTER's
+ parameters, or nil with the problem */
++ (nullable NSArray<NSString *> *)accountRegistrationParametersForArguments:(NSArray<NSString *> *)arguments nickname:(NSString *)nickname requiresEmail:(BOOL)requiresEmail allowsCustomName:(BOOL)allowsCustomName problem:(IRCClientAccountRegistrationProblem *)problem;
+
+- (void)registerAccountWithArguments:(NSArray<NSString *> *)arguments;
+- (void)verifyAccountWithArguments:(NSArray<NSString *> *)arguments;
+
+- (void)receiveAccountRegistrationReply:(IRCMessage *)m;
+- (void)noteAccountRegistrationStandardReply:(IRCMessage *)m;
+@end
+
 @interface IRCClient (CapabilitiesInternal) <IRCCapabilityNegotiatorDelegate>
 - (void)resetCapabilities;
+@property (readonly, copy) NSString *saslUsername;
 - (void)disablePendingCapability:(ClientIRCv3SupportedCapability)capability;
 - (BOOL)isPendingCapabilityEnabled:(ClientIRCv3SupportedCapability)capability;
 - (void)resetSASLNegotiation;

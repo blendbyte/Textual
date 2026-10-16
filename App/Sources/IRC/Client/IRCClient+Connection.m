@@ -714,6 +714,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 				break;
 			}
+			case IRCRemoteCommandRegister: // Command: REGISTER (draft/account-registration)
+			case IRCRemoteCommandVerify: // Command: VERIFY
+			{
+				[self receiveAccountRegistrationReply:message];
+
+				break;
+			}
 			case IRCRemoteCommandFail: // Commands: FAIL, WARN, NOTE (standard-replies)
 			case IRCRemoteCommandWarn:
 			case IRCRemoteCommandNote:

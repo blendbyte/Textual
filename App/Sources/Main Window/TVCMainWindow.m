@@ -732,8 +732,10 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 	self.inputTextField.attributedStringValue = [NSAttributedString attributedString];
 
-	/* History keeps what was typed */
-	[self.inputHistoryManager add:stringValue];
+	/* History keeps what was typed, but not a password for /register */
+	if ([stringValue.string.trim hasPrefixIgnoringCase:@"/register "] == NO) {
+		[self.inputHistoryManager add:stringValue];
+	}
 
 	if (applyMarkdown) {
 		stringValue = [TVCInputMarkdown attributedStringByApplyingMarkdown:stringValue];

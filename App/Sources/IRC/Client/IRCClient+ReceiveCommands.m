@@ -2293,6 +2293,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	[self noteAccountRegistrationStandardReply:m];
+
 	/* In a channel the context names, otherwise in the console (or the
 	 window of the labeled command it answers) */
 	IRCChannel *channel = nil;

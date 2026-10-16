@@ -2242,6 +2242,38 @@ async def scenario_bots(client):
 		seen = len(client.received)
 
 
+async def scenario_register(client):
+	"""Account registration (9.19 D): draft/account-registration with
+	email-required and custom-account-name, standard-replies. REGISTER for
+	"alice" fails (ACCOUNT_EXISTS); any other account needs verification: VERIFY
+	with code 123456 succeeds and logs in (900), any other code fails
+	(INVALID_CODE). Stays connected."""
+	if not await client.register_with_capabilities("draft/account-registration=email-required,custom-account-name standard-replies"):
+		return
+
+	me = client.nickname
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			params = rest.split(" ")
+			if command.upper() == "REGISTER" and len(params) >= 3:
+				account = me if params[0] == "*" else params[0]
+				if account.lower() == "alice":
+					await client.send(f":{SERVER} FAIL REGISTER ACCOUNT_EXISTS {account} :Account already exists")
+				else:
+					await client.send(f":{SERVER} REGISTER VERIFICATION_REQUIRED {account} :Account created, pending verification; a code was sent to {params[1]}")
+			elif command.upper() == "VERIFY" and len(params) >= 2:
+				account, code = params[0], params[1].lstrip(":")
+				if code == "123456":
+					await client.send(f":{SERVER} VERIFY SUCCESS {account} :Account successfully registered")
+					await client.send(f":{SERVER} 900 {me} {me}!user@client.textual.test {account} :You are now logged in as {account}")
+				else:
+					await client.send(f":{SERVER} FAIL VERIFY INVALID_CODE {account} :Invalid verification code")
+		seen = len(client.received)
+
+
 async def scenario_keywords(client):
 	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
@@ -2430,6 +2462,7 @@ SCENARIOS = {
 	"events": scenario_events,
 	"labels": scenario_labels,
 	"bots": scenario_bots,
+	"register": scenario_register,
 	"multiline": scenario_multiline,
 	"mute": scenario_mute,
 	"keywords": scenario_keywords,
@@ -2479,7 +2512,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 
