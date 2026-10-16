@@ -544,13 +544,18 @@ static NSString * const _globalSecretsIdentifier = @"global";
 
 	NSString *linkString = nil;
 
+	/* Only Location may be relative to the address */
+	NSURL *baseURL = nil;
+
 	if (self.linkTemplate.length > 0) {
 		linkString = [self.class expandTemplate:self.linkTemplate response:response data:data regexes:self.regexes fileName:nil];
 	} else {
 		/* Without a template: Location, else the answer's text */
 		linkString = [response valueForHTTPHeaderField:@"Location"];
 
-		if (linkString.length == 0) {
+		if (linkString.length > 0) {
+			baseURL = response.URL;
+		} else {
 			linkString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 		}
 	}
@@ -561,7 +566,15 @@ static NSString * const _globalSecretsIdentifier = @"global";
 		return nil;
 	}
 
-	NSURL *link = [NSURL URLWithString:linkString relativeToURL:response.URL].absoluteURL;
+	/* NSURL percent-encodes what isn't allowed in a link (since macOS 14),
+	 so an error page would pass as a path: refuse those characters first */
+	NSCharacterSet *notInLinks = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n<>\"{}|\\^`"];
+
+	if ([linkString rangeOfCharacterFromSet:notInLinks].location != NSNotFound) {
+		return nil;
+	}
+
+	NSURL *link = [NSURL URLWithString:linkString relativeToURL:baseURL].absoluteURL;
 
 	NSString *scheme = link.scheme.lowercaseString;
 
