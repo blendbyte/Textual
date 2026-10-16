@@ -906,6 +906,50 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	});
 }
 
+- (void)removeEntryWithUniqueIdentifier:(NSString *)uniqueIdentifier forItem:(IRCTreeItem *)item
+{
+	NSParameterAssert(uniqueIdentifier != nil);
+	NSParameterAssert(item != nil);
+
+	NSString *viewId = item.uniqueIdentifier;
+
+	/* After any write of the line, which is queued here too */
+	dispatch_async(self.queue, ^{
+		HLSHistoricLogViewContext *viewContext = [self _contextForView:viewId];
+
+		if (viewContext == nil) {
+			return;
+		}
+
+		[viewContext performBlockAndWait:^{
+			NSFetchRequest *fetchRequest =
+			[self.managedObjectModel fetchRequestFromTemplateWithName:@"UniqueIdToEntryId"
+												substitutionVariables:@{
+													@"view_id" : viewId,
+													@"unique_id" : uniqueIdentifier
+												}];
+
+			fetchRequest.includesPendingChanges = YES;
+
+			NSError *fetchRequestError = nil;
+
+			NSArray<NSManagedObject *> *fetchedObjects = [viewContext executeFetchRequest:fetchRequest error:&fetchRequestError];
+
+			if (fetchedObjects == nil) {
+				LogToConsoleError("Failed to look up a historic log line to remove: %{public}@", fetchRequestError.localizedDescription);
+
+				return;
+			}
+
+			for (NSManagedObject *entry in fetchedObjects) {
+				[viewContext deleteObject:entry];
+			}
+
+			viewContext.hls_totalLineCount -= MIN(fetchedObjects.count, viewContext.hls_totalLineCount);
+		}];
+	});
+}
+
 #pragma mark -
 #pragma mark Fetching
 

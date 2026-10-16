@@ -95,6 +95,10 @@
 "del-q1" = "Delete this message for everyone?";
 "del-q2" = "It is removed for everyone in the conversation, and can't be brought back.";
 "del-q3" = "Delete";
+"fsd-n1" = "Not sent: %@";
+"fsd-n2" = "Not sent";
+"fsd-b1" = "Resend";
+"fsd-b2" = "Delete";
 "prv-l1" = "only you";
 "bac-t1" = "Ban Account %@";
 "e7g-s1" = ", ";

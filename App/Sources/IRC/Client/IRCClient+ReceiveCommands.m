@@ -151,6 +151,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSAssertReturn([m paramsCount] > 1);
 
+	/* Ours, taken by the server (failed sends) */
+	[self outgoingMessageEchoed:m];
+
 	NSString *text = [m paramAt:1];
 
 	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityIdentifyCTCP] && ([text hasPrefix:@"+\x01"] || [text hasPrefix:@"-\x01"])) {
@@ -2297,6 +2300,11 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self noteAccountRegistrationStandardReply:m];
+
+	/* Refused a message of ours: shown on it instead */
+	if ([m.command isEqualToStringIgnoringCase:@"FAIL"] && [self outgoingMessageFailedWithReply:m]) {
+		return;
+	}
 
 	/* In a channel the context names, otherwise in the console (or the
 	 window of the labeled command it answers) */

@@ -1791,6 +1791,28 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 }
 
 /* The line with the changes made while it waited to be saved (reactions, deleting) */
+/* The line with what changed since it was printed, leaving the changes for its saving */
+- (TVCLogLine *)logLineWithPendingChanges:(TVCLogLine *)logLine
+{
+	NSParameterAssert(logLine != nil);
+
+	NSArray *changes = nil;
+
+	@synchronized (self.unsavedLogLines) {
+		changes = [self.pendingLineChanges[logLine.uniqueIdentifier] copy];
+	}
+
+	for (TVCLogLine * _Nullable (^change)(TVCLogLine *) in changes) {
+		TVCLogLine *changedLine = change(logLine);
+
+		if (changedLine) {
+			logLine = changedLine;
+		}
+	}
+
+	return logLine;
+}
+
 - (TVCLogLine *)logLineApplyingPendingChanges:(TVCLogLine *)logLine
 {
 	NSParameterAssert(logLine != nil);
@@ -2260,9 +2282,22 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	NSString *lineNumber = [self messageReferenceForMsgid:msgid][@"lineNumber"];
 
+	if (lineNumber == nil) {
+		return;
+	}
+
+	[self updateSavedLineWithNumber:lineNumber usingBlock:block];
+}
+
+/* The line as saved, or as it will be when it is (still being drawn) */
+- (void)updateSavedLineWithNumber:(NSString *)lineNumber usingBlock:(TVCLogLine * _Nullable (^)(TVCLogLine *logLine))block
+{
+	NSParameterAssert(lineNumber != nil);
+	NSParameterAssert(block != nil);
+
 	IRCTreeItem *item = self.associatedItem;
 
-	if (lineNumber == nil || item == nil) {
+	if (item == nil) {
 		return;
 	}
 
@@ -2287,6 +2322,119 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	}
 
 	[sharedHistoricLog() updateEntryWithUniqueIdentifier:lineNumber forItem:item usingBlock:block];
+}
+
+#pragma mark -
+#pragma mark Failed Sends
+
+- (void)markLine:(NSString *)lineNumber asSendFailed:(NSString *)reason
+{
+	NSParameterAssert(lineNumber != nil);
+	NSParameterAssert(reason != nil);
+
+	[self evaluateFunction:@"_MessageActions.markFailed" withArguments:@[lineNumber, reason]];
+
+	[self updateSavedLineWithNumber:lineNumber usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
+		TVCLogLineMutable *changedLine = [logLine mutableCopy];
+
+		changedLine.sendFailedReason = reason;
+
+		return [changedLine copy];
+	}];
+}
+
+/* Out of the view and what is saved */
+- (void)removeLineWithNumber:(NSString *)lineNumber
+{
+	NSParameterAssert(lineNumber != nil);
+
+	[self evaluateFunction:@"_MessageActions.removeLine" withArguments:@[lineNumber]];
+
+	@synchronized (self.unsavedLogLines) {
+		NSUInteger index = [self.unsavedLogLines indexOfObjectPassingTest:^BOOL(TVCLogLine *object, NSUInteger objectIndex, BOOL *stop) {
+			return [object.uniqueIdentifier isEqualToString:lineNumber];
+		}];
+
+		if (index != NSNotFound) {
+			[self.unsavedLogLines removeObjectAtIndex:index];
+
+			[self.pendingLineChanges removeObjectForKey:lineNumber];
+
+			return;
+		}
+	}
+
+	IRCTreeItem *item = self.associatedItem;
+
+	if (item) {
+		[sharedHistoricLog() removeEntryWithUniqueIdentifier:lineNumber forItem:item];
+	}
+}
+
+/* Resend or Delete on a message the server refused */
+- (void)performFailedSendAction:(NSString *)action onLine:(NSString *)lineNumber
+{
+	NSParameterAssert(action != nil);
+	NSParameterAssert(lineNumber != nil);
+
+	BOOL resend = [action isEqualToString:@"resend"];
+
+	if (resend == NO && [action isEqualToString:@"delete"] == NO) {
+		return;
+	}
+
+	IRCChannel *channel = self.associatedChannel;
+
+	if (channel == nil) {
+		return;
+	}
+
+	void (^performAction)(TVCLogLine *) = ^(TVCLogLine *logLine) {
+		if (logLine.sendFailedReason == nil) {
+			return;
+		}
+
+		if (resend && [channel.associatedClient resendFailedLine:logLine inChannel:channel] == NO) {
+			NSBeep();
+
+			return;
+		}
+
+		[self removeLineWithNumber:lineNumber];
+	};
+
+	/* Still being drawn, or as saved */
+	TVCLogLine *unsavedLine = nil;
+
+	@synchronized (self.unsavedLogLines) {
+		for (TVCLogLine *logLine in self.unsavedLogLines) {
+			if ([logLine.uniqueIdentifier isEqualToString:lineNumber]) {
+				unsavedLine = [self logLineWithPendingChanges:logLine];
+
+				break;
+			}
+		}
+	}
+
+	if (unsavedLine) {
+		performAction(unsavedLine);
+
+		return;
+	}
+
+	IRCTreeItem *item = self.associatedItem;
+
+	if (item == nil) {
+		return;
+	}
+
+	[sharedHistoricLog() updateEntryWithUniqueIdentifier:lineNumber forItem:item usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			performAction(logLine);
+		});
+
+		return nil; // only read
+	}];
 }
 
 - (nullable NSString *)renderLogLine:(TVCLogLine *)logLine previousLine:(nullable TVCLogLine *)previousLine resultInfo:(NSDictionary<NSString *, id> ** _Nullable)resultInfo
@@ -2392,6 +2540,15 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	/* Deleted: messageBody already says so */
 	if (logLine.isRedacted) {
 		classAttribute = [classAttribute stringByAppendingString:@" redacted"];
+	}
+
+	/* Refused by the server: dimmed, with why and Resend, Delete */
+	NSString *sendFailedReason = logLine.sendFailedReason;
+
+	if (sendFailedReason) {
+		classAttribute = [classAttribute stringByAppendingString:@" failed"];
+
+		templateAttributes[@"sendFailedReason"] = sendFailedReason;
 	}
 
 	templateAttributes[@"lineClassAttribute"] = classAttribute;
@@ -2761,7 +2918,12 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 				  @"react" : TXTLS(@"TVCMainWindow[rct-b1]"),
 				  @"moreReactions" : TXTLS(@"TVCMainWindow[rct-b2]"),
 				  @"delete" : TXTLS(@"TVCMainWindow[del-b1]"),
-				  @"earlierMessage" : TXTLS(@"TVCMainWindow[rpl-e1]")
+				  @"earlierMessage" : TXTLS(@"TVCMainWindow[rpl-e1]"),
+				  /* "%@" stays for the reason, which the view fills in */
+				  @"notSent" : TXTLS(@"TVCMainWindow[fsd-n1]", @"%@"),
+				  @"notSentNoReason" : TXTLS(@"TVCMainWindow[fsd-n2]"),
+				  @"resend" : TXTLS(@"TVCMainWindow[fsd-b1]"),
+				  @"deleteFailed" : TXTLS(@"TVCMainWindow[fsd-b2]")
 			  },
 			  /* "%@" stays for the count, which the view fills in */
 			  @"generalEventStrings" : @{

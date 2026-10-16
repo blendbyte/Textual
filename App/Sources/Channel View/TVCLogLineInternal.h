@@ -58,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_messageBody;
 	NSString *_msgid;
 	NSString *_replyToMsgid;
+	NSString *_sendFailedReason;
 	NSString *_nickname;
 	NSString *_nicknameColorStyle;
 	TVCLogLineMemberType _memberType;

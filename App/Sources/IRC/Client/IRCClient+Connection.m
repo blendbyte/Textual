@@ -126,6 +126,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self removeLabeledRequests];
 
+	[self removeOutgoingMessages];
+
 	self.connectDelay = 0;
 
 	self.invokingISONCommandForFirstTime = NO;

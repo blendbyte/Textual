@@ -68,6 +68,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performMessageMenuCommand:(NSMenuItem *)sender; // Reply, React…, Delete… in the context menu
 
+/* Failed sends: our message the server refused */
+- (void)markLine:(NSString *)lineNumber asSendFailed:(NSString *)reason;
+- (void)removeLineWithNumber:(NSString *)lineNumber;
+- (void)performFailedSendAction:(NSString *)action onLine:(NSString *)lineNumber; // "resend" or "delete"
+
 - (instancetype)initWithClient:(IRCClient *)client inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithChannel:(IRCChannel *)channel inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 

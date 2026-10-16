@@ -107,7 +107,13 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 		":where(div.line .reactions.inline .reaction) { font-size: 0.8em; line-height: 1.35; padding: 0 5px; }",
 		":where(div.line.redacted .redactedNote, div.line.redacted .innerMessage) { font-style: italic; opacity: 0.6; }",
 		":where(div.line .reaction.mine) { border-color: rgba(0, 122, 255, 0.6); background: rgba(0, 122, 255, 0.14); }",
-		":where(div.line .reaction .reactionCount) { margin-left: 0.3em; font-variant-numeric: tabular-nums; }"
+		":where(div.line .reaction .reactionCount) { margin-left: 0.3em; font-variant-numeric: tabular-nums; }",
+		":where(div.line.failed .innerMessage) { opacity: 0.5; }",
+		":where(div.line .failedNote) { display: block; margin: 2px 0 1px 0; font-size: 0.85em; color: #d70015; }",
+		"@media (prefers-color-scheme: dark) { :where(div.line .failedNote) { color: #ff6961; } }",
+		":where(div.line .failedNote button) { appearance: none; margin: 0 0 0 0.6em; padding: 0; border: 0; background: none; " +
+			"font: inherit; color: -apple-system-control-accent; cursor: pointer; }",
+		":where(div.line .failedNote button:hover) { text-decoration: underline; }"
 	];
 
 	var style = document.createElement("style");
@@ -153,7 +159,7 @@ _MessageActions.linesAdded = function(lineNumbers) /* PRIVATE */
 
 _MessageActions.decorateAll = function() /* PRIVATE */
 {
-	var lines = document.querySelectorAll("div.line[data-reply-to], div.line[data-reactions]");
+	var lines = document.querySelectorAll("div.line[data-reply-to], div.line[data-reactions], div.line[data-send-failed]");
 
 	for (var i = 0; i < lines.length; i++) {
 		_MessageActions.decorateLine(lines[i]);
@@ -165,6 +171,8 @@ _MessageActions.decorateLine = function(line) /* PRIVATE */
 	_MessageActions._decorateReply(line);
 
 	_MessageActions._renderReactions(line);
+
+	_MessageActions._decorateFailed(line);
 };
 
 _MessageActions._decorateReply = function(line) /* PRIVATE */
@@ -314,8 +322,18 @@ _MessageActions._showLine = function(line) /* PRIVATE */
 /* ************************************************** */
 
 /* From the app: [{emoji, count, nicknames, mine}, …] for a message */
+/* A line that grew (reactions, a note) keeps the view at the bottom if it was */
+_MessageActions._keepAtBottom = function(wasAtBottom) /* PRIVATE */
+{
+	if (wasAtBottom) {
+		TextualScroller.scrollToBottom();
+	}
+};
+
 _MessageActions.setReactions = function(msgid, reactions) /* PRIVATE */
 {
+	var atBottom = TextualScroller.isScrolledToBottom();
+
 	var lines = document.querySelectorAll("div.line[data-msgid=\"" + CSS.escape(msgid) + "\"]");
 
 	for (var i = 0; i < lines.length; i++) {
@@ -327,6 +345,8 @@ _MessageActions.setReactions = function(msgid, reactions) /* PRIVATE */
 
 		_MessageActions._renderReactions(lines[i]);
 	}
+
+	_MessageActions._keepAtBottom(atBottom);
 };
 
 _MessageActions._reactionsOfLine = function(line) /* PRIVATE */
@@ -459,6 +479,8 @@ _MessageActions._showReactionChoices = function(line) /* PRIVATE */
  its reactions go, and replies quoting it say so too */
 _MessageActions.deleteMessage = function(msgid, note) /* PRIVATE */
 {
+	var atBottom = TextualScroller.isScrolledToBottom();
+
 	var lines = document.querySelectorAll("div.line[data-msgid=\"" + CSS.escape(msgid) + "\"]");
 
 	for (var i = 0; i < lines.length; i++) {
@@ -510,6 +532,102 @@ _MessageActions.deleteMessage = function(msgid, note) /* PRIVATE */
 			_MessageActions._fillQuote(quote, reply);
 		}
 	}
+
+	_MessageActions._keepAtBottom(atBottom);
+};
+
+/* ************************************************** */
+/*                   Failed sends                     */
+/* ************************************************** */
+
+/* From the app: the server refused our message */
+_MessageActions.markFailed = function(lineNumber, reason) /* PRIVATE */
+{
+	var line = document.getElementByLineNumber(lineNumber);
+
+	if (line === null) {
+		return;
+	}
+
+	var atBottom = TextualScroller.isScrolledToBottom();
+
+	line.classList.add("failed");
+
+	line.dataset.sendFailed = reason;
+
+	_MessageActions._decorateFailed(line);
+
+	_MessageActions._keepAtBottom(atBottom);
+};
+
+/* "Not sent: why", then Resend and Delete */
+_MessageActions._decorateFailed = function(line) /* PRIVATE */
+{
+	if (line.dataset.sendFailed === undefined) {
+		return;
+	}
+
+	var existing = line.querySelector(":scope > .failedNote");
+
+	if (existing) {
+		existing.remove();
+	}
+
+	var strings = _MessageActions.strings;
+
+	var reason = line.dataset.sendFailed;
+
+	var note = document.createElement("div");
+
+	note.className = "failedNote";
+
+	var text = document.createElement("span");
+
+	text.textContent = ((reason.length > 0) ? (strings.notSent || "Not sent: %@").replace("%@", reason) : (strings.notSentNoReason || "Not sent"));
+
+	note.appendChild(text);
+
+	var lineNumber = line.id.replace(/^line-/, "");
+
+	var actions = [["resend", (strings.resend || "Resend")], ["delete", (strings.deleteFailed || "Delete")]];
+
+	actions.forEach(function(action) {
+		var button = document.createElement("button");
+
+		button.type = "button";
+
+		button.textContent = action[1];
+
+		button.addEventListener("click", function(event) {
+			event.stopPropagation();
+
+			appPrivate.failedSendAction(lineNumber, action[0]);
+		});
+
+		note.appendChild(button);
+	});
+
+	line.appendChild(note);
+};
+
+/* From the app: a line taken out (resent, or deleted) */
+_MessageActions.removeLine = function(lineNumber) /* PRIVATE */
+{
+	var line = document.getElementByLineNumber(lineNumber);
+
+	if (line === null) {
+		return;
+	}
+
+	if (line === _MessageActions._toolbarLine) {
+		_MessageActions._hideToolbar();
+	}
+
+	if (line === _MessageActions._focusedLine) {
+		_MessageActions.blurMessages();
+	}
+
+	line.remove();
 };
 
 /* ************************************************** */

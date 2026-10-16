@@ -39,6 +39,10 @@
 	data-reply-excerpt="{{replyToExcerpt}}"
 {{/replyToMsgid}}
 
+{{#sendFailedReason}}
+	data-send-failed="{{sendFailedReason}}"
+{{/sendFailedReason}}
+
 	data-timestamp="{{timestamp}}">
 
 {{! The Chat display: the sender and time above their messages, and messages

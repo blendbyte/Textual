@@ -238,6 +238,12 @@ enum {
 - (void)deleteMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 @end
 
+/* Failed sends (IRCClient+FailedSends.m) */
+@interface IRCClient (FailedSendsPrivate)
+/* Resend on a message the server refused: NO when it can't be sent now */
+- (BOOL)resendFailedLine:(TVCLogLine *)logLine inChannel:(IRCChannel *)channel;
+@end
+
 @interface IRCClient (TimedCommandsPrivate)
 - (void)onTimedCommand:(IRCTimedCommand *)timedCommand;
 @end

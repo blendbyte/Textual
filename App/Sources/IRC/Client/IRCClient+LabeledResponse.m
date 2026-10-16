@@ -178,6 +178,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.labeledRequests[label] = [[IRCClientLabeledRequest alloc] initWithLabel:label command:command channel:self.labelingChannel];
 
+	/* A message of ours (failed sends) */
+	if (self.capturingLabel && self.capturedLabel == nil) {
+		self.capturedLabel = label;
+	}
+
 	return [self.class line:line withLabel:label];
 }
 
@@ -246,6 +251,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (label.length > 0) {
 		[self.labeledRequests removeObjectForKey:label];
+
+		[self outgoingMessageAnsweredWithLabel:label];
 	}
 }
 
@@ -255,6 +262,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (batch.label.length > 0) {
 		[self.labeledRequests removeObjectForKey:batch.label];
+
+		[self outgoingMessageAnsweredWithLabel:batch.label];
 	}
 }
 

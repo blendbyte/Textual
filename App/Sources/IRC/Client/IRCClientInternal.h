@@ -64,6 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define _whoCheckInterval			120
 #define _batchFlushTimeout			60 // a batch that never closes is processed after this many seconds
 #define _labeledRequestTimeout		300 // a labeled command whose reply never came is forgotten after this many seconds
+#define _outgoingMessageTimeout		60 // a message sent with a label whose answer never came is forgotten after this many seconds
+#define _outgoingMessageErrorWindow	5 // without labels, an error about a message's target counts this many seconds after it
 #define _isonLineMaximumLength		400 // bytes of nicknames per ISON line (lines are limited to 512)
 
 #define _CTCPReplyLimit				5 // replies per _CTCPReplyLimitInterval
@@ -80,6 +82,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSDate *sentAt;
 
 - (instancetype)initWithLabel:(NSString *)label command:(NSString *)command channel:(nullable IRCChannel *)channel;
+@end
+
+/* Failed sends (IRCClient+FailedSends.m): a message we sent, until the server
+ took it or refused it */
+@interface IRCClientOutgoingMessage : NSObject
+@property (nonatomic, copy) NSString *target;
+@property (nonatomic, copy) NSString *text; // as shown (formatting codes, no CTCP)
+@property (nonatomic, copy) NSString *command; // "PRIVMSG" or "NOTICE"
+@property (nonatomic, assign) TVCLogLineType lineType;
+@property (nonatomic, copy, nullable) NSString *replyToMsgid;
+@property (nonatomic, weak, nullable) IRCChannel *channel;
+@property (nonatomic, copy) NSDate *sentAt;
+@property (nonatomic, copy, nullable) NSString *label; // labeled-response: its answer is matched exactly
+@property (nonatomic, assign) BOOL printedLocally; // shown at once (no echo-message)
+@property (nonatomic, copy, nullable) NSString *lineNumber; // that line
+@property (nonatomic, copy, nullable) NSString *failedReason;
 @end
 
 @interface IRCClient ()
@@ -137,6 +155,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger labelingDepth; // > 0 while a typed command runs
 @property (nonatomic, weak, nullable) IRCChannel *labelingChannel; // its window; nil = the console
 @property (nonatomic, strong, nullable) IRCClientLabeledRequest *labeledReplyRequest; // while its reply is processed
+@property (nonatomic, assign) BOOL capturingLabel; // the first label given while set goes into capturedLabel
+@property (nonatomic, copy, nullable) NSString *capturedLabel;
+@property (nonatomic, strong) NSMutableArray<IRCClientOutgoingMessage *> *outgoingMessages; // oldest first
+@property (nonatomic, strong, nullable) IRCClientOutgoingMessage *printingOutgoingMessage; // print: takes its reply, failure and line number
+@property (nonatomic, weak, nullable) IRCMessageBatchMessage *lastEchoedBatch;
 @property (nonatomic, assign) NSUInteger multilineMaxBytes; // draft/multiline limits from the CAP value
 @property (nonatomic, assign) NSUInteger multilineMaxLines; // 0: no line limit
 @property (nonatomic, assign) NSUInteger multilineBatchCount;
@@ -365,6 +388,25 @@ NS_ASSUME_NONNULL_BEGIN
  the sender are both in it */
 - (nullable IRCChannel *)channelForChannelContextOfMessage:(IRCMessage *)m;
 - (void)updateUser:(IRCUserMutable *)userMutable fromExtendedJoin:(IRCMessage *)m;
+@end
+
+@interface IRCClient (FailedSendsInternal)
+/* A message to channel (shown in it), sent while block runs */
+- (IRCClientOutgoingMessage *)outgoingMessageWithText:(NSString *)text target:(NSString *)target command:(NSString *)command lineType:(TVCLogLineType)lineType channel:(IRCChannel *)channel;
+- (void)sendOutgoingMessage:(IRCClientOutgoingMessage *)outgoing usingBlock:(void (NS_NOESCAPE ^)(void))block;
+
+/* print: inside block shows outgoing (its reply; the line number is kept) */
+- (void)printOutgoingMessage:(IRCClientOutgoingMessage *)outgoing usingBlock:(void (NS_NOESCAPE ^)(void))block;
+
+/* Our message echoed (echo-message) without a label: the oldest to its target is taken */
+- (void)outgoingMessageEchoed:(IRCMessage *)m;
+
+/* An error numeric or FAIL: YES when it refused a message of ours, which is
+ then shown as not sent (and the reply not printed on its own) */
+- (BOOL)outgoingMessageFailedWithReply:(IRCMessage *)m;
+
+- (void)outgoingMessageAnsweredWithLabel:(NSString *)label; // echo or ACK: taken
+- (void)removeOutgoingMessages;
 @end
 
 @interface IRCClient (LabeledResponseInternal)

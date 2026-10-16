@@ -220,6 +220,13 @@ appPrivate.leaveMessageFocus = function()
 	window.webkit.messageHandlers.leaveMessageFocus.postMessage(null);
 };
 
+appPrivate.failedSendAction = function(lineNumber, action)
+{
+	var dataValue = {"values" : [lineNumber, action]};
+
+	window.webkit.messageHandlers.failedSendAction.postMessage(dataValue);
+};
+
 appPrivate.setMessageMenu = function(values)
 {
 	window.webkit.messageHandlers.setMessageMenu.postMessage(values);

@@ -1552,6 +1552,74 @@ async def scenario_replies(client):
 		seen = len(client.received)
 
 
+async def run_failed_sends(client, capabilities):
+	"""Failed sends: in #failed (with alice and bob) a message with "nope"
+	is refused the first time (404 Cannot send to channel; sent again, it
+	goes through, as after Resend), one with "spam" gets FAIL PRIVMSG
+	(matched only with labels), a message to ghost gets 401 No such nick;
+	others are taken (echoed with echo-message, ACK with labels only). The
+	answers carry the message's label when it has one. Stays connected."""
+	if not await client.register_with_capabilities(capabilities):
+		return
+
+	me = client.nickname
+	echo = "echo-message" in capabilities.split(" ")
+
+	await client.send(f":{me}!user@client.textual.test JOIN #failed")
+	await client.send(f":{SERVER} 353 {me} = #failed :{me} alice bob")
+	await client.send(f":{SERVER} 366 {me} #failed :End of /NAMES list.")
+	await client.send(":alice!a@alice.test PRIVMSG #failed :Moderation is on in here today, careful")
+
+	seen = 0
+	echoed = 0
+	refused = set()
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			tags = ""
+			rest_of_line = line
+			if line.startswith("@"):
+				tags, _, rest_of_line = line[1:].partition(" ")
+			command, _, rest = rest_of_line.partition(" ")
+			command = command.upper()
+			label = next((tag[6:] for tag in tags.split(";") if tag.startswith("label=")), None)
+			prefix = f"@label={label} " if label else ""
+			log("··", f"label: {label or 'none'}")
+			if command not in ("PRIVMSG", "NOTICE"):
+				continue
+			target, _, text = rest.partition(" ")
+			text = text[1:] if text.startswith(":") else text
+			if target.lower() == "ghost":
+				await client.send(f"{prefix}:{SERVER} 401 {me} ghost :No such nick/channel")
+			elif "nope" in text and text not in refused:
+				refused.add(text)
+				await client.send(f"{prefix}:{SERVER} 404 {me} {target} :Cannot send to channel (+m)")
+			elif "spam" in text:
+				await client.send(f"{prefix}:{SERVER} FAIL {command} MESSAGE_REJECTED {target} :Your message looked like spam")
+			elif echo:
+				echoed += 1
+				echo_tags = ";".join(([f"label={label}"] if label else []) + [f"msgid=f{echoed}"])
+				await client.send(f"@{echo_tags} :{me}!user@client.textual.test {command} {rest}")
+			elif label:
+				await client.send(f"@label={label} :{SERVER} ACK")
+		seen = len(client.received)
+
+
+async def scenario_failed_sends(client):
+	"""Failed sends with echo-message and labeled-response (exact matching); see run_failed_sends."""
+	await run_failed_sends(client, "message-tags echo-message labeled-response batch server-time standard-replies")
+
+
+async def scenario_failed_sends_plain(client):
+	"""Failed sends without echo-message or labels (only a single message to the target counts)."""
+	await run_failed_sends(client, "server-time")
+
+
+async def scenario_failed_sends_echo(client):
+	"""Failed sends with echo-message but no labels (the oldest message not echoed counts)."""
+	await run_failed_sends(client, "message-tags echo-message server-time standard-replies")
+
+
 async def scenario_sasl_new(client):
 	"""SASL 3.2 (set nicknamePassword=textual-new first): registration without
 	sasl; two seconds later the server sends CAP NEW :sasl=PLAIN. The client
@@ -2597,6 +2665,9 @@ SCENARIOS = {
 	"network-icon": scenario_network_icon,
 	"websocket": scenario_websocket,
 	"replies": scenario_replies,
+	"failed": scenario_failed_sends,
+	"failed-plain": scenario_failed_sends_plain,
+	"failed-echo": scenario_failed_sends_echo,
 	"register": scenario_register,
 	"multiline": scenario_multiline,
 	"mute": scenario_mute,
@@ -2647,7 +2718,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

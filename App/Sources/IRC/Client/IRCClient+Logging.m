@@ -600,8 +600,17 @@ NS_ASSUME_NONNULL_BEGIN
 	 Our own line printed without echo-message has none, but shows its reply. */
 	logLine.msgid = referenceMessage.msgid;
 
+	/* A message of ours being sent, or refused (failed sends) */
+	IRCClientOutgoingMessage *outgoing = self.printingOutgoingMessage;
+
 	if (referenceMessage) {
 		logLine.replyToMsgid = referenceMessage.replyToMsgid;
+	} else if (outgoing) {
+		logLine.replyToMsgid = outgoing.replyToMsgid;
+
+		logLine.sendFailedReason = outgoing.failedReason;
+
+		outgoing.lineNumber = logLine.uniqueIdentifier;
 	} else if (memberType == TVCLogLineMemberTypeLocalUser) {
 		logLine.replyToMsgid = self.outgoingReplyMsgid;
 	}

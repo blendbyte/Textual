@@ -334,16 +334,27 @@ NS_ASSUME_NONNULL_BEGIN
 		/* A reply: the first message answers it */
 		NSString *replyMsgid = self.outgoingReplyMsgid;
 
+		/* Remembered until the server takes or refuses it */
+		NSString *text = [self.class multilineTextOfParts:batch];
+
+		IRCClientOutgoingMessage *outgoing = [self outgoingMessageWithText:text target:channel.name command:commandToSend lineType:lineType channel:channel];
+
 		if (printLocally) {
-			[self print:[self.class multilineTextOfParts:batch]
-					 by:self.userNickname
-			  inChannel:channel
-				 asType:lineType
-				command:commandToSend
-			 receivedAt:[NSDate date]];
+			outgoing.printedLocally = YES;
+
+			[self printOutgoingMessage:outgoing usingBlock:^{
+				[self print:text
+						 by:self.userNickname
+				  inChannel:channel
+					 asType:lineType
+					command:commandToSend
+				 receivedAt:[NSDate date]];
+			}];
 		}
 
-		[self sendMultilineBatch:batch command:commandToSend target:channel.name replyTo:replyMsgid];
+		[self sendOutgoingMessage:outgoing usingBlock:^{
+			[self sendMultilineBatch:batch command:commandToSend target:channel.name replyTo:replyMsgid];
+		}];
 
 		self.outgoingReplyMsgid = nil;
 	}
@@ -429,13 +440,24 @@ NS_ASSUME_NONNULL_BEGIN
 	{
 		NSString *message = [lineMutable stringFormattedForChannel:destinationName onClient:self withLineType:lineType];
 
+		/* Remembered until the server takes or refuses it (failed sends) */
+		IRCClientOutgoingMessage *outgoing = nil;
+
+		if (channel) {
+			outgoing = [self outgoingMessageWithText:message target:destinationName command:printCommand lineType:lineType channel:channel];
+		}
+
 		if (channel && [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
-			[self print:message
-					 by:self.userNickname
-			  inChannel:channel
-				 asType:lineType
-				command:printCommand
-			 receivedAt:[NSDate date]];
+			outgoing.printedLocally = YES;
+
+			[self printOutgoingMessage:outgoing usingBlock:^{
+				[self print:message
+						 by:self.userNickname
+				  inChannel:channel
+					 asType:lineType
+					command:printCommand
+				 receivedAt:[NSDate date]];
+			}];
 		}
 
 		if (lineType == TVCLogLineTypeAction) {
@@ -445,17 +467,23 @@ NS_ASSUME_NONNULL_BEGIN
 		/* A reply: the first message (of a line split in several) answers it */
 		NSString *replyMsgid = self.outgoingReplyMsgid;
 
-		if (replyMsgid) {
-			self.outgoingReplyMsgid = nil;
+		self.outgoingReplyMsgid = nil;
 
-			NSString *lineToSend = [IRCSendingMessage stringWithCommand:command arguments:@[destinationName, message]];
+		void (^sendMessage)(void) = ^{
+			if (replyMsgid) {
+				NSString *lineToSend = [IRCSendingMessage stringWithCommand:command arguments:@[destinationName, message]];
 
-			[self sendLine:[NSString stringWithFormat:@"@+reply=%@ %@", replyMsgid.encodedMessageTagString, lineToSend]];
+				[self sendLine:[NSString stringWithFormat:@"@+reply=%@ %@", replyMsgid.encodedMessageTagString, lineToSend]];
+			} else {
+				[self send:command, destinationName, message, nil];
+			}
+		};
 
-			continue;
+		if (outgoing) {
+			[self sendOutgoingMessage:outgoing usingBlock:sendMessage];
+		} else {
+			sendMessage();
 		}
-
-		[self send:command, destinationName, message, nil];
 	}
 }
 

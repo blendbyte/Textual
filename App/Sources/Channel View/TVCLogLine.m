@@ -160,6 +160,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_nickname = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"nickname"];
 	self->_msgid = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"msgid"];
 	self->_replyToMsgid = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"replyToMsgid"];
+	self->_sendFailedReason = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"sendFailedReason"];
 
 	self->_lineType = [aDecoder decodeIntegerForKey:@"lineType"];
 	self->_memberType = [aDecoder decodeIntegerForKey:@"memberType"];
@@ -236,6 +237,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	[aCoder maybeEncodeObject:self.msgid forKey:@"msgid"];
 	[aCoder maybeEncodeObject:self.replyToMsgid forKey:@"replyToMsgid"];
+	[aCoder maybeEncodeObject:self.sendFailedReason forKey:@"sendFailedReason"];
 
 	[aCoder maybeEncodeObject:self.nickname forKey:@"nickname"];
 
@@ -477,6 +479,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	object->_msgid = self->_msgid;
 	object->_replyToMsgid = self->_replyToMsgid;
+	object->_sendFailedReason = self->_sendFailedReason;
 
 	object->_receivedAt = self->_receivedAt;
 
@@ -521,6 +524,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic replyToMsgid;
 @dynamic reactions;
 @dynamic isRedacted;
+@dynamic sendFailedReason;
 @dynamic receivedAt;
 
 + (BOOL)isMutable
@@ -629,6 +633,13 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	if (self->_eventNicknames != eventNicknames) {
 		self->_eventNicknames = [eventNicknames copy];
+	}
+}
+
+- (void)setSendFailedReason:(nullable NSString *)sendFailedReason
+{
+	if (self->_sendFailedReason != sendFailedReason) {
+		self->_sendFailedReason = [sendFailedReason copy];
 	}
 }
 

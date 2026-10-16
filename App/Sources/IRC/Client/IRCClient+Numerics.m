@@ -2005,6 +2005,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL printMessage = [self postReceivedMessage:m];
 
+	/* Refused a message of ours: shown on it instead */
+	if ([self outgoingMessageFailedWithReply:m]) {
+		return;
+	}
+
 	switch (numeric) {
 		case ERR_NOSUCHNICK:
 		{

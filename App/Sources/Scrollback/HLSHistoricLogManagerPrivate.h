@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
  returns what to save instead, or nil to leave it. Runs on the log's queue;
  nothing happens when the line isn't saved (any more). */
 - (void)updateEntryWithUniqueIdentifier:(NSString *)uniqueIdentifier forItem:(IRCTreeItem *)item usingBlock:(TVCLogLine * _Nullable (^)(TVCLogLine *logLine))block;
+- (void)removeEntryWithUniqueIdentifier:(NSString *)uniqueIdentifier forItem:(IRCTreeItem *)item;
 
 - (void)saveData; // asynchronous operation
 

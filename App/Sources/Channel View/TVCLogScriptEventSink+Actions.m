@@ -314,6 +314,14 @@ NS_ASSUME_NONNULL_BEGIN
 	context.webViewPolicy.messageMenu = values;
 }
 
+/* Failed sends: Resend or Delete on a message the server refused */
+- (void)_failedSendAction:(TVCLogScriptEventSinkContext *)context
+{
+	NSArray *arguments = context.arguments;
+
+	[context.viewController performFailedSendAction:arguments[1] onLine:arguments[0]];
+}
+
 /* Delete (9.15 C): after asking */
 - (void)_deleteMessage:(TVCLogScriptEventSinkContext *)context
 {

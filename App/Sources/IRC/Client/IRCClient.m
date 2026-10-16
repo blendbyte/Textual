@@ -217,6 +217,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	self.labeledRequests = [NSMutableDictionary dictionary];
 
+	self.outgoingMessages = [NSMutableArray array];
+
 	self.supportInfo = [[IRCISupportInfo alloc] initWithClient:self];
 
 	self.connectType = IRCClientConnectModeNormal;
