@@ -432,23 +432,26 @@ NS_ASSUME_NONNULL_BEGIN
 		case RPL_ENDOFMOTD:
 		case ERR_NOMOTD:
 		{
-			if (numeric == RPL_ENDOFMOTD || numeric == ERR_NOMOTD) {
+			BOOL endOfMOTD = (numeric == RPL_ENDOFMOTD || numeric == ERR_NOMOTD);
+
+			if (endOfMOTD) {
 				[self finishNetworkIconAfterRegistration];
 
 				/* CLIENTTAGDENY comes after the welcome */
 				[self updateMessageActionsInViews];
 			}
 
-			NSAssertReturnR(printMessage, YES);
-
-			if ([TPCPreferences displayServerMOTD] == NO) {
-				break;
+			if (printMessage && [TPCPreferences displayServerMOTD]) {
+				if (numeric == ERR_NOMOTD) {
+					[self printErrorReply:m];
+				} else {
+					[self printReply:m];
+				}
 			}
 
-			if (numeric == ERR_NOMOTD) {
-				[self printErrorReply:m];
-			} else {
-				[self printReply:m];
+			/* Below the end of the MOTD */
+			if (endOfMOTD) {
+				[self noteUnavailableMessageActions];
 			}
 
 			break;

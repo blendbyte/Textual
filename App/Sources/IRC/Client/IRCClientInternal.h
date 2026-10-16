@@ -145,6 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *accountRegistrationAccount; // a REGISTER sent, until it succeeds or fails
 @property (nonatomic, copy, nullable) NSString *accountRegistrationPassword;
 @property (nonatomic, copy, nullable) NSString *outgoingReplyMsgidValue; // backs outgoingReplyMsgid
+@property (nonatomic, assign) BOOL messageActionsNoteShown; // "This network doesn't pass on replies…", once per connection
 @property (nonatomic, strong, nullable) NSImage *networkIconImage; // draft/ICON: the icon shown, from the caches folder or downloaded
 @property (nonatomic, copy, nullable) NSString *networkIconSavedAddress; // the address it came from
 @property (nonatomic, copy, nullable) NSString *networkIconRequestAddress; // being downloaded

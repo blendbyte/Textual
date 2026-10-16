@@ -845,6 +845,67 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	});
 }
 
+- (void)updateEntryWithUniqueIdentifier:(NSString *)uniqueIdentifier forItem:(IRCTreeItem *)item usingBlock:(TVCLogLine * _Nullable (^)(TVCLogLine *logLine))block
+{
+	NSParameterAssert(uniqueIdentifier != nil);
+	NSParameterAssert(item != nil);
+	NSParameterAssert(block != nil);
+
+	NSString *viewId = item.uniqueIdentifier;
+
+	/* After any write of the line, which is queued here too */
+	dispatch_async(self.queue, ^{
+		HLSHistoricLogViewContext *viewContext = [self _contextForView:viewId];
+
+		if (viewContext == nil) {
+			return;
+		}
+
+		[viewContext performBlockAndWait:^{
+			NSFetchRequest *fetchRequest =
+			[self.managedObjectModel fetchRequestFromTemplateWithName:@"UniqueIdToEntryId"
+												substitutionVariables:@{
+													@"view_id" : viewId,
+													@"unique_id" : uniqueIdentifier
+												}];
+
+			fetchRequest.includesPendingChanges = YES;
+
+			NSError *fetchRequestError = nil;
+
+			NSArray<NSManagedObject *> *fetchedObjects = [viewContext executeFetchRequest:fetchRequest error:&fetchRequestError];
+
+			if (fetchedObjects == nil) {
+				LogToConsoleError("Failed to look up a historic log line to change: %{public}@", fetchRequestError.localizedDescription);
+
+				return;
+			}
+
+			NSManagedObject *entry = fetchedObjects.firstObject;
+
+			if (entry == nil) {
+				return;
+			}
+
+			TVCLogLine *logLine = [TVCLogLine logLineWithData:[entry valueForKey:@"logLineData"] uniqueIdentifier:uniqueIdentifier];
+
+			if (logLine == nil) {
+				return;
+			}
+
+			TVCLogLine *changedLine = block(logLine);
+
+			NSData *data = [changedLine archivedData];
+
+			if (data == nil) {
+				return;
+			}
+
+			[entry setValue:data forKey:@"logLineData"];
+		}];
+	});
+}
+
 #pragma mark -
 #pragma mark Fetching
 

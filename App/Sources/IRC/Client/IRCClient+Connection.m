@@ -149,6 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.userIsIdentifiedWithNickServ = NO;
 	self.isAuthenticatedWithSASL = NO;
 	self.nickServVerificationWarningShown = NO;
+	self.messageActionsNoteShown = NO;
 
 	self.CTCPReplyCount = 0;
 	self.CTCPReplyCountStarted = 0;
@@ -705,8 +706,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 				break;
 			}
-			case IRCRemoteCommandTagmsg: // Command: TAGMSG (typing notifications)
+			case IRCRemoteCommandTagmsg: // Command: TAGMSG (reactions, typing notifications)
 			{
+				if ([self receiveReactionTagmsg:message]) {
+					break;
+				}
+
 				[self receiveTagmsg:message];
 
 				break;

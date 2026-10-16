@@ -107,6 +107,7 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @property (nonatomic, strong) NSMutableArray<NSString *> *highlightedLineNumbers;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *messageReferences; // msgid → line number, nickname, excerpt (replies); guarded by itself
 @property (nonatomic, strong) NSMutableArray<NSString *> *messageReferenceOrder; // oldest first, to forget beyond the limit
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray<NSMutableDictionary *> *> *messageReactions; // msgid → reactions in order; guarded by messageReferences
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *jumpToLineCallbacks; // line number → handlers waiting for it
 @property (nonatomic, strong, readwrite, nullable) TVCLogView *backingView; // nil once torn down
 @property (weak, readonly) IRCTreeItem *associatedItem;
@@ -209,6 +210,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	self.messageReferences = [NSMutableDictionary dictionary];
 	self.messageReferenceOrder = [NSMutableArray array];
+	self.messageReactions = [NSMutableDictionary dictionary];
 }
 
 - (void)prepareForTermination:(BOOL)isTerminatingApplication
@@ -754,7 +756,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	BOOL inConversation = (channel != nil && channel.isUtility == NO && client.isLoggedIn);
 
 	return @{
-		@"reply" : @(inConversation && client.canSendReplies)
+		@"reply" : @(inConversation && client.canSendReplies),
+		@"react" : @(inConversation && client.canSendReactions)
 	};
 }
 
@@ -1933,7 +1936,10 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		self.messageReferences[msgid] = reference;
 
 		while (self.messageReferenceOrder.count > _messageReferenceLimit) {
-			[self.messageReferences removeObjectForKey:self.messageReferenceOrder.firstObject];
+			NSString *oldest = self.messageReferenceOrder.firstObject;
+
+			[self.messageReferences removeObjectForKey:oldest];
+			[self.messageReactions removeObjectForKey:oldest];
 
 			[self.messageReferenceOrder removeObjectAtIndex:0];
 		}
@@ -1947,6 +1953,176 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	@synchronized (self.messageReferences) {
 		return self.messageReferences[msgid];
 	}
+}
+
+#pragma mark -
+#pragma mark Reactions
+
+/* The reactions as saved with the line: @[@{@"emoji" : …, @"nicknames" : @[…]}, …] */
++ (NSArray<NSDictionary *> *)reactionsSnapshot:(NSArray<NSMutableDictionary *> *)reactions
+{
+	NSMutableArray *snapshot = [NSMutableArray arrayWithCapacity:reactions.count];
+
+	for (NSDictionary *reaction in reactions) {
+		[snapshot addObject:@{
+			@"emoji" : reaction[@"emoji"],
+			@"nicknames" : [reaction[@"nicknames"] copy]
+		}];
+	}
+
+	return [snapshot copy];
+}
+
+/* What the view shows: each reaction with its count, who, and whether ours */
+- (NSArray<NSDictionary *> *)reactionsForView:(NSArray<NSDictionary *> *)reactions
+{
+	NSString *localNickname = self.associatedClient.userNickname;
+
+	NSMutableArray *forView = [NSMutableArray arrayWithCapacity:reactions.count];
+
+	for (NSDictionary *reaction in reactions) {
+		NSArray<NSString *> *nicknames = reaction[@"nicknames"];
+
+		BOOL mine = (localNickname && [nicknames containsObjectIgnoringCase:localNickname]);
+
+		[forView addObject:@{
+			@"emoji" : reaction[@"emoji"],
+			@"count" : @(nicknames.count),
+			@"nicknames" : [nicknames componentsJoinedByString:@", "],
+			@"mine" : @(mine)
+		}];
+	}
+
+	return [forView copy];
+}
+
+/* A line's reactions as the view should show them: those received this
+ session, else the ones saved with it */
+- (nullable NSArray<NSDictionary *> *)reactionsForLine:(TVCLogLine *)logLine
+{
+	NSString *msgid = logLine.msgid;
+
+	if (msgid == nil) {
+		return nil;
+	}
+
+	NSArray *snapshot = nil;
+
+	@synchronized (self.messageReferences) {
+		NSMutableArray<NSMutableDictionary *> *reactions = self.messageReactions[msgid];
+
+		if (reactions == nil && logLine.reactions.count > 0) {
+			reactions = [NSMutableArray array];
+
+			for (NSDictionary *saved in logLine.reactions) {
+				NSString *emoji = saved[@"emoji"];
+
+				NSArray *nicknames = saved[@"nicknames"];
+
+				if ([emoji isKindOfClass:[NSString class]] == NO || [nicknames isKindOfClass:[NSArray class]] == NO) {
+					continue;
+				}
+
+				[reactions addObject:[@{@"emoji" : emoji, @"nicknames" : [nicknames mutableCopy]} mutableCopy]];
+			}
+
+			self.messageReactions[msgid] = reactions;
+		}
+
+		if (reactions.count == 0) {
+			return nil;
+		}
+
+		snapshot = [self.class reactionsSnapshot:reactions];
+	}
+
+	return [self reactionsForView:snapshot];
+}
+
+- (void)setReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid added:(BOOL)added
+{
+	NSParameterAssert(reaction != nil);
+	NSParameterAssert(nickname != nil);
+	NSParameterAssert(msgid != nil);
+
+	NSArray *snapshot = nil;
+
+	@synchronized (self.messageReferences) {
+		NSMutableArray<NSMutableDictionary *> *reactions = self.messageReactions[msgid];
+
+		if (reactions == nil) {
+			if (added == NO) {
+				return;
+			}
+
+			reactions = [NSMutableArray array];
+
+			self.messageReactions[msgid] = reactions;
+		}
+
+		NSMutableDictionary *entry = nil;
+
+		for (NSMutableDictionary *candidate in reactions) {
+			if ([candidate[@"emoji"] isEqualToString:reaction]) {
+				entry = candidate;
+
+				break;
+			}
+		}
+
+		NSMutableArray<NSString *> *nicknames = entry[@"nicknames"];
+
+		NSUInteger index = [nicknames indexOfObjectPassingTest:^BOOL(NSString *object, NSUInteger objectIndex, BOOL *stop) {
+			return ([object caseInsensitiveCompare:nickname] == NSOrderedSame);
+		}];
+
+		if (added) {
+			if (entry == nil) {
+				entry = [@{@"emoji" : reaction, @"nicknames" : [NSMutableArray array]} mutableCopy];
+
+				[reactions addObject:entry];
+
+				nicknames = entry[@"nicknames"];
+			} else if (index != NSNotFound) {
+				return;
+			}
+
+			[nicknames addObject:nickname];
+		} else {
+			if (entry == nil || index == NSNotFound) {
+				return;
+			}
+
+			[nicknames removeObjectAtIndex:index];
+
+			if (nicknames.count == 0) {
+				[reactions removeObject:entry];
+			}
+		}
+
+		snapshot = [self.class reactionsSnapshot:reactions];
+	}
+
+	[self evaluateFunction:@"_MessageActions.setReactions" withArguments:@[msgid, [self reactionsForView:snapshot]]];
+
+	/* Saved with the line, so they are there after a restart */
+	NSString *lineNumber = [self messageReferenceForMsgid:msgid][@"lineNumber"];
+
+	IRCTreeItem *item = self.associatedItem;
+
+	if (lineNumber == nil || item == nil) {
+		return;
+	}
+
+	NSArray *savedReactions = ((snapshot.count > 0) ? snapshot : nil);
+
+	[sharedHistoricLog() updateEntryWithUniqueIdentifier:lineNumber forItem:item usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
+		TVCLogLineMutable *changedLine = [logLine mutableCopy];
+
+		changedLine.reactions = savedReactions;
+
+		return [changedLine copy];
+	}];
 }
 
 - (nullable NSString *)renderLogLine:(TVCLogLine *)logLine previousLine:(nullable TVCLogLine *)previousLine resultInfo:(NSDictionary<NSString *, id> ** _Nullable)resultInfo
@@ -2063,6 +2239,16 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			templateAttributes[@"msgid"] = msgid;
 
 			[self rememberMessageReferenceForLine:logLine];
+
+			NSArray *reactions = [self reactionsForLine:logLine];
+
+			if (reactions) {
+				NSData *reactionsData = [NSJSONSerialization dataWithJSONObject:reactions options:0 error:NULL];
+
+				if (reactionsData) {
+					templateAttributes[@"reactionsJSON"] = [[NSString alloc] initWithData:reactionsData encoding:NSUTF8StringEncoding];
+				}
+			}
 		}
 
 		NSString *replyToMsgid = logLine.replyToMsgid;
@@ -2403,6 +2589,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"messageActions" : self.messageActionsAvailability,
 			  @"messageActionStrings" : @{
 				  @"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),
+				  @"react" : TXTLS(@"TVCMainWindow[rct-b1]"),
+				  @"moreReactions" : TXTLS(@"TVCMainWindow[rct-b2]"),
 				  @"earlierMessage" : TXTLS(@"TVCMainWindow[rpl-e1]")
 			  },
 			  /* "%@" stays for the count, which the view fills in */

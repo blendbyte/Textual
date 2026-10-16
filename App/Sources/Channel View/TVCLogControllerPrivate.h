@@ -55,6 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
  connection or its capabilities change */
 - (void)updateMessageActions;
 
+/* Reactions (9.15 B): someone added or took back a reaction on a message;
+ shown under it and saved with it */
+- (void)setReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid added:(BOOL)added;
+
 - (instancetype)initWithClient:(IRCClient *)client inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithChannel:(IRCChannel *)channel inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 

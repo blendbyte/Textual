@@ -132,6 +132,10 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 - (void)replyToMessage:(NSString *)msgid from:(NSString *)nickname excerpt:(NSString *)excerpt inChannel:(IRCChannel *)channel;
 - (BOOL)cancelPendingReply; // NO when there was none
+
+/* Reactions (9.15 B): a small field near the pointer with the macOS emoji
+ picker open; what is chosen (or typed and Return) is sent as the reaction */
+- (void)showReactionPickerForMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 @end
 
 @interface TVCMainWindow (TitleAndWindowPrivate)

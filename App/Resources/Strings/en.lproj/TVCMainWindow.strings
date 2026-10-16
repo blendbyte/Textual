@@ -81,6 +81,10 @@
 "rpl-c1" = "Cancel Reply";
 "rpl-b1" = "Reply";
 "rpl-e1" = "an earlier message";
+"rct-b1" = "React";
+"rct-b2" = "More…";
+"rct-p1" = "Emoji";
+"rct-a1" = "Reaction";
 "prv-l1" = "only you";
 "bac-t1" = "Ban Account %@";
 "e7g-s1" = ", ";

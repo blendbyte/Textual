@@ -216,6 +216,21 @@ enum {
 + (nullable NSImage *)serverListIconWithData:(NSData *)data; // 16 points
 @end
 
+/* Reactions (9.15 B, IRCClient+Reactions.m) */
+@interface IRCClient (ReactionsPrivate)
+@property (readonly) BOOL canSendReactions; // message-tags, and the server doesn't deny +draft/react
+
+/* An emoji (or other short text) as a reaction: nil when empty, too long, or with a line break */
++ (nullable NSString *)validatedReaction:(nullable id)value;
+
+- (BOOL)receiveReactionTagmsg:(IRCMessage *)m; // NO when it isn't a reaction
+
+- (void)sendReaction:(NSString *)reaction toMessage:(NSString *)msgid inChannel:(IRCChannel *)channel removing:(BOOL)removing;
+
+/* After registration: why Reply and React are missing on this network, once */
+- (void)noteUnavailableMessageActions;
+@end
+
 @interface IRCClient (TimedCommandsPrivate)
 - (void)onTimedCommand:(IRCTimedCommand *)timedCommand;
 @end

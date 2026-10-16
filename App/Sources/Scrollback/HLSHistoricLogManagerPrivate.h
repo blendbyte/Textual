@@ -55,6 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)writeNewEntryWithLogLine:(TVCLogLine *)logLine forItem:(IRCTreeItem *)item;
 
+/* A saved line changed (reactions, a deleted message): the block gets it and
+ returns what to save instead, or nil to leave it. Runs on the log's queue;
+ nothing happens when the line isn't saved (any more). */
+- (void)updateEntryWithUniqueIdentifier:(NSString *)uniqueIdentifier forItem:(IRCTreeItem *)item usingBlock:(TVCLogLine * _Nullable (^)(TVCLogLine *logLine))block;
+
 - (void)saveData; // asynchronous operation
 
 - (void)resetMaximumLineCount;

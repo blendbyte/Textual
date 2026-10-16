@@ -49,6 +49,7 @@
 #import "THOPluginProtocolPrivate.h"
 #import "IRCClient.h"
 #import "IRCChannel.h"
+#import "IRCClientPrivate.h"
 #import "TPCNicknameColorStyleGeneratorPrivate.h"
 #import "IRCWorld.h"
 #import "TVCMainWindowPrivate.h"
@@ -268,6 +269,32 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_topicBarDoubleClicked:(TVCLogScriptEventSinkContext *)context
 {
 	[context.webViewPolicy topicBarDoubleClicked];
+}
+
+/* Reactions (9.15 B): add or take back ours on a message */
+- (void)_toggleReaction:(TVCLogScriptEventSinkContext *)context
+{
+	NSArray *arguments = context.arguments;
+
+	IRCChannel *channel = context.associatedChannel;
+
+	if (channel == nil) {
+		return;
+	}
+
+	[channel.associatedClient sendReaction:arguments[1] toMessage:arguments[0] inChannel:channel removing:[arguments[2] boolValue]];
+}
+
+/* More…: any emoji, from the macOS picker */
+- (void)_pickReaction:(TVCLogScriptEventSinkContext *)context
+{
+	IRCChannel *channel = context.associatedChannel;
+
+	if (channel == nil) {
+		return;
+	}
+
+	[mainWindow() showReactionPickerForMessage:context.arguments[0] inChannel:channel];
 }
 
 /* Reply (9.15): the message's ID, sender and the start of its text */

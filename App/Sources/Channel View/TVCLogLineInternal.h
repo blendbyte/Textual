@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<NSString *> *_excludeKeywords;
 	NSArray<NSString *> *_highlightKeywords;
 	NSArray<NSString *> *_eventNicknames;
+	NSArray<NSDictionary<NSString *, id> *> *_reactions;
 	NSDictionary<NSString *, id> *_rendererAttributes;
 	NSDate *_receivedAt;
 	NSString *_command;

@@ -208,6 +208,18 @@ appPrivate.openVideoPlayer = function(videoIdentifier, startTime, linkAddress, t
 	window.webkit.messageHandlers.openVideoPlayer.postMessage(dataValue);
 };
 
+appPrivate.toggleReaction = function(msgid, reaction, removing)
+{
+	var dataValue = {"values" : [msgid, reaction, removing]};
+
+	window.webkit.messageHandlers.toggleReaction.postMessage(dataValue);
+};
+
+appPrivate.pickReaction = function(msgid)
+{
+	window.webkit.messageHandlers.pickReaction.postMessage(msgid);
+};
+
 appPrivate.replyToMessage = function(msgid, nickname, excerpt)
 {
 	var dataValue = {"values" : [msgid, nickname, excerpt]};

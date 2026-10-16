@@ -106,6 +106,7 @@ typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {
 @property (readonly) BOOL isPrivateInChannel; // a private message shown in the channel it is about (+channel-context)
 @property (readonly, copy, nullable) NSString *msgid; // the server's message ID (msgid tag): replies, reactions and deleting refer to it
 @property (readonly, copy, nullable) NSString *replyToMsgid; // +reply: the message ID this line answers
+@property (readonly, copy, nullable) NSArray<NSDictionary<NSString *, id> *> *reactions; // +draft/react: in order, each @{@"emoji" : …, @"nicknames" : @[…]}
 
 - (nullable instancetype)initWithData:(NSData *)data NS_DESIGNATED_INITIALIZER;
 
@@ -141,6 +142,7 @@ typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {
 @property (nonatomic, assign, readwrite) BOOL isPrivateInChannel;
 @property (nonatomic, copy, readwrite, nullable) NSString *msgid;
 @property (nonatomic, copy, readwrite, nullable) NSString *replyToMsgid;
+@property (nonatomic, copy, readwrite, nullable) NSArray<NSDictionary<NSString *, id> *> *reactions;
 @end
 
 NS_ASSUME_NONNULL_END

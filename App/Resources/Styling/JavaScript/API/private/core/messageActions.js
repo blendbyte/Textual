@@ -96,7 +96,15 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 		"#messageActions[hidden] { display: none; }",
 		"#messageActions button { appearance: none; border: 0; margin: 0; padding: 2px 7px; border-radius: 5px; " +
 			"background: transparent; color: inherit; font: inherit; cursor: pointer; }",
-		"#messageActions button:hover { background: rgba(128, 128, 128, 0.2); }"
+		"#messageActions button:hover { background: rgba(128, 128, 128, 0.2); }",
+		"#messageActions button.reactionChoice { padding: 1px 4px; font-size: 15px; }",
+		":where(div.line .reactions) { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 1px 0; }",
+		":where(div.line .reaction) { appearance: none; margin: 0; padding: 0 6px; border-radius: 10px; font: inherit; font-size: 0.85em; " +
+			"line-height: 1.6; color: inherit; cursor: pointer; border: 1px solid rgba(128, 128, 128, 0.35); background: rgba(128, 128, 128, 0.08); }",
+		":where(div.line .reactions.inline) { display: inline-flex; flex-wrap: nowrap; gap: 3px; margin: 0 0 0 0.5em; vertical-align: baseline; }",
+		":where(div.line .reactions.inline .reaction) { font-size: 0.8em; line-height: 1.35; padding: 0 5px; }",
+		":where(div.line .reaction.mine) { border-color: rgba(0, 122, 255, 0.6); background: rgba(0, 122, 255, 0.14); }",
+		":where(div.line .reaction .reactionCount) { margin-left: 0.3em; font-variant-numeric: tabular-nums; }"
 	];
 
 	var style = document.createElement("style");
@@ -142,14 +150,21 @@ _MessageActions.linesAdded = function(lineNumbers) /* PRIVATE */
 
 _MessageActions.decorateAll = function() /* PRIVATE */
 {
-	var replies = document.querySelectorAll("div.line[data-reply-to]");
+	var lines = document.querySelectorAll("div.line[data-reply-to], div.line[data-reactions]");
 
-	for (var i = 0; i < replies.length; i++) {
-		_MessageActions.decorateLine(replies[i]);
+	for (var i = 0; i < lines.length; i++) {
+		_MessageActions.decorateLine(lines[i]);
 	}
 };
 
 _MessageActions.decorateLine = function(line) /* PRIVATE */
+{
+	_MessageActions._decorateReply(line);
+
+	_MessageActions._renderReactions(line);
+};
+
+_MessageActions._decorateReply = function(line) /* PRIVATE */
 {
 	if (!line.dataset.replyTo || line.querySelector(":scope > .replyQuote")) {
 		return;
@@ -186,7 +201,18 @@ _MessageActions._excerptOfLine = function(line) /* PRIVATE */
 {
 	var message = (line.querySelector(".innerMessage") || line.querySelector(".message"));
 
-	var text = ((message) ? message.textContent : "").replace(/\s+/g, " ").trim();
+	if (!message) {
+		return "";
+	}
+
+	/* The text alone: not the reactions after it or a preview card */
+	var copy = message.cloneNode(true);
+
+	copy.querySelectorAll(".reactions, .replyQuote, .inlineMediaContainer").forEach(function(element) {
+		element.remove();
+	});
+
+	var text = copy.textContent.replace(/\s+/g, " ").trim();
 
 	if (text.length > _MessageActions._excerptLength) {
 		text = text.substring(0, _MessageActions._excerptLength) + "…";
@@ -281,6 +307,148 @@ _MessageActions._showLine = function(line) /* PRIVATE */
 };
 
 /* ************************************************** */
+/*                    Reactions                       */
+/* ************************************************** */
+
+/* From the app: [{emoji, count, nicknames, mine}, …] for a message */
+_MessageActions.setReactions = function(msgid, reactions) /* PRIVATE */
+{
+	var lines = document.querySelectorAll("div.line[data-msgid=\"" + CSS.escape(msgid) + "\"]");
+
+	for (var i = 0; i < lines.length; i++) {
+		if (reactions && reactions.length > 0) {
+			lines[i].dataset.reactions = JSON.stringify(reactions);
+		} else {
+			delete lines[i].dataset.reactions;
+		}
+
+		_MessageActions._renderReactions(lines[i]);
+	}
+};
+
+_MessageActions._reactionsOfLine = function(line) /* PRIVATE */
+{
+	if (!line.dataset.reactions) {
+		return [];
+	}
+
+	try {
+		var reactions = JSON.parse(line.dataset.reactions);
+
+		return ((Array.isArray(reactions)) ? reactions : []);
+	} catch (error) {
+		return [];
+	}
+};
+
+/* 👍 2  ❤️ 1 under the message (Chat) or after its text (Classic): yours
+ marked, a click takes yours back or adds it */
+_MessageActions._renderReactions = function(line) /* PRIVATE */
+{
+	var existing = line.querySelector(".reactions");
+
+	if (existing) {
+		existing.remove();
+	}
+
+	var reactions = _MessageActions._reactionsOfLine(line);
+
+	if (reactions.length === 0) {
+		return;
+	}
+
+	/* Classic: one line, so they go at the end of the text, before any preview */
+	var inlineText = null;
+
+	if (!line.querySelector(".messageBody")) {
+		inlineText = (line.querySelector(".innerMessage") || line.querySelector(".message"));
+	}
+
+	var container = document.createElement((inlineText) ? "span" : "div");
+
+	container.className = ((inlineText) ? "reactions inline" : "reactions");
+
+	reactions.forEach(function(reaction) {
+		var chip = document.createElement("button");
+
+		chip.type = "button";
+
+		chip.className = ((reaction.mine) ? "reaction mine" : "reaction");
+
+		chip.title = (reaction.nicknames || "");
+
+		chip.setAttribute("aria-label", reaction.emoji + " " + reaction.count + ": " + (reaction.nicknames || ""));
+
+		chip.setAttribute("aria-pressed", ((reaction.mine) ? "true" : "false"));
+
+		chip.appendChild(document.createTextNode(reaction.emoji));
+
+		var count = document.createElement("span");
+
+		count.className = "reactionCount";
+
+		count.textContent = reaction.count;
+
+		chip.appendChild(count);
+
+		chip.addEventListener("click", function(event) {
+			event.preventDefault();
+
+			if (!_MessageActions.available.react) {
+				return;
+			}
+
+			appPrivate.toggleReaction(line.dataset.msgid, reaction.emoji, ((reaction.mine) ? 1 : 0));
+		});
+
+		container.appendChild(chip);
+	});
+
+	if (inlineText) {
+		var media = inlineText.querySelector(":scope > .inlineMediaContainer");
+
+		inlineText.insertBefore(container, media);
+	} else {
+		line.appendChild(container);
+	}
+};
+
+/* The six quick choices, or ours taken back if already given */
+_MessageActions._quickReactions = ["👍", "❤️", "😂", "😮", "😢", "🙏"]; /* PRIVATE */
+
+_MessageActions.reactToLine = function(line, emoji) /* PRIVATE */
+{
+	var msgid = line.dataset.msgid;
+
+	if (!msgid) {
+		return;
+	}
+
+	var mine = _MessageActions._reactionsOfLine(line).some(function(reaction) {
+		return (reaction.emoji === emoji && reaction.mine);
+	});
+
+	appPrivate.toggleReaction(msgid, emoji, ((mine) ? 1 : 0));
+};
+
+_MessageActions._showReactionChoices = function(line) /* PRIVATE */
+{
+	var buttons = _MessageActions._quickReactions.map(function(emoji) {
+		return {label: emoji, className: "reactionChoice", action: function(target) {
+			_MessageActions.reactToLine(target, emoji);
+		}};
+	});
+
+	buttons.push({label: (_MessageActions.strings.moreReactions || "…"), action: function(target) {
+		if (target.dataset.msgid) {
+			appPrivate.pickReaction(target.dataset.msgid);
+		}
+	}});
+
+	_MessageActions._fillToolbar(line, buttons);
+};
+
+/* ************************************************** */
 /*                     Actions                        */
 /* ************************************************** */
 
@@ -317,12 +485,22 @@ _MessageActions._showToolbar = function(line) /* PRIVATE */
 		buttons.push({label: "↩ " + (_MessageActions.strings.reply || ""), action: _MessageActions.replyToLine});
 	}
 
+	if (_MessageActions.available.react) {
+		buttons.push({label: "☺ " + (_MessageActions.strings.react || ""), keepOpen: true, action: _MessageActions._showReactionChoices});
+	}
+
 	if (buttons.length === 0) {
 		_MessageActions._hideToolbar();
 
 		return;
 	}
 
+	_MessageActions._fillToolbar(line, buttons);
+};
+
+/* Buttons over the line; an action with keepOpen changes the toolbar instead of closing it */
+_MessageActions._fillToolbar = function(line, buttons) /* PRIVATE */
+{
 	var toolbar = (_MessageActions._toolbar || _MessageActions._createToolbar());
 
 	toolbar.replaceChildren();
@@ -334,12 +512,18 @@ _MessageActions._showToolbar = function(line) /* PRIVATE */
 
 		button.textContent = item.label;
 
+		if (item.className) {
+			button.className = item.className;
+		}
+
 		button.addEventListener("click", function(event) {
 			event.preventDefault();
 
 			var target = _MessageActions._toolbarLine;
 
-			_MessageActions._hideToolbar();
+			if (!item.keepOpen) {
+				_MessageActions._hideToolbar();
+			}
 
 			if (target) {
 				item.action(target);

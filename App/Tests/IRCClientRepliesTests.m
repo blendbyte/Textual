@@ -87,6 +87,27 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil(client.outgoingReplyMsgid);
 }
 
+/* A reaction is short text without a line break; CLIENTTAGDENY can turn them off */
+- (void)testReactions
+{
+	XCTAssertEqualObjects([IRCClient validatedReaction:@"👍"], @"👍");
+	XCTAssertEqualObjects([IRCClient validatedReaction:@" 🎉 "], @"🎉");
+	XCTAssertNil([IRCClient validatedReaction:@""]);
+	XCTAssertNil([IRCClient validatedReaction:@"two\nlines"]);
+	XCTAssertNil([IRCClient validatedReaction:[@"" stringByPaddingToLength:65 withString:@"x" startingAtIndex:0]]);
+
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	[client enableCapability:ClientIRCv3SupportedCapabilityMessageTags];
+
+	XCTAssertTrue(client.canSendReactions);
+
+	[client.supportInfo processConfigurationData:@"me CLIENTTAGDENY=draft/react :are supported by this server"];
+
+	XCTAssertFalse(client.canSendReactions);
+	XCTAssertTrue(client.canSendReplies);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

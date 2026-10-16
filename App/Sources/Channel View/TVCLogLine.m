@@ -144,6 +144,11 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	self->_eventNicknames = ([eventNicknames isKindOfClass:[NSArray class]] ? eventNicknames : nil);
 
+	id reactions = [aDecoder decodeObjectOfClasses:[NSSet setWithObjects:[NSArray class], [NSDictionary class], [NSString class], nil]
+											forKey:@"reactions"];
+
+	self->_reactions = ([reactions isKindOfClass:[NSArray class]] ? reactions : nil);
+
 	self->_isEncrypted = [aDecoder decodeBoolForKey:@"isEncrypted"];
 	self->_senderIsBot = [aDecoder decodeBoolForKey:@"senderIsBot"];
 	self->_isPrivateInChannel = [aDecoder decodeBoolForKey:@"isPrivateInChannel"];
@@ -214,6 +219,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	[aCoder maybeEncodeObject:self.highlightKeywords forKey:@"highlightKeywords"];
 	[aCoder maybeEncodeObject:self.rendererAttributes forKey:@"rendererAttributes"];
 	[aCoder maybeEncodeObject:self.eventNicknames forKey:@"eventNicknames"];
+	[aCoder maybeEncodeObject:self.reactions forKey:@"reactions"];
 
 	if (self.senderIsBot) {
 		[aCoder encodeBool:YES forKey:@"senderIsBot"];
@@ -458,6 +464,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	object->_eventNicknames = self->_eventNicknames;
 
+	object->_reactions = self->_reactions;
+
 	object->_senderIsBot = self->_senderIsBot;
 	object->_isPrivateInChannel = self->_isPrivateInChannel;
 
@@ -505,6 +513,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic isPrivateInChannel;
 @dynamic msgid;
 @dynamic replyToMsgid;
+@dynamic reactions;
 @dynamic receivedAt;
 
 + (BOOL)isMutable
@@ -599,6 +608,13 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	if (self->_replyToMsgid != replyToMsgid) {
 		self->_replyToMsgid = [replyToMsgid copy];
+	}
+}
+
+- (void)setReactions:(nullable NSArray<NSDictionary<NSString *, id> *> *)reactions
+{
+	if (self->_reactions != reactions) {
+		self->_reactions = [reactions copy];
 	}
 }
 

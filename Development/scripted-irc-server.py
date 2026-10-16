@@ -1466,19 +1466,32 @@ async def scenario_replies(client):
 	and carol: alice asks (msgid a1), bob answers her (+reply=a1), carol answers
 	a message the client never saw (+reply=old1). Every PRIVMSG the client sends
 	is echoed with a new msgid and its client tags (so a reply shows its quote);
-	"more" makes alice say another line (msgid a2). Stays connected; the log
-	shows the tags of each message."""
+	"more" makes alice say another line (msgid a2). Reactions (9.15 B): bob and
+	carol 👍 alice's question, alice 🎉 bob's answer; "unreact" takes carol's 👍
+	back. Stays connected; the log shows the tags of each message."""
 	if not await client.register_with_capabilities("message-tags echo-message server-time batch"):
 		return
 
 	me = client.nickname
 
 	await client.send(f":{me}!user@client.textual.test JOIN #replies")
-	await client.send(f":{SERVER} 353 {me} = #replies :{me} alice bob carol")
+	await client.send(f":{SERVER} 353 {me} = #replies :{me} alice bob carol dave erin")
 	await client.send(f":{SERVER} 366 {me} #replies :End of /NAMES list.")
 	await client.send("@msgid=a1 :alice!a@alice.test PRIVMSG #replies :Has anyone tried the new build yet?")
 	await client.send("@msgid=b1;+reply=a1 :bob!b@bob.test PRIVMSG #replies :Yes, works fine for me")
 	await client.send("@msgid=c1;+reply=old1 :carol!c@carol.test PRIVMSG #replies :That was before your time")
+	await client.send("@+draft/react=👍;+reply=a1 :bob!b@bob.test TAGMSG #replies")
+	await client.send("@+draft/react=👍;+reply=a1 :carol!c@carol.test TAGMSG #replies")
+	await client.send("@+draft/react=🎉;+reply=b1 :alice!a@alice.test TAGMSG #replies")
+	await client.send("@msgid=d1 :dave!d@dave.test PRIVMSG #replies :Release notes for the beta are up: https://textualapp.com")
+	await client.send("@msgid=a3;+reply=d1 :alice!a@alice.test PRIVMSG #replies :Thanks! Reading them now")
+	await client.send("@+draft/react=❤️;+reply=d1 :alice!a@alice.test TAGMSG #replies")
+	await client.send("@+draft/react=❤️;+reply=d1 :bob!b@bob.test TAGMSG #replies")
+	await client.send("@+draft/react=❤️;+reply=d1 :erin!r@erin.test TAGMSG #replies")
+	await client.send("@msgid=r1 :erin!r@erin.test PRIVMSG #replies :Is anyone else seeing the reconnect problem on macOS 14?")
+	await client.send("@msgid=b2;+reply=r1 :bob!b@bob.test PRIVMSG #replies :Only once, right after the Mac woke from sleep")
+	await client.send("@+draft/react=😮;+reply=r1 :dave!d@dave.test TAGMSG #replies")
+	await client.send("@msgid=c2 :carol!c@carol.test PRIVMSG #replies :I'll try to reproduce it this afternoon")
 
 	seen = 0
 	echoed = 0
@@ -1495,10 +1508,12 @@ async def scenario_replies(client):
 			client_tags = [tag for tag in tags.split(";") if tag.startswith("+")]
 			log("··", f"client tags: {';'.join(client_tags) or 'none'}")
 			echoed += 1
-			echo_tags = ";".join([f"msgid=e{echoed}"] + client_tags)
+			echo_tags = ";".join([f"msgid=me{echoed}"] + client_tags)
 			await client.send(f"@{echo_tags} :{me}!user@client.textual.test {command.upper()} {rest}")
 			if command.upper() == "PRIVMSG" and rest.endswith(" :more"):
 				await client.send("@msgid=a2 :alice!a@alice.test PRIVMSG #replies :Another question: does it run on macOS 14?")
+			elif command.upper() == "PRIVMSG" and rest.endswith(" :unreact"):
+				await client.send("@+draft/unreact=👍;+reply=a1 :carol!c@carol.test TAGMSG #replies")
 		seen = len(client.received)
 
 

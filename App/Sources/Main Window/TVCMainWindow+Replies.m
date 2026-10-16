@@ -85,6 +85,113 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _replyBarHeight		24.0
 
+/* More… for reactions: a field with the emoji picker open next to it */
+@interface TVCReactionPickerController : NSViewController <NSTextFieldDelegate, NSPopoverDelegate>
+@property (nonatomic, copy) NSString *msgid;
+@property (nonatomic, weak) IRCChannel *channel;
+@property (nonatomic, strong) NSTextField *field;
+@property (nonatomic, strong, nullable) NSPopover *popover;
+@end
+
+static TVCReactionPickerController * _Nullable _reactionPicker = nil;
+
+@implementation TVCReactionPickerController
+
+- (void)loadView
+{
+	NSTextField *field = [NSTextField textFieldWithString:@""];
+
+	field.placeholderString = TXTLS(@"TVCMainWindow[rct-p1]");
+
+	field.accessibilityLabel = TXTLS(@"TVCMainWindow[rct-a1]");
+
+	field.delegate = self;
+
+	field.font = [NSFont systemFontOfSize:18];
+
+	field.alignment = NSTextAlignmentCenter;
+
+	field.translatesAutoresizingMaskIntoConstraints = NO;
+
+	NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 150, 44)];
+
+	[view addSubview:field];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[field.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:10],
+		[field.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:-10],
+		[field.centerYAnchor constraintEqualToAnchor:view.centerYAnchor]
+	]];
+
+	self.field = field;
+
+	self.view = view;
+}
+
+- (void)sendReaction:(NSString *)reaction
+{
+	IRCChannel *channel = self.channel;
+
+	if (channel) {
+		[channel.associatedClient sendReaction:reaction toMessage:self.msgid inChannel:channel removing:NO];
+	}
+
+	[self close];
+}
+
+/* The picker inserts one emoji: that is the choice */
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+	NSString *text = self.field.stringValue;
+
+	if (text.length == 0) {
+		return;
+	}
+
+	NSRange first = [text rangeOfComposedCharacterSequenceAtIndex:0];
+
+	if (first.length == text.length && [text canBeConvertedToEncoding:NSASCIIStringEncoding] == NO) {
+		[self sendReaction:text];
+	}
+}
+
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
+{
+	if (commandSelector == @selector(insertNewline:)) {
+		NSString *reaction = [IRCClient validatedReaction:self.field.stringValue];
+
+		if (reaction) {
+			[self sendReaction:reaction];
+		} else {
+			NSBeep();
+		}
+
+		return YES;
+	}
+
+	if (commandSelector == @selector(cancelOperation:)) {
+		[self close];
+
+		return YES;
+	}
+
+	return NO;
+}
+
+- (void)close
+{
+	[self.popover close];
+}
+
+- (void)popoverDidClose:(NSNotification *)notification
+{
+	if (_reactionPicker == self) {
+		_reactionPicker = nil;
+	}
+}
+
+@end
+
 @implementation TVCMainWindow (Replies)
 
 /* The bar sits between the chat view and the input field: what sat on
@@ -269,6 +376,46 @@ NS_ASSUME_NONNULL_BEGIN
 	[self updateReplyBar];
 
 	return YES;
+}
+
+- (void)showReactionPickerForMessage:(NSString *)msgid inChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(msgid != nil);
+	NSParameterAssert(channel != nil);
+
+	if (channel.associatedClient.canSendReactions == NO) {
+		return;
+	}
+
+	[_reactionPicker close];
+
+	TVCReactionPickerController *picker = [TVCReactionPickerController new];
+
+	picker.msgid = msgid;
+	picker.channel = channel;
+
+	NSPopover *popover = [NSPopover new];
+
+	popover.contentViewController = picker;
+	popover.behavior = NSPopoverBehaviorApplicationDefined; // the emoji picker is another window
+	popover.delegate = picker;
+
+	picker.popover = popover;
+
+	_reactionPicker = picker;
+
+	/* Where the pointer is: over the message's actions */
+	NSView *contentView = self.contentView;
+
+	NSPoint location = [contentView convertPoint:self.mouseLocationOutsideOfEventStream fromView:nil];
+
+	[popover showRelativeToRect:NSMakeRect(location.x, location.y, 1, 1) ofView:contentView preferredEdge:NSRectEdgeMinY];
+
+	[popover.contentViewController.view.window makeFirstResponder:picker.field];
+
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[NSApp orderFrontCharacterPalette:picker.field];
+	});
 }
 
 - (void)cancelReplyButtonClicked:(id)sender
