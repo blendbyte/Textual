@@ -57,6 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
 @property (nonatomic, copy, readwrite, nullable) NSString *botModeCharacter;
+@property (nonatomic, copy, nullable) NSString *extendedBanPrefix; // EXTBAN's prefix ("$", "~"; empty for none)
+@property (nonatomic, copy, nullable) NSString *accountExtendedBanName; // ACCOUNTEXTBAN's first name ("R", "account")
 @property (nonatomic, assign, readwrite) BOOL whoxSupported;
 @property (nonatomic, copy) NSArray<NSString *> *clientTagDenyList;
 @property (nonatomic, assign, readwrite) NSUInteger maximumChannelNameLength;
@@ -121,6 +123,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.utf8Only = NO;
 
 	self.botModeCharacter = nil;
+
+	self.extendedBanPrefix = nil;
+	self.accountExtendedBanName = nil;
 
 	self.whoxSupported = NO;
 
@@ -198,6 +203,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 				if (awayLength > 0) {
 					self.maximumAwayLength = awayLength;
+				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"EXTBAN"]) {
+				NSRange comma = [segmentValue rangeOfString:@","];
+
+				if (comma.location != NSNotFound) {
+					self.extendedBanPrefix = [segmentValue substringToIndex:comma.location];
+				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"ACCOUNTEXTBAN"]) {
+				NSString *name = [segmentValue componentsSeparatedByString:@","].firstObject;
+
+				if (name.length > 0) {
+					self.accountExtendedBanName = name;
 				}
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"BOT"]) {
 				if (segmentValue.length == 1) {
@@ -407,6 +424,20 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return IRCISupportInfoCaseMappingUnicode;
+}
+
+- (nullable NSString *)accountBanMaskForAccount:(NSString *)account
+{
+	NSParameterAssert(account != nil);
+
+	NSString *prefix = self.extendedBanPrefix;
+	NSString *name = self.accountExtendedBanName;
+
+	if (prefix == nil || name == nil || account.length == 0) {
+		return nil;
+	}
+
+	return [NSString stringWithFormat:@"%@%@:%@", prefix, name, account];
 }
 
 - (NSString *)foldedString:(NSString *)string

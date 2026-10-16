@@ -1321,6 +1321,30 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
+		case MTUserControlsBanAccount: // "Ban Account …"
+		{
+			/* Where the server bans by account (ACCOUNTEXTBAN) and the account is known */
+			NSArray<NSString *> *nicknames = [self selectedMembersNicknames:menuItem];
+
+			NSString *account = nil;
+
+			if (nicknames.count == 1) {
+				account = [u findUser:nicknames[0]].account;
+			}
+
+			NSString *mask = ((account.length > 0) ? [u.supportInfo accountBanMaskForAccount:account] : nil);
+
+			menuItem.hidden = (c.isChannel == NO || mask == nil);
+
+			if (menuItem.hidden) {
+				return NO;
+			}
+
+			menuItem.title = TXTLS(@"TVCMainWindow[bac-t1]", account);
+
+			return (u.isLoggedIn && c.isActive);
+		}
+
 		case MTUserControlsInviteTo: // "Invite To…"
 		{
 			if (u.isLoggedIn == NO || c.isUtility) {

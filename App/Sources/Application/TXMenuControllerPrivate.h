@@ -60,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)memberInChannelViewDoubleClicked:(nullable id)sender;
 - (void)memberInMemberListDoubleClicked:(nullable id)sender;
 
+- (IBAction)memberBanAccountFromChannel:(nullable id)sender; // by services account (ACCOUNTEXTBAN)
+
 /* Files dropped or pasted: a sheet says what can be done with them there
  and nothing is sent without it. On the chat view or the input field the
  selection decides (a private message sends to its nickname); in the member

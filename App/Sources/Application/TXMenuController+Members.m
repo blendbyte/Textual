@@ -597,6 +597,35 @@ NS_ASSUME_NONNULL_BEGIN
 	[self deselectMembers:sender];
 }
 
+/* Banned by services account, which a new nickname or address doesn't escape */
+- (void)memberBanAccountFromChannel:(nullable id)sender
+{
+	IRCClient *u = self.selectedClient;
+	IRCChannel *c = self.selectedChannel;
+
+	if (u == nil || c == nil || u.isLoggedIn == NO || c.isChannel == NO) {
+		return;
+	}
+
+	for (NSString *nickname in [self selectedMembersNicknames:sender]) {
+		NSString *account = [u findUser:nickname].account;
+
+		if (account.length == 0) {
+			continue;
+		}
+
+		NSString *mask = [u.supportInfo accountBanMaskForAccount:account];
+
+		if (mask == nil) {
+			continue;
+		}
+
+		[u sendCommand:[NSString stringWithFormat:@"MODE %@ +b %@", c.name, mask] completeTarget:NO target:nil];
+	}
+
+	[self deselectMembers:sender];
+}
+
 - (void)memberKickbanFromChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;

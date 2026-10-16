@@ -2209,7 +2209,7 @@ async def scenario_bots(client):
 	me = client.nickname
 	others = ["user1", "user2", "user3", "user4", "user5", "user6"]
 
-	await client.send(f":{SERVER} 005 {me} BOT=B WHOX :are supported by this server")
+	await client.send(f":{SERVER} 005 {me} BOT=B WHOX EXTBAN=$,ARar ACCOUNTEXTBAN=R :are supported by this server")
 	await client.send(f":{me}!user@client.textual.test JOIN #one")
 	await client.send(f":{SERVER} 353 {me} = #one :{me} @alice helpbot " + " ".join(others))
 	await client.send(f":{SERVER} 366 {me} #one :End of /NAMES list.")

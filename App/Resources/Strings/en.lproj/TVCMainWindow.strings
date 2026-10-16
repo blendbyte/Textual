@@ -78,6 +78,7 @@
 "e7g-b1" = "%@ came back";
 "bot-l1" = "bot";
 "prv-l1" = "only you";
+"bac-t1" = "Ban Account %@";
 "e7g-s1" = ", ";
 
 /* The same with names, for up to three: "alice and bob joined, carol is now carl" */

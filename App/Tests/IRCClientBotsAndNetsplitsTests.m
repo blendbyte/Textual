@@ -87,6 +87,24 @@ NS_ASSUME_NONNULL_BEGIN
 						  @"Netsplit: alice quit");
 }
 
+/* ACCOUNTEXTBAN with EXTBAN's prefix: "$R:bob", "~account:bob"; none without them */
+- (void)testAccountBanMask
+{
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	XCTAssertNil([client.supportInfo accountBanMaskForAccount:@"bob"]);
+
+	[client.supportInfo processConfigurationData:@"me EXTBAN=$,ARar ACCOUNTEXTBAN=R :are supported by this server"];
+
+	XCTAssertEqualObjects([client.supportInfo accountBanMaskForAccount:@"bob"], @"$R:bob");
+
+	[client.supportInfo reset];
+
+	[client.supportInfo processConfigurationData:@"me EXTBAN=~,a ACCOUNTEXTBAN=account,a :are supported by this server"];
+
+	XCTAssertEqualObjects([client.supportInfo accountBanMaskForAccount:@"bob"], @"~account:bob");
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

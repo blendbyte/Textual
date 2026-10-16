@@ -1401,6 +1401,11 @@ CA
                         <action selector="memberBanFromChannel:" target="267" id="YIF-Hw-0Ci"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Ban Account" tag="1628" id="bnA-cc-001">
+                    <connections>
+                        <action selector="memberBanAccountFromChannel:" target="267" id="bnA-cc-002"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Kick" tag="1620" keyEquivalent="k" id="1350">
                     <connections>
                         <action selector="memberKickFromChannel:" target="267" id="2639"/>

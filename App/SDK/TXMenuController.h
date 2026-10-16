@@ -334,6 +334,7 @@ enum
 	MTUserControlsGiveOwner = 1625, // "Give Owner (+q)"
 	MTUserControlsTakeOwner = 1626, // "Take Owner (-q)"
 	MTUserControlsDontPreviewLinks = 1627, // "Don't Preview Links from …"
+	MTUserControlsBanAccount = 1628, // "Ban Account …"
 
 	/* Dock menu */
 	MTDockMenuDisableAllNotifications = 1700, // "Disable All Notifications"

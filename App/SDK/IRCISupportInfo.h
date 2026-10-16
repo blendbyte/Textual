@@ -86,6 +86,10 @@ typedef NS_ENUM(NSUInteger, IRCISupportInfoCaseMapping)
 @property (readonly) BOOL whoxSupported; // WHOX: extended WHO with selectable fields
 @property (readonly, copy, nullable) NSString *botModeCharacter; // BOT: the user mode and WHO flag of bots ("B")
 
+/* ACCOUNTEXTBAN with EXTBAN: the ban mask for an account ("$R:bob",
+ "~account:bob"), nil where the server has no account bans */
+- (nullable NSString *)accountBanMaskForAccount:(NSString *)account;
+
 /* A nickname or channel name folded with the server's CASEMAPPING: two
  names are the same when their folded strings are equal */
 - (NSString *)foldedString:(NSString *)string;
