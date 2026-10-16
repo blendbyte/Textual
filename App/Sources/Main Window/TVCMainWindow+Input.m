@@ -116,6 +116,11 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSResponder *firstResponder = self.firstResponder;
 
+	/* Keyboard focus on messages takes its keys first */
+	if ([self handleMessageFocusKey:e]) {
+		return YES;
+	}
+
 	/* The suggestion list takes ↑ ↓ Tab Return Esc while it is open */
 	if (firstResponder == self.inputTextField && [self.inputCompletion handleKeyEvent:e]) {
 		return YES;
@@ -206,7 +211,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[self registerInputSelector:@selector(focusWebview:) character:'l' modifiers:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
 
 	[self registerInputSelector:@selector(inputHistoryUpWithScrollCheck:) key:TXKeyUpArrowCode modifiers:0];
-	[self registerInputSelector:@selector(inputHistoryUpWithScrollCheck:) key:TXKeyUpArrowCode modifiers:NSEventModifierFlagOption];
+	/* ⌥↑: into the messages (9.15 D; ↑ and ⌃P still go back through what was typed) */
+	[self registerInputSelector:@selector(focusMessages:) key:TXKeyUpArrowCode modifiers:NSEventModifierFlagOption];
 
 	[self registerInputSelector:@selector(inputHistoryDownWithScrollCheck:) key:TXKeyDownArrowCode modifiers:0];
 	[self registerInputSelector:@selector(inputHistoryDownWithScrollCheck:) key:TXKeyDownArrowCode modifiers:NSEventModifierFlagOption];
@@ -416,6 +422,137 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)speakPendingNotifications:(NSEvent *)e
 {
 	[[TXSharedApplication sharedSpeechSynthesizer] stopSpeakingAndMoveForward];
+}
+
+- (void)focusMessages:(NSEvent *)e
+{
+	if (self.attachedSheet != nil) {
+		return;
+	}
+
+	TVCLogController *viewController = self.selectedViewController;
+
+	NSView *webView = viewController.backingView.webView;
+
+	if (webView == nil) {
+		return;
+	}
+
+	[self.inputCompletion close];
+
+	[self makeFirstResponder:webView];
+
+	viewController.messageFocusActive = YES;
+
+	[viewController evaluateFunction:@"_MessageActions.focusMessages" withArguments:nil];
+}
+
+- (void)leaveMessageFocusInViewController:(nullable TVCLogController *)viewController
+{
+	if (viewController == nil || viewController.messageFocusActive == NO) {
+		return;
+	}
+
+	viewController.messageFocusActive = NO;
+
+	[viewController evaluateFunction:@"_MessageActions.blurMessages" withArguments:nil];
+
+	if (viewController == self.selectedViewController) {
+		[self.inputTextField focus];
+	}
+}
+
+/* ↑ ↓ ← → Return Escape Delete R E go to the focused messages; any other
+ key leaves them and is typed into the input field */
+- (BOOL)handleMessageFocusKey:(NSEvent *)e
+{
+	if (e.type != NSEventTypeKeyDown) {
+		return NO;
+	}
+
+	TVCLogController *viewController = self.selectedViewController;
+
+	if (viewController.messageFocusActive == NO) {
+		return NO;
+	}
+
+	NSView *webView = viewController.backingView.webView;
+
+	NSResponder *firstResponder = self.firstResponder;
+
+	BOOL inWebView = (webView && [firstResponder isKindOfClass:[NSView class]] && [(NSView *)firstResponder isDescendantOf:webView]);
+
+	/* Somewhere else now (a click, another window): no longer focused */
+	if (inWebView == NO) {
+		viewController.messageFocusActive = NO;
+
+		[viewController evaluateFunction:@"_MessageActions.blurMessages" withArguments:nil];
+
+		return NO;
+	}
+
+	NSEventModifierFlags modifiers = (e.modifierFlags & (NSEventModifierFlagCommand | NSEventModifierFlagControl | NSEventModifierFlagOption));
+
+	if ((modifiers & (NSEventModifierFlagCommand | NSEventModifierFlagControl)) != 0) {
+		return NO; // menu shortcuts
+	}
+
+	NSString *command = nil;
+
+	switch (e.keyCode) {
+		case TXKeyUpArrowCode:
+			command = @"up";
+			break;
+		case TXKeyDownArrowCode:
+			command = @"down";
+			break;
+		case TXKeyLeftArrowCode:
+			command = @"left";
+			break;
+		case TXKeyRightArrowCode:
+			command = @"right";
+			break;
+		case TXKeyReturnCode:
+		case TXKeyEnterCode:
+			command = @"return";
+			break;
+		case TXKeyEscapeCode:
+			command = @"escape";
+			break;
+		case TXKeyBackspaceCode:
+		case TXKeyDeleteCode:
+			command = @"delete";
+			break;
+		default:
+		{
+			NSString *character = e.charactersIgnoringModifiers.lowercaseString;
+
+			if ([character isEqualToString:@"r"]) {
+				command = @"reply";
+			} else if ([character isEqualToString:@"e"]) {
+				command = @"react";
+			}
+
+			break;
+		}
+	}
+
+	if (command) {
+		[viewController evaluateFunction:@"_MessageActions.keyboardCommand" withArguments:@[command]];
+
+		return YES;
+	}
+
+	/* Typing: back to the input field with the key */
+	if (modifiers == 0) {
+		[self leaveMessageFocusInViewController:viewController];
+
+		[self redirectKeyDown:e];
+
+		return YES;
+	}
+
+	return NO;
 }
 
 - (void)focusWebview:(NSEvent *)e

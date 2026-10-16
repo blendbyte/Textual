@@ -215,6 +215,16 @@ appPrivate.toggleReaction = function(msgid, reaction, removing)
 	window.webkit.messageHandlers.toggleReaction.postMessage(dataValue);
 };
 
+appPrivate.leaveMessageFocus = function()
+{
+	window.webkit.messageHandlers.leaveMessageFocus.postMessage(null);
+};
+
+appPrivate.setMessageMenu = function(values)
+{
+	window.webkit.messageHandlers.setMessageMenu.postMessage(values);
+};
+
 appPrivate.deleteMessage = function(msgid)
 {
 	window.webkit.messageHandlers.deleteMessage.postMessage(msgid);

@@ -86,6 +86,8 @@
 "rct-p1" = "Emoji";
 "rct-a1" = "Reaction";
 "del-b1" = "Delete";
+"del-m1" = "Delete…";
+"rct-m1" = "React…";
 "del-n1" = "Message deleted";
 "del-n2" = "Message deleted by %@";
 "del-n3" = "Message deleted: %@";

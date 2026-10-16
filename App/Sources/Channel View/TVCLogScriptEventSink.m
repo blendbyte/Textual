@@ -99,6 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
 			@"openImageViewer" : @"ssnn",
 			@"openVideoPlayer" : @"snss",
 			@"deleteMessage" : @"s",
+			@"leaveMessageFocus" : @"",
+			@"setMessageMenu" : @"a+",
 			@"pickReaction" : @"s",
 			@"replyToMessage" : @"sss",
 			@"toggleReaction" : @"ssn",

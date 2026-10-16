@@ -45,7 +45,7 @@
 #import "TLOpenLink.h"
 #import "TPCPreferencesLocal.h"
 #import "TPCThemeController.h"
-#import "TVCLogController.h"
+#import "TVCLogControllerPrivate.h"
 #import "TVCLogViewPrivate.h"
 #import "TVCLogPolicyPrivate.h"
 
@@ -119,6 +119,37 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else
 	{
+		/* On a message: Reply, React…, Delete… first (9.15) */
+		NSArray<NSString *> *messageMenu = self.messageMenu;
+
+		self.messageMenu = nil;
+
+		if (messageMenu.count > 1 && viewController) {
+			NSString *lineNumber = messageMenu.firstObject;
+
+			NSDictionary<NSString *, NSString *> *titles = @{
+				@"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),
+				@"react" : TXTLS(@"TVCMainWindow[rct-m1]"),
+				@"delete" : TXTLS(@"TVCMainWindow[del-m1]")
+			};
+
+			for (NSString *command in [messageMenu subarrayWithRange:NSMakeRange(1, (messageMenu.count - 1))]) {
+				NSString *title = titles[command];
+
+				if (title == nil) {
+					continue;
+				}
+
+				NSMenuItem *item = [NSMenuItem menuItemWithTitle:title target:viewController action:@selector(performMessageMenuCommand:)];
+
+				item.representedObject = @[lineNumber, command];
+
+				[menuItems addObject:item];
+			}
+
+			[menuItems addObject:[NSMenuItem separatorItem]];
+		}
+
 		NSMenu *menu = menuController().channelViewGeneralMenu;
 
 		NSMenuItem *inspectElementItem = nil;

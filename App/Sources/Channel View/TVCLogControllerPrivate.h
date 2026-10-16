@@ -63,6 +63,11 @@ NS_ASSUME_NONNULL_BEGIN
  in the view and in what is saved */
 - (void)deleteMessage:(NSString *)msgid byNickname:(NSString *)nickname reason:(nullable NSString *)reason;
 
+/* Keyboard focus on messages (9.15 D): while on, the window sends keys to the view */
+@property (nonatomic, assign) BOOL messageFocusActive;
+
+- (void)performMessageMenuCommand:(NSMenuItem *)sender; // Reply, React…, Delete… in the context menu
+
 - (instancetype)initWithClient:(IRCClient *)client inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithChannel:(IRCChannel *)channel inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 

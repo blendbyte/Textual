@@ -98,6 +98,8 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 			"background: transparent; color: inherit; font: inherit; cursor: pointer; }",
 		"#messageActions button:hover { background: rgba(128, 128, 128, 0.2); }",
 		"#messageActions button.reactionChoice { padding: 1px 4px; font-size: 15px; }",
+		"#messageActions button.keyboardChoice { background: rgba(128, 128, 128, 0.25); box-shadow: inset 0 0 0 2px -apple-system-control-accent; }",
+		":where(div.line.keyboardFocus) { outline: 2px solid -apple-system-control-accent; outline-offset: -2px; border-radius: 4px; }",
 		":where(div.line .reactions) { display: flex; flex-wrap: wrap; gap: 4px; margin: 3px 0 1px 0; }",
 		":where(div.line .reaction) { appearance: none; margin: 0; padding: 0 6px; border-radius: 10px; font: inherit; font-size: 0.85em; " +
 			"line-height: 1.6; color: inherit; cursor: pointer; border: 1px solid rgba(128, 128, 128, 0.35); background: rgba(128, 128, 128, 0.08); }",
@@ -626,6 +628,8 @@ _MessageActions._hideToolbar = function() /* PRIVATE */
 	}
 
 	_MessageActions._toolbarLine = null;
+
+	_MessageActions._choiceIndex = -1;
 };
 
 _MessageActions._mouseOver = function(event) /* PRIVATE */
@@ -633,6 +637,11 @@ _MessageActions._mouseOver = function(event) /* PRIVATE */
 	var toolbar = _MessageActions._toolbar;
 
 	if (toolbar && toolbar.contains(event.target)) {
+		return;
+	}
+
+	/* Choosing a reaction with the keyboard: the pointer doesn't take it away */
+	if (_MessageActions._choiceIndex >= 0) {
 		return;
 	}
 
@@ -660,7 +669,235 @@ _MessageActions.replyToLine = function(line) /* PRIVATE */
 	appPrivate.replyToMessage(msgid, _MessageActions._senderOfLine(line), _MessageActions._excerptOfLine(line));
 };
 
+/* ************************************************** */
+/*                 Keyboard focus (D)                 */
+/* ************************************************** */
+
+/* ⌥↑ in the input field enters, ↑ ↓ move, R reply, E react (← → Return to
+ choose, Escape back), Delete deletes, Return opens the first link, Escape
+ leaves. The app sends the keys (keyboardCommand); the focused message is
+ the DOM's focus too, so VoiceOver reads it. */
+
+_MessageActions._focusedLine = null; /* PRIVATE */
+_MessageActions._choiceIndex = -1; /* PRIVATE */
+
+_MessageActions._focusableLines = function() /* PRIVATE */
+{
+	var lines = document.querySelectorAll("div.line.text");
+
+	return Array.prototype.filter.call(lines, function(line) {
+		return (line.offsetParent !== null); // not hidden
+	});
+};
+
+_MessageActions._setFocus = function(line) /* PRIVATE */
+{
+	if (_MessageActions._focusedLine && _MessageActions._focusedLine !== line) {
+		_MessageActions._focusedLine.classList.remove("keyboardFocus");
+	}
+
+	_MessageActions._focusedLine = line;
+
+	line.classList.add("keyboardFocus");
+
+	line.tabIndex = -1;
+
+	line.focus({preventScroll: true});
+
+	line.scrollIntoView({block: "nearest"});
+};
+
+_MessageActions.focusMessages = function() /* PRIVATE */
+{
+	var lines = _MessageActions._focusableLines();
+
+	if (lines.length === 0) {
+		appPrivate.leaveMessageFocus();
+
+		return;
+	}
+
+	_MessageActions._setFocus(lines[lines.length - 1]);
+};
+
+_MessageActions.blurMessages = function() /* PRIVATE */
+{
+	_MessageActions._hideToolbar();
+
+	if (_MessageActions._focusedLine) {
+		_MessageActions._focusedLine.classList.remove("keyboardFocus");
+
+		_MessageActions._focusedLine.blur();
+	}
+
+	_MessageActions._focusedLine = null;
+};
+
+/* What can be done with a message: reply, react, delete */
+_MessageActions._actionsForLine = function(line) /* PRIVATE */
+{
+	var actions = [];
+
+	if (!line.dataset.msgid || line.classList.contains("redacted")) {
+		return actions;
+	}
+
+	var available = _MessageActions.available;
+
+	if (available.reply) {
+		actions.push("reply");
+	}
+
+	if (available.react) {
+		actions.push("react");
+	}
+
+	if (available.delete && (line.dataset.memberType === "myself" || available.deleteOthers)) {
+		actions.push("delete");
+	}
+
+	return actions;
+};
+
+_MessageActions._perform = function(line, command) /* PRIVATE */
+{
+	if (_MessageActions._actionsForLine(line).indexOf(command) < 0) {
+		return false;
+	}
+
+	if (command === "reply") {
+		_MessageActions.blurMessages();
+
+		_MessageActions.replyToLine(line);
+	} else if (command === "react") {
+		_MessageActions._showReactionChoices(line);
+
+		_MessageActions._highlightChoice(0);
+	} else if (command === "delete") {
+		appPrivate.deleteMessage(line.dataset.msgid);
+	}
+
+	return true;
+};
+
+_MessageActions._choiceButtons = function() /* PRIVATE */
+{
+	var toolbar = _MessageActions._toolbar;
+
+	return ((toolbar && !toolbar.hidden) ? toolbar.querySelectorAll("button") : []);
+};
+
+_MessageActions._highlightChoice = function(index) /* PRIVATE */
+{
+	var buttons = _MessageActions._choiceButtons();
+
+	if (buttons.length === 0) {
+		_MessageActions._choiceIndex = -1;
+
+		return;
+	}
+
+	index = Math.max(0, Math.min(index, buttons.length - 1));
+
+	for (var i = 0; i < buttons.length; i++) {
+		buttons[i].classList.toggle("keyboardChoice", (i === index));
+	}
+
+	_MessageActions._choiceIndex = index;
+};
+
+/* From the app: up, down, left, right, return, escape, delete, reply, react */
+_MessageActions.keyboardCommand = function(command) /* PRIVATE */
+{
+	var line = _MessageActions._focusedLine;
+
+	if (!line || !line.isConnected) {
+		_MessageActions.focusMessages();
+
+		return;
+	}
+
+	/* Choosing a reaction */
+	if (_MessageActions._choiceIndex >= 0) {
+		if (command === "left" || command === "up") {
+			_MessageActions._highlightChoice(_MessageActions._choiceIndex - 1);
+		} else if (command === "right" || command === "down") {
+			_MessageActions._highlightChoice(_MessageActions._choiceIndex + 1);
+		} else if (command === "return") {
+			var buttons = _MessageActions._choiceButtons();
+
+			var button = buttons[_MessageActions._choiceIndex];
+
+			_MessageActions._choiceIndex = -1;
+
+			if (button) {
+				button.click();
+			}
+		} else if (command === "escape") {
+			_MessageActions._hideToolbar();
+		}
+
+		return;
+	}
+
+	if (command === "up" || command === "down") {
+		var lines = _MessageActions._focusableLines();
+
+		var index = lines.indexOf(line) + ((command === "up") ? -1 : 1);
+
+		if (index >= 0 && index < lines.length) {
+			_MessageActions._setFocus(lines[index]);
+		}
+	} else if (command === "escape") {
+		_MessageActions.blurMessages();
+
+		appPrivate.leaveMessageFocus();
+	} else if (command === "return") {
+		var link = line.querySelector(".innerMessage a[href], .message a[href]");
+
+		if (link) {
+			link.click();
+		}
+	} else {
+		_MessageActions._perform(line, command);
+	}
+};
+
+/* From the app's context menu (Reply, React…, Delete…) */
+_MessageActions.menuCommand = function(lineNumber, command) /* PRIVATE */
+{
+	var line = document.getElementByLineNumber(lineNumber);
+
+	if (line === null) {
+		return;
+	}
+
+	/* The reaction choices are then picked with the keys too */
+	if (command === "react") {
+		_MessageActions._setFocus(line);
+	}
+
+	_MessageActions._perform(line, command);
+};
+
+/* The context menu learns which message it is for, and what it can do */
+_MessageActions._contextMenu = function(event) /* PRIVATE */
+{
+	var line = _MessageActions._messageLineForElement(event.target);
+
+	var actions = ((line) ? _MessageActions._actionsForLine(line) : []);
+
+	if (actions.length === 0) {
+		appPrivate.setMessageMenu([]);
+
+		return;
+	}
+
+	appPrivate.setMessageMenu([line.id.replace(/^line-/, "")].concat(actions));
+};
+
 /* Bind to events */
+document.addEventListener("contextmenu", _MessageActions._contextMenu, true);
 document.addEventListener("mouseover", _MessageActions._mouseOver, false);
 document.addEventListener("mouseout", function(event) {
 	/* The pointer left the view */

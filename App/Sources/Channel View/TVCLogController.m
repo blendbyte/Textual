@@ -778,6 +778,26 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	};
 }
 
+- (void)performMessageMenuCommand:(NSMenuItem *)sender
+{
+	NSArray *lineAndCommand = sender.representedObject;
+
+	if ([lineAndCommand isKindOfClass:[NSArray class]] == NO || lineAndCommand.count != 2) {
+		return;
+	}
+
+	/* The reaction choices are then picked with the keys too */
+	if ([lineAndCommand[1] isEqual:@"react"]) {
+		NSView *webView = self.backingView.webView;
+
+		if (webView.window && [webView.window makeFirstResponder:webView]) {
+			self.messageFocusActive = YES;
+		}
+	}
+
+	[self evaluateFunction:@"_MessageActions.menuCommand" withArguments:lineAndCommand];
+}
+
 - (void)updateMessageActions
 {
 	[self evaluateFunction:@"_MessageActions.setAvailable" withArguments:@[self.messageActionsAvailability]];

@@ -285,6 +285,35 @@ NS_ASSUME_NONNULL_BEGIN
 	[channel.associatedClient sendReaction:arguments[1] toMessage:arguments[0] inChannel:channel removing:[arguments[2] boolValue]];
 }
 
+/* Keyboard focus on messages (9.15 D): Escape went back to the input field */
+- (void)_leaveMessageFocus:(TVCLogScriptEventSinkContext *)context
+{
+	[mainWindow() leaveMessageFocusInViewController:context.viewController];
+}
+
+/* The context menu opens on a message: which, and what can be done */
+- (void)_setMessageMenu:(TVCLogScriptEventSinkContext *)context
+{
+	/* An array arrives spread over the arguments */
+	NSArray *values = context.arguments;
+
+	if (values.count < 2) {
+		context.webViewPolicy.messageMenu = nil;
+
+		return;
+	}
+
+	for (id value in values) {
+		if ([value isKindOfClass:[NSString class]] == NO) {
+			context.webViewPolicy.messageMenu = nil;
+
+			return;
+		}
+	}
+
+	context.webViewPolicy.messageMenu = values;
+}
+
 /* Delete (9.15 C): after asking */
 - (void)_deleteMessage:(TVCLogScriptEventSinkContext *)context
 {

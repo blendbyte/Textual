@@ -139,6 +139,10 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 /* Deleting (9.15 C): asks first, as it can't be undone */
 - (void)confirmDeletingMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
+
+/* Keyboard focus on messages (9.15 D): ⌥↑ from the input field */
+- (void)leaveMessageFocusInViewController:(nullable TVCLogController *)viewController;
+- (BOOL)handleMessageFocusKey:(NSEvent *)e;
 @end
 
 @interface TVCMainWindow (TitleAndWindowPrivate)
