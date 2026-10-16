@@ -45,6 +45,15 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	fileprivate var trustRef: SecTrust?
 
+	/// WebSocket (9.14): binary messages when the server agreed to
+	/// binary.ircv3.net, otherwise text (which must be UTF-8)
+	fileprivate var webSocketSendsBinary = false
+
+	fileprivate var isWebSocket: Bool
+	{
+		return (config.webSocketPath != nil)
+	}
+
 	// MARK: - Open/Close Socket
 
 	fileprivate var constructedParameters: NWParameters
@@ -66,6 +75,19 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		} else {
 			/* "Automatic" uses the proxies configured in System Settings */
 			parameters.preferNoProxies = (config.proxyType == .none)
+		}
+
+		/* WebSocket on top of TLS or TCP: one IRC line per message.
+		 Binary first, so lines in a legacy encoding get through. */
+		if (isWebSocket) {
+			let webSocketOptions = NWProtocolWebSocket.Options()
+
+			webSocketOptions.autoReplyPing = true
+			webSocketOptions.maximumMessageSize = maximumLineLength
+
+			webSocketOptions.setSubprotocols(["binary.ircv3.net", "text.ircv3.net"])
+
+			parameters.defaultProtocolStack.applicationProtocols.insert(webSocketOptions, at: 0)
 		}
 
 		if let internetProtocol = parameters.defaultProtocolStack.internetProtocol as? NWProtocolIP.Options {
@@ -133,9 +155,15 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		let serverAddress = config.serverAddress
 		let serverPort = config.serverPort
 
-		let connection = NWConnection(host: NWEndpoint.Host(stringLiteral: serverAddress),
+		let connection: NWConnection
+
+		if let webSocketURL = webSocketURL {
+			connection = NWConnection(to: .url(webSocketURL), using: constructedParameters)
+		} else {
+			connection = NWConnection(host: NWEndpoint.Host(stringLiteral: serverAddress),
 									  port: NWEndpoint.Port(integerLiteral: serverPort),
 									  using: constructedParameters)
+		}
 
 		connection.stateUpdateHandler = statusUpdateHandler
 
@@ -148,6 +176,24 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		delegate?.connection(self, willConnectTo: serverAddress, on: serverPort)
 
 		connect()
+	}
+
+	/// ws:// or wss:// with the server's host, port and path
+	fileprivate var webSocketURL: URL?
+	{
+		guard let path = config.webSocketPath else {
+			return nil
+		}
+
+		let address = config.serverAddress
+
+		let host = (address.isIPv6Address ? "[\(address)]" : address)
+
+		let scheme = (config.connectionPrefersSecuredConnection ? "wss" : "ws")
+
+		let pathWithSlash = (path.hasPrefix("/") ? path : "/\(path)")
+
+		return URL(string: "\(scheme)://\(host):\(config.serverPort)\(pathWithSlash)")
 	}
 
 	fileprivate func connect()
@@ -182,6 +228,8 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		readInBuffer = nil
 
 		trustRef = nil
+
+		webSocketSendsBinary = false
 	}
 
 	// MARK: - Socket Read & Write
@@ -189,6 +237,12 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 	func read()
 	{
 		if (connected == false || disconnecting) {
+			return
+		}
+
+		if (isWebSocket) {
+			connection?.receiveMessage(completion: webSocketReadCompletionHandler)
+
 			return
 		}
 
@@ -285,7 +339,35 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 		delegate?.connection(self, willSend: data)
 
+		if (isWebSocket) {
+			writeWebSocketMessage(data)
+
+			return
+		}
+
 		connection?.send(content: data, completion: .contentProcessed(writeCompletionHandler))
+	}
+
+	/// One line per message, without CR LF
+	fileprivate func writeWebSocketMessage(_ data: Data)
+	{
+		var line = data.withoutNewlinesAtEnd
+
+		let opcode: NWProtocolWebSocket.Opcode = (webSocketSendsBinary ? .binary : .text)
+
+		/* A text message must be UTF-8: anything else becomes U+FFFD */
+		if (opcode == .text && String(data: line, encoding: .utf8) == nil) {
+			line = Data(String(decoding: line, as: UTF8.self).utf8)
+		}
+
+		let metadata = NWProtocolWebSocket.Metadata(opcode: opcode)
+
+		let context = NWConnection.ContentContext(identifier: "IRC line", metadata: [metadata])
+
+		connection?.send(content: line,
+						 contentContext: context,
+						 isComplete: true,
+						 completion: .contentProcessed(writeCompletionHandler))
 	}
 
 	// MARK: - Properties
@@ -322,6 +404,12 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 		connecting = false
 		connected = true
 
+		if (isWebSocket) {
+			let metadata = connection?.metadata(definition: NWProtocolWebSocket.definition) as? NWProtocolWebSocket.Metadata
+
+			webSocketSendsBinary = (metadata?.selectedSubprotocol == "binary.ircv3.net")
+		}
+
 		read()
 
 		delegate?.connection(self, didConnectTo: connectedHost)
@@ -354,6 +442,10 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 		if let alternateError = alternateDisconnectError {
 			errorPayload = alternateError
+		} else if (isWebSocket && EOFReceived) {
+			/* The server closed the WebSocket; that it then dropped the
+			 connection too ("Socket is not connected") isn't news */
+			errorPayload = nil
 		} else if let nwError = error as? NWError {
 			errorPayload = translateError(nwError)
 		}
@@ -394,6 +486,52 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 			close()
 
 			return
+		}
+
+		read()
+	}
+
+	final func webSocketReadCompletionHandler(_ content: Data?, _ contentContext: NWConnection.ContentContext?, _ isComplete: Bool, _ error: NWError?)
+	{
+		if (disconnecting) {
+			return
+		}
+
+		if let error = error {
+			close(with: error)
+
+			return
+		}
+
+		/* The server closed the WebSocket: nothing more will arrive */
+		let metadata = contentContext?.protocolMetadata(definition: NWProtocolWebSocket.definition) as? NWProtocolWebSocket.Metadata
+
+		if (metadata?.opcode == .close || (content == nil && contentContext?.isFinal == true)) {
+			EOFReceived = true
+
+			delegate?.connectionClosedReadStream(self)
+
+			close()
+
+			return
+		}
+
+		/* One line per message; a line ending or several lines are
+		 tolerated from servers that send them anyway */
+		if var message = content, message.isEmpty == false {
+			message.append(0x0a)
+
+			if let (lines, _) = message.splitNetworkLines() {
+				for line in lines {
+					if (line.count > maximumLineLength) {
+						close(with: .lineTooLong)
+
+						return
+					}
+
+					delegate?.connection(self, received: line)
+				}
+			}
 		}
 
 		read()
@@ -544,6 +682,12 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	fileprivate func translateError(_ error: NWError) -> ConnectionError
 	{
+		/* Network.framework reports a refused WebSocket upgrade (an HTTP
+		 error such as 404 or 502, or no WebSocket there) only as an abort */
+		if (isWebSocket && connected == false), case .posix(.ECONNABORTED) = error {
+			return ConnectionError(otherError: LocalizedString("The server refused the WebSocket connection. Check the address, including its path.", table: "CommonErrors"))
+		}
+
 		switch error {
 			case .dns(let errorCode):
 				return ConnectionError(nwDNSError: errorCode)

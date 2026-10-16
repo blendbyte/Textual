@@ -306,6 +306,7 @@ The identifier for a timer can be found using “/timer list”";
 "gzo-54" = "%.0f minutes have elapsed since last response from this connection. It's possible the connection is timing out.";
 "3yo-gw" = "Message(%1$d): %2$@";
 "o77-ls" = "Connecting to [%1$@] on port %2$hu";
+"wsk-c1" = "Connecting to %@ (WebSocket)";
 "ni5-cy" = "Connecting using SOCKS5 proxy [%1$@] on port %2$hu";
 "oby-av" = "Connecting using HTTP proxy [%1$@] on port %2$hu";
 "xxb-y2" = "Reconnecting…";

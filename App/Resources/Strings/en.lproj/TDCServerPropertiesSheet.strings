@@ -109,6 +109,7 @@ Certificates must meet the following criteria:
 "oz4-kb" = "You will loose unsaved changes if you click “Yes”";
 "sts-l1" = "The server asked for secure connections only (port %1$hu) until %2$@.";
 "sts-b1" = "Forget";
+"wsk-t1" = "A server name or address, or a WebSocket address such as wss://irc.example.com/webirc";
 "icn-l1" = "Icon:";
 "icn-a1" = "Icon";
 "icn-b1" = "Choose…";

@@ -96,6 +96,7 @@ uint16_t const IRCConnectionDefaultProxyPort = 1080;
 	self->_proxyUsername = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"proxyUsername"];
 	self->_serverAddress = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"serverAddress"];
 	self->_serverPort = [aDecoder decodeUnsignedShortForKey:@"serverPort"];
+	self->_webSocketPath = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"webSocketPath"];
 	self->_primaryEncoding = [aDecoder decodeUnsignedIntegerForKey:@"primaryEncoding"];
 	self->_fallbackEncoding = [aDecoder decodeUnsignedIntegerForKey:@"fallbackEncoding"];
 	self->_cipherSuites = [aDecoder decodeUnsignedIntegerForKey:@"cipherSuites"];
@@ -122,6 +123,7 @@ uint16_t const IRCConnectionDefaultProxyPort = 1080;
 	[aCoder maybeEncodeObject:self->_proxyUsername forKey:@"proxyUsername"];
 	[aCoder encodeString:self->_serverAddress forKey:@"serverAddress"];
 	[aCoder encodeUnsignedShort:self->_serverPort forKey:@"serverPort"];
+	[aCoder maybeEncodeObject:self->_webSocketPath forKey:@"webSocketPath"];
 	[aCoder encodeUnsignedInteger:self->_primaryEncoding forKey:@"primaryEncoding"];
 	[aCoder encodeUnsignedInteger:self->_fallbackEncoding forKey:@"fallbackEncoding"];
 	[aCoder encodeUnsignedInteger:self->_cipherSuites forKey:@"cipherSuites"];
@@ -151,6 +153,7 @@ uint16_t const IRCConnectionDefaultProxyPort = 1080;
 	object->_proxyUsername = self->_proxyUsername;
 	object->_serverAddress = self->_serverAddress;
 	object->_serverPort = self->_serverPort;
+	object->_webSocketPath = self->_webSocketPath;
 	object->_primaryEncoding = self->_primaryEncoding;
 	object->_fallbackEncoding = self->_fallbackEncoding;
 	object->_cipherSuites = self->_cipherSuites;
@@ -184,6 +187,7 @@ uint16_t const IRCConnectionDefaultProxyPort = 1080;
 @dynamic proxyUsername;
 @dynamic serverAddress;
 @dynamic serverPort;
+@dynamic webSocketPath;
 @dynamic primaryEncoding;
 @dynamic fallbackEncoding;
 @dynamic cipherSuites;
@@ -274,6 +278,13 @@ uint16_t const IRCConnectionDefaultProxyPort = 1080;
 
 	if (self->_serverAddress != serverAddress) {
 		self->_serverAddress = serverAddress.copy;
+	}
+}
+
+- (void)setWebSocketPath:(nullable NSString *)webSocketPath
+{
+	if (self->_webSocketPath != webSocketPath) {
+		self->_webSocketPath = webSocketPath.copy;
 	}
 }
 

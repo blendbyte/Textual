@@ -300,6 +300,8 @@ cmd_vm-bundle() {
 	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/test-proxy.py" "${ROOT}/Development/ergo-config.py" "${ROOT}/Development/window-id.swift" "${bundle}/Development/"
 	# Without the database and lock of the Ergo running here; vm-dev creates its own
 	rsync -a --exclude ircd.db --exclude ircd.lock "${ERGO_DIR}/" "${bundle}/data/ergo/"
+	# The configuration as ergo-config.py makes it now, not as it was at install
+	python3 "${ROOT}/Development/ergo-config.py" "${ERGO_DIR}/default.yaml" "${bundle}/data/ergo/ircd.yaml"
 	tar -xzf "${python_archive}" -C "${bundle}"
 	ditto "${APP}" "${bundle}/Textual.app"
 

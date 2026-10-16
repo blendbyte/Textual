@@ -53,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_proxyPassword;
 	NSString *_proxyUsername;
 	NSString *_serverAddress;
+	NSString *_webSocketPath;
 	NSUInteger _floodControlDelayInterval;
 	NSUInteger _floodControlMaximumMessages;
 	uint16_t _proxyPort;

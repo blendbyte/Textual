@@ -35,6 +35,7 @@
  *
  *********************************************************************** */
 
+#import "NSStringHelper.h"
 #import "TLOKeychainPrivate.h"
 #import "NSObjectHelperPrivate.h"
 #import "IRC.h"
@@ -105,6 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[defaultsMutable assignStringTo:&self->_serverAddress forKey:@"serverAddress"];
 	[defaultsMutable assignStringTo:&self->_uniqueIdentifier forKey:@"uniqueIdentifier"];
+	[defaultsMutable assignStringTo:&self->_webSocketPath forKey:@"webSocketPath"];
 
 	[defaultsMutable assignUnsignedShortTo:&self->_serverPort forKey:@"serverPort"];
 }
@@ -117,6 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[dic maybeSetObject:self.serverAddress forKey:@"serverAddress"];
 	[dic maybeSetObject:self.uniqueIdentifier forKey:@"uniqueIdentifier"];
+	[dic maybeSetObject:self.webSocketPath forKey:@"webSocketPath"];
 
 	[dic setUnsignedShort:self.serverPort forKey:@"serverPort"];
 
@@ -158,6 +161,109 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.destroyKeychainItemsDuringDealloc) {
 		[self destroyServerPasswordKeychainItem];
 	}
+}
+
+#pragma mark -
+#pragma mark WebSocket
+
+- (nullable NSString *)webSocketAddress
+{
+	NSString *path = self.webSocketPath;
+
+	if (path == nil) {
+		return nil;
+	}
+
+	return [IRCServer webSocketAddressWithHost:self.serverAddress port:self.serverPort secure:self.prefersSecuredConnection path:path];
+}
+
++ (BOOL)parseWebSocketAddress:(NSString *)address host:(NSString * _Nullable * _Nonnull)host port:(uint16_t *)port secure:(BOOL *)secure path:(NSString * _Nullable * _Nonnull)path
+{
+	NSParameterAssert(address != nil);
+	NSParameterAssert(host != NULL);
+	NSParameterAssert(port != NULL);
+	NSParameterAssert(secure != NULL);
+	NSParameterAssert(path != NULL);
+
+	NSURLComponents *components = [NSURLComponents componentsWithString:address.trim];
+
+	NSString *scheme = components.scheme.lowercaseString;
+
+	BOOL isSecure = NO;
+
+	if ([scheme isEqualToString:@"wss"]) {
+		isSecure = YES;
+	} else if ([scheme isEqualToString:@"ws"] == NO) {
+		return NO;
+	}
+
+	NSString *hostValue = components.host;
+
+	if ([hostValue hasPrefix:@"["] && [hostValue hasSuffix:@"]"]) {
+		hostValue = [hostValue substringWithRange:NSMakeRange(1, (hostValue.length - 2))];
+	}
+
+	if (hostValue.length == 0 || hostValue.validInternetAddress == NO) {
+		return NO;
+	}
+
+	uint16_t portValue = (isSecure ? 443 : 80);
+
+	NSNumber *portNumber = components.port;
+
+	if (portNumber) {
+		NSInteger portInteger = portNumber.integerValue;
+
+		if (portInteger < 1 || portInteger > TXMaximumTCPPort) {
+			return NO;
+		}
+
+		portValue = (uint16_t)portInteger;
+	}
+
+	NSString *pathValue = components.percentEncodedPath;
+
+	if (pathValue.length == 0) {
+		pathValue = @"/";
+	}
+
+	NSString *query = components.percentEncodedQuery;
+
+	if (query.length > 0) {
+		pathValue = [pathValue stringByAppendingFormat:@"?%@", query];
+	}
+
+	*host = hostValue.lowercaseString;
+	*port = portValue;
+	*secure = isSecure;
+	*path = pathValue;
+
+	return YES;
+}
+
++ (NSString *)webSocketAddressWithHost:(NSString *)host port:(uint16_t)port secure:(BOOL)secure path:(NSString *)path
+{
+	NSParameterAssert(host != nil);
+	NSParameterAssert(path != nil);
+
+	NSString *hostPart = ((host.IPv6Address) ? [NSString stringWithFormat:@"[%@]", host] : host);
+
+	/* The usual ports and the root path are left out */
+	NSString *portPart = @"";
+
+	if (port != (secure ? 443 : 80)) {
+		portPart = [NSString stringWithFormat:@":%hu", port];
+	}
+
+	NSString *pathPart = path;
+
+	if ([pathPart isEqualToString:@"/"]) {
+		pathPart = @"";
+	} else if ([pathPart hasPrefix:@"/"] == NO) {
+		pathPart = [@"/" stringByAppendingString:pathPart];
+	}
+
+	return [NSString stringWithFormat:@"%@://%@%@%@", (secure ? @"wss" : @"ws"), hostPart, portPart, pathPart];
 }
 
 #pragma mark -
@@ -206,6 +312,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic serverAddress;
 @dynamic serverPassword;
 @dynamic serverPort;
+@dynamic webSocketPath;
 
 + (BOOL)isMutable
 {
@@ -244,6 +351,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_serverPort != serverPort) {
 		self->_serverPort = serverPort;
+	}
+}
+
+- (void)setWebSocketPath:(nullable NSString *)webSocketPath
+{
+	if (self->_webSocketPath != webSocketPath) {
+		self->_webSocketPath = [webSocketPath copy];
 	}
 }
 

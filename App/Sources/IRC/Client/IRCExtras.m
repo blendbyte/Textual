@@ -55,7 +55,7 @@
 #import "IRCClientPrivate.h"
 #import "IRCChannelConfig.h"
 #import "IRCChannel.h"
-#import "IRCServer.h"
+#import "IRCServerPrivate.h"
 #import "IRCWorldPrivate.h"
 #import "IRCExtrasPrivate.h"
 #import "IRCProtocolLinkPrivate.h"
@@ -209,8 +209,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL connectSecurely = NO;
 
+	NSString *webSocketPath = nil;
+
 	/* Begin parsing */
 	NSMutableString *serverInfoMutable = [serverInfo mutableCopy];
+
+	/* WebSocket (9.14): a ws:// or wss:// address, then the password if any */
+	{
+		NSString *firstToken = [serverInfo componentsSeparatedByString:@" "].firstObject;
+
+		NSString *webSocketHost = nil;
+
+		if ([IRCServer parseWebSocketAddress:firstToken host:&webSocketHost port:&serverPort secure:&connectSecurely path:&webSocketPath]) {
+			serverAddress = webSocketHost;
+
+			(void)serverInfoMutable.token;
+
+			if (serverInfoMutable.length > 0) {
+				serverPassword = serverInfoMutable.token;
+			}
+
+			[self createConnectionToServer:serverAddress
+								serverPort:serverPort
+							serverPassword:serverPassword
+						   connectSecurely:connectSecurely
+							 webSocketPath:webSocketPath
+							   channelList:[self channelNamesInList:channelList]
+						connectWhenCreated:connectWhenCreated
+				 mergeConnectionIfPossible:mergeConnectionIfPossible
+				   selectFirstChannelAdded:selectFirstChannelAdded];
+
+			return;
+		}
+	}
 
 	/* Get our first token. A token is everything before the first 
 	 occurrence of a space character. getToken will get everything 
@@ -323,7 +354,21 @@ NS_ASSUME_NONNULL_BEGIN
 		serverPassword = tempStore;
 	}
 
-	/* Convert channel list string into array of configurations */
+	/* Create connection */
+	[self createConnectionToServer:serverAddress
+						serverPort:serverPort
+					serverPassword:serverPassword
+				   connectSecurely:connectSecurely
+					 webSocketPath:nil
+					   channelList:[self channelNamesInList:channelList]
+				connectWhenCreated:connectWhenCreated
+		 mergeConnectionIfPossible:mergeConnectionIfPossible
+		   selectFirstChannelAdded:selectFirstChannelAdded];
+}
+
+/* A comma separated list of channel names, without duplicates or invalid names */
++ (nullable NSArray<NSString *> *)channelNamesInList:(nullable NSString *)channelList
+{
 	NSMutableArray<NSString *> *channelListArray = nil;
 
 	if (channelList.length > 0) {
@@ -346,21 +391,14 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	/* Create connection */
-	[self createConnectionToServer:serverAddress
-						serverPort:serverPort
-					serverPassword:serverPassword
-				   connectSecurely:connectSecurely
-					   channelList:[channelListArray copy]
-				connectWhenCreated:connectWhenCreated
-		 mergeConnectionIfPossible:mergeConnectionIfPossible
-		   selectFirstChannelAdded:selectFirstChannelAdded];
+	return [channelListArray copy];
 }
 
 + (void)createConnectionToServer:(NSString *)serverAddress
 					  serverPort:(uint16_t)serverPort
 				  serverPassword:(nullable NSString *)serverPassword
 				 connectSecurely:(BOOL)connectSecurely
+				   webSocketPath:(nullable NSString *)webSocketPath
 					 channelList:(nullable NSArray<NSString *> *)channelList
 			  connectWhenCreated:(BOOL)connectWhenCreated
 	   mergeConnectionIfPossible:(BOOL)mergeConnectionIfPossible
@@ -438,6 +476,8 @@ NS_ASSUME_NONNULL_BEGIN
 		server.serverPort = serverPort;
 
 		server.prefersSecuredConnection = connectSecurely;
+
+		server.webSocketPath = webSocketPath;
 
 		if (serverPassword != nil) {
 			server.serverPassword = serverPassword;

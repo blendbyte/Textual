@@ -230,6 +230,13 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		return;
 	}
 
+	/* A policy names an IRC port: one learned over WebSocket would send
+	 later IRC connections to the WebSocket port, and a WebSocket
+	 connection isn't moved to IRC */
+	if (socketConfig.webSocketPath) {
+		return;
+	}
+
 	NSInteger port = 0;
 	NSInteger duration = 0;
 

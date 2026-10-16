@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nullable) NSString *serverPasswordFromKeychain;
 @property (readonly) uint16_t serverPort;
 @property (readonly) BOOL prefersSecuredConnection;
+@property (readonly, copy, nullable) NSString *webSocketPath; // WebSocket (ws:// or wss://, TLS as prefersSecuredConnection): the path, "/" at least; nil for a plain IRC connection
 @end
 
 #pragma mark -
@@ -57,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *serverPassword;
 @property (nonatomic, assign, readwrite) uint16_t serverPort;
 @property (nonatomic, assign, readwrite) BOOL prefersSecuredConnection;
+@property (nonatomic, copy, readwrite, nullable) NSString *webSocketPath;
 @end
 
 NS_ASSUME_NONNULL_END

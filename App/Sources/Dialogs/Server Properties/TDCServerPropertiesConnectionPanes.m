@@ -45,7 +45,7 @@
 #import "IRCClientPrivate.h"
 #import "IRCNetworkList.h"
 #import "IRCSASLECDSAPrivate.h"
-#import "IRCServer.h"
+#import "IRCServerPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
 #import "TLOKeychainPrivate.h"
 #import "TLOLocalization.h"
@@ -119,8 +119,10 @@ NS_ASSUME_NONNULL_BEGIN
 	self.serverAddressComboBox.stringValueIsTrimmed = YES;
 	self.serverAddressComboBox.stringValueUsesOnlyFirstToken = YES;
 
+	self.serverAddressComboBox.toolTip = TXTLS(@"TDCServerPropertiesSheet[wsk-t1]");
+
 	self.serverAddressComboBox.validationBlock = ^NSString *(NSString *currentValue) {
-		if (currentValue.isValidInternetAddress == NO) {
+		if (currentValue.isValidInternetAddress == NO && [TDCServerPropertiesGeneralPane isWebSocketAddress:currentValue] == NO) {
 			return TXTLS(@"CommonErrors[yyx-l3]");
 		}
 
@@ -495,6 +497,51 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark -
+#pragma mark WebSocket
+
++ (BOOL)isWebSocketAddress:(NSString *)address
+{
+	NSString *host = nil;
+	NSString *path = nil;
+
+	uint16_t port = 0;
+
+	BOOL secure = NO;
+
+	return [IRCServer parseWebSocketAddress:address host:&host port:&port secure:&secure path:&path];
+}
+
+/* A ws:// or wss:// address holds the port and TLS: their fields show them, greyed out */
+- (void)updateFieldsForWebSocketAddress
+{
+	NSString *host = nil;
+	NSString *path = nil;
+
+	uint16_t port = 0;
+
+	BOOL secure = NO;
+
+	BOOL isWebSocket = [IRCServer parseWebSocketAddress:self.serverAddressComboBox.value host:&host port:&port secure:&secure path:&path];
+
+	self.serverPortTextField.enabled = (isWebSocket == NO);
+	self.prefersSecuredConnectionCheck.enabled = (isWebSocket == NO);
+
+	if (isWebSocket == NO) {
+		return;
+	}
+
+	BOOL populating = self.populatingPrimaryServer;
+
+	self.populatingPrimaryServer = YES;
+
+	self.serverPortTextField.integerValue = port;
+
+	self.prefersSecuredConnectionCheck.state = (secure ? NSControlStateValueOn : NSControlStateValueOff);
+
+	self.populatingPrimaryServer = populating;
+}
+
+#pragma mark -
 #pragma mark Primary Server
 
 - (void)loadPrimaryServerEndpoint
@@ -517,7 +564,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *serverAddress = server.serverAddress;
 
-	if (serverAddress) {
+	NSString *webSocketAddress = server.webSocketAddress;
+
+	if (webSocketAddress) {
+		self.serverAddressComboBox.stringValue = webSocketAddress;
+	} else if (serverAddress) {
 		IRCNetwork *serverAddressNetwork = [self.networkList networkWithServerAddress:serverAddress];
 
 		if (serverAddressNetwork) {
@@ -534,6 +585,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.serverPasswordTextField.stringValue = (server.serverPassword ?: @"");
 
 	self.populatingPrimaryServer = NO;
+
+	[self updateFieldsForWebSocketAddress];
 
 	[self updateStrictTransportSecurityRow];
 }
@@ -650,9 +703,23 @@ NS_ASSUME_NONNULL_BEGIN
 		serverMutable = [server mutableCopy];
 	}
 
-	{
-		NSString *serverAddress = self.serverAddressComboBox.value;
+	NSString *serverAddress = self.serverAddressComboBox.value;
 
+	NSString *webSocketHost = nil;
+	NSString *webSocketPath = nil;
+
+	uint16_t webSocketPort = 0;
+
+	BOOL webSocketSecure = NO;
+
+	if ([IRCServer parseWebSocketAddress:serverAddress host:&webSocketHost port:&webSocketPort secure:&webSocketSecure path:&webSocketPath]) {
+		serverMutable.serverAddress = webSocketHost;
+		serverMutable.serverPort = webSocketPort;
+
+		serverMutable.prefersSecuredConnection = webSocketSecure;
+
+		serverMutable.webSocketPath = webSocketPath;
+	} else {
 		IRCNetwork *serverAddressNetwork = [self.networkList networkNamed:serverAddress];
 
 		if (serverAddressNetwork) {
@@ -660,11 +727,13 @@ NS_ASSUME_NONNULL_BEGIN
 		} else {
 			serverMutable.serverAddress = serverAddress.lowercaseString;
 		}
+
+		serverMutable.serverPort = self.serverPortTextField.integerValue;
+
+		serverMutable.prefersSecuredConnection = (self.prefersSecuredConnectionCheck.state == NSControlStateValueOn);
+
+		serverMutable.webSocketPath = nil;
 	}
-
-	serverMutable.serverPort = self.serverPortTextField.integerValue;
-
-	serverMutable.prefersSecuredConnection = (self.prefersSecuredConnectionCheck.state == NSControlStateValueOn);
 
 	serverMutable.serverPassword = self.serverPasswordTextField.trimmedStringValue;
 
@@ -734,6 +803,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (sender == self.serverAddressComboBox) {
 		[self populateDefaultsForPreconfiguredNetwork];
+
+		[self updateFieldsForWebSocketAddress];
 	}
 
 	[self rebuildPrimaryServerIfNeeded];

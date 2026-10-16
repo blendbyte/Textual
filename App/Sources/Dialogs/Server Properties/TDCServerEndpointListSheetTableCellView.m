@@ -35,7 +35,7 @@
  *
  *********************************************************************** */
 
-#import "IRCServer.h"
+#import "IRCServerPrivate.h"
 #import "NSStringHelper.h"
 #import "TLOLocalization.h"
 #import "TDCServerEndpointListSheetTableCellViewPrivate.h"
@@ -55,7 +55,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)validateValue:(inout id *)ioValue forKeyPath:(NSString *)inKeyPath error:(out NSError **)outError
 {
 	if ([inKeyPath isEqualToString:@"serverAddress"]) {
-		if (((NSString *)*ioValue).isValidInternetAddress == NO) {
+		NSString *address = *ioValue;
+
+		NSString *host = nil;
+		NSString *path = nil;
+
+		uint16_t port = 0;
+
+		BOOL secure = NO;
+
+		BOOL isWebSocket = [IRCServer parseWebSocketAddress:address host:&host port:&port secure:&secure path:&path];
+
+		if (address.isValidInternetAddress == NO && isWebSocket == NO) {
 			if (outError) {
 				*outError = [NSError errorWithDomain:TXErrorDomain
 												 code:71013
@@ -93,7 +104,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return @"";
 	}
 
-	return objectValue.serverAddress;
+	/* WebSocket (9.14): shown as its ws:// or wss:// address */
+	return (objectValue.webSocketAddress ?: objectValue.serverAddress);
 }
 
 - (void)setServerAddress:(NSString *)serverAddress
@@ -104,7 +116,27 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	NSString *host = nil;
+	NSString *path = nil;
+
+	uint16_t port = 0;
+
+	BOOL secure = NO;
+
+	if ([IRCServer parseWebSocketAddress:serverAddress host:&host port:&port secure:&secure path:&path]) {
+		objectValue.serverAddress = host;
+		objectValue.serverPort = port;
+
+		objectValue.prefersSecuredConnection = secure;
+
+		objectValue.webSocketPath = path;
+
+		return;
+	}
+
 	objectValue.serverAddress = serverAddress;
+
+	objectValue.webSocketPath = nil;
 }
 
 - (NSString *)serverPort

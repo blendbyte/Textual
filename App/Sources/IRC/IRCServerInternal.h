@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_serverAddress;
 	NSString *_serverPassword;
 	uint16_t _serverPort;
+	NSString *_webSocketPath;
 
 @private
 	NSString *_uniqueIdentifier;

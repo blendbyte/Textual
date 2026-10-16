@@ -1451,6 +1451,16 @@ async def scenario_network_icon(client):
 		seen = len(client.received)
 
 
+async def scenario_websocket(client):
+	"""WebSocket (9.14), on ws://127.0.0.1:<port>: the path picks the subprotocol
+	(any: the client's first choice; /text: text.ircv3.net; /none: none;
+	/missing: HTTP 404). #ws with alice. Say "latin" for a line in Latin-1
+	(binary only), "close" for a close frame. Each connection ends with a RESULT
+	line: messages in the agreed frame type, none with a line ending. Runs until
+	stopped."""
+	pass
+
+
 async def scenario_sasl_new(client):
 	"""SASL 3.2 (set nicknamePassword=textual-new first): registration without
 	sasl; two seconds later the server sends CAP NEW :sasl=PLAIN. The client
@@ -2494,6 +2504,7 @@ SCENARIOS = {
 	"labels": scenario_labels,
 	"bots": scenario_bots,
 	"network-icon": scenario_network_icon,
+	"websocket": scenario_websocket,
 	"register": scenario_register,
 	"multiline": scenario_multiline,
 	"mute": scenario_mute,
@@ -2746,6 +2757,169 @@ async def run_sts_scenario(port):
 		server.close()
 
 
+# WebSocket (9.14): a hand-written server side of RFC 6455, enough for one client
+
+class WebSocketClient(Client):
+	"""A Client whose lines travel as WebSocket messages: one line per message,
+	without CR LF. Records the frame type of every message and any line ending."""
+
+	def __init__(self, reader, writer, subprotocol):
+		super().__init__(reader, writer)
+		self.subprotocol = subprotocol
+		self.opcodes = set()
+		self.line_endings = 0
+		self.closed_by_client = False
+
+	async def send(self, line, raw=None):
+		data = raw if raw is not None else line.encode()
+		opcode = 0x2 if self.subprotocol == "binary.ircv3.net" else 0x1
+		log(">>", line if raw is None else f"{line} <{data.hex()}>")
+		await self.send_frame(opcode, data)
+
+	async def send_frame(self, opcode, data):
+		header = bytes([0x80 | opcode])
+		if len(data) < 126:
+			header += bytes([len(data)])
+		elif len(data) < 65536:
+			header += bytes([126]) + len(data).to_bytes(2, "big")
+		else:
+			header += bytes([127]) + len(data).to_bytes(8, "big")
+		self.writer.write(header + data)
+		await self.writer.drain()
+
+	async def read_frame(self):
+		try:
+			first, second = await self.reader.readexactly(2)
+			length = second & 0x7f
+			if length == 126:
+				length = int.from_bytes(await self.reader.readexactly(2), "big")
+			elif length == 127:
+				length = int.from_bytes(await self.reader.readexactly(8), "big")
+			mask = await self.reader.readexactly(4) if second & 0x80 else b""
+			payload = await self.reader.readexactly(length)
+		except (asyncio.IncompleteReadError, ConnectionResetError):
+			return None, None
+		if mask:
+			payload = bytes(byte ^ mask[index % 4] for index, byte in enumerate(payload))
+		return first & 0x0f, payload
+
+	async def read_line(self):
+		while True:
+			opcode, payload = await self.read_frame()
+			if opcode is None:
+				return None
+			if opcode == 0x8:
+				self.closed_by_client = True
+				log("<<", "close frame")
+				return None
+			if opcode == 0x9:
+				await self.send_frame(0xa, payload)
+				continue
+			if opcode in (0x1, 0x2):
+				break
+		self.opcodes.add("binary" if opcode == 0x2 else "text")
+		if payload.endswith(b"\n") or payload.endswith(b"\r"):
+			self.line_endings += 1
+		try:
+			line = payload.decode()
+		except UnicodeDecodeError:
+			line = payload.decode(errors="replace") + f" <not UTF-8: {payload.hex()}>"
+		log("<<", line)
+		return line
+
+
+async def websocket_handshake(reader, writer):
+	"""Answers the HTTP upgrade. The path decides: /missing is 404, /text agrees
+	to text.ircv3.net only, /none to no subprotocol; anything else to the
+	client's first choice. Returns the subprotocol ("" for none), or None."""
+	import base64
+	import hashlib
+
+	request = b""
+	while b"\r\n\r\n" not in request:
+		chunk = await reader.read(4096)
+		if not chunk:
+			return None
+		request += chunk
+
+	lines = request.decode(errors="replace").split("\r\n")
+	path = lines[0].split(" ")[1] if len(lines[0].split(" ")) > 1 else "/"
+	headers = {}
+	for line in lines[1:]:
+		name, _, value = line.partition(":")
+		headers[name.strip().lower()] = value.strip()
+
+	offered = [item.strip() for item in headers.get("sec-websocket-protocol", "").split(",") if item.strip()]
+	log("<<", f"GET {path}, subprotocols offered: {', '.join(offered) or 'none'}")
+
+	if path == "/missing":
+		writer.write(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+		await writer.drain()
+		log(">>", "HTTP 404")
+		return None
+
+	if path == "/text":
+		chosen = "text.ircv3.net" if "text.ircv3.net" in offered else ""
+	elif path == "/none":
+		chosen = ""
+	else:
+		chosen = offered[0] if offered else ""
+
+	accept = base64.b64encode(hashlib.sha1((headers.get("sec-websocket-key", "") + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode()).digest()).decode()
+	response = f"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {accept}\r\n"
+	if chosen:
+		response += f"Sec-WebSocket-Protocol: {chosen}\r\n"
+	writer.write((response + "\r\n").encode())
+	await writer.drain()
+	log(">>", f"101, subprotocol {chosen or 'none'}")
+	return chosen
+
+
+async def run_websocket_scenario(port):
+	"""See scenario_websocket."""
+	finished = asyncio.Event()
+
+	async def handle(reader, writer):
+		subprotocol = await websocket_handshake(reader, writer)
+		if subprotocol is None:
+			writer.close()
+			return
+
+		client = WebSocketClient(reader, writer, subprotocol)
+
+		if not await client.register_with_capabilities("server-time"):
+			writer.close()
+			return
+
+		me = client.nickname
+		await client.send(f":{me}!user@client.textual.test JOIN #ws")
+		await client.send(f":{SERVER} 353 {me} = #ws :{me} alice")
+		await client.send(f":{SERVER} 366 {me} #ws :End of /NAMES list.")
+		await client.send(f":alice!a@alice.test PRIVMSG #ws :Hello over WebSocket ({subprotocol or 'no subprotocol'})")
+
+		seen = 0
+		while await client.collect(1):
+			for line in client.received[seen:]:
+				command, _, rest = line.partition(" ")
+				if command.upper() != "PRIVMSG":
+					continue
+				if rest.endswith(" :latin"):
+					await client.send(":alice!a@alice.test PRIVMSG #ws :caf\u00e9 (Latin-1)", raw=":alice!a@alice.test PRIVMSG #ws :caf\xe9 (Latin-1)".encode("latin-1"))
+				elif rest.endswith(" :close"):
+					log(">>", "close frame (1000)")
+					await client.send_frame(0x8, (1000).to_bytes(2, "big") + b"bye")
+			seen = len(client.received)
+
+		expected = {"binary.ircv3.net": {"binary"}, "text.ircv3.net": {"text"}, "": {"text"}}[subprotocol]
+		passed = client.opcodes <= expected and client.line_endings == 0
+		print(f"RESULT: {'PASS' if passed else 'FAIL'} (subprotocol {subprotocol or 'none'}; client sent {', '.join(sorted(client.opcodes)) or 'nothing'} messages; {client.line_endings} with a line ending)", flush=True)
+		writer.close()
+
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'websocket' waiting on ws://127.0.0.1:{port} (/text, /none, /missing)", flush=True)
+	await finished.wait()
+
+
 async def main():
 	parser = argparse.ArgumentParser(description="Scripted IRC server for testing Textual Dev")
 	parser.add_argument("scenario", nargs="?", choices=SCENARIOS.keys())
@@ -2825,6 +2999,10 @@ async def main():
 
 	if arguments.scenario == "event-playback":
 		await run_event_playback_scenario(arguments.port)
+		return
+
+	if arguments.scenario == "websocket":
+		await run_websocket_scenario(arguments.port)
 		return
 
 	servers = [await asyncio.start_server(handle, "127.0.0.1", arguments.port, ssl=tls_context)]

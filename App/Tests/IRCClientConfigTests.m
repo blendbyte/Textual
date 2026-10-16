@@ -39,7 +39,7 @@
 #import "IRCAddressBook.h"
 #import "IRCChannelConfig.h"
 #import "IRCClientConfig.h"
-#import "IRCServer.h"
+#import "IRCServerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -79,6 +79,49 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCClientConfig *plainCopy = [original copy];
 
 	XCTAssertEqualObjects(plainCopy.uniqueIdentifier, original.uniqueIdentifier);
+}
+
+/* WebSocket (9.14): ws:// and wss:// addresses as host, port, TLS and path, and
+ back; the path survives saving; anything else isn't one */
+- (void)testWebSocketAddresses
+{
+	NSString *host = nil;
+	NSString *path = nil;
+
+	uint16_t port = 0;
+
+	BOOL secure = NO;
+
+	XCTAssertTrue([IRCServer parseWebSocketAddress:@"wss://IRC.Example.net/webirc?x=1" host:&host port:&port secure:&secure path:&path]);
+	XCTAssertEqualObjects(host, @"irc.example.net");
+	XCTAssertEqual(port, 443);
+	XCTAssertTrue(secure);
+	XCTAssertEqualObjects(path, @"/webirc?x=1");
+
+	XCTAssertTrue([IRCServer parseWebSocketAddress:@"ws://[::1]:8097" host:&host port:&port secure:&secure path:&path]);
+	XCTAssertEqualObjects(host, @"::1");
+	XCTAssertEqual(port, 8097);
+	XCTAssertFalse(secure);
+	XCTAssertEqualObjects(path, @"/");
+
+	XCTAssertEqualObjects([IRCServer webSocketAddressWithHost:@"::1" port:8097 secure:NO path:@"/"], @"ws://[::1]:8097");
+	XCTAssertEqualObjects([IRCServer webSocketAddressWithHost:@"irc.example.net" port:443 secure:YES path:@"/webirc"], @"wss://irc.example.net/webirc");
+
+	XCTAssertFalse([IRCServer parseWebSocketAddress:@"irc.example.net" host:&host port:&port secure:&secure path:&path]);
+	XCTAssertFalse([IRCServer parseWebSocketAddress:@"https://irc.example.net/" host:&host port:&port secure:&secure path:&path]);
+	XCTAssertFalse([IRCServer parseWebSocketAddress:@"wss://irc.example.net:70000/" host:&host port:&port secure:&secure path:&path]);
+
+	IRCServerMutable *server = [IRCServerMutable new];
+
+	server.serverAddress = @"irc.example.net";
+	server.serverPort = 8443;
+	server.prefersSecuredConnection = YES;
+	server.webSocketPath = @"/webirc";
+
+	IRCServer *saved = [[IRCServer alloc] initWithDictionary:server.dictionaryValue];
+
+	XCTAssertEqualObjects(saved.webSocketPath, @"/webirc");
+	XCTAssertEqualObjects(saved.webSocketAddress, @"wss://irc.example.net:8443/webirc");
 }
 
 @end

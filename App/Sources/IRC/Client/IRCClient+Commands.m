@@ -235,6 +235,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL connectionPrefersSecuredConnection = NO;
 
+	NSString *webSocketPath = nil; // a redirect or an STS upgrade is plain IRC
+
 	if (self.temporaryServerAddressOverride) {
 		serverAddress = self.temporaryServerAddressOverride;
 
@@ -271,11 +273,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 		connectionPrefersSecuredConnection = server.prefersSecuredConnection;
 
+		webSocketPath = server.webSocketPath;
+
 		self.server = server;
 	}
 
-	/* strict-transport-security: a host with a policy is only reached over TLS */
-	if (connectionPrefersSecuredConnection == NO) {
+	/* strict-transport-security: a host with a policy is only reached over TLS.
+	 Its port is an IRC port, so a WebSocket connection is left alone. */
+	if (connectionPrefersSecuredConnection == NO && webSocketPath == nil) {
 		uint16_t policyPort = [[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress];
 
 		if (policyPort > 0) {
@@ -326,7 +331,13 @@ NS_ASSUME_NONNULL_BEGIN
 		[self printDebugInformation:TXTLS(@"IRC[w05-ph]")];
 	}
 
-	[self printDebugInformationToConsole:TXTLS(@"IRC[o77-ls]", serverAddress, serverPort)];
+	if (webSocketPath) {
+		NSString *webSocketAddress = [IRCServer webSocketAddressWithHost:serverAddress port:serverPort secure:connectionPrefersSecuredConnection path:webSocketPath];
+
+		[self printDebugInformationToConsole:TXTLS(@"IRC[wsk-c1]", webSocketAddress)];
+	} else {
+		[self printDebugInformationToConsole:TXTLS(@"IRC[o77-ls]", serverAddress, serverPort)];
+	}
 
 	[RZNotificationCenter() postNotificationName:IRCClientWillConnectNotification object:self];
 
@@ -337,6 +348,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	socketConfig.serverAddress = serverAddress;
 	socketConfig.serverPort = serverPort;
+
+	socketConfig.webSocketPath = webSocketPath;
 
 	IRCConnectionProxyType proxyType = self.config.proxyType;
 
