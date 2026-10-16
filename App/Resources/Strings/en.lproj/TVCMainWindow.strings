@@ -77,6 +77,10 @@
 "e7g-w1" = "%@ went away";
 "e7g-b1" = "%@ came back";
 "bot-l1" = "bot";
+"rpl-l1" = "Replying to ";
+"rpl-c1" = "Cancel Reply";
+"rpl-b1" = "Reply";
+"rpl-e1" = "an earlier message";
 "prv-l1" = "only you";
 "bac-t1" = "Ban Account %@";
 "e7g-s1" = ", ";

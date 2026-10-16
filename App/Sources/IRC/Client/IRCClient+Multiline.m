@@ -34,6 +34,7 @@
  *
  *********************************************************************** */
 
+#import "NSStringHelper.h"
 #import "IRCColorFormatPrivate.h"
 #import "IRCMessage.h"
 #import "IRCMessagePrivate.h"
@@ -242,7 +243,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return [text copy];
 }
 
-- (void)sendMultilineBatch:(NSArray<IRCClientMultilinePart *> *)parts command:(NSString *)command target:(NSString *)target
+- (void)sendMultilineBatch:(NSArray<IRCClientMultilinePart *> *)parts command:(NSString *)command target:(NSString *)target replyTo:(nullable NSString *)replyMsgid
 {
 	NSParameterAssert(parts != nil);
 	NSParameterAssert(command != nil);
@@ -252,7 +253,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *reference = [NSString stringWithFormat:@"ml%lu", self.multilineBatchCount];
 
-	[self sendLine:[NSString stringWithFormat:@"BATCH +%@ draft/multiline %@", reference, target]];
+	/* A reply's tag goes on the batch, which stands for the whole message */
+	NSString *opener = [NSString stringWithFormat:@"BATCH +%@ draft/multiline %@", reference, target];
+
+	if (replyMsgid) {
+		opener = [NSString stringWithFormat:@"@+reply=%@ %@", replyMsgid.encodedMessageTagString, opener];
+	}
+
+	[self sendLine:opener];
 
 	for (IRCClientMultilinePart *part in parts) {
 		NSString *tags = ((part.concat) ? [NSString stringWithFormat:@"@batch=%@;draft/multiline-concat", reference] : [NSString stringWithFormat:@"@batch=%@", reference]);

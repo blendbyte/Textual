@@ -167,9 +167,23 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (nullable NSString *)msgid
 {
-	NSString *msgid = self.messageTags[@"msgid"];
+	return [IRCMessage validatedMessageIdentifier:self.messageTags[@"msgid"]];
+}
 
-	if (msgid.length == 0) {
+- (nullable NSString *)replyToMsgid
+{
+	return [IRCMessage validatedMessageIdentifier:self.messageTags[@"+reply"]];
+}
+
++ (nullable NSString *)validatedMessageIdentifier:(nullable id)identifier
+{
+	if ([identifier isKindOfClass:[NSString class]] == NO) {
+		return nil;
+	}
+
+	NSString *msgid = identifier;
+
+	if (msgid.length == 0 || msgid.length > 256) {
 		return nil;
 	}
 

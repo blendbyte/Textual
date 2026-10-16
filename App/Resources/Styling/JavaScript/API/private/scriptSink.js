@@ -208,6 +208,13 @@ appPrivate.openVideoPlayer = function(videoIdentifier, startTime, linkAddress, t
 	window.webkit.messageHandlers.openVideoPlayer.postMessage(dataValue);
 };
 
+appPrivate.replyToMessage = function(msgid, nickname, excerpt)
+{
+	var dataValue = {"values" : [msgid, nickname, excerpt]};
+
+	window.webkit.messageHandlers.replyToMessage.postMessage(dataValue);
+};
+
 appPrivate.openImageViewer = function(mediaAddress, linkAddress, width, height)
 {
 	var dataValue = {"values" : [mediaAddress, linkAddress, width, height]};

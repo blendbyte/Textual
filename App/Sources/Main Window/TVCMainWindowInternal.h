@@ -77,6 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) double textSizeMultiplier;
 @property (nonatomic, assign, readwrite) BOOL reloadingTheme;
 @property (nonatomic, assign) BOOL inputDraftBeingRestored;
+@property (nonatomic, strong, nullable) NSView *replyBar; // "Replying to …" above the input field (9.15)
+@property (nonatomic, strong, nullable) NSTextField *replyBarLabel;
+@property (nonatomic, strong, nullable) NSLayoutConstraint *replyBarHeightConstraint;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
 @end

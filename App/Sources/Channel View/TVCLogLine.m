@@ -152,6 +152,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_command = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"command"];
 	self->_messageBody = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"messageBody"];
 	self->_nickname = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"nickname"];
+	self->_msgid = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"msgid"];
+	self->_replyToMsgid = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"replyToMsgid"];
 
 	self->_lineType = [aDecoder decodeIntegerForKey:@"lineType"];
 	self->_memberType = [aDecoder decodeIntegerForKey:@"memberType"];
@@ -220,6 +222,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	if (self.isPrivateInChannel) {
 		[aCoder encodeBool:YES forKey:@"isPrivateInChannel"];
 	}
+
+	[aCoder maybeEncodeObject:self.msgid forKey:@"msgid"];
+	[aCoder maybeEncodeObject:self.replyToMsgid forKey:@"replyToMsgid"];
+
 	[aCoder maybeEncodeObject:self.nickname forKey:@"nickname"];
 
 	[aCoder encodeBool:self.isEncrypted forKey:@"isEncrypted"];
@@ -455,6 +461,9 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	object->_senderIsBot = self->_senderIsBot;
 	object->_isPrivateInChannel = self->_isPrivateInChannel;
 
+	object->_msgid = self->_msgid;
+	object->_replyToMsgid = self->_replyToMsgid;
+
 	object->_receivedAt = self->_receivedAt;
 
 	object->_command = self->_command;
@@ -494,6 +503,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic eventNicknames;
 @dynamic senderIsBot;
 @dynamic isPrivateInChannel;
+@dynamic msgid;
+@dynamic replyToMsgid;
 @dynamic receivedAt;
 
 + (BOOL)isMutable
@@ -574,6 +585,20 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		self->_nickname = [nickname copy];
 
 		[self computeNicknameColorStyle];
+	}
+}
+
+- (void)setMsgid:(nullable NSString *)msgid
+{
+	if (self->_msgid != msgid) {
+		self->_msgid = [msgid copy];
+	}
+}
+
+- (void)setReplyToMsgid:(nullable NSString *)replyToMsgid
+{
+	if (self->_replyToMsgid != replyToMsgid) {
+		self->_replyToMsgid = [replyToMsgid copy];
 	}
 }
 

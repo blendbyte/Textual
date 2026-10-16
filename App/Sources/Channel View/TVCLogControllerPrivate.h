@@ -51,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setQueryInfoBar:(NSString *)text;
 - (void)removeTypingIndicator;
 
+/* Replies (9.15): which actions the view offers on messages, after the
+ connection or its capabilities change */
+- (void)updateMessageActions;
+
 - (instancetype)initWithClient:(IRCClient *)client inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithChannel:(IRCChannel *)channel inWindow:(TVCMainWindow *)window NS_DESIGNATED_INITIALIZER;
 

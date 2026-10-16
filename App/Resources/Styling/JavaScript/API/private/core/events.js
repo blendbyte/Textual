@@ -180,6 +180,8 @@ _Textual.viewFinishedLoading = function(configuration) /* PRIVATE */
 	}
 
 	_EventGroups.configure(collapseGeneralEvents, generalEventStrings, configuration.eventDisplay);
+
+	_MessageActions.configure(configuration.messageActions, configuration.messageActionStrings);
 };
 
 _Textual.viewFinishedLoadingHistory = function() /* PRIVATE */
@@ -213,6 +215,12 @@ _Textual.messageAddedToView = function(lineNumber, fromBuffer) /* PRIVATE */
 	/* After the style's handler, which may remove lines */
 	try {
 		_EventGroups.linesAdded(lineNumber, fromBuffer);
+	} catch (error) {
+		console.error(error);
+	}
+
+	try {
+		_MessageActions.linesAdded(lineNumber);
 	} catch (error) {
 		console.error(error);
 	}

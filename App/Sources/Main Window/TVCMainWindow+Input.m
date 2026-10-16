@@ -405,6 +405,11 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Escape stops replying first */
+	if ([self cancelPendingReply]) {
+		return;
+	}
+
 	[self.inputTextField keyDown:e];
 }
 

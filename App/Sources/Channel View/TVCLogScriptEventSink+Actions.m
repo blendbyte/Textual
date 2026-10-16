@@ -51,7 +51,7 @@
 #import "IRCChannel.h"
 #import "TPCNicknameColorStyleGeneratorPrivate.h"
 #import "IRCWorld.h"
-#import "TVCMainWindow.h"
+#import "TVCMainWindowPrivate.h"
 #import "TVCLogControllerPrivate.h"
 #import "TVCLogPolicyPrivate.h"
 #import "TVCLogRenderer.h"
@@ -268,6 +268,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_topicBarDoubleClicked:(TVCLogScriptEventSinkContext *)context
 {
 	[context.webViewPolicy topicBarDoubleClicked];
+}
+
+/* Reply (9.15): the message's ID, sender and the start of its text */
+- (void)_replyToMessage:(TVCLogScriptEventSinkContext *)context
+{
+	NSArray *arguments = context.arguments;
+
+	IRCChannel *channel = context.associatedChannel;
+
+	if (channel == nil) {
+		return;
+	}
+
+	[mainWindow() replyToMessage:arguments[0] from:arguments[1] excerpt:arguments[2] inChannel:channel];
 }
 
 @end

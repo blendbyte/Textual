@@ -54,6 +54,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 @property (nonatomic, copy, nullable) NSDate *chatHistoryRequestTime; // when history was last asked for: later events were seen live
 @property (nonatomic, copy, nullable) NSDate *chatHistoryAnchorTime;
 @property (nonatomic, strong, nullable) NSMutableOrderedSet<NSString *> *chatHistoryRecentMessageIds;
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *pendingReply; // +reply (9.15): msgid, nickname, excerpt of the message being answered
 
 /* draft/read-marker (IRCClient+ReadMarker) */
 @property (nonatomic, copy, nullable) NSDate *readMarkerTime; // read up to here, by any client

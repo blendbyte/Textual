@@ -331,6 +331,9 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printLocally = ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO);
 
 	for (NSArray<IRCClientMultilinePart *> *batch in batches) {
+		/* A reply: the first message answers it */
+		NSString *replyMsgid = self.outgoingReplyMsgid;
+
 		if (printLocally) {
 			[self print:[self.class multilineTextOfParts:batch]
 					 by:self.userNickname
@@ -340,7 +343,9 @@ NS_ASSUME_NONNULL_BEGIN
 			 receivedAt:[NSDate date]];
 		}
 
-		[self sendMultilineBatch:batch command:commandToSend target:channel.name];
+		[self sendMultilineBatch:batch command:commandToSend target:channel.name replyTo:replyMsgid];
+
+		self.outgoingReplyMsgid = nil;
 	}
 
 	NSMutableArray *lineStrings = [NSMutableArray arrayWithCapacity:textLines.count];
@@ -437,8 +442,47 @@ NS_ASSUME_NONNULL_BEGIN
 			message = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, message, 0x01];
 		}
 
+		/* A reply: the first message (of a line split in several) answers it */
+		NSString *replyMsgid = self.outgoingReplyMsgid;
+
+		if (replyMsgid) {
+			self.outgoingReplyMsgid = nil;
+
+			NSString *lineToSend = [IRCSendingMessage stringWithCommand:command arguments:@[destinationName, message]];
+
+			[self sendLine:[NSString stringWithFormat:@"@+reply=%@ %@", replyMsgid.encodedMessageTagString, lineToSend]];
+
+			continue;
+		}
+
 		[self send:command, destinationName, message, nil];
 	}
+}
+
+#pragma mark -
+#pragma mark Replies
+
+- (nullable NSString *)outgoingReplyMsgid
+{
+	return self.outgoingReplyMsgidValue;
+}
+
+- (void)setOutgoingReplyMsgid:(nullable NSString *)outgoingReplyMsgid
+{
+	self.outgoingReplyMsgidValue = ((self.canSendReplies) ? [IRCMessage validatedMessageIdentifier:outgoingReplyMsgid] : nil);
+}
+
+- (void)updateMessageActionsInViews
+{
+	for (IRCChannel *channel in self.channelList) {
+		[channel.viewController updateMessageActions];
+	}
+}
+
+- (BOOL)canSendReplies
+{
+	return ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMessageTags] &&
+			[self.supportInfo isClientTagAllowed:@"reply"]);
 }
 
 - (void)sendPrivmsg:(NSString *)message toChannel:(IRCChannel *)channel

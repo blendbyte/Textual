@@ -124,6 +124,16 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)redirectKeyDown:(NSEvent *)e;
 @end
 
+/* Replies (9.15): the message being answered is kept per channel and shown
+ above the input field until the next message is sent or it is cancelled */
+@interface TVCMainWindow (RepliesPrivate)
+- (void)setUpReplyBar;
+- (void)updateReplyBar;
+
+- (void)replyToMessage:(NSString *)msgid from:(NSString *)nickname excerpt:(NSString *)excerpt inChannel:(IRCChannel *)channel;
+- (BOOL)cancelPendingReply; // NO when there was none
+@end
+
 @interface TVCMainWindow (TitleAndWindowPrivate)
 /* The sidebars carry on up into a transparent title bar (10.1) */
 - (void)setUpUnifiedTitlebar;

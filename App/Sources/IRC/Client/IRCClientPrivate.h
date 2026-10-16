@@ -149,6 +149,14 @@ enum {
 @end
 
 @interface IRCClient (SendingPrivate)
+/* +reply (9.15): set around sending what was typed, so its first message
+ answers this message ID (and a line printed locally shows it) */
+@property (nonatomic, copy, nullable) NSString *outgoingReplyMsgid;
+
+@property (readonly) BOOL canSendReplies; // message-tags, and the server doesn't deny +reply
+
+- (void)updateMessageActionsInViews; // the views' Reply, React, Delete follow the connection
+
 - (void)inputText:(id)string destination:(IRCTreeItem *)destination;
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;

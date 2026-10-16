@@ -596,6 +596,16 @@ NS_ASSUME_NONNULL_BEGIN
 	logLine.isPrivateInChannel = (channel.isChannel && referenceMessage != nil &&
 								  [self stringIsChannelName:[referenceMessage paramAt:0]] == NO);
 
+	/* Replies, reactions and deleting (9.15) refer to the server's message ID.
+	 Our own line printed without echo-message has none, but shows its reply. */
+	logLine.msgid = referenceMessage.msgid;
+
+	if (referenceMessage) {
+		logLine.replyToMsgid = referenceMessage.replyToMsgid;
+	} else if (memberType == TVCLogLineMemberTypeLocalUser) {
+		logLine.replyToMsgid = self.outgoingReplyMsgid;
+	}
+
 	logLine.messageBody = messageBody;
 
 	/* Has the date changed */

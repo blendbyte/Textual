@@ -1461,6 +1461,47 @@ async def scenario_websocket(client):
 	pass
 
 
+async def scenario_replies(client):
+	"""Replies (9.15 A): message-tags and echo-message. #replies with alice, bob
+	and carol: alice asks (msgid a1), bob answers her (+reply=a1), carol answers
+	a message the client never saw (+reply=old1). Every PRIVMSG the client sends
+	is echoed with a new msgid and its client tags (so a reply shows its quote);
+	"more" makes alice say another line (msgid a2). Stays connected; the log
+	shows the tags of each message."""
+	if not await client.register_with_capabilities("message-tags echo-message server-time batch"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #replies")
+	await client.send(f":{SERVER} 353 {me} = #replies :{me} alice bob carol")
+	await client.send(f":{SERVER} 366 {me} #replies :End of /NAMES list.")
+	await client.send("@msgid=a1 :alice!a@alice.test PRIVMSG #replies :Has anyone tried the new build yet?")
+	await client.send("@msgid=b1;+reply=a1 :bob!b@bob.test PRIVMSG #replies :Yes, works fine for me")
+	await client.send("@msgid=c1;+reply=old1 :carol!c@carol.test PRIVMSG #replies :That was before your time")
+
+	seen = 0
+	echoed = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			tags = ""
+			rest_of_line = line
+			if line.startswith("@"):
+				tags, _, rest_of_line = line[1:].partition(" ")
+			command, _, rest = rest_of_line.partition(" ")
+			if command.upper() not in ("PRIVMSG", "NOTICE", "TAGMSG"):
+				continue
+			client_tags = [tag for tag in tags.split(";") if tag.startswith("+")]
+			log("··", f"client tags: {';'.join(client_tags) or 'none'}")
+			echoed += 1
+			echo_tags = ";".join([f"msgid=e{echoed}"] + client_tags)
+			await client.send(f"@{echo_tags} :{me}!user@client.textual.test {command.upper()} {rest}")
+			if command.upper() == "PRIVMSG" and rest.endswith(" :more"):
+				await client.send("@msgid=a2 :alice!a@alice.test PRIVMSG #replies :Another question: does it run on macOS 14?")
+		seen = len(client.received)
+
+
 async def scenario_sasl_new(client):
 	"""SASL 3.2 (set nicknamePassword=textual-new first): registration without
 	sasl; two seconds later the server sends CAP NEW :sasl=PLAIN. The client
@@ -2505,6 +2546,7 @@ SCENARIOS = {
 	"bots": scenario_bots,
 	"network-icon": scenario_network_icon,
 	"websocket": scenario_websocket,
+	"replies": scenario_replies,
 	"register": scenario_register,
 	"multiline": scenario_multiline,
 	"mute": scenario_mute,
@@ -2555,7 +2597,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

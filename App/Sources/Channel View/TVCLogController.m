@@ -37,6 +37,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "NSStringHelper.h"
 #import "TXGlobalModels.h"
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
@@ -104,6 +105,8 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @property (nonatomic, strong) NSMutableArray<TVCLogLine *> *unsavedLogLines; // printed but not yet in the historic log; guarded by itself
 @property (atomic, assign) NSUInteger historyGeneration; // raised by every clear; history fetches from before it are dropped
 @property (nonatomic, strong) NSMutableArray<NSString *> *highlightedLineNumbers;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *messageReferences; // msgid → line number, nickname, excerpt (replies); guarded by itself
+@property (nonatomic, strong) NSMutableArray<NSString *> *messageReferenceOrder; // oldest first, to forget beyond the limit
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *jumpToLineCallbacks; // line number → handlers waiting for it
 @property (nonatomic, strong, readwrite, nullable) TVCLogView *backingView; // nil once torn down
 @property (weak, readonly) IRCTreeItem *associatedItem;
@@ -203,6 +206,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.jumpToLineCallbacks = [NSMutableDictionary dictionary];
 
 	self.unsavedLogLines = [NSMutableArray array];
+
+	self.messageReferences = [NSMutableDictionary dictionary];
+	self.messageReferenceOrder = [NSMutableArray array];
 }
 
 - (void)prepareForTermination:(BOOL)isTerminatingApplication
@@ -734,6 +740,27 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)removeTypingIndicator
 {
 	[self _evaluateFunction:@"_Textual.typingIndicatorRemove" withArguments:nil];
+}
+
+#pragma mark -
+#pragma mark Message Actions
+
+- (NSDictionary<NSString *, id> *)messageActionsAvailability
+{
+	IRCClient *client = self.associatedClient;
+
+	IRCChannel *channel = self.associatedChannel;
+
+	BOOL inConversation = (channel != nil && channel.isUtility == NO && client.isLoggedIn);
+
+	return @{
+		@"reply" : @(inConversation && client.canSendReplies)
+	};
+}
+
+- (void)updateMessageActions
+{
+	[self evaluateFunction:@"_MessageActions.setAvailable" withArguments:@[self.messageActionsAvailability]];
 }
 
 #pragma mark -
@@ -1869,6 +1896,59 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	return (timeBetween >= 0 && timeBetween < TVCLogControllerMessageGroupingWindow);
 }
 
+#pragma mark -
+#pragma mark Message References
+
+#define _messageReferenceLimit		2000
+#define _messageReferenceExcerptLength		120
+
+/* The messages shown in this view by ID, for showing what a reply answers */
+- (void)rememberMessageReferenceForLine:(TVCLogLine *)logLine
+{
+	NSParameterAssert(logLine != nil);
+
+	NSString *msgid = logLine.msgid;
+
+	if (msgid == nil) {
+		return;
+	}
+
+	NSString *excerpt = logLine.messageBody.stripIRCEffects.trim;
+
+	if (excerpt.length > _messageReferenceExcerptLength) {
+		excerpt = [[excerpt substringToIndex:_messageReferenceExcerptLength] stringByAppendingString:@"…"];
+	}
+
+	NSDictionary *reference = @{
+		@"lineNumber" : logLine.uniqueIdentifier,
+		@"nickname" : (logLine.nickname ?: @""),
+		@"excerpt" : (excerpt ?: @"")
+	};
+
+	@synchronized (self.messageReferences) {
+		if (self.messageReferences[msgid] == nil) {
+			[self.messageReferenceOrder addObject:msgid];
+		}
+
+		self.messageReferences[msgid] = reference;
+
+		while (self.messageReferenceOrder.count > _messageReferenceLimit) {
+			[self.messageReferences removeObjectForKey:self.messageReferenceOrder.firstObject];
+
+			[self.messageReferenceOrder removeObjectAtIndex:0];
+		}
+	}
+}
+
+- (nullable NSDictionary *)messageReferenceForMsgid:(NSString *)msgid
+{
+	NSParameterAssert(msgid != nil);
+
+	@synchronized (self.messageReferences) {
+		return self.messageReferences[msgid];
+	}
+}
+
 - (nullable NSString *)renderLogLine:(TVCLogLine *)logLine previousLine:(nullable TVCLogLine *)previousLine resultInfo:(NSDictionary<NSString *, id> ** _Nullable)resultInfo
 {
 	NSParameterAssert(logLine != nil);
@@ -1970,6 +2050,35 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	}
 
 	templateAttributes[@"lineClassAttribute"] = classAttribute;
+
+	/* Replies, reactions and deleting (9.15): a message's ID, and for a reply
+	 who and what it answers when that message was shown in this view
+	 (otherwise the view looks for it, or says it's an earlier one) */
+	BOOL isTextLine = (lineType == TVCLogLineTypePrivateMessage || lineType == TVCLogLineTypeAction || lineType == TVCLogLineTypeNotice);
+
+	if (isTextLine) {
+		NSString *msgid = logLine.msgid;
+
+		if (msgid) {
+			templateAttributes[@"msgid"] = msgid;
+
+			[self rememberMessageReferenceForLine:logLine];
+		}
+
+		NSString *replyToMsgid = logLine.replyToMsgid;
+
+		if (replyToMsgid) {
+			templateAttributes[@"replyToMsgid"] = replyToMsgid;
+
+			NSDictionary *parent = [self messageReferenceForMsgid:replyToMsgid];
+
+			if (parent) {
+				templateAttributes[@"replyToLineNumber"] = parent[@"lineNumber"];
+				templateAttributes[@"replyToNickname"] = parent[@"nickname"];
+				templateAttributes[@"replyToExcerpt"] = parent[@"excerpt"];
+			}
+		}
+	}
 
 	// ---- //
 
@@ -2291,6 +2400,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"scrollbackLimit" : @(scrollbackLimit),
 			  @"collapseGeneralEvents" : @([TPCPreferences collapseEvents]),
 			  @"eventDisplay" : [TPCPreferences eventDisplayByLineType],
+			  @"messageActions" : self.messageActionsAvailability,
+			  @"messageActionStrings" : @{
+				  @"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),
+				  @"earlierMessage" : TXTLS(@"TVCMainWindow[rpl-e1]")
+			  },
 			  /* "%@" stays for the count, which the view fills in */
 			  @"generalEventStrings" : @{
 				  @"joined" : TXTLS(@"TVCMainWindow[e7g-j1]", @"%@"),

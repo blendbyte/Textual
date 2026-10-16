@@ -45,6 +45,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nullable) IRCMessageBatchMessage *parentBatchMessage;
 
 - (void)markAsNotHistoric;
+
+/* A message ID that can go back to the server as one parameter or tag value
+ (msgid, +reply): nil when empty or with a space or control character */
++ (nullable NSString *)validatedMessageIdentifier:(nullable id)identifier;
+
+@property (readonly, copy, nullable) NSString *replyToMsgid; // +reply
 @end
 
 NS_ASSUME_NONNULL_END

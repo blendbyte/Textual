@@ -443,6 +443,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.inputDraftBeingRestored = NO;
+
+	/* Each channel keeps the message it is answering, as it keeps its draft */
+	[self updateReplyBar];
 }
 
 - (void)inputTextDidChange

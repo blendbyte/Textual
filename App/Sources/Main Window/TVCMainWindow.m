@@ -169,6 +169,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 	[self registerKeyHandlers];
 
+	[self setUpReplyBar];
+
 	[self addFormattingMenuToInputTextField];
 
 	[worldController() setupConfiguration];
@@ -741,7 +743,30 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 		stringValue = [TVCInputMarkdown attributedStringByApplyingMarkdown:stringValue];
 	}
 
+	/* A reply (9.15) goes with a message, not with a command; /me is one */
+	IRCChannel *replyChannel = self.selectedChannel;
+
+	NSString *replyMsgid = replyChannel.pendingReply[@"msgid"];
+
+	NSString *typed = stringValue.string;
+
+	BOOL isMessage = ([typed hasPrefix:@"/"] == NO || [typed hasPrefix:@"//"] || [typed hasPrefixIgnoringCase:@"/me "]);
+
+	IRCClient *replyClient = replyChannel.associatedClient;
+
+	if (replyMsgid && isMessage) {
+		replyClient.outgoingReplyMsgid = replyMsgid;
+	}
+
 	[self inputText:stringValue asCommand:command];
+
+	if (replyMsgid && isMessage) {
+		replyClient.outgoingReplyMsgid = nil;
+
+		replyChannel.pendingReply = nil;
+
+		[self updateReplyBar];
+	}
 }
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command

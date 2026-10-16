@@ -318,6 +318,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		/* The Address Book segment needs a connection */
 		[mainWindowTextField() updateSegmentedController];
+
+		/* No replies without a connection */
+		[self updateMessageActionsInViews];
 	}
 }
 

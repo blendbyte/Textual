@@ -24,6 +24,17 @@
 	data-member-type="{{nicknameType}}"
 {{/isRemoteMessage}}
 
+{{#msgid}}
+	data-msgid="{{msgid}}"
+{{/msgid}}
+
+{{#replyToMsgid}}
+	data-reply-to="{{replyToMsgid}}"
+	data-reply-line="{{replyToLineNumber}}"
+	data-reply-nickname="{{replyToNickname}}"
+	data-reply-excerpt="{{replyToExcerpt}}"
+{{/replyToMsgid}}
+
 	data-timestamp="{{timestamp}}">
 
 {{#isEncrypted}}

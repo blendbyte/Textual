@@ -144,6 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL accountRegistrationAllowsCustomName;
 @property (nonatomic, copy, nullable) NSString *accountRegistrationAccount; // a REGISTER sent, until it succeeds or fails
 @property (nonatomic, copy, nullable) NSString *accountRegistrationPassword;
+@property (nonatomic, copy, nullable) NSString *outgoingReplyMsgidValue; // backs outgoingReplyMsgid
 @property (nonatomic, strong, nullable) NSImage *networkIconImage; // draft/ICON: the icon shown, from the caches folder or downloaded
 @property (nonatomic, copy, nullable) NSString *networkIconSavedAddress; // the address it came from
 @property (nonatomic, copy, nullable) NSString *networkIconRequestAddress; // being downloaded
@@ -421,7 +422,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* "line one\nline two" from the parts as a receiver puts them together */
 + (NSString *)multilineTextOfParts:(NSArray<IRCClientMultilinePart *> *)parts;
 
-- (void)sendMultilineBatch:(NSArray<IRCClientMultilinePart *> *)parts command:(NSString *)command target:(NSString *)target;
+- (void)sendMultilineBatch:(NSArray<IRCClientMultilinePart *> *)parts command:(NSString *)command target:(NSString *)target replyTo:(nullable NSString *)replyMsgid;
 
 /* A received draft/multiline batch as the one message it stands for */
 - (nullable IRCMessage *)messageCombiningMultilineBatch:(IRCMessageBatchMessage *)batch;

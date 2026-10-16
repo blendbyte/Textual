@@ -193,6 +193,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Post event */
 	[self postEventToViewController:@"serverConnected"];
 
+	[self updateMessageActionsInViews];
+
 	[self notifyEvent:TXNotificationTypeConnect lineType:TVCLogLineTypeDebug];
 
 	/* Perform login commands */
@@ -432,6 +434,9 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			if (numeric == RPL_ENDOFMOTD || numeric == ERR_NOMOTD) {
 				[self finishNetworkIconAfterRegistration];
+
+				/* CLIENTTAGDENY comes after the welcome */
+				[self updateMessageActionsInViews];
 			}
 
 			NSAssertReturnR(printMessage, YES);
