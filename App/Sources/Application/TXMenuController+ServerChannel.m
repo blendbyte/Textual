@@ -161,7 +161,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet startWithSelection:TDCServerPropertiesSheetSelectionDefault context:nil];
 
@@ -262,7 +262,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 

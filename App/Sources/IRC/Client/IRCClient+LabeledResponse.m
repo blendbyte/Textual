@@ -314,7 +314,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable IRCChannel *)selectedChannelForReplies
 {
-	return [self channelForReplyWithFallback:[mainWindow() selectedChannelOn:self]];
+	return [self channelForReplyWithFallback:[TVCMainWindow.currentWindow selectedChannelOn:self]];
 }
 
 @end

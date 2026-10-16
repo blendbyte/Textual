@@ -496,7 +496,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		/* Determine where to send notice messages */
 		if ([TPCPreferences locationToSendNotices] == TXNoticeSendLocationSelectedChannel) {
-			query = [mainWindow() selectedChannelOn:self];
+			query = [TVCMainWindow.currentWindow selectedChannelOn:self];
 		}
 
 		/* Do not create query until after ChanServ notices have been processed
@@ -975,7 +975,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *printTarget = nil;
 
 	if ([TPCPreferences locationToSendNotices] == TXNoticeSendLocationSelectedChannel) {
-		printTarget = [mainWindow() selectedChannelOn:self];
+		printTarget = [TVCMainWindow.currentWindow selectedChannelOn:self];
 	}
 
 	NSString *messageToPrint = TXTLS(@"IRC[6o8-eu]", command, sender);
@@ -1184,7 +1184,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *printTarget = nil;
 
 	if ([TPCPreferences locationToSendNotices] == TXNoticeSendLocationSelectedChannel) {
-		printTarget = [mainWindow() selectedChannelOn:self];
+		printTarget = [TVCMainWindow.currentWindow selectedChannelOn:self];
 	}
 
 	NSString *messageToPrint = nil;
@@ -1386,7 +1386,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[mainWindow() updateTitleFor:channel];
+	[TVCMainWindow updateTitleFor:channel];
 
 	if (myself) {
 		if (self.config.sendWhoCommandRequestsToChannels && self.isBrokenIRCd_aka_Twitch == NO) {
@@ -1467,7 +1467,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (isPrintOnlyMessage == NO) {
-		[mainWindow() updateTitleFor:channel];
+		[TVCMainWindow updateTitleFor:channel];
 	}
 }
 
@@ -1539,7 +1539,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (isPrintOnlyMessage == NO) {
-		[mainWindow() updateTitleFor:channel];
+		[TVCMainWindow updateTitleFor:channel];
 	}
 }
 
@@ -1641,7 +1641,7 @@ NS_ASSUME_NONNULL_BEGIN
 				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 			}
 
-			[mainWindow() updateTitleFor:channel];
+			[TVCMainWindow updateTitleFor:channel];
 
 			if (printMessage == NO) {
 				return;
@@ -1682,7 +1682,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (myself == NO) {
-		[mainWindow() updateTitleFor:self];
+		[TVCMainWindow updateTitleFor:self];
 
 		[self notifyEvent:TXNotificationTypeUserDisconnected lineType:TVCLogLineTypeQuit target:nil nickname:sender text:comment];
 
@@ -1754,7 +1754,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			/* Reload window title (our nickname is shown there) */
-			[mainWindow() updateTitleFor:self];
+			[TVCMainWindow updateTitleFor:self];
 		}
 		else
 		{
@@ -1842,7 +1842,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 					[self moveChannelToSortedPosition:channel];
 
-					[mainWindow() updateTitleFor:channel]; // Refresh hostmask
+					[TVCMainWindow updateTitleFor:channel]; // Refresh hostmask
 
 					break;
 				}
@@ -1984,7 +1984,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (isPrintOnlyMessage == NO) {
-		[mainWindow() updateTitleFor:channel];
+		[TVCMainWindow updateTitleFor:channel];
 
 		/* Becoming or no longer being an operator: Delete on others' messages */
 		[channel.viewController updateMessageActions];
@@ -2068,7 +2068,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (printMessage) {
 		[self print:message
 				 by:nil
-		  inChannel:[mainWindow() selectedChannelOn:self]
+		  inChannel:[TVCMainWindow.currentWindow selectedChannelOn:self]
 			 asType:TVCLogLineTypeInvite
 			command:m.command
 		 receivedAt:m.receivedAt];
@@ -2401,7 +2401,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCUser *user = [self findUser:m.senderNickname];
 
 	if (user) {
-		[mainWindow() updateDrawingForUserInUserList:user];
+		[TVCMainWindow updateDrawingForUserInUserList:user];
 	}
 }
 
@@ -2470,7 +2470,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCUser *userChanged = [self findUser:nickname];
 
 	if (userChanged) {
-		[mainWindow() updateDrawingForUserInUserList:userChanged];
+		[TVCMainWindow updateDrawingForUserInUserList:userChanged];
 	}
 }
 
@@ -2491,7 +2491,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCUser *userChanged = [self findUser:nickname];
 
 	if (userChanged) {
-		[mainWindow() updateDrawingForUserInUserList:userChanged];
+		[TVCMainWindow updateDrawingForUserInUserList:userChanged];
 	}
 }
 

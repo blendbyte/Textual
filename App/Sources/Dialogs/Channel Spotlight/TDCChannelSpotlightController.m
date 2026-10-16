@@ -467,7 +467,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updatePredicate
 {
 	if ([TPCPreferences channelNavigationIsServerSpecific]) {
-		NSString *clientId = mainWindow().selectedClient.uniqueIdentifier;
+		NSString *clientId = TVCMainWindow.currentWindow.selectedClient.uniqueIdentifier;
 
 		self.searchResultsController.filterPredicate = [NSPredicate predicateWithFormat:@"distance >= 0.5 && (isMenuAction == YES || clientId LIKE[c] %@)", clientId];
 	} else {

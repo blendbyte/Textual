@@ -430,7 +430,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[user markAsReturned];
 	}
 	
-	[mainWindow() updateDrawingForUserInUserList:user];
+	[TVCMainWindow updateDrawingForUserInUserList:user];
 }
 
 - (void)resetAwayStatusForUsers

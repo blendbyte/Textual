@@ -173,12 +173,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)importPreferences:(nullable id)sender
 {
-	[TPCPreferencesImportExport importInWindow:mainWindow()];
+	[TPCPreferencesImportExport importInWindow:TVCMainWindow.currentWindow];
 }
 
 - (void)exportPreferences:(nullable id)sender
 {
-	[TPCPreferencesImportExport exportInWindow:mainWindow()];
+	[TPCPreferencesImportExport exportInWindow:TVCMainWindow.currentWindow];
 }
 
 - (void)importSettingsFromTextual7:(nullable id)sender
@@ -277,14 +277,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)toggleServerListVisibility:(nullable id)sender
 {
-	[mainWindow().contentSplitView toggleServerListVisibility];
+	[TVCMainWindow.currentWindow.contentSplitView toggleServerListVisibility];
 }
 
 - (void)toggleMemberListVisibility:(nullable id)sender
 {
 	mainWindowMemberList().isHiddenByUser = (mainWindowMemberList().isHiddenByUser == NO);
 
-	[mainWindow().contentSplitView toggleMemberListVisibility];
+	[TVCMainWindow.currentWindow.contentSplitView toggleMemberListVisibility];
 }
 
 - (void)forceReloadTheme:(nullable id)sender

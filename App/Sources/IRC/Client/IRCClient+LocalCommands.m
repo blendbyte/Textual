@@ -170,8 +170,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *lowercaseCommand = command.lowercaseString;
 	NSString *uppercaseCommand = command.uppercaseString;
 
-	IRCClient *selectedClient = mainWindow().selectedClient;
-	IRCChannel *selectedChannel = mainWindow().selectedChannel;
+	IRCClient *selectedClient = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *selectedChannel = TVCMainWindow.currentWindow.selectedChannel;
 
 	IRCChannel *targetChannel = nil;
 
@@ -1051,7 +1051,7 @@ static NSUInteger _aliasDepth = 0;
 
 	NSString *needle = stringIn.tokenAsString;
 
-	IRCTreeItem *bestMatch = mainWindow().selectedItem;
+	IRCTreeItem *bestMatch = TVCMainWindow.currentWindow.selectedItem;
 
 	CGFloat bestScore = 0.0;
 
@@ -1440,7 +1440,7 @@ static NSUInteger _aliasDepth = 0;
 	lagCheckContext[@"time"] = @([NSDate timeIntervalSince1970]);
 
 	if (commandNumeric == IRCLocalCommandMylag) {
-		IRCChannel *selectedChannel = [mainWindow() selectedChannelOn:self];
+		IRCChannel *selectedChannel = [TVCMainWindow.currentWindow selectedChannelOn:self];
 		
 		if (selectedChannel) {
 			lagCheckContext[@"channel"] = selectedChannel.name;
@@ -1882,7 +1882,7 @@ static NSUInteger _aliasDepth = 0;
 
 	[self moveChannelToSortedPosition:targetChannel];
 
-	[mainWindow() updateTitleFor:targetChannel];
+	[TVCMainWindow updateTitleFor:targetChannel];
 }
 
 /* SERVER */

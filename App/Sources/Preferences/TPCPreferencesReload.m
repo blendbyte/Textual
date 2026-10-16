@@ -304,7 +304,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Main window alpha level */
 	if (_reloads(TPCPreferencesReloadActionMainWindowTransparencyLevel)) {
-		[mainWindow() updateAlphaValueToReflectPreferences];
+		[TVCMainWindow updateAlphaValueToReflectPreferences];
 	}
 
 	/* Highlight keywords */
@@ -337,7 +337,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Input history scope */
 	if (_reloads(TPCPreferencesReloadActionInputHistoryScope)) {
-		[mainWindow().inputHistoryManager noteInputHistoryObjectScopeDidChange];
+		[TVCMainWindow inputHistoryScopeDidChange];
 	}
 
 	/* Sparkle framework update feed URL */
@@ -380,7 +380,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Channel view arrangement */
 	if (_reloads(TPCPreferencesReloadActionChannelViewArrangement)) {
-		[mainWindow() updateChannelViewArrangement];
+		[TVCMainWindow updateChannelViewArrangement];
 	}
 
 	/* World controller preferences changed call */

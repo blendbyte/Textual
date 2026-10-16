@@ -92,7 +92,163 @@ NSString * const TVCMainWindowDidReloadThemeNotification = @"TVCMainWindowDidRel
 
 NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSelectionChangedNotification";
 
+/* Every window of this class, the main window first (7.13) */
+static NSPointerArray *_windows = nil;
+
+/* The one that was key last */
+static __weak TVCMainWindow *_lastKeyWindow = nil;
+
 @implementation TVCMainWindow
+
+#pragma mark -
+#pragma mark Windows
+
++ (void)registerWindow:(TVCMainWindow *)window
+{
+	NSParameterAssert(window != nil);
+
+	if (_windows == nil) {
+		_windows = [NSPointerArray weakObjectsPointerArray];
+	}
+
+	[_windows compact];
+
+	if ([_windows.allObjects containsObject:window]) {
+		return;
+	}
+
+	[_windows addPointer:(__bridge void *)window];
+}
+
++ (NSArray<TVCMainWindow *> *)windows
+{
+	NSArray *windows = _windows.allObjects;
+
+	return ((windows) ?: @[]);
+}
+
++ (TVCMainWindow *)currentWindow
+{
+	TVCMainWindow *window = _lastKeyWindow;
+
+	if (window && window.visible) {
+		return window;
+	}
+
+	return mainWindow();
+}
+
++ (nullable TVCMainWindow *)focusedWindow
+{
+	for (TVCMainWindow *window in self.windows) {
+		if (window.keyWindow) {
+			return window;
+		}
+	}
+
+	return nil;
+}
+
++ (NSArray<TVCMainWindow *> *)windowsShowingItem:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	NSMutableArray *windows = [NSMutableArray array];
+
+	for (TVCMainWindow *window in self.windows) {
+		if ([window isItemVisible:item]) {
+			[windows addObject:window];
+		}
+	}
+
+	return [windows copy];
+}
+
++ (nullable TVCMainWindow *)windowWithSelectedItem:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	for (TVCMainWindow *window in self.windows) {
+		if ([window isItemSelected:item]) {
+			return window;
+		}
+	}
+
+	return nil;
+}
+
++ (BOOL)isUserLookingAtItem:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	TVCMainWindow *window = self.focusedWindow;
+
+	return (window && [window isItemSelected:item]);
+}
+
++ (void)updateTitleFor:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	for (TVCMainWindow *window in self.windows) {
+		[window updateTitleFor:item];
+	}
+}
+
++ (void)updateDrawingForUserInUserList:(IRCUser *)user
+{
+	NSParameterAssert(user != nil);
+
+	for (TVCMainWindow *window in self.windows) {
+		[window updateDrawingForUserInUserList:user];
+	}
+}
+
++ (void)updateTypingIndicatorForChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	for (TVCMainWindow *window in self.windows) {
+		[window updateTypingIndicatorForChannel:channel];
+	}
+}
+
++ (void)updateUploadButton
+{
+	for (TVCMainWindow *window in self.windows) {
+		[window updateUploadButton];
+	}
+}
+
++ (void)updateAlphaValueToReflectPreferences
+{
+	for (TVCMainWindow *window in self.windows) {
+		[window updateAlphaValueToReflectPreferences];
+	}
+}
+
++ (void)updateChannelViewArrangement
+{
+	for (TVCMainWindow *window in self.windows) {
+		[window updateChannelViewArrangement];
+	}
+}
+
++ (void)inputHistoryScopeDidChange
+{
+	for (TVCMainWindow *window in self.windows) {
+		[window.inputHistoryManager noteInputHistoryObjectScopeDidChange];
+	}
+}
+
++ (void)destroyInputHistoryOf:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	for (TVCMainWindow *window in self.windows) {
+		[window.inputHistoryManager destroy:item];
+	}
+}
 
 #pragma mark -
 #pragma mark Awakening
@@ -127,11 +283,10 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 {
 	[super awakeFromNib];
 
-	/* -awakeFromNib is called multiple times because of reloads */
-	static BOOL _awakeFromNibCalled = NO;
-
-	if (_awakeFromNibCalled == NO) {
-		_awakeFromNibCalled = YES;
+	/* -awakeFromNib is called multiple times because of reloads;
+	 once per window (7.13: there can be more than one) */
+	if (self.awakened == NO) {
+		self.awakened = YES;
 
 		[self _awakeFromNib];
 	}
@@ -139,6 +294,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 - (void)_awakeFromNib
 {
+	[self.class registerWindow:self];
+
 	self.delegate = (id)self;
 
 	self.allowsConcurrentViewDrawing = NO;
@@ -458,6 +615,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
 
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
+	_lastKeyWindow = self;
+
 	self.lastKeyWindowStateChange = [NSDate timeIntervalSince1970];
 
 	[self.titlebarTitleField updateTextColor];
@@ -526,6 +685,8 @@ NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSele
  by making the input field the field editor of every text field in the window. */
 - (void)addFormattingMenuToInputTextField
 {
+	self.formattingMenu.ownerWindow = self;
+
 	NSMenu *editorMenu = self.inputTextField.menu;
 
 	NSMenuItem *formatterMenu = self.formattingMenu.formatterMenu;

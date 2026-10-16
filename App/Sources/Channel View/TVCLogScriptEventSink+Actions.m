@@ -285,10 +285,18 @@ NS_ASSUME_NONNULL_BEGIN
 	[channel.associatedClient sendReaction:arguments[1] toMessage:arguments[0] inChannel:channel removing:[arguments[2] boolValue]];
 }
 
+/* The window showing the view the event came from (7.13) */
++ (TVCMainWindow *)windowOfContext:(TVCLogScriptEventSinkContext *)context
+{
+	TVCMainWindow *window = context.viewController.attachedWindow;
+
+	return ((window) ?: mainWindow());
+}
+
 /* Keyboard focus on messages (9.15 D): Escape went back to the input field */
 - (void)_leaveMessageFocus:(TVCLogScriptEventSinkContext *)context
 {
-	[mainWindow() leaveMessageFocusInViewController:context.viewController];
+	[[self.class windowOfContext:context] leaveMessageFocusInViewController:context.viewController];
 }
 
 /* The context menu opens on a message: which, and what can be done */
@@ -331,7 +339,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[mainWindow() confirmDeletingMessage:context.arguments[0] inChannel:channel];
+	[[self.class windowOfContext:context] confirmDeletingMessage:context.arguments[0] inChannel:channel];
 }
 
 /* More…: any emoji, from the macOS picker */
@@ -343,7 +351,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[mainWindow() showReactionPickerForMessage:context.arguments[0] inChannel:channel];
+	[[self.class windowOfContext:context] showReactionPickerForMessage:context.arguments[0] inChannel:channel];
 }
 
 /* Reply (9.15): the message's ID, sender and the start of its text */
@@ -357,7 +365,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[mainWindow() replyToMessage:arguments[0] from:arguments[1] excerpt:arguments[2] inChannel:channel];
+	[[self.class windowOfContext:context] replyToMessage:arguments[0] from:arguments[1] excerpt:arguments[2] inChannel:channel];
 }
 
 @end

@@ -311,7 +311,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.reconnectEnabled = YES;
 
 	/* Present status to user */
-	[mainWindow() updateTitleFor:self];
+	[TVCMainWindow updateTitleFor:self];
 
 	if (connectMode == IRCClientConnectModeReconnect) {
 		[self printDebugInformationToConsole:TXTLS(@"IRC[xxb-y2]")];
@@ -535,7 +535,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self stopReconnectTimer];
 
-	[mainWindow() updateTitleFor:self];
+	[TVCMainWindow updateTitleFor:self];
 }
 
 - (void)changeNickname:(NSString *)newNickname

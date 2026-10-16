@@ -76,7 +76,7 @@ static NSTimeInterval const IRCClientReadMarkerDelay = 2.0;
 
 - (BOOL)readMarkerChannelIsViewed:(IRCChannel *)channel
 {
-	return (mainWindow().keyWindow && [mainWindow() isItemSelected:channel]);
+	return [TVCMainWindow isUserLookingAtItem:channel];
 }
 
 - (void)readMarkerNoteMessageAt:(NSDate *)receivedAt inChannel:(IRCChannel *)channel

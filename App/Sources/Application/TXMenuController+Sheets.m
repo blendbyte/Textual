@@ -116,7 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 
@@ -201,7 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = (id)self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet startWithChannels:channels];
 
@@ -250,7 +250,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[windowController() popMainWindowSheetIfExists];
 
 	TDCWelcomeSheet *sheet =
-	[[TDCWelcomeSheet alloc] initWithWindow:mainWindow()];
+	[[TDCWelcomeSheet alloc] initWithWindow:TVCMainWindow.currentWindow];
 
 	sheet.delegate = (id)self;
 
@@ -324,7 +324,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet startWithSelection:selection context:context];
 
@@ -405,7 +405,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = (id)self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 
@@ -432,7 +432,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = (id)self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 
@@ -463,7 +463,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = (id)self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 
@@ -501,7 +501,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = (id)self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 
@@ -565,7 +565,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	sheet.delegate = (id)self;
 
-	sheet.window = mainWindow();
+	sheet.window = TVCMainWindow.currentWindow;
 
 	[sheet start];
 

@@ -41,6 +41,8 @@
 #import "TLOLocalization.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TVCTextViewIRCFormattingMenuPrivate.h"
+#import "TVCMainWindow.h"
+#import "TVCMainWindowTextView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -77,6 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ([firstResponder isKindOfClass:[TVCTextViewWithIRCFormatter class]]) {
 		return firstResponder;
+	}
+
+	/* A right-click in a window that isn't key (Textual in the background,
+	 or Preferences in front): neither has the field, so every item was
+	 greyed out. The menu belongs to its own window's input field. */
+	TVCMainWindow *ownerWindow = self.ownerWindow;
+
+	if (ownerWindow && ownerWindow.keyWindow == NO) {
+		return ownerWindow.inputTextField;
 	}
 
 	return nil;

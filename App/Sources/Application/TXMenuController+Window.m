@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	TXCommandWKeyAction keyAction = [TPCPreferences commandWKeyAction];
 
-	if (keyAction == TXCommandWKeyActionCloseWindow || mainWindow().keyWindow == NO) {
+	if (keyAction == TXCommandWKeyActionCloseWindow || TVCMainWindow.focusedWindow == nil) {
 		NSWindow *windowToClose = [NSApp keyWindow];
 
 		if (windowToClose == nil) {
@@ -165,7 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)centerMainWindow:(nullable id)sender
 {
-	[mainWindow() exactlyCenterWindow];
+	[TVCMainWindow.currentWindow exactlyCenterWindow];
 }
 
 - (void)toggleFullscreen:(nullable id)sender
@@ -175,13 +175,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)resetMainWindowFrame:(nullable id)sender
 {
-	if (mainWindow().inFullscreenMode) {
-		[mainWindow() toggleFullScreen:sender];
+	TVCMainWindow *window = TVCMainWindow.currentWindow;
+
+	if (window.inFullscreenMode) {
+		[window toggleFullScreen:sender];
 	}
 
-	[mainWindow() setFrame:[mainWindow() defaultWindowFrame] display:YES animate:YES];
+	[window setFrame:[window defaultWindowFrame] display:YES animate:YES];
 
-	[mainWindow() exactlyCenterWindow];
+	[window exactlyCenterWindow];
 }
 
 - (void)sortChannelListNames:(nullable id)sender

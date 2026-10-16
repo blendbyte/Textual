@@ -98,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 		  completionBlock:^(TLOUploadDestination * _Nullable destination) {
 			  [TLOUploadDestination setGlobalDestination:destination];
 
-			  [mainWindow() updateUploadButton];
+			  [TVCMainWindow updateUploadButton];
 
 			  if (completionBlock) {
 				  completionBlock();

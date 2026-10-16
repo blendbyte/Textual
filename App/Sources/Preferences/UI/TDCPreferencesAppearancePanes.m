@@ -573,7 +573,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)onChangedTransparency:(nullable id)sender
 {
-	[mainWindow() updateAlphaValueToReflectPreferences];
+	[TVCMainWindow updateAlphaValueToReflectPreferences];
 }
 
 - (void)onChangedChannelViewArrangement:(nullable id)sender

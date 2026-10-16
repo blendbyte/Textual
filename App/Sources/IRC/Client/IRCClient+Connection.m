@@ -226,7 +226,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.supportInfo reset];
 
 	if (isTerminating == NO) {
-		[mainWindow() updateUploadButton];
+		[TVCMainWindow updateUploadButton];
 	}
 
 	[self clearAddressBookCache];
@@ -321,7 +321,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (isTerminating == NO) {
 		[mainWindow() reloadTreeGroup:self];
 
-		[mainWindow() updateTitleFor:self];
+		[TVCMainWindow updateTitleFor:self];
 
 		/* The Address Book segment needs a connection */
 		[mainWindowTextField() updateSegmentedController];
@@ -394,7 +394,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.tryingNicknameSentNickname = self.config.nickname;
 
-	[mainWindow() updateTitleFor:self];
+	[TVCMainWindow updateTitleFor:self];
 
 	[RZNotificationCenter() postNotificationName:IRCClientDidConnectNotification object:self];
 

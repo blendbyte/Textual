@@ -170,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command
 {
-	IRCTreeItem *destination = mainWindow().selectedItem;
+	IRCTreeItem *destination = TVCMainWindow.currentWindow.selectedItem;
 
 	[self inputText:string asCommand:command destination:destination];
 }
@@ -294,7 +294,7 @@ NS_ASSUME_NONNULL_BEGIN
 											 suppressionResponse:NULL];
 
 	if (response == TDCAlertResponseOther) {
-		[mainWindow() sendText:text.string asLinkOnClient:self toItem:destination asCommand:command];
+		[TVCMainWindow.currentWindow sendText:text.string asLinkOnClient:self toItem:destination asCommand:command];
 
 		return NO;
 	}
@@ -569,7 +569,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)sendPrivmsgToSelectedChannel:(NSString *)message
 {
-	IRCChannel *channel = [mainWindow() selectedChannelOn:self];
+	IRCChannel *channel = [TVCMainWindow.currentWindow selectedChannelOn:self];
 
 	if (channel == nil) {
 		return;

@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(sender != nil);
 
-	if (mainWindow().keyWindow == NO) {
+	if (TVCMainWindow.focusedWindow == nil) {
 		return;
 	}
 
@@ -158,7 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paste:(nullable id)sender
 {
-	if (mainWindow().keyWindow) {
+	if ((TVCMainWindow.focusedWindow != nil)) {
 		[mainWindowTextField() focus];
 
 		[mainWindowTextField() paste:sender];
@@ -175,7 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)print:(nullable id)sender
 {
-	if (mainWindow().keyWindow) {
+	if ((TVCMainWindow.focusedWindow != nil)) {
 		TVCLogView *webView = self.selectedViewControllerBackingView;
 
 		if (webView == nil) {

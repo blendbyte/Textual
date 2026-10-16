@@ -789,7 +789,7 @@ NS_ASSUME_NONNULL_BEGIN
 	openPanel.canCreateDirectories = NO;
 	openPanel.resolvesAliases = YES;
 
-	[openPanel beginSheetModalForWindow:mainWindow() completionHandler:^(NSInteger returnCode) {
+	[openPanel beginSheetModalForWindow:TVCMainWindow.currentWindow completionHandler:^(NSInteger returnCode) {
 		if (returnCode != NSModalResponseOK) {
 			return;
 		}
@@ -866,7 +866,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *otherButton = ((recipient) ? TXTLS(@"Prompts[d7f-u5]") : TXTLS(@"Prompts[d7f-p1]")); // Send by DCC, Insert Path
 
-	[TDCAlert alertSheetWithWindow:mainWindow()
+	[TDCAlert alertSheetWithWindow:TVCMainWindow.currentWindow
 							  body:body
 							 title:title
 					 defaultButton:TXTLS(@"Prompts[d7f-u4]") // Upload
@@ -874,7 +874,7 @@ NS_ASSUME_NONNULL_BEGIN
 					   otherButton:otherButton
 				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
 					   if (buttonClicked == TDCAlertResponseDefault) {
-						   [mainWindow() uploadFiles:sendableFiles onClient:client toItem:item];
+						   [TVCMainWindow.currentWindow uploadFiles:sendableFiles onClient:client toItem:item];
 					   } else if (buttonClicked == TDCAlertResponseOther) {
 						   if (recipient) {
 							   [self sendDroppedFiles:sendableFiles to:recipient onClient:client];
@@ -901,7 +901,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *destination = u.fileUploadDestinationDescription;
 
 	if (destination == nil) {
-		[mainWindow() offerUploadSetupForClient:u];
+		[TVCMainWindow.currentWindow offerUploadSetupForClient:u];
 
 		return;
 	}
@@ -940,7 +940,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCTreeItem *item = ((c) ?: u);
 
-	[TDCAlert alertSheetWithWindow:mainWindow()
+	[TDCAlert alertSheetWithWindow:TVCMainWindow.currentWindow
 							  body:TXTLS(@"Prompts[d7f-u3]", destination)
 							 title:TXTLS(@"Prompts[d7f-i4]")
 					 defaultButton:TXTLS(@"Prompts[d7f-u4]") // Upload
@@ -948,7 +948,7 @@ NS_ASSUME_NONNULL_BEGIN
 					   otherButton:nil
 				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
 					   if (buttonClicked == TDCAlertResponseDefault) {
-						   [mainWindow() uploadFiles:@[path] onClient:u toItem:item];
+						   [TVCMainWindow.currentWindow uploadFiles:@[path] onClient:u toItem:item];
 					   }
 				   }];
 }
@@ -1053,7 +1053,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	[TDCAlert alertSheetWithWindow:mainWindow()
+	[TDCAlert alertSheetWithWindow:TVCMainWindow.currentWindow
 							  body:body
 							 title:title
 					 defaultButton:defaultButton
@@ -1068,7 +1068,7 @@ NS_ASSUME_NONNULL_BEGIN
 						   [self insertDroppedFilePaths:files];
 					   } else if (answer == TDCFileTransferDropAnswerNoRecipient && buttonClicked == TDCAlertResponseOther) {
 						   XRPerformBlockAsynchronouslyOnMainQueue(^{
-							   [mainWindow() editUploadDestinationForClient:client];
+							   [TVCMainWindow.currentWindow editUploadDestinationForClient:client];
 						   });
 					   } else if (answer == TDCFileTransferDropAnswerSend && buttonClicked == TDCAlertResponseDefault) {
 						   [self sendDroppedFiles:sendableFiles to:recipient onClient:client];

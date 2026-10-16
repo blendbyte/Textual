@@ -164,7 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 			/* 2 */ (onlySpeakEventsForSelection == NO &&
 					 [TPCPreferences channelMessageSpeakChannelName]) ||
 			/* 2 */	(onlySpeakEventsForSelection &&
-					 [mainWindow() isItemSelected:channel] == NO));
+					 [TVCMainWindow windowWithSelectedItem:channel] == nil));
 
 			BOOL speakNickname = (isChannel == NO ||
 					[TPCPreferences channelMessageSpeakNickname]);
@@ -212,7 +212,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			BOOL onlySpeakEventsForSelection = [TPCPreferences onlySpeakEventsForSelection];
 
-			BOOL channelIsSelected = [mainWindow() isItemSelected:channel];
+			BOOL channelIsSelected = ([TVCMainWindow windowWithSelectedItem:channel] != nil);
 
 			if (onlySpeakEventsForSelection && channelIsSelected == NO) {
 				break;
@@ -523,14 +523,22 @@ NS_ASSUME_NONNULL_BEGIN
 		return YES;
 	}
 
-	BOOL mainWindowIsFocused = (mainWindow().inactive == NO);
+	/* One of Textual's windows is in front (key or main) */
+	BOOL windowIsFocused = NO;
+
+	for (TVCMainWindow *window in TVCMainWindow.windows) {
+		if (window.inactive == NO) {
+			windowIsFocused = YES;
+		}
+	}
 
 	BOOL postNotificationsWhileFocused = [TPCPreferences postNotificationsWhileInFocus];
 
-	/* Events without a channel are shown in the server console */
-	BOOL targetIsSelected = [mainWindow() isItemSelected:((target) ?: self)];
+	/* Events without a channel are shown in the server console; the window
+	 showing it is in front (key or main) */
+	TVCMainWindow *targetWindow = [TVCMainWindow windowWithSelectedItem:((target) ?: self)];
 
-	BOOL onlySpeakEvent = (postNotificationsWhileFocused && mainWindowIsFocused && targetIsSelected);
+	BOOL onlySpeakEvent = (postNotificationsWhileFocused && targetWindow && targetWindow.inactive == NO);
 
 	if ([TPCPreferences soundIsMuted] == NO) {
 		if (onlySpeakEvent == NO) {
@@ -560,7 +568,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return YES;
 	}
 
-	if (postNotificationsWhileFocused == NO && mainWindowIsFocused) {
+	if (postNotificationsWhileFocused == NO && windowIsFocused) {
 		if (eventType != TXNotificationTypeAddressBookMatch) {
 			return YES;
 		}

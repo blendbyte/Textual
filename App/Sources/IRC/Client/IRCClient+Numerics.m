@@ -228,7 +228,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[mainWindow() reloadTreeItem:self];
 
-	[mainWindow() updateTitleFor:self];
+	[TVCMainWindow updateTitleFor:self];
 
 	[mainWindowTextField() updateSegmentedController];
 
@@ -338,7 +338,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self updateNetworkIcon];
 
-			[mainWindow() updateUploadButton];
+			[TVCMainWindow updateUploadButton];
 
 			if (printMessage) {
 				NSString *configurationFormatted = self.supportInfo.stringValueForLastUpdate;
@@ -495,7 +495,9 @@ NS_ASSUME_NONNULL_BEGIN
 				self.awayMessageToRestore = nil;
 			}
 			
-			[mainWindow() updateTitle];
+			for (TVCMainWindow *window in TVCMainWindow.windows) {
+				[window updateTitle];
+			}
 
 			if (printMessage) {
 				[self printReply:m];
@@ -1008,8 +1010,10 @@ NS_ASSUME_NONNULL_BEGIN
 				if (channel.whoxRefreshPending) {
 					channel.whoxRefreshPending = NO;
 
-					if (mainWindow().selectedChannel == channel) {
-						[mainWindow().memberList refreshAllDrawings];
+					for (TVCMainWindow *window in [TVCMainWindow windowsShowingItem:channel]) {
+						if (window.selectedChannel == channel) {
+							[window.memberList refreshAllDrawings];
+						}
 					}
 				}
 			}
@@ -1173,7 +1177,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			/* Update user count in title */
-			[mainWindow() updateTitleFor:channel];
+			[TVCMainWindow updateTitleFor:channel];
 
 			break;
 		}
@@ -1630,7 +1634,7 @@ NS_ASSUME_NONNULL_BEGIN
 			IRCChannel *channel = nil;
 
 			if ([TPCPreferences locationToSendNotices] == TXNoticeSendLocationSelectedChannel) {
-				channel = [mainWindow() selectedChannelOn:self];
+				channel = [TVCMainWindow.currentWindow selectedChannelOn:self];
 			}
 
 			if (channel) {
@@ -1838,7 +1842,7 @@ NS_ASSUME_NONNULL_BEGIN
 				 user.accountKnown != userAdded.accountKnown ||
 				 NSObjectsAreEqual(user.account, userAdded.account) == NO)
 		{
-			[mainWindow() updateDrawingForUserInUserList:userAdded];
+			[TVCMainWindow updateDrawingForUserInUserList:userAdded];
 		}
 	}
 

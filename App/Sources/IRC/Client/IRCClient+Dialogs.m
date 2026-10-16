@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[windowController() popMainWindowSheetIfExists];
 
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	if (c == nil) {
 		return;
@@ -154,7 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	listSheet.delegate = (id)self;
 
-	listSheet.window = mainWindow();
+	listSheet.window = TVCMainWindow.currentWindow;
 
 	[listSheet start];
 

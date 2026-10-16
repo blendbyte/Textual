@@ -196,7 +196,7 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 		[channel clearTypingForNickname:sender];
 	}
 
-	[mainWindow() updateTypingIndicatorForChannel:channel];
+	[TVCMainWindow updateTypingIndicatorForChannel:channel];
 }
 
 /* A message from someone ends their typing */
@@ -206,7 +206,7 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 	NSParameterAssert(channel != nil);
 
 	if ([channel clearTypingForNickname:nickname]) {
-		[mainWindow() updateTypingIndicatorForChannel:channel];
+		[TVCMainWindow updateTypingIndicatorForChannel:channel];
 	}
 }
 

@@ -457,7 +457,7 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 		}
 	}
 
-	[[mainWindow() inputHistoryManager] destroy:self];
+	[TVCMainWindow destroyInputHistoryOf:self];
 
 	[self.viewController prepareForPermanentDestruction];
 }

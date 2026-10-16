@@ -49,7 +49,7 @@
 #import "TPCPreferencesUserDefaults.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
-#import "TVCMainWindow.h"
+#import "TVCMainWindowPrivate.h"
 #import "TVCLogController.h"
 #import "TVCLogView.h"
 #import "IRCClientConfig.h"
@@ -317,7 +317,7 @@ static BOOL _developmentConnectRequested = NO;
 		}
 	}
 
-	TVCLogController *viewController = mainWindow().selectedViewController;
+	TVCLogController *viewController = TVCMainWindow.currentWindow.selectedViewController;
 
 	if (viewController == nil || script.length == 0) {
 		return;

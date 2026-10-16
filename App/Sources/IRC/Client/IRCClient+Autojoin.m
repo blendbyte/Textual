@@ -184,7 +184,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self printDebugInformationToConsole:text];
 
-	IRCChannel *c = [mainWindow() selectedChannelOn:self];
+	IRCChannel *c = [TVCMainWindow.currentWindow selectedChannelOn:self];
 
 	if (c != nil) {
 		[self printDebugInformation:text inChannel:c];

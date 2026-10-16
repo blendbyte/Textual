@@ -352,7 +352,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[TVCLogView applyProxyOfClient:self];
 
 	/* The server's upload address may have changed (9.18 B) */
-	[mainWindow() updateUploadButton];
+	[TVCMainWindow updateUploadButton];
 
 	/* Update channel list */
 	{
@@ -477,7 +477,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self destroyServerPasswordKeychainItemAfterMigration];
 
 	/* Update main window title */
-	[mainWindow() updateTitleFor:self];
+	[TVCMainWindow updateTitleFor:self];
 
 	/* The icon may have been chosen or removed */
 	[mainWindow() reloadTreeItem:self];
@@ -662,7 +662,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		[c prepareForPermanentDestruction];
 	}
 
-	[[mainWindow() inputHistoryManager] destroy:self];
+	[TVCMainWindow destroyInputHistoryOf:self];
 
 	[self.viewController prepareForPermanentDestruction];
 
@@ -1450,7 +1450,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(channel != nil);
 
-	if (mainWindow().keyWindow && [mainWindow() isItemSelected:channel]) {
+	if ([TVCMainWindow isUserLookingAtItem:channel]) {
 		return;
 	}
 
@@ -1470,7 +1470,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(channel != nil);
 
-	if (mainWindow().keyWindow && [mainWindow() isItemSelected:channel]) {
+	if ([TVCMainWindow isUserLookingAtItem:channel]) {
 		return;
 	}
 

@@ -637,7 +637,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Add scrollback marker to channel if conditions are met */
 	if ([TPCPreferences autoAddScrollbackMark]) {
-		if ([mainWindow() isItemVisible:channel] == NO || mainWindow().mainWindow == NO) {
+		BOOL channelInFront = NO;
+
+		for (TVCMainWindow *window in [TVCMainWindow windowsShowingItem:channel]) {
+			if (window.mainWindow) {
+				channelInFront = YES;
+			}
+		}
+
+		if (channelInFront == NO) {
 			if (channel.isUnread == NO &&
 				(lineType == TVCLogLineTypePrivateMessage ||
 				 lineType == TVCLogLineTypeAction ||

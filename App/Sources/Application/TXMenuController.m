@@ -213,9 +213,11 @@ NS_ASSUME_NONNULL_BEGIN
 	 in a sheet, most items can be disabled which means at this point
 	 we will default to disabled and allow the bottom logic to enable
 	 only the bare essentials. */
-	BOOL defaultToNoForSheet = ( mainWindow().attachedSheet != nil ||
-								(mainWindow().mainWindow == NO &&
-								 mainWindow().isBeneathMouse == NO));
+	TVCMainWindow *currentWindow = TVCMainWindow.currentWindow;
+
+	BOOL defaultToNoForSheet = ( currentWindow.attachedSheet != nil ||
+								(currentWindow.mainWindow == NO &&
+								 currentWindow.isBeneathMouse == NO));
 
 	if (defaultToNoForSheet) {
 		validationResult = NO;
@@ -395,7 +397,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTMainMenuChannel: // "Channel"
@@ -479,15 +481,15 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTMMFileCloseWindow: // "Close Window"
 		{
 			TXCommandWKeyAction keyAction = [TPCPreferences commandWKeyAction];
 
-			if (keyAction == TXCommandWKeyActionCloseWindow || mainWindow().keyWindow == NO) {
+			if (keyAction == TXCommandWKeyActionCloseWindow || TVCMainWindow.focusedWindow == nil) {
 				menuItem.title = TXTLS(@"BasicLanguage[1f6-bg]");
 
 				return YES;
@@ -565,23 +567,23 @@ NS_ASSUME_NONNULL_BEGIN
 			/* An editable picture well (the server icon in Server Properties) takes a picture */
 			id keyFirstResponder = [NSApp keyWindow].firstResponder;
 
-			if (mainWindow().keyWindow == NO && [keyFirstResponder isKindOfClass:[NSImageView class]]) {
+			if (TVCMainWindow.focusedWindow == nil && [keyFirstResponder isKindOfClass:[NSImageView class]]) {
 				return ([keyFirstResponder isEditable] && [NSImage canInitWithPasteboard:RZPasteboard()]);
 			}
 
 			NSString *currentPasteboard = RZPasteboard().stringContent;
 
 			/* Files pasted in the main window get the dropped files sheet */
-			BOOL filesOnPasteboard = (mainWindow().keyWindow && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
+			BOOL filesOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
 
 			/* And a picture (a screenshot): uploaded where the network offers it (9.18) */
-			BOOL pictureOnPasteboard = (mainWindow().keyWindow && [NSImage canInitWithPasteboard:RZPasteboard()]);
+			BOOL pictureOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [NSImage canInitWithPasteboard:RZPasteboard()]);
 
 			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
 				return NO;
 			}
 
-			if (mainWindow().keyWindow) {
+			if ((TVCMainWindow.focusedWindow != nil)) {
 				return mainWindowTextField().editable;
 			}
 
@@ -639,7 +641,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
 
 	switch (tag) {
 		case MTMMServerConnect: // "Connect"
@@ -736,8 +738,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTMMChannelJoinChannel: // "Join Channel"
@@ -810,7 +812,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTMMQueryQueryLogs: // "Query Logs"
@@ -873,8 +875,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTMMWindowToggleVisibilityOfServerList: // "Toggle Visibility of Server List"
@@ -882,7 +884,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTMMWindowCenterWindow: // "Center Window"
 		case MTMMWindowResetWindowToDefaultSize: // "Reset Window to Default Size"
 		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
+			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
@@ -898,7 +900,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTMMWindowMainWindow: // "Main Window"
 		{
 			BOOL isMainWindowMain = mainWindow().mainWindow;
-			BOOL isMainWindowDisabled = mainWindow().disabled;
+			BOOL isMainWindowDisabled = mainWindow().disabled; // "Main Window" brings the main window back
 
 			menuItem.hidden = isMainWindowMain;
 
@@ -907,7 +909,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		case MTMMWindowToggleVisibilityOfMemberList: // "Toggle Visibility of Member List"
 		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
+			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
@@ -916,7 +918,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		case MTMMWindowToggleWindowAppearance: // "Toggle Window Appearance"
 		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
+			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
@@ -928,7 +930,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTMMWindowAddressBook: // "Address Book"
 		case MTMMWindowIgnoreList: // "Ignore List"
 		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
+			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
@@ -942,7 +944,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		case MTMMWindowHighlightList: // "Highlight List"
 		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
+			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
@@ -993,8 +995,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTWKGeneralPaste: // "Paste" (WebView)
@@ -1002,16 +1004,16 @@ NS_ASSUME_NONNULL_BEGIN
 			NSString *currentPasteboard = RZPasteboard().stringContent;
 
 			/* Files pasted in the main window get the dropped files sheet */
-			BOOL filesOnPasteboard = (mainWindow().keyWindow && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
+			BOOL filesOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
 
 			/* And a picture (a screenshot): uploaded where the network offers it (9.18) */
-			BOOL pictureOnPasteboard = (mainWindow().keyWindow && [NSImage canInitWithPasteboard:RZPasteboard()]);
+			BOOL pictureOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [NSImage canInitWithPasteboard:RZPasteboard()]);
 
 			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
 				return NO;
 			}
 
-			if (mainWindow().keyWindow) {
+			if ((TVCMainWindow.focusedWindow != nil)) {
 				return mainWindowTextField().editable;
 			}
 
@@ -1120,7 +1122,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
 
 	switch (tag) {
 		case MTMainWindowSegmentedControllerAddChannel: // "Add Channel…"
@@ -1148,8 +1150,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSMenu *menu = menuItem.menu;
 
-	IRCClient *u = mainWindow().selectedClient;
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 #define _setHidden(tag, value)		[menu itemWithTag:(tag)].hidden = (value)
 
@@ -1250,8 +1252,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCClient *u = mainWindow().selectedClient;
-	IRCChannel *c = mainWindow().selectedChannel;
+	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
 		case MTUserControlsAddIgnore: // "Add Ignore"
@@ -1441,8 +1443,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.menuIsOpen = YES;
 
-	self.pointedClient = mainWindow().selectedClient;
-	self.pointedChannel = mainWindow().selectedChannel;
+	self.pointedClient = TVCMainWindow.currentWindow.selectedClient;
+	self.pointedChannel = TVCMainWindow.currentWindow.selectedChannel;
 
 	self.menuPerformedActionLastOpen = NO;
 }
@@ -1509,7 +1511,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return pointedClient;
 	}
 
-	return mainWindow().selectedClient;
+	return TVCMainWindow.currentWindow.selectedClient;
 }
 
 - (nullable IRCChannel *)selectedChannel
@@ -1520,7 +1522,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return pointedChannel;
 	}
 
-	return mainWindow().selectedChannel;
+	return TVCMainWindow.currentWindow.selectedChannel;
 }
 
 - (nullable TVCLogController *)selectedViewController

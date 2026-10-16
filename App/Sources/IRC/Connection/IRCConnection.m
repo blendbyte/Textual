@@ -40,7 +40,7 @@
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TXMasterController.h"
-#import "TVCMainWindow.h"
+#import "TVCMainWindowPrivate.h"
 #import "IRCClient.h"
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionErrors.h"
@@ -259,7 +259,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		(void)
-		[RCMTrustPanel presentTrustPanelInWindow:mainWindow()
+		[RCMTrustPanel presentTrustPanelInWindow:TVCMainWindow.currentWindow
 											body:promptInformativeText
 										   title:promptTitleText
 								   defaultButton:defaultButtonTitle
@@ -306,7 +306,7 @@ NS_ASSUME_NONNULL_BEGIN
 		 runs a modal session in a hidden window that only the panel itself
 		 can end, so closing it from here left the app blocked */
 		self.trustPanel =
-		[RCMTrustPanel presentTrustPanelInWindow:mainWindow()
+		[RCMTrustPanel presentTrustPanelInWindow:TVCMainWindow.currentWindow
 											body:promptInformativeText
 										   title:promptTitleText
 								   defaultButton:defaultButtonTitle

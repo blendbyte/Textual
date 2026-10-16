@@ -39,7 +39,7 @@
 #import "NSStringHelper.h"
 #import "TXMasterController.h"
 #import "TXMenuController.h"
-#import "TVCMainWindow.h"
+#import "TVCMainWindowPrivate.h"
 #import "TPCApplicationInfo.h"
 #import "TPCPreferencesLocal.h"
 #import "TLOLocalization.h"
@@ -174,15 +174,15 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 
 - (void)dismissNotificationsForSelection
 {
-	TVCMainWindow *mainWindow = mainWindow();
+	TVCMainWindow *window = TVCMainWindow.currentWindow;
 
-	IRCClient *client = mainWindow.selectedClient;
+	IRCClient *client = window.selectedClient;
 
 	if (client == nil) {
 		return;
 	}
 
-	[self dismissNotificationsForChannel:mainWindow.selectedChannel onClient:client];
+	[self dismissNotificationsForChannel:window.selectedChannel onClient:client];
 }
 
 - (NSString *)titleForEvent:(TXNotificationType)event

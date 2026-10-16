@@ -88,6 +88,38 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
 @end
 
+/* Windows (7.13): the main window and windows showing one channel (10.18).
+ Code that used to ask the main window asks these instead; with one window
+ every answer is the main window's. */
+@interface TVCMainWindow (Windows)
+@property (class, readonly, copy) NSArray<TVCMainWindow *> *windows; // the main window first
+
+/* The window the user is in, or was in last (Preferences in front); else the main window */
+@property (class, readonly) TVCMainWindow *currentWindow;
+
+/* The key window, if it's one of these */
+@property (class, readonly, nullable) TVCMainWindow *focusedWindow;
+
+/* Windows where the item is selected, or among several selected */
++ (NSArray<TVCMainWindow *> *)windowsShowingItem:(IRCTreeItem *)item;
+
+/* The window where the item is selected (one place at a time), or nil */
++ (nullable TVCMainWindow *)windowWithSelectedItem:(IRCTreeItem *)item;
+
+/* Selected in the key window: the user is looking at it */
++ (BOOL)isUserLookingAtItem:(IRCTreeItem *)item;
+
+/* Every window is updated (each ignores what it doesn't show) */
++ (void)updateTitleFor:(IRCTreeItem *)item;
++ (void)updateDrawingForUserInUserList:(IRCUser *)user;
++ (void)updateTypingIndicatorForChannel:(IRCChannel *)channel;
++ (void)updateUploadButton;
++ (void)updateAlphaValueToReflectPreferences;
++ (void)updateChannelViewArrangement;
++ (void)inputHistoryScopeDidChange;
++ (void)destroyInputHistoryOf:(IRCTreeItem *)item; // the channel or server is gone
+@end
+
 @interface TVCMainWindow (ServerListPrivate)
 - (void)reloadTree;
 - (void)reloadTreeItem:(IRCTreeItem *)item;
