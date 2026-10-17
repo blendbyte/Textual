@@ -212,6 +212,7 @@
 		4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */; };
 		4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515B20EB673E00448776 /* TLOFileLogger.m */; };
 		4CF8C7EE64FA57C8AD0EA4EC /* TLOMessageArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */; };
+		4C64A9C2699802157A6ACAF5 /* TLOMessageArchiveSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDA53C97EFC5485C861B3CE /* TLOMessageArchiveSearch.m */; };
 		4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514920EB673E00448776 /* TLONotificationController.m */; };
 		4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E00448776 /* TLOInputHistory.m */; };
 		4C461703899F86E9A1CDD3F8 /* TVCInputCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC3E57AC7861D0E229F24C0 /* TVCInputCompletion.m */; };
@@ -1044,6 +1045,7 @@
 		4C31515A20EB673E00448776 /* TLOSpokenNotification.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOSpokenNotification.m; sourceTree = "<group>"; };
 		4C31515B20EB673E00448776 /* TLOFileLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOFileLogger.m; sourceTree = "<group>"; };
 		4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOMessageArchive.m; sourceTree = "<group>"; };
+		4CDA53C97EFC5485C861B3CE /* TLOMessageArchiveSearch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOMessageArchiveSearch.m; sourceTree = "<group>"; };
 		4CEC8EB8F2FC1109BF7B21B3 /* TLOMessageArchivePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOMessageArchivePrivate.h; sourceTree = "<group>"; };
 		4C31515C20EB673E00448776 /* TLONicknameCompletionStatus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLONicknameCompletionStatus.m; sourceTree = "<group>"; };
 		4C31515D20EB673E00448776 /* TLONotificationConfiguration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLONotificationConfiguration.m; sourceTree = "<group>"; };
@@ -2653,6 +2655,7 @@
 				4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */,
 				4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */,
 				4CEC8EB8F2FC1109BF7B21B3 /* TLOMessageArchivePrivate.h */,
+				4CDA53C97EFC5485C861B3CE /* TLOMessageArchiveSearch.m */,
 			);
 			path = Scrollback;
 			sourceTree = "<group>";
@@ -3906,6 +3909,7 @@
 				4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */,
 				4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */,
 				4CF8C7EE64FA57C8AD0EA4EC /* TLOMessageArchive.m in Sources */,
+				4C64A9C2699802157A6ACAF5 /* TLOMessageArchiveSearch.m in Sources */,
 				4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */,
 				4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */,
 				4C461703899F86E9A1CDD3F8 /* TVCInputCompletion.m in Sources */,

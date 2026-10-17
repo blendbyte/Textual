@@ -69,6 +69,83 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 @property (readonly, weak, nullable) IRCTreeItem *item;
 @end
 
+typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
+{
+	TLOMessageArchiveSearchOrderNewest = 0,
+	TLOMessageArchiveSearchOrderBestMatch = 1 // newest without words to search for
+};
+
+/* What to search for (10.9 C), read from what the user typed:
+
+	words and "a phrase"	found anywhere in a message, any case
+							(word* is the same as word)
+	from:nick				said by; several are any of them
+	in:#channel				in this channel or query (in:textual is
+							#textual too); several are any of them
+	before:2026-10-01		before that day (also a month, a year, today
+	after:2026-10			or yesterday); after: after the day or month
+	during:2026				on that day, in that month or year
+	has:link				with a link
+	mentions:me				highlights
+
+ A filter without a value (still being typed) is left out; an unknown or
+ malformed one is searched as text. */
+@interface TLOMessageArchiveQuery : NSObject <NSCopying>
++ (instancetype)queryWithString:(NSString *)string;
+
+/* Dates in this calendar (and its time zone), today and yesterday from now */
++ (instancetype)queryWithString:(NSString *)string calendar:(NSCalendar *)calendar now:(NSDate *)now;
+
+@property (readonly, copy) NSString *string;
+
+@property (readonly, copy) NSArray<NSString *> *terms; // words and phrases, without quotes
+@property (readonly, copy) NSArray<NSString *> *nicknames; // from:
+@property (readonly, copy) NSArray<NSString *> *viewNames; // in:
+@property (readonly, copy, nullable) NSDate *earliestDate; // included
+@property (readonly, copy, nullable) NSDate *latestDate; // not included
+@property (readonly) BOOL hasLink;
+@property (readonly) BOOL mentionsMe;
+
+/* Nothing to search for: no words and no filters */
+@property (readonly, getter=isEmpty) BOOL empty;
+
+/* Where to search, set by the caller: one view, one server, or everywhere */
+@property (copy, nullable) NSString *serverId;
+@property (copy, nullable) NSString *viewId;
+
+@property (assign) TLOMessageArchiveSearchOrder order;
+@end
+
+@interface TLOMessageArchiveResult : NSObject
+@property (readonly) int64_t rowId;
+@property (readonly, copy) NSString *serverId;
+@property (readonly, copy) NSString *serverName;
+@property (readonly, copy) NSString *viewId;
+@property (readonly, copy) NSString *viewName;
+@property (readonly) TLOMessageArchiveViewType viewType;
+@property (readonly, copy) NSDate *date;
+@property (readonly) NSUInteger lineType; // TVCLogLineType
+@property (readonly, copy, nullable) NSString *nickname;
+@property (readonly) BOOL isSelf;
+@property (readonly) BOOL isHighlight;
+@property (readonly) BOOL hasLink;
+@property (readonly, copy, nullable) NSString *msgid;
+@property (readonly, copy) NSString *lineId; // the scrollback line (TVCLogLine uniqueIdentifier)
+@property (readonly, copy) NSString *body; // without formatting
+
+/* Where the words searched for are in the body, in order, not overlapping */
+@property (readonly, copy) NSArray<NSValue *> *matchRanges;
+
+/* The body cut to about this many characters around the first match, with
+ "…" where it was cut; the ranges of the matches in it */
+- (NSString *)snippetWithMaximumLength:(NSUInteger)maximumLength matchRanges:(NSArray<NSValue *> * _Nullable * _Nullable)matchRanges;
+@end
+
+@interface TLOMessageArchiveSearchPage : NSObject
+@property (readonly, copy) NSArray<TLOMessageArchiveResult *> *results;
+@property (readonly) BOOL hasMore; // a next page has results
+@end
+
 /* The message archive (10.9): every message, action, notice and topic
  change, kept as searchable text in its own SQLite database with a full
  text index (FTS5, trigram tokenizer: substrings in any language), for
@@ -114,6 +191,16 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 
 /* The keep period: everything older goes (in steps, on the queue) */
 - (void)removeMessagesOlderThan:(NSDate *)date;
+
+/* Search (10.9 C), on a connection of its own, so writing doesn't wait for
+ it; lines written in the last two seconds may not be found yet. An empty
+ query finds nothing. The completion handlers are called on the main queue. */
+- (void)search:(TLOMessageArchiveQuery *)query
+		offset:(NSUInteger)offset
+		 limit:(NSUInteger)limit
+completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler;
+
+- (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler;
 
 /* Writes what is waiting and waits for the queue to be done */
 - (void)flush;

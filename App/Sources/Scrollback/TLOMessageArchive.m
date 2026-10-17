@@ -175,6 +175,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL writeScheduled;
 @property (nonatomic, strong, nullable) dispatch_source_t removeTimer;
 @property (nonatomic, assign) BOOL closed;
+
+/* Search reads on a connection of its own (WAL: readers don't wait for the
+ writer, the writer doesn't wait for them) */
+@property (nonatomic, strong) dispatch_queue_t searchQueue;
+@property (nonatomic, assign, nullable) sqlite3 *searchDatabase;
+@property (nonatomic, assign) BOOL searchClosed;
+@end
+
+/* In TLOMessageArchiveSearch.m */
+@interface TLOMessageArchiveQuery (Database)
+- (TLOMessageArchiveSearchPage *)_pageWithOffset:(NSUInteger)offset limit:(NSUInteger)limit inDatabase:(sqlite3 *)database;
+- (NSUInteger)_countInDatabase:(sqlite3 *)database;
 @end
 
 @implementation TLOMessageArchive
@@ -212,6 +224,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.url = url;
 
 		self.queue = dispatch_queue_create("com.textualapp.message-archive", DISPATCH_QUEUE_SERIAL);
+
+		self.searchQueue = dispatch_queue_create("com.textualapp.message-archive.search", DISPATCH_QUEUE_SERIAL);
 
 		self.pendingRows = [NSMutableArray array];
 
@@ -935,6 +949,89 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark -
+#pragma mark Searching
+
+/* On the search queue: opened when first needed */
+- (nullable sqlite3 *)_openSearchDatabase
+{
+	if (self.searchDatabase || self.searchClosed) {
+		return self.searchDatabase;
+	}
+
+	/* The writer opens (and makes) the database first */
+	dispatch_sync(self.queue, ^{});
+
+	sqlite3 *database = NULL;
+
+	int result = sqlite3_open_v2(self.url.fileSystemRepresentation, &database, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_NOMUTEX), NULL);
+
+	if (result != SQLITE_OK) {
+		LogToConsoleError("Failed to open the message archive for search: %{public}s", sqlite3_errstr(result));
+
+		sqlite3_close_v2(database);
+
+		return NULL;
+	}
+
+	sqlite3_busy_timeout(database, 2000);
+
+	(void)sqlite3_exec(database, "PRAGMA query_only = 1;", NULL, NULL, NULL);
+
+	self.searchDatabase = database;
+
+	return database;
+}
+
+- (void)search:(TLOMessageArchiveQuery *)query
+		offset:(NSUInteger)offset
+		 limit:(NSUInteger)limit
+completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
+{
+	NSParameterAssert(query != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	query = [query copy];
+
+	dispatch_async(self.searchQueue, ^{
+		TLOMessageArchiveSearchPage *page = nil;
+
+		sqlite3 *database = ((query.empty) ? NULL : [self _openSearchDatabase]);
+
+		if (database) {
+			page = [query _pageWithOffset:offset limit:limit inDatabase:database];
+		} else {
+			page = [TLOMessageArchiveSearchPage new];
+		}
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionHandler(page);
+		});
+	});
+}
+
+- (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler
+{
+	NSParameterAssert(query != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	query = [query copy];
+
+	dispatch_async(self.searchQueue, ^{
+		NSUInteger count = 0;
+
+		sqlite3 *database = ((query.empty) ? NULL : [self _openSearchDatabase]);
+
+		if (database) {
+			count = [query _countInDatabase:database];
+		}
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionHandler(count);
+		});
+	});
+}
+
+#pragma mark -
 #pragma mark Finishing
 
 - (void)flush
@@ -946,6 +1043,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareForApplicationTermination
 {
+	dispatch_sync(self.searchQueue, ^{
+		if (self.searchDatabase) {
+			sqlite3_close_v2(self.searchDatabase);
+
+			self.searchDatabase = NULL;
+		}
+
+		self.searchClosed = YES;
+	});
+
 	dispatch_sync(self.queue, ^{
 		[self _writePendingRows];
 

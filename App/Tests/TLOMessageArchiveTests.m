@@ -259,6 +259,223 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"Guest66: notice" matchType:TXNicknameHighlightMatchTypeExact]);
 }
 
+#pragma mark -
+#pragma mark Search
+
+- (void)archive:(TVCLogLine *)logLine inView:(NSString *)viewId named:(NSString *)viewName type:(TLOMessageArchiveViewType)viewType server:(NSString *)serverId highlighted:(BOOL)highlighted hasLink:(BOOL)hasLink
+{
+	TLOMessageArchiveView *view =
+	[[TLOMessageArchiveView alloc] initWithViewId:viewId
+										 viewName:viewName
+										 viewType:viewType
+										 serverId:serverId
+									   serverName:serverId];
+
+	[self.archive archiveLogLine:logLine highlighted:highlighted hasLink:hasLink inView:view];
+}
+
+- (TLOMessageArchiveSearchPage *)search:(TLOMessageArchiveQuery *)query offset:(NSUInteger)offset limit:(NSUInteger)limit
+{
+	XCTestExpectation *expectation = [self expectationWithDescription:@"search"];
+
+	__block TLOMessageArchiveSearchPage *page = nil;
+
+	[self.archive search:query offset:offset limit:limit completionHandler:^(TLOMessageArchiveSearchPage *result) {
+		page = result;
+
+		[expectation fulfill];
+	}];
+
+	[self waitForExpectationsWithTimeout:10 handler:nil];
+
+	return page;
+}
+
+- (NSArray<NSString *> *)bodiesFound:(NSString *)string inView:(nullable NSString *)viewId
+{
+	TLOMessageArchiveQuery *query = [TLOMessageArchiveQuery queryWithString:string];
+
+	query.viewId = viewId;
+
+	return [[self search:query offset:0 limit:50].results valueForKey:@"body"];
+}
+
+- (NSArray<NSString *> *)bodiesFound:(NSString *)string
+{
+	return [self bodiesFound:string inView:nil];
+}
+
+/* Words, phrases and filters, read from what was typed */
+- (void)testParsesQueries
+{
+	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+
+	calendar.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+
+	NSDate *now = [NSDate dateWithTimeIntervalSince1970:1791979200]; // 2026-10-14 12:00 UTC
+
+	NSDate * (^day)(NSInteger, NSInteger, NSInteger) = ^NSDate *(NSInteger year, NSInteger month, NSInteger dayOfMonth) {
+		NSDateComponents *components = [NSDateComponents new];
+
+		components.year = year;
+		components.month = month;
+		components.day = dayOfMonth;
+
+		return [calendar dateFromComponents:components];
+	};
+
+	TLOMessageArchiveQuery *query =
+	[TLOMessageArchiveQuery queryWithString:@"from:@alice FROM:bob in:textual \"hello world\" deploy* has:link mentions:me http://example.org from: before:2026-10-05 after:2026-09 during:2026"
+								   calendar:calendar
+										now:now];
+
+	NSArray *terms = @[@"hello world", @"deploy", @"http://example.org"];
+	NSArray *nicknames = @[@"alice", @"bob"];
+	NSArray *viewNames = @[@"textual"];
+
+	XCTAssertEqualObjects(query.terms, terms);
+	XCTAssertEqualObjects(query.nicknames, nicknames);
+	XCTAssertEqualObjects(query.viewNames, viewNames);
+	XCTAssertTrue(query.hasLink);
+	XCTAssertTrue(query.mentionsMe);
+
+	/* after: the day after September; before: the start of the day; during: narrowed by both */
+	XCTAssertEqualObjects(query.earliestDate, day(2026, 10, 1));
+	XCTAssertEqualObjects(query.latestDate, day(2026, 10, 5));
+
+	/* Unknown or malformed filters and quoted ones are text; typographic quotes are quotes */
+	query = [TLOMessageArchiveQuery queryWithString:@"has:files before:2026-02-30 \"from:alice\" “smart quotes” during:yesterday" calendar:calendar now:now];
+
+	terms = @[@"has:files", @"before:2026-02-30", @"from:alice", @"smart quotes"];
+
+	XCTAssertEqualObjects(query.terms, terms);
+	XCTAssertEqual(query.nicknames.count, 0);
+	XCTAssertEqualObjects(query.earliestDate, day(2026, 10, 13));
+	XCTAssertEqualObjects(query.latestDate, day(2026, 10, 14));
+
+	/* Filters still being typed: nothing to search for */
+	XCTAssertTrue([TLOMessageArchiveQuery queryWithString:@" from: in: " calendar:calendar now:now].empty);
+}
+
+/* Words anywhere in a message, any case; filters; where; newest first; pages */
+- (void)testSearchFindsAndFilters
+{
+	NSDate *time = [NSDate dateWithTimeIntervalSince1970:1791633600]; // 2026-10-10 12:00 UTC
+
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"the deploy went fine" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:1]]
+		   inView:@"view-1" named:@"#textual" type:TLOMessageArchiveViewTypeChannel server:@"server-1" highlighted:NO hasLink:NO];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"deploying again, see https://example.org" nickname:@"bob" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:2]]
+		   inView:@"view-1" named:@"#textual" type:TLOMessageArchiveViewTypeChannel server:@"server-1" highlighted:NO hasLink:YES];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"Deploy notes" nickname:@"bob" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:3]]
+		   inView:@"view-2" named:@"#other" type:TLOMessageArchiveViewTypeChannel server:@"server-1" highlighted:YES hasLink:NO];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"nothing to see" nickname:@"carol" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:4]]
+		   inView:@"view-3" named:@"carol" type:TLOMessageArchiveViewTypeQuery server:@"server-2" highlighted:NO hasLink:NO];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"ok" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:5]]
+		   inView:@"view-1" named:@"#textual" type:TLOMessageArchiveViewTypeChannel server:@"server-1" highlighted:NO hasLink:NO];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"deploy of last year" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[NSDate dateWithTimeIntervalSince1970:1748779200]] // 2025-06-01
+		   inView:@"view-1" named:@"#textual" type:TLOMessageArchiveViewTypeChannel server:@"server-1" highlighted:NO hasLink:NO];
+
+	[self.archive flush];
+
+	NSArray *expected = @[@"Deploy notes", @"deploying again, see https://example.org", @"the deploy went fine", @"deploy of last year"];
+
+	XCTAssertEqualObjects([self bodiesFound:@"DEPLOY"], expected);
+
+	expected = @[@"deploying again, see https://example.org", @"the deploy went fine", @"deploy of last year"];
+
+	XCTAssertEqualObjects([self bodiesFound:@"deploy" inView:@"view-1"], expected);
+
+	expected = @[@"the deploy went fine", @"deploy of last year"];
+
+	XCTAssertEqualObjects([self bodiesFound:@"deploy from:ALICE"], expected);
+	XCTAssertEqualObjects([self bodiesFound:@"deploy in:other"], @[@"Deploy notes"]);
+	XCTAssertEqualObjects([self bodiesFound:@"in:carol"], @[@"nothing to see"]);
+	XCTAssertEqualObjects([self bodiesFound:@"has:link"], @[@"deploying again, see https://example.org"]);
+	XCTAssertEqualObjects([self bodiesFound:@"mentions:me"], @[@"Deploy notes"]);
+	XCTAssertEqualObjects([self bodiesFound:@"\"deploy went\""], @[@"the deploy went fine"]);
+	XCTAssertEqualObjects([self bodiesFound:@"deploy before:2026-01-01"], @[@"deploy of last year"]);
+
+	/* Shorter than the index's three characters: found in the text */
+	XCTAssertEqualObjects([self bodiesFound:@"ok"], @[@"ok"]);
+
+	/* Nothing to search for, nothing found */
+	XCTAssertEqual([self bodiesFound:@"  "].count, 0);
+
+	/* Pages */
+	TLOMessageArchiveQuery *query = [TLOMessageArchiveQuery queryWithString:@"deploy"];
+
+	TLOMessageArchiveSearchPage *page = [self search:query offset:0 limit:2];
+
+	XCTAssertEqual(page.results.count, 2);
+	XCTAssertTrue(page.hasMore);
+
+	page = [self search:query offset:2 limit:2];
+
+	XCTAssertEqual(page.results.count, 2);
+	XCTAssertFalse(page.hasMore);
+
+	/* Best match finds the same */
+	query.order = TLOMessageArchiveSearchOrderBestMatch;
+
+	XCTAssertEqual([self search:query offset:0 limit:10].results.count, 4);
+
+	/* What was found where, and how many */
+	TLOMessageArchiveResult *result = [self search:[TLOMessageArchiveQuery queryWithString:@"in:other notes deploy"] offset:0 limit:1].results.firstObject;
+
+	XCTAssertEqualObjects(result.viewName, @"#other");
+	XCTAssertEqualObjects(result.nickname, @"bob");
+	XCTAssertTrue(result.isHighlight);
+
+	NSArray *ranges = @[[NSValue valueWithRange:NSMakeRange(0, 6)], [NSValue valueWithRange:NSMakeRange(7, 5)]];
+
+	XCTAssertEqualObjects(result.matchRanges, ranges);
+
+	XCTestExpectation *expectation = [self expectationWithDescription:@"count"];
+
+	[self.archive countResultsOfSearch:query completionHandler:^(NSUInteger count) {
+		XCTAssertEqual(count, 4);
+
+		[expectation fulfill];
+	}];
+
+	[self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+/* A long message cut around what was found */
+- (void)testSnippets
+{
+	NSMutableString *body = [NSMutableString string];
+
+	for (NSUInteger i = 0; i < 30; i++) {
+		[body appendString:@"lorem "];
+	}
+
+	[body appendString:@"the Needle is here"];
+
+	for (NSUInteger i = 0; i < 30; i++) {
+		[body appendString:@" ipsum"];
+	}
+
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:body nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[NSDate date]]];
+
+	[self.archive flush];
+
+	TLOMessageArchiveResult *result = [self search:[TLOMessageArchiveQuery queryWithString:@"needle"] offset:0 limit:1].results.firstObject;
+
+	NSArray<NSValue *> *ranges = nil;
+
+	NSString *snippet = [result snippetWithMaximumLength:40 matchRanges:&ranges];
+
+	XCTAssertTrue([snippet hasPrefix:@"…"]);
+	XCTAssertTrue([snippet hasSuffix:@"…"]);
+	XCTAssertLessThanOrEqual(snippet.length, 42);
+	XCTAssertEqual(ranges.count, 1);
+	XCTAssertEqualObjects([snippet substringWithRange:ranges.firstObject.rangeValue], @"Needle");
+
+	/* Short enough: all of it */
+	XCTAssertEqualObjects([result snippetWithMaximumLength:1000 matchRanges:NULL], body);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
