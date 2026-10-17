@@ -38,6 +38,7 @@
 
 #import "NSObjectHelperPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
+#import "TLOMessageArchivePrivate.h"
 #import "NSStringHelper.h"
 #import "IRCChannelPrivate.h"
 #import "IRCChannelMode.h"
@@ -373,7 +374,7 @@ static BOOL _popOutsOpened = NO;
 	[self.class restorePopOuts];
 
 	/* A minute in: the views have loaded their history by then */
-	[self performSelector:@selector(forgetHistoricLogOfRemovedItems) withObject:nil afterDelay:60.0];
+	[self performSelector:@selector(maintainHistoricLog) withObject:nil afterDelay:60.0];
 
 	[TVCDockIcon drawWithoutCount];
 
@@ -562,8 +563,9 @@ static BOOL _popOutsOpened = NO;
 	[self saveSelection];
 }
 
-/* Scrollback of servers, channels and queries that no longer exist */
-- (void)forgetHistoricLogOfRemovedItems
+/* Once, the scrollback into the message archive (10.9 B), and the
+ scrollback of servers, channels and queries that no longer exist out */
+- (void)maintainHistoricLog
 {
 	if (masterController().applicationIsTerminating) {
 		return;
@@ -571,13 +573,29 @@ static BOOL _popOutsOpened = NO;
 
 	NSMutableSet<NSString *> *viewIds = [NSMutableSet set];
 
+	NSMutableArray<TLOMessageArchiveView *> *archiveViews = [NSMutableArray array];
+
 	for (IRCClient *u in worldController().clientList) {
 		[viewIds addObject:u.uniqueIdentifier];
 
+		TLOMessageArchiveView *consoleView = [TLOMessageArchiveView viewForItem:u];
+
+		if (consoleView) {
+			[archiveViews addObject:consoleView];
+		}
+
 		for (IRCChannel *c in u.channelList) {
 			[viewIds addObject:c.uniqueIdentifier];
+
+			TLOMessageArchiveView *channelView = [TLOMessageArchiveView viewForItem:c];
+
+			if (channelView) {
+				[archiveViews addObject:channelView];
+			}
 		}
 	}
+
+	[sharedMessageArchive() importScrollbackOfViews:[archiveViews copy]];
 
 	[sharedHistoricLog() forgetItemsOtherThan:viewIds];
 }

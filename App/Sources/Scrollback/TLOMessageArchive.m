@@ -39,8 +39,15 @@
 #import <sqlite3.h>
 
 #import "NSStringHelper.h"
+#import "IRCChannel.h"
+#import "IRCClient.h"
+#import "IRCTreeItem.h"
+#import "THOUnicodeHelper.h"
+#import "TLOLinkParser.h"
 #import "TPCPathInfo.h"
+#import "TPCPreferencesLocal.h"
 #import "TVCLogLine.h"
+#import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -59,6 +66,83 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Old messages go in steps, so writing isn't held up for long */
 #define _removeBatchSize			5000
+
+/* Scrollback lines read per step of the import */
+#define _importBatchSize			500
+
+/* In the database's meta table once the scrollback was imported */
+#define _scrollbackImportedKey		@"scrollback_imported"
+
+@interface TLOMessageArchiveView ()
+@property (readwrite, copy) NSString *viewId;
+@property (readwrite, copy) NSString *viewName;
+@property (readwrite) TLOMessageArchiveViewType viewType;
+@property (readwrite, copy) NSString *serverId;
+@property (readwrite, copy) NSString *serverName;
+@property (readwrite, weak, nullable) IRCTreeItem *item;
+@end
+
+@implementation TLOMessageArchiveView
+
++ (nullable instancetype)viewForItem:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	IRCClient *client = item.associatedClient;
+
+	IRCChannel *channel = item.associatedChannel;
+
+	NSString *viewName = @"";
+
+	TLOMessageArchiveViewType viewType = TLOMessageArchiveViewTypeConsole;
+
+	if (channel) {
+		if (channel.isUtility) {
+			return nil;
+		}
+
+		viewName = channel.name;
+
+		viewType = ((channel.isPrivateMessage) ? TLOMessageArchiveViewTypeQuery : TLOMessageArchiveViewTypeChannel);
+	}
+
+	TLOMessageArchiveView *view =
+	[[self alloc] initWithViewId:item.uniqueIdentifier
+						viewName:viewName
+						viewType:viewType
+						serverId:client.uniqueIdentifier
+					  serverName:client.networkNameAlt];
+
+	view.item = item;
+
+	return view;
+}
+
+- (instancetype)initWithViewId:(NSString *)viewId
+					  viewName:(NSString *)viewName
+					  viewType:(TLOMessageArchiveViewType)viewType
+					  serverId:(NSString *)serverId
+					serverName:(NSString *)serverName
+{
+	NSParameterAssert(viewId != nil);
+	NSParameterAssert(viewName != nil);
+	NSParameterAssert(serverId != nil);
+	NSParameterAssert(serverName != nil);
+
+	if ((self = [super init])) {
+		self.viewId = viewId;
+		self.viewName = viewName;
+		self.viewType = viewType;
+		self.serverId = serverId;
+		self.serverName = serverName;
+
+		return self;
+	}
+
+	return nil;
+}
+
+@end
 
 @interface TLOMessageArchiveRow : NSObject
 @property (nonatomic, copy) NSString *serverId;
@@ -235,6 +319,7 @@ NS_ASSUME_NONNULL_BEGIN
 		"CREATE TRIGGER IF NOT EXISTS messages_deleted AFTER DELETE ON messages BEGIN "
 			"INSERT INTO messages_text (messages_text, rowid, body) VALUES ('delete', old.id, old.body); "
 		"END;"
+		"CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);"
 		"PRAGMA user_version = 1;"];
 }
 
@@ -366,38 +451,26 @@ NS_ASSUME_NONNULL_BEGIN
 	return [NSString stringWithFormat:@"t:%lld:%@:%@", milliseconds, ((logLine.nickname) ?: @""), bodyHash];
 }
 
-- (void)archiveLogLine:(TVCLogLine *)logLine
-		   highlighted:(BOOL)highlighted
-			   hasLink:(BOOL)hasLink
-				inView:(NSString *)viewId
-			  viewName:(NSString *)viewName
-			  viewType:(TLOMessageArchiveViewType)viewType
-			  onServer:(NSString *)serverId
-			serverName:(NSString *)serverName
+/* The row for a line, or nil when it isn't kept */
++ (nullable TLOMessageArchiveRow *)_rowForLogLine:(TVCLogLine *)logLine highlighted:(BOOL)highlighted hasLink:(BOOL)hasLink inView:(TLOMessageArchiveView *)view
 {
-	NSParameterAssert(logLine != nil);
-	NSParameterAssert(viewId != nil);
-	NSParameterAssert(viewName != nil);
-	NSParameterAssert(serverId != nil);
-	NSParameterAssert(serverName != nil);
-
-	if ([self.class _archivesLogLine:logLine] == NO) {
-		return;
+	if ([self _archivesLogLine:logLine] == NO) {
+		return nil;
 	}
 
 	NSString *body = logLine.messageBody.stripIRCEffects;
 
 	if (body.length == 0) {
-		return;
+		return nil;
 	}
 
 	TLOMessageArchiveRow *row = [TLOMessageArchiveRow new];
 
-	row.serverId = serverId;
-	row.serverName = serverName;
-	row.viewId = viewId;
-	row.viewName = viewName;
-	row.viewType = viewType;
+	row.serverId = view.serverId;
+	row.serverName = view.serverName;
+	row.viewId = view.viewId;
+	row.viewName = view.viewName;
+	row.viewType = view.viewType;
 	row.time = logLine.receivedAt.timeIntervalSince1970;
 	row.lineType = logLine.lineType;
 	row.nickname = logLine.nickname;
@@ -406,8 +479,25 @@ NS_ASSUME_NONNULL_BEGIN
 	row.hasLink = hasLink;
 	row.msgid = logLine.msgid;
 	row.lineId = logLine.uniqueIdentifier;
-	row.dedupeKey = [self.class _dedupeKeyForLogLine:logLine body:body];
+	row.dedupeKey = [self _dedupeKeyForLogLine:logLine body:body];
 	row.body = body;
+
+	return row;
+}
+
+- (void)archiveLogLine:(TVCLogLine *)logLine
+		   highlighted:(BOOL)highlighted
+			   hasLink:(BOOL)hasLink
+				inView:(TLOMessageArchiveView *)view
+{
+	NSParameterAssert(logLine != nil);
+	NSParameterAssert(view != nil);
+
+	TLOMessageArchiveRow *row = [self.class _rowForLogLine:logLine highlighted:highlighted hasLink:hasLink inView:view];
+
+	if (row == nil) {
+		return;
+	}
 
 	dispatch_async(self.queue, ^{
 		if (self.closed) {
@@ -447,6 +537,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.pendingRows removeAllObjects];
 
+	[self _insertRows:rows];
+}
+
+/* On the queue, in one transaction */
+- (void)_insertRows:(NSArray<TLOMessageArchiveRow *> *)rows
+{
 	sqlite3_stmt *statement = self.insertStatement;
 
 	if (statement == NULL) {
@@ -495,6 +591,240 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	(void)[self _execute:"COMMIT;"];
+}
+
+#pragma mark -
+#pragma mark Importing
+
+- (void)importScrollbackOfViews:(NSArray<TLOMessageArchiveView *> *)views
+{
+	NSParameterAssert(views != nil);
+
+	/* Read here: the preferences are read on the main thread */
+	TXNicknameHighlightMatchType matchType = [TPCPreferences highlightMatchingMethod];
+
+	dispatch_async(self.queue, ^{
+		if (self.database == NULL || [[self _metaValueForKey:_scrollbackImportedKey] isEqualToString:@"1"]) {
+			return;
+		}
+
+		LogToConsoleInfo("Importing the scrollback of %{public}lu views into the message archive", views.count);
+
+		[self _importScrollbackOfViews:views atIndex:0 matchType:matchType importedCount:0];
+	});
+}
+
+/* One view after the other, a batch at a time: the scrollback's queue and
+ this one take other work in between */
+- (void)_importScrollbackOfViews:(NSArray<TLOMessageArchiveView *> *)views atIndex:(NSUInteger)index matchType:(TXNicknameHighlightMatchType)matchType importedCount:(NSUInteger)importedCount
+{
+	if (self.closed) {
+		return;
+	}
+
+	if (index >= views.count) {
+		[self _setMetaValue:@"1" forKey:_scrollbackImportedKey];
+
+		LogToConsoleInfo("Imported %{public}lu scrollback lines into the message archive", importedCount);
+
+		return;
+	}
+
+	TLOMessageArchiveView *view = views[index];
+
+	IRCTreeItem *item = view.item;
+
+	if (item == nil) {
+		[self _importScrollbackOfViews:views atIndex:(index + 1) matchType:matchType importedCount:importedCount];
+
+		return;
+	}
+
+	NSTimeInterval oldestTime = ([NSDate date].timeIntervalSince1970 - _keepPeriod);
+
+	__block NSUInteger viewImportedCount = importedCount;
+
+	[sharedHistoricLog() enumerateEntriesForItem:item batchSize:_importBatchSize usingBlock:^(NSArray<TVCLogLine *> *entries, void (^next)(void)) {
+		/* Found off the queue: links and keywords take a moment */
+		NSMutableArray<TLOMessageArchiveRow *> *rows = [NSMutableArray arrayWithCapacity:entries.count];
+
+		for (TVCLogLine *logLine in entries) {
+			if (logLine.receivedAt.timeIntervalSince1970 < oldestTime) {
+				continue;
+			}
+
+			NSString *body = logLine.messageBody.stripIRCEffects;
+
+			BOOL highlighted = [self.class logLineIsHighlight:logLine body:body matchType:matchType];
+
+			BOOL hasLink = ([TLOLinkParser locateLinksInString:body].count > 0);
+
+			TLOMessageArchiveRow *row = [self.class _rowForLogLine:logLine highlighted:highlighted hasLink:hasLink inView:view];
+
+			if (row) {
+				[rows addObject:row];
+			}
+		}
+
+		dispatch_async(self.queue, ^{
+			if (self.closed) {
+				return;
+			}
+
+			if (rows.count > 0) {
+				[self _insertRows:rows];
+
+				viewImportedCount += rows.count;
+			}
+
+			if (next) {
+				next();
+
+				return;
+			}
+
+			[self _importScrollbackOfViews:views atIndex:(index + 1) matchType:matchType importedCount:viewImportedCount];
+		});
+	}];
+}
+
++ (BOOL)logLineIsHighlight:(TVCLogLine *)logLine body:(NSString *)body matchType:(NSUInteger)matchType
+{
+	NSParameterAssert(logLine != nil);
+	NSParameterAssert(body != nil);
+
+	/* As -[TVCLogRenderer scanForKeywords] */
+	TVCLogLineType lineType = logLine.lineType;
+
+	if ((lineType != TVCLogLineTypePrivateMessage && lineType != TVCLogLineTypeAction) || logLine.memberType != TVCLogLineMemberTypeNormal) {
+		return NO;
+	}
+
+	NSArray<NSString *> *keywords = logLine.highlightKeywords;
+
+	if (keywords.count == 0 || body.length == 0) {
+		return NO;
+	}
+
+	NSMutableArray<NSValue *> *excludedRanges = [NSMutableArray array];
+
+	for (NSString *excludeKeyword in logLine.excludeKeywords) {
+		[body enumerateMatchesOfString:excludeKeyword withBlock:^(NSRange range, BOOL *stop) {
+			[excludedRanges addObject:[NSValue valueWithRange:range]];
+		} options:NSCaseInsensitiveSearch];
+	}
+
+	BOOL (^excluded)(NSRange) = ^BOOL (NSRange range) {
+		for (NSValue *excludedRange in excludedRanges) {
+			if (NSIntersectionRange(range, excludedRange.rangeValue).length > 0) {
+				return YES;
+			}
+		}
+
+		return NO;
+	};
+
+	if (matchType == TXNicknameHighlightMatchTypeRegularExpression) {
+		for (NSString *keyword in keywords) {
+			NSRange range = [XRRegularExpression string:body rangeOfRegex:keyword withoutCase:YES];
+
+			if (range.location != NSNotFound && excluded(range) == NO) {
+				return YES;
+			}
+		}
+
+		return NO;
+	}
+
+	BOOL exactMatching = (matchType == TXNicknameHighlightMatchTypeExact);
+
+	for (NSString *keyword in keywords) {
+		__block BOOL found = NO;
+
+		[body enumerateMatchesOfString:keyword withBlock:^(NSRange range, BOOL *stop) {
+			if (excluded(range)) {
+				return;
+			}
+
+			if (exactMatching && [self _rangeIsWholeWord:range inString:body] == NO) {
+				return;
+			}
+
+			found = YES;
+
+			*stop = YES;
+		} options:NSCaseInsensitiveSearch];
+
+		if (found) {
+			return YES;
+		}
+	}
+
+	return NO;
+}
+
+/* As -[TVCLogRenderer sectionOfBodyIsSurroundedByNonAlphabeticals:]: no
+ letter or digit right before or after, where the match itself starts or
+ ends with one */
++ (BOOL)_rangeIsWholeWord:(NSRange)range inString:(NSString *)string
+{
+	BOOL (^isWordCharacter)(UniChar) = ^BOOL (UniChar character) {
+		return (CS_StringIsBase10Numeric(character) || [THOUnicodeHelper isAlphabeticalCodePoint:character]);
+	};
+
+	NSUInteger length = string.length;
+
+	if (isWordCharacter([string characterAtIndex:range.location]) && range.location > 0) {
+		if (isWordCharacter([string characterAtIndex:(range.location - 1)])) {
+			return NO;
+		}
+	}
+
+	if (isWordCharacter([string characterAtIndex:(NSMaxRange(range) - 1)]) && NSMaxRange(range) < length) {
+		if (isWordCharacter([string characterAtIndex:NSMaxRange(range)])) {
+			return NO;
+		}
+	}
+
+	return YES;
+}
+
+#pragma mark -
+#pragma mark Meta
+
+/* On the queue */
+- (nullable NSString *)_metaValueForKey:(NSString *)key
+{
+	if (self.database == NULL) {
+		return nil;
+	}
+
+	sqlite3_stmt *statement = NULL;
+
+	if (sqlite3_prepare_v2(self.database, "SELECT value FROM meta WHERE key = ?", -1, &statement, NULL) != SQLITE_OK) {
+		return nil;
+	}
+
+	sqlite3_bind_text(statement, 1, key.UTF8String, -1, SQLITE_TRANSIENT);
+
+	NSString *value = nil;
+
+	if (sqlite3_step(statement) == SQLITE_ROW) {
+		const unsigned char *text = sqlite3_column_text(statement, 0);
+
+		if (text) {
+			value = @((const char *)text);
+		}
+	}
+
+	sqlite3_finalize(statement);
+
+	return value;
+}
+
+- (void)_setMetaValue:(NSString *)value forKey:(NSString *)key
+{
+	[self _runStatement:"INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)" withStrings:@[key, value]];
 }
 
 #pragma mark -

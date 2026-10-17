@@ -72,6 +72,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)forgetItem:(IRCTreeItem *)item;
 - (void)resetDataForItem:(IRCTreeItem *)item;
 
+/* The view's saved lines, oldest first, a batch at a time (the message
+ archive's import, 10.9 B). The block gets each batch on a background
+ queue, with a block that fetches the next one after the work waiting on
+ the log's queue, or nil after the last. Lines that can't be read are left
+ out, so a batch can be empty and still have a next. */
+- (void)enumerateEntriesForItem:(IRCTreeItem *)item
+					  batchSize:(NSUInteger)batchSize
+					 usingBlock:(void (^)(NSArray<TVCLogLine *> *entries, void (^ _Nullable next)(void)))block;
+
 /* Deletes the lines of every view not in the set: views that no longer
  exist. A view's lines are only deleted when it is closed while Textual
  runs, so a crash or a force quit left them, and queries not kept across

@@ -37,18 +37,37 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TVCLogLine;
+@class IRCTreeItem, TVCLogLine;
 
 #define sharedMessageArchive()			[TLOMessageArchive sharedArchive]
 
-/* Where a line was said, taken when it is printed (on any thread, the
- tree item is read once on the thread that prints) */
 typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 {
 	TLOMessageArchiveViewTypeConsole = 0,
 	TLOMessageArchiveViewTypeChannel = 1,
 	TLOMessageArchiveViewTypeQuery = 2
 };
+
+/* Where a line was said: read from the tree item once, on the thread that
+ has it, so the archive's queue doesn't touch the item */
+@interface TLOMessageArchiveView : NSObject
+/* nil for a utility channel: its lines aren't kept */
++ (nullable instancetype)viewForItem:(IRCTreeItem *)item;
+
+- (instancetype)initWithViewId:(NSString *)viewId
+					  viewName:(NSString *)viewName
+					  viewType:(TLOMessageArchiveViewType)viewType
+					  serverId:(NSString *)serverId
+					serverName:(NSString *)serverName NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@property (readonly, copy) NSString *viewId;
+@property (readonly, copy) NSString *viewName; // empty for the console
+@property (readonly) TLOMessageArchiveViewType viewType;
+@property (readonly, copy) NSString *serverId;
+@property (readonly, copy) NSString *serverName;
+@property (readonly, weak, nullable) IRCTreeItem *item;
+@end
 
 /* The message archive (10.9): every message, action, notice and topic
  change, kept as searchable text in its own SQLite database with a full
@@ -77,11 +96,18 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 - (void)archiveLogLine:(TVCLogLine *)logLine
 		   highlighted:(BOOL)highlighted
 			   hasLink:(BOOL)hasLink
-				inView:(NSString *)viewId
-			  viewName:(NSString *)viewName
-			  viewType:(TLOMessageArchiveViewType)viewType
-			  onServer:(NSString *)serverId
-			serverName:(NSString *)serverName;
+				inView:(TLOMessageArchiveView *)view;
+
+/* Once (10.9 B): the lines already in the scrollback store of these views,
+ kept as if they had been printed, so search reaches back before the archive
+ began. Highlights are found from the keywords saved with each line. Marked
+ done in the database (a new database imports again); stopped by quitting,
+ it starts over next time, which keeps nothing twice. */
+- (void)importScrollbackOfViews:(NSArray<TLOMessageArchiveView *> *)views;
+
+/* Whether the line highlighted, as the renderer decides it, for lines
+ rendered before the archive (the renderer also skips keywords inside links) */
++ (BOOL)logLineIsHighlight:(TVCLogLine *)logLine body:(NSString *)body matchType:(NSUInteger)matchType; // TXNicknameHighlightMatchType
 
 /* A deleted message (REDACT): out of the archive too */
 - (void)removeMessageWithMsgid:(NSString *)msgid inView:(NSString *)viewId;

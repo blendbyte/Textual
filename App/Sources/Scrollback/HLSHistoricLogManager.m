@@ -769,6 +769,106 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	});
 }
 
+- (void)enumerateEntriesForItem:(IRCTreeItem *)item
+					  batchSize:(NSUInteger)batchSize
+					 usingBlock:(void (^)(NSArray<TVCLogLine *> *entries, void (^ _Nullable next)(void)))block
+{
+	NSParameterAssert(item != nil);
+	NSParameterAssert(batchSize > 0);
+	NSParameterAssert(block != nil);
+
+	[self _enumerateEntriesForView:item.uniqueIdentifier afterEntryIdentifier:(-1) batchSize:batchSize usingBlock:block];
+}
+
+/* From the entry identifier the last batch ended at: lines deleted on the
+ way (a REDACT) leave gaps, so it is not counted forward */
+- (void)_enumerateEntriesForView:(NSString *)viewId
+			afterEntryIdentifier:(NSInteger)afterEntryIdentifier
+					   batchSize:(NSUInteger)batchSize
+					  usingBlock:(void (^)(NSArray<TVCLogLine *> *entries, void (^ _Nullable next)(void)))block
+{
+	dispatch_async(self.queue, ^{
+		HLSHistoricLogViewContext *viewContext = [self _contextForView:viewId];
+
+		if (viewContext == nil) {
+			XRPerformBlockAsynchronouslyOnGlobalQueue(^{
+				block(@[], nil);
+			});
+
+			return;
+		}
+
+		NSFetchRequest *fetchRequest = [self.class fetchRequestForView:viewId
+															 ascending:YES
+															fetchLimit:batchSize
+												 lowestEntryIdentifier:(afterEntryIdentifier + 1)
+												highestEntryIdentifier:NSIntegerMax
+														   limitToDate:nil];
+
+		__block NSArray<NSDictionary *> *records = @[];
+
+		__block NSInteger lastEntryIdentifier = afterEntryIdentifier;
+
+		[viewContext performBlockAndWait:^{
+			NSError *fetchRequestError = nil;
+
+			NSArray<NSManagedObject *> *fetchedObjects = [viewContext executeFetchRequest:fetchRequest error:&fetchRequestError];
+
+			if (fetchedObjects == nil) {
+				LogToConsoleError("Failed to fetch from the historic log: %{public}@", fetchRequestError.localizedDescription);
+
+				return;
+			}
+
+			NSMutableArray<NSDictionary *> *recordsMutable = [NSMutableArray arrayWithCapacity:fetchedObjects.count];
+
+			for (NSManagedObject *object in fetchedObjects) {
+				lastEntryIdentifier = MAX(lastEntryIdentifier, [[object valueForKey:@"entryIdentifier"] integerValue]);
+
+				NSData *data = [object valueForKey:@"logLineData"];
+
+				if (data == nil) {
+					continue;
+				}
+
+				NSMutableDictionary *record = [NSMutableDictionary dictionaryWithCapacity:2];
+
+				record[@"data"] = data;
+
+				[record maybeSetObject:[object valueForKey:@"logLineUniqueIdentifier"] forKey:@"uniqueIdentifier"];
+
+				[recordsMutable addObject:record];
+			}
+
+			records = [recordsMutable copy];
+		}];
+
+		BOOL more = (lastEntryIdentifier != afterEntryIdentifier);
+
+		XRPerformBlockAsynchronouslyOnGlobalQueue(^{
+			NSMutableArray<TVCLogLine *> *entries = [NSMutableArray arrayWithCapacity:records.count];
+
+			for (NSDictionary *record in records) {
+				TVCLogLine *logLine = [TVCLogLine logLineWithData:record[@"data"] uniqueIdentifier:record[@"uniqueIdentifier"]];
+
+				if (logLine) {
+					[entries addObject:logLine];
+				}
+			}
+
+			if (more == NO) {
+				block([entries copy], nil);
+
+				return;
+			}
+
+			block([entries copy], ^{
+				[self _enumerateEntriesForView:viewId afterEntryIdentifier:lastEntryIdentifier batchSize:batchSize usingBlock:block];
+			});
+		});
+	});
+}
+
 - (void)forgetItemsOtherThan:(NSSet<NSString *> *)viewIds
 {
 	NSParameterAssert(viewIds != nil);

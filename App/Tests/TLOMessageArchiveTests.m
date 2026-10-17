@@ -38,6 +38,7 @@
 #import <XCTest/XCTest.h>
 #import <sqlite3.h>
 
+#import "TPCPreferencesLocal.h"
 #import "TVCLogLine.h"
 #import "TLOMessageArchivePrivate.h"
 
@@ -87,14 +88,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)archive:(TVCLogLine *)logLine inView:(NSString *)viewId
 {
-	[self.archive archiveLogLine:logLine
-					 highlighted:NO
-						 hasLink:NO
-						  inView:viewId
-						viewName:@"#textual"
-						viewType:TLOMessageArchiveViewTypeChannel
-						onServer:@"server-1"
-					  serverName:@"Libera.Chat"];
+	TLOMessageArchiveView *view =
+	[[TLOMessageArchiveView alloc] initWithViewId:viewId
+										 viewName:@"#textual"
+										 viewType:TLOMessageArchiveViewTypeChannel
+										 serverId:@"server-1"
+									   serverName:@"Libera.Chat"];
+
+	[self.archive archiveLogLine:logLine highlighted:NO hasLink:NO inView:view];
 }
 
 /* What the database holds, read with SQLite directly after the queue is done */
@@ -220,6 +221,42 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.archive removeMessagesOlderThan:[now dateByAddingTimeInterval:(-365 * 24 * 60 * 60)]];
 
 	XCTAssertEqualObjects(self.allBodies, @[@"new"]);
+}
+
+/* Highlights of imported scrollback, found as the renderer finds them */
+- (void)testFindsHighlightsOfImportedLines
+{
+	TVCLogLineMutable *logLine = [TVCLogLineMutable new];
+
+	logLine.lineType = TVCLogLineTypePrivateMessage;
+	logLine.memberType = TVCLogLineMemberTypeNormal;
+	logLine.highlightKeywords = @[@"Guest66", @"release"];
+	logLine.excludeKeywords = @[@"prerelease"];
+
+	/* Exact: a whole word only, any case */
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"hi guest66, welcome" matchType:TXNicknameHighlightMatchTypeExact]);
+	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"hi Guest667" matchType:TXNicknameHighlightMatchTypeExact]);
+
+	/* Partial: inside a word too, but not in an excluded word */
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"hi Guest667" matchType:TXNicknameHighlightMatchTypePartial]);
+	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"the prerelease is out" matchType:TXNicknameHighlightMatchTypePartial]);
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"the prerelease and the release" matchType:TXNicknameHighlightMatchTypePartial]);
+
+	/* Regular expressions */
+	logLine.highlightKeywords = @[@"gu[e]st\\d+"];
+
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"ping Guest66" matchType:TXNicknameHighlightMatchTypeRegularExpression]);
+
+	/* Never one's own lines, notices or lines without keywords */
+	logLine.highlightKeywords = @[@"Guest66"];
+	logLine.memberType = TVCLogLineMemberTypeLocalUser;
+
+	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"I am Guest66" matchType:TXNicknameHighlightMatchTypeExact]);
+
+	logLine.memberType = TVCLogLineMemberTypeNormal;
+	logLine.lineType = TVCLogLineTypeNotice;
+
+	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"Guest66: notice" matchType:TXNicknameHighlightMatchTypeExact]);
 }
 
 @end

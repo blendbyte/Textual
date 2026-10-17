@@ -1669,29 +1669,11 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	/* Where it was said, for the message archive (10.9), read here and not
-	 on the printing queue; utility channels aren't kept */
-	BOOL archiveLine = [TLOMessageArchive archivesLineType:logLine.lineType];
+	 on the printing queue; nil for utility channels, which aren't kept */
+	TLOMessageArchiveView *archiveView = nil;
 
-	IRCClient *archiveClient = self.associatedClient;
-	IRCChannel *archiveChannel = self.associatedChannel;
-
-	NSString *archiveViewId = self.associatedItem.uniqueIdentifier;
-	NSString *archiveViewName = @"";
-	NSString *archiveServerId = archiveClient.uniqueIdentifier;
-	NSString *archiveServerName = archiveClient.networkNameAlt;
-
-	TLOMessageArchiveViewType archiveViewType = TLOMessageArchiveViewTypeConsole;
-
-	if (archiveLine && archiveChannel) {
-		archiveViewName = archiveChannel.name;
-
-		if (archiveChannel.isUtility) {
-			archiveLine = NO;
-		} else if (archiveChannel.isPrivateMessage) {
-			archiveViewType = TLOMessageArchiveViewTypeQuery;
-		} else {
-			archiveViewType = TLOMessageArchiveViewTypeChannel;
-		}
+	if ([TLOMessageArchive archivesLineType:logLine.lineType]) {
+		archiveView = [TLOMessageArchiveView viewForItem:self.associatedItem];
 	}
 
 	TVCLogControllerPrintingBlock printBlock = ^(id operation) {
@@ -1723,17 +1705,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		THOPluginDidPostNewMessageConcreteObject *pluginObject = resultInfo[@"pluginConcreteObject"];
 
 		/* Kept even when a clear drops it from the view */
-		if (archiveLine) {
+		if (archiveView) {
 			NSArray *listOfLinks = resultInfo[TVCLogRendererResultsListOfLinksInBodyAttribute];
 
-			[sharedMessageArchive() archiveLogLine:logLine
-									   highlighted:highlighted
-										   hasLink:(listOfLinks.count > 0)
-											inView:archiveViewId
-										  viewName:archiveViewName
-										  viewType:archiveViewType
-										  onServer:archiveServerId
-										serverName:archiveServerName];
+			[sharedMessageArchive() archiveLogLine:logLine highlighted:highlighted hasLink:(listOfLinks.count > 0) inView:archiveView];
 		}
 
 		XRPerformBlockAsynchronouslyOnMainQueue(^{
