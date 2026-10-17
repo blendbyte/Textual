@@ -43,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogController ()
 
+/* The window showing it: changes when it pops out into its own (10.18) */
+- (void)setAttachedWindow:(TVCMainWindow *)attachedWindow;
+
 /* Typing notifications: "… is typing" as the last line of the view */
 - (void)setTypingIndicatorText:(NSString *)text;
 

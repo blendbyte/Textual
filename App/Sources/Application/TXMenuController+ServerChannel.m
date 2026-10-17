@@ -522,6 +522,47 @@ NS_ASSUME_NONNULL_BEGIN
 	return channel;
 }
 
+#pragma mark -
+#pragma mark Pop-out Windows
+
+/* The server's menu pops out its console; the others the channel or private
+ message, or the server console when that is what's selected */
+- (nullable IRCTreeItem *)_treeItemToPopOutForMenuItem:(NSMenuItem *)menuItem
+{
+	IRCClient *client = self.selectedClient;
+
+	if (menuItem.tag == MTMMServerOpenInNewWindow) {
+		return client;
+	}
+
+	IRCChannel *channel = self.selectedChannel;
+
+	if (channel) {
+		return channel;
+	}
+
+	if (menuItem.tag == MTMMWindowOpenInNewWindow) {
+		return client;
+	}
+
+	return nil;
+}
+
+- (void)openInNewWindow:(nullable id)sender
+{
+	if ([sender isKindOfClass:[NSMenuItem class]] == NO) {
+		return;
+	}
+
+	IRCTreeItem *item = [self _treeItemToPopOutForMenuItem:sender];
+
+	if (item == nil) {
+		return;
+	}
+
+	[TVCMainWindow popOutItem:item];
+}
+
 - (void)toggleMute:(nullable id)sender
 {
 	if ([sender isKindOfClass:[NSMenuItem class]] == NO) {

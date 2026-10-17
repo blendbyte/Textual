@@ -129,6 +129,7 @@ enum
 	MTMMServerAddChannelSeparator = 513, // "-"
 	MTMMServerServerProperties = 514, // "Server Properties…"
 	MTMMServerMuteNetwork = 515, // "Mute Network"
+	MTMMServerOpenInNewWindow = 516, // "Open in New Window"
 
 	/* Main menu - Channel menu */
 	MTMMChannelJoinChannel = 600, // "Join Channel"
@@ -156,12 +157,14 @@ enum
 	MTMMChannelChannelPropertiesSeparator = 617, // "-"
 	MTMMChannelCopyUniqueIdentifier = 618, //
 	MTMMChannelMuteChannel = 650, // "Mute Channel"
+	MTMMChannelOpenInNewWindow = 651, // "Open in New Window"
 
 	/* Main menu - Query menu */
 	MTMMQueryCloseQuery = 1800, // "Close Query"
 	MTMMQueryCloseQuerySeparator = 1801, // "-"
 	MTMMQueryQueryLogs = 1802, // "Query Logs"
 	MTMMQueryMuteQuery = 1803, // "Mute Private Message"
+	MTMMQueryOpenInNewWindow = 1804, // "Open in New Window"
 
 	/* Main menu - Navigation menu */
 	MTMMNavigationServersMenu = 700, // "Servers"
@@ -209,6 +212,7 @@ enum
 	MTMMWindowResetWindowToDefaultSize = 810, // "Reset Window to Default Size"
 	MTMMWindowResetWindowToDefaultSizeSeparator = 811, // "-"
 	MTMMWindowMainWindow = 812, // "Main Window"
+	MTMMWindowOpenInNewWindow = 820, // "Open in New Window"
 	MTMMWindowAddressBook = 813, // "Address Book"
 	MTMMWindowIgnoreList = 814, // "Ignore List"
 	MTMMWindowViewLogs = 815, // "View Logs"
@@ -397,6 +401,7 @@ enum
 - (IBAction)joinChannel:(nullable id)sender;
 - (IBAction)leaveChannel:(nullable id)sender;
 - (IBAction)toggleMute:(nullable id)sender;
+- (IBAction)openInNewWindow:(nullable id)sender; // a pop-out window (10.18)
 
 - (IBAction)connect:(nullable id)sender;
 - (IBAction)connectBypassingProxy:(nullable id)sender;

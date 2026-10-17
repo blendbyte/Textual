@@ -142,10 +142,10 @@ NS_ASSUME_NONNULL_BEGIN
 	 the user list for selected rows. */
 	NSMutableArray *userArray = [NSMutableArray array];
 
-	NSIndexSet *selectedRows = mainWindowMemberList().selectedRowIndexes;
+	NSIndexSet *selectedRows = TVCMainWindow.currentWindow.memberList.selectedRowIndexes;
 
 	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-		IRCChannelUser *user = [mainWindowMemberList() itemAtRow:index];
+		IRCChannelUser *user = [TVCMainWindow.currentWindow.memberList itemAtRow:index];
 
 		if (returnStrings) {
 			[userArray addObject:user.user.nickname];
@@ -171,7 +171,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[mainWindowMemberList() deselectAll:sender];
+	[TVCMainWindow.currentWindow.memberList deselectAll:sender];
 }
 
 #pragma mark -
@@ -286,7 +286,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The member list's selection, never a nickname left from the chat view */
 	self.pointedNickname = nil;
 
-	NSInteger rowBeneathMouse = mainWindowMemberList().rowBeneathMouse;
+	NSInteger rowBeneathMouse = TVCMainWindow.currentWindow.memberList.rowBeneathMouse;
 
 	if (rowBeneathMouse < 0) {
 		return;
@@ -336,7 +336,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self deselectMembers:sender];
 
-	TVCMainWindowTextView *textView = mainWindowTextField();
+	TVCMainWindowTextView *textView = TVCMainWindow.currentWindow.inputTextField;
 
 	NSRange selectedRange = textView.selectedRange;
 
@@ -964,7 +964,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	IRCChannelUser *member = [mainWindowMemberList() itemAtRow:row];
+	IRCChannelUser *member = [TVCMainWindow.currentWindow.memberList itemAtRow:row];
 
 	if (member == nil) {
 		return;
@@ -1080,7 +1080,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(files != nil);
 
-	TVCMainWindowTextView *textField = mainWindowTextField();
+	TVCMainWindowTextView *textField = TVCMainWindow.currentWindow.inputTextField;
 
 	[textField focus];
 

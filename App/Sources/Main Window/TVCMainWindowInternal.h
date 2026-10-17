@@ -78,6 +78,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL reloadingTheme;
 @property (nonatomic, assign) BOOL inputDraftBeingRestored;
 @property (nonatomic, assign) BOOL awakened; // set up once (-awakeFromNib comes again with nib reloads)
+@property (nonatomic, strong, nullable) IRCTreeItem *popOutItem; // a pop-out's one item (10.18); nil for the main window
+@property (nonatomic, copy, nullable) NSArray *popOutTopLevelObjects; // keeps a pop-out's nib objects alive
+@property (nonatomic, assign) BOOL popOutClosingQuietly; // its item is going away, or Textual is quitting: not put back
 @property (nonatomic, strong, nullable) NSView *replyBar; // "Replying to …" above the input field (9.15)
 @property (nonatomic, strong, nullable) NSTextField *replyBarLabel;
 @property (nonatomic, strong, nullable) NSLayoutConstraint *replyBarHeightConstraint;
@@ -115,6 +118,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMainWindow (InputInternal)
 - (void)registerKeyHandlers;
+
+/* Pop-out windows (10.18) */
++ (void)unregisterWindow:(TVCMainWindow *)window;
++ (BOOL)isLoadingPopOut;
+- (void)awakeFromNibAsPopOut;
+- (void)showPoppedOutItem:(IRCTreeItem *)item memberListHidden:(BOOL)memberListHidden;
+- (void)stopShowingPoppedOutItem:(IRCTreeItem *)item;
++ (nullable TVCMainWindow *)popOutItem:(IRCTreeItem *)item frame:(nullable NSValue *)frameValue memberListHidden:(BOOL)memberListHidden makeKey:(BOOL)makeKey;
+- (void)adjustSelectionWithItems:(NSArray<IRCTreeItem *> *)selectedItems selectedItem:(nullable IRCTreeItem *)selectedItem;
 @end
 
 @interface TVCMainWindow (TitleAndWindowInternal)

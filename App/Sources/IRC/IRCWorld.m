@@ -696,6 +696,9 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 {
 	NSParameterAssert(target != nil);
 
+	/* Its own window (and a server's channels' windows) closes (10.18) */
+	[TVCMainWindow closePopOutsForItem:target];
+
 	if (target.isClient) {
 		[mainWindow() deselectGroup:target];
 	} else {

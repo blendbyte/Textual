@@ -93,10 +93,13 @@ NSString * const TVCMainWindowDidReloadThemeNotification = @"TVCMainWindowDidRel
 NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSelectionChangedNotification";
 
 /* Every window of this class, the main window first (7.13) */
-static NSPointerArray *_windows = nil;
+static NSPointerArray * _Nullable _windows = nil;
 
 /* The one that was key last */
-static __weak TVCMainWindow *_lastKeyWindow = nil;
+static __weak TVCMainWindow * _Nullable _lastKeyWindow = nil;
+
+/* A pop-out was opened this session (10.18) */
+static BOOL _popOutsOpened = NO;
 
 @implementation TVCMainWindow
 
@@ -118,6 +121,27 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 	}
 
 	[_windows addPointer:(__bridge void *)window];
+
+	if (_windows.count > 1) {
+		_popOutsOpened = YES;
+	}
+}
+
++ (void)unregisterWindow:(TVCMainWindow *)window
+{
+	NSParameterAssert(window != nil);
+
+	for (NSUInteger index = 0; index < _windows.count; index++) {
+		if ([_windows pointerAtIndex:index] == (__bridge void *)window) {
+			[_windows removePointerAtIndex:index];
+
+			break;
+		}
+	}
+
+	if (_lastKeyWindow == window) {
+		_lastKeyWindow = nil;
+	}
 }
 
 + (NSArray<TVCMainWindow *> *)windows
@@ -302,6 +326,13 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 
 	self.alphaValue = [TPCPreferences mainWindowTransparency];
 
+	/* A pop-out (10.18): a window only, the application is up already */
+	if ([self.class isLoadingPopOut]) {
+		[self awakeFromNibAsPopOut];
+
+		return;
+	}
+
 	[self addAccessoryViewsToTitlebar];
 
 	[self updateAppearance];
@@ -336,11 +367,41 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 
 	[self setupTrees];
 
+	[self.class restorePopOuts];
+
 	[TVCDockIcon drawWithoutCount];
 
 	[self observeNotifications];
 
 	[masterController() applicationWakeStepTwo];
+}
+
+/* Like the main window's setup, without starting the application */
+- (void)awakeFromNibAsPopOut
+{
+	[self addAccessoryViewsToTitlebar];
+
+	[self updateAppearance];
+
+	[self.loadingScreen hide];
+
+	[self.contentSplitView restorePositions];
+
+	[self.contentSplitView collapseServerList];
+
+	[self setUpUnifiedTitlebar];
+
+	[self updateChannelViewArrangement];
+
+	[self registerKeyHandlers];
+
+	[self setUpReplyBar];
+
+	[self setUpUploads];
+
+	[self addFormattingMenuToInputTextField];
+
+	[self observeNotifications];
 }
 
 - (void)observeNotifications
@@ -497,6 +558,10 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 
 - (void)prepareForApplicationTermination
 {
+	LogToConsoleTerminationProgress("Closing pop-out windows");
+
+	[self.class closePopOutsForTermination];
+
 	LogToConsoleTerminationProgress("Removing main window observers");
 
 	[RZNotificationCenter() removeObserver:self];
@@ -617,6 +682,18 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 {
 	_lastKeyWindow = self;
 
+	/* With pop-outs (10.18), the window in front decides the menus (the
+	 Channel menu for a channel) and which notifications go: as if its
+	 selection had just been made. Once the change of key window is done:
+	 a menu bar item shown during it kept a blank title. */
+	if (_popOutsOpened) {
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			if (self.keyWindow) {
+				[RZNotificationCenter() postNotificationName:TVCMainWindowSelectionChangedNotification object:self];
+			}
+		});
+	}
+
 	self.lastKeyWindowStateChange = [NSDate timeIntervalSince1970];
 
 	[self.titlebarTitleField updateTextColor];
@@ -654,6 +731,17 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 - (void)windowDidResize:(NSNotification *)notification
 {
 	[self.inputTextField recalculateTextViewSize];
+
+	if (self.isPopOut) {
+		[self.class savePopOuts];
+	}
+}
+
+- (void)windowDidMove:(NSNotification *)notification
+{
+	if (self.isPopOut) {
+		[self.class savePopOuts];
+	}
 }
 
 - (BOOL)windowShouldZoom:(NSWindow *)awindow toFrame:(NSRect)newFrame
@@ -734,6 +822,11 @@ static __weak TVCMainWindow *_lastKeyWindow = nil;
 		}
 
 		self.textSizeMultiplier = textSizeMultiplier;
+	}
+
+	/* The views use their window's: every window keeps the same */
+	for (TVCMainWindow *window in self.class.windows) {
+		window.textSizeMultiplier = textSizeMultiplier;
 	}
 
 	for (IRCClient *u in worldController().clientList) {

@@ -54,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* Added at the end of the draft of a channel that isn't selected (an uploaded file's link) */
 - (void)appendText:(NSString *)text toDraftForTreeItem:(IRCTreeItem *)treeItem;
 
+/* Replaces it (nil removes it): an item moving to another window takes its draft along (10.18) */
+- (void)setDraft:(nullable NSAttributedString *)draft forTreeItem:(IRCTreeItem *)treeItem;
+
 - (void)destroy:(IRCTreeItem *)treeItem;
 
 - (void)noteInputHistoryObjectScopeDidChange;

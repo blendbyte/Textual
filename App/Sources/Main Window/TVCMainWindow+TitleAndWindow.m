@@ -293,7 +293,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	self.styleMask |= NSWindowStyleMaskFullSizeContentView;
+	/* The frame stays: AppKit keeps the content size instead, and the
+	 restored frame lost the title bar's height at every launch */
+	if ((self.styleMask & NSWindowStyleMaskFullSizeContentView) == 0) {
+		NSRect frame = self.frame;
+
+		self.styleMask |= NSWindowStyleMaskFullSizeContentView;
+
+		[self setFrame:frame display:NO];
+	}
 
 	self.titlebarAppearsTransparent = YES;
 }

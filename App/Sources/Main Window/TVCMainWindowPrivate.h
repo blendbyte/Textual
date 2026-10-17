@@ -120,6 +120,26 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 + (void)destroyInputHistoryOf:(IRCTreeItem *)item; // the channel or server is gone
 @end
 
+/* Pop-out windows (10.18): a channel, private message or server console in a
+ window of its own (this class from the same nib, its server list hidden).
+ It is shown in one place at a time: selecting it in the main window brings
+ its window forward. Closing the window puts it back in the main window. */
+@interface TVCMainWindow (PopOut)
+@property (readonly) BOOL isPopOut;
+
++ (nullable TVCMainWindow *)popOutWindowForItem:(IRCTreeItem *)item;
+
++ (void)popOutItem:(IRCTreeItem *)item; // or brings its window forward
++ (void)popOutItem:(IRCTreeItem *)item atScreenPoint:(NSPoint)point; // dragged out of the server list
+
+/* The item (and, for a server, its channels) is going away */
++ (void)closePopOutsForItem:(IRCTreeItem *)item;
+
++ (void)restorePopOuts; // at launch, once the servers are there
++ (void)savePopOuts; // which, where, member list shown; for the next launch
++ (void)closePopOutsForTermination; // their places are kept for the next launch
+@end
+
 @interface TVCMainWindow (ServerListPrivate)
 - (void)reloadTree;
 - (void)reloadTreeItem:(IRCTreeItem *)item;

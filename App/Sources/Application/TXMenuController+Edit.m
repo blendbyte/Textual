@@ -159,9 +159,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paste:(nullable id)sender
 {
 	if ((TVCMainWindow.focusedWindow != nil)) {
-		[mainWindowTextField() focus];
+		[TVCMainWindow.currentWindow.inputTextField focus];
 
-		[mainWindowTextField() paste:sender];
+		[TVCMainWindow.currentWindow.inputTextField paste:sender];
 
 		return;
 	}

@@ -233,6 +233,23 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(selectedItems != nil);
 
+	/* What has a window of its own (10.18) isn't shown here as well */
+	if (self.isPopOut == NO) {
+		NSMutableArray<IRCTreeItem *> *itemsShownHere = [NSMutableArray arrayWithCapacity:selectedItems.count];
+
+		for (IRCTreeItem *item in selectedItems) {
+			if ([self.class popOutWindowForItem:item] == nil) {
+				[itemsShownHere addObject:item];
+			}
+		}
+
+		selectedItems = [itemsShownHere copy];
+
+		if (selectedItem && [selectedItems containsObject:selectedItem] == NO) {
+			selectedItem = selectedItems.lastObject;
+		}
+	}
+
 	NSMutableIndexSet *itemRows = [NSMutableIndexSet indexSet];
 
 	for (IRCTreeItem *item in selectedItems) {
@@ -355,6 +372,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)select:(nullable IRCTreeItem *)item
 {
+	/* In a window of its own (10.18): that window comes forward */
+	TVCMainWindow *popOutWindow = ((item) ? [self.class popOutWindowForItem:item] : nil);
+
+	if (popOutWindow && popOutWindow != self) {
+		[popOutWindow makeKeyAndOrderFront:nil];
+
+		return;
+	}
+
 	[self shiftSelection:self.selectedItem
 				  toItem:item
 				 options:(TVCMainWindowShiftSelectionFlagMaintainGrouping |
@@ -733,7 +759,33 @@ NS_ASSUME_NONNULL_BEGIN
 {
 #define _maximumSelectedRows	6
 
-	return [outlineView selectionIndexesForProposedSelection:proposedSelectionIndexes maximumNumberOfSelections:_maximumSelectedRows];
+	/* A row whose item has a window of its own (10.18) isn't selected:
+	 clicked alone, its window comes forward */
+	NSMutableIndexSet *rowsShownHere = [proposedSelectionIndexes mutableCopy];
+
+	__block TVCMainWindow *popOutWindow = nil;
+
+	[proposedSelectionIndexes enumerateIndexesUsingBlock:^(NSUInteger row, BOOL *stop) {
+		IRCTreeItem *item = [outlineView itemAtRow:row];
+
+		TVCMainWindow *window = ((item) ? [self.class popOutWindowForItem:item] : nil);
+
+		if (window) {
+			[rowsShownHere removeIndex:row];
+
+			popOutWindow = window;
+		}
+	}];
+
+	if (popOutWindow && rowsShownHere.count == 0) {
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[popOutWindow makeKeyAndOrderFront:nil];
+		});
+
+		return outlineView.selectedRowIndexes;
+	}
+
+	return [outlineView selectionIndexesForProposedSelection:rowsShownHere maximumNumberOfSelections:_maximumSelectedRows];
 
 #undef _maximumSelectedRows
 }
@@ -789,6 +841,32 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return YES;
+}
+
+/* A row let go outside the window (10.18): it opens in a window of its own there */
+- (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
+{
+	if (operation != NSDragOperationNone || self.isPopOut) {
+		return;
+	}
+
+	if (NSPointInRect(screenPoint, self.frame)) {
+		return;
+	}
+
+	NSString *draggedItemToken = [session.draggingPasteboard stringForType:_treeDragItemType];
+
+	if (draggedItemToken == nil) {
+		return;
+	}
+
+	IRCTreeItem *draggedItem = [worldController() findItemWithPasteboardString:draggedItemToken];
+
+	if (draggedItem == nil) {
+		return;
+	}
+
+	[self.class popOutItem:draggedItem atScreenPoint:screenPoint];
 }
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(nullable id)item proposedChildIndex:(NSInteger)index

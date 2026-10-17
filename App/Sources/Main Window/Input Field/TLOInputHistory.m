@@ -199,6 +199,15 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 	}
 }
 
+- (void)setDraft:(nullable NSAttributedString *)draft forTreeItem:(IRCTreeItem *)treeItem
+{
+	NSParameterAssert(treeItem != nil);
+
+	@synchronized (self.historyObjects) {
+		self.drafts[treeItem.uniqueIdentifier] = ((draft.length > 0) ? [draft copy] : nil);
+	}
+}
+
 - (void)noteInputHistoryObjectScopeDidChange
 {
 	@synchronized(self.historyObjects) {

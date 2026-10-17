@@ -616,6 +616,12 @@ CA
                                     <action selector="toggleMute:" target="267" id="mTn-a1-c9x"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Open in New Window" tag="516" id="pOw-s1-a0k">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="openInNewWindow:" target="267" id="pOw-a1-c9x"/>
+                                </connections>
+                            </menuItem>
                         </items>
                         <connections>
                             <outlet property="delegate" destination="267" id="pQH-ZC-X9q"/>
@@ -882,6 +888,12 @@ CQ
                                 <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                 <connections>
                                     <action selector="showMainWindow:" target="267" id="2578"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Open in New Window" tag="820" keyEquivalent="n" id="pOw-s4-w1n">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="openInNewWindow:" target="267" id="pOw-a4-w2n"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Address Book" tag="813" keyEquivalent="2" id="1310">
@@ -1196,6 +1208,12 @@ CA
                         <action selector="toggleMute:" target="267" id="mTc-a2-d8y"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Open in New Window" tag="651" id="pOw-s2-b1l">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="openInNewWindow:" target="267" id="pOw-a2-d8y"/>
+                    </connections>
+                </menuItem>
                 <menuItem isSeparatorItem="YES" tag="616" id="G83-kQ-M4p">
                     <connections>
                         <binding destination="TlT-Ik-3QP" name="hidden" keyPath="values.TextualDeveloperEnvironment" id="Oq2-DH-zfe">
@@ -1245,6 +1263,12 @@ CA
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="toggleMute:" target="267" id="mTq-a3-e7z"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Open in New Window" tag="1804" id="pOw-s3-c2m">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="openInNewWindow:" target="267" id="pOw-a3-e7z"/>
                     </connections>
                 </menuItem>
             </items>

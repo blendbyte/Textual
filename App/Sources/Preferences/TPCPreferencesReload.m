@@ -234,9 +234,13 @@ NS_ASSUME_NONNULL_BEGIN
 		 drawings related to this preference. The member list automatically
 		 invalidates its caches when passing a recognized key. */ 
 		if (reloadAction == TPCPreferencesReloadActionMemberListUserBadges && key != nil) {
-			[mainWindowMemberList() refreshDrawingForChangesToPreference:key];
+			for (TVCMainWindow *window in TVCMainWindow.windows) {
+				[window.memberList refreshDrawingForChangesToPreference:key];
+			}
 		} else {
-			[mainWindowMemberList().userInterfaceObjects invalidateUserMarkBadgeCaches];
+			for (TVCMainWindow *window in TVCMainWindow.windows) {
+				[window.memberList.userInterfaceObjects invalidateUserMarkBadgeCaches];
+			}
 		}
 	}
 
@@ -272,7 +276,9 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Member list appearance */
 	if (_reloads(TPCPreferencesReloadActionMemberList)) {
 		if (didReloadUserInterface == NO) {
-			[mainWindowMemberList() applicationAppearanceChanged];
+			for (TVCMainWindow *window in TVCMainWindow.windows) {
+				[window.memberList applicationAppearanceChanged];
+			}
 		}
 	}
 
@@ -293,13 +299,17 @@ NS_ASSUME_NONNULL_BEGIN
 	if (_reloads(TPCPreferencesReloadActionMemberList)) {
 		/* Sort order will redraw these for us */
 		if (didReloadMemberListSortOrder == NO) {
-			[mainWindowMemberList() refreshAllDrawings];
+			for (TVCMainWindow *window in TVCMainWindow.windows) {
+				[window.memberList refreshAllDrawings];
+			}
 		}
 	}
 
 	/* Main window segmented controller */
 	if (_reloads(TPCPreferencesReloadActionTextFieldSegmentedControllerOrigin)) {
-		[mainWindowTextField() reloadOriginPointsAndRecalculateSize];
+		for (TVCMainWindow *window in TVCMainWindow.windows) {
+			[window.inputTextField reloadOriginPointsAndRecalculateSize];
+		}
 	}
 
 	/* Main window alpha level */
@@ -323,7 +333,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Text direction: right-to-left, left-to-right */
 	if (_reloads(TPCPreferencesReloadActionTextDirection)) {
-		[mainWindowTextField() updateTextDirection];
+		for (TVCMainWindow *window in TVCMainWindow.windows) {
+			[window.inputTextField updateTextDirection];
+		}
 
 		if (didReloadActiveStyle == NO) {
 			[mainWindow() reloadTheme];
@@ -332,7 +344,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Text field font size */
 	if (_reloads(TPCPreferencesReloadActionTextFieldFontSize)) {
-		[mainWindowTextField() updateTextBasedOnPreferredFontSize];
+		for (TVCMainWindow *window in TVCMainWindow.windows) {
+			[window.inputTextField updateTextBasedOnPreferredFontSize];
+		}
 	}
 
 	/* Input history scope */

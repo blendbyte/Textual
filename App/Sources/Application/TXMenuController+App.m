@@ -277,14 +277,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)toggleServerListVisibility:(nullable id)sender
 {
-	[TVCMainWindow.currentWindow.contentSplitView toggleServerListVisibility];
+	TVCMainWindow *window = TVCMainWindow.currentWindow;
+
+	/* A pop-out has none to show */
+	if (window.isPopOut) {
+		return;
+	}
+
+	[window.contentSplitView toggleServerListVisibility];
 }
 
 - (void)toggleMemberListVisibility:(nullable id)sender
 {
-	mainWindowMemberList().isHiddenByUser = (mainWindowMemberList().isHiddenByUser == NO);
+	TVCMainWindow *window = TVCMainWindow.currentWindow;
 
-	[TVCMainWindow.currentWindow.contentSplitView toggleMemberListVisibility];
+	TVCMemberList *memberList = window.memberList;
+
+	memberList.isHiddenByUser = (memberList.isHiddenByUser == NO);
+
+	[window.contentSplitView toggleMemberListVisibility];
+
+	/* Remembered per pop-out window */
+	if (window.isPopOut) {
+		[TVCMainWindow savePopOuts];
+	}
 }
 
 - (void)forceReloadTheme:(nullable id)sender

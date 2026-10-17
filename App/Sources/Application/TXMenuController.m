@@ -319,6 +319,13 @@ NS_ASSUME_NONNULL_BEGIN
 		return (item != nil);
 	}
 
+	/* Pop-out windows (10.18): not from the pop-out itself */
+	if (menuItem.action == @selector(openInNewWindow:)) {
+		IRCTreeItem *item = [self _treeItemToPopOutForMenuItem:menuItem];
+
+		return (item && [TVCMainWindow popOutWindowForItem:item] != TVCMainWindow.currentWindow);
+	}
+
 	if (tag < 100) {
 		return [self _validateMainMenuItem:menuItem];
 	}
@@ -430,16 +437,34 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(menuItem != nil);
 
+	/* Hidden, it keeps its submenu: the menu bar takes the title from the
+	 submenu and drew an empty slot when it came back with a new one
+	 outside menu tracking (a pop-out window becoming key, 10.18). A hidden
+	 item's shortcuts don't fire (allowsKeyEquivalentWhenHidden is NO). */
 	if (submenu) {
 		if (menuItem.submenu != submenu) {
 			menuItem.submenu = submenu;
 		}
 
+		BOOL wasHidden = menuItem.hidden;
+
 		menuItem.hidden = NO;
+
+		/* Shown again as a pop-out window becomes key (10.18): the menu bar
+		 kept an empty slot for it until the next menu was opened. Taken
+		 out and put back in its place, it is drawn. */
+		NSMenu *menuBar = menuItem.menu;
+
+		if (wasHidden && menuBar == NSApp.mainMenu && TVCMainWindow.windows.count > 1) {
+			NSInteger index = [menuBar indexOfItem:menuItem];
+
+			if (index >= 0) {
+				[menuBar removeItemAtIndex:index];
+				[menuBar insertItem:menuItem atIndex:index];
+			}
+		}
 	} else {
 		menuItem.hidden = YES;
-
-		menuItem.submenu = nil;
 	}
 }
 
@@ -584,7 +609,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			if ((TVCMainWindow.focusedWindow != nil)) {
-				return mainWindowTextField().editable;
+				return TVCMainWindow.currentWindow.inputTextField.editable;
 			}
 
 			if ([keyFirstResponder respondsToSelector:@selector(isEditable)]) {
@@ -894,6 +919,11 @@ NS_ASSUME_NONNULL_BEGIN
 				[menuItem.menu itemWithTag:MTMMWindowResetWindowToDefaultSizeSeparator].hidden = (isMainWindowMain == NO);
 			}
 
+			/* A pop-out (10.18) has no server list */
+			if (tag == MTMMWindowToggleVisibilityOfServerList || tag == MTMMWindowSortChannelList) {
+				return (TVCMainWindow.currentWindow.isPopOut == NO);
+			}
+
 			return YES;
 		}
 
@@ -1014,7 +1044,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			if ((TVCMainWindow.focusedWindow != nil)) {
-				return mainWindowTextField().editable;
+				return TVCMainWindow.currentWindow.inputTextField.editable;
 			}
 
 			id firstResponder = [NSApp keyWindow].firstResponder;
