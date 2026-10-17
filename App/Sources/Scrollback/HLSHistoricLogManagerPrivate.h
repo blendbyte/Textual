@@ -72,6 +72,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)forgetItem:(IRCTreeItem *)item;
 - (void)resetDataForItem:(IRCTreeItem *)item;
 
+/* Deletes the lines of every view not in the set: views that no longer
+ exist. A view's lines are only deleted when it is closed while Textual
+ runs, so a crash or a force quit left them, and queries not kept across
+ launches come back with new identifiers. */
+- (void)forgetItemsOtherThan:(NSSet<NSString *> *)viewIds;
+
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 				  ascending:(BOOL)ascending
 				 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap

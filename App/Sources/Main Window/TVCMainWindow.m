@@ -37,6 +37,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "HLSHistoricLogManagerPrivate.h"
 #import "NSStringHelper.h"
 #import "IRCChannelPrivate.h"
 #import "IRCChannelMode.h"
@@ -371,6 +372,9 @@ static BOOL _popOutsOpened = NO;
 
 	[self.class restorePopOuts];
 
+	/* A minute in: the views have loaded their history by then */
+	[self performSelector:@selector(forgetHistoricLogOfRemovedItems) withObject:nil afterDelay:60.0];
+
 	[TVCDockIcon drawWithoutCount];
 
 	[self observeNotifications];
@@ -556,6 +560,26 @@ static BOOL _popOutsOpened = NO;
 	[self saveContentSplitViewState];
 
 	[self saveSelection];
+}
+
+/* Scrollback of servers, channels and queries that no longer exist */
+- (void)forgetHistoricLogOfRemovedItems
+{
+	if (masterController().applicationIsTerminating) {
+		return;
+	}
+
+	NSMutableSet<NSString *> *viewIds = [NSMutableSet set];
+
+	for (IRCClient *u in worldController().clientList) {
+		[viewIds addObject:u.uniqueIdentifier];
+
+		for (IRCChannel *c in u.channelList) {
+			[viewIds addObject:c.uniqueIdentifier];
+		}
+	}
+
+	[sharedHistoricLog() forgetItemsOtherThan:viewIds];
 }
 
 - (void)prepareForApplicationTermination

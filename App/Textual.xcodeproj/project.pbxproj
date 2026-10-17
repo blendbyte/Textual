@@ -211,6 +211,7 @@
 		4C06E69D20EC55B90055D09A /* TLOLicenseManagerDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */; };
 		4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */; };
 		4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515B20EB673E00448776 /* TLOFileLogger.m */; };
+		4CF8C7EE64FA57C8AD0EA4EC /* TLOMessageArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */; };
 		4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514920EB673E00448776 /* TLONotificationController.m */; };
 		4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E00448776 /* TLOInputHistory.m */; };
 		4C461703899F86E9A1CDD3F8 /* TVCInputCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC3E57AC7861D0E229F24C0 /* TVCInputCompletion.m */; };
@@ -461,6 +462,7 @@
 		4C31573220EB6D0500448776 /* THOPluginManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151CF20EB673E00448776 /* THOPluginManagerPrivate.h */; };
 		4C31573320EB6D0500448776 /* THOPluginProtocolPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151B320EB673E00448776 /* THOPluginProtocolPrivate.h */; };
 		4C31573620EB6D0500448776 /* TLOFileLoggerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */; };
+		4C1AB8B887697DF3790BB6DA /* TLOMessageArchivePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CEC8EB8F2FC1109BF7B21B3 /* TLOMessageArchivePrivate.h */; };
 		4C31573720EB6D0500448776 /* TLONotificationControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151AF20EB673E00448776 /* TLONotificationControllerPrivate.h */; };
 		4C31573820EB6D0500448776 /* TLOInputHistoryPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */; };
 		4C59C9184E2CE73937362834 /* TXWebsiteLinks.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CEDCD5C56F068A1AC363FFF /* TXWebsiteLinks.h */; };
@@ -736,6 +738,7 @@
 		4CE9F00465BB5D17F16D8988 /* TVCInputMarkdownTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C722724ADF9DDCE8BB13442 /* TVCInputMarkdownTests.m */; };
 		4C03ABFF9E2EFDF00767BBCD /* IRCAliasTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C870CA064CDF0587168CD01 /* IRCAliasTests.m */; };
 		4C25AC984F529FACD80D31C3 /* HLSHistoricLogManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */; };
+		4CF374C58608F0C1AA8BD782 /* TLOMessageArchiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0661102FA15FB32C457BAF /* TLOMessageArchiveTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1040,6 +1043,8 @@
 		4C31515920EB673E00448776 /* TLOpenLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLOpenLink.swift; sourceTree = "<group>"; };
 		4C31515A20EB673E00448776 /* TLOSpokenNotification.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOSpokenNotification.m; sourceTree = "<group>"; };
 		4C31515B20EB673E00448776 /* TLOFileLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOFileLogger.m; sourceTree = "<group>"; };
+		4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOMessageArchive.m; sourceTree = "<group>"; };
+		4CEC8EB8F2FC1109BF7B21B3 /* TLOMessageArchivePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOMessageArchivePrivate.h; sourceTree = "<group>"; };
 		4C31515C20EB673E00448776 /* TLONicknameCompletionStatus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLONicknameCompletionStatus.m; sourceTree = "<group>"; };
 		4C31515D20EB673E00448776 /* TLONotificationConfiguration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLONotificationConfiguration.m; sourceTree = "<group>"; };
 		4C31515F20EB673E00448776 /* IRCColorFormat.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCColorFormat.m; sourceTree = "<group>"; };
@@ -1664,6 +1669,7 @@
 		4C722724ADF9DDCE8BB13442 /* TVCInputMarkdownTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCInputMarkdownTests.m; sourceTree = "<group>"; };
 		4C870CA064CDF0587168CD01 /* IRCAliasTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAliasTests.m; sourceTree = "<group>"; };
 		4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HLSHistoricLogManagerTests.m; sourceTree = "<group>"; };
+		4C0661102FA15FB32C457BAF /* TLOMessageArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOMessageArchiveTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2645,6 +2651,8 @@
 				4C31522420EB673E00448776 /* HLSHistoricLogManagerPrivate.h */,
 				4C31515B20EB673E00448776 /* TLOFileLogger.m */,
 				4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */,
+				4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */,
+				4CEC8EB8F2FC1109BF7B21B3 /* TLOMessageArchivePrivate.h */,
 			);
 			path = Scrollback;
 			sourceTree = "<group>";
@@ -3065,6 +3073,7 @@
 				4CE483843FCB79C64907DDE1 /* IRCClientLabeledResponseTests.m */,
 				4C0995115EA7A7CC859BFC31 /* TDCChannelSpotlightSearchResultTests.m */,
 				4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */,
+				4C0661102FA15FB32C457BAF /* TLOMessageArchiveTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3C /* TVCLogViewSecurityTests.m */,
 			);
 			path = Tests;
@@ -3334,6 +3343,7 @@
 				4C3156F620EB6D0500448776 /* IRCMessagePrivate.h in Headers */,
 				4C3156EA20EB6D0500448776 /* IRCChannelPrivate.h in Headers */,
 				4C31573620EB6D0500448776 /* TLOFileLoggerPrivate.h in Headers */,
+				4C1AB8B887697DF3790BB6DA /* TLOMessageArchivePrivate.h in Headers */,
 				4C3155A820EB6CB400448776 /* IRCChannelMode.h in Headers */,
 				4C31574E20EB6D0500448776 /* TVCContentNavigationOutlineViewPrivate.h in Headers */,
 				4C3155B920EB6CB400448776 /* IRCTreeItem.h in Headers */,
@@ -3895,6 +3905,7 @@
 				4C06E69D20EC55B90055D09A /* TLOLicenseManagerDownloader.m in Sources */,
 				4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */,
 				4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */,
+				4CF8C7EE64FA57C8AD0EA4EC /* TLOMessageArchive.m in Sources */,
 				4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */,
 				4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */,
 				4C461703899F86E9A1CDD3F8 /* TVCInputCompletion.m in Sources */,
@@ -4035,6 +4046,7 @@
 				4C4CB4C2E7FE0E942CDB242F /* IRCClientLabeledResponseTests.m in Sources */,
 				4CB4523DFD9DB49B1B25F70D /* TDCChannelSpotlightSearchResultTests.m in Sources */,
 				4C25AC984F529FACD80D31C3 /* HLSHistoricLogManagerTests.m in Sources */,
+				4CF374C58608F0C1AA8BD782 /* TLOMessageArchiveTests.m in Sources */,
 				4CACA1915D50ECEEE616CC47 /* TPCPreferencesTests.m in Sources */,
 				4CA4A4D412BC97120FEB0648 /* TVCLogRendererTests.m in Sources */,
 				96C3DA14BC1FF800D2BEEFF1 /* IRCProtocolLinkTests.m in Sources */,

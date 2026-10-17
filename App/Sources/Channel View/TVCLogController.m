@@ -61,6 +61,7 @@
 #import "TVCLogLine.h"
 #import "TVCLogRenderer.h"
 #import "HLSHistoricLogManagerPrivate.h"
+#import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCLogControllerOperationQueuePrivate.h"
 #import "TVCMainWindowPrivate.h"
@@ -1667,6 +1668,32 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		ignoreInlineMedia = [self.associatedClient ignoresInlineMediaFromNickname:senderNickname];
 	}
 
+	/* Where it was said, for the message archive (10.9), read here and not
+	 on the printing queue; utility channels aren't kept */
+	BOOL archiveLine = [TLOMessageArchive archivesLineType:logLine.lineType];
+
+	IRCClient *archiveClient = self.associatedClient;
+	IRCChannel *archiveChannel = self.associatedChannel;
+
+	NSString *archiveViewId = self.associatedItem.uniqueIdentifier;
+	NSString *archiveViewName = @"";
+	NSString *archiveServerId = archiveClient.uniqueIdentifier;
+	NSString *archiveServerName = archiveClient.networkNameAlt;
+
+	TLOMessageArchiveViewType archiveViewType = TLOMessageArchiveViewTypeConsole;
+
+	if (archiveLine && archiveChannel) {
+		archiveViewName = archiveChannel.name;
+
+		if (archiveChannel.isUtility) {
+			archiveLine = NO;
+		} else if (archiveChannel.isPrivateMessage) {
+			archiveViewType = TLOMessageArchiveViewTypeQuery;
+		} else {
+			archiveViewType = TLOMessageArchiveViewTypeChannel;
+		}
+	}
+
 	TVCLogControllerPrintingBlock printBlock = ^(id operation) {
 		NSDictionary<NSString *, id> *resultInfo = nil;
 
@@ -1694,6 +1721,20 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		NSString *highlightKeyword = resultInfo[TVCLogRendererResultsMatchedKeywordAttribute];
 
 		THOPluginDidPostNewMessageConcreteObject *pluginObject = resultInfo[@"pluginConcreteObject"];
+
+		/* Kept even when a clear drops it from the view */
+		if (archiveLine) {
+			NSArray *listOfLinks = resultInfo[TVCLogRendererResultsListOfLinksInBodyAttribute];
+
+			[sharedMessageArchive() archiveLogLine:logLine
+									   highlighted:highlighted
+										   hasLink:(listOfLinks.count > 0)
+											inView:archiveViewId
+										  viewName:archiveViewName
+										  viewType:archiveViewType
+										  onServer:archiveServerId
+										serverName:archiveServerName];
+		}
 
 		XRPerformBlockAsynchronouslyOnMainQueue(^{
 			if (self.terminating) {
@@ -2094,6 +2135,9 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	}
 
 	[self evaluateFunction:@"_MessageActions.deleteMessage" withArguments:@[msgid, note]];
+
+	/* Out of the archive, also when the line is no longer in the view */
+	[sharedMessageArchive() removeMessageWithMsgid:msgid inView:self.associatedItem.uniqueIdentifier];
 
 	/* Out of what is saved too: the text is gone, the line says why */
 	[self updateSavedLineForMessage:msgid usingBlock:^TVCLogLine *(TVCLogLine *logLine) {

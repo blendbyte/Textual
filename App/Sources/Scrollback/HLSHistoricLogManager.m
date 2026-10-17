@@ -769,6 +769,78 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	});
 }
 
+- (void)forgetItemsOtherThan:(NSSet<NSString *> *)viewIds
+{
+	NSParameterAssert(viewIds != nil);
+
+	dispatch_async(self.queue, ^{
+		NSManagedObjectContext *parentContext = self.managedObjectContext;
+
+		if (parentContext == nil) {
+			return;
+		}
+
+		[parentContext performBlockAndWait:^{
+			/* The views in the store, from the index */
+			NSFetchRequest *viewsRequest = [NSFetchRequest fetchRequestWithEntityName:@"LogLine2"];
+
+			viewsRequest.resultType = NSDictionaryResultType;
+
+			viewsRequest.propertiesToFetch = @[@"logLineViewIdentifier"];
+
+			viewsRequest.returnsDistinctResults = YES;
+
+			viewsRequest.includesPendingChanges = NO;
+
+			NSError *fetchError = nil;
+
+			NSArray<NSDictionary *> *views = [parentContext executeFetchRequest:viewsRequest error:&fetchError];
+
+			if (views == nil) {
+				LogToConsoleError("Failed to fetch historic log views: %{public}@", fetchError.localizedDescription);
+
+				return;
+			}
+
+			NSMutableArray<NSString *> *removedViewIds = [NSMutableArray array];
+
+			for (NSDictionary *view in views) {
+				NSString *viewId = view[@"logLineViewIdentifier"];
+
+				if (viewId == nil || [viewIds containsObject:viewId] || self.contextObjects[viewId] != nil) {
+					continue;
+				}
+
+				[removedViewIds addObject:viewId];
+			}
+
+			if (removedViewIds.count == 0) {
+				return;
+			}
+
+			NSFetchRequest *deleteFetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"LogLine2"];
+
+			deleteFetchRequest.predicate = [NSPredicate predicateWithFormat:@"logLineViewIdentifier IN %@", removedViewIds];
+
+			NSBatchDeleteRequest *deleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:deleteFetchRequest];
+
+			deleteRequest.resultType = NSBatchDeleteResultTypeCount;
+
+			NSError *deleteError = nil;
+
+			NSBatchDeleteResult *deleteResult = [parentContext executeRequest:deleteRequest error:&deleteError];
+
+			if (deleteResult == nil) {
+				LogToConsoleError("Failed to delete historic log lines of removed views: %{public}@", deleteError.localizedDescription);
+
+				return;
+			}
+
+			LogToConsoleInfo("Deleted %{public}@ historic log lines of %{public}lu removed views", deleteResult.result, removedViewIds.count);
+		}];
+	});
+}
+
 - (void)resetDataForItem:(IRCTreeItem *)item
 {
 	NSString *viewId = item.uniqueIdentifier;

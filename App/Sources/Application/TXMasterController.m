@@ -48,6 +48,7 @@
 #import "TDCLegacyImportAssistantPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
+#import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
 #import "TVCLogControllerOperationQueuePrivate.h"
 #import "TVCMainWindowPrivate.h"
@@ -523,6 +524,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The view controllers have had their chance to change the history */
 	if (self.terminatingClientCount == 0 && self.terminateHistoricLogSaveFinished == NO) {
 		[sharedHistoricLog() prepareForApplicationTermination];
+
+		[sharedMessageArchive() prepareForApplicationTermination];
 
 		self.terminateHistoricLogSaveFinished = YES;
 	}
