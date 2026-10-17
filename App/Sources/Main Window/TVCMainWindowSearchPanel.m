@@ -43,6 +43,7 @@
 #import "IRCUser.h"
 #import "IRCWorld.h"
 #import "TLOLocalization.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TLONicknameCompletionStatusPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerPrivate.h"
@@ -170,7 +171,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Panel
 
 @interface TVCMainWindowSearchPanel () <NSSearchFieldDelegate, NSTableViewDataSource, NSTableViewDelegate>
-@property (readwrite, weak) TVCMainWindow *mainWindow;
+@property (readwrite, weak, nullable) TVCMainWindow *mainWindow;
+@property (readwrite) BOOL mentionsMode;
+@property (nonatomic, copy) NSString *searchedText; // what the field had at the last search
 @property (nonatomic, strong) NSSearchField *searchField;
 @property (nonatomic, strong) NSButton *closeButton;
 @property (nonatomic, strong) NSPopUpButton *scopePopUp;
@@ -206,8 +209,27 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(mainWindow != nil);
 
+	return [self _initWithWindow:mainWindow mentionsMode:NO];
+}
+
+- (instancetype)initForMentions
+{
+	return [self _initWithWindow:nil mentionsMode:YES];
+}
+
+- (instancetype)_initWithWindow:(nullable TVCMainWindow *)mainWindow mentionsMode:(BOOL)mentionsMode
+{
 	if ((self = [super initWithNibName:nil bundle:nil])) {
 		self.mainWindow = mainWindow;
+
+		self.mentionsMode = mentionsMode;
+
+		/* Mentions are of every network (results say where) */
+		if (mentionsMode) {
+			_scope = TVCMainWindowSearchScopeEverywhere;
+		}
+
+		self.searchedText = @"";
 
 		self.results = [NSMutableArray array];
 
@@ -418,6 +440,17 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Measures the rows (as the cells' text field draws) */
 	self.measuringField = [TVCMainWindowSearchResultCell labelWithLines:0];
 
+	/* Mentions: in a window of its own, of every network */
+	if (self.mentionsMode) {
+		searchField.placeholderString = TXTLS(@"TVCMainWindow[men-p1]");
+
+		closeButton.hidden = YES;
+
+		scopePopUp.hidden = YES;
+
+		[RZNotificationCenter() addObserver:self selector:@selector(highlightsArchived:) name:TLOMessageArchiveDidArchiveHighlightsNotification object:nil];
+	}
+
 	[view addSubview:searchField];
 	[view addSubview:closeButton];
 	[view addSubview:resultsBar];
@@ -434,8 +467,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.topConstraint,
 		self.resultsTopConstraint,
 		[searchField.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:8.0],
-		[closeButton.leadingAnchor constraintEqualToAnchor:searchField.trailingAnchor constant:4.0],
-		[closeButton.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:(-6.0)],
+		[closeButton.leadingAnchor constraintEqualToAnchor:searchField.trailingAnchor constant:((self.mentionsMode) ? -20.0 : 4.0)],
+		[closeButton.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:((self.mentionsMode) ? -8.0 : -6.0)],
 		[closeButton.centerYAnchor constraintEqualToAnchor:searchField.centerYAnchor],
 		[closeButton.widthAnchor constraintEqualToConstant:20.0],
 		[resultsBar.topAnchor constraintEqualToAnchor:searchField.bottomAnchor constant:6.0],
@@ -455,8 +488,10 @@ NS_ASSUME_NONNULL_BEGIN
 	self.view = view;
 
 	/* The title bar is transparent (10.1): the panel starts below it */
-	for (NSNotificationName name in @[NSWindowDidResizeNotification, NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification]) {
-		[RZNotificationCenter() addObserver:self selector:@selector(windowFrameChanged:) name:name object:self.mainWindow];
+	if (self.mainWindow) {
+		for (NSNotificationName name in @[NSWindowDidResizeNotification, NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification]) {
+			[RZNotificationCenter() addObserver:self selector:@selector(windowFrameChanged:) name:name object:self.mainWindow];
+		}
 	}
 
 	[self updateScopeTitles];
@@ -466,7 +501,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (CGFloat)titlebarHeight
 {
-	TVCMainWindow *window = self.mainWindow;
+	NSWindow *window = self.mainWindow;
+
+	/* Mentions: an ordinary window, its content below the title bar */
+	if (window == nil) {
+		return 0.0;
+	}
 
 	return MAX(0.0, (NSHeight(window.frame) - NSMaxY(window.contentLayoutRect)));
 }
@@ -525,7 +565,36 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)close:(nullable id)sender
 {
+	if (self.mentionsMode) {
+		[self.view.window performClose:nil];
+
+		return;
+	}
+
 	[self.mainWindow closeSearchPanel];
+}
+
+- (int64_t)newestResultRowId
+{
+	int64_t rowId = 0;
+
+	for (TLOMessageArchiveResult *result in self.results) {
+		rowId = MAX(rowId, result.rowId);
+	}
+
+	return rowId;
+}
+
+/* Mentions: new highlights were written (in batches, two seconds apart) */
+- (void)highlightsArchived:(NSNotification *)notification
+{
+	if (self.isViewLoaded == NO || self.view.window.visible == NO || self.contextMessages) {
+		return;
+	}
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(search) object:nil];
+
+	[self performSelector:@selector(search) withObject:nil afterDelay:0.5];
 }
 
 /* Results, their conversation, or what can be typed */
@@ -668,13 +737,22 @@ NS_ASSUME_NONNULL_BEGIN
 	self.contextMessages = nil;
 	self.contextResult = nil;
 
-	TLOMessageArchiveQuery *query = [TLOMessageArchiveQuery queryWithString:self.searchField.stringValue];
+	NSString *text = self.searchField.stringValue;
+
+	self.searchedText = text;
+
+	/* Mentions: highlights of every network, what's typed narrows them down */
+	if (self.mentionsMode) {
+		text = [@"mentions:me " stringByAppendingString:text];
+	}
+
+	TLOMessageArchiveQuery *query = [TLOMessageArchiveQuery queryWithString:text];
 
 	IRCTreeItem *item = self.mainWindow.selectedItem;
 
-	if (self.scope == TVCMainWindowSearchScopeChannel) {
+	if (self.mentionsMode == NO && self.scope == TVCMainWindowSearchScopeChannel) {
 		query.viewId = (item.uniqueIdentifier ?: @"");
-	} else if (self.scope == TVCMainWindowSearchScopeServer) {
+	} else if (self.mentionsMode == NO && self.scope == TVCMainWindowSearchScopeServer) {
 		query.serverId = (item.associatedClient.uniqueIdentifier ?: @"");
 	}
 
@@ -717,12 +795,14 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
+		BOOL mentions = self.mentionsMode;
+
 		if (count == 0) {
-			self.statusField.stringValue = TXTLS(@"TVCMainWindow[src-r3]");
+			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r3]" : @"TVCMainWindow[src-r3]");
 		} else if (count == 1) {
-			self.statusField.stringValue = TXTLS(@"TVCMainWindow[src-r2]");
+			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r2]" : @"TVCMainWindow[src-r2]");
 		} else {
-			self.statusField.stringValue = TXTLS(@"TVCMainWindow[src-r1]", count);
+			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r1]" : @"TVCMainWindow[src-r1]", count);
 		}
 	}];
 }
@@ -788,7 +868,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (commandSelector == @selector(insertNewline:)) {
 		/* The search waiting for the pause runs now; then the first result opens */
-		if (self.query == nil || [self.query.string isEqualToString:self.searchField.stringValue] == NO) {
+		if (self.query == nil || [self.searchedText isEqualToString:self.searchField.stringValue] == NO) {
 			[self search];
 
 			return YES;
@@ -1017,6 +1097,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (nickname.length == 0) {
 		nickname = TXTLS(@"TVCMainWindow[src-t1]");
+	}
+
+	/* Mentions: those that came since the window was last closed */
+	int64_t markedNewAfterRowId = self.markedNewAfterRowId;
+
+	if (self.contextMessages == nil && markedNewAfterRowId > 0 && result.rowId > markedNewAfterRowId) {
+		[header appendAttributedString:[[NSAttributedString alloc] initWithString:TXTLS(@"TVCMainWindow[men-n1]") attributes:@{
+			NSFontAttributeName : [NSFont systemFontOfSize:10.0],
+			NSForegroundColorAttributeName : [NSColor controlAccentColor]
+		}]];
 	}
 
 	[header appendAttributedString:[[NSAttributedString alloc] initWithString:nickname attributes:@{
@@ -1421,6 +1511,92 @@ NS_ASSUME_NONNULL_BEGIN
 		[self.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 
 		[self.tableView scrollRowToVisible:row];
+	}
+}
+
+@end
+
+#pragma mark -
+#pragma mark Mentions
+
+static NSString * const _mentionsLastSeenDefaultsKey = @"Mentions -> Last Seen Row";
+
+@interface TVCMentionsWindowController ()
+@property (nonatomic, strong) TVCMainWindowSearchPanel *panel;
+@end
+
+@implementation TVCMentionsWindowController
+
++ (void)showMentions
+{
+	static TVCMentionsWindowController *sharedController = nil;
+
+	if (sharedController == nil) {
+		sharedController = [self new];
+	}
+
+	[sharedController show];
+}
+
+- (instancetype)init
+{
+	NSWindow *window =
+	[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 420, 560)
+								styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable)
+								  backing:NSBackingStoreBuffered
+									defer:YES];
+
+	if ((self = [super initWithWindow:window])) {
+		window.title = TXTLS(@"TVCMainWindow[men-t1]");
+		window.releasedWhenClosed = NO;
+		window.minSize = NSMakeSize(320, 300);
+		window.delegate = self;
+		window.tabbingMode = NSWindowTabbingModeDisallowed;
+
+		self.panel = [[TVCMainWindowSearchPanel alloc] initForMentions];
+
+		window.contentViewController = self.panel;
+
+		/* Where it was last time, else in the middle */
+		if ([window setFrameUsingName:@"Mentions"] == NO) {
+			[window setContentSize:NSMakeSize(420, 560)];
+
+			[window center];
+		}
+
+		window.frameAutosaveName = @"Mentions";
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (void)show
+{
+	NSWindow *window = self.window;
+
+	/* Those since it was last closed are new */
+	if (window.visible == NO) {
+		self.panel.markedNewAfterRowId = [RZUserDefaults() integerForKey:_mentionsLastSeenDefaultsKey];
+
+		[self.panel search];
+	}
+
+	[window makeKeyAndOrderFront:nil];
+
+	[self.panel focusSearchField];
+}
+
+/* What was shown has been seen */
+- (void)windowWillClose:(NSNotification *)notification
+{
+	NSInteger lastSeen = [RZUserDefaults() integerForKey:_mentionsLastSeenDefaultsKey];
+
+	NSInteger newest = (NSInteger)self.panel.newestResultRowId;
+
+	if (newest > lastSeen) {
+		[RZUserDefaults() setInteger:newest forKey:_mentionsLastSeenDefaultsKey];
 	}
 }
 

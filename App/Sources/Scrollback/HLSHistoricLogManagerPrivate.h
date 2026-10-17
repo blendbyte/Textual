@@ -87,6 +87,12 @@ NS_ASSUME_NONNULL_BEGIN
  launches come back with new identifiers. */
 - (void)forgetItemsOtherThan:(NSSet<NSString *> *)viewIds;
 
+/* Which of these lines the item's scrollback has (10.9 D: the archive's
+ lines past the scrollback leave those out). Called on a background queue. */
+- (void)fetchUniqueIdentifiers:(NSArray<NSString *> *)uniqueIdentifiers
+					   forItem:(IRCTreeItem *)item
+			   completionBlock:(void (^)(NSSet<NSString *> *present))completionBlock;
+
 - (void)fetchEntriesForItem:(IRCTreeItem *)item
 				  ascending:(BOOL)ascending
 				 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap

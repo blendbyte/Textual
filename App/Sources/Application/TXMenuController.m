@@ -68,7 +68,6 @@
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
-#import "TDCServerHighlightListSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCWelcomeSheetPrivate.h"
 #import "TPCPathInfoPrivate.h"
@@ -970,17 +969,9 @@ NS_ASSUME_NONNULL_BEGIN
 			return [TPCPreferences logToDiskIsEnabled];
 		}
 
-		case MTMMWindowHighlightList: // "Highlight List"
+		case MTMMWindowHighlightList: // "Mentions"
 		{
-			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
-
-			menuItem.hidden = (isMainWindowMain == NO);
-
-			if (u == nil) {
-				return NO;
-			}
-
-			return [TPCPreferences logHighlights];
+			return YES;
 		}
 
 		default:

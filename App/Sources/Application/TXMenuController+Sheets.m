@@ -70,7 +70,6 @@
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCPreferencesControllerPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
-#import "TDCServerHighlightListSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCWelcomeSheetPrivate.h"
 #import "TPCPathInfoPrivate.h"
@@ -84,6 +83,7 @@
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 #import <Sparkle/Sparkle.h>
 #endif
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TXMenuControllerInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -388,28 +388,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark -
-#pragma mark Highlight List Sheet
+#pragma mark Mentions (10.9 E)
 
+/* Highlights of every network, from the message archive, in a window of
+ their own (they replaced the per-server Highlight List sheet) */
+- (void)showMentions:(nullable id)sender
+{
+	[TVCMentionsWindowController showMentions];
+}
+
+/* The old name (kept for extensions that call it) */
 - (void)showServerHighlightList:(nullable id)sender
 {
-	IRCClient *u = self.selectedClient;
-
-	if (u == nil) {
-		return;
-	}
-
-	[windowController() popMainWindowSheetIfExists];
-
-	TDCServerHighlightListSheet *sheet =
-	[[TDCServerHighlightListSheet alloc] initWithClient:u];
-
-	sheet.delegate = (id)self;
-
-	sheet.window = TVCMainWindow.currentWindow;
-
-	[sheet start];
-
-	[windowController() addWindowToWindowList:sheet];
+	[self showMentions:sender];
 }
 
 #pragma mark -

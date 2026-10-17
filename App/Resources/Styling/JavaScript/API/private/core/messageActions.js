@@ -404,9 +404,33 @@ Textual.flashLine = function(lineNumber) /* PUBLIC */
 {
 	var line = document.getElementByLineNumber(lineNumber);
 
-	if (line) {
-		_MessageActions._showLine(line);
+	if (!line) {
+		return;
 	}
+
+	/* Away from the bottom now: content that comes in doesn't scroll there */
+	TextualScroller.userScrolled = true;
+
+	_MessageActions._showLine(line);
+
+	/* A view shown for the first time still lays out and loads images: if
+	that pushes the line out of view, it comes back */
+	var keepInView = function() {
+		if (!document.body.contains(line)) {
+			return;
+		}
+
+		var rect = line.getBoundingClientRect();
+
+		if (rect.bottom < 0 || rect.top > window.innerHeight) {
+			TextualScroller.userScrolled = true;
+
+			line.scrollIntoView({block: "center"});
+		}
+	};
+
+	setTimeout(keepInView, 400);
+	setTimeout(keepInView, 1200);
 };
 
 _MessageActions._showLine = function(line) /* PRIVATE */

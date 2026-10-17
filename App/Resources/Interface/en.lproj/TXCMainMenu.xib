@@ -114,6 +114,7 @@
                     </connections>
                 </menuItem>
                 <menuItem title="Disable All Notification Sounds" tag="1701" keyEquivalent="M" id="5jG-1t-WG4">
+                    <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                     <connections>
                         <action selector="toggleMuteOnNotificationSounds:" target="267" id="rBT-LB-lUy"/>
                     </connections>
@@ -224,6 +225,7 @@
                                 </connections>
                             </menuItem>
                             <menuItem title="Disable All Notification Sounds" tag="201" keyEquivalent="M" id="3092">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                 <connections>
                                     <action selector="toggleMuteOnNotificationSounds:" target="267" id="Ox8-g0-Y9n"/>
                                 </connections>
@@ -920,10 +922,9 @@ CQ
                                     <action selector="openLogLocation:" target="267" id="2574"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Highlight List" tag="816" keyEquivalent="5" id="2268">
-                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                            <menuItem title="Mentions" tag="816" keyEquivalent="M" id="2268">
                                 <connections>
-                                    <action selector="showServerHighlightList:" target="267" id="QzC-Mq-UeU"/>
+                                    <action selector="showMentions:" target="267" id="QzC-Mq-UeU"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="File Transfers" tag="817" keyEquivalent="6" id="CDY-3R-NUL">

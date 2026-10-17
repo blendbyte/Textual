@@ -41,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define sharedMessageArchive()			[TLOMessageArchive sharedArchive]
 
+/* Highlights were written (Mentions, 10.9 E): posted on the main queue */
+TEXTUAL_EXTERN NSString * const TLOMessageArchiveDidArchiveHighlightsNotification;
+
 typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 {
 	TLOMessageArchiveViewTypeConsole = 0,

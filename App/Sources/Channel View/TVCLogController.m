@@ -1707,6 +1707,141 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	return [logLine copyAsArchivedLineWithUniqueIdentifier:_archiveBoundaryLineNumber];
 }
 
+/* The archive's messages next to a point, without those the scrollback has
+ (a server's history replayed on joining has times before the scrollback's
+ first line, and is in the scrollback too): up to count, oldest first. From
+ the message rowId, or with 0 from where the scrollback starts. Older ones:
+ also the message before them (for the day they start), if any. Newer ones:
+ also the message at rowId. */
+- (void)_collectArchiveMessagesInView:(NSString *)viewId
+								rowId:(int64_t)rowId
+								older:(BOOL)older
+								count:(NSUInteger)count
+						   oldestLine:(nullable TVCLogLine *)oldestLine
+					  completionBlock:(void (^)(NSArray<TLOMessageArchiveResult *> *messages, TLOMessageArchiveResult * _Nullable previous))completionBlock
+{
+	[self _collectArchiveMessagesInView:viewId
+								  rowId:rowId
+								  older:older
+								  count:count
+							 oldestLine:oldestLine
+							  collected:@[]
+								 anchor:nil
+						   attemptsLeft:5
+						completionBlock:completionBlock];
+}
+
+- (void)_collectArchiveMessagesInView:(NSString *)viewId
+								rowId:(int64_t)rowId
+								older:(BOOL)older
+								count:(NSUInteger)count
+						   oldestLine:(nullable TVCLogLine *)oldestLine
+							collected:(NSArray<TLOMessageArchiveResult *> *)collected
+							   anchor:(nullable TLOMessageArchiveResult *)anchor
+						 attemptsLeft:(NSUInteger)attemptsLeft
+					  completionBlock:(void (^)(NSArray<TLOMessageArchiveResult *> *messages, TLOMessageArchiveResult * _Nullable previous))completionBlock
+{
+	/* Older: one more, for the day */
+	NSUInteger wanted = (count + ((older) ? 1 : 0));
+
+	void (^finishBlock)(NSArray<TLOMessageArchiveResult *> *, TLOMessageArchiveResult *) = ^(NSArray<TLOMessageArchiveResult *> *messages, TLOMessageArchiveResult *anchorMessage) {
+		if (older == NO) {
+			if (messages.count > count) {
+				messages = [messages subarrayWithRange:NSMakeRange(0, count)];
+			}
+
+			completionBlock(messages, anchorMessage);
+
+			return;
+		}
+
+		if (messages.count > wanted) {
+			messages = [messages subarrayWithRange:NSMakeRange((messages.count - wanted), wanted)];
+		}
+
+		TLOMessageArchiveResult *previous = nil;
+
+		if (messages.count > count) {
+			previous = messages.firstObject;
+
+			messages = [messages subarrayWithRange:NSMakeRange(1, (messages.count - 1))];
+		}
+
+		completionBlock(messages, previous);
+	};
+
+	/* A few more than wanted: some may be in the scrollback */
+	NSUInteger fetchCount = ((wanted - MIN(wanted, collected.count)) + 20);
+
+	NSTimeInterval scrollbackTime = ((oldestLine) ? oldestLine.receivedAt.timeIntervalSince1970 : DBL_MAX);
+
+	[sharedMessageArchive() messagesInView:viewId
+									 rowId:rowId
+									before:((older) ? fetchCount : 0)
+									 after:((older) ? 0 : fetchCount)
+						  scrollbackLineId:oldestLine.uniqueIdentifier
+							scrollbackTime:scrollbackTime
+						 completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+		/* From a message that's gone (or the scrollback has it) */
+		if (rowId != 0 && anchorIndex == NSNotFound) {
+			finishBlock(collected, anchor);
+
+			return;
+		}
+
+		NSMutableArray<TLOMessageArchiveResult *> *candidates = [messages mutableCopy];
+
+		TLOMessageArchiveResult *anchorMessage = anchor;
+
+		if (anchorIndex != NSNotFound) {
+			if (anchorMessage == nil) {
+				anchorMessage = candidates[anchorIndex];
+			}
+
+			[candidates removeObjectAtIndex:anchorIndex];
+		}
+
+		if (candidates.count == 0) {
+			finishBlock(collected, anchorMessage);
+
+			return;
+		}
+
+		BOOL exhausted = (candidates.count < fetchCount);
+
+		[sharedHistoricLog() fetchUniqueIdentifiers:[candidates valueForKey:@"lineId"] forItem:self.associatedItem completionBlock:^(NSSet<NSString *> *present) {
+			NSMutableArray<TLOMessageArchiveResult *> *kept = [NSMutableArray arrayWithCapacity:candidates.count];
+
+			for (TLOMessageArchiveResult *candidate in candidates) {
+				if ([present containsObject:candidate.lineId] == NO) {
+					[kept addObject:candidate];
+				}
+			}
+
+			NSArray *all = ((older) ? [kept arrayByAddingObjectsFromArray:collected] : [collected arrayByAddingObjectsFromArray:kept]);
+
+			if (all.count >= wanted || exhausted || attemptsLeft <= 1) {
+				finishBlock(all, anchorMessage);
+
+				return;
+			}
+
+			/* All in the scrollback so far: on past them */
+			int64_t nextRowId = ((older) ? candidates.firstObject.rowId : candidates.lastObject.rowId);
+
+			[self _collectArchiveMessagesInView:viewId
+										  rowId:nextRowId
+										  older:older
+										  count:count
+									 oldestLine:oldestLine
+									  collected:all
+										 anchor:anchorMessage
+								   attemptsLeft:(attemptsLeft - 1)
+								completionBlock:completionBlock];
+		}];
+	}];
+}
+
 /* Lines of the scrollback came back short: if that's because it ends, the
  archive's older messages come before them, with the boundary line */
 - (void)_continueLines:(NSArray<TVCLogLine *> *)entries
@@ -1726,11 +1861,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			return;
 		}
 
-		NSDate *boundary = oldestLine.receivedAt;
-
-		NSUInteger count = (maximumNumberOfLines - entries.count);
-
-		[sharedMessageArchive() messagesInView:viewId rowId:0 before:(count + 1) after:0 scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundary.timeIntervalSince1970 completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+		[self _collectArchiveMessagesInView:viewId rowId:0 older:YES count:(maximumNumberOfLines - entries.count) oldestLine:oldestLine completionBlock:^(NSArray<TLOMessageArchiveResult *> *messages, TLOMessageArchiveResult *previous) {
 			if (self.historyGeneration != historyGeneration) {
 				return;
 			}
@@ -1741,19 +1872,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 				return;
 			}
 
-			/* One more than shown: the day the first starts */
-			TLOMessageArchiveResult *previous = nil;
-
-			if (messages.count > count) {
-				previous = messages.firstObject;
-
-				messages = [messages subarrayWithRange:NSMakeRange(1, (messages.count - 1))];
-			}
-
 			NSMutableArray<TVCLogLine *> *logLines = [NSMutableArray array];
 
 			[logLines addObjectsFromArray:[self _logLinesForArchiveMessages:messages previous:previous]];
-			[logLines addObject:[self _archiveBoundaryLineAt:boundary]];
+			[logLines addObject:[self _archiveBoundaryLineAt:oldestLine.receivedAt]];
 			[logLines addObjectsFromArray:entries];
 
 			[self _renderLogLinesAfterLineNumberPostFlight:logLines completionBlock:completionBlock];
@@ -1785,28 +1907,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	};
 
 	[self _fetchOldestScrollbackLine:^(TVCLogLine *oldestLine) {
-		NSDate *boundary = oldestLine.receivedAt;
-
-		NSTimeInterval boundaryTime = ((boundary) ? boundary.timeIntervalSince1970 : DBL_MAX);
-
 		/* Older: from the archive */
 		if (after == NO) {
-			[sharedMessageArchive() messagesInView:viewId rowId:rowId before:(maximumNumberOfLines + 1) after:0 scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundaryTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
-				NSMutableArray<TLOMessageArchiveResult *> *older = [messages mutableCopy];
-
-				if (anchorIndex != NSNotFound) {
-					[older removeObjectAtIndex:anchorIndex];
-				}
-
-				TLOMessageArchiveResult *previous = nil;
-
-				if (older.count > maximumNumberOfLines) {
-					previous = older.firstObject;
-
-					[older removeObjectAtIndex:0];
-				}
-
-				renderBlock([self _logLinesForArchiveMessages:older previous:previous]);
+			[self _collectArchiveMessagesInView:viewId rowId:rowId older:YES count:maximumNumberOfLines oldestLine:oldestLine completionBlock:^(NSArray<TLOMessageArchiveResult *> *messages, TLOMessageArchiveResult *previous) {
+				renderBlock([self _logLinesForArchiveMessages:messages previous:previous]);
 			}];
 
 			return;
@@ -1820,18 +1924,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		}
 
 		/* Newer than an archive line: the archive up to the boundary, then the scrollback */
-		[sharedMessageArchive() messagesInView:viewId rowId:rowId before:0 after:maximumNumberOfLines scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundaryTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
-			if (anchorIndex == NSNotFound) {
-				renderBlock(@[]);
+		[self _collectArchiveMessagesInView:viewId rowId:rowId older:NO count:maximumNumberOfLines oldestLine:oldestLine completionBlock:^(NSArray<TLOMessageArchiveResult *> *newer, TLOMessageArchiveResult *anchor) {
+			NSArray<TVCLogLine *> *archiveLines = [self _logLinesForArchiveMessages:newer previous:anchor];
 
-				return;
-			}
-
-			NSArray<TLOMessageArchiveResult *> *newer = [messages subarrayWithRange:NSMakeRange((anchorIndex + 1), (messages.count - anchorIndex - 1))];
-
-			NSArray<TVCLogLine *> *archiveLines = [self _logLinesForArchiveMessages:newer previous:messages[anchorIndex]];
-
-			if (newer.count >= maximumNumberOfLines || boundary == nil) {
+			if (newer.count >= maximumNumberOfLines || oldestLine == nil) {
 				renderBlock(archiveLines);
 
 				return;
@@ -1840,7 +1936,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			[self _fetchFirstScrollbackLines:(maximumNumberOfLines - newer.count - 1) completionBlock:^(NSArray<TVCLogLine *> *entries) {
 				NSMutableArray<TVCLogLine *> *logLines = [archiveLines mutableCopy];
 
-				[logLines addObject:[self _archiveBoundaryLineAt:boundary]];
+				[logLines addObject:[self _archiveBoundaryLineAt:oldestLine.receivedAt]];
 				[logLines addObjectsFromArray:entries];
 
 				renderBlock(logLines);
@@ -1873,45 +1969,45 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	};
 
 	[self _fetchOldestScrollbackLine:^(TVCLogLine *oldestLine) {
-		NSDate *boundary = oldestLine.receivedAt;
-
-		NSTimeInterval boundaryTime = ((boundary) ? boundary.timeIntervalSince1970 : DBL_MAX);
-
-		[sharedMessageArchive() messagesInView:viewId rowId:rowId before:(numberOfLinesBefore + 1) after:numberOfLinesAfter scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundaryTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
-			/* Gone, or the scrollback has it */
-			if (anchorIndex == NSNotFound) {
+		[self _collectArchiveMessagesInView:viewId rowId:rowId older:NO count:numberOfLinesAfter oldestLine:oldestLine completionBlock:^(NSArray<TLOMessageArchiveResult *> *newer, TLOMessageArchiveResult *anchor) {
+			/* Gone, or not past the scrollback */
+			if (anchor == nil) {
 				renderBlock(@[]);
 
 				return;
 			}
 
-			NSMutableArray<TLOMessageArchiveResult *> *shown = [messages mutableCopy];
+			[sharedHistoricLog() fetchUniqueIdentifiers:@[anchor.lineId] forItem:self.associatedItem completionBlock:^(NSSet<NSString *> *present) {
+				/* The scrollback has it */
+				if (present.count > 0) {
+					renderBlock(@[]);
 
-			TLOMessageArchiveResult *previous = nil;
+					return;
+				}
 
-			NSUInteger newerCount = (messages.count - anchorIndex - 1);
+				[self _collectArchiveMessagesInView:viewId rowId:rowId older:YES count:numberOfLinesBefore oldestLine:oldestLine completionBlock:^(NSArray<TLOMessageArchiveResult *> *older, TLOMessageArchiveResult *previous) {
+					NSMutableArray<TLOMessageArchiveResult *> *shown = [older mutableCopy];
 
-			if (anchorIndex > numberOfLinesBefore) {
-				previous = shown.firstObject;
+					[shown addObject:anchor];
+					[shown addObjectsFromArray:newer];
 
-				[shown removeObjectAtIndex:0];
-			}
+					NSArray<TVCLogLine *> *archiveLines = [self _logLinesForArchiveMessages:shown previous:previous];
 
-			NSArray<TVCLogLine *> *archiveLines = [self _logLinesForArchiveMessages:shown previous:previous];
+					if (newer.count >= numberOfLinesAfter || oldestLine == nil) {
+						renderBlock(archiveLines);
 
-			if (newerCount >= numberOfLinesAfter || boundary == nil) {
-				renderBlock(archiveLines);
+						return;
+					}
 
-				return;
-			}
+					[self _fetchFirstScrollbackLines:(numberOfLinesAfter - newer.count) completionBlock:^(NSArray<TVCLogLine *> *entries) {
+						NSMutableArray<TVCLogLine *> *logLines = [archiveLines mutableCopy];
 
-			[self _fetchFirstScrollbackLines:(numberOfLinesAfter - newerCount) completionBlock:^(NSArray<TVCLogLine *> *entries) {
-				NSMutableArray<TVCLogLine *> *logLines = [archiveLines mutableCopy];
+						[logLines addObject:[self _archiveBoundaryLineAt:oldestLine.receivedAt]];
+						[logLines addObjectsFromArray:entries];
 
-				[logLines addObject:[self _archiveBoundaryLineAt:boundary]];
-				[logLines addObjectsFromArray:entries];
-
-				renderBlock(logLines);
+						renderBlock(logLines);
+					}];
+				}];
 			}];
 		}];
 	}];

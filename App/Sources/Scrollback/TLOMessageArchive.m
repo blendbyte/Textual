@@ -192,6 +192,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSArray<TLOMessageArchiveResult *> *)_messagesInView:(NSString *)viewId rowId:(int64_t)rowId before:(NSUInteger)before after:(NSUInteger)after scrollbackLineId:(nullable NSString *)scrollbackLineId scrollbackTime:(NSTimeInterval)scrollbackTime anchorIndex:(NSUInteger *)anchorIndex inDatabase:(sqlite3 *)database;
 @end
 
+NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessageArchiveDidArchiveHighlightsNotification";
+
 @implementation TLOMessageArchive
 
 + (TLOMessageArchive *)sharedArchive
@@ -608,6 +610,18 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	(void)[self _execute:"COMMIT;"];
+
+	for (TLOMessageArchiveRow *row in rows) {
+		if (row.isHighlight == NO) {
+			continue;
+		}
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[RZNotificationCenter() postNotificationName:TLOMessageArchiveDidArchiveHighlightsNotification object:self];
+		});
+
+		break;
+	}
 }
 
 #pragma mark -

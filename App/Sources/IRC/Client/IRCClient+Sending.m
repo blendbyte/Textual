@@ -76,7 +76,6 @@
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
 #import "TDCServerChannelListDialogPrivate.h"
-#import "TDCServerHighlightListSheetPrivate.h"
 #import "IRC.h"
 #import "IRCAddressBook.h"
 #import "IRCAddressBookMatchCachePrivate.h"

@@ -52,12 +52,27 @@ typedef NS_ENUM(NSUInteger, TVCMainWindowSearchScope)
  result still in the chat's scrollback is scrolled to and flashed there; an
  older one is shown in its conversation from the archive, in the panel. */
 @interface TVCMainWindowSearchPanel : NSViewController
-- (instancetype)initWithWindow:(TVCMainWindow *)mainWindow NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithWindow:(TVCMainWindow *)mainWindow;
+
+/* The Mentions window's list (10.9 E): highlights of every network, newest
+ first; what is typed narrows them down */
+- (instancetype)initForMentions;
 - (instancetype)initWithNibName:(nullable NSNibName)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (readonly, weak) TVCMainWindow *mainWindow;
+@property (readonly, weak, nullable) TVCMainWindow *mainWindow; // nil for Mentions
+
+@property (readonly) BOOL mentionsMode;
+
+/* Mentions: those that came after this one (archive row; 0: none) are
+ marked new. By arrival, not time: a bouncer's playback brings old times. */
+@property (nonatomic, assign) int64_t markedNewAfterRowId;
+
+/* The newest of the results shown (archive row), or 0 */
+@property (readonly) int64_t newestResultRowId;
+
+- (void)search; // again, now
 
 @property (nonatomic, assign) TVCMainWindowSearchScope scope; // searches again
 
@@ -70,6 +85,13 @@ typedef NS_ENUM(NSUInteger, TVCMainWindowSearchScope)
 
 /* The window selected another item: a search in it follows */
 - (void)selectedItemChanged;
+@end
+
+/* Mentions (10.9 E, ⌘⇧M): the highlights of every network, from the message
+ archive, in a window of their own; a click goes to the message. Those that
+ came since the window was last closed are marked new. */
+@interface TVCMentionsWindowController : NSWindowController <NSWindowDelegate>
++ (void)showMentions;
 @end
 
 @interface TVCMainWindow (SearchPrivate)

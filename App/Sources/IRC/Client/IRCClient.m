@@ -120,7 +120,6 @@
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
 #import "TDCServerChannelListDialogPrivate.h"
-#import "TDCServerHighlightListSheetPrivate.h"
 #import "IRC.h"
 #import "IRCAddressBook.h"
 #import "IRCAddressBookMatchCachePrivate.h"
@@ -680,7 +679,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	NSArray *openWindows =
 	[windowController() windowsFromWindowList:@[@"TDCChannelInviteSheet",
 												@"TDCServerChangeNicknameSheet",
-												@"TDCServerHighlightListSheet",
 												@"TDCServerPropertiesSheet"]];
 
 	for (TDCSheetBase <TDCClientPrototype> *windowObject in openWindows) {
@@ -1063,15 +1061,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[cachedHighlights insertObject:[newEntry copy] atIndex:0];
 
 	self.cachedHighlights = cachedHighlights;
-
-	/* Reload table if the window is open. */
-	TDCServerHighlightListSheet *highlightListSheet = [windowController() windowFromWindowList:@"TDCServerHighlightListSheet"];
-
-	if ([highlightListSheet.clientId isEqualToString:self.uniqueIdentifier] == NO) {
-		return;
-	}
-
-	[highlightListSheet addEntry:self.cachedHighlights.firstObject];
 }
 
 #pragma mark -

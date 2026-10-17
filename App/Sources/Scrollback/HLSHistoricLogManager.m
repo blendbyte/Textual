@@ -390,6 +390,60 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	});
 }
 
+- (void)fetchUniqueIdentifiers:(NSArray<NSString *> *)uniqueIdentifiers
+					   forItem:(IRCTreeItem *)item
+			   completionBlock:(void (^)(NSSet<NSString *> *present))completionBlock
+{
+	NSParameterAssert(uniqueIdentifiers != nil);
+	NSParameterAssert(item != nil);
+	NSParameterAssert(completionBlock != nil);
+
+	NSString *viewId = item.uniqueIdentifier;
+
+	dispatch_async(self.queue, ^{
+		HLSHistoricLogViewContext *viewContext = [self _contextForView:viewId];
+
+		if (viewContext == nil || uniqueIdentifiers.count == 0) {
+			completionBlock([NSSet set]);
+
+			return;
+		}
+
+		NSMutableSet<NSString *> *present = [NSMutableSet set];
+
+		[viewContext performBlockAndWait:^{
+			NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"LogLine2"];
+
+			fetchRequest.predicate = [NSPredicate predicateWithFormat:@"logLineViewIdentifier == %@ AND logLineUniqueIdentifier IN %@", viewId, uniqueIdentifiers];
+
+			fetchRequest.includesPendingChanges = YES;
+
+			/* Without the archived line */
+			fetchRequest.propertiesToFetch = @[@"logLineUniqueIdentifier"];
+
+			NSError *fetchRequestError = nil;
+
+			NSArray<NSManagedObject *> *fetchedObjects = [viewContext executeFetchRequest:fetchRequest error:&fetchRequestError];
+
+			if (fetchedObjects == nil) {
+				LogToConsoleError("Failed to look up historic log lines: %{public}@", fetchRequestError.localizedDescription);
+
+				return;
+			}
+
+			for (NSManagedObject *object in fetchedObjects) {
+				NSString *uniqueIdentifier = [object valueForKey:@"logLineUniqueIdentifier"];
+
+				if (uniqueIdentifier) {
+					[present addObject:uniqueIdentifier];
+				}
+			}
+		}];
+
+		completionBlock([present copy]);
+	});
+}
+
 /* The entry identifier of the line with this unique identifier, or NSNotFound.
  Call on the view context's queue. */
 - (NSInteger)_entryIdentifierInViewContext:(HLSHistoricLogViewContext *)viewContext forUniqueIdentifier:(NSString *)uniqueIdentifier

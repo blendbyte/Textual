@@ -217,7 +217,7 @@ enum
 	MTMMWindowAddressBook = 813, // "Address Book"
 	MTMMWindowIgnoreList = 814, // "Ignore List"
 	MTMMWindowViewLogs = 815, // "View Logs"
-	MTMMWindowHighlightList = 816, // "Highlight List"
+	MTMMWindowHighlightList = 816, // "Mentions" (was "Highlight List")
 	MTMMWindowFileTransfers = 817, // "File Transfers"
 	MTMMWindowFileTransfersSeparator = 818, // "-"
 	MTMMWindowBrightAllToFront = 819, // "Bring All to Front"
@@ -537,7 +537,8 @@ enum
 - (IBAction)showNotificationPreferences:(nullable id)sender;
 - (IBAction)showPreferencesWindow:(nullable id)sender;
 - (IBAction)showServerChangeNicknameSheet:(nullable id)sender;
-- (IBAction)showServerHighlightList:(nullable id)sender;
+- (IBAction)showMentions:(nullable id)sender;
+- (IBAction)showServerHighlightList:(nullable id)sender; // opens Mentions
 - (IBAction)showServerPropertiesSheet:(nullable id)sender;
 - (IBAction)showStylePreferences:(nullable id)sender;
 - (IBAction)showWelcomeSheet:(nullable id)sender;

@@ -160,6 +160,13 @@
 "src-b1" = "Results";
 "src-t1" = "Topic";
 "src-d1" = "Yesterday";
+"men-t1" = "Mentions";
+"men-p1" = "Search Mentions";
+"men-r1" = "%lu mentions";
+"men-r2" = "1 mention";
+"men-r3" = "No mentions yet";
+/* Before a new mention's sender */
+"men-n1" = "● ";
 "jtp-b1" = "Jump to Present";
 "arc-b1" = "The saved scrollback ends here. Older messages come from the message archive: conversation only, without formatting.";
 "src-x1" = "%1$@, %2$@ — from the message archive";
