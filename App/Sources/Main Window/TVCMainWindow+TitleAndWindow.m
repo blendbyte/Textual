@@ -195,27 +195,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Unified title bar (10.1): the title bar is transparent and the sidebars
- carry on up into it, like Mail's: above the server list and the member list
- the sidebar material, over the chat the title bar material, each strip as
- wide as the part below it. The content itself stays below the title bar:
- the split view and the loading screen hang from the window's content layout
- guide (where content starts under any title bar) instead of the content
- view's top, which moves up under the title bar with a full-size content
- view. The guide follows the title bar's real height, so nothing is measured
- (the blueprint measured contentLayoutRect, wrong before the window was on
- screen). */
-- (NSVisualEffectView *)_titlebarStripWithMaterial:(NSVisualEffectMaterial)material
-{
-	NSVisualEffectView *strip = [NSVisualEffectView new];
-
-	strip.translatesAutoresizingMaskIntoConstraints = NO;
-	strip.material = material;
-	strip.blendingMode = NSVisualEffectBlendingModeBehindWindow;
-	strip.state = NSVisualEffectStateFollowsWindowActiveState;
-
-	return strip;
-}
-
+ carry on up into it, like Mail's: one band of sidebar material across the
+ whole title bar, the same as the server list and the member list below it.
+ Three strips (sidebar material over the lists, title bar material over the
+ chat) clashed with the chat, which has its own color, and one in the
+ style's color cut the title short over a narrow chat. The content itself
+ stays below the title bar: the split view and the loading screen hang from
+ the window's content layout guide (where content starts under any title
+ bar) instead of the content view's top, which moves up under the title bar
+ with a full-size content view. The guide follows the title bar's real
+ height, so nothing is measured (the blueprint measured contentLayoutRect,
+ wrong before the window was on screen). */
 - (void)setUpUnifiedTitlebar
 {
 	NSView *contentView = self.contentView;
@@ -240,55 +230,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[NSLayoutConstraint deactivateConstraints:oldConstraints];
 
-		/* A plain view holding the three strips, side by side: a blur inside
-		 a blur shows the outer one */
-		NSView *backgroundView = [NSView new];
+		NSVisualEffectView *backgroundView = [NSVisualEffectView new];
 
 		backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
-
-		NSVisualEffectView *serverListStrip = [self _titlebarStripWithMaterial:NSVisualEffectMaterialSidebar];
-		NSVisualEffectView *channelStrip = [self _titlebarStripWithMaterial:NSVisualEffectMaterialTitlebar];
-		NSVisualEffectView *memberListStrip = [self _titlebarStripWithMaterial:NSVisualEffectMaterialSidebar];
-
-		[backgroundView addSubview:serverListStrip];
-		[backgroundView addSubview:channelStrip];
-		[backgroundView addSubview:memberListStrip];
+		backgroundView.material = NSVisualEffectMaterialSidebar;
+		backgroundView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+		backgroundView.state = NSVisualEffectStateFollowsWindowActiveState;
 
 		[contentView addSubview:backgroundView];
 
-		NSView *serverList = splitView.subviews[0];
-		NSView *memberList = splitView.subviews[2];
-
-		NSMutableArray<NSLayoutConstraint *> *constraints = [NSMutableArray arrayWithArray:@[
+		[NSLayoutConstraint activateConstraints:@[
 			[splitView.topAnchor constraintEqualToAnchor:contentLayoutGuide.topAnchor],
 			[self.loadingScreen.topAnchor constraintEqualToAnchor:contentLayoutGuide.topAnchor],
 
 			[backgroundView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
 			[backgroundView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
 			[backgroundView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-			[backgroundView.bottomAnchor constraintEqualToAnchor:contentLayoutGuide.topAnchor],
-
-			[serverListStrip.leadingAnchor constraintEqualToAnchor:serverList.leadingAnchor],
-			[serverListStrip.trailingAnchor constraintEqualToAnchor:serverList.trailingAnchor],
-
-			[channelStrip.leadingAnchor constraintEqualToAnchor:serverList.trailingAnchor],
-			[channelStrip.trailingAnchor constraintEqualToAnchor:memberList.leadingAnchor],
-
-			[memberListStrip.leadingAnchor constraintEqualToAnchor:memberList.leadingAnchor],
-			[memberListStrip.trailingAnchor constraintEqualToAnchor:memberList.trailingAnchor]
+			[backgroundView.bottomAnchor constraintEqualToAnchor:contentLayoutGuide.topAnchor]
 		]];
-
-		for (NSView *strip in @[serverListStrip, channelStrip, memberListStrip]) {
-			[constraints addObject:[strip.topAnchor constraintEqualToAnchor:backgroundView.topAnchor]];
-			[constraints addObject:[strip.bottomAnchor constraintEqualToAnchor:backgroundView.bottomAnchor]];
-		}
-
-		[NSLayoutConstraint activateConstraints:constraints];
 
 		self.titlebarBackgroundView = backgroundView;
 	}
 
-	/* Without the strips the content would slide under the title bar */
+	/* Without the band the content would slide under the title bar */
 	if (self.titlebarBackgroundView == nil) {
 		return;
 	}

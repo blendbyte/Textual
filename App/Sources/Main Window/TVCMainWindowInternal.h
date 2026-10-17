@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readwrite) IBOutlet TVCMainWindowTitlebarAccessoryViewController *titlebarAccessoryViewController;
 @property (nonatomic, weak, readwrite) IBOutlet TVCMainWindowTitlebarAccessoryViewLockButton *titlebarAccessoryViewLockButton;
 @property (nonatomic, strong) TVCMainWindowTitlebarTitleField *titlebarTitleField;
-@property (nonatomic, strong, nullable) NSView *titlebarBackgroundView; // holds the unified title bar's strips (10.1)
+@property (nonatomic, strong, nullable) NSView *titlebarBackgroundView; // the unified title bar's band (10.1)
 @property (nonatomic, strong, readwrite) IBOutlet TXMenuControllerMainWindowProxy *mainMenuProxy;
 @property (nonatomic, strong, readwrite) IBOutlet TVCTextViewIRCFormattingMenu *formattingMenu;
 @property (nonatomic, unsafe_unretained, readwrite) IBOutlet TVCMainWindowTextView *inputTextField;

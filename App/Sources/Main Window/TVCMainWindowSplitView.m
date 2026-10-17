@@ -92,6 +92,15 @@ NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel V
 	return dividerColor;
 }
 
+/* No line beside the server list and the member list: their sidebar
+ material already sets them apart from the chat, and a grey line (inverted
+ in dark mode) looked like a border. The divider is still there to drag.
+ Channels shown side by side keep theirs (TVCMainWindowChannelView uses
+ -dividerColor). */
+- (void)drawDividerInRect:(NSRect)rect
+{
+}
+
 - (void)awakeFromNib
 {
 	[super awakeFromNib];

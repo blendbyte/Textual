@@ -339,11 +339,13 @@ static BOOL _popOutsOpened = NO;
 
 	[self reloadLoadingScreen];
 
+	/* Before the window is shown: AppKit keeps the frame it is shown with
+	 as the one to go back to when leaving full screen */
+	[self loadWindowState];
+
 	[self makeMainWindow];
 
 	[self makeKeyAndOrderFront:nil];
-
-	[self loadWindowState];
 
 	[self setUpUnifiedTitlebar];
 
