@@ -45,9 +45,15 @@
 #import "THOUnicodeHelper.h"
 #import "TLOLinkParser.h"
 #import "TPCPathInfo.h"
-#import "TPCPreferencesLocal.h"
+#import "IRCChannelConfig.h"
+#import "IRCHighlightKeywordPrivate.h"
+#import "IRCWorld.h"
+#import "TXMasterController.h"
+#import "IRCClientConfig.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TVCLogLine.h"
 #import "HLSHistoricLogManagerPrivate.h"
+#import "TLOFileLoggerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -60,9 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
  this many wait (a reconnect replaying history) */
 #define _writeDelay					2.0
 #define _writeBatchSize				500
-
-/* The keep period until it is a setting (10.9 step F): a year */
-#define _keepPeriod					(365 * 24 * 60 * 60)
 
 /* Old messages go in steps, so writing isn't held up for long */
 #define _removeBatchSize			5000
@@ -165,6 +168,26 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation TLOMessageArchiveRow
 @end
 
+@implementation TLOMessageArchiveTextLogTarget
+
+- (instancetype)initWithView:(TLOMessageArchiveView *)view
+{
+	NSParameterAssert(view != nil);
+
+	if ((self = [super init])) {
+		self->_view = view;
+
+		self.highlightKeywords = @[];
+		self.excludeKeywords = @[];
+
+		return self;
+	}
+
+	return nil;
+}
+
+@end
+
 @interface TLOMessageArchive ()
 @property (readwrite, copy) NSURL *url;
 @property (nonatomic, strong) dispatch_queue_t queue;
@@ -175,6 +198,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL writeScheduled;
 @property (nonatomic, strong, nullable) dispatch_source_t removeTimer;
 @property (nonatomic, assign) BOOL closed;
+
+/* Read on the queue, set on any thread */
+@property (atomic, assign) NSInteger keepDaysValue;
 
 /* Search reads on a connection of its own (WAL: readers don't wait for the
  writer, the writer doesn't wait for them) */
@@ -213,6 +239,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 		TLOMessageArchive *archive = [[self alloc] initWithURL:url];
 
+		archive.keepDaysValue = [TPCPreferences messageArchiveKeepPeriod];
+
 		[archive _startRemovingOldMessages];
 
 		sharedSelf = archive;
@@ -233,6 +261,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		self.searchQueue = dispatch_queue_create("com.textualapp.message-archive.search", DISPATCH_QUEUE_SERIAL);
 
 		self.pendingRows = [NSMutableArray array];
+
+		self.keepDaysValue = TPCMessageArchiveKeepPeriodOneYear;
 
 		/* First on the queue: everything else waits for the database */
 		dispatch_async(self.queue, ^{
@@ -453,6 +483,14 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		return [@"m:" stringByAppendingString:msgid];
 	}
 
+	long long milliseconds = (long long)(logLine.receivedAt.timeIntervalSince1970 * 1000.0);
+
+	return [NSString stringWithFormat:@"t:%lld:%@:%@", milliseconds, ((logLine.nickname) ?: @""), [self _hashOfBody:body]];
+}
+
+/* The first 8 bytes of the text's SHA-256, in hex */
++ (NSString *)_hashOfBody:(NSString *)body
+{
 	NSData *bodyData = [body dataUsingEncoding:NSUTF8StringEncoding];
 
 	unsigned char digest[CC_SHA256_DIGEST_LENGTH];
@@ -465,9 +503,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		[bodyHash appendFormat:@"%02x", digest[i]];
 	}
 
-	long long milliseconds = (long long)(logLine.receivedAt.timeIntervalSince1970 * 1000.0);
-
-	return [NSString stringWithFormat:@"t:%lld:%@:%@", milliseconds, ((logLine.nickname) ?: @""), bodyHash];
+	return [bodyHash copy];
 }
 
 /* The row for a line, or nil when it isn't kept */
@@ -511,6 +547,10 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 {
 	NSParameterAssert(logLine != nil);
 	NSParameterAssert(view != nil);
+
+	if (self.keepDaysValue == TPCMessageArchiveKeepPeriodOff) {
+		return;
+	}
 
 	TLOMessageArchiveRow *row = [self.class _rowForLogLine:logLine highlighted:highlighted hasLink:hasLink inView:view];
 
@@ -562,9 +602,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 /* On the queue, in one transaction */
 - (void)_insertRows:(NSArray<TLOMessageArchiveRow *> *)rows
 {
-	sqlite3_stmt *statement = self.insertStatement;
-
-	if (statement == NULL) {
+	if (self.insertStatement == NULL) {
 		return;
 	}
 
@@ -573,44 +611,67 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	}
 
 	for (TLOMessageArchiveRow *row in rows) {
-		sqlite3_bind_text(statement, 1, row.serverId.UTF8String, -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(statement, 2, row.serverName.UTF8String, -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(statement, 3, row.viewId.UTF8String, -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(statement, 4, row.viewName.UTF8String, -1, SQLITE_TRANSIENT);
-		sqlite3_bind_int(statement, 5, (int)row.viewType);
-		sqlite3_bind_double(statement, 6, row.time);
-		sqlite3_bind_int(statement, 7, (int)row.lineType);
-
-		if (row.nickname) {
-			sqlite3_bind_text(statement, 8, row.nickname.UTF8String, -1, SQLITE_TRANSIENT);
-		} else {
-			sqlite3_bind_null(statement, 8);
-		}
-
-		sqlite3_bind_int(statement, 9, row.isSelf);
-		sqlite3_bind_int(statement, 10, row.isHighlight);
-		sqlite3_bind_int(statement, 11, row.hasLink);
-
-		if (row.msgid) {
-			sqlite3_bind_text(statement, 12, row.msgid.UTF8String, -1, SQLITE_TRANSIENT);
-		} else {
-			sqlite3_bind_null(statement, 12);
-		}
-
-		sqlite3_bind_text(statement, 13, row.lineId.UTF8String, -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(statement, 14, row.dedupeKey.UTF8String, -1, SQLITE_TRANSIENT);
-		sqlite3_bind_text(statement, 15, row.body.UTF8String, -1, SQLITE_TRANSIENT);
-
-		if (sqlite3_step(statement) != SQLITE_DONE) {
-			LogToConsoleError("Failed to archive a message: %{public}s", sqlite3_errmsg(self.database));
-		}
-
-		sqlite3_reset(statement);
-		sqlite3_clear_bindings(statement);
+		(void)[self _insertRow:row];
 	}
 
 	(void)[self _execute:"COMMIT;"];
 
+	[self _postHighlightsNotificationForRows:rows];
+}
+
+/* On the queue, in a transaction: NO when it was there already (or failed) */
+- (BOOL)_insertRow:(TLOMessageArchiveRow *)row
+{
+	sqlite3_stmt *statement = self.insertStatement;
+
+	if (statement == NULL) {
+		return NO;
+	}
+
+	sqlite3_bind_text(statement, 1, row.serverId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 2, row.serverName.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 3, row.viewId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 4, row.viewName.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(statement, 5, (int)row.viewType);
+	sqlite3_bind_double(statement, 6, row.time);
+	sqlite3_bind_int(statement, 7, (int)row.lineType);
+
+	if (row.nickname) {
+		sqlite3_bind_text(statement, 8, row.nickname.UTF8String, -1, SQLITE_TRANSIENT);
+	} else {
+		sqlite3_bind_null(statement, 8);
+	}
+
+	sqlite3_bind_int(statement, 9, row.isSelf);
+	sqlite3_bind_int(statement, 10, row.isHighlight);
+	sqlite3_bind_int(statement, 11, row.hasLink);
+
+	if (row.msgid) {
+		sqlite3_bind_text(statement, 12, row.msgid.UTF8String, -1, SQLITE_TRANSIENT);
+	} else {
+		sqlite3_bind_null(statement, 12);
+	}
+
+	sqlite3_bind_text(statement, 13, row.lineId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 14, row.dedupeKey.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 15, row.body.UTF8String, -1, SQLITE_TRANSIENT);
+
+	BOOL inserted = NO;
+
+	if (sqlite3_step(statement) == SQLITE_DONE) {
+		inserted = (sqlite3_changes(self.database) > 0);
+	} else {
+		LogToConsoleError("Failed to archive a message: %{public}s", sqlite3_errmsg(self.database));
+	}
+
+	sqlite3_reset(statement);
+	sqlite3_clear_bindings(statement);
+
+	return inserted;
+}
+
+- (void)_postHighlightsNotificationForRows:(NSArray<TLOMessageArchiveRow *> *)rows
+{
 	for (TLOMessageArchiveRow *row in rows) {
 		if (row.isHighlight == NO) {
 			continue;
@@ -671,7 +732,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		return;
 	}
 
-	NSTimeInterval oldestTime = ([NSDate date].timeIntervalSince1970 - _keepPeriod);
+	NSTimeInterval oldestTime = [self _oldestKeptTime];
 
 	__block NSUInteger viewImportedCount = importedCount;
 
@@ -731,15 +792,18 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		return NO;
 	}
 
-	NSArray<NSString *> *keywords = logLine.highlightKeywords;
+	return [self _body:body matchesKeywords:logLine.highlightKeywords excludeKeywords:logLine.excludeKeywords matchType:matchType];
+}
 
++ (BOOL)_body:(NSString *)body matchesKeywords:(nullable NSArray<NSString *> *)keywords excludeKeywords:(nullable NSArray<NSString *> *)excludeKeywords matchType:(NSUInteger)matchType
+{
 	if (keywords.count == 0 || body.length == 0) {
 		return NO;
 	}
 
 	NSMutableArray<NSValue *> *excludedRanges = [NSMutableArray array];
 
-	for (NSString *excludeKeyword in logLine.excludeKeywords) {
+	for (NSString *excludeKeyword in excludeKeywords) {
 		[body enumerateMatchesOfString:excludeKeyword withBlock:^(NSRange range, BOOL *stop) {
 			[excludedRanges addObject:[NSValue valueWithRange:range]];
 		} options:NSCaseInsensitiveSearch];
@@ -932,7 +996,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	__weak typeof(self) weakSelf = self;
 
 	dispatch_source_set_event_handler(timer, ^{
-		[weakSelf _removeMessagesOlderThan:([NSDate date].timeIntervalSince1970 - _keepPeriod)];
+		[weakSelf _removeExpiredMessages];
 	});
 
 	dispatch_resume(timer);
@@ -963,6 +1027,801 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	}
 
 	sqlite3_finalize(statement);
+}
+
+#pragma mark -
+#pragma mark Keep Period
+
+- (NSInteger)keepDays
+{
+	return self.keepDaysValue;
+}
+
+- (void)setKeepDays:(NSInteger)keepDays
+{
+	NSInteger oldKeepDays = self.keepDaysValue;
+
+	self.keepDaysValue = keepDays;
+
+	/* Shorter: what is older now goes at once, not at the next daily round */
+	if (keepDays > 0 && (oldKeepDays <= 0 || keepDays < oldKeepDays)) {
+		dispatch_async(self.queue, ^{
+			[self _removeExpiredMessages];
+		});
+	}
+}
+
+/* Messages older than this aren't kept; 0 when everything is */
+- (NSTimeInterval)_oldestKeptTime
+{
+	NSInteger keepDays = self.keepDaysValue;
+
+	if (keepDays <= 0) {
+		return 0;
+	}
+
+	return ([NSDate date].timeIntervalSince1970 - (keepDays * 24 * 60 * 60));
+}
+
+/* On the queue */
+- (void)_removeExpiredMessages
+{
+	NSTimeInterval oldestTime = [self _oldestKeptTime];
+
+	if (oldestTime > 0) {
+		[self _removeMessagesOlderThan:oldestTime];
+	}
+}
+
++ (BOOL)keepsMessagesOfItem:(IRCTreeItem *)item
+{
+	NSParameterAssert(item != nil);
+
+	if ([TPCPreferences messageArchiveKeepPeriod] == TPCMessageArchiveKeepPeriodOff) {
+		return NO;
+	}
+
+	if (item.associatedClient.config.excludedFromArchive) {
+		return NO;
+	}
+
+	IRCChannel *channel = item.associatedChannel;
+
+	if (channel && channel.config.excludedFromArchive) {
+		return NO;
+	}
+
+	return YES;
+}
+
+#pragma mark -
+#pragma mark Deleting
+
+- (void)deleteAllMessagesImportingScrollbackAgain:(BOOL)importScrollbackAgain completionHandler:(nullable void (^)(void))completionHandler
+{
+	/* The search connection first: a search after this one waits for the
+	 writer (-_openSearchDatabase), so it opens the new database */
+	dispatch_async(self.searchQueue, ^{
+		if (self.searchDatabase) {
+			sqlite3_close_v2(self.searchDatabase);
+
+			self.searchDatabase = NULL;
+		}
+
+		dispatch_async(self.queue, ^{
+			if (self.closed) {
+				return;
+			}
+
+			[self.pendingRows removeAllObjects];
+
+			[self _closeDatabase];
+
+			[self _deleteDatabaseFiles];
+
+			[self _openDatabase];
+
+			if (importScrollbackAgain == NO) {
+				[self _setMetaValue:@"1" forKey:_scrollbackImportedKey];
+			}
+
+			LogToConsoleInfo("The message archive was deleted");
+
+			if (completionHandler) {
+				dispatch_async(dispatch_get_main_queue(), completionHandler);
+			}
+		});
+	});
+}
+
+/* On the queue, closed */
+- (void)_deleteDatabaseFiles
+{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+
+	NSString *path = self.url.path;
+
+	for (NSString *suffix in @[@"", @"-wal", @"-shm"]) {
+		NSString *filePath = [path stringByAppendingString:suffix];
+
+		if ([fileManager fileExistsAtPath:filePath] == NO) {
+			continue;
+		}
+
+		NSError *error = nil;
+
+		if ([fileManager removeItemAtPath:filePath error:&error] == NO) {
+			LogToConsoleError("Failed to delete the message archive: %{public}@", error.localizedDescription);
+		}
+	}
+}
+
+- (void)importScrollbackAgain
+{
+	dispatch_async(self.queue, ^{
+		[self _runStatement:"DELETE FROM meta WHERE key = ?" withStrings:@[_scrollbackImportedKey]];
+	});
+}
+
+- (void)deleteMessagesOfServer:(nullable NSString *)serverId inView:(nullable NSString *)viewId completionHandler:(nullable void (^)(void))completionHandler
+{
+	NSParameterAssert(serverId != nil || viewId != nil);
+
+	dispatch_async(self.queue, ^{
+		/* Some may still be waiting to be written */
+		[self _writePendingRows];
+
+		if (viewId) {
+			[self _runStatement:"DELETE FROM messages WHERE view_id = ?" withStrings:@[viewId]];
+		} else {
+			[self _runStatement:"DELETE FROM messages WHERE server_id = ?" withStrings:@[serverId]];
+		}
+
+		if (completionHandler) {
+			dispatch_async(dispatch_get_main_queue(), completionHandler);
+		}
+	});
+}
+
+#pragma mark -
+#pragma mark Size
+
+- (unsigned long long)fileSize
+{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+
+	NSString *path = self.url.path;
+
+	unsigned long long fileSize = 0;
+
+	for (NSString *suffix in @[@"", @"-wal"]) {
+		NSDictionary *attributes = [fileManager attributesOfItemAtPath:[path stringByAppendingString:suffix] error:NULL];
+
+		fileSize += attributes.fileSize;
+	}
+
+	return fileSize;
+}
+
+- (void)countMessagesOfServer:(nullable NSString *)serverId inView:(nullable NSString *)viewId completionHandler:(void (^)(NSUInteger count))completionHandler
+{
+	NSParameterAssert(completionHandler != nil);
+
+	dispatch_async(self.searchQueue, ^{
+		NSUInteger count = 0;
+
+		sqlite3 *database = [self _openSearchDatabase];
+
+		sqlite3_stmt *statement = NULL;
+
+		const char *sql = "SELECT count(*) FROM messages";
+
+		if (viewId) {
+			sql = "SELECT count(*) FROM messages WHERE view_id = ?";
+		} else if (serverId) {
+			sql = "SELECT count(*) FROM messages WHERE server_id = ?";
+		}
+
+		if (database && sqlite3_prepare_v2(database, sql, -1, &statement, NULL) == SQLITE_OK) {
+			NSString *argument = ((viewId) ?: serverId);
+
+			if (argument) {
+				sqlite3_bind_text(statement, 1, argument.UTF8String, -1, SQLITE_TRANSIENT);
+			}
+
+			if (sqlite3_step(statement) == SQLITE_ROW) {
+				count = (NSUInteger)sqlite3_column_int64(statement, 0);
+			}
+
+			sqlite3_finalize(statement);
+		}
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionHandler(count);
+		});
+	});
+}
+
+#pragma mark -
+#pragma mark Text Logs
+
+- (void)importTextLogsInFolder:(NSURL *)folderURL
+			   progressHandler:(nullable void (^)(NSUInteger filesDone, NSUInteger fileCount))progressHandler
+			 completionHandler:(void (^)(NSUInteger importedCount))completionHandler
+{
+	[self importTextLogsInFolder:folderURL
+						resolver:^TLOMessageArchiveTextLogTarget * _Nullable (NSString *serverFolder, TLOMessageArchiveViewType viewType, NSString *viewName) {
+							return [TLOMessageArchive _textLogTargetForServerFolder:serverFolder viewType:viewType viewName:viewName];
+						}
+				 progressHandler:progressHandler
+			   completionHandler:completionHandler];
+}
+
+- (void)importTextLogsInFolder:(NSURL *)folderURL
+					  resolver:(TLOMessageArchiveTextLogResolver)resolver
+			   progressHandler:(nullable void (^)(NSUInteger filesDone, NSUInteger fileCount))progressHandler
+			 completionHandler:(void (^)(NSUInteger importedCount))completionHandler
+{
+	NSParameterAssert(folderURL != nil);
+	NSParameterAssert(resolver != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+		NSUInteger importedCount = 0;
+
+		NSArray<NSURL *> *files = @[];
+
+		if (self.keepDaysValue != TPCMessageArchiveKeepPeriodOff) {
+			files = [self.class _textLogFilesInFolder:folderURL];
+		}
+
+		LogToConsoleInfo("Importing %{public}lu text logs into the message archive", files.count);
+
+		/* "<server folder>/<view type>/<view name>" → its target, or NSNull */
+		NSMutableDictionary<NSString *, id> *targets = [NSMutableDictionary dictionary];
+
+		NSTimeInterval oldestTime = [self _oldestKeptTime];
+
+		NSUInteger fileIndex = 0;
+
+		for (NSURL *file in files) {
+			@autoreleasepool {
+				importedCount += [self _importTextLogFile:file targets:targets resolver:resolver oldestTime:oldestTime];
+			}
+
+			fileIndex += 1;
+
+			if (progressHandler) {
+				NSUInteger filesDone = fileIndex;
+
+				dispatch_async(dispatch_get_main_queue(), ^{
+					progressHandler(filesDone, files.count);
+				});
+			}
+		}
+
+		LogToConsoleInfo("Imported %{public}lu messages from text logs into the message archive", importedCount);
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionHandler(importedCount);
+		});
+	});
+}
+
+/* The text logs under a folder: "<day>.txt" files, in order */
++ (NSArray<NSURL *> *)_textLogFilesInFolder:(NSURL *)folderURL
+{
+	NSDirectoryEnumerator *enumerator =
+	[[NSFileManager defaultManager] enumeratorAtURL:folderURL
+						 includingPropertiesForKeys:@[NSURLIsRegularFileKey]
+											options:NSDirectoryEnumerationSkipsHiddenFiles
+									   errorHandler:nil];
+
+	NSMutableArray<NSURL *> *files = [NSMutableArray array];
+
+	for (NSURL *file in enumerator) {
+		if ([self _dayOfTextLogFile:file] == nil) {
+			continue;
+		}
+
+		[files addObject:file];
+	}
+
+	[files sortUsingComparator:^NSComparisonResult(NSURL *file1, NSURL *file2) {
+		return [file1.path compare:file2.path];
+	}];
+
+	return [files copy];
+}
+
+/* Local midnight of the day a text log is named after ("2026-10-17.txt"), or nil */
++ (nullable NSDate *)_dayOfTextLogFile:(NSURL *)file
+{
+	NSString *name = file.lastPathComponent;
+
+	if (name.length != 14 || [name hasSuffix:@".txt"] == NO) {
+		return nil;
+	}
+
+	NSInteger year = _numberInString(name, 0, 4);
+	NSInteger month = _numberInString(name, 5, 2);
+	NSInteger day = _numberInString(name, 8, 2);
+
+	if (year < 0 || month < 0 || day < 0 || [name characterAtIndex:4] != '-' || [name characterAtIndex:7] != '-') {
+		return nil;
+	}
+
+	NSDateComponents *components = [NSDateComponents new];
+
+	components.year = year;
+	components.month = month;
+	components.day = day;
+
+	return [[NSCalendar currentCalendar] dateFromComponents:components];
+}
+
+/* The digits at a place in a string as a number, or -1 */
+static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteger length)
+{
+	if ((location + length) > string.length) {
+		return -1;
+	}
+
+	NSInteger number = 0;
+
+	for (NSUInteger i = location; i < (location + length); i++) {
+		unichar character = [string characterAtIndex:i];
+
+		if (character < '0' || character > '9') {
+			return -1;
+		}
+
+		number = ((number * 10) + (character - '0'));
+	}
+
+	return number;
+}
+
+/* Off the queue: reads one file and archives its lines; how many were new */
+- (NSUInteger)_importTextLogFile:(NSURL *)file
+						 targets:(NSMutableDictionary<NSString *, id> *)targets
+						resolver:(TLOMessageArchiveTextLogResolver)resolver
+					  oldestTime:(NSTimeInterval)oldestTime
+{
+	NSDate *day = [self.class _dayOfTextLogFile:file];
+
+	if (day == nil) {
+		return 0;
+	}
+
+	/* Two days of slack for time zones */
+	if (oldestTime > 0 && (day.timeIntervalSince1970 + (2 * 24 * 60 * 60)) < oldestTime) {
+		return 0;
+	}
+
+	/* <server folder>/Console/<day>.txt, <server folder>/Channels/<channel>/<day>.txt,
+	 <server folder>/Queries/<nickname>/<day>.txt (TLOFileLogger) */
+	NSArray<NSString *> *components = file.pathComponents;
+
+	NSUInteger componentCount = components.count;
+
+	if (componentCount < 3) {
+		return 0;
+	}
+
+	NSString *parentFolder = components[(componentCount - 2)];
+
+	NSString *serverFolder = nil;
+
+	NSString *viewName = @"";
+
+	TLOMessageArchiveViewType viewType = TLOMessageArchiveViewTypeConsole;
+
+	if ([parentFolder isEqualToString:TLOFileLoggerConsoleDirectoryName]) {
+		serverFolder = components[(componentCount - 3)];
+	} else if (componentCount >= 4) {
+		NSString *typeFolder = components[(componentCount - 3)];
+
+		if ([typeFolder isEqualToString:TLOFileLoggerChannelDirectoryName]) {
+			viewType = TLOMessageArchiveViewTypeChannel;
+		} else if ([typeFolder isEqualToString:TLOFileLoggerPrivateMessageDirectoryName]) {
+			viewType = TLOMessageArchiveViewTypeQuery;
+		} else {
+			return 0;
+		}
+
+		viewName = parentFolder;
+
+		serverFolder = components[(componentCount - 4)];
+	} else {
+		return 0;
+	}
+
+	NSString *targetKey = [NSString stringWithFormat:@"%@/%lu/%@", serverFolder, viewType, viewName];
+
+	id target = targets[targetKey];
+
+	if (target == nil) {
+		/* Servers and channels are read on the main queue (the main queue
+		 never waits for this one) */
+		__block TLOMessageArchiveTextLogTarget *resolvedTarget = nil;
+
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			resolvedTarget = resolver(serverFolder, viewType, viewName);
+		});
+
+		target = ((resolvedTarget) ?: [NSNull null]);
+
+		targets[targetKey] = target;
+	}
+
+	if ([target isKindOfClass:[TLOMessageArchiveTextLogTarget class]] == NO) {
+		return 0;
+	}
+
+	NSString *contents = [NSString stringWithContentsOfURL:file encoding:NSUTF8StringEncoding error:NULL];
+
+	if (contents == nil) {
+		return 0;
+	}
+
+	NSMutableArray<TLOMessageArchiveRow *> *rows = [NSMutableArray array];
+
+	[contents enumerateLinesUsingBlock:^(NSString *line, BOOL *stop) {
+		TLOMessageArchiveRow *row = [self.class _rowForTextLogLine:line day:day target:target];
+
+		if (row == nil || row.time < oldestTime) {
+			return;
+		}
+
+		[rows addObject:row];
+	}];
+
+	__block NSUInteger importedCount = 0;
+
+	for (NSUInteger index = 0; index < rows.count; index += _importBatchSize) {
+		NSArray *batch = [rows subarrayWithRange:NSMakeRange(index, MIN(_importBatchSize, (rows.count - index)))];
+
+		dispatch_sync(self.queue, ^{
+			importedCount += [self _insertTextLogRows:batch];
+		});
+	}
+
+	return importedCount;
+}
+
+/* A line of a text log as TLOFileLogger writes it, or nil for other lines
+ (joins, mode changes and the like):
+
+	[2026-10-17T14:03:21+0200] <@alice> a message
+	[2026-10-17T14:03:21+0200] • alice: an action
+	[2026-10-17T14:03:21+0200] -bob- a notice
+
+ Older logs may have only the time ([14:03:21]): on the file's day. */
++ (nullable TLOMessageArchiveRow *)_rowForTextLogLine:(NSString *)line day:(NSDate *)day target:(TLOMessageArchiveTextLogTarget *)target
+{
+	if ([line hasPrefix:@"["] == NO) {
+		return nil;
+	}
+
+	NSRange timeEnd = [line rangeOfString:@"] "];
+
+	if (timeEnd.location == NSNotFound) {
+		return nil;
+	}
+
+	NSDate *date = [self _dateOfTextLogTimestamp:[line substringWithRange:NSMakeRange(1, (timeEnd.location - 1))] day:day];
+
+	if (date == nil) {
+		return nil;
+	}
+
+	NSString *rest = [line substringFromIndex:NSMaxRange(timeEnd)];
+
+	TVCLogLineType lineType = TVCLogLineTypePrivateMessage;
+
+	NSRange nicknameRange = NSMakeRange(NSNotFound, 0);
+
+	NSRange end = NSMakeRange(NSNotFound, 0);
+
+	if ([rest hasPrefix:@"<"]) {
+		end = [rest rangeOfString:@"> "];
+
+		nicknameRange = NSMakeRange(1, (end.location - 1));
+	} else if ([rest hasPrefix:@"• "]) {
+		lineType = TVCLogLineTypeAction;
+
+		end = [rest rangeOfString:@": " options:0 range:NSMakeRange(2, (rest.length - 2))];
+
+		nicknameRange = NSMakeRange(2, (end.location - 2));
+	} else if ([rest hasPrefix:@"-"]) {
+		lineType = TVCLogLineTypeNotice;
+
+		end = [rest rangeOfString:@"- " options:0 range:NSMakeRange(1, (rest.length - 1))];
+
+		nicknameRange = NSMakeRange(1, (end.location - 1));
+	}
+
+	if (end.location == NSNotFound) {
+		return nil;
+	}
+
+	NSString *nickname = [rest substringWithRange:nicknameRange];
+
+	/* A message's sender has their mode symbol before it (<@alice>) */
+	if (lineType == TVCLogLineTypePrivateMessage) {
+		NSCharacterSet *modeSymbols = [NSCharacterSet characterSetWithCharactersInString:@"~&@%+!"];
+
+		while (nickname.length > 0 && [modeSymbols characterIsMember:[nickname characterAtIndex:0]]) {
+			nickname = [nickname substringFromIndex:1];
+		}
+	}
+
+	NSString *body = [rest substringFromIndex:NSMaxRange(end)];
+
+	if (nickname.length == 0 || [nickname containsString:@" "] || body.length == 0) {
+		return nil;
+	}
+
+	TLOMessageArchiveView *view = target.view;
+
+	NSString *localNickname = target.localNickname;
+
+	BOOL isSelf = (localNickname && [nickname caseInsensitiveCompare:localNickname] == NSOrderedSame);
+
+	BOOL highlighted = (isSelf == NO && lineType != TVCLogLineTypeNotice &&
+						[self _body:body matchesKeywords:target.highlightKeywords excludeKeywords:target.excludeKeywords matchType:target.matchType]);
+
+	TLOMessageArchiveRow *row = [TLOMessageArchiveRow new];
+
+	row.serverId = view.serverId;
+	row.serverName = view.serverName;
+	row.viewId = view.viewId;
+	row.viewName = view.viewName;
+	row.viewType = view.viewType;
+	row.time = date.timeIntervalSince1970;
+	row.lineType = lineType;
+	row.nickname = nickname;
+	row.isSelf = isSelf;
+	row.isHighlight = highlighted;
+	row.hasLink = ([TLOLinkParser locateLinksInString:body].count > 0);
+	row.lineId = @""; // not in the scrollback
+	row.dedupeKey = [NSString stringWithFormat:@"l:%lld:%@:%@", (long long)row.time, nickname, [self _hashOfBody:body]];
+	row.body = body;
+
+	return row;
+}
+
+/* "2026-10-17T14:03:21+0200" (also +02:00), or "14:03:21" on the day */
++ (nullable NSDate *)_dateOfTextLogTimestamp:(NSString *)timestamp day:(NSDate *)day
+{
+	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+
+	if (timestamp.length == 8) {
+		NSInteger hour = _numberInString(timestamp, 0, 2);
+		NSInteger minute = _numberInString(timestamp, 3, 2);
+		NSInteger second = _numberInString(timestamp, 6, 2);
+
+		if (hour < 0 || minute < 0 || second < 0) {
+			return nil;
+		}
+
+		calendar.timeZone = [NSTimeZone localTimeZone];
+
+		return [calendar dateBySettingHour:hour minute:minute second:second ofDate:day options:0];
+	}
+
+	if (timestamp.length < 24 || [timestamp characterAtIndex:10] != 'T') {
+		return nil;
+	}
+
+	unichar sign = [timestamp characterAtIndex:19];
+
+	NSUInteger zoneMinutesLocation = (([timestamp characterAtIndex:22] == ':') ? 23 : 22);
+
+	NSInteger zoneHours = _numberInString(timestamp, 20, 2);
+	NSInteger zoneMinutes = _numberInString(timestamp, zoneMinutesLocation, 2);
+
+	if ((sign != '+' && sign != '-') || zoneHours < 0 || zoneMinutes < 0) {
+		return nil;
+	}
+
+	NSInteger zoneSeconds = (((zoneHours * 60) + zoneMinutes) * 60);
+
+	NSDateComponents *components = [NSDateComponents new];
+
+	components.year = _numberInString(timestamp, 0, 4);
+	components.month = _numberInString(timestamp, 5, 2);
+	components.day = _numberInString(timestamp, 8, 2);
+	components.hour = _numberInString(timestamp, 11, 2);
+	components.minute = _numberInString(timestamp, 14, 2);
+	components.second = _numberInString(timestamp, 17, 2);
+
+	if (components.year < 0 || components.month < 0 || components.day < 0 || components.hour < 0 || components.minute < 0 || components.second < 0) {
+		return nil;
+	}
+
+	components.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:((sign == '-') ? -zoneSeconds : zoneSeconds)];
+
+	return [calendar dateFromComponents:components];
+}
+
+/* On the queue, in one transaction: the lines not archived yet. The same
+ message printed live has its time to the millisecond, a text log only to
+ the second, so a line is new when the view has no message with its sender
+ and text within that second. */
+- (NSUInteger)_insertTextLogRows:(NSArray<TLOMessageArchiveRow *> *)rows
+{
+	if (self.closed || self.database == NULL || self.insertStatement == NULL) {
+		return 0;
+	}
+
+	sqlite3_stmt *existsStatement = NULL;
+
+	if (sqlite3_prepare_v2(self.database, "SELECT 1 FROM messages WHERE view_id = ? AND time >= ? AND time < ? AND nickname IS ? AND body = ? LIMIT 1", -1, &existsStatement, NULL) != SQLITE_OK) {
+		LogToConsoleError("Failed to prepare importing text logs: %{public}s", sqlite3_errmsg(self.database));
+
+		return 0;
+	}
+
+	if ([self _execute:"BEGIN;"] == NO) {
+		sqlite3_finalize(existsStatement);
+
+		return 0;
+	}
+
+	NSMutableArray<TLOMessageArchiveRow *> *insertedRows = [NSMutableArray array];
+
+	for (TLOMessageArchiveRow *row in rows) {
+		sqlite3_bind_text(existsStatement, 1, row.viewId.UTF8String, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_double(existsStatement, 2, row.time);
+		sqlite3_bind_double(existsStatement, 3, (row.time + 1.0));
+		sqlite3_bind_text(existsStatement, 4, row.nickname.UTF8String, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(existsStatement, 5, row.body.UTF8String, -1, SQLITE_TRANSIENT);
+
+		BOOL exists = (sqlite3_step(existsStatement) == SQLITE_ROW);
+
+		sqlite3_reset(existsStatement);
+		sqlite3_clear_bindings(existsStatement);
+
+		if (exists) {
+			continue;
+		}
+
+		if ([self _insertRow:row]) {
+			[insertedRows addObject:row];
+		}
+	}
+
+	(void)[self _execute:"COMMIT;"];
+
+	sqlite3_finalize(existsStatement);
+
+	[self _postHighlightsNotificationForRows:insertedRows];
+
+	return insertedRows.count;
+}
+
+/* The server and channel a text log's folders name (Libera (1a2b3)/Channels/#textual):
+ by the first five characters of the server's id in the folder name, else by
+ its name; channels and queries by name. Those that are gone keep their
+ names, with ids of their own. Highlights: the keywords that apply there
+ (not those limited to people) and the nickname now. */
++ (nullable TLOMessageArchiveTextLogTarget *)_textLogTargetForServerFolder:(NSString *)serverFolder viewType:(TLOMessageArchiveViewType)viewType viewName:(NSString *)viewName
+{
+	if ([TPCPreferences messageArchiveKeepPeriod] == TPCMessageArchiveKeepPeriodOff) {
+		return nil;
+	}
+
+	NSString *serverName = serverFolder;
+
+	NSString *serverIdPrefix = nil;
+
+	NSRange idStart = [serverFolder rangeOfString:@" (" options:NSBackwardsSearch];
+
+	if (idStart.location != NSNotFound && [serverFolder hasSuffix:@")"]) {
+		serverName = [serverFolder substringToIndex:idStart.location];
+
+		serverIdPrefix = [serverFolder substringWithRange:NSMakeRange(NSMaxRange(idStart), (serverFolder.length - NSMaxRange(idStart) - 1))];
+	}
+
+	IRCClient *client = nil;
+
+	for (IRCClient *u in worldController().clientList) {
+		if (serverIdPrefix.length > 0 && [u.uniqueIdentifier.lowercaseString hasPrefix:serverIdPrefix.lowercaseString]) {
+			client = u;
+
+			break;
+		}
+	}
+
+	if (client == nil) {
+		for (IRCClient *u in worldController().clientList) {
+			if ([u.name.safeFilename isEqualToString:serverName]) {
+				client = u;
+
+				break;
+			}
+		}
+	}
+
+	IRCTreeItem *item = nil;
+
+	if (client && viewType == TLOMessageArchiveViewTypeConsole) {
+		item = client;
+	} else if (client) {
+		for (IRCChannel *c in client.channelList) {
+			BOOL sameType = ((viewType == TLOMessageArchiveViewTypeChannel) ? c.isChannel : c.isPrivateMessage);
+
+			if (sameType && [c.name.safeFilename caseInsensitiveCompare:viewName] == NSOrderedSame) {
+				item = c;
+
+				break;
+			}
+		}
+	}
+
+	if (client.config.excludedFromArchive || (item && [self keepsMessagesOfItem:item] == NO)) {
+		return nil;
+	}
+
+	TLOMessageArchiveView *view = nil;
+
+	if (item) {
+		view = [TLOMessageArchiveView viewForItem:item];
+	} else {
+		NSString *serverId = ((client) ? client.uniqueIdentifier : [@"textlog:" stringByAppendingString:serverFolder]);
+
+		view = [[TLOMessageArchiveView alloc] initWithViewId:[NSString stringWithFormat:@"textlog:%@/%lu/%@", serverFolder, viewType, viewName]
+													viewName:viewName
+													viewType:viewType
+													serverId:serverId
+												  serverName:((client) ? client.networkNameAlt : serverName)];
+	}
+
+	if (view == nil) {
+		return nil;
+	}
+
+	TLOMessageArchiveTextLogTarget *target = [[TLOMessageArchiveTextLogTarget alloc] initWithView:view];
+
+	NSString *localNickname = client.userNickname;
+
+	target.localNickname = localNickname;
+
+	target.matchType = [TPCPreferences highlightMatchingMethod];
+
+	IRCChannel *channel = item.associatedChannel;
+
+	if (channel.config.ignoreHighlights) {
+		return target;
+	}
+
+	NSArray<NSString *> *(^keywords)(NSArray<IRCHighlightKeyword *> *) = ^NSArray<NSString *> *(NSArray<IRCHighlightKeyword *> *entries) {
+		NSMutableArray<NSString *> *keywords = [NSMutableArray array];
+
+		for (IRCHighlightKeyword *e in entries) {
+			if (e.nicknames.count > 0 || [e appliesToChannelWithId:view.viewId clientId:view.serverId] == NO) {
+				continue;
+			}
+
+			[keywords addObjectWithoutDuplication:e.keyword];
+		}
+
+		return [keywords copy];
+	};
+
+	NSMutableArray<NSString *> *matchKeywords = [keywords([TPCPreferences highlightMatchKeywordEntries]) mutableCopy];
+
+	if (localNickname) {
+		[matchKeywords addObjectWithoutDuplication:localNickname];
+	}
+
+	target.highlightKeywords = matchKeywords;
+
+	target.excludeKeywords = keywords([TPCPreferences highlightExcludeKeywordEntries]);
+
+	return target;
 }
 
 #pragma mark -

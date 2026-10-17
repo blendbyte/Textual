@@ -67,6 +67,7 @@ typedef NS_ENUM(NSUInteger, IRCChannelFormatting) {
 @property (readonly) BOOL showTreeBadgeCount;
 @property (readonly) IRCChannelType type;
 @property (readonly) IRCChannelFormatting formatting;
+@property (readonly) BOOL excludedFromArchive; // its messages aren't kept in the message archive
 @property (readonly, copy) NSString *channelName;
 @property (readonly, copy) NSString *uniqueIdentifier;
 @property (readonly, copy, nullable) NSString *label;
@@ -99,6 +100,7 @@ typedef NS_ENUM(NSUInteger, IRCChannelFormatting) {
 @interface IRCChannelConfigMutable : IRCChannelConfig
 @property (nonatomic, assign, readwrite) IRCChannelType type;
 @property (nonatomic, assign, readwrite) IRCChannelFormatting formatting;
+@property (nonatomic, assign, readwrite) BOOL excludedFromArchive;
 @property (nonatomic, assign, readwrite) BOOL autoJoin;
 @property (nonatomic, assign, readwrite) BOOL ignoreGeneralEventMessages;
 @property (nonatomic, assign, readwrite) BOOL ignoreHighlights;

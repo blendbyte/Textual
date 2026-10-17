@@ -125,6 +125,7 @@
 		4CFA3F87D82CF0A3A49ACBBE /* TDCHighlightKeywordSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8B178AD6EFE4D659798959 /* TDCHighlightKeywordSheet.m */; };
 		A158CC599D81585F02DDA31A /* TDCPreferencesAdvancedPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8E8D21921ED7D68624BA14 /* TDCPreferencesAdvancedPanes.m */; };
 		4C497A2FFD766E56B1D4752B /* TDCPreferencesInlineMediaPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC6E20C4C4C3271153F5FAE /* TDCPreferencesInlineMediaPane.m */; };
+		4C64F4BC2324D6DA91465D6D /* TDCPreferencesHistoryPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06FE266CEBAFDE5D148EE8 /* TDCPreferencesHistoryPane.m */; };
 		4C06E65720EC55B90055D09A /* TDCPreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526920EB673E00448776 /* TDCPreferencesController.m */; };
 		4C06E65820EC55B90055D09A /* TDCServerEndpointListSheetTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528E20EB673E00448776 /* TDCServerEndpointListSheetTableCellView.m */; };
 		4C06E65920EC55B90055D09A /* TDCServerEndpointListSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528F20EB673E00448776 /* TDCServerEndpointListSheet.m */; };
@@ -300,7 +301,6 @@
 		9471684F5F3C6F86E0580C98 /* TDCPreferencesInterface.xib in Resources */ = {isa = PBXBuildFile; fileRef = F7A35D27EF96FFC74A6869D3 /* TDCPreferencesInterface.xib */; };
 		AC4A30CEF9591DAF566A4EBF /* TDCPreferencesStyle.xib in Resources */ = {isa = PBXBuildFile; fileRef = A73A5E526AEB7AC7283655E1 /* TDCPreferencesStyle.xib */; };
 		20E2049F9465339B806E1A4C /* TDCPreferencesFileTransfers.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6A86FC252272A4C650A623F9 /* TDCPreferencesFileTransfers.xib */; };
-		12CD8D31DBC6122AC252F039 /* TDCPreferencesLogLocation.xib in Resources */ = {isa = PBXBuildFile; fileRef = 08D335810934BFDDC1E0256A /* TDCPreferencesLogLocation.xib */; };
 		0D6A5CEB6807BFB03FC79896 /* TDCPreferencesInstalledAddons.xib in Resources */ = {isa = PBXBuildFile; fileRef = 98B0901F0A010630CFEEA02A /* TDCPreferencesInstalledAddons.xib */; };
 		A28C323389D2A5568981950B /* TDCPreferencesHidden.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7A60DDFDF7E4D649DFFAB9E0 /* TDCPreferencesHidden.xib */; };
 		4C2F42062C3F4218000D962D /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C2F42042C3F4218000D962D /* UserNotifications.framework */; };
@@ -964,7 +964,6 @@
 		86575818A34B7185FE1C48CA /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesInterface.xib; sourceTree = "<group>"; };
 		A7C020A1C9A5D01DFE946CE9 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesStyle.xib; sourceTree = "<group>"; };
 		CE0587A74C399654B9F85962 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesFileTransfers.xib; sourceTree = "<group>"; };
-		12F825AB3D94657314B42D4B /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesLogLocation.xib; sourceTree = "<group>"; };
 		E8C81E856846445257533ED3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesInstalledAddons.xib; sourceTree = "<group>"; };
 		9DFF1725DB394BCF89510B8E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCPreferencesHidden.xib; sourceTree = "<group>"; };
 		4C1DC5521580420500A47BC9 /* Textual.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Textual.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1299,6 +1298,7 @@
 		4CA934DABCFC7F896F9DDA98 /* TDCHighlightKeywordSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCHighlightKeywordSheetPrivate.h; sourceTree = "<group>"; };
 		0F8E8D21921ED7D68624BA14 /* TDCPreferencesAdvancedPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesAdvancedPanes.m; sourceTree = "<group>"; };
 		4CC6E20C4C4C3271153F5FAE /* TDCPreferencesInlineMediaPane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesInlineMediaPane.m; sourceTree = "<group>"; };
+		4C06FE266CEBAFDE5D148EE8 /* TDCPreferencesHistoryPane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesHistoryPane.m; sourceTree = "<group>"; };
 		4C31526920EB673E00448776 /* TDCPreferencesController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesController.m; sourceTree = "<group>"; };
 		4C31526B20EB673E00448776 /* TDCChannelSpotlightPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelSpotlightPanel.m; sourceTree = "<group>"; };
 		4C31526C20EB673E00448776 /* TDCChannelSpotlightSearchResult.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelSpotlightSearchResult.m; sourceTree = "<group>"; };
@@ -2614,6 +2614,7 @@
 				4CA934DABCFC7F896F9DDA98 /* TDCHighlightKeywordSheetPrivate.h */,
 				0F8E8D21921ED7D68624BA14 /* TDCPreferencesAdvancedPanes.m */,
 				4CC6E20C4C4C3271153F5FAE /* TDCPreferencesInlineMediaPane.m */,
+				4C06FE266CEBAFDE5D148EE8 /* TDCPreferencesHistoryPane.m */,
 				4C31523920EB673E00448776 /* TDCPreferencesNotificationConfigurationPrivate.h */,
 				1AC03A0E588A1C197CD2B2D0 /* TDCPreferencesPanePrivate.h */,
 				4CB873DB22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m */,
@@ -2887,7 +2888,6 @@
 				F7A35D27EF96FFC74A6869D3 /* TDCPreferencesInterface.xib */,
 				A73A5E526AEB7AC7283655E1 /* TDCPreferencesStyle.xib */,
 				6A86FC252272A4C650A623F9 /* TDCPreferencesFileTransfers.xib */,
-				08D335810934BFDDC1E0256A /* TDCPreferencesLogLocation.xib */,
 				98B0901F0A010630CFEEA02A /* TDCPreferencesInstalledAddons.xib */,
 				7A60DDFDF7E4D649DFFAB9E0 /* TDCPreferencesHidden.xib */,
 				4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */,
@@ -3587,7 +3587,6 @@
 				9471684F5F3C6F86E0580C98 /* TDCPreferencesInterface.xib in Resources */,
 				AC4A30CEF9591DAF566A4EBF /* TDCPreferencesStyle.xib in Resources */,
 				20E2049F9465339B806E1A4C /* TDCPreferencesFileTransfers.xib in Resources */,
-				12CD8D31DBC6122AC252F039 /* TDCPreferencesLogLocation.xib in Resources */,
 				0D6A5CEB6807BFB03FC79896 /* TDCPreferencesInstalledAddons.xib in Resources */,
 				A28C323389D2A5568981950B /* TDCPreferencesHidden.xib in Resources */,
 				4C06E1D820EC4AC40055D09A /* TDCChannelInviteSheet.xib in Resources */,
@@ -3824,6 +3823,7 @@
 				4CFA3F87D82CF0A3A49ACBBE /* TDCHighlightKeywordSheet.m in Sources */,
 				A158CC599D81585F02DDA31A /* TDCPreferencesAdvancedPanes.m in Sources */,
 				4C497A2FFD766E56B1D4752B /* TDCPreferencesInlineMediaPane.m in Sources */,
+				4C64F4BC2324D6DA91465D6D /* TDCPreferencesHistoryPane.m in Sources */,
 				4C06E65720EC55B90055D09A /* TDCPreferencesController.m in Sources */,
 				4C06E65820EC55B90055D09A /* TDCServerEndpointListSheetTableCellView.m in Sources */,
 				4C06E65920EC55B90055D09A /* TDCServerEndpointListSheet.m in Sources */,
@@ -4629,14 +4629,6 @@
 				CE0587A74C399654B9F85962 /* en */,
 			);
 			name = TDCPreferencesFileTransfers.xib;
-			sourceTree = "<group>";
-		};
-		08D335810934BFDDC1E0256A /* TDCPreferencesLogLocation.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				12F825AB3D94657314B42D4B /* en */,
-			);
-			name = TDCPreferencesLogLocation.xib;
 			sourceTree = "<group>";
 		};
 		98B0901F0A010630CFEEA02A /* TDCPreferencesInstalledAddons.xib */ = {

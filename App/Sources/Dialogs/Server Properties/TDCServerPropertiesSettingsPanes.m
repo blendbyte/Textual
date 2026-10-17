@@ -40,6 +40,8 @@
 #import "NSStringHelper.h"
 #import "IRCClientConfigPrivate.h"
 #import "TLOLocalization.h"
+#import "TLOMessageArchivePrivate.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TVCValidatedTextField.h"
 #import "TDCAlert.h"
@@ -230,6 +232,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCServerPropertiesMessagesPane ()
 @property (nonatomic, weak) IBOutlet TVCValidatedTextField *normalLeavingCommentTextField;
 @property (nonatomic, weak) IBOutlet TVCValidatedTextField *sleepModeQuitMessageTextField;
+@property (nonatomic, strong) NSButton *keepInArchiveCheck;
+@property (nonatomic, strong) NSButton *deleteArchivedMessagesButton;
+@property (nonatomic, copy, nullable) NSString *serverId;
+@property (nonatomic, copy, nullable) NSString *serverName;
 @end
 
 @implementation TDCServerPropertiesMessagesPane
@@ -255,6 +261,42 @@ NS_ASSUME_NONNULL_BEGIN
 
 		textField.validationBlock = validationBlock;
 	}
+
+	[self addArchiveRows];
+}
+
+/* The message archive (10.9 F): below the messages, which move up for it */
+- (void)addArchiveRows
+{
+	NSView *view = self.view;
+
+	NSView *lastField = self.sleepModeQuitMessageTextField;
+
+	for (NSLayoutConstraint *constraint in view.constraints) {
+		if (constraint.firstAttribute == NSLayoutAttributeTop && constraint.secondItem == view && constraint.constant == 60) {
+			constraint.constant = 30;
+		}
+	}
+
+	NSButton *keepInArchiveCheck = [NSButton checkboxWithTitle:TXTLS(@"TDCServerPropertiesSheet[arc-c1]") target:self action:@selector(keepInArchiveChanged:)];
+
+	NSButton *deleteButton = [NSButton buttonWithTitle:TXTLS(@"TDCServerPropertiesSheet[arc-b1]") target:self action:@selector(deleteArchivedMessages:)];
+
+	keepInArchiveCheck.translatesAutoresizingMaskIntoConstraints = NO;
+	deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+	[view addSubview:keepInArchiveCheck];
+	[view addSubview:deleteButton];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[keepInArchiveCheck.topAnchor constraintEqualToAnchor:lastField.bottomAnchor constant:20],
+		[keepInArchiveCheck.leadingAnchor constraintEqualToAnchor:lastField.leadingAnchor],
+		[deleteButton.topAnchor constraintEqualToAnchor:keepInArchiveCheck.bottomAnchor constant:8],
+		[deleteButton.leadingAnchor constraintEqualToAnchor:lastField.leadingAnchor constant:14]
+	]];
+
+	self.keepInArchiveCheck = keepInArchiveCheck;
+	self.deleteArchivedMessagesButton = deleteButton;
 }
 
 - (void)loadFromConfig:(IRCClientConfig *)config
@@ -262,6 +304,13 @@ NS_ASSUME_NONNULL_BEGIN
 	self.normalLeavingCommentTextField.stringValue = config.normalLeavingComment;
 
 	self.sleepModeQuitMessageTextField.stringValue = config.sleepModeLeavingComment;
+
+	self.keepInArchiveCheck.state = ((config.excludedFromArchive) ? NSControlStateValueOff : NSControlStateValueOn);
+
+	self.serverId = config.uniqueIdentifier;
+	self.serverName = config.connectionName;
+
+	[self updateArchiveControls];
 }
 
 - (void)saveToConfig:(IRCClientConfigMutable *)config
@@ -269,6 +318,64 @@ NS_ASSUME_NONNULL_BEGIN
 	config.normalLeavingComment = self.normalLeavingCommentTextField.value;
 
 	config.sleepModeLeavingComment = self.sleepModeQuitMessageTextField.value;
+
+	config.excludedFromArchive = (self.keepInArchiveCheck.state == NSControlStateValueOff);
+}
+
+- (void)keepInArchiveChanged:(nullable id)sender
+{
+	[self updateArchiveControls];
+}
+
+/* While the archive is off there's nothing to leave out; the delete button
+ when it has this server's messages */
+- (void)updateArchiveControls
+{
+	self.keepInArchiveCheck.enabled = ([TPCPreferences messageArchiveKeepPeriod] != TPCMessageArchiveKeepPeriodOff);
+
+	self.deleteArchivedMessagesButton.enabled = NO;
+
+	NSString *serverId = self.serverId;
+
+	if (serverId == nil) {
+		return;
+	}
+
+	[sharedMessageArchive() countMessagesOfServer:serverId inView:nil completionHandler:^(NSUInteger count) {
+		self.deleteArchivedMessagesButton.enabled = (count > 0);
+	}];
+}
+
+- (void)deleteArchivedMessages:(nullable id)sender
+{
+	NSString *serverId = self.serverId;
+
+	if (serverId == nil) {
+		return;
+	}
+
+	[sharedMessageArchive() countMessagesOfServer:serverId inView:nil completionHandler:^(NSUInteger count) {
+		NSAlert *alert = [NSAlert new];
+
+		alert.alertStyle = NSAlertStyleWarning;
+		alert.messageText = TXTLS(@"TDCServerPropertiesSheet[arc-d1]", self.serverName);
+		alert.informativeText = TXTLS(@"TDCServerPropertiesSheet[arc-d2]", [NSNumberFormatter localizedStringFromNumber:@(count) numberStyle:NSNumberFormatterDecimalStyle]);
+
+		[alert addButtonWithTitle:TXTLS(@"TDCServerPropertiesSheet[arc-d3]")];
+		[alert addButtonWithTitle:TXTLS(@"Prompts[qso-2g]")];
+
+		alert.buttons.firstObject.hasDestructiveAction = YES;
+
+		[alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse response) {
+			if (response != NSAlertFirstButtonReturn) {
+				return;
+			}
+
+			[sharedMessageArchive() deleteMessagesOfServer:serverId inView:nil completionHandler:^{
+				[self updateArchiveControls];
+			}];
+		}];
+	}];
 }
 
 - (nullable NSControl *)firstInvalidField

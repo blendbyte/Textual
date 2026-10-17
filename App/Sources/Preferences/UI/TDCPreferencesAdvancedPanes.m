@@ -251,60 +251,6 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 @end
 
 #pragma mark -
-#pragma mark Log Location
-
-@interface TDCPreferencesLogLocationPane ()
-@property (nonatomic, weak) IBOutlet NSPopUpButton *transcriptFolderButton;
-
-/* Bound in the nib */
-@property (nonatomic, assign) BOOL logTranscript;
-
-- (IBAction)onChangedTranscriptFolder:(nullable id)sender;
-@end
-
-@implementation TDCPreferencesLogLocationPane
-
-- (void)viewDidLoad
-{
-	[super viewDidLoad];
-
-	[self updateTranscriptFolder];
-}
-
-- (BOOL)logTranscript
-{
-	return [TPCPreferences logToDisk];
-}
-
-- (void)setLogTranscript:(BOOL)logTranscript
-{
-	[TPCPreferences setLogToDisk:logTranscript];
-
-	/* Turned off: closes the log files that are open */
-	[TPCPreferences performReloadAction:TPCPreferencesReloadActionLogTranscripts];
-}
-
-- (void)updateTranscriptFolder
-{
-	[self showFolder:[TPCPathInfo transcriptFolderURL]
-	   inPopUpButton:self.transcriptFolderButton
-		 placeholder:TXTLS(@"TDCPreferencesController[70s-c6]")];
-}
-
-- (void)onChangedTranscriptFolder:(nullable id)sender
-{
-	[self chooseFolderFromPopUpButton:self.transcriptFolderButton completionBlock:^(NSData * _Nullable bookmark) {
-		[TPCPathInfo setTranscriptFolderURL:bookmark];
-
-		[TPCPreferences performReloadAction:TPCPreferencesReloadActionLogTranscripts];
-
-		[self updateTranscriptFolder];
-	}];
-}
-
-@end
-
-#pragma mark -
 #pragma mark Installed Addons
 
 @interface TDCPreferencesInstalledAddonsPane ()

@@ -1076,6 +1076,15 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 {
 	NSParameterAssert(lineNumber != nil);
 
+	/* No line (a message imported from a text log): the page would never answer */
+	if (lineNumber.length == 0) {
+		if (completionHandler) {
+			completionHandler(NO);
+		}
+
+		return;
+	}
+
 	/* Jumping to line chains callback functions which may take time to load.
 	 We do not want invoke the completion handler until we know for certain
 	 whether the line was jumped to. We therefore change the completion
@@ -2126,11 +2135,14 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	/* Where it was said, for the message archive (10.9), read here and not
-	 on the printing queue; nil for utility channels, which aren't kept */
+	 on the printing queue; nil for utility channels, which aren't kept, and
+	 when the archive is off or leaves this server or channel out */
 	TLOMessageArchiveView *archiveView = nil;
 
-	if ([TLOMessageArchive archivesLineType:logLine.lineType]) {
-		archiveView = [TLOMessageArchiveView viewForItem:self.associatedItem];
+	IRCTreeItem *archiveItem = self.associatedItem;
+
+	if (archiveItem && [TLOMessageArchive archivesLineType:logLine.lineType] && [TLOMessageArchive keepsMessagesOfItem:archiveItem]) {
+		archiveView = [TLOMessageArchiveView viewForItem:archiveItem];
 	}
 
 	TVCLogControllerPrintingBlock printBlock = ^(id operation) {

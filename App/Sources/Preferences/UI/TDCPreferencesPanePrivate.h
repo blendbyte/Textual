@@ -104,7 +104,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCPreferencesInlineMediaPane : TDCPreferencesPane
 @end
 
-@interface TDCPreferencesLogLocationPane : TDCPreferencesPane
+/* The message archive and text logs (10.9 F) */
+@interface TDCPreferencesHistoryPane : TDCPreferencesPane
 @end
 
 @interface TDCPreferencesInstalledAddonsPane : TDCPreferencesPane

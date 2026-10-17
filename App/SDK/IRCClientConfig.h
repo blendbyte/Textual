@@ -74,6 +74,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (readonly) BOOL zncIgnorePlaybackNotifications;
 @property (readonly) BOOL zncIgnoreUserNotifications;
 @property (readonly) BOOL zncOnlyPlaybackLatest;
+@property (readonly) BOOL excludedFromArchive; // its messages aren't kept in the message archive
 @property (readonly) IRCConnectionAddressType addressType;
 @property (readonly) IRCConnectionProxyType proxyType;
 @property (readonly) NSStringEncoding fallbackEncoding;
@@ -140,6 +141,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (nonatomic, assign, readwrite) BOOL zncIgnorePlaybackNotifications;
 @property (nonatomic, assign, readwrite) BOOL zncIgnoreUserNotifications;
 @property (nonatomic, assign, readwrite) BOOL zncOnlyPlaybackLatest;
+@property (nonatomic, assign, readwrite) BOOL excludedFromArchive;
 @property (nonatomic, assign, readwrite) IRCConnectionAddressType addressType;
 @property (nonatomic, assign, readwrite) IRCConnectionProxyType proxyType;
 @property (nonatomic, assign, readwrite) NSStringEncoding fallbackEncoding;

@@ -156,7 +156,7 @@
 "src-r2" = "1 message";
 "src-r3" = "No messages found";
 "src-r4" = "Searching…";
-"src-h1" = "Messages of the last year are searched, by any part of a word. Narrow it down with:\n\nfrom:nick — said by someone\nin:#channel — in a channel\nbefore:, after:, during: — a day (2026-10-05), a month (2026-10), a year, today or yesterday\nhas:link — with a link\nmentions:me — your highlights\n\"exact words\" — together, in this order";
+"src-h1" = "%@ are searched, by any part of a word. Narrow it down with:\n\nfrom:nick — said by someone\nin:#channel — in a channel\nbefore:, after:, during: — a day (2026-10-05), a month (2026-10), a year, today or yesterday\nhas:link — with a link\nmentions:me — your highlights\n\"exact words\" — together, in this order";
 "src-b1" = "Results";
 "src-t1" = "Topic";
 "src-d1" = "Yesterday";
@@ -170,3 +170,11 @@
 "jtp-b1" = "Jump to Present";
 "arc-b1" = "The saved scrollback ends here. Older messages come from the message archive: conversation only, without formatting.";
 "src-x1" = "%1$@, %2$@ — from the message archive";
+
+/* What search covers, by the keep period (10.9 F) */
+"src-k1" = "Messages of the last year";
+"src-k2" = "Messages of the last %ld days";
+"src-k3" = "All kept messages";
+"src-k5" = "Messages of the last 2 years";
+"src-k4" = "The message archive is off, so there is nothing to search. It can be turned on in Preferences → History.";
+"src-r5" = "The message archive is off (Preferences → History)";

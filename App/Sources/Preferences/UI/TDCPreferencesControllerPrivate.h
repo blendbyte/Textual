@@ -42,7 +42,8 @@ typedef NS_ENUM(NSUInteger, TDCPreferencesControllerSelection) {
 	TDCPreferencesControllerSelectionDefault = 0,
 	TDCPreferencesControllerSelectionNotifications,
 	TDCPreferencesControllerSelectionStyle,
-	TDCPreferencesControllerSelectionHiddenPreferences
+	TDCPreferencesControllerSelectionHiddenPreferences,
+	TDCPreferencesControllerSelectionHistory
 };
 
 @protocol TDCPreferencesControllerDelegate;

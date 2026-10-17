@@ -56,6 +56,11 @@
                             <action selector="onPrefPaneSelected:" target="-2" id="Ia1-Hq-C1G"/>
                         </connections>
                     </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="7D3F1C2A-9B84-4E61-A0C5-3E2B9F6D1A47" explicitItemIdentifier="110" label="History" paletteLabel="History" tag="110" sizingBehavior="auto" selectable="YES" id="hS7-Ry-Pn1">
+                        <connections>
+                            <action selector="onPrefPaneSelected:" target="-2" id="hS7-Ac-Tn1"/>
+                        </connections>
+                    </toolbarItem>
                     <toolbarItem implicitItemIdentifier="58E4DD0E-BEE2-4844-889E-1BD91F6CBFB9" explicitItemIdentifier="107" label="Controls" paletteLabel="Controls" tag="107" image="TPWTB_Controls" sizingBehavior="auto" selectable="YES" id="e6N-0C-9Eo">
                         <connections>
                             <action selector="onPrefPaneSelected:" target="-2" id="qAU-RF-I8Y"/>
@@ -109,13 +114,6 @@
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="onPrefPaneSelected:" target="-2" id="h99-K3-frK"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="4Q9-EF-TQw"/>
-                                        <menuItem title="Log Location" tag="108007" id="naX-ng-Lmu">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="onPrefPaneSelected:" target="-2" id="yX3-uo-rcl"/>
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="40A-un-kd2"/>
@@ -178,6 +176,7 @@
                     <toolbarItem reference="e6N-0C-9Eo"/>
                     <toolbarItem reference="fzQ-55-v97"/>
                     <toolbarItem reference="Ggd-0D-rbs"/>
+                    <toolbarItem reference="hS7-Ry-Pn1"/>
                     <toolbarItem reference="4tt-rO-NHB"/>
                     <toolbarItem reference="BVW-Pf-3Qn"/>
                     <toolbarItem reference="Ljh-iZ-r98"/>

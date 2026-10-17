@@ -41,7 +41,8 @@
 #import "IRCClient.h"
 #import "IRCChannel.h"
 #import "IRCISupportInfo.h"
-#import "TPCPreferencesLocal.h"
+#import "TPCPreferencesLocalPrivate.h"
+#import "TLOMessageArchivePrivate.h"
 #import "TLOLocalization.h"
 #import "TVCNotificationConfigurationViewControllerPrivate.h"
 #import "TVCValidatedTextField.h"
@@ -74,6 +75,8 @@ typedef NS_ENUM(NSUInteger, TDCChannelPropertiesSheetSelection)
 @property (nonatomic, weak) IBOutlet NSButton *ignoreHighlightsCheck;
 @property (nonatomic, weak) IBOutlet NSButton *ignoreGeneralEventMessagesCheck;
 @property (nonatomic, strong) NSPopUpButton *formattingPopUp;
+@property (nonatomic, strong) NSButton *keepInArchiveCheck;
+@property (nonatomic, strong) NSButton *deleteArchivedMessagesButton;
 @property (nonatomic, weak) IBOutlet NSSegmentedControl *contentViewTabView;
 @property (nonatomic, weak) IBOutlet TVCValidatedTextField *channelNameTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *labelTextField;
@@ -214,6 +217,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	[self addFormattingRow];
 
+	[self addArchiveRows];
+
 	[self addConfigurationDidChangeObserver];
 
 	[self setupNotificationsController];
@@ -261,11 +266,93 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	[NSLayoutConstraint activateConstraints:@[
 		[row.topAnchor constraintEqualToAnchor:lastCheck.bottomAnchor constant:13],
 		[row.leadingAnchor constraintEqualToAnchor:lastCheck.leadingAnchor],
-		[row.trailingAnchor constraintLessThanOrEqualToAnchor:generalView.trailingAnchor constant:-20],
-		[generalView.bottomAnchor constraintEqualToAnchor:row.bottomAnchor constant:18]
+		[row.trailingAnchor constraintLessThanOrEqualToAnchor:generalView.trailingAnchor constant:-20]
 	]];
 
 	self.formattingPopUp = popUp;
+}
+
+/* The message archive (10.9 F), below "Colors and formatting:" */
+- (void)addArchiveRows
+{
+	NSView *generalView = self.contentViewGeneralView;
+
+	NSView *formattingRow = self.formattingPopUp.superview;
+
+	NSButton *keepInArchiveCheck = [NSButton checkboxWithTitle:TXTLS(@"TDCChannelPropertiesSheet[arc-c1]") target:nil action:nil];
+
+	NSButton *deleteButton = [NSButton buttonWithTitle:TXTLS(@"TDCChannelPropertiesSheet[arc-b1]") target:self action:@selector(deleteArchivedMessages:)];
+
+	keepInArchiveCheck.translatesAutoresizingMaskIntoConstraints = NO;
+	deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+	[generalView addSubview:keepInArchiveCheck];
+	[generalView addSubview:deleteButton];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[keepInArchiveCheck.topAnchor constraintEqualToAnchor:formattingRow.bottomAnchor constant:13],
+		[keepInArchiveCheck.leadingAnchor constraintEqualToAnchor:formattingRow.leadingAnchor],
+		[keepInArchiveCheck.trailingAnchor constraintLessThanOrEqualToAnchor:generalView.trailingAnchor constant:-20],
+		[deleteButton.topAnchor constraintEqualToAnchor:keepInArchiveCheck.bottomAnchor constant:8],
+		[deleteButton.leadingAnchor constraintEqualToAnchor:formattingRow.leadingAnchor constant:14],
+		[generalView.bottomAnchor constraintEqualToAnchor:deleteButton.bottomAnchor constant:18]
+	]];
+
+	self.keepInArchiveCheck = keepInArchiveCheck;
+	self.deleteArchivedMessagesButton = deleteButton;
+}
+
+/* While the archive is off there's nothing to leave out; the delete button
+ when it has this channel's messages */
+- (void)updateArchiveControls
+{
+	self.keepInArchiveCheck.enabled = ([TPCPreferences messageArchiveKeepPeriod] != TPCMessageArchiveKeepPeriodOff);
+
+	self.deleteArchivedMessagesButton.enabled = NO;
+
+	NSString *viewId = self.config.uniqueIdentifier;
+
+	if (viewId == nil) {
+		return;
+	}
+
+	[sharedMessageArchive() countMessagesOfServer:nil inView:viewId completionHandler:^(NSUInteger count) {
+		self.deleteArchivedMessagesButton.enabled = (count > 0);
+	}];
+}
+
+- (void)deleteArchivedMessages:(nullable id)sender
+{
+	NSString *viewId = self.config.uniqueIdentifier;
+
+	NSString *channelName = self.config.channelName;
+
+	if (viewId == nil) {
+		return;
+	}
+
+	[sharedMessageArchive() countMessagesOfServer:nil inView:viewId completionHandler:^(NSUInteger count) {
+		NSAlert *alert = [NSAlert new];
+
+		alert.alertStyle = NSAlertStyleWarning;
+		alert.messageText = TXTLS(@"TDCChannelPropertiesSheet[arc-d1]", channelName);
+		alert.informativeText = TXTLS(@"TDCChannelPropertiesSheet[arc-d2]", [NSNumberFormatter localizedStringFromNumber:@(count) numberStyle:NSNumberFormatterDecimalStyle]);
+
+		[alert addButtonWithTitle:TXTLS(@"TDCChannelPropertiesSheet[arc-d3]")];
+		[alert addButtonWithTitle:TXTLS(@"Prompts[qso-2g]")];
+
+		alert.buttons.firstObject.hasDestructiveAction = YES;
+
+		[alert beginSheetModalForWindow:self.sheet completionHandler:^(NSModalResponse response) {
+			if (response != NSAlertFirstButtonReturn) {
+				return;
+			}
+
+			[sharedMessageArchive() deleteMessagesOfServer:nil inView:viewId completionHandler:^{
+				[self updateArchiveControls];
+			}];
+		}];
+	}];
 }
 
 - (void)setupNotificationsController
@@ -317,6 +404,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self.enableInlineMediaCheck.state = self.config.inlineMediaEnabled;
 
 	[self.formattingPopUp selectItemWithTag:self.config.formatting];
+
+	self.keepInArchiveCheck.state = ((self.config.excludedFromArchive) ? NSControlStateValueOff : NSControlStateValueOn);
+
+	[self updateArchiveControls];
 
 	[self updateNavigationEnabledState];
 }
@@ -482,6 +573,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self.config.inlineMediaEnabled = self.enableInlineMediaCheck.state;
 
 	self.config.formatting = self.formattingPopUp.selectedTag;
+
+	self.config.excludedFromArchive = (self.keepInArchiveCheck.state == NSControlStateValueOff);
 
 	if ([self.delegate respondsToSelector:@selector(channelPropertiesSheet:onOk:)]) {
 		[self.delegate channelPropertiesSheet:self onOk:[self.config copy]];

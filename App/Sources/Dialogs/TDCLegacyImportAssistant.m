@@ -39,6 +39,7 @@
 #import "TDCAlert.h"
 #import "TLOLocalization.h"
 #import "TPCLegacyImportPrivate.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TDCLegacyImportAssistantPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -968,6 +969,11 @@ typedef NS_ENUM(NSUInteger, TDCLegacyImportAssistantStep) {
 
 	if (result.triedLicense && result.importedLicense == NO) {
 		[notes addObject:[self _rowWithSymbol:@"key" color:orange text:TXTLS(@"Prompts[3jr-s5]")]];
+	}
+
+	/* The message archive (10.9 F): on for them too, so they hear of it once */
+	if ([TPCPreferences messageArchiveKeepPeriod] != TPCMessageArchiveKeepPeriodOff) {
+		[notes addObject:[self _rowWithSymbol:@"magnifyingglass" color:grey text:TXTLS(@"Prompts[arc-i1]")]];
 	}
 
 	if (result.encryptionComponentsURL) {

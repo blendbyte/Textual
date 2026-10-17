@@ -118,6 +118,8 @@
 	<string>Your behavior is not conducive to the desired environment.</string>
 	<key>IRCopDefaultLocalizaiton -&gt; Shun Reason</key>
 	<string>1d Shunned.</string>
+	<key>Message Archive -&gt; Keep Period</key>
+	<integer>365</integer>
 	<key>Notifications -&gt; Highlights When Muted</key>
 	<true/>
 	<key>Highlights -&gt; Mass Highlight Threshold</key>

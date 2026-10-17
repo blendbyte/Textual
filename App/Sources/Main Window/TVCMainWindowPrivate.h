@@ -86,6 +86,10 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)updateAlphaValueToReflectPreferences;
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
+
+/* Once, the scrollback into the message archive (10.9 B; again when it was
+ turned off and on), and the scrollback of items that no longer exist out */
+- (void)maintainHistoricLog;
 @end
 
 /* Windows (7.13): the main window and windows showing one channel (10.18).

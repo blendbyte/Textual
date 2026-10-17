@@ -51,6 +51,7 @@
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TPCLegacyImportPrivate.h"
+#import "TLOMessageArchivePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -466,6 +467,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.result.importedScrollback = YES;
+
+	/* Into the message archive at the next launch, though this copy's was before */
+	[sharedMessageArchive() importScrollbackAgain];
 }
 
 - (void)noteOtherContentOfGroupURL:(NSURL *)groupURL

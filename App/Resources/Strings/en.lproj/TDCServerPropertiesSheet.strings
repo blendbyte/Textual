@@ -130,3 +130,10 @@ Certificates must meet the following criteria:
 "upl-n1" = "Where files go if the network doesn't offer uploads itself. If it does, its own is used.";
 "upl-p1" = "Uploads";
 "upl-o1" = "Not set up";
+
+/* The message archive (10.9 F) */
+"arc-c1" = "Keep this server's messages in the message archive";
+"arc-b1" = "Delete Archived Messages…";
+"arc-d1" = "Delete the archived messages of %@?";
+"arc-d2" = "The %@ messages of this server's channels and queries are deleted from the message archive. The saved scrollback stays.";
+"arc-d3" = "Delete";

@@ -575,10 +575,16 @@ static BOOL _popOutsOpened = NO;
 
 	NSMutableArray<TLOMessageArchiveView *> *archiveViews = [NSMutableArray array];
 
+	BOOL archiveOn = ([TPCPreferences messageArchiveKeepPeriod] != TPCMessageArchiveKeepPeriodOff);
+
 	for (IRCClient *u in worldController().clientList) {
 		[viewIds addObject:u.uniqueIdentifier];
 
-		TLOMessageArchiveView *consoleView = [TLOMessageArchiveView viewForItem:u];
+		TLOMessageArchiveView *consoleView = nil;
+
+		if ([TLOMessageArchive keepsMessagesOfItem:u]) {
+			consoleView = [TLOMessageArchiveView viewForItem:u];
+		}
 
 		if (consoleView) {
 			[archiveViews addObject:consoleView];
@@ -587,7 +593,11 @@ static BOOL _popOutsOpened = NO;
 		for (IRCChannel *c in u.channelList) {
 			[viewIds addObject:c.uniqueIdentifier];
 
-			TLOMessageArchiveView *channelView = [TLOMessageArchiveView viewForItem:c];
+			TLOMessageArchiveView *channelView = nil;
+
+			if ([TLOMessageArchive keepsMessagesOfItem:c]) {
+				channelView = [TLOMessageArchiveView viewForItem:c];
+			}
 
 			if (channelView) {
 				[archiveViews addObject:channelView];
@@ -595,7 +605,10 @@ static BOOL _popOutsOpened = NO;
 		}
 	}
 
-	[sharedMessageArchive() importScrollbackOfViews:[archiveViews copy]];
+	/* Turned off, it's imported when turned on again */
+	if (archiveOn) {
+		[sharedMessageArchive() importScrollbackOfViews:[archiveViews copy]];
+	}
 
 	[sharedHistoricLog() forgetItemsOtherThan:viewIds];
 }

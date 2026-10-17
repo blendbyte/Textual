@@ -43,6 +43,7 @@
 #import "IRCUser.h"
 #import "IRCWorld.h"
 #import "TLOLocalization.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TLONicknameCompletionStatusPrivate.h"
 #import "TLOMessageArchivePrivate.h"
@@ -428,7 +429,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[RZNotificationCenter() addObserver:self selector:@selector(resultsScrolled:) name:NSViewBoundsDidChangeNotification object:scrollView.contentView];
 
 	/* What can be typed, while nothing is */
-	NSTextField *hintField = [NSTextField wrappingLabelWithString:TXTLS(@"TVCMainWindow[src-h1]")];
+	NSTextField *hintField = [NSTextField wrappingLabelWithString:[self.class hintText]];
 
 	hintField.translatesAutoresizingMaskIntoConstraints = NO;
 	hintField.font = [NSFont systemFontOfSize:11.0];
@@ -728,6 +729,35 @@ NS_ASSUME_NONNULL_BEGIN
 	[self performSelector:@selector(search) withObject:nil afterDelay:_searchDelay];
 }
 
+/* What is searched, by the keep period, and what can be typed */
++ (NSString *)hintText
+{
+	TPCMessageArchiveKeepPeriod keepPeriod = [TPCPreferences messageArchiveKeepPeriod];
+
+	switch (keepPeriod) {
+		case TPCMessageArchiveKeepPeriodOff:
+		{
+			return TXTLS(@"TVCMainWindow[src-k4]");
+		}
+		case TPCMessageArchiveKeepPeriodForever:
+		{
+			return TXTLS(@"TVCMainWindow[src-h1]", TXTLS(@"TVCMainWindow[src-k3]"));
+		}
+		case TPCMessageArchiveKeepPeriodOneYear:
+		{
+			return TXTLS(@"TVCMainWindow[src-h1]", TXTLS(@"TVCMainWindow[src-k1]"));
+		}
+		case TPCMessageArchiveKeepPeriodTwoYears:
+		{
+			return TXTLS(@"TVCMainWindow[src-h1]", TXTLS(@"TVCMainWindow[src-k5]"));
+		}
+		default:
+		{
+			return TXTLS(@"TVCMainWindow[src-h1]", TXTLS(@"TVCMainWindow[src-k2]", keepPeriod));
+		}
+	}
+}
+
 - (void)search
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(search) object:nil];
@@ -740,6 +770,9 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *text = self.searchField.stringValue;
 
 	self.searchedText = text;
+
+	/* The keep period may have changed (Preferences → History) */
+	self.hintField.stringValue = [self.class hintText];
 
 	/* Mentions: highlights of every network, what's typed narrows them down */
 	if (self.mentionsMode) {
@@ -797,7 +830,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		BOOL mentions = self.mentionsMode;
 
-		if (count == 0) {
+		if (count == 0 && [TPCPreferences messageArchiveKeepPeriod] == TPCMessageArchiveKeepPeriodOff) {
+			self.statusField.stringValue = TXTLS(@"TVCMainWindow[src-r5]");
+		} else if (count == 0) {
 			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r3]" : @"TVCMainWindow[src-r3]");
 		} else if (count == 1) {
 			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r2]" : @"TVCMainWindow[src-r2]");
@@ -1389,6 +1424,13 @@ NS_ASSUME_NONNULL_BEGIN
 	NSUInteger generation = self.generation;
 
 	__weak typeof(self) weakSelf = self;
+
+	/* Never in the scrollback (imported from a text log): only in the archive */
+	if (lineId.length == 0 && viewController.historyIsShown) {
+		[self jumpToArchivedResult:result inView:viewController];
+
+		return;
+	}
 
 	[viewController jumpToLine:lineId completionHandler:^(BOOL success) {
 		if (success) {

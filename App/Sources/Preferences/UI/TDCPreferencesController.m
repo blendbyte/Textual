@@ -56,6 +56,7 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 	TDCPreferencesPaneTagControls = 107,
 	TDCPreferencesPaneTagAdvanced = 108,
 	TDCPreferencesPaneTagAddons = 109,
+	TDCPreferencesPaneTagHistory = 110,
 
 	TDCPreferencesPaneTagChannelManagement = 108000,
 	TDCPreferencesPaneTagCommandScope = 108001,
@@ -63,7 +64,6 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 	TDCPreferencesPaneTagIncomingData = 108003,
 	TDCPreferencesPaneTagFileTransfers = 108005,
 	TDCPreferencesPaneTagInlineMedia = 108006,
-	TDCPreferencesPaneTagLogLocation = 108007,
 	TDCPreferencesPaneTagDefaultIdentity = 108008,
 	TDCPreferencesPaneTagDefaultIRCopMessages = 108009,
 	TDCPreferencesPaneTagHiddenPreferences = 108011, // Help → Advanced → Hidden Preferences (no toolbar item)
@@ -173,6 +173,12 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 
 			break;
 		}
+		case TDCPreferencesControllerSelectionHistory:
+		{
+			[self _showPane:[self paneForTag:TDCPreferencesPaneTagHistory].view selectedItem:TDCPreferencesPaneTagHistory];
+
+			break;
+		}
 		case TDCPreferencesControllerSelectionHiddenPreferences:
 		{
 			[self _showPane:[self paneForTag:TDCPreferencesPaneTagHiddenPreferences].view selectedItem:TDCPreferencesPaneTagAdvanced];
@@ -202,6 +208,21 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 
  - (void)setUpToolbarItemsAndMenus
 {
+	/* History (10.9 F): the system's clock, which suits the others */
+	for (NSToolbarItem *item in self.navigationToolbar.items) {
+		if (item.tag != TDCPreferencesPaneTagHistory) {
+			continue;
+		}
+
+		NSImage *icon = [[NSImage alloc] initWithContentsOfFile:@"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/Clock.icns"];
+
+		if (icon == nil) {
+			icon = [NSImage imageWithSystemSymbolName:@"clock" accessibilityDescription:nil];
+		}
+
+		item.image = icon;
+	}
+
 	NSArray *plugins = sharedPluginManager().pluginsWithPreferencePanes;
 
 	if (plugins.count > 0) {
@@ -278,7 +299,7 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 		case TDCPreferencesPaneTagStyle: { pane = [TDCPreferencesStylePane new]; break; }
 		case TDCPreferencesPaneTagFileTransfers: { pane = [TDCPreferencesFileTransfersPane new]; break; }
 		case TDCPreferencesPaneTagInlineMedia: { pane = [TDCPreferencesInlineMediaPane new]; break; }
-		case TDCPreferencesPaneTagLogLocation: { pane = [TDCPreferencesLogLocationPane new]; break; }
+		case TDCPreferencesPaneTagHistory: { pane = [TDCPreferencesHistoryPane new]; break; }
 		case TDCPreferencesPaneTagInstalledAddons: { pane = [TDCPreferencesInstalledAddonsPane new]; break; }
 		case TDCPreferencesPaneTagHiddenPreferences: { pane = [TDCPreferencesHiddenPane new]; break; }
 		case TDCPreferencesPaneTagFloodControl: { pane = _nib(@"FloodControl"); break; }

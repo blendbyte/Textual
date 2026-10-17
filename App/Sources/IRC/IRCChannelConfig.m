@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self->_defaults = @{
 	  @"autoJoin" : @(YES),
 	  @"channelType" : @(IRCChannelTypeChannel),
+	  @"excludedFromArchive" : @(NO),
 	  @"formatting" : @(IRCChannelFormattingGlobal),
 	  @"ignoreGeneralEventMessages"	: @(NO),
 	  @"ignoreHighlights" : @(NO),
@@ -134,6 +135,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignUnsignedIntegerTo:&self->_type forKey:@"channelType"];
 
 	[defaultsMutable assignUnsignedIntegerTo:&self->_formatting forKey:@"formatting"];
+
+	[defaultsMutable assignBoolTo:&self->_excludedFromArchive forKey:@"excludedFromArchive"];
 
 	if (self->_type != IRCChannelTypeChannel) {
 		return;
@@ -232,6 +235,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[dic setUnsignedInteger:self.type forKey:@"channelType"];
 
 	[dic setUnsignedInteger:self.formatting forKey:@"formatting"];
+
+	[dic setBool:self.excludedFromArchive forKey:@"excludedFromArchive"];
 
 	if (target == XRPortablePropertyDictTargetCopy ||
 		target == XRPortablePropertyDictTargetMutableCopy)
@@ -444,6 +449,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic type;
 @dynamic formatting;
+@dynamic excludedFromArchive;
 @dynamic autoJoin;
 @dynamic channelName;
 @dynamic label;
@@ -479,6 +485,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_formatting != formatting) {
 		self->_formatting = formatting;
+	}
+}
+
+- (void)setExcludedFromArchive:(BOOL)excludedFromArchive
+{
+	if (self->_excludedFromArchive != excludedFromArchive) {
+		self->_excludedFromArchive = excludedFromArchive;
 	}
 }
 

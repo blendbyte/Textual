@@ -47,3 +47,10 @@
 "fmt-p1" = "Use global setting (%@)";
 "fmt-p2" = "Remove";
 "fmt-p3" = "Show";
+
+/* The message archive (10.9 F) */
+"arc-c1" = "Keep messages in the message archive";
+"arc-b1" = "Delete Archived Messages…";
+"arc-d1" = "Delete the archived messages of %@?";
+"arc-d2" = "Its %@ messages are deleted from the message archive. The saved scrollback stays.";
+"arc-d3" = "Delete";

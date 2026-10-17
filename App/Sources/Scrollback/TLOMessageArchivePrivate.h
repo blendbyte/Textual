@@ -72,6 +72,23 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 @property (readonly, weak, nullable) IRCTreeItem *item;
 @end
 
+/* Where a text log's lines go, and what's needed to read them (10.9 F) */
+@interface TLOMessageArchiveTextLogTarget : NSObject
+- (instancetype)initWithView:(TLOMessageArchiveView *)view NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@property (readonly) TLOMessageArchiveView *view;
+@property (copy, nullable) NSString *localNickname; // own lines, and a highlight word
+@property (copy) NSArray<NSString *> *highlightKeywords;
+@property (copy) NSArray<NSString *> *excludeKeywords;
+@property (assign) NSUInteger matchType; // TXNicknameHighlightMatchType
+@end
+
+/* The folders a text log is in: the server's ("Libera (1a2b3)"), the kind of
+ view and its name (empty for the console) → where its lines go, or nil to
+ leave it out. Called on the main queue. */
+typedef TLOMessageArchiveTextLogTarget * _Nullable (^TLOMessageArchiveTextLogResolver)(NSString *serverFolder, TLOMessageArchiveViewType viewType, NSString *viewName);
+
 typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 {
 	TLOMessageArchiveSearchOrderNewest = 0,
@@ -172,6 +189,15 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 /* Only these are kept: the conversation, not joins, parts or mode changes */
 + (BOOL)archivesLineType:(NSUInteger)lineType; // TVCLogLineType
 
+/* NO when the archive is off, or the server or channel is left out (10.9 F,
+ Server and Channel Properties); read on the main thread */
++ (BOOL)keepsMessagesOfItem:(IRCTreeItem *)item;
+
+/* The keep period in days (TPCMessageArchiveKeepPeriod: 0 forever, -1 off,
+ when nothing new is kept); a year by default. Shortened, older messages go
+ at once. */
+@property (assign) NSInteger keepDays;
+
 /* Lines of other types are ignored. Redacted lines are never kept. */
 - (void)archiveLogLine:(TVCLogLine *)logLine
 		   highlighted:(BOOL)highlighted
@@ -228,6 +254,42 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 /* A result in its conversation (10.9 D, for results older than the
  scrollback): up to count messages before it and after it, oldest first */
 - (void)messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages))completionHandler;
+
+/* Delete Archive (10.9 F): the database is deleted and made again, which
+ gives the space back at once. The scrollback is imported into the new one at
+ the next launch only when asked (the archive turned off, so that turning it
+ on again starts with the scrollback), not after deleting on purpose. */
+- (void)deleteAllMessagesImportingScrollbackAgain:(BOOL)importScrollbackAgain completionHandler:(nullable void (^)(void))completionHandler;
+
+/* The scrollback is imported again at the next launch (Textual 7's was
+ imported into it); what is in the archive already isn't kept twice */
+- (void)importScrollbackAgain;
+
+/* A server's or a view's messages (one of them) */
+- (void)deleteMessagesOfServer:(nullable NSString *)serverId inView:(nullable NSString *)viewId completionHandler:(nullable void (^)(void))completionHandler;
+
+/* The database's size on disk */
+@property (readonly) unsigned long long fileSize;
+
+/* All messages, a server's, or a view's; on the main queue */
+- (void)countMessagesOfServer:(nullable NSString *)serverId inView:(nullable NSString *)viewId completionHandler:(void (^)(NSUInteger count))completionHandler;
+
+/* Import Text Logs… (10.9 F): the text logs under a folder as Textual writes
+ them (TLOFileLogger: <server> (<id>)/Channels/<channel>/<day>.txt, Queries,
+ Console), matched to servers and channels by the id in the folder name, else
+ by name (those that are gone keep their names); messages, actions and
+ notices (not joins and the like) within the keep period, each kept once, also
+ when it is in the archive already from the scrollback. Handlers on the main
+ queue. */
+- (void)importTextLogsInFolder:(NSURL *)folderURL
+			   progressHandler:(nullable void (^)(NSUInteger filesDone, NSUInteger fileCount))progressHandler
+			 completionHandler:(void (^)(NSUInteger importedCount))completionHandler;
+
+/* With another way of finding where lines go (tests) */
+- (void)importTextLogsInFolder:(NSURL *)folderURL
+					  resolver:(TLOMessageArchiveTextLogResolver)resolver
+			   progressHandler:(nullable void (^)(NSUInteger filesDone, NSUInteger fileCount))progressHandler
+			 completionHandler:(void (^)(NSUInteger importedCount))completionHandler;
 
 /* Writes what is waiting and waits for the queue to be done */
 - (void)flush;

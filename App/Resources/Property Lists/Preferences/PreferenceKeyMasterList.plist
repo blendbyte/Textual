@@ -42,6 +42,8 @@
 	<integer>0</integer>
 	<key>ConfirmApplicationQuit</key>
 	<integer>0</integer>
+	<key>Message Archive -&gt; Keep Period</key>
+	<integer>0</integer>
 	<key>PreventSleepWhileConnected</key>
 	<integer>0</integer>
 	<key>ControlEnterSendsMessage</key>

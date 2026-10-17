@@ -65,6 +65,8 @@ NSString * const TPCPreferencesShowInlineMediaDefaultsKey = @"DisplayEventInLogV
 
 NSString * const TPCPreferencesInputMarkdownDefaultsKey = @"Input -> Markdown Formatting";
 
+NSString * const TPCPreferencesMessageArchiveKeepPeriodDefaultsKey = @"Message Archive -> Keep Period";
+
 NSArray<NSString *> *TPCPreferencesInputCompletionDefaultsKeys(void)
 {
 	return @[@"Input Completion -> Nicknames",
@@ -806,6 +808,16 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications
 {
 	[RZUserDefaults() setBool:sendTypingNotifications forKey:@"Typing Notifications -> Send"];
+}
+
++ (TPCMessageArchiveKeepPeriod)messageArchiveKeepPeriod
+{
+	return [RZUserDefaults() integerForKey:TPCPreferencesMessageArchiveKeepPeriodDefaultsKey];
+}
+
++ (void)setMessageArchiveKeepPeriod:(TPCMessageArchiveKeepPeriod)messageArchiveKeepPeriod
+{
+	[RZUserDefaults() setInteger:messageArchiveKeepPeriod forKey:TPCPreferencesMessageArchiveKeepPeriodDefaultsKey];
 }
 
 + (BOOL)keepChannelListSorted

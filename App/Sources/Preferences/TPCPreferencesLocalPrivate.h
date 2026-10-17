@@ -55,6 +55,20 @@ TEXTUAL_EXTERN NSArray<NSString *> *TPCPreferencesInputCompletionDefaultsKeys(vo
 
 TEXTUAL_EXTERN NSString * const TPCPreferencesInputMarkdownDefaultsKey; // Markdown when sending
 
+/* How long the message archive keeps messages (10.9 F), in days */
+TEXTUAL_EXTERN NSString * const TPCPreferencesMessageArchiveKeepPeriodDefaultsKey;
+
+typedef NS_ENUM(NSInteger, TPCMessageArchiveKeepPeriod) {
+	TPCMessageArchiveKeepPeriodOff = -1, // nothing kept
+	TPCMessageArchiveKeepPeriodForever = 0,
+	TPCMessageArchiveKeepPeriodTwoWeeks = 14,
+	TPCMessageArchiveKeepPeriodThirtyDays = 30,
+	TPCMessageArchiveKeepPeriodNinetyDays = 90,
+	TPCMessageArchiveKeepPeriodHalfYear = 180,
+	TPCMessageArchiveKeepPeriodOneYear = 365,
+	TPCMessageArchiveKeepPeriodTwoYears = 730
+};
+
 typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 	TXInlineMediaDomainRuleModeExcept = 0, // links from every site except those listed
 	TXInlineMediaDomainRuleModeOnly = 1 // links only from the sites listed
@@ -200,6 +214,10 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 + (void)cleanUpHighlightKeywords;
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
+
+/* Preferences › History (10.9 F) */
+@property (class, readonly) TPCMessageArchiveKeepPeriod messageArchiveKeepPeriod;
++ (void)setMessageArchiveKeepPeriod:(TPCMessageArchiveKeepPeriod)messageArchiveKeepPeriod;
 
 /* Channels and private messages kept in Window → Sort Channel List's order (10.10) */
 @property (class, readonly) BOOL keepChannelListSorted;

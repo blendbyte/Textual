@@ -109,6 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
 	defaults[@"zncIgnorePlaybackNotifications"] = @(YES);
 	defaults[@"zncIgnoreUserNotifications"] = @(NO);
 	defaults[@"zncOnlyPlaybackLatest"] = @(YES);
+	defaults[@"excludedFromArchive"] = @(NO);
 
 	self->_defaults = [defaults copy];
 }
@@ -273,6 +274,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_zncIgnorePlaybackNotifications forKey:@"zncIgnorePlaybackNotifications"];
 	[defaultsMutable assignBoolTo:&self->_zncIgnoreUserNotifications forKey:@"zncIgnoreUserNotifications"];
 	[defaultsMutable assignBoolTo:&self->_zncOnlyPlaybackLatest forKey:@"zncOnlyPlaybackLatest"];
+	[defaultsMutable assignBoolTo:&self->_excludedFromArchive forKey:@"excludedFromArchive"];
 
 	[defaultsMutable assignDoubleTo:&self->_lastMessageServerTime forKey:@"cachedLastServerTimeCapabilityReceivedAtTimestamp"];
 	[defaultsMutable assignObjectTo:&self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
@@ -723,6 +725,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic setBool:self.zncIgnorePlaybackNotifications forKey:@"zncIgnorePlaybackNotifications"];
 	[dic setBool:self.zncIgnoreUserNotifications forKey:@"zncIgnoreUserNotifications"];
 	[dic setBool:self.zncOnlyPlaybackLatest forKey:@"zncOnlyPlaybackLatest"];
+	[dic setBool:self.excludedFromArchive forKey:@"excludedFromArchive"];
 
 	[dic setUnsignedInteger:self.addressType forKey:@"addressType"];
 	[dic setUnsignedInteger:self.cipherSuites forKey:@"cipherSuites"];
@@ -1046,6 +1049,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic zncIgnorePlaybackNotifications;
 @dynamic zncIgnoreUserNotifications;
 @dynamic zncOnlyPlaybackLatest;
+@dynamic excludedFromArchive;
 
 + (BOOL)isMutable
 {
@@ -1203,6 +1207,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_zncOnlyPlaybackLatest != zncOnlyPlaybackLatest) {
 		self->_zncOnlyPlaybackLatest = zncOnlyPlaybackLatest;
+	}
+}
+
+- (void)setExcludedFromArchive:(BOOL)excludedFromArchive
+{
+	if (self->_excludedFromArchive != excludedFromArchive) {
+		self->_excludedFromArchive = excludedFromArchive;
 	}
 }
 

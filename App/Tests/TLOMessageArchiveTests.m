@@ -306,6 +306,119 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Words, phrases and filters, read from what was typed */
+/* Text logs (10.9 F): messages, actions and notices with their senders,
+ times and the view they belong to, other lines left out; a message the
+ archive has from the scrollback (to the millisecond) isn't added again, and
+ a second import adds nothing */
+- (void)testImportsTextLogs
+{
+	NSCalendar *calendar = [NSCalendar currentCalendar];
+
+	NSDate *day = [calendar startOfDayForDate:[NSDate dateWithTimeIntervalSinceNow:(-2 * 24 * 60 * 60)]];
+
+	NSDateFormatter *formatter = [NSDateFormatter new];
+
+	formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+	formatter.dateFormat = @"yyyy-MM-dd";
+
+	NSString *fileName = [[formatter stringFromDate:day] stringByAppendingString:@".txt"];
+
+	/* As TLOFileLogger writes them, in another time zone than this Mac's */
+	formatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:(-5 * 60 * 60)];
+	formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZ";
+
+	NSDate *time = [day dateByAddingTimeInterval:(10 * 60 * 60)];
+
+	NSString * (^line)(NSTimeInterval, NSString *) = ^NSString *(NSTimeInterval offset, NSString *rest) {
+		return [NSString stringWithFormat:@"[%@] %@", [formatter stringFromDate:[time dateByAddingTimeInterval:offset]], rest];
+	};
+
+	NSArray<NSString *> *lines = @[
+		line(0, @"<@alice> hello there"),
+		line(60, @"• bob: waves"),
+		line(120, @"-carol- a notice"),
+		line(180, @"dave (~dave@example.com) joined the channel"),
+		line(240, @"<me> my own line"),
+		line(300, @"<eve> hi me look"),
+		line(360, @"<+alice> from the scrollback"),
+		@"[10:07:00] <bob> an older log's line"
+	];
+
+	NSURL *folderURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[NSUUID UUID].UUIDString];
+
+	NSURL *channelURL = [folderURL URLByAppendingPathComponent:@"Libera (abcde)/Channels/#textual" isDirectory:YES];
+
+	XCTAssertTrue([[NSFileManager defaultManager] createDirectoryAtURL:channelURL withIntermediateDirectories:YES attributes:nil error:NULL]);
+
+	XCTAssertTrue([[lines componentsJoinedByString:@"\n"] writeToURL:[channelURL URLByAppendingPathComponent:fileName] atomically:YES encoding:NSUTF8StringEncoding error:NULL]);
+
+	/* Archived from the scrollback, to the millisecond */
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"from the scrollback" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:360.345]]];
+
+	TLOMessageArchiveView *view =
+	[[TLOMessageArchiveView alloc] initWithViewId:@"view-1"
+										 viewName:@"#textual"
+										 viewType:TLOMessageArchiveViewTypeChannel
+										 serverId:@"server-1"
+									   serverName:@"Libera.Chat"];
+
+	__block NSString *resolvedFolder = nil;
+
+	TLOMessageArchiveTextLogResolver resolver = ^TLOMessageArchiveTextLogTarget *(NSString *serverFolder, TLOMessageArchiveViewType viewType, NSString *viewName) {
+		resolvedFolder = [NSString stringWithFormat:@"%@/%lu/%@", serverFolder, viewType, viewName];
+
+		TLOMessageArchiveTextLogTarget *target = [[TLOMessageArchiveTextLogTarget alloc] initWithView:view];
+
+		target.localNickname = @"me";
+		target.highlightKeywords = @[@"me"];
+		target.matchType = TXNicknameHighlightMatchTypeExact;
+
+		return target;
+	};
+
+	NSUInteger (^importLogs)(void) = ^NSUInteger {
+		XCTestExpectation *expectation = [self expectationWithDescription:@"import"];
+
+		__block NSUInteger importedCount = 0;
+
+		[self.archive importTextLogsInFolder:folderURL resolver:resolver progressHandler:nil completionHandler:^(NSUInteger count) {
+			importedCount = count;
+
+			[expectation fulfill];
+		}];
+
+		[self waitForExpectationsWithTimeout:10 handler:nil];
+
+		return importedCount;
+	};
+
+	XCTAssertEqual(importLogs(), 6);
+
+	XCTAssertEqualObjects(resolvedFolder, @"Libera (abcde)/1/#textual");
+
+	NSArray *nicknames = @[@"alice", @"bob", @"carol", @"me", @"eve", @"alice", @"bob"];
+
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT nickname FROM messages ORDER BY time, id"], nicknames);
+
+	NSArray *actions = @[@"waves"];
+	NSArray *notices = @[@"a notice"];
+	NSArray *own = @[@"my own line"];
+	NSArray *highlights = @[@"hi me look"];
+	NSArray *first = @[@"hello there"];
+	NSArray *older = @[@"an older log's line"];
+
+	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE line_type = %ld", (long)TVCLogLineTypeAction]]), actions);
+	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE line_type = %ld", (long)TVCLogLineTypeNotice]]), notices);
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT body FROM messages WHERE is_self = 1"], own);
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT body FROM messages WHERE is_highlight = 1"], highlights);
+	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE time = %.0f", time.timeIntervalSince1970]]), first);
+	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE time = %.0f", [day dateByAddingTimeInterval:((10 * 60 * 60) + (7 * 60))].timeIntervalSince1970]]), older);
+
+	XCTAssertEqual(importLogs(), 0);
+
+	[[NSFileManager defaultManager] removeItemAtURL:folderURL error:NULL];
+}
+
 - (void)testParsesQueries
 {
 	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
