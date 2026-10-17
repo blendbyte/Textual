@@ -303,17 +303,23 @@
                             <menuItem title="Find" tag="309" id="168">
                                 <menu key="submenu" title="Find" showsStateColumn="NO" id="159">
                                     <items>
-                                        <menuItem title="Find…" tag="3090000" keyEquivalent="f" id="1453">
+                                        <menuItem title="Search…" tag="3090000" keyEquivalent="f" id="1453">
                                             <connections>
                                                 <action selector="showFindPrompt:" target="267" id="rJN-Xr-PAJ"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Find Next" tag="3090001" keyEquivalent="g" id="1454">
+                                        <menuItem title="Search Everywhere…" tag="3090003" keyEquivalent="F" id="sE1-aR-ch1">
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                            <connections>
+                                                <action selector="showFindPrompt:" target="267" id="sE2-aR-ch2"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Next Result" tag="3090001" keyEquivalent="g" id="1454">
                                             <connections>
                                                 <action selector="showFindPrompt:" target="267" id="L8F-Ae-4jy"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Find Previous" tag="3090002" keyEquivalent="G" id="1455">
+                                        <menuItem title="Previous Result" tag="3090002" keyEquivalent="G" id="1455">
                                             <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
                                             <connections>
                                                 <action selector="showFindPrompt:" target="267" id="yYj-Ky-6L0"/>

@@ -504,6 +504,7 @@
 		4C31575D20EB6D0500448776 /* TVCMainWindowPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523820EB673E00448776 /* TVCMainWindowPrivate.h */; };
 		4C31575E20EB6D0500448776 /* TVCMainWindowSegmentedControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522D20EB673E00448776 /* TVCMainWindowSegmentedControllerPrivate.h */; };
 		4C31576020EB6D0500448776 /* TVCMainWindowSplitViewPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151CE20EB673E00448776 /* TVCMainWindowSplitViewPrivate.h */; };
+		4CD174FF0A85194DF44945D7 /* TVCMainWindowSearchPanelPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CAE3A9BC871F9161E669B14 /* TVCMainWindowSearchPanelPrivate.h */; };
 		BE0696763E6E3D9BAF74C04E /* TVCListViewsPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 216E3AD51176D1771088FE56 /* TVCListViewsPrivate.h */; };
 		4C31576120EB6D0500448776 /* TVCMainWindowTextViewAppearancePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151F320EB673E00448776 /* TVCMainWindowTextViewAppearancePrivate.h */; };
 		4C31576220EB6D0500448776 /* TVCMainWindowTextViewPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151BB20EB673E00448776 /* TVCMainWindowTextViewPrivate.h */; };
@@ -668,6 +669,7 @@
 		4CE3775E1BA2C1645CAF75E2 /* TVCMainWindow+ChannelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CB0048C04883193A17DEABB /* TVCMainWindow+ChannelView.m */; };
 		4C8DF41CAB53C8100228579C /* TVCMainWindow+Input.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC47131B1DC97629ECE4F9E /* TVCMainWindow+Input.m */; };
 		4C1C0F11E0A0000000000A03 /* TVCMainWindow+Replies.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A04 /* TVCMainWindow+Replies.m */; };
+		4C4BF6F0090D16848AA38474 /* TVCMainWindowSearchPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C14394AF16B350CC7FC0795 /* TVCMainWindowSearchPanel.m */; };
 		4C1C0F11E0A0000000000A0F /* TVCMainWindow+Uploads.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A10 /* TVCMainWindow+Uploads.m */; };
 		4C1C0F11E0A0000000000A1B /* TVCMainWindow+PopOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A1C /* TVCMainWindow+PopOut.m */; };
 		4C354E44932B89AC998E79FD /* TVCMainWindow+Navigation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7CBE12E2F153237CB13267 /* TVCMainWindow+Navigation.m */; };
@@ -1580,6 +1582,8 @@
 		4CB0048C04883193A17DEABB /* TVCMainWindow+ChannelView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+ChannelView.m"; sourceTree = "<group>"; };
 		4CC47131B1DC97629ECE4F9E /* TVCMainWindow+Input.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+Input.m"; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A04 /* TVCMainWindow+Replies.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+Replies.m"; sourceTree = "<group>"; };
+		4C14394AF16B350CC7FC0795 /* TVCMainWindowSearchPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCMainWindowSearchPanel.m; sourceTree = "<group>"; };
+		4CAE3A9BC871F9161E669B14 /* TVCMainWindowSearchPanelPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowSearchPanelPrivate.h; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A10 /* TVCMainWindow+Uploads.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+Uploads.m"; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A1C /* TVCMainWindow+PopOut.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+PopOut.m"; sourceTree = "<group>"; };
 		4C7CBE12E2F153237CB13267 /* TVCMainWindow+Navigation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TVCMainWindow+Navigation.m"; sourceTree = "<group>"; };
@@ -2535,6 +2539,8 @@
 				4C31522D20EB673E00448776 /* TVCMainWindowSegmentedControllerPrivate.h */,
 				4C3152D320EB673E00448776 /* TVCMainWindowSplitView.m */,
 				4C3151CE20EB673E00448776 /* TVCMainWindowSplitViewPrivate.h */,
+				4C14394AF16B350CC7FC0795 /* TVCMainWindowSearchPanel.m */,
+				4CAE3A9BC871F9161E669B14 /* TVCMainWindowSearchPanelPrivate.h */,
 				0B0F5492376B6AA3DDAF2094 /* TVCListViews.m */,
 				216E3AD51176D1771088FE56 /* TVCListViewsPrivate.h */,
 				4C3152D720EB673E00448776 /* TVCMainWindowTitlebarAccessoryView.m */,
@@ -3307,6 +3313,7 @@
 				4C3156EC20EB6D0500448776 /* IRCClientConfigPrivate.h in Headers */,
 				4C31577220EB6D0500448776 /* TXMasterControllerPrivate.h in Headers */,
 				4C31576020EB6D0500448776 /* TVCMainWindowSplitViewPrivate.h in Headers */,
+				4CD174FF0A85194DF44945D7 /* TVCMainWindowSearchPanelPrivate.h in Headers */,
 				BE0696763E6E3D9BAF74C04E /* TVCListViewsPrivate.h in Headers */,
 				4C31576720EB6D0500448776 /* TVCMemberListUserInfoPopoverPrivate.h in Headers */,
 				BB61C4271B0CB30464466F86 /* TVCMemberListControllerPrivate.h in Headers */,
@@ -3767,6 +3774,7 @@
 				4CE3775E1BA2C1645CAF75E2 /* TVCMainWindow+ChannelView.m in Sources */,
 				4C8DF41CAB53C8100228579C /* TVCMainWindow+Input.m in Sources */,
 				4C1C0F11E0A0000000000A03 /* TVCMainWindow+Replies.m in Sources */,
+				4C4BF6F0090D16848AA38474 /* TVCMainWindowSearchPanel.m in Sources */,
 				4C1C0F11E0A0000000000A0F /* TVCMainWindow+Uploads.m in Sources */,
 				4C1C0F11E0A0000000000A1B /* TVCMainWindow+PopOut.m in Sources */,
 				4C354E44932B89AC998E79FD /* TVCMainWindow+Navigation.m in Sources */,

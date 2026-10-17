@@ -141,3 +141,25 @@
 "upl-s2" = "%@ doesn't offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
 "upl-s3" = "Set Up Upload Address…";
 "upl-s4" = "%@ doesn't offer uploads, and your own upload address is turned off for this server in Server Properties.";
+/* The search panel (10.9) */
+"src-p1" = "Search Messages";
+"src-a1" = "Search messages";
+"src-a2" = "Messages found";
+"src-c1" = "Close Search";
+"src-s1" = "In %@";
+"src-s2" = "Everywhere";
+"src-s3" = "In the console of %@";
+"src-s4" = "Nothing selected";
+"src-o1" = "Newest First";
+"src-o2" = "Best Match";
+"src-r1" = "%lu messages";
+"src-r2" = "1 message";
+"src-r3" = "No messages found";
+"src-r4" = "Searching…";
+"src-h1" = "Messages of the last year are searched, by any part of a word. Narrow it down with:\n\nfrom:nick — said by someone\nin:#channel — in a channel\nbefore:, after:, during: — a day (2026-10-05), a month (2026-10), a year, today or yesterday\nhas:link — with a link\nmentions:me — your highlights\n\"exact words\" — together, in this order";
+"src-b1" = "Results";
+"src-t1" = "Topic";
+"src-d1" = "Yesterday";
+"jtp-b1" = "Jump to Present";
+"arc-b1" = "The saved scrollback ends here. Older messages come from the message archive: conversation only, without formatting.";
+"src-x1" = "%1$@, %2$@ — from the message archive";

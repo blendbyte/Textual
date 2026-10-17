@@ -59,6 +59,7 @@
 #import "TLOLocalization.h"
 #import "TVCLogViewPrivate.h"
 #import "TVCLogLine.h"
+#import "TVCLogLinePrivate.h"
 #import "TVCLogRenderer.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
@@ -68,6 +69,10 @@
 #import "TVCLogControllerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+/* Lines past the scrollback, from the message archive (10.9 D) */
+static NSString * const _archiveLinePrefix = @"archive-";
+static NSString * const _archiveBoundaryLineNumber = @"archive-boundary";
 
 #define _enqueueBlock(operationBlock)			\
 	[self.printingQueue enqueueMessageBlock:(operationBlock) for:self isStandalone:NO];
@@ -150,6 +155,11 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)setLoaded:(BOOL)loaded
 {
 	__atomic_store_n(&self->_loaded, loaded, __ATOMIC_RELAXED);
+}
+
+- (BOOL)historyIsShown
+{
+	return (self.loaded && self.historyLoaded && self.reloadingHistory == NO);
 }
 
 #pragma mark -
@@ -1049,7 +1059,12 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	}
 
-	[self jumpToLine:lineNumber];
+	/* There, the view is at the present again: new lines are added and followed */
+	[self jumpToLine:lineNumber completionHandler:^(BOOL result) {
+		if (result) {
+			[self _evaluateFunction:@"_MessageBuffer.reachedPresent" withArguments:nil];
+		}
+	}];
 }
 
 - (void)jumpToLine:(NSString *)lineNumber
@@ -1497,11 +1512,32 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	NSParameterAssert(maximumNumberOfLines > 0);
 	NSParameterAssert(completionBlock != nil);
 
+	/* Past the scrollback: lines from the message archive */
+	if ([lineNumber hasPrefix:_archiveLinePrefix]) {
+		[self _renderArchiveLinesAfter:after lineNumber:lineNumber maximumNumberOfLines:maximumNumberOfLines completionBlock:completionBlock];
+
+		return;
+	}
+
 	NSUInteger historyGeneration = self.historyGeneration;
+
+	NSString *archiveViewId = [self _archiveViewId];
 
 	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
 		void (^historicLogCompletionBlock)(NSArray *) = ^(NSArray<TVCLogLine *> *entries) {
 			if ([operation isCancelled] || self.historyGeneration != historyGeneration) {
+				return;
+			}
+
+			/* The scrollback may end here: older lines come from the archive */
+			if (after == NO && entries.count < maximumNumberOfLines && archiveViewId) {
+				[self _continueLines:entries
+						 beforeLineNumber:lineNumber
+					  intoArchiveOfView:archiveViewId
+					 maximumNumberOfLines:maximumNumberOfLines
+						historyGeneration:historyGeneration
+						  completionBlock:completionBlock];
+
 				return;
 			}
 
@@ -1533,6 +1569,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	NSParameterAssert(lineNumber != nil);
 	NSParameterAssert(completionBlock != nil);
 
+	/* A message older than the scrollback (a search result) */
+	if ([lineNumber hasPrefix:_archiveLinePrefix]) {
+		[self _renderArchiveLine:lineNumber numberOfLinesBefore:numberOfLinesBefore numberOfLinesAfter:numberOfLinesAfter completionBlock:completionBlock];
+
+		return;
+	}
+
 	NSUInteger historyGeneration = self.historyGeneration;
 
 	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
@@ -1554,6 +1597,324 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	};
 
 	_enqueueBlockStandalone(operationBlock)
+}
+
+#pragma mark -
+#pragma mark Past the Scrollback (10.9 D)
+
+/* When the scrollback ends, the chat goes on with the message archive:
+ messages, actions, notices and topic changes, without formatting. A line
+ says where the scrollback ends ("archive-boundary"); the archive's lines are
+ "archive-<row>". The page keeps only so many lines (its buffer limits), so
+ scrolling back as far as the archive goes doesn't pile up. */
+
+/* The archive's view for this item, or nil (utility channels aren't kept) */
+- (nullable NSString *)_archiveViewId
+{
+	IRCTreeItem *item = self.associatedItem;
+
+	if (item == nil || [TLOMessageArchiveView viewForItem:item] == nil) {
+		return nil;
+	}
+
+	return item.uniqueIdentifier;
+}
+
++ (int64_t)_archiveRowIdForLineNumber:(NSString *)lineNumber
+{
+	if ([lineNumber hasPrefix:_archiveLinePrefix] == NO || [lineNumber isEqualToString:_archiveBoundaryLineNumber]) {
+		return 0;
+	}
+
+	return [lineNumber substringFromIndex:_archiveLinePrefix.length].longLongValue;
+}
+
+/* The oldest line of the scrollback (nil when it's empty): the archive's
+ lines are those before it */
+- (void)_fetchOldestScrollbackLine:(void (^)(TVCLogLine * _Nullable logLine))completionBlock
+{
+	[sharedHistoricLog() fetchEntriesForItem:self.associatedItem
+								   ascending:YES
+								  fetchLimit:1
+								 limitToDate:nil
+						 withCompletionBlock:^(NSArray<TVCLogLine *> *entries) {
+		completionBlock(entries.firstObject);
+	}];
+}
+
+- (void)_fetchFirstScrollbackLines:(NSUInteger)count completionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock
+{
+	if (count == 0) {
+		completionBlock(@[]);
+
+		return;
+	}
+
+	[sharedHistoricLog() fetchEntriesForItem:self.associatedItem
+								   ascending:YES
+								  fetchLimit:count
+								 limitToDate:nil
+						 withCompletionBlock:completionBlock];
+}
+
+/* Lines for the archive's messages; previous is the message before the first
+ (for the day it starts), if known */
+- (NSArray<TVCLogLine *> *)_logLinesForArchiveMessages:(NSArray<TLOMessageArchiveResult *> *)messages previous:(nullable TLOMessageArchiveResult *)previous
+{
+	NSCalendar *calendar = [NSCalendar currentCalendar];
+
+	NSMutableArray<TVCLogLine *> *logLines = [NSMutableArray arrayWithCapacity:messages.count];
+
+	for (TLOMessageArchiveResult *message in messages) {
+		TVCLogLineMutable *logLine = [TVCLogLineMutable new];
+
+		logLine.lineType = message.lineType;
+		logLine.memberType = ((message.isSelf) ? TVCLogLineMemberTypeLocalUser : TVCLogLineMemberTypeNormal);
+		logLine.nickname = message.nickname;
+		logLine.messageBody = message.body;
+		logLine.receivedAt = message.date;
+		logLine.msgid = message.msgid;
+
+		if (message.lineType == TVCLogLineTypeNotice) {
+			logLine.command = @"NOTICE";
+		} else if (message.lineType == TVCLogLineTypeTopic) {
+			logLine.command = @"TOPIC";
+		} else {
+			logLine.command = @"PRIVMSG";
+		}
+
+		logLine.isFirstForDay = (previous == nil || [calendar isDate:message.date inSameDayAsDate:previous.date] == NO);
+
+		NSString *lineNumber = [_archiveLinePrefix stringByAppendingFormat:@"%lld", message.rowId];
+
+		[logLines addObject:[logLine copyAsArchivedLineWithUniqueIdentifier:lineNumber]];
+
+		previous = message;
+	}
+
+	return [logLines copy];
+}
+
+/* "The scrollback ends here; older messages come from the archive" */
+- (TVCLogLine *)_archiveBoundaryLineAt:(NSDate *)date
+{
+	TVCLogLineMutable *logLine = [TVCLogLineMutable new];
+
+	logLine.lineType = TVCLogLineTypeDebug;
+	logLine.messageBody = TXTLS(@"TVCMainWindow[arc-b1]");
+	logLine.receivedAt = date;
+
+	return [logLine copyAsArchivedLineWithUniqueIdentifier:_archiveBoundaryLineNumber];
+}
+
+/* Lines of the scrollback came back short: if that's because it ends, the
+ archive's older messages come before them, with the boundary line */
+- (void)_continueLines:(NSArray<TVCLogLine *> *)entries
+	  beforeLineNumber:(NSString *)lineNumber
+	 intoArchiveOfView:(NSString *)viewId
+  maximumNumberOfLines:(NSUInteger)maximumNumberOfLines
+	 historyGeneration:(NSUInteger)historyGeneration
+	   completionBlock:(void (^)(NSArray<NSDictionary<NSString *, id> *> *))completionBlock
+{
+	[self _fetchOldestScrollbackLine:^(TVCLogLine *oldestLine) {
+		NSString *firstLineNumber = ((entries.count > 0) ? entries.firstObject.uniqueIdentifier : lineNumber);
+
+		/* Not the end (lines missing in between): as it was */
+		if (oldestLine == nil || [oldestLine.uniqueIdentifier isEqualToString:firstLineNumber] == NO) {
+			[self _renderLogLinesAfterLineNumberPostFlight:entries completionBlock:completionBlock];
+
+			return;
+		}
+
+		NSDate *boundary = oldestLine.receivedAt;
+
+		NSUInteger count = (maximumNumberOfLines - entries.count);
+
+		[sharedMessageArchive() messagesInView:viewId rowId:0 before:(count + 1) after:0 scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundary.timeIntervalSince1970 completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+			if (self.historyGeneration != historyGeneration) {
+				return;
+			}
+
+			if (messages.count == 0) {
+				[self _renderLogLinesAfterLineNumberPostFlight:entries completionBlock:completionBlock];
+
+				return;
+			}
+
+			/* One more than shown: the day the first starts */
+			TLOMessageArchiveResult *previous = nil;
+
+			if (messages.count > count) {
+				previous = messages.firstObject;
+
+				messages = [messages subarrayWithRange:NSMakeRange(1, (messages.count - 1))];
+			}
+
+			NSMutableArray<TVCLogLine *> *logLines = [NSMutableArray array];
+
+			[logLines addObjectsFromArray:[self _logLinesForArchiveMessages:messages previous:previous]];
+			[logLines addObject:[self _archiveBoundaryLineAt:boundary]];
+			[logLines addObjectsFromArray:entries];
+
+			[self _renderLogLinesAfterLineNumberPostFlight:logLines completionBlock:completionBlock];
+		}];
+	}];
+}
+
+/* Before or after an archive line or the boundary line */
+- (void)_renderArchiveLinesAfter:(BOOL)after lineNumber:(NSString *)lineNumber maximumNumberOfLines:(NSUInteger)maximumNumberOfLines completionBlock:(void (^)(NSArray<NSDictionary<NSString *, id> *> *))completionBlock
+{
+	NSString *viewId = [self _archiveViewId];
+
+	if (viewId == nil) {
+		completionBlock(@[]);
+
+		return;
+	}
+
+	NSUInteger historyGeneration = self.historyGeneration;
+
+	int64_t rowId = [self.class _archiveRowIdForLineNumber:lineNumber];
+
+	void (^renderBlock)(NSArray<TVCLogLine *> *) = ^(NSArray<TVCLogLine *> *logLines) {
+		if (self.historyGeneration != historyGeneration) {
+			return;
+		}
+
+		[self _renderLogLinesAfterLineNumberPostFlight:logLines completionBlock:completionBlock];
+	};
+
+	[self _fetchOldestScrollbackLine:^(TVCLogLine *oldestLine) {
+		NSDate *boundary = oldestLine.receivedAt;
+
+		NSTimeInterval boundaryTime = ((boundary) ? boundary.timeIntervalSince1970 : DBL_MAX);
+
+		/* Older: from the archive */
+		if (after == NO) {
+			[sharedMessageArchive() messagesInView:viewId rowId:rowId before:(maximumNumberOfLines + 1) after:0 scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundaryTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+				NSMutableArray<TLOMessageArchiveResult *> *older = [messages mutableCopy];
+
+				if (anchorIndex != NSNotFound) {
+					[older removeObjectAtIndex:anchorIndex];
+				}
+
+				TLOMessageArchiveResult *previous = nil;
+
+				if (older.count > maximumNumberOfLines) {
+					previous = older.firstObject;
+
+					[older removeObjectAtIndex:0];
+				}
+
+				renderBlock([self _logLinesForArchiveMessages:older previous:previous]);
+			}];
+
+			return;
+		}
+
+		/* Newer than the boundary line: the scrollback from its start */
+		if (rowId == 0) {
+			[self _fetchFirstScrollbackLines:maximumNumberOfLines completionBlock:renderBlock];
+
+			return;
+		}
+
+		/* Newer than an archive line: the archive up to the boundary, then the scrollback */
+		[sharedMessageArchive() messagesInView:viewId rowId:rowId before:0 after:maximumNumberOfLines scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundaryTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+			if (anchorIndex == NSNotFound) {
+				renderBlock(@[]);
+
+				return;
+			}
+
+			NSArray<TLOMessageArchiveResult *> *newer = [messages subarrayWithRange:NSMakeRange((anchorIndex + 1), (messages.count - anchorIndex - 1))];
+
+			NSArray<TVCLogLine *> *archiveLines = [self _logLinesForArchiveMessages:newer previous:messages[anchorIndex]];
+
+			if (newer.count >= maximumNumberOfLines || boundary == nil) {
+				renderBlock(archiveLines);
+
+				return;
+			}
+
+			[self _fetchFirstScrollbackLines:(maximumNumberOfLines - newer.count - 1) completionBlock:^(NSArray<TVCLogLine *> *entries) {
+				NSMutableArray<TVCLogLine *> *logLines = [archiveLines mutableCopy];
+
+				[logLines addObject:[self _archiveBoundaryLineAt:boundary]];
+				[logLines addObjectsFromArray:entries];
+
+				renderBlock(logLines);
+			}];
+		}];
+	}];
+}
+
+/* A jump to an archive line: it with lines around it */
+- (void)_renderArchiveLine:(NSString *)lineNumber numberOfLinesBefore:(NSUInteger)numberOfLinesBefore numberOfLinesAfter:(NSUInteger)numberOfLinesAfter completionBlock:(void (^)(NSArray<NSDictionary<NSString *, id> *> *))completionBlock
+{
+	NSString *viewId = [self _archiveViewId];
+
+	int64_t rowId = [self.class _archiveRowIdForLineNumber:lineNumber];
+
+	if (viewId == nil || rowId == 0) {
+		completionBlock(@[]);
+
+		return;
+	}
+
+	NSUInteger historyGeneration = self.historyGeneration;
+
+	void (^renderBlock)(NSArray<TVCLogLine *> *) = ^(NSArray<TVCLogLine *> *logLines) {
+		if (self.historyGeneration != historyGeneration) {
+			return;
+		}
+
+		[self _renderLogLinesAfterLineNumberPostFlight:logLines completionBlock:completionBlock];
+	};
+
+	[self _fetchOldestScrollbackLine:^(TVCLogLine *oldestLine) {
+		NSDate *boundary = oldestLine.receivedAt;
+
+		NSTimeInterval boundaryTime = ((boundary) ? boundary.timeIntervalSince1970 : DBL_MAX);
+
+		[sharedMessageArchive() messagesInView:viewId rowId:rowId before:(numberOfLinesBefore + 1) after:numberOfLinesAfter scrollbackLineId:oldestLine.uniqueIdentifier scrollbackTime:boundaryTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+			/* Gone, or the scrollback has it */
+			if (anchorIndex == NSNotFound) {
+				renderBlock(@[]);
+
+				return;
+			}
+
+			NSMutableArray<TLOMessageArchiveResult *> *shown = [messages mutableCopy];
+
+			TLOMessageArchiveResult *previous = nil;
+
+			NSUInteger newerCount = (messages.count - anchorIndex - 1);
+
+			if (anchorIndex > numberOfLinesBefore) {
+				previous = shown.firstObject;
+
+				[shown removeObjectAtIndex:0];
+			}
+
+			NSArray<TVCLogLine *> *archiveLines = [self _logLinesForArchiveMessages:shown previous:previous];
+
+			if (newerCount >= numberOfLinesAfter || boundary == nil) {
+				renderBlock(archiveLines);
+
+				return;
+			}
+
+			[self _fetchFirstScrollbackLines:(numberOfLinesAfter - newerCount) completionBlock:^(NSArray<TVCLogLine *> *entries) {
+				NSMutableArray<TVCLogLine *> *logLines = [archiveLines mutableCopy];
+
+				[logLines addObject:[self _archiveBoundaryLineAt:boundary]];
+				[logLines addObjectsFromArray:entries];
+
+				renderBlock(logLines);
+			}];
+		}];
+	}];
 }
 
 - (void)_renderLogLinesAfterLineNumberPostFlight:(NSArray<TVCLogLine *> *)logLines completionBlock:(void (^)(NSArray<NSDictionary<NSString *, id> *> *))completionBlock
@@ -2933,6 +3294,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"eventDisplay" : [TPCPreferences eventDisplayByLineType],
 			  @"messageActions" : self.messageActionsAvailability,
 			  @"messageActionStrings" : @{
+				  @"jumpToPresent" : TXTLS(@"TVCMainWindow[jtp-b1]"),
 				  @"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),
 				  @"react" : TXTLS(@"TVCMainWindow[rct-b1]"),
 				  @"moreReactions" : TXTLS(@"TVCMainWindow[rct-b2]"),

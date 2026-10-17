@@ -96,9 +96,10 @@ enum
 	MTMMEditSelectAll = 307, // "Select All"
 	MTMMEditSelectAllSeparator = 308, // "-"
 	MTMMEditFindMenu = 309, // "Find"
-	MTMMEditFindMenuFind = 3090000, // "Find…"
-	MTMMEditFindMenuFindNext = 3090001, // "Find Next"
-	MTMMEditFindMenuFindPrevious = 3090002, // "Find Previous"
+	MTMMEditFindMenuFind = 3090000, // "Search…" (the selected channel)
+	MTMMEditFindMenuFindNext = 3090001, // "Next Result"
+	MTMMEditFindMenuFindPrevious = 3090002, // "Previous Result"
+	MTMMEditFindMenuSearchEverywhere = 3090003, // "Search Everywhere…"
 
 	/* Main menu - View menu */
 	MTMMViewMarkScrollback = 400, // "Mark Scrollback"

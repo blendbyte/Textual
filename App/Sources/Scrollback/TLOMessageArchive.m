@@ -187,6 +187,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TLOMessageArchiveQuery (Database)
 - (TLOMessageArchiveSearchPage *)_pageWithOffset:(NSUInteger)offset limit:(NSUInteger)limit inDatabase:(sqlite3 *)database;
 - (NSUInteger)_countInDatabase:(sqlite3 *)database;
++ (NSArray<TLOMessageArchiveResult *> *)_messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count inDatabase:(sqlite3 *)database;
++ (NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database;
++ (NSArray<TLOMessageArchiveResult *> *)_messagesInView:(NSString *)viewId rowId:(int64_t)rowId before:(NSUInteger)before after:(NSUInteger)after scrollbackLineId:(nullable NSString *)scrollbackLineId scrollbackTime:(NSTimeInterval)scrollbackTime anchorIndex:(NSUInteger *)anchorIndex inDatabase:(sqlite3 *)database;
 @end
 
 @implementation TLOMessageArchive
@@ -1027,6 +1030,73 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 
 		dispatch_async(dispatch_get_main_queue(), ^{
 			completionHandler(count);
+		});
+	});
+}
+
+- (void)messagesInView:(NSString *)viewId
+				 rowId:(int64_t)rowId
+				before:(NSUInteger)before
+				 after:(NSUInteger)after
+	  scrollbackLineId:(nullable NSString *)scrollbackLineId
+		scrollbackTime:(NSTimeInterval)scrollbackTime
+	 completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex))completionHandler
+{
+	NSParameterAssert(viewId != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	dispatch_async(self.searchQueue, ^{
+		NSArray *messages = @[];
+
+		NSUInteger anchorIndex = NSNotFound;
+
+		sqlite3 *database = [self _openSearchDatabase];
+
+		if (database) {
+			messages = [TLOMessageArchiveQuery _messagesInView:viewId rowId:rowId before:before after:after scrollbackLineId:scrollbackLineId scrollbackTime:scrollbackTime anchorIndex:&anchorIndex inDatabase:database];
+		}
+
+		completionHandler(messages, anchorIndex);
+	});
+}
+
+- (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames))completionHandler
+{
+	NSParameterAssert(completionHandler != nil);
+
+	dispatch_async(self.searchQueue, ^{
+		NSArray *nicknames = @[];
+		NSArray *viewNames = @[];
+
+		sqlite3 *database = [self _openSearchDatabase];
+
+		if (database) {
+			nicknames = [TLOMessageArchiveQuery _namesInColumn:@"nickname" limit:limit inDatabase:database];
+			viewNames = [TLOMessageArchiveQuery _namesInColumn:@"view_name" limit:limit inDatabase:database];
+		}
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionHandler(nicknames, viewNames);
+		});
+	});
+}
+
+- (void)messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages))completionHandler
+{
+	NSParameterAssert(result != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	dispatch_async(self.searchQueue, ^{
+		NSArray *messages = @[];
+
+		sqlite3 *database = [self _openSearchDatabase];
+
+		if (database) {
+			messages = [TLOMessageArchiveQuery _messagesAround:result count:count inDatabase:database];
+		}
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionHandler(messages);
 		});
 	});
 }

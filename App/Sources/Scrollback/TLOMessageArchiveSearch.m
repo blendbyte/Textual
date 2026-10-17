@@ -45,6 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
  looked for in the text itself */
 #define _indexedTermLength			3
 
+/* A result's columns, in the order TLOMessageArchiveResult reads them */
+#define _resultColumns				@"m.id, m.server_id, m.server_name, m.view_id, m.view_name, m.view_type, m.time, m.line_type, " \
+									@"m.nickname, m.is_self, m.is_highlight, m.has_link, m.msgid, m.line_id, m.body"
+
 @interface TLOMessageArchiveResult ()
 @property (readwrite) int64_t rowId;
 @property (readwrite, copy) NSString *serverId;
@@ -70,6 +74,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, copy) NSArray<TLOMessageArchiveResult *> *results;
 @property (readwrite) BOOL hasMore;
 @end
+
+static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statement, int column)
+{
+	const unsigned char *text = sqlite3_column_text(statement, column);
+
+	if (text == NULL) {
+		return nil;
+	}
+
+	return @((const char *)text);
+}
 
 #pragma mark -
 #pragma mark Query
@@ -574,10 +589,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* One more than asked for tells whether there is a next page */
-	NSString *sql = [NSString stringWithFormat:
-		@"SELECT m.id, m.server_id, m.server_name, m.view_id, m.view_name, m.view_type, m.time, m.line_type, "
-		@"m.nickname, m.is_self, m.is_highlight, m.has_link, m.msgid, m.line_id, m.body "
-		@"%@ ORDER BY %@ LIMIT ? OFFSET ?", fromAndWhere, order];
+	NSString *sql = [NSString stringWithFormat:@"SELECT %@ %@ ORDER BY %@ LIMIT ? OFFSET ?", _resultColumns, fromAndWhere, order];
 
 	[arguments addObject:@(limit + 1)];
 	[arguments addObject:@(offset)];
@@ -611,6 +623,167 @@ NS_ASSUME_NONNULL_BEGIN
 	page.results = results;
 
 	return page;
+}
+
+/* Up to count messages before the result in its view and count after it,
+ with the result, oldest first */
++ (NSArray<TLOMessageArchiveResult *> *)_messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count inDatabase:(sqlite3 *)database
+{
+	NSMutableArray<TLOMessageArchiveResult *> *messages = [NSMutableArray array];
+
+	NSString *before = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) < (?, ?) ORDER BY m.time DESC, m.id DESC LIMIT ?", _resultColumns];
+	NSString *after = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) >= (?, ?) ORDER BY m.time, m.id LIMIT ?", _resultColumns];
+
+	NSArray *beforeArguments = @[result.viewId, @(result.date.timeIntervalSince1970), @(result.rowId), @(count)];
+	NSArray *afterArguments = @[result.viewId, @(result.date.timeIntervalSince1970), @(result.rowId), @(count + 1)];
+
+	for (NSUInteger step = 0; step < 2; step++) {
+		sqlite3_stmt *statement = [self _prepare:((step == 0) ? before : after) arguments:((step == 0) ? beforeArguments : afterArguments) inDatabase:database];
+
+		if (statement == NULL) {
+			return @[];
+		}
+
+		NSMutableArray<TLOMessageArchiveResult *> *stepMessages = [NSMutableArray array];
+
+		while (sqlite3_step(statement) == SQLITE_ROW) {
+			[stepMessages addObject:[TLOMessageArchiveResult _resultWithStatement:statement terms:@[]]];
+		}
+
+		sqlite3_finalize(statement);
+
+		if (step == 0) {
+			[messages addObjectsFromArray:stepMessages.reverseObjectEnumerator.allObjects];
+		} else {
+			[messages addObjectsFromArray:stepMessages];
+		}
+	}
+
+	return [messages copy];
+}
+
+/* See -[TLOMessageArchive messagesInView:rowId:before:after:scrollbackLineId:scrollbackTime:completionHandler:] */
++ (NSArray<TLOMessageArchiveResult *> *)_messagesInView:(NSString *)viewId
+												   rowId:(int64_t)rowId
+												  before:(NSUInteger)before
+												   after:(NSUInteger)after
+										scrollbackLineId:(nullable NSString *)scrollbackLineId
+										  scrollbackTime:(NSTimeInterval)scrollbackTime
+											 anchorIndex:(NSUInteger *)anchorIndex
+											  inDatabase:(sqlite3 *)database
+{
+	*anchorIndex = NSNotFound;
+
+	/* Where the scrollback starts, as (time, id): its first line's own row
+	 when the archive has it (messages of the same time stay in order), else
+	 the time (before every message of that time) */
+	NSNumber *startTime = @(scrollbackTime);
+	NSNumber *startRowId = @0;
+
+	if (scrollbackLineId) {
+		sqlite3_stmt *statement = [self _prepare:@"SELECT time, id FROM messages WHERE view_id = ? AND line_id = ?" arguments:@[viewId, scrollbackLineId] inDatabase:database];
+
+		if (statement) {
+			if (sqlite3_step(statement) == SQLITE_ROW) {
+				startTime = @(sqlite3_column_double(statement, 0));
+				startRowId = @(sqlite3_column_int64(statement, 1));
+			}
+
+			sqlite3_finalize(statement);
+		}
+	}
+
+	/* The point: the message, or where the scrollback starts */
+	NSArray *point = @[startTime, startRowId];
+
+	TLOMessageArchiveResult *anchor = nil;
+
+	if (rowId != 0) {
+		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.id = ? AND m.view_id = ? AND (m.time, m.id) < (?, ?)", _resultColumns];
+
+		sqlite3_stmt *statement = [self _prepare:sql arguments:@[@(rowId), viewId, startTime, startRowId] inDatabase:database];
+
+		if (statement == NULL) {
+			return @[];
+		}
+
+		if (sqlite3_step(statement) == SQLITE_ROW) {
+			anchor = [TLOMessageArchiveResult _resultWithStatement:statement terms:@[]];
+		}
+
+		sqlite3_finalize(statement);
+
+		/* Gone, or the scrollback has it */
+		if (anchor == nil) {
+			return @[];
+		}
+
+		point = @[@(anchor.date.timeIntervalSince1970), @(anchor.rowId)];
+	}
+
+	NSMutableArray<TLOMessageArchiveResult *> *messages = [NSMutableArray array];
+
+	if (before > 0) {
+		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) < (?, ?) ORDER BY m.time DESC, m.id DESC LIMIT ?", _resultColumns];
+
+		sqlite3_stmt *statement = [self _prepare:sql arguments:@[viewId, point[0], point[1], @(before)] inDatabase:database];
+
+		if (statement) {
+			while (sqlite3_step(statement) == SQLITE_ROW) {
+				[messages insertObject:[TLOMessageArchiveResult _resultWithStatement:statement terms:@[]] atIndex:0];
+			}
+
+			sqlite3_finalize(statement);
+		}
+	}
+
+	if (anchor) {
+		*anchorIndex = messages.count;
+
+		[messages addObject:anchor];
+	}
+
+	if (anchor && after > 0) {
+		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) > (?, ?) AND (m.time, m.id) < (?, ?) ORDER BY m.time, m.id LIMIT ?", _resultColumns];
+
+		sqlite3_stmt *statement = [self _prepare:sql arguments:@[viewId, point[0], point[1], startTime, startRowId, @(after)] inDatabase:database];
+
+		if (statement) {
+			while (sqlite3_step(statement) == SQLITE_ROW) {
+				[messages addObject:[TLOMessageArchiveResult _resultWithStatement:statement terms:@[]]];
+			}
+
+			sqlite3_finalize(statement);
+		}
+	}
+
+	return [messages copy];
+}
+
+/* The most recent first */
++ (NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database
+{
+	NSString *sql = [NSString stringWithFormat:@"SELECT %1$@ FROM messages WHERE %1$@ IS NOT NULL AND %1$@ != '' GROUP BY %1$@ ORDER BY max(time) DESC LIMIT ?", column];
+
+	sqlite3_stmt *statement = [self _prepare:sql arguments:@[@(limit)] inDatabase:database];
+
+	if (statement == NULL) {
+		return @[];
+	}
+
+	NSMutableArray<NSString *> *names = [NSMutableArray array];
+
+	while (sqlite3_step(statement) == SQLITE_ROW) {
+		NSString *name = TLOMessageArchiveColumnString(statement, 0);
+
+		if (name) {
+			[names addObject:name];
+		}
+	}
+
+	sqlite3_finalize(statement);
+
+	return [names copy];
 }
 
 - (NSUInteger)_countInDatabase:(sqlite3 *)database
@@ -649,16 +822,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Results
 
-static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statement, int column)
-{
-	const unsigned char *text = sqlite3_column_text(statement, column);
-
-	if (text == NULL) {
-		return nil;
-	}
-
-	return @((const char *)text);
-}
 
 @implementation TLOMessageArchiveResult
 

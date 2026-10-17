@@ -202,6 +202,30 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 
 - (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler;
 
+/* The chat's history past the scrollback (10.9 D): a view's messages older
+ than where its scrollback starts (the line with scrollbackLineId, found in
+ the archive by its line id, else by scrollbackTime; nil and DBL_MAX for an
+ empty scrollback), oldest first. Around a message (rowId): up to before
+ messages earlier than it, it (anchorIndex), and up to after later ones; or,
+ with rowId 0, up to before messages before the scrollback. A message the
+ scrollback has, or that is gone, gives none (anchorIndex NSNotFound). The
+ completion handler is called on a background queue. */
+- (void)messagesInView:(NSString *)viewId
+				 rowId:(int64_t)rowId
+				before:(NSUInteger)before
+				 after:(NSUInteger)after
+	  scrollbackLineId:(nullable NSString *)scrollbackLineId
+		scrollbackTime:(NSTimeInterval)scrollbackTime
+	 completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex))completionHandler;
+
+/* For suggestions while typing from: and in: (10.9 D): who wrote and the
+ channels and queries written in, most recent first, up to limit each */
+- (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames))completionHandler;
+
+/* A result in its conversation (10.9 D, for results older than the
+ scrollback): up to count messages before it and after it, oldest first */
+- (void)messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages))completionHandler;
+
 /* Writes what is waiting and waits for the queue to be done */
 - (void)flush;
 

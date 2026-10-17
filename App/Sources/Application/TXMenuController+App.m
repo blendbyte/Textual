@@ -54,6 +54,7 @@
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowSplitView.h"
 #import "TVCMainWindowTextView.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
@@ -290,6 +291,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)toggleMemberListVisibility:(nullable id)sender
 {
 	TVCMainWindow *window = TVCMainWindow.currentWindow;
+
+	/* The search panel has the column: closing it brings the member list back */
+	if (window.isSearchPanelVisible) {
+		[window closeSearchPanel];
+
+		return;
+	}
 
 	TVCMemberList *memberList = window.memberList;
 

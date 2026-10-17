@@ -89,6 +89,11 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 		":where(div.line .replyQuote:hover) { opacity: 1; }",
 		":where(div.line .replyQuote .replySender) { font-weight: 600; }",
 		":where(div.line.replyFlash) { animation: textualReplyFlash 1.6s ease-out; }",
+		"#jumpToPresent { position: fixed; z-index: 10000; right: 16px; bottom: 12px; appearance: none; margin: 0; padding: 4px 12px; " +
+			"border-radius: 14px; border: 1px solid rgba(128, 128, 128, 0.35); background: Canvas; color: CanvasText; " +
+			"box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); font: 12px -apple-system, system-ui; cursor: pointer; }",
+		"#jumpToPresent:hover { box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3), inset 0 0 0 20px rgba(128, 128, 128, 0.12); }",
+		"#jumpToPresent[hidden] { display: none; }",
 		"@keyframes textualReplyFlash { from { background-color: rgba(255, 196, 0, 0.35); } to { background-color: transparent; } }",
 		"#messageActions { position: fixed; z-index: 10000; display: flex; padding: 1px; border-radius: 6px; " +
 			"background: Canvas; color: CanvasText; border: 1px solid rgba(128, 128, 128, 0.35); " +
@@ -304,6 +309,104 @@ _MessageActions._quoteClicked = function(event) /* PRIVATE */
 			_MessageActions._showLine(loaded);
 		}
 	});
+};
+
+/* ************************************************** */
+/*                  Jump to Present                   */
+/* ************************************************** */
+
+/* While the view is away from its newest lines (scrolled up more than a
+ screen, or showing older history whose newer lines aren't loaded): a button
+ that goes back to them (10.9, as scrollback reaches into the archive) */
+_MessageActions._jumpButton = null; /* PRIVATE */
+_MessageActions._jumpUpdateScheduled = false; /* PRIVATE */
+
+_MessageActions.updateJumpToPresent = function() /* PRIVATE */
+{
+	if (_MessageActions._jumpUpdateScheduled) {
+		return;
+	}
+
+	_MessageActions._jumpUpdateScheduled = true;
+
+	window.requestAnimationFrame(function() {
+		_MessageActions._jumpUpdateScheduled = false;
+
+		_MessageActions._updateJumpToPresentNow();
+	});
+};
+
+_MessageActions._updateJumpToPresentNow = function() /* PRIVATE */
+{
+	var element = _TextualScroller._scrolledElement;
+
+	if (!element || !document.body) {
+		return;
+	}
+
+	var distance = (element.scrollHeight - element.scrollTop - element.clientHeight);
+
+	var away = (_MessageBuffer._bufferBottomIsComplete === false || distance > element.clientHeight);
+
+	var button = _MessageActions._jumpButton;
+
+	if (away === false) {
+		if (button) {
+			button.hidden = true;
+		}
+
+		return;
+	}
+
+	if (!button) {
+		button = document.createElement("button");
+
+		button.id = "jumpToPresent";
+		button.type = "button";
+		button.textContent = ((_MessageActions.strings.jumpToPresent || "Jump to Present") + " \u2193");
+
+		button.addEventListener("click", function(event) {
+			event.preventDefault();
+
+			_MessageActions.jumpToPresent();
+		}, false);
+
+		document.body.appendChild(button);
+
+		_MessageActions._jumpButton = button;
+	}
+
+	button.hidden = false;
+};
+
+_MessageActions.jumpToPresent = function() /* PRIVATE */
+{
+	/* The newest lines are loaded: just there */
+	if (_MessageBuffer._bufferBottomIsComplete) {
+		TextualScroller.scrollToBottom();
+
+		_MessageActions.updateJumpToPresent();
+
+		return;
+	}
+
+	/* Else the app loads them (and calls _MessageBuffer.reachedPresent) */
+	appPrivate.jumpToPresent();
+};
+
+document.addEventListener("scrolledUpward", _MessageActions.updateJumpToPresent, false);
+document.addEventListener("scrolledDownward", _MessageActions.updateJumpToPresent, false);
+
+window.addEventListener("resize", _MessageActions.updateJumpToPresent, false);
+
+/* A line found by search (10.9): flashed, as a reply's message is */
+Textual.flashLine = function(lineNumber) /* PUBLIC */
+{
+	var line = document.getElementByLineNumber(lineNumber);
+
+	if (line) {
+		_MessageActions._showLine(line);
+	}
 };
 
 _MessageActions._showLine = function(line) /* PRIVATE */

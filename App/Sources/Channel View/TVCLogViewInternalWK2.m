@@ -501,24 +501,6 @@ static NSMutableArray<dispatch_block_t> *_loadsWaitingForContentRules = nil;
 	}
 }
 
-- (void)findString:(NSString *)searchString movingForward:(BOOL)movingForward
-{
-	NSParameterAssert(searchString != nil);
-
-	WKFindConfiguration *configuration = [WKFindConfiguration new];
-
-	configuration.backwards = (movingForward == NO);
-	configuration.caseSensitive = NO;
-	configuration.wraps = YES;
-
-	/* Selects and scrolls to the match */
-	[self findString:searchString withConfiguration:configuration completionHandler:^(WKFindResult *result) {
-		if (result.matchFound == NO) {
-			NSBeep();
-		}
-	}];
-}
-
 - (void)startObservingLoadingProperty
 {
 	if (self.t_observingLoadingProperty) {

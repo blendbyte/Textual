@@ -90,8 +90,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareInitialState
 {
-	self.currentSearchPhrase = @"";
-
 	if ([TPCPreferences soundIsMuted]) {
 		self.muteNotificationsSoundsDockMenuItem.state = NSControlStateValueOn;
 		self.muteNotificationsSoundsFileMenuItem.state = NSControlStateValueOn;

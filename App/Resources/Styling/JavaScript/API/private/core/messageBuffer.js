@@ -619,6 +619,8 @@ _MessageBuffer.loadMessagesDuringScrollWithPayloadPostflight = function(requestP
 	} else {
 		_MessageBuffer._loadingMessagesAfterLineDuringScroll = false;
 	}
+
+	_MessageActions.updateJumpToPresent();
 };
 
 _MessageBuffer.loadMessagesWithJump = function(lineNumber, callbackFunction) /* PRIVATE */
@@ -650,8 +652,13 @@ _MessageBuffer.loadMessagesWithJump = function(lineNumber, callbackFunction) /* 
 		return;
 	}
 
+	/* A message past the scrollback (message archive) can be loaded although
+	everything of the scrollback is */
+	var fromArchive = (lineNumber.lineNumberContents().indexOf("archive-") === 0);
+
 	if (_MessageBuffer._bufferTopIsComplete &&
-		_MessageBuffer._bufferBottomIsComplete) 
+		_MessageBuffer._bufferBottomIsComplete &&
+		fromArchive === false) 
 	{
 		console.log("Cancelled request to load messages because there is nothing new to load");
 
@@ -780,8 +787,23 @@ _MessageBuffer.loadMessagesWithJumpPostflight = function(requestPayload) /* PRIV
 		/* Flush state and inform callback of result */
 		_MessageBuffer._loadingMessagesDuringJump = false;
 
+		_MessageActions.updateJumpToPresent();
+
 		callbackFunction(jumped);
 	}
+};
+
+/* Jump to Present loaded the newest lines: new lines are added again and
+the view follows them */
+_MessageBuffer.reachedPresent = function() /* PRIVATE */
+{
+	_MessageBuffer._bufferBottomIsComplete = true;
+
+	_MessageBuffer.toggleAutomaticScrolling();
+
+	TextualScroller.scrollToBottom();
+
+	_MessageActions.updateJumpToPresent();
 };
 
 /* ************************************************** */

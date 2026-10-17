@@ -46,6 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 /* The window showing it: changes when it pops out into its own (10.18) */
 - (void)setAttachedWindow:(TVCMainWindow *)attachedWindow;
 
+/* The page has loaded and its saved history is shown: a jump made before
+ that can fail (search, 10.9) */
+@property (readonly) BOOL historyIsShown;
+
 /* Typing notifications: "… is typing" as the last line of the view */
 - (void)setTypingIndicatorText:(NSString *)text;
 

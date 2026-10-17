@@ -101,6 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@"deleteMessage" : @"s",
 			@"failedSendAction" : @"ss",
 			@"leaveMessageFocus" : @"",
+			@"jumpToPresent" : @"",
 			@"setMessageMenu" : @"a+",
 			@"pickReaction" : @"s",
 			@"replyToMessage" : @"sss",

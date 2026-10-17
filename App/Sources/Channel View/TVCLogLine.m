@@ -194,6 +194,21 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	}
 }
 
+- (TVCLogLine *)copyAsArchivedLineWithUniqueIdentifier:(NSString *)uniqueIdentifier
+{
+	NSParameterAssert(uniqueIdentifier != nil);
+
+	/* A new object even when this one is immutable (its copy may be itself) */
+	TVCLogLine *object = [[self mutableCopy] copy];
+
+	object->_uniqueIdentifier = [uniqueIdentifier copy];
+
+	/* Sessions are numbered below a million */
+	object->_sessionIdentifier = 1000000;
+
+	return object;
+}
+
 - (void)populateDefaultUniqueIdentifier
 {
 	if (self->_uniqueIdentifier != nil) {

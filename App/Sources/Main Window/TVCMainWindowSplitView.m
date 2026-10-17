@@ -51,6 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel View Saved Frames";
 
+static NSString * const _searchWidthDefaultsKey = @"Window -> Main Window -> Search Panel Width";
+
+#define _searchColumnDefaultWidth		340.0
+#define _searchColumnMinimumWidth		260.0
+#define _searchColumnMaximumWidth		640.0
+
 @interface TVCMainWindowSplitView ()
 @property (nonatomic, assign) BOOL restoredPositions;
 @property (nonatomic, assign) BOOL stopFrameUpdatesForServerList;
@@ -60,12 +66,19 @@ NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel V
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *memberListWidthMinConstraint;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *memberListWidthMaxConstraint;
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, NSNumber *> *unsavedFrames; // until -writeSavedFrames
+@property (nonatomic, assign) BOOL searchColumnShown;
 @end
 
 @implementation TVCMainWindowSplitView
 
 - (void)applicationAppearanceChanged
 {
+	if (self.showingSearchColumn) {
+		[self updateServerListWidthLimits];
+
+		return;
+	}
+
 	TVCMainWindowAppearance *appearance = self.mainWindow.userInterfaceObjects;
 
 	TVCServerListAppearance *serverList = appearance.serverList;
@@ -77,6 +90,14 @@ NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel V
 
 	self.memberListWidthMinConstraint.constant = memberList.minimumWidth;
 	self.memberListWidthMaxConstraint.constant = memberList.maximumWidth;
+}
+
+- (void)updateServerListWidthLimits
+{
+	TVCServerListAppearance *serverList = self.mainWindow.userInterfaceObjects.serverList;
+
+	self.serverListWidthMinConstraint.constant = serverList.minimumWidth;
+	self.serverListWidthMaxConstraint.constant = serverList.maximumWidth;
 }
 
 - (NSColor *)dividerColor
@@ -381,6 +402,58 @@ NSString * const _userDefaultsKey	  = @"Window -> Main Window -> Split Channel V
 	}
 
 	return [RZUserDefaults() objectForKey:_userDefaultsKey];
+}
+
+#pragma mark -
+#pragma mark Search Column
+
+- (BOOL)isShowingSearchColumn
+{
+	return self.searchColumnShown;
+}
+
+- (void)showSearchColumn
+{
+	if (self.showingSearchColumn) {
+		return;
+	}
+
+	self.searchColumnShown = YES;
+
+	/* The member list's saved width stays as it is */
+	self.stopFrameUpdatesForMemberList = YES;
+
+	self.memberListWidthMinConstraint.constant = _searchColumnMinimumWidth;
+	self.memberListWidthMaxConstraint.constant = _searchColumnMaximumWidth;
+
+	self.memberListWidthMinConstraint.active = YES;
+
+	CGFloat width = [RZUserDefaults() doubleForKey:_searchWidthDefaultsKey];
+
+	if (width < _searchColumnMinimumWidth || width > _searchColumnMaximumWidth) {
+		width = _searchColumnDefaultWidth;
+	}
+
+	self.subviews[2].hidden = NO;
+
+	[self setPosition:(NSWidth(self.frame) - width - self.dividerThickness) ofDividerAtIndex:1];
+}
+
+- (void)hideSearchColumn
+{
+	if (self.showingSearchColumn == NO) {
+		return;
+	}
+
+	CGFloat width = NSWidth(self.subviews[2].frame);
+
+	if (width >= _searchColumnMinimumWidth && width <= _searchColumnMaximumWidth) {
+		[RZUserDefaults() setDouble:width forKey:_searchWidthDefaultsKey];
+	}
+
+	self.searchColumnShown = NO;
+
+	[self applicationAppearanceChanged];
 }
 
 - (BOOL)isServerListCollapsed

@@ -65,6 +65,7 @@
 #import "TDCChannelSpotlightControllerPrivate.h"
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCInputPrompt.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
@@ -89,58 +90,40 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation TXMenuController (Edit)
 
 #pragma mark -
-#pragma mark Find Panel
+#pragma mark Search (10.9)
 
-- (void)_showFindPromptOpenDialog:(nullable id)sender
-{
-	void (^promptCompletionBlock)(NSString *) = ^(NSString *resultString)
-	{
-		if ([self.currentSearchPhrase isEqualToString:resultString]) {
-			return;
-		}
-
-		self.currentSearchPhrase = resultString;
-
-		TVCLogView *webView = self.selectedViewControllerBackingView;
-
-		[webView findString:resultString movingForward:YES];
-	};
-
-	NSString *resultString = nil;
-
-	TVCAlertResponseButton response =
-	[TDCInputPrompt promptWithMessage:TXTLS(@"Prompts[d2w-4o]")
-								title:TXTLS(@"Prompts[akr-eh]")
-						defaultButton:TXTLS(@"Prompts[q5h-xx]")
-					  alternateButton:TXTLS(@"Prompts[qso-2g]")
-						prefillString:self.currentSearchPhrase
-						 resultString:&resultString];
-
-	if (response == TVCAlertResponseButtonFirst) {
-		promptCompletionBlock(resultString);
-	}
-}
-
+/* ⌘F searches the selected channel, ⌘⇧F everywhere (the message archive, in
+ the search panel); ⌘G and ⌘⇧G open the next and previous result */
 - (void)showFindPrompt:(nullable id)sender
 {
 	NSParameterAssert(sender != nil);
 
-	if (TVCMainWindow.focusedWindow == nil) {
+	TVCMainWindow *window = TVCMainWindow.focusedWindow;
+
+	if (window == nil) {
 		return;
 	}
 
-	if ([sender tag] == MTMMEditFindMenuFind || self.currentSearchPhrase.length == 0) {
-		[self _showFindPromptOpenDialog:sender];
+	switch ([sender tag]) {
+		case MTMMEditFindMenuFind:
+		{
+			[window showSearchPanelWithScope:TVCMainWindowSearchScopeChannel];
 
-		return;
-	}
+			break;
+		}
+		case MTMMEditFindMenuSearchEverywhere:
+		{
+			[window showSearchPanelWithScope:TVCMainWindowSearchScopeEverywhere];
 
-	TVCLogView *webView = self.selectedViewControllerBackingView;
+			break;
+		}
+		case MTMMEditFindMenuFindNext:
+		case MTMMEditFindMenuFindPrevious:
+		{
+			[window openAdjacentSearchResult:([sender tag] == MTMMEditFindMenuFindNext)];
 
-	if ([sender tag] == MTMMEditFindMenuFindNext) {
-		[webView findString:self.currentSearchPhrase movingForward:YES];
-	} else {
-		[webView findString:self.currentSearchPhrase movingForward:NO];
+			break;
+		}
 	}
 }
 
@@ -158,15 +141,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paste:(nullable id)sender
 {
-	if ((TVCMainWindow.focusedWindow != nil)) {
+	id firstResponder = [NSApp keyWindow].firstResponder;
+
+	/* Another text field in the window (the search field) takes it itself */
+	BOOL typingElsewhere = ([firstResponder isKindOfClass:[NSTextView class]] && [firstResponder isFieldEditor]);
+
+	if (TVCMainWindow.focusedWindow != nil && typingElsewhere == NO) {
 		[TVCMainWindow.currentWindow.inputTextField focus];
 
 		[TVCMainWindow.currentWindow.inputTextField paste:sender];
 
 		return;
 	}
-
-	id firstResponder = [NSApp keyWindow].firstResponder;
 
 	if ([firstResponder respondsToSelector:@selector(paste:)]) {
 		[firstResponder performSelector:@selector(paste:) withObject:sender];

@@ -78,6 +78,7 @@
 #import "TLOSpeechSynthesizerPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TVCInputCompletionPrivate.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TVCMainWindowInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -115,6 +116,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)performedCustomKeyboardEvent:(NSEvent *)e
 {
 	NSResponder *firstResponder = self.firstResponder;
+
+	/* The search panel's field and list take their keys as they are (10.9):
+	 the shortcuts here are the input field's and the chat's */
+	if (self.isSearchPanelVisible) {
+		id responder = firstResponder;
+
+		if ([responder isKindOfClass:[NSTextView class]] && [responder isFieldEditor]) {
+			responder = [(NSTextView *)responder delegate];
+		}
+
+		if ([responder isKindOfClass:[NSView class]] && [responder isDescendantOf:self.searchPanel.view]) {
+			return NO;
+		}
+	}
 
 	/* Keyboard focus on messages takes its keys first */
 	if ([self handleMessageFocusKey:e]) {

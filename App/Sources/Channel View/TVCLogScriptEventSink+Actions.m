@@ -293,6 +293,12 @@ NS_ASSUME_NONNULL_BEGIN
 	return ((window) ?: mainWindow());
 }
 
+/* The Jump to Present button (10.9): the newest lines aren't loaded */
+- (void)_jumpToPresent:(TVCLogScriptEventSinkContext *)context
+{
+	[context.viewController jumpToPresent];
+}
+
 /* Keyboard focus on messages (9.15 D): Escape went back to the input field */
 - (void)_leaveMessageFocus:(TVCLogScriptEventSinkContext *)context
 {

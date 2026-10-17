@@ -350,13 +350,6 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+" TXWebsiteLi
 	[self.webViewBacking stopLoading];
 }
 
-- (void)findString:(NSString *)searchString movingForward:(BOOL)movingForward
-{
-	NSParameterAssert(searchString != nil);
-
-	[self.webViewBacking findString:searchString movingForward:movingForward];
-}
-
 @end
 
 #pragma mark -

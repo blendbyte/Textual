@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _treeDragItemTypes		[NSArray arrayWithObject:_treeDragItemType]
 
-@class TVCInputCompletionController;
+@class TVCInputCompletionController, TVCMainWindowSearchPanel;
 
 @interface TVCMainWindow ()
 @property (nonatomic, weak, readwrite) IBOutlet TVCMainWindowChannelView *channelView;
@@ -94,6 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableArray *uploadQueue; // waiting, oldest first
 @property (nonatomic, strong, nullable) IRCFileUpload *currentUpload;
 @property (nonatomic, assign) NSUInteger uploadsDone; // of this round
+@property (nonatomic, strong, nullable) TVCMainWindowSearchPanel *searchPanel; // in the member list's column (10.9)
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
 @end

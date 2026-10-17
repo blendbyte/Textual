@@ -78,6 +78,7 @@
 #import "TLOSpeechSynthesizerPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TVCInputCompletionPrivate.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TVCMainWindowInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -312,8 +313,11 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Reset spelling for text field */
 	[self.inputTextField resetSpellingIgnores];
 
-	/* Update splitter view depending on selection */
-	if (isChannel) {
+	/* Update splitter view depending on selection; the search panel keeps
+	 the member list's column while it's open (10.9) */
+	if (self.isSearchPanelVisible) {
+		[self.searchPanel selectedItemChanged];
+	} else if (isChannel) {
 		if (self.memberList.isHiddenByUser == NO) {
 			[self.contentSplitView expandMemberList];
 		}

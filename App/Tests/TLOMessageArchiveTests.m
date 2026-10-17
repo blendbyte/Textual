@@ -476,6 +476,79 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([result snippetWithMaximumLength:1000 matchRanges:NULL], body);
 }
 
+/* The chat's history past the scrollback: the archive's messages before
+ the scrollback's first line, also those of the same time (a burst) */
+- (void)testMessagesBeforeTheScrollback
+{
+	NSDate *time = [NSDate dateWithTimeIntervalSince1970:1791633600];
+
+	NSArray *bodies = @[@"a", @"b", @"c", @"d", @"e"];
+	NSArray *offsets = @[@0, @60, @60, @60, @120];
+
+	NSMutableArray<TVCLogLine *> *logLines = [NSMutableArray array];
+
+	for (NSUInteger i = 0; i < bodies.count; i++) {
+		TVCLogLine *logLine = [self lineOfType:TVCLogLineTypePrivateMessage body:bodies[i] nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[time dateByAddingTimeInterval:[offsets[i] doubleValue]]];
+
+		[logLines addObject:logLine];
+
+		[self archive:logLine];
+	}
+
+	[self.archive flush];
+
+	/* The scrollback starts at "c", which has the time of "b" and "d" */
+	NSString *scrollbackLineId = logLines[2].uniqueIdentifier;
+	NSTimeInterval scrollbackTime = logLines[2].receivedAt.timeIntervalSince1970;
+
+	NSArray * (^messages)(int64_t, NSUInteger, NSUInteger, NSString *, NSUInteger *) = ^NSArray *(int64_t rowId, NSUInteger before, NSUInteger after, NSString *lineId, NSUInteger *anchorIndex) {
+		XCTestExpectation *expectation = [self expectationWithDescription:@"messages"];
+
+		__block NSArray *result = nil;
+
+		[self.archive messagesInView:@"view-1" rowId:rowId before:before after:after scrollbackLineId:lineId scrollbackTime:scrollbackTime completionHandler:^(NSArray<TLOMessageArchiveResult *> *found, NSUInteger index) {
+			result = found;
+
+			*anchorIndex = index;
+
+			[expectation fulfill];
+		}];
+
+		[self waitForExpectationsWithTimeout:10 handler:nil];
+
+		return result;
+	};
+
+	NSUInteger anchorIndex = 0;
+
+	NSArray *expected = @[@"a", @"b"];
+
+	XCTAssertEqualObjects([messages(0, 10, 0, scrollbackLineId, &anchorIndex) valueForKey:@"body"], expected);
+	XCTAssertEqual(anchorIndex, NSNotFound);
+
+	/* Without its line in the archive: by time, so the burst isn't split */
+	expected = @[@"a"];
+
+	XCTAssertEqualObjects([messages(0, 10, 0, @"unknown", &anchorIndex) valueForKey:@"body"], expected);
+
+	/* Around a message: up to the scrollback */
+	NSArray<TLOMessageArchiveResult *> *older = messages(0, 10, 0, scrollbackLineId, &anchorIndex);
+
+	expected = @[@"a", @"b"];
+
+	XCTAssertEqualObjects([messages(older.firstObject.rowId, 5, 5, scrollbackLineId, &anchorIndex) valueForKey:@"body"], expected);
+	XCTAssertEqual(anchorIndex, 0);
+
+	/* One the scrollback has: none */
+	TLOMessageArchiveResult *first = older.firstObject;
+
+	NSArray *found = messages((first.rowId + 3), 5, 5, scrollbackLineId, &anchorIndex);
+
+	XCTAssertEqual(found.count, 0);
+	XCTAssertEqual(anchorIndex, NSNotFound);
+}
+
 @end
+
 
 NS_ASSUME_NONNULL_END

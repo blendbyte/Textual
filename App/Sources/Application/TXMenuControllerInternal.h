@@ -51,7 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL menuPerformedActionLastOpen;
 @property (nonatomic, weak) IRCClient *pointedClient;
 @property (nonatomic, weak) IRCChannel *pointedChannel;
-@property (nonatomic, copy) NSString *currentSearchPhrase;
 @property (readonly, nullable) TVCLogController *selectedViewController;
 @property (readonly, nullable) TVCLogView *selectedViewControllerBackingView;
 @property (readonly) TDCFileTransferDialog *fileTransferController;

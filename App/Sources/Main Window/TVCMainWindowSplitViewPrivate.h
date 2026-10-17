@@ -44,6 +44,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Positions changed by dragging are written shortly after; this writes them now */
 - (void)writeSavedFrames;
+
+/* The search panel (10.9) takes the member list's column, wider (its own
+ width is remembered); the member list's width isn't changed meanwhile */
+- (void)showSearchColumn;
+- (void)hideSearchColumn; // the caller then expands or collapses the member list
+
+@property (readonly, getter=isShowingSearchColumn) BOOL showingSearchColumn;
 @end
 
 NS_ASSUME_NONNULL_END
