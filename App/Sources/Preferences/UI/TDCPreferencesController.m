@@ -195,6 +195,17 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 }
 
 
+- (void)showPaneWithTag:(NSInteger)tag
+{
+	TDCPreferencesPane *pane = [self paneForTag:tag];
+
+	if (pane == nil) {
+		return;
+	}
+
+	[self _showPane:pane.view selectedItem:[self toolbarItemForTag:tag]];
+}
+
 - (void)_showPane:(NSView *)view selectedItem:(NSInteger)selectedItem
 {
 	[self firstPane:view selectedItem:selectedItem];

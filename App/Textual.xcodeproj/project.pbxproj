@@ -126,6 +126,11 @@
 		A158CC599D81585F02DDA31A /* TDCPreferencesAdvancedPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8E8D21921ED7D68624BA14 /* TDCPreferencesAdvancedPanes.m */; };
 		4C497A2FFD766E56B1D4752B /* TDCPreferencesInlineMediaPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC6E20C4C4C3271153F5FAE /* TDCPreferencesInlineMediaPane.m */; };
 		4C64F4BC2324D6DA91465D6D /* TDCPreferencesHistoryPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06FE266CEBAFDE5D148EE8 /* TDCPreferencesHistoryPane.m */; };
+		4C174D7953F2A5E60B5B56F6 /* TDCSettingsWindowControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CC30D01F30B60BD00342E6F /* TDCSettingsWindowControllerPrivate.h */; };
+		4CD13566DD916CD218448402 /* TDCSettingsBridgePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C81C2432334F0FCD14C81BC /* TDCSettingsBridgePrivate.h */; };
+		4C4C481F03C9462FB90BEE71 /* TDCSettingsSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD3CD50C985CADFDC20AEA8 /* TDCSettingsSections.swift */; };
+		4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */; };
+		4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */; };
 		4C06E65720EC55B90055D09A /* TDCPreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526920EB673E00448776 /* TDCPreferencesController.m */; };
 		4C06E65820EC55B90055D09A /* TDCServerEndpointListSheetTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528E20EB673E00448776 /* TDCServerEndpointListSheetTableCellView.m */; };
 		4C06E65920EC55B90055D09A /* TDCServerEndpointListSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528F20EB673E00448776 /* TDCServerEndpointListSheet.m */; };
@@ -1299,6 +1304,11 @@
 		0F8E8D21921ED7D68624BA14 /* TDCPreferencesAdvancedPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesAdvancedPanes.m; sourceTree = "<group>"; };
 		4CC6E20C4C4C3271153F5FAE /* TDCPreferencesInlineMediaPane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesInlineMediaPane.m; sourceTree = "<group>"; };
 		4C06FE266CEBAFDE5D148EE8 /* TDCPreferencesHistoryPane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesHistoryPane.m; sourceTree = "<group>"; };
+		4CC30D01F30B60BD00342E6F /* TDCSettingsWindowControllerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCSettingsWindowControllerPrivate.h; sourceTree = "<group>"; };
+		4C81C2432334F0FCD14C81BC /* TDCSettingsBridgePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCSettingsBridgePrivate.h; sourceTree = "<group>"; };
+		4CD3CD50C985CADFDC20AEA8 /* TDCSettingsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsSections.swift; sourceTree = "<group>"; };
+		4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsWindow.swift; sourceTree = "<group>"; };
+		4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCSettingsBridge.m; sourceTree = "<group>"; };
 		4C31526920EB673E00448776 /* TDCPreferencesController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCPreferencesController.m; sourceTree = "<group>"; };
 		4C31526B20EB673E00448776 /* TDCChannelSpotlightPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelSpotlightPanel.m; sourceTree = "<group>"; };
 		4C31526C20EB673E00448776 /* TDCChannelSpotlightSearchResult.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelSpotlightSearchResult.m; sourceTree = "<group>"; };
@@ -2615,6 +2625,11 @@
 				0F8E8D21921ED7D68624BA14 /* TDCPreferencesAdvancedPanes.m */,
 				4CC6E20C4C4C3271153F5FAE /* TDCPreferencesInlineMediaPane.m */,
 				4C06FE266CEBAFDE5D148EE8 /* TDCPreferencesHistoryPane.m */,
+				4CC30D01F30B60BD00342E6F /* TDCSettingsWindowControllerPrivate.h */,
+				4C81C2432334F0FCD14C81BC /* TDCSettingsBridgePrivate.h */,
+				4CD3CD50C985CADFDC20AEA8 /* TDCSettingsSections.swift */,
+				4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */,
+				4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */,
 				4C31523920EB673E00448776 /* TDCPreferencesNotificationConfigurationPrivate.h */,
 				1AC03A0E588A1C197CD2B2D0 /* TDCPreferencesPanePrivate.h */,
 				4CB873DB22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m */,
@@ -3304,6 +3319,8 @@
 				4C31577220EB6D0500448776 /* TXMasterControllerPrivate.h in Headers */,
 				4C31576020EB6D0500448776 /* TVCMainWindowSplitViewPrivate.h in Headers */,
 				4CD174FF0A85194DF44945D7 /* TVCMainWindowSearchPanelPrivate.h in Headers */,
+				4C174D7953F2A5E60B5B56F6 /* TDCSettingsWindowControllerPrivate.h in Headers */,
+				4CD13566DD916CD218448402 /* TDCSettingsBridgePrivate.h in Headers */,
 				BE0696763E6E3D9BAF74C04E /* TVCListViewsPrivate.h in Headers */,
 				4C31576720EB6D0500448776 /* TVCMemberListUserInfoPopoverPrivate.h in Headers */,
 				BB61C4271B0CB30464466F86 /* TVCMemberListControllerPrivate.h in Headers */,
@@ -3824,6 +3841,9 @@
 				A158CC599D81585F02DDA31A /* TDCPreferencesAdvancedPanes.m in Sources */,
 				4C497A2FFD766E56B1D4752B /* TDCPreferencesInlineMediaPane.m in Sources */,
 				4C64F4BC2324D6DA91465D6D /* TDCPreferencesHistoryPane.m in Sources */,
+				4C4C481F03C9462FB90BEE71 /* TDCSettingsSections.swift in Sources */,
+				4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */,
+				4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */,
 				4C06E65720EC55B90055D09A /* TDCPreferencesController.m in Sources */,
 				4C06E65820EC55B90055D09A /* TDCServerEndpointListSheetTableCellView.m in Sources */,
 				4C06E65920EC55B90055D09A /* TDCServerEndpointListSheet.m in Sources */,

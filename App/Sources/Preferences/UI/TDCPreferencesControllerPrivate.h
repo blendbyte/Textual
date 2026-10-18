@@ -56,6 +56,9 @@ typedef NS_ENUM(NSUInteger, TDCPreferencesControllerSelection) {
 
 - (void)show:(TDCPreferencesControllerSelection)selection;
 
+/* A pane by its tag (TDCPreferencesPaneTag) */
+- (void)showPaneWithTag:(NSInteger)tag;
+
 /* In every section made so far, also ones not shown (a reset can cover another section's well) */
 - (void)deactivateColorWellsInAllPanes;
 @end

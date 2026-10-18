@@ -69,6 +69,7 @@
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCPreferencesControllerPrivate.h"
+#import "TDCSettingsWindowControllerPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCWelcomeSheetPrivate.h"
@@ -597,24 +598,36 @@ NS_ASSUME_NONNULL_BEGIN
 	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionHiddenPreferences];
 }
 
+/* The Settings window (12.11); a selection picks its section */
 - (void)showPreferencesWindowWithSelection:(TDCPreferencesControllerSelection)selection
 {
-	TDCPreferencesController *openWindow = [windowController() windowFromWindowList:@"TDCPreferencesController"];
+	NSString *section = nil;
 
-	if (openWindow) {
-		[openWindow show:selection];
-
-		return;
+	switch (selection) {
+		case TDCPreferencesControllerSelectionNotifications: { section = @"notifications"; break; }
+		case TDCPreferencesControllerSelectionStyle: { section = @"appearance"; break; }
+		case TDCPreferencesControllerSelectionHiddenPreferences: { section = @"advanced"; break; }
+		case TDCPreferencesControllerSelectionHistory: { section = @"history"; break; }
+		default: { break; }
 	}
 
-	TDCPreferencesController *controller =
-	[TDCPreferencesController new];
+	[TDCSettingsWindowController showSection:section];
+}
 
-	controller.delegate = (id)self;
+/* The old Preferences window, for the sections of Settings not rebuilt yet */
+- (void)showLegacyPreferencesPaneWithTag:(NSInteger)tag
+{
+	TDCPreferencesController *controller = [windowController() windowFromWindowList:@"TDCPreferencesController"];
 
-	[controller show:selection];
+	if (controller == nil) {
+		controller = [TDCPreferencesController new];
 
-	[windowController() addWindowToWindowList:controller];
+		controller.delegate = (id)self;
+
+		[windowController() addWindowToWindowList:controller];
+	}
+
+	[controller showPaneWithTag:tag];
 }
 
 - (void)preferencesDialogWillClose:(TDCPreferencesController *)sender

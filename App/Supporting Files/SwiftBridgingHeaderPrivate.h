@@ -43,6 +43,9 @@
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 
+// TDCSettingsWindow.swift, TDCSettingsSections.swift
+#import "TDCSettingsBridgePrivate.h"
+
 // TLOLinkParser.swift
 #import "TVCLogLine.h"
 
