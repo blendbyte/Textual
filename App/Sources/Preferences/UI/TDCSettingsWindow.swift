@@ -241,6 +241,8 @@ final class SettingsModel: ObservableObject
 		switch path.last {
 			case .styles:
 				return SettingsText("set-app-h1")
+			case .events:
+				return SettingsText("set-mes-ep")
 			case let .pluginPane(_, title):
 				return title
 			case nil:
@@ -503,6 +505,7 @@ struct SettingsRootView: View
 enum SettingsSubpage: Hashable
 {
 	case styles
+	case events
 	case pluginPane(index: Int, title: String)
 
 	@ViewBuilder
@@ -511,6 +514,8 @@ enum SettingsSubpage: Hashable
 		switch self {
 			case .styles:
 				StylePickerPage()
+			case .events:
+				MessagesEventsPage()
 			case let .pluginPane(index, title):
 				ScrollView {
 					PluginPaneView(index: index)
@@ -673,6 +678,7 @@ struct SettingsPage: View
 			switch section {
 				case .general: GeneralSettings()
 				case .appearance: AppearanceSettings()
+				case .messages: MessagesSettings()
 				case .lists: ListsSettings()
 				case .servers: ServersSettings()
 				case .commands: CommandsSettings()

@@ -890,4 +890,30 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 
 @end
 
+
+#pragma mark -
+
+@implementation TDCSettingsBridge (Messages)
+
++ (nullable NSString *)sampleTimeWithFormat:(NSString *)format offset:(NSTimeInterval)offset
+{
+	NSParameterAssert(format != nil);
+
+	NSDate *date = [[NSCalendar currentCalendar] dateBySettingHour:14 minute:2 second:40 ofDate:[NSDate date] options:0];
+
+	return TXFormattedTimestamp([date dateByAddingTimeInterval:offset], format);
+}
+
++ (BOOL)timestampFormatChosenByStyle
+{
+	return ([TPCPreferences themeTimestampFormatPreferenceUserConfigurable] == NO);
+}
+
++ (BOOL)nicknameFormatChosenByStyle
+{
+	return ([TPCPreferences themeNicknameFormatPreferenceUserConfigurable] == NO);
+}
+
+@end
+
 NS_ASSUME_NONNULL_END

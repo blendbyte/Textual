@@ -128,4 +128,12 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 + (void)useSystemFont;
 @end
 
+@interface TDCSettingsBridge (Messages)
+/* The time a format gives for 14:02:40 today plus seconds, for the sample */
++ (nullable NSString *)sampleTimeWithFormat:(NSString *)format offset:(NSTimeInterval)offset;
+
+@property (class, readonly) BOOL timestampFormatChosenByStyle;
+@property (class, readonly) BOOL nicknameFormatChosenByStyle;
+@end
+
 NS_ASSUME_NONNULL_END

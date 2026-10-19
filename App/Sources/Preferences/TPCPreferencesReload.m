@@ -79,10 +79,20 @@ NS_ASSUME_NONNULL_BEGIN
 	if ([keys containsObject:@"AutomaticallyFilterUnicodeTextSpam"] ||
 		[keys containsObject:@"ConversationTrackingIncludesUserModeSymbol"] ||
 		[keys containsObject:@"DisableRemoteNicknameColorHashing"] ||
+		[keys containsObject:@"RemoveIRCTextFormatting"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Date Changes"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Inline Media"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Join, Part, Quit Display"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Message Grouping Style"] ||
+		[keys containsObject:@"Event Display -> Joins"] ||
+		[keys containsObject:@"Event Display -> Parts"] ||
+		[keys containsObject:@"Event Display -> Quits"] ||
+		[keys containsObject:@"Event Display -> Nickname Changes"] ||
+		[keys containsObject:@"Event Display -> Away Changes"] ||
+		[keys containsObject:@"Event Display -> Kicks"] ||
+		[keys containsObject:@"Event Display -> Mode Changes"] ||
+		[keys containsObject:@"Event Display -> Topic Changes"] ||
+		[keys containsObject:@"Event Display -> Collapse"] ||
 		[keys containsObject:@"Theme -> Nickname Format"] ||
 		[keys containsObject:@"Theme -> Timestamp Format"] ||
 		[keys containsObject:@"Theme -> Channel Font Preference Enabled"] ||

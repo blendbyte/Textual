@@ -67,6 +67,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue((style & TPCPreferencesReloadActionStyle) == TPCPreferencesReloadActionStyle);
 
+	/* How events show is read when the chat loads: Settings changes them live */
+	TPCPreferencesReloadAction events = [TPCPreferences reloadActionForKeys:@[@"Event Display -> Topic Changes"]];
+
+	XCTAssertTrue((events & TPCPreferencesReloadActionStyle) == TPCPreferencesReloadActionStyle);
+
+	TPCPreferencesReloadAction collapse = [TPCPreferences reloadActionForKeys:@[@"Event Display -> Collapse"]];
+
+	XCTAssertTrue((collapse & TPCPreferencesReloadActionStyle) == TPCPreferencesReloadActionStyle);
+
+	/* Removing formatting applies to every line at once, not only new ones */
+	TPCPreferencesReloadAction formatting = [TPCPreferences reloadActionForKeys:@[@"RemoveIRCTextFormatting"]];
+
+	XCTAssertTrue((formatting & TPCPreferencesReloadActionStyle) == TPCPreferencesReloadActionStyle);
+
 	/* Every change ends in the general "preferences changed" pass */
 	XCTAssertEqual([TPCPreferences reloadActionForKeys:@[]], TPCPreferencesReloadActionPreferencesChanged);
 }
