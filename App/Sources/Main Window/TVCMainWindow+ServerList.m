@@ -648,6 +648,21 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* Fixed heights: the server rows' 14 pt bold name and the channel rows'
+ 16 pt icon, each 3 points from the top and bottom (the fonts are fixed,
+ TVCServerListAppearance.plist). Automatic heights measured each row again
+ while the list drew it (a selected name turns bold), which AppKit warns
+ about at launch ("reentrant operation in its NSTableView delegate") and
+ will make an assert. */
+- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
+{
+	if (item == nil || [item isClient]) {
+		return 23.0;
+	} else {
+		return 22.0;
+	}
+}
+
 - (nullable NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(nullable NSTableColumn *)tableColumn item:(id)item
 {
 	NSString *viewIdentifier = nil;
