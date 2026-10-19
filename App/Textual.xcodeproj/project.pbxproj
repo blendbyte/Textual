@@ -133,6 +133,8 @@
 		4478084D39344101AD2CD11F /* TDCSettingsHighlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1847E60C83094971BCE7522D /* TDCSettingsHighlights.swift */; };
 		7A4A90094AA140EFAC5D4EF5 /* TDCSettingsNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = A023933D4034495B93A8ADE2 /* TDCSettingsNotifications.swift */; };
 		DB9A668BB6084612B673FE34 /* TDCSettingsTyping.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FD9DDABBE148D7BADF2228 /* TDCSettingsTyping.swift */; };
+		668FBFA5A2B847DCAA056552 /* TDCSettingsHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C212CDAF7324479AB2FCCC2 /* TDCSettingsHistory.swift */; };
+		523B99C0E0204E82BF6A6392 /* TDCSettingsPreviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187E6F5F96874FD3A426134A /* TDCSettingsPreviews.swift */; };
 		9D35529E80B44E7A9466F627 /* TDCSettingsMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */; };
 		4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */; };
 		4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */; };
@@ -1317,6 +1319,8 @@
 		1847E60C83094971BCE7522D /* TDCSettingsHighlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsHighlights.swift; sourceTree = "<group>"; };
 		A023933D4034495B93A8ADE2 /* TDCSettingsNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsNotifications.swift; sourceTree = "<group>"; };
 		E4FD9DDABBE148D7BADF2228 /* TDCSettingsTyping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsTyping.swift; sourceTree = "<group>"; };
+		0C212CDAF7324479AB2FCCC2 /* TDCSettingsHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsHistory.swift; sourceTree = "<group>"; };
+		187E6F5F96874FD3A426134A /* TDCSettingsPreviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsPreviews.swift; sourceTree = "<group>"; };
 		5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsMessages.swift; sourceTree = "<group>"; };
 		4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsWindow.swift; sourceTree = "<group>"; };
 		4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCSettingsBridge.m; sourceTree = "<group>"; };
@@ -2644,6 +2648,8 @@
 				1847E60C83094971BCE7522D /* TDCSettingsHighlights.swift */,
 				A023933D4034495B93A8ADE2 /* TDCSettingsNotifications.swift */,
 				E4FD9DDABBE148D7BADF2228 /* TDCSettingsTyping.swift */,
+				0C212CDAF7324479AB2FCCC2 /* TDCSettingsHistory.swift */,
+				187E6F5F96874FD3A426134A /* TDCSettingsPreviews.swift */,
 				5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */,
 				4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */,
 				4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */,
@@ -3865,6 +3871,8 @@
 				4478084D39344101AD2CD11F /* TDCSettingsHighlights.swift in Sources */,
 				7A4A90094AA140EFAC5D4EF5 /* TDCSettingsNotifications.swift in Sources */,
 				DB9A668BB6084612B673FE34 /* TDCSettingsTyping.swift in Sources */,
+				668FBFA5A2B847DCAA056552 /* TDCSettingsHistory.swift in Sources */,
+				523B99C0E0204E82BF6A6392 /* TDCSettingsPreviews.swift in Sources */,
 				9D35529E80B44E7A9466F627 /* TDCSettingsMessages.swift in Sources */,
 				4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */,
 				4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */,

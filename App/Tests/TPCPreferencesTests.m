@@ -81,6 +81,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue((formatting & TPCPreferencesReloadActionStyle) == TPCPreferencesReloadActionStyle);
 
+	/* Text logs on or off opens or closes the log files */
+	TPCPreferencesReloadAction transcripts = [TPCPreferences reloadActionForKeys:@[@"LogTranscript"]];
+
+	XCTAssertTrue((transcripts & TPCPreferencesReloadActionLogTranscripts) == TPCPreferencesReloadActionLogTranscripts);
+
 	/* Every change ends in the general "preferences changed" pass */
 	XCTAssertEqual([TPCPreferences reloadActionForKeys:@[]], TPCPreferencesReloadActionPreferencesChanged);
 }

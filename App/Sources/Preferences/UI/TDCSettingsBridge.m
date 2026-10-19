@@ -65,6 +65,9 @@
 #import "IRCWorld.h"
 #import "TLONotificationController.h"
 #import "TLOSoundPlayer.h"
+#import "TLOMessageArchivePrivate.h"
+#import "TPCPathInfoPrivate.h"
+#import "ICPCoreMediaPrivate.h"
 #import "TDCSettingsBridgePrivate.h"
 #import "TDCAlert.h"
 #import "TPCTheme.h"
@@ -1106,6 +1109,313 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 	}
 
 	return [invalidKeywords copy];
+}
+
+@end
+
+#pragma mark -
+#pragma mark Previews
+
+@implementation TDCSettingsBridge (Previews)
+
++ (NSArray<NSString *> *)previewServiceNames
+{
+	return [ICPCoreMedia serviceNames];
+}
+
++ (BOOL)previewServiceIsEnabled:(NSString *)serviceName
+{
+	return [TPCPreferences inlineMediaServiceIsEnabled:serviceName];
+}
+
++ (void)setPreviewService:(NSString *)serviceName enabled:(BOOL)enabled
+{
+	[TPCPreferences setInlineMediaService:serviceName enabled:enabled];
+}
+
++ (NSArray<NSString *> *)previewSites
+{
+	return [TPCPreferences inlineMediaDomains];
+}
+
++ (BOOL)addPreviewSite:(NSString *)site
+{
+	NSString *domain = [TPCPreferences normalizedInlineMediaDomain:site];
+
+	NSArray *domains = [TPCPreferences inlineMediaDomains];
+
+	if (domain == nil || [domains containsObject:domain]) {
+		return NO;
+	}
+
+	[TPCPreferences setInlineMediaDomains:[domains arrayByAddingObject:domain]];
+
+	return YES;
+}
+
++ (void)removePreviewSite:(NSString *)site
+{
+	NSMutableArray *domains = [[TPCPreferences inlineMediaDomains] mutableCopy];
+
+	[domains removeObject:site];
+
+	[TPCPreferences setInlineMediaDomains:[domains copy]];
+}
+
+@end
+
+#pragma mark -
+#pragma mark History
+
+@implementation TDCSettingsBridge (History)
+
++ (NSInteger)messageArchiveKeepPeriod
+{
+	return [TPCPreferences messageArchiveKeepPeriod];
+}
+
++ (NSString *)titleForMessageArchiveKeepPeriod:(NSInteger)keepPeriod
+{
+	switch (keepPeriod) {
+		case TPCMessageArchiveKeepPeriodOff:
+			return TXTLS(@"TDCPreferencesController[set-his-p-1]");
+		case TPCMessageArchiveKeepPeriodForever:
+			return TXTLS(@"TDCPreferencesController[set-his-p0]");
+		case TPCMessageArchiveKeepPeriodOneYear:
+			return TXTLS(@"TDCPreferencesController[set-his-py1]");
+		case TPCMessageArchiveKeepPeriodTwoYears:
+			return TXTLS(@"TDCPreferencesController[set-his-py2]");
+		default:
+			return TXTLS(@"TDCPreferencesController[set-his-pd]", keepPeriod);
+	}
+}
+
++ (void)changeMessageArchiveKeepPeriod:(NSInteger)keepPeriod messageCount:(NSInteger)messageCount inWindow:(NSWindow *)window completionHandler:(void (^)(void))completionHandler
+{
+	NSParameterAssert(window != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	TPCMessageArchiveKeepPeriod oldPeriod = [TPCPreferences messageArchiveKeepPeriod];
+
+	if (keepPeriod == oldPeriod) {
+		completionHandler();
+
+		return;
+	}
+
+	void (^change)(void) = ^{
+		[self _changeMessageArchiveKeepPeriodTo:keepPeriod from:oldPeriod completionHandler:completionHandler];
+	};
+
+	/* Off deletes what's kept; a shorter period what's older */
+	if (keepPeriod == TPCMessageArchiveKeepPeriodOff && messageCount > 0) {
+		NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(messageCount) numberStyle:NSNumberFormatterDecimalStyle];
+
+		[self _confirmInWindow:window
+						 title:TXTLS(@"TDCPreferencesController[set-his-o1]")
+				   informative:TXTLS(@"TDCPreferencesController[set-his-o2]", countString)
+						button:TXTLS(@"TDCPreferencesController[set-his-o3]")
+					completion:^(BOOL confirmed) {
+						if (confirmed) {
+							change();
+						} else {
+							completionHandler();
+						}
+					}];
+
+		return;
+	}
+
+	BOOL shorter = (keepPeriod > 0 && oldPeriod != TPCMessageArchiveKeepPeriodOff && (oldPeriod == TPCMessageArchiveKeepPeriodForever || keepPeriod < oldPeriod));
+
+	if (shorter && messageCount > 0) {
+		[self _confirmInWindow:window
+						 title:TXTLS(@"TDCPreferencesController[set-his-k1]", [self titleForMessageArchiveKeepPeriod:keepPeriod])
+				   informative:TXTLS(@"TDCPreferencesController[set-his-k2]")
+						button:TXTLS(@"TDCPreferencesController[set-his-k3]")
+					completion:^(BOOL confirmed) {
+						if (confirmed) {
+							change();
+						} else {
+							completionHandler();
+						}
+					}];
+
+		return;
+	}
+
+	change();
+}
+
++ (void)_changeMessageArchiveKeepPeriodTo:(TPCMessageArchiveKeepPeriod)newPeriod from:(TPCMessageArchiveKeepPeriod)oldPeriod completionHandler:(void (^)(void))completionHandler
+{
+	[TPCPreferences setMessageArchiveKeepPeriod:newPeriod];
+
+	TLOMessageArchive *archive = sharedMessageArchive();
+
+	archive.keepDays = newPeriod;
+
+	if (newPeriod == TPCMessageArchiveKeepPeriodOff) {
+		/* Turned on again, it starts with the scrollback */
+		[archive deleteAllMessagesImportingScrollbackAgain:YES completionHandler:^{
+			completionHandler();
+		}];
+
+		return;
+	} else if (oldPeriod == TPCMessageArchiveKeepPeriodOff) {
+		[mainWindow() maintainHistoricLog];
+	}
+
+	/* Removing older messages takes a moment */
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		completionHandler();
+	});
+}
+
++ (void)messageArchiveSizeWithCompletionHandler:(void (^)(NSInteger messageCount, NSString *fileSize))completionHandler
+{
+	NSParameterAssert(completionHandler != nil);
+
+	TLOMessageArchive *archive = sharedMessageArchive();
+
+	[archive countMessagesOfServer:nil inView:nil completionHandler:^(NSUInteger count) {
+		NSString *fileSize = [NSByteCountFormatter stringFromByteCount:(long long)archive.fileSize countStyle:NSByteCountFormatterCountStyleFile];
+
+		completionHandler((NSInteger)count, fileSize);
+	}];
+}
+
++ (void)deleteMessageArchiveWithMessageCount:(NSInteger)messageCount inWindow:(NSWindow *)window completionHandler:(void (^)(void))completionHandler
+{
+	NSParameterAssert(window != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(messageCount) numberStyle:NSNumberFormatterDecimalStyle];
+
+	[self _confirmInWindow:window
+					 title:TXTLS(@"TDCPreferencesController[set-his-d1]")
+			   informative:TXTLS(@"TDCPreferencesController[set-his-d2]", countString)
+					button:TXTLS(@"TDCPreferencesController[set-his-d3]")
+				completion:^(BOOL confirmed) {
+					if (confirmed == NO) {
+						completionHandler();
+
+						return;
+					}
+
+					[sharedMessageArchive() deleteAllMessagesImportingScrollbackAgain:NO completionHandler:^{
+						completionHandler();
+					}];
+				}];
+}
+
++ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status))progressHandler completionHandler:(void (^)(NSString *status))completionHandler
+{
+	NSParameterAssert(window != nil);
+	NSParameterAssert(progressHandler != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+	panel.allowsMultipleSelection = NO;
+	panel.canChooseDirectories = YES;
+	panel.canChooseFiles = NO;
+	panel.canCreateDirectories = NO;
+	panel.resolvesAliases = YES;
+
+	panel.directoryURL = [TPCPathInfo transcriptFolderURL];
+
+	panel.message = TXTLS(@"TDCPreferencesController[set-his-i1]");
+	panel.prompt = TXTLS(@"TDCPreferencesController[set-his-i2]");
+
+	[panel beginSheetModalForWindow:window completionHandler:^(NSInteger returnCode) {
+		if (returnCode != NSModalResponseOK) {
+			completionHandler(@"");
+
+			return;
+		}
+
+		NSURL *folderURL = panel.URLs[0];
+
+		BOOL accessing = [folderURL startAccessingSecurityScopedResource];
+
+		progressHandler(TXTLS(@"TDCPreferencesController[set-his-i6]"));
+
+		[sharedMessageArchive() importTextLogsInFolder:folderURL progressHandler:^(NSUInteger filesDone, NSUInteger fileCount) {
+			progressHandler(TXTLS(@"TDCPreferencesController[set-his-i3]", filesDone, fileCount));
+		} completionHandler:^(NSUInteger importedCount) {
+			if (accessing) {
+				[folderURL stopAccessingSecurityScopedResource];
+			}
+
+			if (importedCount == 0) {
+				completionHandler(TXTLS(@"TDCPreferencesController[set-his-i5]"));
+			} else {
+				NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(importedCount) numberStyle:NSNumberFormatterDecimalStyle];
+
+				completionHandler(TXTLS(@"TDCPreferencesController[set-his-i4]", countString));
+			}
+		}];
+	}];
+}
+
++ (void)_confirmInWindow:(NSWindow *)window title:(NSString *)title informative:(NSString *)informative button:(NSString *)button completion:(void (^)(BOOL confirmed))completion
+{
+	NSAlert *alert = [NSAlert new];
+
+	alert.alertStyle = NSAlertStyleWarning;
+	alert.messageText = title;
+	alert.informativeText = informative;
+
+	[alert addButtonWithTitle:button];
+	[alert addButtonWithTitle:TXTLS(@"Prompts[qso-2g]")];
+
+	alert.buttons.firstObject.hasDestructiveAction = YES;
+
+	[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse response) {
+		completion(response == NSAlertFirstButtonReturn);
+	}];
+}
+
++ (nullable NSURL *)transcriptFolderURL
+{
+	return [TPCPathInfo transcriptFolderURL];
+}
+
++ (void)chooseTranscriptFolderInWindow:(NSWindow *)window completionHandler:(void (^)(BOOL chosen))completionHandler
+{
+	NSParameterAssert(window != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+	panel.allowsMultipleSelection = NO;
+	panel.canChooseDirectories = YES;
+	panel.canChooseFiles = NO;
+	panel.canCreateDirectories = YES;
+	panel.resolvesAliases = YES;
+
+	panel.prompt = TXTLS(@"Prompts[xne-79]");
+
+	[panel beginSheetModalForWindow:window completionHandler:^(NSInteger returnCode) {
+		NSData *bookmark = nil;
+
+		if (returnCode == NSModalResponseOK) {
+			bookmark = [TPCSecurityScopedFolder bookmarkForURL:panel.URLs[0]];
+		}
+
+		if (bookmark == nil) {
+			completionHandler(NO);
+
+			return;
+		}
+
+		[TPCPathInfo setTranscriptFolderURL:bookmark];
+
+		[TPCPreferences performReloadAction:TPCPreferencesReloadActionLogTranscripts];
+
+		completionHandler(YES);
+	}];
 }
 
 @end

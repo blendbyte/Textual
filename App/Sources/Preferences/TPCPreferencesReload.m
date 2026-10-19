@@ -190,6 +190,11 @@ NS_ASSUME_NONNULL_BEGIN
 		reloadAction |= TPCPreferencesReloadActionIRCCommandCache;
 	}
 
+	/* Text logs: turned off, the open files close */
+	if ([keys containsObject:@"LogTranscript"]) {
+		reloadAction |= TPCPreferencesReloadActionLogTranscripts;
+	}
+
 	/* Scrollback limit */
 	if ([keys containsObject:@"ScrollbackMaximumSavedLineCount"]) {
 		reloadAction |= TPCPreferencesReloadActionScrollbackSaveLimit;

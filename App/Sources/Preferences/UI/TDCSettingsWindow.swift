@@ -245,6 +245,8 @@ final class SettingsModel: ObservableObject
 				return SettingsText("set-mes-ep")
 			case let .notificationEvent(event):
 				return TDCSettingsBridge.title(forNotificationEvent: event)
+			case .previewServices:
+				return SettingsText("set-pre-v")
 			case let .pluginPane(_, title):
 				return title
 			case nil:
@@ -509,6 +511,7 @@ enum SettingsSubpage: Hashable
 	case styles
 	case events
 	case notificationEvent(Int)
+	case previewServices
 	case pluginPane(index: Int, title: String)
 
 	@ViewBuilder
@@ -521,6 +524,8 @@ enum SettingsSubpage: Hashable
 				MessagesEventsPage()
 			case let .notificationEvent(event):
 				NotificationEventPage(event: event)
+			case .previewServices:
+				PreviewServicesPage()
 			case let .pluginPane(index, title):
 				ScrollView {
 					PluginPaneView(index: index)
@@ -687,13 +692,14 @@ struct SettingsPage: View
 				case .typing: TypingSettings()
 				case .notifications: NotificationsSettings()
 				case .highlights: HighlightsSettings()
+				case .previews: PreviewsSettings()
+				case .history: HistorySettings()
 				case .lists: ListsSettings()
 				case .servers: ServersSettings()
 				case .commands: CommandsSettings()
 				case .files: FilesSettings()
 				case .extensions: ExtensionsSettings()
 				case .advanced: AdvancedSettings()
-				default: LegacySettings(section: section)
 			}
 		}
 		.formStyle(.grouped)
@@ -736,6 +742,9 @@ struct SettingLabel: View
 	let title: String
 	var help: String? = nil
 
+	/* Dimmed when it can't be changed, as System Settings does: a Form leaves it as it is */
+	@Environment(\.isEnabled) private var isEnabled
+
 	var body: some View
 	{
 		VStack(alignment: .leading, spacing: 2) {
@@ -748,6 +757,7 @@ struct SettingLabel: View
 					.fixedSize(horizontal: false, vertical: true)
 			}
 		}
+		.opacity(isEnabled ? 1 : 0.5)
 	}
 }
 

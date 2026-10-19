@@ -173,4 +173,41 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class, readonly, copy) NSArray<NSString *> *invalidRegularExpressionKeywords;
 @end
 
+@interface TDCSettingsBridge (Previews)
+/* The sites and services previews have their own look for, by name */
+@property (class, readonly, copy) NSArray<NSString *> *previewServiceNames;
+
++ (BOOL)previewServiceIsEnabled:(NSString *)serviceName;
++ (void)setPreviewService:(NSString *)serviceName enabled:(BOOL)enabled;
+
+@property (class, readonly, copy) NSArray<NSString *> *previewSites;
+
+/* NO when it isn't a site's name or is in the list already */
++ (BOOL)addPreviewSite:(NSString *)site;
++ (void)removePreviewSite:(NSString *)site;
+@end
+
+@interface TDCSettingsBridge (History)
+/* Days (TPCMessageArchiveKeepPeriod): -1 off, 0 forever */
+@property (class, readonly) NSInteger messageArchiveKeepPeriod;
+
++ (NSString *)titleForMessageArchiveKeepPeriod:(NSInteger)keepPeriod;
+
+/* Asks first when messages would be deleted; the handler is called either way */
++ (void)changeMessageArchiveKeepPeriod:(NSInteger)keepPeriod messageCount:(NSInteger)messageCount inWindow:(NSWindow *)window completionHandler:(void (^)(void))completionHandler;
+
+/* "48,210 messages" and "12.4 MB" */
++ (void)messageArchiveSizeWithCompletionHandler:(void (^)(NSInteger messageCount, NSString *fileSize))completionHandler;
+
++ (void)deleteMessageArchiveWithMessageCount:(NSInteger)messageCount inWindow:(NSWindow *)window completionHandler:(void (^)(void))completionHandler;
+
+/* The handlers are given what to show next to the button */
++ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status))progressHandler completionHandler:(void (^)(NSString *status))completionHandler;
+
+@property (class, readonly, copy, nullable) NSURL *transcriptFolderURL;
+
+/* The handler is told whether a folder was chosen */
++ (void)chooseTranscriptFolderInWindow:(NSWindow *)window completionHandler:(void (^)(BOOL chosen))completionHandler;
+@end
+
 NS_ASSUME_NONNULL_END
