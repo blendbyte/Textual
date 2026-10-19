@@ -83,7 +83,6 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 - (void)maybeToggleFullscreenAfterLaunch;
 
-- (void)updateAlphaValueToReflectPreferences;
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
 
@@ -118,7 +117,6 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 + (void)updateDrawingForUserInUserList:(IRCUser *)user;
 + (void)updateTypingIndicatorForChannel:(IRCChannel *)channel;
 + (void)updateUploadButton;
-+ (void)updateAlphaValueToReflectPreferences;
 + (void)updateChannelViewArrangement;
 + (void)inputHistoryScopeDidChange;
 + (void)destroyInputHistoryOf:(IRCTreeItem *)item; // the channel or server is gone

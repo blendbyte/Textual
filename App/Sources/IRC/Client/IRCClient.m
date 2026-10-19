@@ -1043,10 +1043,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	NSParameterAssert(channel != nil);
 	NSParameterAssert(logLine != nil);
 
-	if ([TPCPreferences logHighlights] == NO) {
-		return;
-	}
-
 	/* Create entry */
 	IRCHighlightLogEntryMutable *newEntry = [IRCHighlightLogEntryMutable new];
 

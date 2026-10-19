@@ -504,12 +504,7 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 }
 
 #pragma mark -
-#pragma mark Old Preferences
-
-+ (void)showLegacyPreferencesPaneWithTag:(NSInteger)tag
-{
-	[menuController() showLegacyPreferencesPaneWithTag:tag];
-}
+#pragma mark Window
 
 + (void)settingsWindowWillClose
 {

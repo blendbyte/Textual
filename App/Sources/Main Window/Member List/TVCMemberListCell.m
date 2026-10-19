@@ -442,10 +442,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Set "x" if the user has no modes set */
 	NSString *stringToDraw = self.cellItem.mark;
 
-	if ([TPCPreferences memberListDisplayNoModeSymbol]) {
-		if (stringToDraw.length == 0) {
-			stringToDraw = @"×";
-		}
+	if (stringToDraw.length == 0) {
+		stringToDraw = @"×";
 	}
 
 	/* The mode string, centred by its shape (TVCListBadge) */

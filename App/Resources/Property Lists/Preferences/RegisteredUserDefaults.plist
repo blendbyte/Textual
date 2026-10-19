@@ -94,8 +94,6 @@
 	<false/>
 	<key>DisplayServerMessageOfTheDayOnConnect</key>
 	<true/>
-	<key>DisplayUserListNoModeSymbol</key>
-	<true/>
 	<key>File Transfers -&gt; File Transfer IP Address Detection Method</key>
 	<integer>1</integer>
 	<key>File Transfers -&gt; File Transfer IP Address Detection Prefers 3rd-party Sources</key>
@@ -156,20 +154,14 @@
 	<integer>0</integer>
 	<key>Keyboard -&gt; Tab Key Action</key>
 	<integer>0</integer>
-	<key>LogHighlights</key>
-	<true/>
 	<key>LogTranscript</key>
 	<false/>
 	<key>Main Input Text Field -&gt; Focus When Changing Views</key>
 	<true/>
 	<key>Main Input Text Field -&gt; Font Size</key>
 	<integer>1</integer>
-	<key>MainWindowTransparencyLevel</key>
-	<real>1.0</real>
 	<key>MemberListSortFavorsServerStaff</key>
 	<false/>
-	<key>MemberListUpdatesUserInfoPopoverOnScroll</key>
-	<true/>
 	<key>NSWindowAutosaveFrameMovesToActiveDisplay</key>
 	<false/>
 	<key>NicknameHighlightMatchingType</key>
@@ -224,8 +216,6 @@
 	<true/>
 	<key>OpenClickedLinksInBackgroundBrowser</key>
 	<false/>
-	<key>Optimizations -&gt; Load History Lazily</key>
-	<true/>
 	<key>PostNotificationsWhileInFocus</key>
 	<true/>
 	<key>PreferModernCiphers</key>
@@ -338,10 +328,6 @@
 	</data>
 	<key>UserListDoubleClickAction</key>
 	<integer>200</integer>
-	<key>WebViewDoNotUsesCustomScrollers</key>
-	<false/>
-	<key>WebViewPreviewLinks</key>
-	<false/>
 	<key>com.adiumX.AutoHyperlinks.permittedSchemesDefault</key>
 	<array>
 		<string>feed</string>

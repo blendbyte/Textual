@@ -196,9 +196,10 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"DisableMainWindowSegmentedController"];
 }
 
+/* No longer a setting: highlights are always kept (IRCClient.cachedHighlights) */
 + (BOOL)logHighlights
 {
-	return [RZUserDefaults() boolForKey:@"LogHighlights"];
+	return YES;
 }
 
 + (BOOL)clearAllConnections
@@ -293,14 +294,15 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"MemberListSortFavorsServerStaff"];
 }
 
+/* No longer settings: what they did by default always happens */
 + (BOOL)memberListUpdatesUserInfoPopoverOnScroll
 {
-	return [RZUserDefaults() boolForKey:@"MemberListUpdatesUserInfoPopoverOnScroll"];
+	return YES;
 }
 
 + (BOOL)memberListDisplayNoModeSymbol
 {
-	return [RZUserDefaults() boolForKey:@"DisplayUserListNoModeSymbol"];
+	return YES;
 }
 
 + (BOOL)postNotificationsWhileInFocus
@@ -908,9 +910,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 #pragma mark -
 #pragma mark App Nap 
 
+/* No longer a setting: App Nap is the system's to decide (+initPreferences
+ removes Textual 7's "NSAppSleepDisabled") */
 + (BOOL)appNapEnabled
 {
-	return ([[NSUserDefaults standardUserDefaults] boolForKey:@"NSAppSleepDisabled"] == NO);
+	return YES;
 }
 
 + (BOOL)preventSleepWhileConnected
@@ -923,11 +927,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	[RZUserDefaults() setBool:preventSleepWhileConnected forKey:@"PreventSleepWhileConnected"];
 
 	[RZNotificationCenter() postNotificationName:TPCPreferencesPreventSleepWhileConnectedChangedNotification object:nil];
-}
-
-+ (void)setAppNapEnabled:(BOOL)appNapEnabled
-{
-	[[NSUserDefaults standardUserDefaults] setBool:(appNapEnabled == NO) forKey:@"NSAppSleepDisabled"];
 }
 
 #pragma mark -
@@ -1151,9 +1150,10 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	[RZUserDefaults() setObject:themeUserStyleSheetRules forKey:@"Theme -> User Style Sheet Rules"];
 }
 
+/* No longer a setting: the main window is opaque */
 + (CGFloat)mainWindowTransparency
 {
-	return [RZUserDefaults() doubleForKey:@"MainWindowTransparencyLevel"];
+	return 1.0;
 }
 
 + (BOOL)automaticallyReloadCustomThemesWhenTheyChange
@@ -1171,14 +1171,15 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return NO;
 }
 
+/* No longer settings: no Force Touch previews of links, and the chat's own scrollers */
 + (BOOL)webKit2PreviewLinks
 {
-	return [RZUserDefaults() boolForKey:@"WebViewPreviewLinks"];
+	return NO;
 }
 
 + (BOOL)themeChannelViewUsesCustomScrollers
 {
-	return ([RZUserDefaults() boolForKey:@"WebViewDoNotUsesCustomScrollers"] == NO);
+	return YES;
 }
 
 + (TXChannelViewArrangement)channelViewArrangement
@@ -1864,6 +1865,9 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 	[self migrateInlineMediaLimits];
 
 	[self migrateMemberListWidth];
+
+	/* App Nap is no longer a setting: a choice to turn it off made in Textual 7 goes */
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"NSAppSleepDisabled"];
 
 	[TPCPathInfo startUsingTranscriptFolderURL];
 

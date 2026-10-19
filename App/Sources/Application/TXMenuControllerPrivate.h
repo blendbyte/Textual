@@ -101,8 +101,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showServerPropertiesSheetForClient:(IRCClient *)client withSelection:(TDCServerPropertiesSheetSelection)selection context:(nullable id)context;
 
-/* The old Preferences window at one of its panes (a tag), while Settings is rebuilt */
-- (void)showLegacyPreferencesPaneWithTag:(NSInteger)tag;
 @end
 
 @interface TXMenuControllerMainWindowProxy : NSObject

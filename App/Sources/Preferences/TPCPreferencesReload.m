@@ -112,11 +112,6 @@ NS_ASSUME_NONNULL_BEGIN
 		reloadAction |= TPCPreferencesReloadActionHighlightKeywords;
 	}
 
-	/* Highlight logging */
-	if ([keys containsObject:@"LogHighlights"]) {
-		reloadAction |= TPCPreferencesReloadActionHighlightLogging;
-	}
-
 	/* Text direction: right-to-left, left-to-right */
 	if ([keys containsObject:@"RightToLeftTextFormatting"]) {
 		reloadAction |= TPCPreferencesReloadActionTextDirection;
@@ -138,9 +133,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Main window alpha level */
-	if ([keys containsObject:@"MainWindowTransparencyLevel"]) {
-		reloadAction |= TPCPreferencesReloadActionMainWindowTransparencyLevel;
-	}
 
 	/* Dock icon */
 	if ([keys containsObject:@"DisplayDockBadges"] ||
@@ -160,8 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Member list user badge colors */
-	if ([keys containsObject:@"DisplayUserListNoModeSymbol"] ||
-		[keys containsObject:@"User List Mode Badge Colors -> +y"] ||
+	if ([keys containsObject:@"User List Mode Badge Colors -> +y"] ||
 		[keys containsObject:@"User List Mode Badge Colors -> +q"] ||
 		[keys containsObject:@"User List Mode Badge Colors -> +a"] ||
 		[keys containsObject:@"User List Mode Badge Colors -> +o"] ||
@@ -327,23 +318,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	/* Main window alpha level */
-	if (_reloads(TPCPreferencesReloadActionMainWindowTransparencyLevel)) {
-		[TVCMainWindow updateAlphaValueToReflectPreferences];
-	}
-
 	/* Highlight keywords */
 	if (_reloads(TPCPreferencesReloadActionHighlightKeywords)) {
 		[self cleanUpHighlightKeywords];
-	}
-
-	/* Highlight logging */
-	if (_reloads(TPCPreferencesReloadActionHighlightLogging)) {
-		if ([self logHighlights] == NO) {
-			for (IRCClient *u in worldController().clientList) {
-				[u clearCachedHighlights];
-			}
-		}
 	}
 
 	/* Text direction: right-to-left, left-to-right */

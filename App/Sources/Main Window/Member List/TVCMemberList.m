@@ -287,10 +287,6 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 
 - (void)scrollViewBoundsDidChangeNotification:(NSNotification *)notification
 {
-	if ([TPCPreferences memberListUpdatesUserInfoPopoverOnScroll] == NO) {
-		return;
-	}
-
 	if (notification.object != [self scrollViewContentView]) {
 		return;
 	}

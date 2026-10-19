@@ -930,12 +930,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		[self notifyViewFinishedLoadingHistory];
 
 		return;
-	} else {
-		BOOL lazyLoadHistory = [RZUserDefaults() boolForKey:@"Optimizations -> Load History Lazily"];
-
-		if (lazyLoadHistory && self.visible == NO) {
-			return;
-		}
+	} else if (self.visible == NO) {
+		/* Loaded when the view is first shown */
+		return;
 	}
 
 	self.reloadingHistory = YES;
@@ -3211,9 +3208,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	BOOL onlyShowDuringScrolling = (preferredScrollerStyle == NSScrollerStyleOverlay);
 
-	BOOL usesCustomScrollers = [TPCPreferences themeChannelViewUsesCustomScrollers];
-
-	return (onlyShowDuringScrolling == NO && usesCustomScrollers);
+	return (onlyShowDuringScrolling == NO);
 }
 
 - (NSString *)initialDocument

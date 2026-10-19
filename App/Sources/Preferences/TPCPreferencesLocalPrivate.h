@@ -80,8 +80,6 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 /* Textual 7's Caffeine extension setting becomes "PreventSleepWhileConnected" (once) */
 + (void)migrateCaffeinePreference;
 
-+ (void)setAppNapEnabled:(BOOL)appNapEnabled;
-
 /* Posts TPCPreferencesPreventSleepWhileConnectedChangedNotification */
 + (void)setPreventSleepWhileConnected:(BOOL)preventSleepWhileConnected;
 

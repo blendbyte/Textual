@@ -88,9 +88,6 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class, readonly, copy) NSArray<NSString *> *pluginPaneTitles;
 + (nullable NSView *)pluginPaneViewAtIndex:(NSUInteger)index;
 
-/* Sections not rebuilt yet: the old Preferences window at its pane (a tag) */
-+ (void)showLegacyPreferencesPaneWithTag:(NSInteger)tag;
-
 /* The window closed */
 + (void)settingsWindowWillClose;
 @end

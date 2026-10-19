@@ -44,11 +44,11 @@ typedef NS_OPTIONS(NSUInteger, TPCPreferencesReloadAction) {
 	TPCPreferencesReloadActionChannelViewArrangement				= 1 << 1,
 	TPCPreferencesReloadActionDockIconBadges						= 1 << 2,
 	TPCPreferencesReloadActionHighlightKeywords						= 1 << 3,
-	TPCPreferencesReloadActionHighlightLogging						= 1 << 4,
+	TPCPreferencesReloadActionHighlightLogging						= 1 << 4, // no longer used
 	TPCPreferencesReloadActionIRCCommandCache						= 1 << 5,
 	TPCPreferencesReloadActionInputHistoryScope						= 1 << 6,
 	TPCPreferencesReloadActionLogTranscripts						= 1 << 7,
-	TPCPreferencesReloadActionMainWindowTransparencyLevel			= 1 << 8,
+	TPCPreferencesReloadActionMainWindowTransparencyLevel			= 1 << 8, // no longer used
 	TPCPreferencesReloadActionMemberList							= 1 << 9,
 	TPCPreferencesReloadActionMemberListSortOrder					= 1 << 10,
 	TPCPreferencesReloadActionMemberListUserBadges					= 1 << 11,

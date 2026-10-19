@@ -266,7 +266,7 @@ static NSMutableArray<dispatch_block_t> *_loadsWaitingForContentRules = nil;
 
 	self.translatesAutoresizingMaskIntoConstraints = NO;
 
-	self.allowsLinkPreview = [TPCPreferences webKit2PreviewLinks];
+	self.allowsLinkPreview = NO;
 
 	self.customUserAgent = TVCLogViewCommonUserAgentString;
 

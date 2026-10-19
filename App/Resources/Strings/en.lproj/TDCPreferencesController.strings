@@ -36,10 +36,7 @@
  *********************************************************************** */
 
 "r7x-q1" = "This is not a valid regular expression";
-"r7x-q3" = "These highlight keywords are not valid regular expressions and will never match:\n\n%@\n\nCorrect them in the list of highlight keywords.";
 "r7x-q2" = "“%@” can’t be used as a highlight keyword: it would never match anything. Correct it, or switch highlight matching away from regular expressions.";
-"70s-c6" = "No Log Location Selected";
-"721-ie" = "No Location Selected";
 
 "5jv-aw" = "Are you opening this style because you are interested in modifying it?";
 "ojj-ap" = "It’s possible to modify the appearance of this style without editing its source files.
@@ -51,12 +48,6 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "dj8-1t" = "Create Copy";
 "6ws-av" = "View Files";
 
-"uc0-z7" = "Preferred Selection";
-"q4o-2f" = "The style named “%1$@” has chosen to override the following preferences with ones that it prefers for the best viewing experience:\n\n%2$@";
-
-"77t-de" = "• Nickname Format";
-"ddh-hr" = "• Timestamp Format";
-"we8-i8" = "• Channel View Font";
 "s7f-n1" = "System Font";
 
 "g7d-n1" = "Chat";
@@ -66,49 +57,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "g7d-y1" = "Use These Formats";
 "g7d-k1" = "Keep My Formats";
 
-/* Inline Media */
-"imp-t1" = "General";
-"imp-t2" = "Services";
-"imp-t3" = "Rules";
-"imp-s1" = "Show previews of links (images, videos and cards)";
-"imp-s2" = "Previews load pictures and page details from the sites that links point to, through each server’s proxy if it has one. Channels can turn previews off in Channel Properties.";
-"imp-mb" = "%lu MB";
-"imp-l1" = "Largest image:";
-"imp-l2" = "Show images at most";
-"imp-u1" = "pixels wide";
-"imp-l3" = "Hide images taller than";
-"imp-u2" = "pixels (0 for any height)";
-"imp-w1" = "Cards for other web pages";
-"imp-w2" = "The title, description and picture of any page the services below don’t cover. Only for links written with https://.";
-"imp-a1" = "A player for links to audio files";
-"imp-v1" = "Services:";
-"imp-r1" = "Preview links from:";
-"imp-r2" = "All sites except these";
-"imp-r3" = "Only these sites";
-"imp-rp" = "example.com";
-"imp-ra" = "Add Site";
-"imp-rr" = "Remove Site";
-"imp-rn" = "A site includes its subdomains: example.com also covers www.example.com. To stop previews from one person, choose “Don’t Preview Links from …” in their nickname menu; for one channel, use Channel Properties.";
-
-/* Controls → Suggestions */
-"icp-t1" = "Typing";
-"icp-h1" = "Show a list of suggestions while typing:";
-"icp-k0" = "Nicknames, after @";
-"icp-k1" = "Channels, after #";
-"icp-k2" = "Commands, after / at the start of a message";
-"icp-k3" = "Emoji, after : and two letters (:thumbsup:)";
-"icp-n1" = "↑ and ↓ choose, Tab or Return picks, Esc closes the list. A nickname is inserted without the @, with the autocomplete suffix at the start of a message. Tab completion works as before.";
-"imd-c1" = "Turn **bold**, _italic_, `code` and ||spoiler|| into formatting when sending";
-"imd-n1" = "Only at the start and end of words, so names like snake_case, file paths and links stay as typed. Option-Shift-Return (⌥⇧↩) sends one message exactly as typed. Spoilers are sent as black on black, the usual IRC spoiler.";
-
-/* Controls → Aliases */
-"als-t1" = "Aliases";
-"als-h1" = "Your own commands. Typing /name runs what is written next to it, on any server:";
-"als-c1" = "Name";
-"als-c2" = "Runs";
-"als-ad" = "Add Alias";
-"als-rm" = "Remove Alias";
-"als-n1" = "$1 to $9 are the words typed after the name, $1- is everything from the first word on; $nick is your nickname, $channel the current channel, $server the server. Separate several commands with ; (\\; for a semicolon). Textual’s own commands can’t be replaced. In a message, “/alias o /mode $channel +o $1” does the same.";
+/* The highlight word sheet */
 "hkw-h1" = "Highlight word";
 "hkw-h2" = "Excluded word";
 "hkw-t1" = "Word:";
@@ -122,18 +71,9 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "hkw-f4" = "Nicknames, separated by spaces";
 "hkw-s1" = "Sound:";
 "hkw-s2" = "Highlight sound";
-"hkw-e1" = "Edit…";
 "hkw-m1" = "♪ %@";
 "hkw-m2" = "from %@";
-"msh-c1" = "Not when a message names";
-"msh-c2" = "or more people";
-"typ-c1" = "Let others see when I’m typing";
-"typ-n1" = "In channels and private messages, on servers that support it. Typing a command doesn’t count.";
 
-"srt-c1" = "Keep channels and private messages sorted by name";
-"srt-t1" = "New channels and private messages go in their place in the server list, the order of Window → Sort Channel List. Dragging them to another place is off while this is on.";
-
-"evt-t1" = "Events";
 "evt-k0" = "Joins:";
 "evt-k1" = "Parts:";
 "evt-k2" = "Quits:";
@@ -145,51 +85,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "evt-d0" = "Show";
 "evt-d1" = "Dim";
 "evt-d2" = "Hide";
-"evt-c1" = "Collapse joins, parts, quits, nickname and away changes in a row into one line";
 "evt-n1" = "Hidden events are kept, so showing them again brings back the earlier ones too. Away and back appear on servers that report them.";
-"upl-t1" = "Uploads:";
-"upl-l1" = "Not set up";
-"upl-b1" = "Set Up…";
-"upl-b2" = "Change…";
-"upl-n1" = "Where files you drop, paste or attach are uploaded on networks that don't offer uploads. A server can use its own or none (Server Properties).";
-"upl-c1" = "Use dpaste.com for long pastes";
-"upl-n2" = "Where no upload address applies, “Send as Link” puts many lines on dpaste.com for 30 days and sends the link. Anyone with the link can read them.";
-
-/* Preferences → History */
-"his-l1" = "Keep messages:";
-"his-p1" = "1 year";
-"his-p2" = "%ld days";
-"his-p3" = "Forever";
-"his-p4" = "Off";
-"his-p5" = "2 years";
-"his-n1" = "Search (⌘F), Mentions (⌘⇧M) and the chat's history before the saved scrollback come from the message archive: messages, actions, notices and topic changes, as text, on this Mac. Servers and channels can be left out in their properties.";
-"his-l2" = "Message archive:";
-"his-s1" = "%1$@ messages, %2$@";
-"his-s2" = "1 message, %@";
-"his-s3" = "Off";
-"his-b1" = "Delete Archive…";
-"his-b2" = "Import Text Logs…";
-"his-n2" = "Adds the messages of text logs saved by Textual (also Textual 7) that are within the keep period. Messages already in the archive aren't added twice.";
-"his-l3" = "Text logs:";
-"his-c1" = "Save to folder:";
-"his-f1" = "Choose Folder…";
-"his-f2" = "Clear Folder";
-"his-n3" = "Also writes every channel's and query's messages and events to a text file per day.";
-"his-o1" = "Turn off the message archive?";
-"his-o2" = "The %@ messages in it are deleted. While it's off, nothing is kept: Search and Mentions find nothing, and the chat ends where the saved scrollback ends. Turned on again, it starts with the saved scrollback.";
-"his-o3" = "Turn Off";
-"his-k1" = "Keep messages for %@?";
-"his-k2" = "Messages older than that are deleted from the archive now.";
-"his-k3" = "Delete Older Messages";
-"his-d1" = "Delete the message archive?";
-"his-d2" = "All %@ messages in it are deleted from this Mac. New messages are kept from now on; the saved scrollback stays.";
-"his-d3" = "Delete Archive";
-"his-i1" = "Choose the folder with the text logs, or one server's or channel's folder in it.";
-"his-i2" = "Import";
-"his-i3" = "Importing… %1$lu of %2$lu files";
-"his-i4" = "Added %@ messages.";
-"his-i5" = "No new messages found.";
-"his-i6" = "Looking for text logs…";
 
 /* Settings window */
 "set-title" = "Settings";
@@ -403,7 +299,6 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-adv-v" = "Lines kept in a chat view";
 "set-adv-vh" = "Older lines load again as you scroll up. More lines use more memory.";
 "set-adv-vd" = "Standard";
-
 
 /* Settings › Appearance */
 "set-app-a0" = "Like the Mac";

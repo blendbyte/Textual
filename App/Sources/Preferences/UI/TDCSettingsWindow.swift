@@ -41,8 +41,7 @@ import SwiftUI
 /* The Settings window: a sidebar of sections with a search field, and
  each section one page of grouped rows (a grouped Form, like System Settings).
  Settings are read from and written to Textual's preferences directly; what
- depends on a key is updated through TDCSettingsBridge. Sections not rebuilt
- yet open their pane of the old Preferences window. */
+ depends on a key is updated through TDCSettingsBridge. */
 
 /// A string of the Settings window (TDCPreferencesController.strings)
 func SettingsText(_ key: String, _ arguments: CVarArg...) -> String

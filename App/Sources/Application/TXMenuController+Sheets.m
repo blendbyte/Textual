@@ -68,7 +68,6 @@
 #import "TDCInputPrompt.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCNicknameColorSheetPrivate.h"
-#import "TDCPreferencesControllerPrivate.h"
 #import "TDCSettingsWindowControllerPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
@@ -580,62 +579,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showPreferencesWindow:(nullable id)sender
 {
-	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionDefault];
+	[TDCSettingsWindowController showSection:nil];
 }
 
 - (void)showNotificationPreferences:(nullable id)sender
 {
-	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionNotifications];
+	[TDCSettingsWindowController showSection:@"notifications"];
 }
 
 - (void)showStylePreferences:(nullable id)sender
 {
-	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionStyle];
+	[TDCSettingsWindowController showSection:@"appearance"];
 }
 
 - (void)showHiddenPreferences:(nullable id)sender
 {
-	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionHiddenPreferences];
-}
-
-/* The Settings window; a selection picks its section */
-- (void)showPreferencesWindowWithSelection:(TDCPreferencesControllerSelection)selection
-{
-	NSString *section = nil;
-
-	switch (selection) {
-		case TDCPreferencesControllerSelectionNotifications: { section = @"notifications"; break; }
-		case TDCPreferencesControllerSelectionStyle: { section = @"appearance"; break; }
-		case TDCPreferencesControllerSelectionHiddenPreferences: { section = @"advanced"; break; }
-		case TDCPreferencesControllerSelectionHistory: { section = @"history"; break; }
-		default: { break; }
-	}
-
-	[TDCSettingsWindowController showSection:section];
-}
-
-/* The old Preferences window, for the sections of Settings not rebuilt yet */
-- (void)showLegacyPreferencesPaneWithTag:(NSInteger)tag
-{
-	TDCPreferencesController *controller = [windowController() windowFromWindowList:@"TDCPreferencesController"];
-
-	if (controller == nil) {
-		controller = [TDCPreferencesController new];
-
-		controller.delegate = (id)self;
-
-		[windowController() addWindowToWindowList:controller];
-	}
-
-	[controller showPaneWithTag:tag];
-}
-
-- (void)preferencesDialogWillClose:(TDCPreferencesController *)sender
-{
-	[TPCPreferences performReloadAction:(TPCPreferencesReloadActionHighlightKeywords |
-										 TPCPreferencesReloadActionPreferencesChanged)];
-
-	[windowController() removeWindowFromWindowList:sender];
+	[TDCSettingsWindowController showSection:@"advanced"];
 }
 
 @end

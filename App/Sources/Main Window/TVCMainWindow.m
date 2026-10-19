@@ -246,13 +246,6 @@ static BOOL _popOutsOpened = NO;
 	}
 }
 
-+ (void)updateAlphaValueToReflectPreferences
-{
-	for (TVCMainWindow *window in self.windows) {
-		[window updateAlphaValueToReflectPreferences];
-	}
-}
-
 + (void)updateChannelViewArrangement
 {
 	for (TVCMainWindow *window in self.windows) {
@@ -325,8 +318,6 @@ static BOOL _popOutsOpened = NO;
 	self.delegate = (id)self;
 
 	self.allowsConcurrentViewDrawing = NO;
-
-	self.alphaValue = [TPCPreferences mainWindowTransparency];
 
 	/* A pop-out: a window only, the application is up already */
 	if ([self.class isLoadingPopOut]) {
@@ -525,26 +516,6 @@ static BOOL _popOutsOpened = NO;
 	[super notifyApplicationAppearanceChanged];
 
 	[RZNotificationCenter() postNotificationName:TVCMainWindowAppearanceChangedNotification object:self];
-}
-
-- (void)updateAlphaValueToReflectPreferences
-{
-	[self updateAlphaValueToReflectPreferencesAnimated:NO];
-}
-
-- (void)updateAlphaValueToReflectPreferencesAnimated:(BOOL)animate
-{
-	if (self.inFullscreenMode) {
-		return;
-	}
-
-	double alphaValue = [TPCPreferences mainWindowTransparency];
-
-	if (animate) {
-		[self animator].alphaValue = alphaValue;
-	} else {
-		self.alphaValue = alphaValue;
-	}
 }
 
 - (void)loadWindowState
@@ -818,16 +789,6 @@ static BOOL _popOutsOpened = NO;
 - (NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions
 {
 	return proposedOptions;
-}
-
-- (void)windowDidExitFullScreen:(NSNotification *)notification
-{
-	[self updateAlphaValueToReflectPreferencesAnimated:YES];
-}
-
-- (void)windowWillEnterFullScreen:(NSNotification *)notification
-{
-	[self animator].alphaValue = 1.0;
 }
 
 /* The Format menu at the end of the input field's context menu. This was done
