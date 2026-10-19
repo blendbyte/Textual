@@ -1656,6 +1656,10 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 		return 0;
 	}
 
+	/* Lines printed just now wait to be written: written first, they aren't
+	 imported again */
+	[self _writePendingRows];
+
 	sqlite3_stmt *existsStatement = NULL;
 
 	if (sqlite3_prepare_v2(self.database, "SELECT 1 FROM messages WHERE view_id = ? AND time >= ? AND time < ? AND nickname IS ? AND body = ? LIMIT 1", -1, &existsStatement, NULL) != SQLITE_OK) {
