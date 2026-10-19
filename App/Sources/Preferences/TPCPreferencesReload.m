@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Main window appearance */
-	if ([keys containsObject:@"Appearance"]) {
+	if ([keys containsObject:@"Appearance"] || [keys containsObject:@"DisableSidebarTranslucency"]) {
 		reloadAction |= TPCPreferencesReloadActionAppearance;
 	}
 

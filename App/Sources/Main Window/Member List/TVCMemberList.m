@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "IRCUser.h"
+#import "TVCMainWindowPrivate.h"
 #import "IRCChannelUser.h"
 #import "IRCChannelPrivate.h"
 #import "IRCChannelMemberListPrivate.h"
@@ -494,13 +495,7 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 
 	NSVisualEffectView *visualEffectView = self.visualEffectView;
 
-	if ([TPCPreferences disableSidebarTranslucency]) {
-		visualEffectView.state = NSVisualEffectStateInactive;
-	} else {
-		visualEffectView.state = NSVisualEffectStateFollowsWindowActiveState;
-	}
-
-	visualEffectView.material = NSVisualEffectMaterialSidebar;
+	[TVCMainWindow applySidebarTranslucencyToView:visualEffectView];
 }
 
 - (void)applicationAppearanceChanged

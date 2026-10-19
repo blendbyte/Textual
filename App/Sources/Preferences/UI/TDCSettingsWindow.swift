@@ -134,12 +134,129 @@ enum SettingsSection: String, CaseIterable, Identifiable
 
 // MARK: - Window
 
+/// Where Settings is: a section, and the pages opened from it
+struct SettingsLocation: Equatable
+{
+	var section: SettingsSection?
+	var path: [SettingsSubpage]
+}
+
 final class SettingsModel: ObservableObject
 {
 	@Published var selection: SettingsSection? = .general
+	{
+		didSet {
+			guard selection != oldValue, restoring == false else {
+				return
+			}
+
+			record(SettingsLocation(section: oldValue, path: path))
+
+			/* A section starts on its first page */
+			restoring = true
+			path = []
+			restoring = false
+		}
+	}
+
 	@Published var query = ""
 
+	/* The pages opened from a section's page (a style, an extension) */
+	@Published var path: [SettingsSubpage] = []
+	{
+		didSet {
+			guard path != oldValue, restoring == false else {
+				return
+			}
+
+			record(SettingsLocation(section: selection, path: oldValue))
+		}
+	}
+
+	/* Back and forward go through every page shown, across sections, as in
+	 System Settings */
+	@Published private(set) var backList: [SettingsLocation] = []
+	@Published private(set) var forwardList: [SettingsLocation] = []
+
+	/* The page's big title is under the toolbar: the toolbar shows it */
+	@Published var titleScrolledAway = false
+
+	private var restoring = false
+
 	weak var window: NSWindow?
+
+	private var location: SettingsLocation
+	{
+		SettingsLocation(section: selection, path: path)
+	}
+
+	private func record(_ location: SettingsLocation)
+	{
+		titleScrolledAway = false
+
+		guard location.section != nil else {
+			return
+		}
+
+		backList.append(location)
+
+		forwardList.removeAll()
+	}
+
+	func goBack()
+	{
+		guard let previous = backList.popLast() else {
+			return
+		}
+
+		forwardList.append(location)
+
+		go(to: previous)
+	}
+
+	func goForward()
+	{
+		guard let next = forwardList.popLast() else {
+			return
+		}
+
+		backList.append(location)
+
+		go(to: next)
+	}
+
+	private func go(to location: SettingsLocation)
+	{
+		restoring = true
+		selection = location.section
+		path = location.path
+		restoring = false
+
+		titleScrolledAway = false
+	}
+
+	/// The title the toolbar shows once the page's own is out of sight
+	var pageTitle: String
+	{
+		switch path.last {
+			case .styles:
+				return SettingsText("set-app-h1")
+			case let .pluginPane(_, title):
+				return title
+			case nil:
+				return (selection?.title ?? "")
+		}
+	}
+
+	var pageTitleInToolbar: Bool
+	{
+		/* An addon's page has no big title of its own */
+		if case .pluginPane = path.last {
+			return true
+		}
+
+		return titleScrolledAway
+	}
 }
 
 @objc(TDCSettingsWindowController)
@@ -229,6 +346,71 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate
 		window.delegate = self
 
 		model.window = window
+
+		keepToolbar()
+
+		followMainWindowAppearance()
+	}
+
+	private var appearanceObserver: NSObjectProtocol?
+
+	/* Light or Dark in Appearance sets the main window's look, not the app's:
+	 Settings stayed in the Mac's while the chat changed */
+	private func followMainWindowAppearance()
+	{
+		window?.appearance = TDCSettingsBridge.mainWindowAppearance
+
+		appearanceObserver = NotificationCenter.default.addObserver(forName: .init("TVCMainWindowAppearanceChangedNotification"), object: nil, queue: .main) { [weak self] (notification) in
+			self?.window?.appearance = (notification.object as? NSWindow)?.appearance
+		}
+	}
+
+	private var toolbarObservation: NSKeyValueObservation?
+	private var toolbarVisibilityObservation: NSKeyValueObservation?
+
+	/* Back from a page (a style, an extension), SwiftUI takes the toolbar
+	 away: the window then shrank to a bare title bar and its contents moved */
+	private func keepToolbar()
+	{
+		guard let window = window else {
+			return
+		}
+
+		toolbarObservation = window.observe(\.toolbar, options: [.new]) { [weak self] (window, _) in
+			DispatchQueue.main.async {
+				self?.restoreToolbar()
+			}
+		}
+
+		restoreToolbar()
+	}
+
+	private func restoreToolbar()
+	{
+		guard let window = window else {
+			return
+		}
+
+		if (window.toolbar == nil) {
+			window.toolbar = NSToolbar(identifier: "Settings")
+		}
+
+		guard let toolbar = window.toolbar else {
+			return
+		}
+
+		if (toolbar.isVisible == false) {
+			toolbar.isVisible = true
+		}
+
+		toolbarVisibilityObservation = toolbar.observe(\.isVisible, options: [.new]) { (toolbar, _) in
+			if (toolbar.isVisible == false) {
+				DispatchQueue.main.async {
+					toolbar.isVisible = true
+				}
+			}
+		}
+
 	}
 
 	required init?(coder: NSCoder)
@@ -259,7 +441,7 @@ struct SettingsRootView: View
 			VStack(spacing: 0) {
 				SettingsSearchField(text: $model.query, prompt: SettingsText("set-search"))
 					.padding(.horizontal, 10)
-					.padding(.top, 2)
+					.padding(.top, 8)
 					.padding(.bottom, 16)
 
 				List(selection: $model.selection) {
@@ -282,14 +464,28 @@ struct SettingsRootView: View
 			.navigationSplitViewColumnWidth(min: 230, ideal: 230, max: 320)
 			.toolbar(removing: .sidebarToggle)
 		} detail: {
-			NavigationStack {
+			NavigationStack(path: $model.path) {
 				if let section = model.selection {
 					SettingsPage(section: section)
 						.id(section)
+						.settingsToolbar(model: model)
+						.navigationDestination(for: SettingsSubpage.self) { subpage in
+							subpage.page
+								.navigationBarBackButtonHidden(true)
+								.settingsToolbar(model: model)
+						}
 				}
 			}
 		}
 		.environmentObject(model)
+		.onChange(of: model.pageTitleInToolbar) { _, inToolbar in
+			/* The window's title is the page's: shown next to back and
+			 forward, as in System Settings. A moment later: an addon's
+			 page shows it from the start, and set as it opened, it didn't. */
+			DispatchQueue.main.async {
+				model.window?.titleVisibility = (model.pageTitleInToolbar ? .visible : .hidden)
+			}
+		}
 		.onChange(of: model.query) { _, _ in
 			/* The first section that matches, as System Settings does */
 			let sections = visibleSections
@@ -300,6 +496,90 @@ struct SettingsRootView: View
 
 			model.selection = sections.first
 		}
+	}
+}
+
+/// A page opened from a section's page
+enum SettingsSubpage: Hashable
+{
+	case styles
+	case pluginPane(index: Int, title: String)
+
+	@ViewBuilder
+	var page: some View
+	{
+		switch self {
+			case .styles:
+				StylePickerPage()
+			case let .pluginPane(index, title):
+				ScrollView {
+					PluginPaneView(index: index)
+						.frame(minHeight: 400)
+						.padding()
+				}
+				.navigationTitle(title)
+		}
+	}
+}
+
+extension View
+{
+	/* Back and forward are always there, as in System Settings, and can only
+	 be clicked when there is somewhere to go. Always having them also keeps
+	 the toolbar the same height: the sidebar moved going back and forth. */
+	func settingsToolbar(model: SettingsModel) -> some View
+	{
+		toolbar {
+			ToolbarItem(placement: .navigation) {
+				SettingsNavigationButtons(model: model)
+			}
+		}
+	}
+
+	/// The big title of a page: once it scrolls under the toolbar, the
+	/// toolbar shows the title instead
+	func settingsPageTitle(model: SettingsModel) -> some View
+	{
+		onGeometryChange(for: Bool.self) { (geometry) in
+			(geometry.frame(in: .global).maxY < SettingsToolbarHeight)
+		} action: { (scrolledAway) in
+			if (model.titleScrolledAway != scrolledAway) {
+				model.titleScrolledAway = scrolledAway
+			}
+		}
+	}
+}
+
+/* The window's top down to the bottom of its toolbar */
+private let SettingsToolbarHeight: CGFloat = 52
+
+struct SettingsNavigationButtons: View
+{
+	@ObservedObject var model: SettingsModel
+
+	var body: some View
+	{
+		ControlGroup {
+			Button {
+				model.goBack()
+			} label: {
+				Label(SettingsText("set-back"), systemImage: "chevron.backward")
+			}
+			.help(SettingsText("set-back"))
+			.keyboardShortcut("[", modifiers: .command)
+			.disabled(model.backList.isEmpty)
+
+			Button {
+				model.goForward()
+			} label: {
+				Label(SettingsText("set-forward"), systemImage: "chevron.forward")
+			}
+			.help(SettingsText("set-forward"))
+			.keyboardShortcut("]", modifiers: .command)
+			.disabled(model.forwardList.isEmpty)
+		}
+		.controlGroupStyle(.navigation)
+		.labelStyle(.iconOnly)
 	}
 }
 
@@ -392,6 +672,7 @@ struct SettingsPage: View
 		Group {
 			switch section {
 				case .general: GeneralSettings()
+				case .appearance: AppearanceSettings()
 				case .lists: ListsSettings()
 				case .servers: ServersSettings()
 				case .commands: CommandsSettings()
@@ -411,6 +692,8 @@ struct SettingsPageHeader: View
 {
 	let section: SettingsSection
 
+	@EnvironmentObject private var model: SettingsModel
+
 	var body: some View
 	{
 		VStack(spacing: 6) {
@@ -419,6 +702,7 @@ struct SettingsPageHeader: View
 
 			Text(section.title)
 				.font(.title.weight(.semibold))
+				.settingsPageTitle(model: model)
 
 			Text(section.lead)
 				.foregroundStyle(.secondary)
@@ -449,6 +733,31 @@ struct SettingLabel: View
 					.foregroundStyle(.secondary)
 					.fixedSize(horizontal: false, vertical: true)
 			}
+		}
+	}
+}
+
+/// A number chosen from a menu of sensible values, as System Settings
+/// does ("Turn display off after: 10 minutes"); a value set before that
+/// isn't one of them is in the menu too
+struct SettingValuePicker<Value: Hashable & Comparable>: View
+{
+	let title: String
+	var help: String? = nil
+	let selection: Binding<Value>
+	let values: [Value]
+	let name: (Value) -> String
+
+	var body: some View
+	{
+		let choices = (values.contains(selection.wrappedValue) ? values : (values + [selection.wrappedValue]).sorted())
+
+		Picker(selection: selection) {
+			ForEach(choices, id: \.self) { (value) in
+				Text(name(value)).tag(value)
+			}
+		} label: {
+			SettingLabel(title: title, help: help)
 		}
 	}
 }

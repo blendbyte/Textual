@@ -53,6 +53,7 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 
 @interface TXAppearance ()
 @property (nonatomic, strong, readwrite) TXAppearancePropertyCollection *properties;
+@property (nonatomic, assign) BOOL forceNextNotification;
 @end
 
 @implementation TXAppearance
@@ -144,9 +145,15 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 	[self updateAppearanceBySystemChange];
 }
 
+/* From a preference change: views update even when light or dark stayed the
+ same (translucent sidebars, for one, are applied while they update) */
 - (void)updateAppearance
 {
+	self.forceNextNotification = YES;
+
 	[self updateAppearanceBySystemChange:NO];
+
+	self.forceNextNotification = NO;
 }
 
 - (void)updateAppearanceBySystemChange
@@ -211,7 +218,7 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 		 signal views to perform selection update so that vibrant
 		 views can draw correctly when the system changes. */
 
-		if (systemChanged == NO) {
+		if (systemChanged == NO && self.forceNextNotification == NO) {
 			return;
 		}
 	}

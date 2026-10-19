@@ -17,7 +17,7 @@
 	<key>AutojoinDelayAfterIdentification</key>
 	<real>0.0</real>
 	<key>AutojoinDelayBetweenChannelJoins</key>
-	<real>2.2</real>
+	<real>2.0</real>
 	<key>AutojoinMaximumChannelJoinCount</key>
 	<integer>2</integer>
 	<key>AutomaticallyAddScrollbackMarker</key>

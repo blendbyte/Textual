@@ -329,6 +329,14 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 - (void)disableSystemSleep
 {
+	if ([TPCPreferences fileTransfersPreventIdleSystemSleep] == NO) {
+		return;
+	}
+
+	if (self.transferProgressHandler) {
+		return;
+	}
+
 	self.transferProgressHandler = [RZProcessInfo() beginActivityWithOptions:NSActivityUserInitiated reason:@"Transferring file"];
 }
 

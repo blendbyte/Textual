@@ -45,6 +45,7 @@
 
 // TDCSettingsWindow.swift, TDCSettingsSections.swift
 #import "TDCSettingsBridgePrivate.h"
+#import "TVCMainWindow.h"
 
 // TLOLinkParser.swift
 #import "TVCLogLine.h"

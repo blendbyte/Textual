@@ -500,6 +500,10 @@ static BOOL _popOutsOpened = NO;
 
 	[self updateVibrancyWithAppearance:appearance];
 
+	if ([self.titlebarBackgroundView isKindOfClass:[NSVisualEffectView class]]) {
+		[self.class applySidebarTranslucencyToView:(NSVisualEffectView *)self.titlebarBackgroundView];
+	}
+
 	[self notifyApplicationAppearanceChanged];
 }
 

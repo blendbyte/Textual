@@ -287,6 +287,37 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 	[monitor startMonitoringWithLatency:5.0];
 
 	self.fileSystemMonitor = monitor;
+
+	self.monitoringStartDate = [NSDate date];
+
+	self.monitoredModificationDates = [NSMutableDictionary dictionary];
+}
+
+/* Copying the style for the views (on every reload) reports its files as
+ changed without changing them: that reloaded the style every five seconds.
+ A file counts as changed when its modification date moved on. */
+- (BOOL)_fileWasModifiedAtURL:(NSURL *)url
+{
+	NSParameterAssert(url != nil);
+
+	NSDate *modified = nil;
+
+	/* A new URL: an old one keeps the date it read first */
+	[[NSURL fileURLWithPath:url.path] getResourceValue:&modified forKey:NSURLContentModificationDateKey error:NULL];
+
+	if (modified == nil) {
+		return YES;
+	}
+
+	NSDate *previous = (self.monitoredModificationDates[url.path] ?: self.monitoringStartDate);
+
+	if (previous && [modified compare:previous] != NSOrderedDescending) {
+		return NO;
+	}
+
+	self.monitoredModificationDates[url.path] = modified;
+
+	return YES;
 }
 
 - (void)_concludeMonitoringEventWithResult:(_TPCThemeMonitoringResult)result
@@ -378,8 +409,9 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 	/* Do #2 */
 	NSString *fileExtension = url.pathExtension;
 
-	if ([fileExtension isEqual:@"css"] ||
-		[fileExtension isEqual:@"js"])
+	if (([fileExtension isEqual:@"css"] ||
+		 [fileExtension isEqual:@"js"]) &&
+		[self _fileWasModifiedAtURL:url])
 	{
 		result |= _TPCThemeMonitoringResultReloadableFileModified;
 	}

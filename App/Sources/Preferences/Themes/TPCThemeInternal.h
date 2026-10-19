@@ -60,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) GRMustacheTemplateRepository *defaultTemplateRepository;
 @property (atomic, strong, readwrite) TPCThemeSettings *settings; // atomic: lines are rendered on other threads while a light/dark switch replaces it
 @property (nonatomic, strong, nullable) XRFileSystemMonitor *fileSystemMonitor;
+@property (nonatomic, copy, nullable) NSDate *monitoringStartDate;
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSDate *> *monitoredModificationDates;
 @end
 
 @interface TPCThemeSettings ()

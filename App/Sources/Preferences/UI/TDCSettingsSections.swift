@@ -239,24 +239,22 @@ struct ServersSettings: View
 
 				SettingToggle(title: SettingsText("set-srv-k"), isOn: store.bool("RejoinChannelOnLocalKick"))
 
-				let afterIdentifying = store.double("AutojoinDelayAfterIdentification")
-
-				Stepper(value: afterIdentifying, in: 0...10, step: 0.5) {
-					SettingLabel(title: ((afterIdentifying.wrappedValue == 0) ? SettingsText("set-srv-w10") : SettingsText("set-srv-w1", seconds(afterIdentifying.wrappedValue))),
-								 help: SettingsText("set-srv-w1h"))
+				SettingValuePicker(title: SettingsText("set-srv-w1"), help: SettingsText("set-srv-w1h"),
+								   selection: store.double("AutojoinDelayAfterIdentification"),
+								   values: [0, 1, 2, 3, 5, 10]) { (value) in
+					((value == 0) ? SettingsText("set-srv-w10") : seconds(value))
 				}
 
-				let betweenJoins = store.double("AutojoinDelayBetweenChannelJoins")
-
-				Stepper(value: betweenJoins, in: 0.5...10, step: 0.5) {
-					SettingLabel(title: SettingsText("set-srv-w2", seconds(betweenJoins.wrappedValue)), help: SettingsText("set-srv-w2h"))
+				SettingValuePicker(title: SettingsText("set-srv-w2"), help: SettingsText("set-srv-w2h"),
+								   selection: store.double("AutojoinDelayBetweenChannelJoins"),
+								   values: [0.5, 1, 2, 3, 5, 10]) { (value) in
+					seconds(value)
 				}
 
-				let awayTracking = store.integer("TrackUserAwayStatusMaximumChannelSize")
-
-				Stepper(value: awayTracking, in: 0...2000, step: 50) {
-					SettingLabel(title: ((awayTracking.wrappedValue == 0) ? SettingsText("set-srv-a0") : SettingsText("set-srv-a", awayTracking.wrappedValue)),
-								 help: SettingsText("set-srv-ah"))
+				SettingValuePicker(title: SettingsText("set-srv-a"), help: SettingsText("set-srv-ah"),
+								   selection: store.integer("TrackUserAwayStatusMaximumChannelSize"),
+								   values: [0, 100, 200, 300, 500, 1000]) { (value) in
+					((value == 0) ? SettingsText("set-srv-a0") : SettingsText("set-srv-an", value))
 				}
 			}
 
@@ -412,7 +410,7 @@ struct FilesSettings: View
 			}
 
 			Section(SettingsText("set-fil-h1")) {
-				LabeledContent(SettingsText("set-fil-d")) {
+				LabeledContent {
 					Menu {
 						Button(SettingsText("set-fil-dc")) {
 							if let window = model.window {
@@ -433,6 +431,8 @@ struct FilesSettings: View
 						}
 					}
 					.fixedSize()
+				} label: {
+					SettingLabel(title: SettingsText("set-fil-d"), help: SettingsText("set-fil-dh"))
 				}
 
 				Picker(SettingsText("set-fil-r"), selection: store.integer("File Transfers -> File Transfer Request Reply Action")) {
@@ -551,14 +551,7 @@ struct ExtensionsSettings: View
 			if (paneTitles.isEmpty == false) {
 				Section(SettingsText("set-ext-h1")) {
 					ForEach(Array(paneTitles.enumerated()), id: \.offset) { (index, title) in
-						NavigationLink(title) {
-							ScrollView {
-								PluginPaneView(index: index)
-									.frame(minHeight: 400)
-									.padding()
-							}
-							.navigationTitle(title)
-						}
+						NavigationLink(title, value: SettingsSubpage.pluginPane(index: index, title: title))
 					}
 				}
 			}

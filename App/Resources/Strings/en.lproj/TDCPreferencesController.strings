@@ -44,7 +44,9 @@
 "5jv-aw" = "Are you opening this style because you are interested in modifying it?";
 "ojj-ap" = "It’s possible to modify the appearance of this style without editing its source files.
 
-Click “Edit Style” to add your own style sheet rules. This feature can also be found in the Developers section of Preferences.";
+Click “Edit Style” to add your own style sheet rules. It is also in Settings → Advanced (Custom CSS).
+
+Textual’s own styles are replaced when Textual updates: “Create Copy” makes one of your own to change freely.";
 "aib-iy" = "Edit Style";
 "dj8-1t" = "Create Copy";
 "6ws-av" = "View Files";
@@ -192,6 +194,8 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 /* Settings window (12.11) */
 "set-title" = "Settings";
 "set-search" = "Search";
+"set-back" = "Back";
+"set-forward" = "Forward";
 "set-reset" = "Reset";
 "set-optional" = "Optional";
 
@@ -305,16 +309,17 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "set-srv-h2" = "Joining channels";
 "set-srv-j" = "Join channels I’m invited to";
 "set-srv-k" = "Rejoin after being kicked";
-"set-srv-w1" = "Wait %@ after identifying";
+"set-srv-w1" = "Wait after identifying";
 "set-srv-w1h" = "So channels that need you to be logged in see you logged in.";
-"set-srv-w2" = "Wait %@ between channels";
+"set-srv-w2" = "Wait between channels";
 "set-srv-w2h" = "Joining many channels at once can get you disconnected on some networks.";
 "set-srv-s1" = "1 second";
-"set-srv-w10" = "Don’t wait after identifying";
+"set-srv-w10" = "Don’t wait";
 "set-srv-sn" = "%@ seconds";
-"set-srv-a0" = "Don’t track who is away";
-"set-srv-a" = "Track who is away in channels up to %ld people";
-"set-srv-ah" = "Textual asks the server from time to time. In bigger channels that would cost too much traffic.";
+"set-srv-a0" = "Never";
+"set-srv-a" = "Track who is away";
+"set-srv-an" = "In channels up to %ld people";
+"set-srv-ah" = "Only on servers that don’t report it by themselves (most current ones do). Textual asks the server from time to time; in bigger channels that would cost too much traffic.";
 "set-srv-h3" = "Replies";
 "set-srv-c" = "Answer CTCP requests";
 "set-srv-ch" = "Tells people who ask which client you use and your local time.";
@@ -355,6 +360,7 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "set-fil-d" = "Save downloads to";
 "set-fil-dc" = "Choose Folder…";
 "set-fil-da" = "Ask each time";
+"set-fil-dh" = "With “Ask each time”, Textual asks where to save when you start a download. Files it downloads by itself go to Downloads.";
 "set-fil-r" = "When someone sends you a file";
 "set-fil-r1" = "Ignore it";
 "set-fil-r2" = "Ask me";
@@ -409,3 +415,47 @@ Click “Edit Style” to add your own style sheet rules. This feature can also 
 "set-old-previews" = "Inline Media";
 "set-old-history" = "History";
 "set-old-behavior" = "Behavior";
+
+/* Settings › Appearance (12.11 S2) */
+"set-app-a0" = "Like the Mac";
+"set-app-a1" = "Light";
+"set-app-a2" = "Dark";
+"set-app-h1" = "Style";
+"set-app-s" = "More styles";
+"set-app-sh" = "Styles are folders of CSS. Download more, or make your own from one of these.";
+"set-app-sb" = "Browse Style Files…";
+"set-app-c" = "This style chooses its own %@.";
+"set-app-ct" = "time format";
+"set-app-cn" = "nickname format";
+"set-app-cf" = "font";
+"set-app-np" = "Preview after first use";
+"set-app-own" = "A style of your own.";
+"set-app-h2" = "Messages appear as";
+"set-app-d1" = "Chat groups each person’s messages under their name, like modern messengers. The time shows next to the name.";
+"set-app-d0" = "Classic puts the time and the name in front of every line, like traditional IRC clients. Compact and easy to scan.";
+"set-app-du" = "This style only has the Classic display.";
+"set-app-h3" = "Text";
+"set-app-f" = "Font: %@";
+"set-app-fh" = "Used in the chat.";
+"set-app-fhs" = "This style chooses its own font.";
+"set-app-fc" = "Change…";
+"set-app-fs" = "Use System Font";
+"set-app-r" = "Right-to-left text";
+"set-app-rh" = "For Arabic, Hebrew and other languages written from right to left.";
+"set-app-h4" = "Window";
+"set-app-t" = "Translucent sidebars";
+"set-app-th" = "The server and member lists let the desktop shine through.";
+"set-app-l" = "Several channels at once";
+"set-app-lh" = "When you show more than one channel in the window.";
+"set-app-l0" = "Stacked";
+"set-app-l1" = "Side by side";
+
+"set-sty-Lumen" = "New in Textual 8. Calm and roomy, light and dark.";
+"set-sty-Simplified" = "Textual 7’s default. Light and dark.";
+"set-sty-Tomorrow" = "Soft colors, light and dark.";
+"set-sty-Equinox" = "Grey, with gentle highlights.";
+"set-sty-Sapientia" = "Warm, with a colon after names.";
+"set-sty-Total Sublime" = "Dark, like a code editor.";
+"set-sty-Astria" = "Bright colors on black.";
+"set-sty-Sulaco" = "Names in a column, times on the right.";
+"set-app-pl" = "How the chat looks: colors, spacing and where names and times go.";

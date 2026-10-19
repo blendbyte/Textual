@@ -233,9 +233,9 @@ NS_ASSUME_NONNULL_BEGIN
 		NSVisualEffectView *backgroundView = [NSVisualEffectView new];
 
 		backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
-		backgroundView.material = NSVisualEffectMaterialSidebar;
 		backgroundView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
-		backgroundView.state = NSVisualEffectStateFollowsWindowActiveState;
+
+		[self.class applySidebarTranslucencyToView:backgroundView];
 
 		[contentView addSubview:backgroundView];
 
@@ -268,6 +268,24 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.titlebarAppearsTransparent = YES;
+}
+
+/* Translucent sidebars (Settings → Appearance): the sidebar material lets the
+ desktop through; off, the window's own opaque background. ("Inactive" is
+ no longer opaque since Big Sur, so the state alone doesn't do it.) */
++ (void)applySidebarTranslucencyToView:(nullable NSVisualEffectView *)view
+{
+	if (view == nil) {
+		return;
+	}
+
+	if ([TPCPreferences disableSidebarTranslucency]) {
+		view.material = NSVisualEffectMaterialWindowBackground;
+		view.state = NSVisualEffectStateActive;
+	} else {
+		view.material = NSVisualEffectMaterialSidebar;
+		view.state = NSVisualEffectStateFollowsWindowActiveState;
+	}
 }
 
 - (void)addAccessoryViewsToTitlebar

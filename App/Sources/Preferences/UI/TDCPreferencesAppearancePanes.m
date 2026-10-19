@@ -1133,10 +1133,11 @@ static NSString * const _chatTimestampFormat = @"%H:%M";
 		return;
 	}
 
-	/* The section may have left the window (closed) before the style loaded */
+	/* The section may have left the window (closed) before the style loaded,
+	 or the style may have been chosen in Settings, which says it on its page */
 	NSWindow *window = self.view.window;
 
-	if (window == nil) {
+	if (window == nil || window.isKeyWindow == NO) {
 		return;
 	}
 

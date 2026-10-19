@@ -220,6 +220,9 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 /* The sidebars carry on up into a transparent title bar (10.1) */
 - (void)setUpUnifiedTitlebar;
 
+/* Translucent or opaque, as Settings → Appearance says */
++ (void)applySidebarTranslucencyToView:(nullable NSVisualEffectView *)view;
+
 - (BOOL)reloadLoadingScreen;
 
 - (void)updateTitle;

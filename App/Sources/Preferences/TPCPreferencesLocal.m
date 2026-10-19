@@ -1016,13 +1016,25 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [[self themeChannelViewFontName] isEqualToString:TPCPreferencesThemeFontNameSystemFont];
 }
 
-/* The font panel names the system font ".AppleSystemUIFont" (or a weight of it):
- not a name WebKit or a later launch can use, so it's stored as the marker */
+/* The font panel names the system font ".AppleSystemUIFont" or ".SFNS-Regular"
+ (or a weight of it): not a name WebKit or a later launch can use, so it's
+ stored as the marker */
 + (BOOL)_fontNameIsSystemFont:(NSString *)fontName
 {
-	return ([fontName isEqualToString:TPCPreferencesThemeFontNameSystemFont] ||
-			[fontName hasPrefix:@".AppleSystemUIFont"] ||
-			[fontName isEqualToString:[NSFont systemFontOfSize:0].fontName]);
+	if ([fontName isEqualToString:TPCPreferencesThemeFontNameSystemFont] ||
+		[fontName hasPrefix:@".AppleSystemUIFont"] ||
+		[fontName isEqualToString:[NSFont systemFontOfSize:0].fontName])
+	{
+		return YES;
+	}
+
+	if ([fontName hasPrefix:@"."] == NO) {
+		return NO;
+	}
+
+	NSString *familyName = [NSFont fontWithName:fontName size:0].familyName;
+
+	return (familyName && [familyName isEqualToString:[NSFont systemFontOfSize:0].familyName]);
 }
 
 + (void)setThemeChannelViewFontName:(NSString *)value
