@@ -136,4 +136,41 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class, readonly) BOOL nicknameFormatChosenByStyle;
 @end
 
+@interface TDCSettingsBridge (Typing)
+/* Turned off while typing somewhere, "done" goes out first */
+@property (class) BOOL sendTypingNotifications;
+@end
+
+@interface TDCSettingsBridge (Notifications)
+/* The kinds of events (TXNotificationType), in groups as listed */
+@property (class, readonly, copy) NSArray<NSArray<NSNumber *> *> *notificationEventGroups;
+
++ (NSString *)titleForNotificationEvent:(NSInteger)event;
+
+/* "Enabled", "Sound", "Bounce Dock Icon", "Bounce Dock Icon Repeatedly",
+ "Speak", "Disable While Away" */
++ (NSString *)notificationKeyForEvent:(NSInteger)event category:(NSString *)category;
+
+@property (class, readonly, copy) NSArray<NSString *> *alertSounds;
+
++ (void)playAlertSound:(NSString *)name;
+@end
+
+@interface TDCSettingsBridge (Highlights)
++ (NSArray<NSDictionary<NSString *, id> *> *)highlightKeywordEntriesExcluded:(BOOL)excluded;
+
++ (nullable NSString *)summaryOfHighlightKeywordEntry:(NSDictionary<NSString *, id> *)entry;
+
+/* index -1 adds one */
++ (void)editHighlightKeywordAtIndex:(NSInteger)index excluded:(BOOL)excluded inWindow:(NSWindow *)window;
+
++ (void)removeHighlightKeywordAtIndex:(NSInteger)index excluded:(BOOL)excluded;
+
+/* Your nickname on the server in front, else the one for new servers */
+@property (class, readonly, copy) NSString *highlightSampleNickname;
+
+/* Words that aren't valid regular expressions, while matching by them */
+@property (class, readonly, copy) NSArray<NSString *> *invalidRegularExpressionKeywords;
+@end
+
 NS_ASSUME_NONNULL_END

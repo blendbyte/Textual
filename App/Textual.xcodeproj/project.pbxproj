@@ -130,6 +130,9 @@
 		4CD13566DD916CD218448402 /* TDCSettingsBridgePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C81C2432334F0FCD14C81BC /* TDCSettingsBridgePrivate.h */; };
 		4C4C481F03C9462FB90BEE71 /* TDCSettingsSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD3CD50C985CADFDC20AEA8 /* TDCSettingsSections.swift */; };
 		4CAB508E94223D80C7624D70 /* TDCSettingsAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC3FF61C0D12048BC3A554C /* TDCSettingsAppearance.swift */; };
+		4478084D39344101AD2CD11F /* TDCSettingsHighlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1847E60C83094971BCE7522D /* TDCSettingsHighlights.swift */; };
+		7A4A90094AA140EFAC5D4EF5 /* TDCSettingsNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = A023933D4034495B93A8ADE2 /* TDCSettingsNotifications.swift */; };
+		DB9A668BB6084612B673FE34 /* TDCSettingsTyping.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FD9DDABBE148D7BADF2228 /* TDCSettingsTyping.swift */; };
 		9D35529E80B44E7A9466F627 /* TDCSettingsMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */; };
 		4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */; };
 		4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */; };
@@ -1311,6 +1314,9 @@
 		4C81C2432334F0FCD14C81BC /* TDCSettingsBridgePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCSettingsBridgePrivate.h; sourceTree = "<group>"; };
 		4CD3CD50C985CADFDC20AEA8 /* TDCSettingsSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsSections.swift; sourceTree = "<group>"; };
 		4CC3FF61C0D12048BC3A554C /* TDCSettingsAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsAppearance.swift; sourceTree = "<group>"; };
+		1847E60C83094971BCE7522D /* TDCSettingsHighlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsHighlights.swift; sourceTree = "<group>"; };
+		A023933D4034495B93A8ADE2 /* TDCSettingsNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsNotifications.swift; sourceTree = "<group>"; };
+		E4FD9DDABBE148D7BADF2228 /* TDCSettingsTyping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsTyping.swift; sourceTree = "<group>"; };
 		5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsMessages.swift; sourceTree = "<group>"; };
 		4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSettingsWindow.swift; sourceTree = "<group>"; };
 		4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCSettingsBridge.m; sourceTree = "<group>"; };
@@ -2635,6 +2641,9 @@
 				4C81C2432334F0FCD14C81BC /* TDCSettingsBridgePrivate.h */,
 				4CD3CD50C985CADFDC20AEA8 /* TDCSettingsSections.swift */,
 				4CC3FF61C0D12048BC3A554C /* TDCSettingsAppearance.swift */,
+				1847E60C83094971BCE7522D /* TDCSettingsHighlights.swift */,
+				A023933D4034495B93A8ADE2 /* TDCSettingsNotifications.swift */,
+				E4FD9DDABBE148D7BADF2228 /* TDCSettingsTyping.swift */,
 				5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */,
 				4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */,
 				4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */,
@@ -3853,6 +3862,9 @@
 				4C64F4BC2324D6DA91465D6D /* TDCPreferencesHistoryPane.m in Sources */,
 				4C4C481F03C9462FB90BEE71 /* TDCSettingsSections.swift in Sources */,
 				4CAB508E94223D80C7624D70 /* TDCSettingsAppearance.swift in Sources */,
+				4478084D39344101AD2CD11F /* TDCSettingsHighlights.swift in Sources */,
+				7A4A90094AA140EFAC5D4EF5 /* TDCSettingsNotifications.swift in Sources */,
+				DB9A668BB6084612B673FE34 /* TDCSettingsTyping.swift in Sources */,
 				9D35529E80B44E7A9466F627 /* TDCSettingsMessages.swift in Sources */,
 				4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */,
 				4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */,

@@ -59,6 +59,12 @@
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCUploadDestinationSheetPrivate.h"
 #import "TDCPreferencesUserStyleSheetPrivate.h"
+#import "TDCHighlightKeywordSheetPrivate.h"
+#import "IRCHighlightKeywordPrivate.h"
+#import "IRCClientPrivate.h"
+#import "IRCWorld.h"
+#import "TLONotificationController.h"
+#import "TLOSoundPlayer.h"
 #import "TDCSettingsBridgePrivate.h"
 #import "TDCAlert.h"
 #import "TPCTheme.h"
@@ -912,6 +918,194 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 + (BOOL)nicknameFormatChosenByStyle
 {
 	return ([TPCPreferences themeNicknameFormatPreferenceUserConfigurable] == NO);
+}
+
+@end
+
+#pragma mark -
+
+@implementation TDCSettingsBridge (Typing)
+
++ (BOOL)sendTypingNotifications
+{
+	return [TPCPreferences sendTypingNotifications];
+}
+
++ (void)setSendTypingNotifications:(BOOL)sendTypingNotifications
+{
+	/* Instead of the others seeing it until their timeout */
+	if (sendTypingNotifications == NO) {
+		for (IRCClient *client in worldController().clientList) {
+			for (IRCChannel *channel in client.channelList) {
+				[client sendTypingDoneToChannel:channel];
+			}
+		}
+	}
+
+	[TPCPreferences setSendTypingNotifications:sendTypingNotifications];
+}
+
+@end
+
+#pragma mark -
+
+@implementation TDCSettingsBridge (Notifications)
+
++ (NSArray<NSArray<NSNumber *> *> *)notificationEventGroups
+{
+	return @[
+		@[@(TXNotificationTypeHighlight), @(TXNotificationTypeNewPrivateMessage), @(TXNotificationTypePrivateMessage), @(TXNotificationTypePrivateNotice)],
+		@[@(TXNotificationTypeChannelMessage), @(TXNotificationTypeChannelNotice), @(TXNotificationTypeInvite), @(TXNotificationTypeKick)],
+		@[@(TXNotificationTypeUserJoined), @(TXNotificationTypeUserParted), @(TXNotificationTypeUserDisconnected), @(TXNotificationTypeAddressBookMatch)],
+		@[@(TXNotificationTypeConnect), @(TXNotificationTypeDisconnect)],
+		@[@(TXNotificationTypeFileTransferReceiveRequested), @(TXNotificationTypeFileTransferSendSuccessful), @(TXNotificationTypeFileTransferReceiveSuccessful),
+		  @(TXNotificationTypeFileTransferSendFailed), @(TXNotificationTypeFileTransferReceiveFailed)]
+	];
+}
+
++ (NSString *)titleForNotificationEvent:(NSInteger)event
+{
+	return [sharedNotificationController() titleForEvent:(TXNotificationType)event];
+}
+
++ (NSString *)notificationKeyForEvent:(NSInteger)event category:(NSString *)category
+{
+	NSParameterAssert(category != nil);
+
+	return ([TPCPreferences keyForEvent:(TXNotificationType)event category:category] ?: @"");
+}
+
++ (NSArray<NSString *> *)alertSounds
+{
+	return [TLOSoundPlayer uniqueListOfSounds];
+}
+
++ (void)playAlertSound:(NSString *)name
+{
+	NSParameterAssert(name != nil);
+
+	[TLOSoundPlayer playAlertSound:name];
+}
+
+@end
+
+#pragma mark -
+
+@implementation TDCSettingsBridge (Highlights)
+
+static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
+
++ (NSString *)_highlightKeywordsKeyExcluded:(BOOL)excluded
+{
+	return (excluded ? @"Highlight List -> Excluded Matches" : @"Highlight List -> Primary Matches");
+}
+
++ (NSArray<NSDictionary<NSString *, id> *> *)highlightKeywordEntriesExcluded:(BOOL)excluded
+{
+	NSArray *entries = [RZUserDefaults() arrayForKey:[self _highlightKeywordsKeyExcluded:excluded]];
+
+	NSMutableArray *result = [NSMutableArray array];
+
+	for (id entry in entries) {
+		if ([entry isKindOfClass:[NSDictionary class]] && [entry[IRCHighlightKeywordStringKey] isKindOfClass:[NSString class]]) {
+			[result addObject:entry];
+		}
+	}
+
+	return [result copy];
+}
+
++ (nullable NSString *)summaryOfHighlightKeywordEntry:(NSDictionary<NSString *, id> *)entry
+{
+	NSParameterAssert(entry != nil);
+
+	return [TDCHighlightKeywordSheet summaryOfEntry:entry];
+}
+
++ (void)_saveHighlightKeywordEntries:(NSArray *)entries excluded:(BOOL)excluded
+{
+	NSString *key = [self _highlightKeywordsKeyExcluded:excluded];
+
+	[RZUserDefaults() setObject:entries forKey:key];
+
+	/* Cleans the list up and sorts it */
+	[TPCPreferences performReloadActionForKeys:@[key]];
+}
+
++ (void)editHighlightKeywordAtIndex:(NSInteger)index excluded:(BOOL)excluded inWindow:(NSWindow *)window
+{
+	NSParameterAssert(window != nil);
+
+	if (_highlightKeywordSheet != nil) {
+		return;
+	}
+
+	NSArray *entries = [self highlightKeywordEntriesExcluded:excluded];
+
+	NSDictionary *entry = ((index >= 0 && index < entries.count) ? entries[index] : nil);
+
+	TDCHighlightKeywordSheet *sheet = [[TDCHighlightKeywordSheet alloc] initWithEntry:entry excluded:excluded];
+
+	_highlightKeywordSheet = sheet;
+
+	[sheet beginSheetForWindow:window completionHandler:^(NSDictionary<NSString *, id> * _Nullable entryOut) {
+		_highlightKeywordSheet = nil;
+
+		if (entryOut == nil) {
+			return;
+		}
+
+		NSMutableArray *entriesNew = [[self highlightKeywordEntriesExcluded:excluded] mutableCopy];
+
+		if (entry) {
+			[entriesNew removeObject:entry];
+		}
+
+		[entriesNew addObject:entryOut];
+
+		[self _saveHighlightKeywordEntries:entriesNew excluded:excluded];
+	}];
+}
+
++ (void)removeHighlightKeywordAtIndex:(NSInteger)index excluded:(BOOL)excluded
+{
+	NSMutableArray *entries = [[self highlightKeywordEntriesExcluded:excluded] mutableCopy];
+
+	if (index < 0 || index >= entries.count) {
+		return;
+	}
+
+	[entries removeObjectAtIndex:index];
+
+	[self _saveHighlightKeywordEntries:entries excluded:excluded];
+}
+
++ (NSString *)highlightSampleNickname
+{
+	NSString *nickname = mainWindow().selectedClient.userNickname;
+
+	if (nickname.length == 0) {
+		nickname = [TPCPreferences defaultNickname];
+	}
+
+	return (nickname ?: @"");
+}
+
++ (NSArray<NSString *> *)invalidRegularExpressionKeywords
+{
+	if ([TPCPreferences highlightMatchingMethod] != TXNicknameHighlightMatchTypeRegularExpression) {
+		return @[];
+	}
+
+	NSMutableArray<NSString *> *invalidKeywords = [NSMutableArray array];
+
+	for (NSString *keyword in [TPCPreferences highlightMatchKeywords]) {
+		if ([XRRegularExpression isValidRegex:keyword] == NO) {
+			[invalidKeywords addObject:keyword];
+		}
+	}
+
+	return [invalidKeywords copy];
 }
 
 @end

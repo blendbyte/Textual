@@ -243,6 +243,8 @@ final class SettingsModel: ObservableObject
 				return SettingsText("set-app-h1")
 			case .events:
 				return SettingsText("set-mes-ep")
+			case let .notificationEvent(event):
+				return TDCSettingsBridge.title(forNotificationEvent: event)
 			case let .pluginPane(_, title):
 				return title
 			case nil:
@@ -506,6 +508,7 @@ enum SettingsSubpage: Hashable
 {
 	case styles
 	case events
+	case notificationEvent(Int)
 	case pluginPane(index: Int, title: String)
 
 	@ViewBuilder
@@ -516,6 +519,8 @@ enum SettingsSubpage: Hashable
 				StylePickerPage()
 			case .events:
 				MessagesEventsPage()
+			case let .notificationEvent(event):
+				NotificationEventPage(event: event)
 			case let .pluginPane(index, title):
 				ScrollView {
 					PluginPaneView(index: index)
@@ -679,6 +684,9 @@ struct SettingsPage: View
 				case .general: GeneralSettings()
 				case .appearance: AppearanceSettings()
 				case .messages: MessagesSettings()
+				case .typing: TypingSettings()
+				case .notifications: NotificationsSettings()
+				case .highlights: HighlightsSettings()
 				case .lists: ListsSettings()
 				case .servers: ServersSettings()
 				case .commands: CommandsSettings()
@@ -743,9 +751,9 @@ struct SettingLabel: View
 	}
 }
 
-/// A number chosen from a menu of sensible values, as System Settings
-/// does ("Turn display off after: 10 minutes"); a value set before that
-/// isn't one of them is in the menu too
+/// A value chosen from a menu of sensible ones, as System Settings does
+/// ("Turn display off after: 10 minutes"); a value set before that isn't
+/// one of them is in the menu too
 struct SettingValuePicker<Value: Hashable & Comparable>: View
 {
 	let title: String
@@ -756,7 +764,9 @@ struct SettingValuePicker<Value: Hashable & Comparable>: View
 
 	var body: some View
 	{
-		let choices = (values.contains(selection.wrappedValue) ? values : (values + [selection.wrappedValue]).sorted())
+		/* In order among numbers; after the others otherwise */
+		let choices = (values.contains(selection.wrappedValue) ? values :
+					   ((values == values.sorted()) ? (values + [selection.wrappedValue]).sorted() : (values + [selection.wrappedValue])))
 
 		Picker(selection: selection) {
 			ForEach(choices, id: \.self) { (value) in
