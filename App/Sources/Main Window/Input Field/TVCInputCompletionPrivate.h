@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCClient, IRCChannel, TVCMainWindow;
 
-/* Suggestions while typing (E3, 10.16 idea 3): a list opens for a word that
+/* Suggestions while typing: a list opens for a word that
  starts with @ (nicknames), # (channels), / at the start of the message
  (commands) or : and two letters (emoji). Each kind can be turned off. */
 typedef NS_ENUM(NSUInteger, TVCInputCompletionKind) {
@@ -70,7 +70,7 @@ typedef NS_ENUM(NSUInteger, TVCInputCompletionKind) {
  are turned off give nil too when enabledKinds is given (NSNumber kinds). */
 + (nullable TVCInputCompletionQuery *)queryInString:(NSString *)string selectedRange:(NSRange)selectedRange;
 
-/* What replaces the query's range (D-E3.1): a nickname without the @, with
+/* What replaces the query's range: a nickname without the @, with
  the completion suffix at the start of the message; then a space unless one
  follows already */
 + (NSString *)replacementForItem:(TVCInputCompletionItem *)item query:(TVCInputCompletionQuery *)query inString:(NSString *)string nicknameSuffix:(nullable NSString *)nicknameSuffix;

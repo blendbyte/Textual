@@ -1541,7 +1541,7 @@ static NSUInteger _aliasDepth = 0;
 	[self _muteForContext:context muted:YES];
 }
 
-/* MUTE / UNMUTE (E3, D-E3.7): where you are — a channel, a query, or the
+/* MUTE / UNMUTE: where you are — a channel, a query, or the
  network in the server console; "all" mutes every sound as before */
 - (void)_muteForContext:(IRCLocalCommandContext *)context muted:(BOOL)muted
 {

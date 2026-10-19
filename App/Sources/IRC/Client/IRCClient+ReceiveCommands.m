@@ -2396,7 +2396,7 @@ NS_ASSUME_NONNULL_BEGIN
 		userMutable.accountKnown = YES;
 	}];
 
-	/* The member list marks people who aren't logged in (10.2) */
+	/* The member list marks people who aren't logged in */
 	IRCUser *user = [self findUser:m.senderNickname];
 
 	if (user) {
@@ -2465,7 +2465,7 @@ NS_ASSUME_NONNULL_BEGIN
 		userMutable.accountKnown = YES;
 	}];
 
-	/* The member list marks people who aren't logged in (10.2) */
+	/* The member list marks people who aren't logged in */
 	IRCUser *userChanged = [self findUser:nickname];
 
 	if (userChanged) {

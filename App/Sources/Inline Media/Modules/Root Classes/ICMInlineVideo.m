@@ -155,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
 		playbackSpeed = 1.0;
 	}
 
-	/* WebKit loads it through Textual (D-E2.1). A clip that plays by itself
+	/* WebKit loads it through Textual. A clip that plays by itself
 	 follows the image size limit; a video you start yourself has none. */
 	BOOL playsByItself = self.videoAutoplayEnabled;
 

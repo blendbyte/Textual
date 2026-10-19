@@ -220,7 +220,7 @@ appPrivate.leaveMessageFocus = function()
 	window.webkit.messageHandlers.leaveMessageFocus.postMessage(null);
 };
 
-/* The Jump to Present button (10.9): the app loads the newest lines */
+/* The Jump to Present button: the app loads the newest lines */
 appPrivate.jumpToPresent = function()
 {
 	window.webkit.messageHandlers.jumpToPresent.postMessage(null);

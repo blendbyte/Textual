@@ -225,7 +225,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.cellTextField.attributedStringValue = newValue;
 
-	/* Muted (E3): dimmed, and so are the channels of a muted network.
+	/* Muted: dimmed, and so are the channels of a muted network.
 	 The views fade rather than the text color, which an inactive window
 	 drew at full strength. */
 	IRCTreeItem *mutedItem = self.cellItem;

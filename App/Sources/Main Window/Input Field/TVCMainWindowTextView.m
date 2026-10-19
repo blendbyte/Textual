@@ -247,7 +247,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* A picture without text (a screenshot): offered for upload (9.18) */
+	/* A picture without text (a screenshot): offered for upload */
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
 
 	if (pasteboard.stringContent.length == 0 && [NSImage canInitWithPasteboard:pasteboard]) {

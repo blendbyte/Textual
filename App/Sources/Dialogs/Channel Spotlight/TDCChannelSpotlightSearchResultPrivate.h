@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCChannel, TDCChannelSpotlightController;
 
-/* A channel, or a menu command (10.17 idea 3) */
+/* A channel, or a menu command */
 @interface TDCChannelSpotlightSearchResult : NSObject
 @property (readonly, weak, nullable) IRCChannel *channel;
 @property (readonly, weak, nullable) NSMenuItem *menuItem;

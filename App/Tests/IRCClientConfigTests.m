@@ -81,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(plainCopy.uniqueIdentifier, original.uniqueIdentifier);
 }
 
-/* WebSocket (9.14): ws:// and wss:// addresses as host, port, TLS and path, and
+/* WebSocket: ws:// and wss:// addresses as host, port, TLS and path, and
  back; the path survives saving; anything else isn't one */
 - (void)testWebSocketAddresses
 {

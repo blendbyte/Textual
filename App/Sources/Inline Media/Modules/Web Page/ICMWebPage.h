@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Any other link (E2.4, D-E2.7): one request. A page gets a page card from
+/* Any other link: one request. A page gets a page card from
  the title, description, picture and site name in its head (a bounded
  string search, no HTML parser); a link that turns out to be an image, a
  video or audio shows as that. Off with "InlineMediaWebPageCards". */

@@ -265,7 +265,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self addArchiveRows];
 }
 
-/* The message archive (10.9 F): below the messages, which move up for it */
+/* The message archive: below the messages, which move up for it */
 - (void)addArchiveRows
 {
 	NSView *view = self.view;

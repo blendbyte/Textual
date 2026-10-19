@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSResponder *firstResponder = self.firstResponder;
 
-	/* The search panel's field and list take their keys as they are (10.9):
+	/* The search panel's field and list take their keys as they are:
 	 the shortcuts here are the input field's and the chat's */
 	if (self.isSearchPanelVisible) {
 		id responder = firstResponder;
@@ -226,7 +226,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self registerInputSelector:@selector(focusWebview:) character:'l' modifiers:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
 
 	[self registerInputSelector:@selector(inputHistoryUpWithScrollCheck:) key:TXKeyUpArrowCode modifiers:0];
-	/* ⌥↑: into the messages (9.15 D; ↑ and ⌃P still go back through what was typed) */
+	/* ⌥↑: into the messages (↑ and ⌃P still go back through what was typed) */
 	[self registerInputSelector:@selector(focusMessages:) key:TXKeyUpArrowCode modifiers:NSEventModifierFlagOption];
 
 	[self registerInputSelector:@selector(inputHistoryDownWithScrollCheck:) key:TXKeyDownArrowCode modifiers:0];
@@ -274,7 +274,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.inputTextField keyDownToSuper:e];
 }
 
-/* ⌥⇧↩: this message without Markdown (D-E3.5) */
+/* ⌥⇧↩: this message without Markdown */
 - (void)sendMessageAsTyped:(NSEvent *)e
 {
 	[self inputTextAsCommand:IRCRemoteCommandPrivmsg applyingMarkdown:NO];

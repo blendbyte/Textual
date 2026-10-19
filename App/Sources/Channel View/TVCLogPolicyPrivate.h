@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *anchorURL;
 @property (nonatomic, copy, nullable) NSString *channelName;
 @property (nonatomic, copy, nullable) NSString *nickname;
-@property (nonatomic, copy, nullable) NSArray<NSString *> *messageMenu; // 9.15: the message's line number, then "reply", "react", "delete"
+@property (nonatomic, copy, nullable) NSArray<NSString *> *messageMenu; // the message's line number, then "reply", "react", "delete"
 
 
 - (void)channelNameDoubleClicked;

@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _maximumEmbedLength			(32 * 1024)
 
 /* A post card for X (twitter.com and x.com): author and text from X's official
- oEmbed (D-E2.5), no image, no script. When oEmbed fails, a card built from the
+ oEmbed, no image, no script. When oEmbed fails, a card built from the
  address alone ("Post by @handle on X"). */
 @implementation ICMTweet
 

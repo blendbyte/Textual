@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class TVCMainWindow;
 
 @interface TVCTextViewIRCFormattingMenu : NSObject
-/* The window whose input field's context menu holds it (7.13): used when that
+/* The window whose input field's context menu holds it: used when that
  window isn't key, e.g. a right-click while Textual is in the background */
 @property (nonatomic, weak, nullable) TVCMainWindow *ownerWindow;
 

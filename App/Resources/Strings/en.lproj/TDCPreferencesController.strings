@@ -66,7 +66,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "g7d-y1" = "Use These Formats";
 "g7d-k1" = "Keep My Formats";
 
-/* Inline Media (E2.6) */
+/* Inline Media */
 "imp-t1" = "General";
 "imp-t2" = "Services";
 "imp-t3" = "Rules";
@@ -90,7 +90,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "imp-rr" = "Remove Site";
 "imp-rn" = "A site includes its subdomains: example.com also covers www.example.com. To stop previews from one person, choose “Don’t Preview Links from …” in their nickname menu; for one channel, use Channel Properties.";
 
-/* Controls → Suggestions (E3) */
+/* Controls → Suggestions */
 "icp-t1" = "Typing";
 "icp-h1" = "Show a list of suggestions while typing:";
 "icp-k0" = "Nicknames, after @";
@@ -101,7 +101,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "imd-c1" = "Turn **bold**, _italic_, `code` and ||spoiler|| into formatting when sending";
 "imd-n1" = "Only at the start and end of words, so names like snake_case, file paths and links stay as typed. Option-Shift-Return (⌥⇧↩) sends one message exactly as typed. Spoilers are sent as black on black, the usual IRC spoiler.";
 
-/* Controls → Aliases (E3) */
+/* Controls → Aliases */
 "als-t1" = "Aliases";
 "als-h1" = "Your own commands. Typing /name runs what is written next to it, on any server:";
 "als-c1" = "Name";
@@ -155,7 +155,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "upl-c1" = "Use dpaste.com for long pastes";
 "upl-n2" = "Where no upload address applies, “Send as Link” puts many lines on dpaste.com for 30 days and sends the link. Anyone with the link can read them.";
 
-/* Preferences → History (10.9 F) */
+/* Preferences → History */
 "his-l1" = "Keep messages:";
 "his-p1" = "1 year";
 "his-p2" = "%ld days";
@@ -191,7 +191,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "his-i5" = "No new messages found.";
 "his-i6" = "Looking for text logs…";
 
-/* Settings window (12.11) */
+/* Settings window */
 "set-title" = "Settings";
 "set-search" = "Search";
 "set-back" = "Back";
@@ -416,7 +416,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-old-history" = "History";
 "set-old-behavior" = "Behavior";
 
-/* Settings › Appearance (12.11 S2) */
+/* Settings › Appearance */
 "set-app-a0" = "Like the Mac";
 "set-app-a1" = "Light";
 "set-app-a2" = "Dark";

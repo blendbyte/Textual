@@ -38,7 +38,7 @@
 import AppKit
 import SwiftUI
 
-/* The pages of the Settings window (12.11) */
+/* The pages of the Settings window */
 
 // MARK: - General
 

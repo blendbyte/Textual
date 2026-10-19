@@ -43,11 +43,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogController ()
 
-/* The window showing it: changes when it pops out into its own (10.18) */
+/* The window showing it: changes when it pops out into its own */
 - (void)setAttachedWindow:(TVCMainWindow *)attachedWindow;
 
 /* The page has loaded and its saved history is shown: a jump made before
- that can fail (search, 10.9) */
+ that can fail (search) */
 @property (readonly) BOOL historyIsShown;
 
 /* Typing notifications: "… is typing" as the last line of the view */
@@ -58,19 +58,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setQueryInfoBar:(NSString *)text;
 - (void)removeTypingIndicator;
 
-/* Replies (9.15): which actions the view offers on messages, after the
+/* Replies: which actions the view offers on messages, after the
  connection or its capabilities change */
 - (void)updateMessageActions;
 
-/* Reactions (9.15 B): someone added or took back a reaction on a message;
+/* Reactions: someone added or took back a reaction on a message;
  shown under it and saved with it */
 - (void)setReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid added:(BOOL)added;
 
-/* Deleting (9.15 C): the message becomes "Message deleted" (by whom, why),
+/* Deleting: the message becomes "Message deleted" (by whom, why),
  in the view and in what is saved */
 - (void)deleteMessage:(NSString *)msgid byNickname:(NSString *)nickname reason:(nullable NSString *)reason;
 
-/* Keyboard focus on messages (9.15 D): while on, the window sends keys to the view */
+/* Keyboard focus on messages: while on, the window sends keys to the view */
 @property (nonatomic, assign) BOOL messageFocusActive;
 
 - (void)performMessageMenuCommand:(NSMenuItem *)sender; // Reply, React…, Delete… in the context menu

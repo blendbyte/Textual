@@ -36,7 +36,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* A keyword's settings in Preferences → Highlights (E3, D-E3.8): the keyword,
+/* A keyword's settings in Preferences → Highlights: the keyword,
  the channels or networks it applies to, the people it applies to and, for a
  highlight word, its sound. Hands back the stored dictionary
  (IRCHighlightKeywordPrivate.h), or nil when cancelled. */

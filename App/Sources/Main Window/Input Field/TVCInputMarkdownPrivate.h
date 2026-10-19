@@ -36,7 +36,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Markdown when sending (E3, 10.17 idea 9): **bold**, _italic_, `code`
+/* Markdown when sending: **bold**, _italic_, `code`
  (monospace) and ||spoiler|| (black on black) become IRC formatting. Strict:
  a marker opens only at the start of a word (after a space, the start of the
  line or an opening bracket or quote) and closes only at the end of one, so

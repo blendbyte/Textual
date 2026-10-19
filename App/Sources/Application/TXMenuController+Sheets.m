@@ -598,7 +598,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self showPreferencesWindowWithSelection:TDCPreferencesControllerSelectionHiddenPreferences];
 }
 
-/* The Settings window (12.11); a selection picks its section */
+/* The Settings window; a selection picks its section */
 - (void)showPreferencesWindowWithSelection:(TDCPreferencesControllerSelection)selection
 {
 	NSString *section = nil;

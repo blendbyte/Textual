@@ -246,7 +246,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Typing: leaving a conversation pauses ours there while a draft stays
- (10.11), else ends it; the next one shows its own. The input field still
+, else ends it; the next one shows its own. The input field still
  holds the text of the conversation left (moveFocusTo: comes below). */
 	if (itemChangedFrom && itemChangedFrom.isClient == NO) {
 		IRCChannel *previousChannel = (IRCChannel *)itemChangedFrom;
@@ -314,7 +314,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.inputTextField resetSpellingIgnores];
 
 	/* Update splitter view depending on selection; the search panel keeps
-	 the member list's column while it's open (10.9) */
+	 the member list's column while it's open */
 	if (self.isSearchPanelVisible) {
 		[self.searchPanel selectedItemChanged];
 	} else if (isChannel) {

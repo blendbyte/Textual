@@ -307,7 +307,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSInteger tag = menuItem.tag;
 
-	/* Mute (E3): checked while muted */
+	/* Mute: checked while muted */
 	if (menuItem.action == @selector(toggleMute:)) {
 		IRCTreeItem *item = [self _treeItemToMuteForMenuItem:menuItem];
 
@@ -316,7 +316,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return (item != nil);
 	}
 
-	/* Pop-out windows (10.18): not from the pop-out itself */
+	/* Pop-out windows: not from the pop-out itself */
 	if (menuItem.action == @selector(openInNewWindow:)) {
 		IRCTreeItem *item = [self _treeItemToPopOutForMenuItem:menuItem];
 
@@ -436,7 +436,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Hidden, it keeps its submenu: the menu bar takes the title from the
 	 submenu and drew an empty slot when it came back with a new one
-	 outside menu tracking (a pop-out window becoming key, 10.18). A hidden
+	 outside menu tracking (a pop-out window becoming key). A hidden
 	 item's shortcuts don't fire (allowsKeyEquivalentWhenHidden is NO). */
 	if (submenu) {
 		if (menuItem.submenu != submenu) {
@@ -447,7 +447,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		menuItem.hidden = NO;
 
-		/* Shown again as a pop-out window becomes key (10.18): the menu bar
+		/* Shown again as a pop-out window becomes key: the menu bar
 		 kept an empty slot for it until the next menu was opened. Taken
 		 out and put back in its place, it is drawn. */
 		NSMenu *menuBar = menuItem.menu;
@@ -598,7 +598,7 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Files pasted in the main window get the dropped files sheet */
 			BOOL filesOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
 
-			/* And a picture (a screenshot): uploaded where the network offers it (9.18) */
+			/* And a picture (a screenshot): uploaded where the network offers it */
 			BOOL pictureOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [NSImage canInitWithPasteboard:RZPasteboard()]);
 
 			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
@@ -916,7 +916,7 @@ NS_ASSUME_NONNULL_BEGIN
 				[menuItem.menu itemWithTag:MTMMWindowResetWindowToDefaultSizeSeparator].hidden = (isMainWindowMain == NO);
 			}
 
-			/* A pop-out (10.18) has no server list */
+			/* A pop-out has no server list */
 			if (tag == MTMMWindowToggleVisibilityOfServerList || tag == MTMMWindowSortChannelList) {
 				return (TVCMainWindow.currentWindow.isPopOut == NO);
 			}
@@ -1025,7 +1025,7 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Files pasted in the main window get the dropped files sheet */
 			BOOL filesOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
 
-			/* And a picture (a screenshot): uploaded where the network offers it (9.18) */
+			/* And a picture (a screenshot): uploaded where the network offers it */
 			BOOL pictureOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [NSImage canInitWithPasteboard:RZPasteboard()]);
 
 			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {

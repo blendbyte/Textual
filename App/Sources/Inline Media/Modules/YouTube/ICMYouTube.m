@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* A video card from YouTube's oEmbed (title, channel); the thumbnail's
  address is YouTube's fixed one, so the card has a picture even when oEmbed
  fails. The video ID and start time are kept on the card for click-to-play
- (E2.7). */
+. */
 @implementation ICMYouTube
 
 - (void)_performActionForVideo:(NSString *)videoIdentifier startTime:(NSTimeInterval)startTime
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *watchAddress = [NSString stringWithFormat:@"https://www.youtube.com/watch?v=%@", videoIdentifier];
 
-	/* The privacy-enhanced domain, like the player (E2.7) */
+	/* The privacy-enhanced domain, like the player */
 	NSURLComponents *requestComponents = [NSURLComponents componentsWithString:@"https://www.youtube-nocookie.com/oembed"];
 
 	requestComponents.queryItems =

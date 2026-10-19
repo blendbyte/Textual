@@ -164,7 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* A channel's own choice for colors and formatting (10.10) */
+	/* A channel's own choice for colors and formatting */
 	IRCChannel *channel = context.associatedChannel;
 
 	if (channel && [methodName isEqualToString:@"removeAllFormatting"]) {

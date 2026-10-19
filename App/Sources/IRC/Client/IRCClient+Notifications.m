@@ -437,7 +437,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self notifyEvent:TXNotificationTypeHighlight lineType:lineType target:target nickname:nickname text:text userInfo:nil checkOutputRules:NO highlightKeyword:keyword];
 }
 
-/* The sound of the highlight keyword that matched, if it has one (E3) */
+/* The sound of the highlight keyword that matched, if it has one */
 - (nullable NSString *)soundForHighlightKeyword:(NSString *)keyword inChannel:(nullable IRCChannel *)channel
 {
 	NSParameterAssert(keyword != nil);
@@ -486,7 +486,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	/* Muted channel, query or network (E3): nothing, except highlights
+	/* Muted channel, query or network: nothing, except highlights
 	 when "Highlights still notify in muted channels" is on */
 	if (self.config.muted || target.config.muted) {
 		if (eventType != TXNotificationTypeHighlight || [TPCPreferences highlightsNotifyWhenMuted] == NO) {

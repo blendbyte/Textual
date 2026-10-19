@@ -402,7 +402,7 @@ enum
 - (IBAction)joinChannel:(nullable id)sender;
 - (IBAction)leaveChannel:(nullable id)sender;
 - (IBAction)toggleMute:(nullable id)sender;
-- (IBAction)openInNewWindow:(nullable id)sender; // a pop-out window (10.18)
+- (IBAction)openInNewWindow:(nullable id)sender; // a pop-out window
 
 - (IBAction)connect:(nullable id)sender;
 - (IBAction)connectBypassingProxy:(nullable id)sender;

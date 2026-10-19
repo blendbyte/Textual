@@ -194,7 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.titlebarTitleField.sideMargin = (MAX(windowButtonsWidth, lockButtonWidth) + 8.0);
 }
 
-/* Unified title bar (10.1): the title bar is transparent and the sidebars
+/* Unified title bar: the title bar is transparent and the sidebars
  carry on up into it, like Mail's: one band of sidebar material across the
  whole title bar, the same as the server list and the member list below it.
  Three strips (sidebar material over the lists, title bar material over the

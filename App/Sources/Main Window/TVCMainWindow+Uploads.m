@@ -85,11 +85,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* File uploads (9.18): files go up one after another; a bar above the input
+/* File uploads: files go up one after another; a bar above the input
  field shows which and how far, with Cancel. Each link is put in the input
  field of the channel the files were meant for (its draft when another is
  selected). A paperclip button beside the input field chooses files, shown
- while the selected server offers uploads. Long pastes (9.18 D) go the same
+ while the selected server offers uploads. Long pastes go the same
  way as a text file, and their link is sent; if they can't go, their text
  comes back to the input field. */
 

@@ -424,7 +424,7 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	self->_outputDictionary[TVCLogRendererResultsKeywordMatchFoundAttribute] = @(foundKeyword != nil);
 
-	/* Its sound, if it has one (E3) */
+	/* Its sound, if it has one */
 	if (foundKeyword) {
 		self->_outputDictionary[TVCLogRendererResultsMatchedKeywordAttribute] = foundKeyword;
 	}
@@ -787,7 +787,7 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 		[userSet addObject:user];
 	}
 
-	/* Mass highlights (E3, 10.14, D-E3.9): a message that names this many
+	/* Mass highlights: a message that names this many
 	 people in the channel or more is shown as an ordinary line */
 	if ([TPCPreferences automaticallyDetectHighlightSpam] &&
 		userSet.count >= [TPCPreferences massHighlightThreshold] &&

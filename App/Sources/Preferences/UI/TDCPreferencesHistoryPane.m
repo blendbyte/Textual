@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _paneWidth			670
 
-/* Preferences → History (10.9 F): the message archive (how long it keeps
+/* Preferences → History: the message archive (how long it keeps
  messages, its size, Delete Archive…, Import Text Logs…) and text logs (moved
  here from Advanced → Log Location). Built in code. */
 @interface TDCPreferencesHistoryPane ()

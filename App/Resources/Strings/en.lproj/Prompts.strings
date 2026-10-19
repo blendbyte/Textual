@@ -330,5 +330,5 @@ Information encrypted using: %2$@";
 "a8k-t1" = "Acknowledgements";
 "a8k-t2" = "Textual is built on the work of the people and projects below. Their licences ask for these notices to come with the app.";
 
-/* The import's summary: the message archive (10.9 F) */
+/* The import's summary: the message archive */
 "arc-i1" = "Your conversations are now kept in a searchable message archive for a year, starting with the imported scrollback: Search (⌘F) and Mentions (⌘⇧M) find them. Preferences → History changes how long, or turns it off.";

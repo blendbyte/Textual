@@ -1,2 +1,2 @@
-# Private Apple interfaces still in use (private-api-scan.py). D11 allows none:
+# Private Apple interfaces still in use (private-api-scan.py). None are allowed:
 # entries here are waiting for their replacement, and new ones fail CI.

@@ -47,14 +47,14 @@ typedef NS_ENUM(NSUInteger, TVCMainWindowSearchScope)
 	TVCMainWindowSearchScopeEverywhere = 2
 };
 
-/* The search panel (10.9 D): searches the message archive from the right
+/* The search panel: searches the message archive from the right
  sidebar (the member list's column, which comes back when it closes). A
  result still in the chat's scrollback is scrolled to and flashed there; an
  older one is shown in its conversation from the archive, in the panel. */
 @interface TVCMainWindowSearchPanel : NSViewController
 - (instancetype)initWithWindow:(TVCMainWindow *)mainWindow;
 
-/* The Mentions window's list (10.9 E): highlights of every network, newest
+/* The Mentions window's list: highlights of every network, newest
  first; what is typed narrows them down */
 - (instancetype)initForMentions;
 - (instancetype)initWithNibName:(nullable NSNibName)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
@@ -87,7 +87,7 @@ typedef NS_ENUM(NSUInteger, TVCMainWindowSearchScope)
 - (void)selectedItemChanged;
 @end
 
-/* Mentions (10.9 E, ⌘⇧M): the highlights of every network, from the message
+/* Mentions (⌘⇧M): the highlights of every network, from the message
  archive, in a window of their own; a click goes to the message. Those that
  came since the window was last closed are marked new. */
 @interface TVCMentionsWindowController : NSWindowController <NSWindowDelegate>

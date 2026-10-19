@@ -263,7 +263,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Text that becomes many messages: send it (YES), not (NO), or, where text can
- go up (9.18 D), as a link instead (NO here; the link is sent once it's up) */
+ go up, as a link instead (NO here; the link is sent once it's up) */
 - (BOOL)confirmSendingLongText:(NSAttributedString *)text asCommand:(IRCRemoteCommand)command destination:(IRCTreeItem *)destination
 {
 	NSParameterAssert(text != nil);

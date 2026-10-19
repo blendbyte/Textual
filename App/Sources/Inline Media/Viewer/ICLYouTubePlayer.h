@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCClient;
 
-/* A YouTube card's ▶ (E2.7): YouTube's own player in a window of its own,
+/* A YouTube card's ▶: YouTube's own player in a window of its own,
  outside the chat view, which never loads anything from YouTube. Nothing
  is requested until ▶ is clicked; the window goes through the server's
  proxy, keeps no cookies or data, and opens links in the browser. */

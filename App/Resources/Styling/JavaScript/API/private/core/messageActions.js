@@ -36,7 +36,7 @@
 
 "use strict";
 
-/* Replies, reactions and deleting (9.15). Lines with the server's message ID
+/* Replies, reactions and deleting. Lines with the server's message ID
  (data-msgid) get a small set of actions while the pointer is over them, and a
  reply (data-reply-to) a quote of the message it answers: who and what, from
  the app when it knew them (data-reply-nickname, data-reply-excerpt,
@@ -317,7 +317,7 @@ _MessageActions._quoteClicked = function(event) /* PRIVATE */
 
 /* While the view is away from its newest lines (scrolled up more than a
  screen, or showing older history whose newer lines aren't loaded): a button
- that goes back to them (10.9, as scrollback reaches into the archive) */
+ that goes back to them (as scrollback reaches into the archive) */
 _MessageActions._jumpButton = null; /* PRIVATE */
 _MessageActions._jumpUpdateScheduled = false; /* PRIVATE */
 
@@ -399,7 +399,7 @@ document.addEventListener("scrolledDownward", _MessageActions.updateJumpToPresen
 
 window.addEventListener("resize", _MessageActions.updateJumpToPresent, false);
 
-/* A line found by search (10.9): flashed, as a reply's message is */
+/* A line found by search: flashed, as a reply's message is */
 Textual.flashLine = function(lineNumber) /* PUBLIC */
 {
 	var line = document.getElementByLineNumber(lineNumber);

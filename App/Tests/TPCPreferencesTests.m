@@ -159,7 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* "Only inline images and videos" (D-E2.12): service cards and web page cards
+/* "Only inline images and videos": service cards and web page cards
  off, files and clip services stay; every Textual 7 limit is gone afterwards */
 - (void)testInlineMediaLimitsMigration
 {

@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *networkSocketPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *proxyServerPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *redundancyPane;
-@property (nonatomic, strong) TDCServerPropertiesUploadsPane *uploadsPane; // built in code (9.18 B)
+@property (nonatomic, strong) TDCServerPropertiesUploadsPane *uploadsPane; // built in code
 @property (nonatomic, copy) NSArray<TDCServerPropertiesPane *> *panes;
 @end
 

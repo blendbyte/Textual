@@ -70,7 +70,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Lines past the scrollback, from the message archive (10.9 D) */
+/* Lines past the scrollback, from the message archive */
 static NSString * const _archiveLinePrefix = @"archive-";
 static NSString * const _archiveBoundaryLineNumber = @"archive-boundary";
 
@@ -2134,7 +2134,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		ignoreInlineMedia = [self.associatedClient ignoresInlineMediaFromNickname:senderNickname];
 	}
 
-	/* Where it was said, for the message archive (10.9), read here and not
+	/* Where it was said, for the message archive, read here and not
 	 on the printing queue; nil for utility channels, which aren't kept, and
 	 when the archive is off or leaves this server or channel out */
 	TLOMessageArchiveView *archiveView = nil;
@@ -3041,7 +3041,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	templateAttributes[@"lineClassAttribute"] = classAttribute;
 
-	/* Replies, reactions and deleting (9.15): a message's ID, and for a reply
+	/* Replies, reactions and deleting: a message's ID, and for a reply
 	 who and what it answers when that message was shown in this view
 	 (otherwise the view looks for it, or says it's an earlier one) */
 	BOOL isTextLine = (lineType == TVCLogLineTypePrivateMessage || lineType == TVCLogLineTypeAction || lineType == TVCLogLineTypeNotice);

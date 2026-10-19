@@ -347,7 +347,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Strict Transport Security
 
-/* 10.7 (from 9.4): under the port, whether a server told Textual to connect
+/* Under the port, whether a server told Textual to connect
  only securely and until when, with Forget (what /sts clear does) */
 - (void)addStrictTransportSecurityRow
 {
@@ -1482,7 +1482,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Uploads
 
-/* Where files go on this network if it offers no uploads (9.18 B): the
+/* Where files go on this network if it offers no uploads: the
  address in Preferences, none, or this server's own */
 @interface TDCServerPropertiesUploadsPane ()
 @property (nonatomic, strong) NSPopUpButton *uploadModeButton;

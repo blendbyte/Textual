@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[context.webViewPolicy nicknameDoubleClicked];
 }
 
-/* Clicking an inline image (E2.5): its textual-media: address, the link it
+/* Clicking an inline image: its textual-media: address, the link it
  came from and its size. Only an image Textual fetched can be opened. */
 - (void)_openImageViewer:(TVCLogScriptEventSinkContext *)context
 {
@@ -164,7 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[ICLImageViewer showImageAtMediaURL:mediaURL linkURL:linkURL imageSize:imageSize];
 }
 
-/* A YouTube card's picture (E2.7): the video, where to start, the link and
+/* A YouTube card's picture: the video, where to start, the link and
  the card's title */
 - (void)_openVideoPlayer:(TVCLogScriptEventSinkContext *)context
 {
@@ -271,7 +271,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[context.webViewPolicy topicBarDoubleClicked];
 }
 
-/* Reactions (9.15 B): add or take back ours on a message */
+/* Reactions: add or take back ours on a message */
 - (void)_toggleReaction:(TVCLogScriptEventSinkContext *)context
 {
 	NSArray *arguments = context.arguments;
@@ -285,7 +285,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[channel.associatedClient sendReaction:arguments[1] toMessage:arguments[0] inChannel:channel removing:[arguments[2] boolValue]];
 }
 
-/* The window showing the view the event came from (7.13) */
+/* The window showing the view the event came from */
 + (TVCMainWindow *)windowOfContext:(TVCLogScriptEventSinkContext *)context
 {
 	TVCMainWindow *window = context.viewController.attachedWindow;
@@ -293,13 +293,13 @@ NS_ASSUME_NONNULL_BEGIN
 	return ((window) ?: mainWindow());
 }
 
-/* The Jump to Present button (10.9): the newest lines aren't loaded */
+/* The Jump to Present button: the newest lines aren't loaded */
 - (void)_jumpToPresent:(TVCLogScriptEventSinkContext *)context
 {
 	[context.viewController jumpToPresent];
 }
 
-/* Keyboard focus on messages (9.15 D): Escape went back to the input field */
+/* Keyboard focus on messages: Escape went back to the input field */
 - (void)_leaveMessageFocus:(TVCLogScriptEventSinkContext *)context
 {
 	[[self.class windowOfContext:context] leaveMessageFocusInViewController:context.viewController];
@@ -336,7 +336,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[context.viewController performFailedSendAction:arguments[1] onLine:arguments[0]];
 }
 
-/* Delete (9.15 C): after asking */
+/* Delete: after asking */
 - (void)_deleteMessage:(TVCLogScriptEventSinkContext *)context
 {
 	IRCChannel *channel = context.associatedChannel;
@@ -360,7 +360,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[[self.class windowOfContext:context] showReactionPickerForMessage:context.arguments[0] inChannel:channel];
 }
 
-/* Reply (9.15): the message's ID, sender and the start of its text */
+/* Reply: the message's ID, sender and the start of its text */
 - (void)_replyToMessage:(TVCLogScriptEventSinkContext *)context
 {
 	NSArray *arguments = context.arguments;

@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, TLOUploadDestinationBody) {
 	TLOUploadDestinationBodyBinary // the file itself
 };
 
-/* An upload address of the user's own (9.18 B), for networks without one:
+/* An upload address of the user's own, for networks without one:
  the common part of ShareX's custom uploaders (.sxcu). HTTPS only (plain HTTP
  only to this Mac). Its headers, URL parameters and form fields can hold
  tokens: they are kept in the Keychain, the rest in the preferences. */
@@ -79,7 +79,7 @@ typedef NS_ENUM(NSUInteger, TLOUploadDestinationBody) {
 /* Hide the paperclip where no upload address applies (an option of the setup) */
 @property (class, nonatomic, assign) BOOL hidesUploadButtonWithoutDestination;
 
-/* Long pastes (9.18 D): dpaste.com where no upload address applies, if the user turned it on */
+/* Long pastes: dpaste.com where no upload address applies, if the user turned it on */
 @property (class, nonatomic, assign) BOOL sendsLongPastesToPasteService;
 @property (class, readonly, copy) TLOUploadDestination *pasteServiceDestination;
 

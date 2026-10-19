@@ -70,7 +70,7 @@ static TVCLogScriptEventSink *_sharedWebViewScriptSink = nil;
  website data store so its views load inline media through its proxy. */
 static NSMutableDictionary<NSString *, WKWebViewConfiguration *> *_clientWebViewConfigurations = nil;
 
-/* Nothing in the chat view loads from the internet itself (E2, D-E2.2): media
+/* Nothing in the chat view loads from the internet itself: media
  comes through textual-media: (ICLMediaSchemeHandler), everything else from
  the style and the app bundle. Pages wait until the rule list is in place. */
 static NSString * const _remoteLoadsRuleListIdentifier = @"TextualChatViewRemoteLoads-1";

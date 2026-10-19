@@ -832,7 +832,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self answerDroppedFiles:files recipient:recipient onClient:u inChannel:c];
 }
 
-/* Where the network offers uploads (9.18): Upload, and DCC (a private
+/* Where the network offers uploads: Upload, and DCC (a private
  message) or Insert Path as the other choice. NO when it doesn't. */
 - (BOOL)offerToUploadFiles:(NSArray<NSString *> *)files recipient:(nullable NSString *)recipient onClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel
 {
@@ -1025,7 +1025,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			body = TXTLS(@"Prompts[d7f-n3]");
 
-			/* Uploads would do (9.18): offered unless turned off */
+			/* Uploads would do: offered unless turned off */
 			if (client.fileUploadsAvailable == NO && client.config.uploadDestinationMode != IRCClientUploadDestinationModeOff) {
 				body = [body stringByAppendingFormat:@" %@", TXTLS(@"Prompts[d7f-n4]")];
 

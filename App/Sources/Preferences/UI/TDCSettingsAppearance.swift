@@ -38,7 +38,7 @@
 import AppKit
 import SwiftUI
 
-/* Settings › Appearance (12.11 S2): light or dark, the style with previews,
+/* Settings › Appearance: light or dark, the style with previews,
  Chat or Classic, the font, and the window */
 
 struct SettingsStyle: Identifiable

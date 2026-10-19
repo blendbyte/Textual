@@ -37,7 +37,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /* An earlier installation of Textual. Every one keeps its data in a group
- container under ~/Library/Group Containers (migration plan §3.1). */
+ container under ~/Library/Group Containers. */
 @interface TPCLegacyImportSource : NSObject
 @property (readonly, copy) NSString *groupIdentifier;
 @property (readonly, copy) NSString *displayName;
@@ -80,7 +80,7 @@ typedef NS_ENUM(NSUInteger, TPCLegacyImportReadError) {
 
 /* Imports the settings, files, scrollback and licence of Textual 7 (or an
  earlier version) through folders the user grants access to. Textual 8 has
- a new identity (D7), so nothing of the earlier version's is reused in place.
+ a new identity, so nothing of the earlier version's is reused in place.
  The window that walks the user through it is TDCLegacyImportAssistant. */
 @interface TPCLegacyImport : NSObject
 /* Sources with settings, most recently used first */

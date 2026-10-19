@@ -121,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Kept sorted: new channels and private messages, and a renamed query, land
- in Window → Sort Channel List's order (10.10) */
+ in Window → Sort Channel List's order */
 - (void)testKeptSortedListPlacesNewAndRenamedEntries
 {
 	BOOL savedKeepSorted = [TPCPreferences keepChannelListSorted];

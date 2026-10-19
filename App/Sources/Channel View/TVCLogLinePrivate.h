@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)renderedBodyForTranscriptLog;
 - (NSString *)renderedBodyForTranscriptLogInChannel:(nullable IRCChannel *)channel;
 
-/* A line made from the message archive (10.9 D): with this identifier and
+/* A line made from the message archive: with this identifier and
  from no session of the scrollback (shown as history) */
 - (TVCLogLine *)copyAsArchivedLineWithUniqueIdentifier:(NSString *)uniqueIdentifier;
 

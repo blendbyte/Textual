@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
  IRCUserList forgets users unused for a while. */
 @property (readonly) CFAbsoluteTime unusedSince;
 
-/* Whether account is this person's real state (10.2): set by a WHOX answer,
+/* Whether account is this person's real state: set by a WHOX answer,
  extended-join, account-notify or account-tag, so a nil account then means
  logged out rather than unknown */
 @property (readonly) BOOL accountKnown;

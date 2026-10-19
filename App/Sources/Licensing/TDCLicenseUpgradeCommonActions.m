@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(licenseKey != nil);
 
-	/* The upgrade page for a key is gone; 12.1 replaces this flow */
+	/* The upgrade page for a key is gone; the new licensing replaces this flow */
 	[TLOpenLink openWithString:TXWebsiteBuy inBackground:NO];
 }
 

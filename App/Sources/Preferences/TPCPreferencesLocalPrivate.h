@@ -55,7 +55,7 @@ TEXTUAL_EXTERN NSArray<NSString *> *TPCPreferencesInputCompletionDefaultsKeys(vo
 
 TEXTUAL_EXTERN NSString * const TPCPreferencesInputMarkdownDefaultsKey; // Markdown when sending
 
-/* How long the message archive keeps messages (10.9 F), in days */
+/* How long the message archive keeps messages, in days */
 TEXTUAL_EXTERN NSString * const TPCPreferencesMessageArchiveKeepPeriodDefaultsKey;
 
 typedef NS_ENUM(NSInteger, TPCMessageArchiveKeepPeriod) {
@@ -121,16 +121,16 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 @property (class) BOOL inputMarkdownEnabled;
 
-/* Muted channels and networks still notify highlights (E3) */
+/* Muted channels and networks still notify highlights */
 @property (class) BOOL highlightsNotifyWhenMuted;
 
-/* "Automatically ignore highlight spam": a message naming this many people in the channel or more (E3, 10.14) */
+/* "Automatically ignore highlight spam": a message naming this many people in the channel or more */
 @property (readonly, class) NSUInteger massHighlightThreshold;
 
 + (BOOL)inputCompletionEnabledForKind:(NSUInteger)kind;
 + (void)setInputCompletion:(BOOL)enabled forKind:(NSUInteger)kind;
 
-/* Inline media (E2.6): services turned off by name (+[ICPCoreMedia serviceNames]),
+/* Inline media: services turned off by name (+[ICPCoreMedia serviceNames]),
  web page cards, audio, and which sites' links are previewed */
 @property (class, copy) NSArray<NSString *> *inlineMediaDisabledServices;
 + (BOOL)inlineMediaServiceIsEnabled:(NSString *)serviceName;
@@ -146,7 +146,7 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 /* "https://www.Example.com/x" → "www.example.com", "*.example.com" → "example.com"; nil if not a domain */
 + (nullable NSString *)normalizedInlineMediaDomain:(NSString *)domain;
 
-/* Textual 7's limits (D-E2.12): "Only inline images and videos" turns every
+/* Textual 7's limits: "Only inline images and videos" turns every
  service card and web page cards off; the limits are removed */
 + (void)migrateInlineMediaLimits;
 
@@ -183,7 +183,7 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 /* For the chat view: line type ("join", "away", …) → "show", "dim" or "hide" */
 @property (class, readonly, copy) NSDictionary<NSString *, NSString *> *eventDisplayByLineType;
 
-/* Show / Collapse / Hide as the one setting before (10.13), onto the kinds */
+/* Show / Collapse / Hide as the one setting before, onto the kinds */
 + (void)setGeneralEventDisplay:(TXGeneralEventDisplay)generalEventDisplay;
 
 + (void)migrateGeneralEventPreference;
@@ -215,15 +215,15 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
 
-/* Preferences › History (10.9 F) */
+/* Preferences › History */
 @property (class, readonly) TPCMessageArchiveKeepPeriod messageArchiveKeepPeriod;
 + (void)setMessageArchiveKeepPeriod:(TPCMessageArchiveKeepPeriod)messageArchiveKeepPeriod;
 
-/* Channels and private messages kept in Window → Sort Channel List's order (10.10) */
+/* Channels and private messages kept in Window → Sort Channel List's order */
 @property (class, readonly) BOOL keepChannelListSorted;
 + (void)setKeepChannelListSorted:(BOOL)keepChannelListSorted;
 
-/* The keyword lists with their limits and sounds (E3, D-E3.8) */
+/* The keyword lists with their limits and sounds */
 @property (class, readonly, copy, nullable) NSArray<IRCHighlightKeyword *> *highlightMatchKeywordEntries;
 @property (class, readonly, copy, nullable) NSArray<IRCHighlightKeyword *> *highlightExcludeKeywordEntries;
 

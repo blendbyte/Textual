@@ -141,7 +141,7 @@
 "upl-s2" = "%@ doesn't offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
 "upl-s3" = "Set Up Upload Address…";
 "upl-s4" = "%@ doesn't offer uploads, and your own upload address is turned off for this server in Server Properties.";
-/* The search panel (10.9) */
+/* The search panel */
 "src-p1" = "Search Messages";
 "src-a1" = "Search messages";
 "src-a2" = "Messages found";
@@ -171,7 +171,7 @@
 "arc-b1" = "The saved scrollback ends here. Older messages come from the message archive: conversation only, without formatting.";
 "src-x1" = "%1$@, %2$@ — from the message archive";
 
-/* What search covers, by the keep period (10.9 F) */
+/* What search covers, by the keep period */
 "src-k1" = "Messages of the last year";
 "src-k2" = "Messages of the last %ld days";
 "src-k3" = "All kept messages";

@@ -83,7 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([self queryIn:@"hi "]);
 }
 
-/* D-E3.1: the @ goes; the suffix only at the start; no double space */
+/* The @ goes; the suffix only at the start; no double space */
 - (void)testReplacements
 {
 	TVCInputCompletionItem *alice = [TVCInputCompletionItem itemWithKind:TVCInputCompletionKindNickname value:@"alice" title:@"alice" detail:nil];

@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class IRCAddressBookEntry, IRCChannelConfig, IRCHighlightMatchCondition;
 @class IRCNetwork, IRCServer;
 
-/* File uploads (9.18) where the network offers none */
+/* File uploads where the network offers none */
 typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 	IRCClientUploadDestinationModeDefault = 0, // the upload address in Preferences
 	IRCClientUploadDestinationModeOff, // none

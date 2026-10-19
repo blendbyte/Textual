@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else
 	{
-		/* On a message: Reply, React…, Delete… first (9.15) */
+		/* On a message: Reply, React…, Delete… first */
 		NSArray<NSString *> *messageMenu = self.messageMenu;
 
 		self.messageMenu = nil;

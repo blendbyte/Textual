@@ -45,7 +45,7 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	fileprivate var trustRef: SecTrust?
 
-	/// WebSocket (9.14): binary messages when the server agreed to
+	/// WebSocket: binary messages when the server agreed to
 	/// binary.ircv3.net, otherwise text (which must be UTF-8)
 	fileprivate var webSocketSendsBinary = false
 

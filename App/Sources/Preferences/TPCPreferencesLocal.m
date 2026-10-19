@@ -241,7 +241,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"AutomaticallyDetectHighlightSpam"];
 }
 
-/* Mass highlights (E3, 10.14): this many people named in one message, or more */
+/* Mass highlights: this many people named in one message, or more */
 + (NSUInteger)massHighlightThreshold
 {
 	NSInteger threshold = [RZUserDefaults() integerForKey:@"Highlights -> Mass Highlight Threshold"];
@@ -704,7 +704,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 }
 
 /* Textual 7's "Join, Part, Quit" checkbox and the Show / Collapse / Hide
- setting that followed it (10.13; also what a Textual 7 import writes) become
+ setting that followed it (also what a Textual 7 import writes) become
  the per-kind settings, once; their keys are gone afterwards */
 + (void)migrateGeneralEventPreference
 {
@@ -735,7 +735,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	}
 }
 
-/* The member list's default width went from 120 (its minimum) to 190 (10.5).
+/* The member list's default width went from 120 (its minimum) to 190.
  The width is saved whether or not it was ever dragged, so a saved 120 is
  taken as "never resized" and moves to the new default, once */
 + (void)migrateMemberListWidth
@@ -1603,7 +1603,7 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 }
 
 /* A server's own keywords (Textual 7, or a plugin) join the global lists
- once; the caller saves the server's configuration without them (D-E3.8) */
+ once; the caller saves the server's configuration without them */
 + (void)moveServerHighlightConditions:(NSArray<IRCHighlightMatchCondition *> *)conditions clientId:(NSString *)clientId
 {
 	NSParameterAssert(conditions != nil);
@@ -1720,7 +1720,7 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 
 }
 
-/* Textual 7's Caffeine extension became a built-in preference (8.0) */
+/* Textual 7's Caffeine extension became a built-in preference (Textual 8) */
 + (void)migrateCaffeinePreference
 {
 	NSString *extensionKey = @"Private Extension Store -> Caffeine Extension -> Prevent Sleep";

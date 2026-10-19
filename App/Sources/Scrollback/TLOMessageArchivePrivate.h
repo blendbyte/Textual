@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define sharedMessageArchive()			[TLOMessageArchive sharedArchive]
 
-/* Highlights were written (Mentions, 10.9 E): posted on the main queue */
+/* Highlights were written (Mentions): posted on the main queue */
 TEXTUAL_EXTERN NSString * const TLOMessageArchiveDidArchiveHighlightsNotification;
 
 typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
@@ -72,7 +72,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 @property (readonly, weak, nullable) IRCTreeItem *item;
 @end
 
-/* Where a text log's lines go, and what's needed to read them (10.9 F) */
+/* Where a text log's lines go, and what's needed to read them */
 @interface TLOMessageArchiveTextLogTarget : NSObject
 - (instancetype)initWithView:(TLOMessageArchiveView *)view NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
@@ -95,7 +95,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 	TLOMessageArchiveSearchOrderBestMatch = 1 // newest without words to search for
 };
 
-/* What to search for (10.9 C), read from what the user typed:
+/* What to search for, read from what the user typed:
 
 	words and "a phrase"	found anywhere in a message, any case
 							(word* is the same as word)
@@ -166,7 +166,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 @property (readonly) BOOL hasMore; // a next page has results
 @end
 
-/* The message archive (10.9): every message, action, notice and topic
+/* The message archive: every message, action, notice and topic
  change, kept as searchable text in its own SQLite database with a full
  text index (FTS5, trigram tokenizer: substrings in any language), for
  search over all past messages. Separate from the scrollback store (the
@@ -189,8 +189,8 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 /* Only these are kept: the conversation, not joins, parts or mode changes */
 + (BOOL)archivesLineType:(NSUInteger)lineType; // TVCLogLineType
 
-/* NO when the archive is off, or the server or channel is left out (10.9 F,
- Server and Channel Properties); read on the main thread */
+/* NO when the archive is off, or the server or channel is left out
+ (Server and Channel Properties); read on the main thread */
 + (BOOL)keepsMessagesOfItem:(IRCTreeItem *)item;
 
 /* The keep period in days (TPCMessageArchiveKeepPeriod: 0 forever, -1 off,
@@ -204,7 +204,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 			   hasLink:(BOOL)hasLink
 				inView:(TLOMessageArchiveView *)view;
 
-/* Once (10.9 B): the lines already in the scrollback store of these views,
+/* Once: the lines already in the scrollback store of these views,
  kept as if they had been printed, so search reaches back before the archive
  began. Highlights are found from the keywords saved with each line. Marked
  done in the database (a new database imports again); stopped by quitting,
@@ -221,7 +221,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 /* The keep period: everything older goes (in steps, on the queue) */
 - (void)removeMessagesOlderThan:(NSDate *)date;
 
-/* Search (10.9 C), on a connection of its own, so writing doesn't wait for
+/* Search, on a connection of its own, so writing doesn't wait for
  it; lines written in the last two seconds may not be found yet. An empty
  query finds nothing. The completion handlers are called on the main queue. */
 - (void)search:(TLOMessageArchiveQuery *)query
@@ -231,7 +231,7 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 
 - (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler;
 
-/* The chat's history past the scrollback (10.9 D): a view's messages older
+/* The chat's history past the scrollback: a view's messages older
  than where its scrollback starts (the line with scrollbackLineId, found in
  the archive by its line id, else by scrollbackTime; nil and DBL_MAX for an
  empty scrollback), oldest first. Around a message (rowId): up to before
@@ -247,15 +247,15 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 		scrollbackTime:(NSTimeInterval)scrollbackTime
 	 completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex))completionHandler;
 
-/* For suggestions while typing from: and in: (10.9 D): who wrote and the
+/* For suggestions while typing from: and in:: who wrote and the
  channels and queries written in, most recent first, up to limit each */
 - (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames))completionHandler;
 
-/* A result in its conversation (10.9 D, for results older than the
+/* A result in its conversation (for results older than the
  scrollback): up to count messages before it and after it, oldest first */
 - (void)messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages))completionHandler;
 
-/* Delete Archive (10.9 F): the database is deleted and made again, which
+/* Delete Archive: the database is deleted and made again, which
  gives the space back at once. The scrollback is imported into the new one at
  the next launch only when asked (the archive turned off, so that turning it
  on again starts with the scrollback), not after deleting on purpose. */
@@ -274,7 +274,7 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 /* All messages, a server's, or a view's; on the main queue */
 - (void)countMessagesOfServer:(nullable NSString *)serverId inView:(nullable NSString *)viewId completionHandler:(void (^)(NSUInteger count))completionHandler;
 
-/* Import Text Logs… (10.9 F): the text logs under a folder as Textual writes
+/* Import Text Logs…: the text logs under a folder as Textual writes
  them (TLOFileLogger: <server> (<id>)/Channels/<channel>/<day>.txt, Queries,
  Console), matched to servers and channels by the id in the folder name, else
  by name (those that are gone keep their names); messages, actions and

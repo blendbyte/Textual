@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Lists the private Apple interfaces the built app refers to (D11: public API
+# Lists the private Apple interfaces the built app refers to (public API
 # only, both builds; App Store guideline 2.5.1) and fails on any that are not
 # in the baseline:
 #
@@ -160,7 +160,7 @@ for finding in gone:
 	print(f"::notice::{finding} is no longer used. Remove it from {baseline_file}.")
 
 for finding in new:
-	print(f"::error::New private API: {finding}. Use public API instead (D11).")
+	print(f"::error::New private API: {finding}. Use public API instead.")
 
 print(f"Private API: {len(findings)} (baseline {len(baseline)})")
 

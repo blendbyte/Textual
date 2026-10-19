@@ -101,7 +101,7 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 	[self addUploadDestinationRow];
 }
 
-/* Uploads (9.18 B): the address used on networks without one of their own */
+/* Uploads: the address used on networks without one of their own */
 - (void)addUploadDestinationRow
 {
 	NSGridView *grid = nil;
@@ -140,7 +140,7 @@ static NSString *TDCPreferencesClampedValue(id value, NSInteger minimum, NSInteg
 
 	[note.widthAnchor constraintLessThanOrEqualToConstant:300].active = YES;
 
-	/* Long pastes (9.18 D): dpaste.com, off unless chosen */
+	/* Long pastes: dpaste.com, off unless chosen */
 	NSButton *pasteServiceCheckbox = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[upl-c1]") target:self action:@selector(togglePasteService:)];
 
 	pasteServiceCheckbox.state = (([TLOUploadDestination sendsLongPastesToPasteService]) ? NSControlStateValueOn : NSControlStateValueOff);

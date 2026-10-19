@@ -83,7 +83,7 @@ static NSInteger _cachedMessageCount = (-1);
 	NSUInteger highlightCount = 0;
 	NSUInteger messageCount = 0;
 
-	/* Muted conversations don't count (E3); their highlights do while
+	/* Muted conversations don't count; their highlights do while
 	 they still notify */
 	BOOL highlightsNotifyWhenMuted = [TPCPreferences highlightsNotifyWhenMuted];
 

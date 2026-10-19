@@ -82,7 +82,7 @@ typedef NS_ENUM(NSUInteger, IRCConnectionAddressType)
 @property (readonly) uint16_t proxyPort;
 @property (readonly) uint16_t serverPort;
 @property (readonly, copy) NSString *serverAddress;
-@property (readonly, copy, nullable) NSString *webSocketPath; // WebSocket (9.14): the path; nil for a plain IRC connection
+@property (readonly, copy, nullable) NSString *webSocketPath; // WebSocket: the path; nil for a plain IRC connection
 @property (readonly, copy, nullable) NSString *proxyAddress;
 @property (readonly, copy, nullable) NSString *proxyPassword;
 @property (readonly, copy, nullable) NSString *proxyUsername;

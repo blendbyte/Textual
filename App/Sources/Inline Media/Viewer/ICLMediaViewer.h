@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* A window for one piece of inline media (E2.5's images; E2.7's YouTube
+/* A window for one piece of inline media (images; YouTube's
  player builds on it): its own web view, sized to the media up to the
  screen, resizable and full screen, closed with Esc or ⌘W. It floats above
  Textual's windows (decided 2026-10-14) and hides while another app is in

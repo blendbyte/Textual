@@ -47,7 +47,7 @@
 var _Textual = (window._Textual || {});
 
 /* Resource management */
-/* The core scripts are injected by Textual before the page loads (8.0);
+/* The core scripts are injected by Textual before the page loads (Textual 8);
 templates written for Textual 7 still call this, so it stays, doing nothing. */
 Textual.initializeCore = function(resourcesPath)
 {

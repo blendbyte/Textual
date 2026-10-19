@@ -708,7 +708,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self uploadHost:address.host sharesDomainWithHost:serverHost];
 }
 
-/* Where the network offers none: the server's choice (9.18 B) */
+/* Where the network offers none: the server's choice */
 - (BOOL)customUploadDestinationConfigured
 {
 	IRCClientConfig *config = self.config;

@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* WebKit gives a view in a window that isn't visible no animation frames;
- the overlay waiting for layout then stayed up and the view was blank (8.3) */
+ the overlay waiting for layout then stayed up and the view was blank */
 - (void)testLayoutFinishesWithoutAnimationFrames
 {
 	JSContext *context = [self eventsContext];

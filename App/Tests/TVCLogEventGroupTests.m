@@ -138,7 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* A kind hidden in Preferences counts nowhere and doesn't split a run (the
  view's stylesheet hides it); away and back changes collapse too; a summary is
- dimmed only when all of its lines are (E1) */
+ dimmed only when all of its lines are */
 - (void)testHiddenKindsArePassedOver
 {
 	JSContext *context = [self eventGroupsContext];

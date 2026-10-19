@@ -350,7 +350,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	/* Inline media follows a changed proxy in views that are already open */
 	[TVCLogView applyProxyOfClient:self];
 
-	/* The server's upload address may have changed (9.18 B) */
+	/* The server's upload address may have changed */
 	[TVCMainWindow updateUploadButton];
 
 	/* Update channel list */
@@ -1117,7 +1117,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			return;
 		}
 
-		/* In sorted position while the list is kept sorted (10.10) */
+		/* In sorted position while the list is kept sorted */
 		if ([TPCPreferences keepChannelListSorted])
 		{
 			[self.channelListPrivate insertObject:channel atIndex:[self _sortedIndexForChannel:channel]];

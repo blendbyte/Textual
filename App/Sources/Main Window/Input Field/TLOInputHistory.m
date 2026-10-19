@@ -58,7 +58,7 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 @interface TLOInputHistory ()
 @property (nonatomic, weak) TVCMainWindow *window;
 @property (nonatomic, strong) NSMutableDictionary *historyObjects;
-@property (nonatomic, strong) NSMutableDictionary<NSString *, NSAttributedString *> *drafts; // unsent text per channel, query and console (10.11)
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSAttributedString *> *drafts; // unsent text per channel, query and console
 @property (nonatomic, copy, nullable) NSString *currentTreeItem;
 @end
 
@@ -132,7 +132,7 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 	}
 }
 
-/* Drafts are always kept per channel, query and server console (10.11): a
+/* Drafts are always kept per channel, query and server console: a
  half-written message never follows you somewhere else. The setting only
  decides whether ↑/↓ history is per channel or shared. */
 - (void)moveFocusTo:(IRCTreeItem *)treeItem

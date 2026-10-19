@@ -36,8 +36,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Simple aliases (E3, 10.17 idea 10): your own commands, one list for every
- server (D-E3.6). "/alias o /mode $channel +o $1" makes "/o alice" run
+/* Simple aliases: your own commands, one list for every
+ server. "/alias o /mode $channel +o $1" makes "/o alice" run
  "/mode #here +o alice". Textual's own commands always come first. */
 
 typedef NS_ENUM(NSUInteger, IRCAliasError) {

@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* macOS 27 shrinks a hidden view (to zero or another height) and the scroll
- position moves with it: that is not the user scrolling up (7.1) */
+ position moves with it: that is not the user scrolling up */
 - (void)testLayoutChangesAreNotUserScrolling
 {
 	JSContext *context = [self scrollerContext];

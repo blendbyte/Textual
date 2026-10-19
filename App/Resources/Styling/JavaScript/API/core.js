@@ -37,7 +37,7 @@
 
 "use strict";
 
-/* Kept when a template loads this file again after Textual injected it (8.0) */
+/* Kept when a template loads this file again after Textual injected it (Textual 8) */
 var Textual = (window.Textual || {});
 
 /* *********************************************************************** */

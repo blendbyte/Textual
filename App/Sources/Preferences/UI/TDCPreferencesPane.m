@@ -331,7 +331,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Aliases
 
-/* Your own commands (E3): a name and what it runs; /alias does the same */
+/* Your own commands: a name and what it runs; /alias does the same */
 - (NSTabViewItem *)_aliasesTabViewItem
 {
 	self.aliasRows = [NSMutableArray array];
@@ -536,7 +536,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.aliasButtons setEnabled:(self.aliasTable.selectedRow >= 0) forSegment:1];
 }
 
-/* Typing (E3): a suggestion switch per kind and Markdown, built in code */
+/* Typing: a suggestion switch per kind and Markdown, built in code */
 - (NSTabViewItem *)_suggestionsTabViewItem
 {
 	NSTextField *heading = [NSTextField labelWithString:TXTLS(@"TDCPreferencesController[icp-h1]")];
@@ -583,7 +583,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[rows addObject:markdownButton];
 	[rows addObject:markdownNote];
 
-	/* Typing notifications (10.7, from 9.10) */
+	/* Typing notifications */
 	NSButton *typingButton = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[typ-c1]") target:self action:@selector(onChangedSendTypingNotifications:)];
 
 	typingButton.state = [TPCPreferences sendTypingNotifications];

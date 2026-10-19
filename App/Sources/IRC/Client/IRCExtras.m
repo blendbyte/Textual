@@ -214,7 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Begin parsing */
 	NSMutableString *serverInfoMutable = [serverInfo mutableCopy];
 
-	/* WebSocket (9.14): a ws:// or wss:// address, then the password if any */
+	/* WebSocket: a ws:// or wss:// address, then the password if any */
 	{
 		NSString *firstToken = [serverInfo componentsSeparatedByString:@" "].firstObject;
 

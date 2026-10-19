@@ -57,10 +57,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Pop-out windows (10.18): this class from the same nib, set up as a window
+/* Pop-out windows: this class from the same nib, set up as a window
  only (the application is up already), its server list hidden and its one
- item selected for good. The item's view moves into it as it is (7.13 found
- that a WKWebView keeps its page when it changes window). */
+ item selected for good. The item's view moves into it as it is (a WKWebView
+ keeps its page when it changes window). */
 
 static NSString * const _popOutsDefaultsKey = @"Window -> Pop-out Windows";
 

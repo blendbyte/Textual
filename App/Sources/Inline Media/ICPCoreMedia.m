@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 	dispatch_once(&onceToken, ^{
 		/* Twitch (clips and live) was removed: its embeds require a
 		 parent= domain and Textual loads the chat view from file://.
-		 YouTube, Vimeo, Dailymotion and X are preview cards (E2.2). */
+		 YouTube, Vimeo, Dailymotion and X are preview cards. */
 		modules =
 		@[
 			[ICMBandcamp class],

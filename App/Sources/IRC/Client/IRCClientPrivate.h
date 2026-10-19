@@ -121,7 +121,7 @@ enum {
 /* For print completion blocks: the message was printed, so the output rules already passed */
 - (BOOL)notifyPrintedText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text;
 
-/* A highlight; the keyword that matched picks its own sound, if it has one (E3) */
+/* A highlight; the keyword that matched picks its own sound, if it has one */
 - (BOOL)notifyHighlightText:(NSString *)text lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname keyword:(nullable NSString *)keyword;
 @end
 
@@ -135,21 +135,21 @@ enum {
  links. Main thread (the match cache isn't thread safe). */
 - (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname;
 
-/* "Don't Preview Links from …" (D-E2.11): on sets it on the one ignore entry
+/* "Don't Preview Links from …": on sets it on the one ignore entry
  that matches the person, or adds an entry that only does this; off clears
  it, removing entries that did nothing else */
 - (void)setIgnoresInlineMedia:(BOOL)ignoresInlineMedia fromNickname:(NSString *)nickname;
 @end
 
 @interface IRCClient (MutePrivate)
-/* A channel, query or (the client itself) the whole network (E3): no
+/* A channel, query or (the client itself) the whole network: no
  notifications or sounds; highlights per a preference. Saved; the row dims. */
 - (BOOL)isTreeItemMuted:(IRCTreeItem *)item;
 - (void)setMuted:(BOOL)muted forTreeItem:(IRCTreeItem *)item;
 @end
 
 @interface IRCClient (SendingPrivate)
-/* +reply (9.15): set around sending what was typed, so its first message
+/* +reply: set around sending what was typed, so its first message
  answers this message ID (and a line printed locally shows it) */
 @property (nonatomic, copy, nullable) NSString *outgoingReplyMsgid;
 
@@ -216,7 +216,7 @@ enum {
 + (nullable NSImage *)serverListIconWithData:(NSData *)data; // 16 points
 @end
 
-/* Reactions (9.15 B, IRCClient+Reactions.m) */
+/* Reactions (IRCClient+Reactions.m) */
 @interface IRCClient (ReactionsPrivate)
 @property (readonly) BOOL canSendReactions; // message-tags, and the server doesn't deny +draft/react
 
@@ -230,7 +230,7 @@ enum {
 /* After registration: why Reply and React are missing on this network, once */
 - (void)noteUnavailableMessageActions;
 
-/* Deleting (9.15 C): draft/message-redaction */
+/* Deleting: draft/message-redaction */
 @property (readonly) BOOL canDeleteMessages;
 
 - (void)receiveRedact:(IRCMessage *)m;
@@ -240,7 +240,7 @@ enum {
 
 @class TLOUploadDestination;
 
-/* File uploads (9.18, IRCClient+FileUpload.m): one file to the network's upload address */
+/* File uploads (IRCClient+FileUpload.m): one file to the network's upload address */
 @interface IRCFileUpload : NSObject
 @property (readonly, copy) NSString *filePath;
 @property (readonly, copy) NSString *fileName;
@@ -276,13 +276,13 @@ enum {
 
 - (nullable IRCFileUpload *)fileUploadForPath:(NSString *)path; // nil without an upload address
 
-/* The network's, else the user's own (9.18 B: the server's choice, or the one in Preferences) */
+/* The network's, else the user's own (the server's choice, or the one in Preferences) */
 @property (readonly) BOOL fileUploadsAvailable;
 @property (readonly) BOOL customUploadDestinationConfigured; // without reading the Keychain
 @property (readonly, copy, nullable) TLOUploadDestination *customUploadDestination; // with its tokens
 @property (readonly, copy, nullable) NSString *fileUploadDestinationDescription; // "files.example.org (offered by the network)"
 
-/* Long pastes as a link (9.18 D): where file uploads go, else dpaste.com if turned on (not where uploads are off) */
+/* Long pastes as a link: where file uploads go, else dpaste.com if turned on (not where uploads are off) */
 - (nullable IRCFileUpload *)textUploadForPath:(NSString *)path;
 @property (readonly, copy, nullable) NSString *textUploadDestinationDescription;
 @end

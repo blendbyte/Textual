@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* Through a proxy the proxy looks names up (D-E2.3): local addresses and names
+/* Through a proxy the proxy looks names up: local addresses and names
  are still refused, and .onion is only for Tor */
 - (void)testProxyResolutionRules
 {

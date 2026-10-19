@@ -38,7 +38,7 @@
 import AppKit
 import SwiftUI
 
-/* Settings › Messages (12.11 S3): how lines look in the chat, with a sample
+/* Settings › Messages: how lines look in the chat, with a sample
  on top that follows every choice */
 
 private let timestampFormatKey = "Theme -> Timestamp Format"

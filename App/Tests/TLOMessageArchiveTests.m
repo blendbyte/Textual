@@ -306,7 +306,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Words, phrases and filters, read from what was typed */
-/* Text logs (10.9 F): messages, actions and notices with their senders,
+/* Text logs: messages, actions and notices with their senders,
  times and the view they belong to, other lines left out; a message the
  archive has from the scrollback (to the millisecond) isn't added again, and
  a second import adds nothing */

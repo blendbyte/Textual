@@ -39,7 +39,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Highlight keywords (E3, 10.17 idea 8, D-E3.8): one list in Preferences →
+/* Highlight keywords: one list in Preferences →
  Highlights for every server. A keyword can be limited to channels or whole
  networks and to people; a highlight word can have its own sound. Stored in
  "Highlight List -> Primary Matches" and "Highlight List -> Excluded Matches"

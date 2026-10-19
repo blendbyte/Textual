@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readwrite) IBOutlet TVCMainWindowTitlebarAccessoryViewController *titlebarAccessoryViewController;
 @property (nonatomic, weak, readwrite) IBOutlet TVCMainWindowTitlebarAccessoryViewLockButton *titlebarAccessoryViewLockButton;
 @property (nonatomic, strong) TVCMainWindowTitlebarTitleField *titlebarTitleField;
-@property (nonatomic, strong, nullable) NSView *titlebarBackgroundView; // the unified title bar's band (10.1)
+@property (nonatomic, strong, nullable) NSView *titlebarBackgroundView; // the unified title bar's band
 @property (nonatomic, strong, readwrite) IBOutlet TXMenuControllerMainWindowProxy *mainMenuProxy;
 @property (nonatomic, strong, readwrite) IBOutlet TVCTextViewIRCFormattingMenu *formattingMenu;
 @property (nonatomic, unsafe_unretained, readwrite) IBOutlet TVCMainWindowTextView *inputTextField;
@@ -78,13 +78,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL reloadingTheme;
 @property (nonatomic, assign) BOOL inputDraftBeingRestored;
 @property (nonatomic, assign) BOOL awakened; // set up once (-awakeFromNib comes again with nib reloads)
-@property (nonatomic, strong, nullable) IRCTreeItem *popOutItem; // a pop-out's one item (10.18); nil for the main window
+@property (nonatomic, strong, nullable) IRCTreeItem *popOutItem; // a pop-out's one item; nil for the main window
 @property (nonatomic, copy, nullable) NSArray *popOutTopLevelObjects; // keeps a pop-out's nib objects alive
 @property (nonatomic, assign) BOOL popOutClosingQuietly; // its item is going away, or Textual is quitting: not put back
-@property (nonatomic, strong, nullable) NSView *replyBar; // "Replying to …" above the input field (9.15)
+@property (nonatomic, strong, nullable) NSView *replyBar; // "Replying to …" above the input field
 @property (nonatomic, strong, nullable) NSTextField *replyBarLabel;
 @property (nonatomic, strong, nullable) NSLayoutConstraint *replyBarHeightConstraint;
-@property (nonatomic, strong, nullable) NSView *uploadBar; // "Uploading …" above the reply bar (9.18)
+@property (nonatomic, strong, nullable) NSView *uploadBar; // "Uploading …" above the reply bar
 @property (nonatomic, strong, nullable) NSTextField *uploadBarLabel;
 @property (nonatomic, strong, nullable) NSProgressIndicator *uploadBarProgress;
 @property (nonatomic, strong, nullable) NSLayoutConstraint *uploadBarHeightConstraint;
@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableArray *uploadQueue; // waiting, oldest first
 @property (nonatomic, strong, nullable) IRCFileUpload *currentUpload;
 @property (nonatomic, assign) NSUInteger uploadsDone; // of this round
-@property (nonatomic, strong, nullable) TVCMainWindowSearchPanel *searchPanel; // in the member list's column (10.9)
+@property (nonatomic, strong, nullable) TVCMainWindowSearchPanel *searchPanel; // in the member list's column
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
 @end
@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TVCMainWindow (InputInternal)
 - (void)registerKeyHandlers;
 
-/* Pop-out windows (10.18) */
+/* Pop-out windows */
 + (void)unregisterWindow:(TVCMainWindow *)window;
 + (BOOL)isLoadingPopOut;
 - (void)awakeFromNibAsPopOut;

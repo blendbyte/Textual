@@ -144,7 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	ICLPayloadMutable *payload = self.payload;
 
-	/* WebKit loads it through Textual, which fetches it with every check (D-E2.1) */
+	/* WebKit loads it through Textual, which fetches it with every check */
 	NSURL *imageURL =
 	[[ICLMediaSchemeHandler sharedHandler] URLForMediaAtURL:payload.urlToInline
 													session:payload.session

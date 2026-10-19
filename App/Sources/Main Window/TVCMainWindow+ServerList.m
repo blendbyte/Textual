@@ -233,7 +233,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(selectedItems != nil);
 
-	/* What has a window of its own (10.18) isn't shown here as well */
+	/* What has a window of its own isn't shown here as well */
 	if (self.isPopOut == NO) {
 		NSMutableArray<IRCTreeItem *> *itemsShownHere = [NSMutableArray arrayWithCapacity:selectedItems.count];
 
@@ -372,7 +372,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)select:(nullable IRCTreeItem *)item
 {
-	/* In a window of its own (10.18): that window comes forward */
+	/* In a window of its own: that window comes forward */
 	TVCMainWindow *popOutWindow = ((item) ? [self.class popOutWindowForItem:item] : nil);
 
 	if (popOutWindow && popOutWindow != self) {
@@ -759,7 +759,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 #define _maximumSelectedRows	6
 
-	/* A row whose item has a window of its own (10.18) isn't selected:
+	/* A row whose item has a window of its own isn't selected:
 	 clicked alone, its window comes forward */
 	NSMutableIndexSet *rowsShownHere = [proposedSelectionIndexes mutableCopy];
 
@@ -843,7 +843,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
-/* A row let go outside the window (10.18): it opens in a window of its own there */
+/* A row let go outside the window: it opens in a window of its own there */
 - (void)outlineView:(NSOutlineView *)outlineView draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
 {
 	if (operation != NSDragOperationNone || self.isPopOut) {
@@ -901,7 +901,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else
 	{
-		/* Manual order and automatic sorting would fight (10.10) */
+		/* Manual order and automatic sorting would fight */
 		if ([TPCPreferences keepChannelListSorted]) {
 			return NSDragOperationNone;
 		}

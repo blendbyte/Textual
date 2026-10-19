@@ -366,7 +366,7 @@ The identifier for a timer can be found using “/timer list”";
 "x69-rz" = "%1$@ was connected from %2$@ (%3$@)";
 "js3-9v" = "Cannot use nickname “%@“ — Trying another…";
 
-/* One-line descriptions in the completion list after "/" (E3) */
+/* One-line descriptions in the completion list after "/" */
 "cmd-alias" = "Make your own command, or list yours";
 "cmd-adchat" = "Send a message to the server admins’ channel";
 "cmd-ame" = "Send an action to every channel on this server";
@@ -474,7 +474,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-whowas" = "Show information about someone who left";
 "cmd-zline" = "Ban an address from the server (Z:Line)";
 
-/* /alias and /unalias (E3) */
+/* /alias and /unalias */
 "als-l0" = "You have no aliases. For example, “/alias o /mode $channel +o $1” makes “/o alice” give alice operator status.";
 "als-l1" = "Your aliases:";
 "als-l2" = "  /%1$@ → %2$@";
@@ -488,7 +488,7 @@ The identifier for a timer can be found using “/timer list”";
 "als-e5" = "/%@ runs more than 10 commands";
 "als-e6" = "Aliases call each other more than 5 deep: stopped at /%@";
 
-/* /mute and /unmute where you are (E3) */
+/* /mute and /unmute where you are */
 "mut-m1" = "Muted %@: no notifications or sounds; highlights still get through. /unmute undoes it, /mute all mutes every sound.";
 "mut-m2" = "Muted %@: no notifications or sounds, highlights included. /unmute undoes it, /mute all mutes every sound.";
 "mut-u1" = "%@ is no longer muted";
@@ -507,7 +507,7 @@ The identifier for a timer can be found using “/timer list”";
 "spl-n2" = "%1$@ and %2$@";
 "spl-n3" = "%1$@, %2$@ and %3$@";
 
-/* /register and /verify (draft/account-registration, 9.19) */
+/* /register and /verify (draft/account-registration) */
 "acr-n1" = "This server doesn’t offer account registration. On many networks, accounts are created with: /msg NickServ REGISTER <password> <email>";
 "acr-u1" = "Usage: /register [account] <email or *> <password>. Without an account name, your current nickname is registered; * means no email address.";
 "acr-u2" = "Usage: /verify [account] <code>";

@@ -916,7 +916,7 @@ async def scenario_cap_ls(client):
 
 
 async def scenario_protocol_fixes(client):
-	"""Lines that exercise protocol fixes (plan 6.3), checked in Textual Dev:
+	"""Lines that exercise protocol fixes, checked in Textual Dev:
 	#pf must list 4 users (a NAMES line starting with a known nickname used to
 	drop the rest); a ZNC buffextras nickname change prints in #pf; a nested
 	batch's lines print (nested first, then outer); a batch that never closes
@@ -1423,7 +1423,7 @@ async def scenario_chathistory(client):
 
 
 async def scenario_event_playback(client):
-	"""draft/event-playback and draft/pre-away (E4 9.19). Connection 1: #ch with
+	"""draft/event-playback and draft/pre-away. Connection 1: #ch with
 	gina, bob, dave and erin, line 1 (msgid m1); say "drop" (after /away, to
 	test pre-away) and the server drops the connection. Connection 2: AWAY before
 	CAP END is noted; the CHATHISTORY batch holds line 1 again, an event from
@@ -1435,7 +1435,7 @@ async def scenario_event_playback(client):
 
 
 async def scenario_network_icon(client):
-	"""Network icon (9.19 E): the welcome names draft/ICON (Ergo's GitHub picture,
+	"""Network icon: the welcome names draft/ICON (Ergo's GitHub picture,
 	with {size}). Say "other" anywhere for a 005 naming another icon (IRCv3's),
 	"plain" for one with an http:// address (ignored, the icon stays). Connect to
 	a scenario without an icon (e.g. bots) to see it removed. Stays connected."""
@@ -1465,7 +1465,7 @@ async def scenario_network_icon(client):
 
 
 async def scenario_websocket(client):
-	"""WebSocket (9.14), on ws://127.0.0.1:<port>: the path picks the subprotocol
+	"""WebSocket, on ws://127.0.0.1:<port>: the path picks the subprotocol
 	(any: the client's first choice; /text: text.ircv3.net; /none: none;
 	/missing: HTTP 404). #ws with alice. Say "latin" for a line in Latin-1
 	(binary only), "close" for a close frame. Each connection ends with a RESULT
@@ -1475,13 +1475,13 @@ async def scenario_websocket(client):
 
 
 async def scenario_replies(client):
-	"""Replies (9.15 A): message-tags and echo-message. #replies with alice, bob
+	"""Replies: message-tags and echo-message. #replies with alice, bob
 	and carol: alice asks (msgid a1), bob answers her (+reply=a1), carol answers
 	a message the client never saw (+reply=old1). Every PRIVMSG the client sends
 	is echoed with a new msgid and its client tags (so a reply shows its quote);
-	"more" makes alice say another line (msgid a2). Reactions (9.15 B): bob and
+	"more" makes alice say another line (msgid a2). Reactions: bob and
 	carol 👍 alice's question, alice 🎉 bob's answer; "unreact" takes carol's 👍
-	back. Deleting (9.15 C, draft/message-redaction): the client's own messages
+	back. Deleting (draft/message-redaction): the client's own messages
 	are deleted (REDACT sent back), others' refused (FAIL REDACT) unless "op"
 	made it an operator; "bobdel" has bob delete his last answer, "moddel" has
 	dave delete carol's last line with a reason. Stays connected; the log
@@ -1684,7 +1684,7 @@ class UploadHost:
 			log("http", f"OPTIONS {path}")
 			respond("204 No Content", ["Allow: OPTIONS, POST", "Accept-Post: */*"])
 		elif method == "POST" and path.startswith("/custom"):
-			# Like a typical file host (9.18 B): a form with the file in "file",
+			# Like a typical file host: a form with the file in "file",
 			# "Authorization: Bearer test-token", the link in a JSON answer
 			import re
 			authorization = headers.get("authorization", "")
@@ -1731,7 +1731,7 @@ class UploadHost:
 
 
 async def run_uploads(client, capabilities, offer=True):
-	"""Uploads (9.18): the welcome names draft/FILEHOST (an HTTP address on
+	"""Uploads: the welcome names draft/FILEHOST (an HTTP address on
 	the port + 20, see UploadHost) unless offer is False. #uploads with alice.
 	Stays connected."""
 	host = UploadHost()
@@ -1756,19 +1756,19 @@ async def run_uploads(client, capabilities, offer=True):
 
 
 async def scenario_uploads(client):
-	"""Uploads (9.18) without signing in: draft/FILEHOST over HTTP; see run_uploads."""
+	"""Uploads without signing in: draft/FILEHOST over HTTP; see run_uploads."""
 	await run_uploads(client, "message-tags server-time")
 
 
 async def scenario_uploads_own(client):
-	"""Uploads (9.18 B) where the network offers none: set up your own address,
+	"""Uploads where the network offers none: set up your own address,
 	http://127.0.0.1:<port + 20>/custom with "Authorization: Bearer test-token"
 	and the link from $json:files[0].url$ (see UploadHost)."""
 	await run_uploads(client, "message-tags server-time", offer=False)
 
 
 async def scenario_uploads_sasl(client):
-	"""Uploads (9.18) after SASL PLAIN (any login works): the upload should carry it."""
+	"""Uploads after SASL PLAIN (any login works): the upload should carry it."""
 	await run_uploads(client, "message-tags server-time sasl")
 
 
@@ -2094,7 +2094,7 @@ async def scenario_media(client):
 
 
 async def scenario_services(client):
-	"""Preview cards for the services added in E2.3 (turn previews on; the VM
+	"""Preview cards for the newer services (turn previews on; the VM
 	needs internet): #services gets GitHub (repository, issue, pull request,
 	commit), Reddit, Wikipedia (English, German, mobile), Bluesky, Spotify,
 	SoundCloud, Bandcamp and Giphy links. Stays connected (Ctrl-C to stop)."""
@@ -2133,7 +2133,7 @@ async def scenario_services(client):
 
 
 async def scenario_pages(client):
-	"""Web page cards and audio (E2.4; turn previews on; the VM needs
+	"""Web page cards and audio (turn previews on; the VM needs
 	internet): #pages gets pages with Open Graph tags, one with only a title,
 	a GitHub page no GitHub card covers, an image link without an extension,
 	MP3 and Ogg audio, a PDF and a plain HTTP page (both stay links). Stays
@@ -2254,7 +2254,7 @@ async def scenario_previews_short(client):
 
 
 async def scenario_drafts(client):
-	"""Drafts per channel (10.11): #one and #two, a private message from alice
+	"""Drafts per channel: #one and #two, a private message from alice
 	and typing notifications allowed (message-tags), so the log shows the
 	client's +typing TAGMSGs (vm-dev scripted log). Stays connected."""
 	if not await client.register_with_capabilities("server-time message-tags"):
@@ -2276,7 +2276,7 @@ async def scenario_drafts(client):
 
 
 async def scenario_mute(client):
-	"""One-click mute (E3): #one and #two. Saying "go" anywhere makes the server
+	"""One-click mute: #one and #two. Saying "go" anywhere makes the server
 	wait 5 seconds (time to switch to another app), then bob talks in #one and
 	#two, alice mentions the client in #one and carol sends a private message.
 	Stays connected."""
@@ -2313,7 +2313,7 @@ async def scenario_mute(client):
 
 
 async def scenario_sorting(client):
-	"""Per-channel formatting and a channel list kept sorted (10.10): the server
+	"""Per-channel formatting and a channel list kept sorted: the server
 	joins #zulu, #alpha and #mike in that order, coloured lines arrive in #alpha
 	and #mike, and zoe and bob send private messages. Saying "go" anywhere:
 	zoe becomes abby, the server joins #bravo, and #alpha, #mike and #bravo get
@@ -2363,7 +2363,7 @@ async def scenario_sorting(client):
 
 
 async def scenario_events(client):
-	"""Event messages per kind (E1): #events with alice, bob, carol, dave and erin,
+	"""Event messages per kind: #events with alice, bob, carol, dave and erin,
 	away-notify on. Saying "go" anywhere sends one of each kind: joins, a part, a
 	quit, a nickname change, two people away and back, a mode
 	change, a topic change and a kick, then a message; "go" again repeats it
@@ -2411,7 +2411,7 @@ async def scenario_events(client):
 
 
 async def scenario_labels(client):
-	"""labeled-response (9.17): #one and #two, batch and labeled-response offered.
+	"""labeled-response: #one and #two, batch and labeled-response offered.
 	Labeled commands are answered 3 seconds late, so the window can be changed
 	in between: WHOIS (a labeled batch), WHO and NAMES (batches, the old Hidden
 	Responses), VERSION (one labeled line), JOIN (at once: the join and its
@@ -2482,7 +2482,7 @@ async def scenario_labels(client):
 
 
 async def scenario_multiline(client):
-	"""draft/multiline (9.16): #one and #two with batch, labeled-response,
+	"""draft/multiline: #one and #two with batch, labeled-response,
 	echo-message and draft/multiline (max-bytes=4096, max-lines=10) offered.
 	The client's multiline batches are echoed as batches; alice sends a
 	multi-line message with a joined piece. "go" in #one repeats alice's.
@@ -2549,7 +2549,7 @@ async def scenario_multiline(client):
 
 
 async def scenario_bots(client):
-	"""Bot mode, netsplit/netjoin and channel-context (9.19 B): BOT=B, message-tags
+	"""Bot mode, netsplit/netjoin and channel-context: BOT=B, message-tags
 	and batch. #one with helpbot (a bot: WHO flag B, bot tag), alice and 6 others.
 	"go" anywhere: helpbot talks in #one (bot tag) and answers privately with
 	+channel-context=#one; a stranger not in #one sends a private message claiming
@@ -2595,7 +2595,7 @@ async def scenario_bots(client):
 
 
 async def scenario_register(client):
-	"""Account registration (9.19 D): draft/account-registration with
+	"""Account registration: draft/account-registration with
 	email-required and custom-account-name, standard-replies. REGISTER for
 	"alice" fails (ACCOUNT_EXISTS); any other account needs verification: VERIFY
 	with code 123456 succeeds and logs in (900), any other code fails
@@ -2627,7 +2627,7 @@ async def scenario_register(client):
 
 
 async def scenario_keywords(client):
-	"""Highlight keyword limits (E3): #one and #two. Saying "go" anywhere makes
+	"""Highlight keyword limits: #one and #two. Saying "go" anywhere makes
 	the server wait 5 seconds (time to switch to another app), then send lines
 	for keywords limited to a server, a channel and a person: "deploy" (whole
 	server), "deploybot" (excluded), "release" (#one only), "build" (alice
@@ -2667,7 +2667,7 @@ async def scenario_keywords(client):
 
 
 async def scenario_mass(client):
-	"""Mass highlights (E3, 10.14): #one with alice, bob, carol, dave, eve and
+	"""Mass highlights: #one with alice, bob, carol, dave, eve and
 	frank. Saying "go" anywhere makes the server wait 5 seconds (time to switch
 	to another app), then send a line naming the client and 3 others (a
 	highlight), one naming the client and 4 others (5 people: not a highlight)
@@ -2703,7 +2703,7 @@ async def scenario_mass(client):
 
 
 async def scenario_accounts(client):
-	"""Account markers (10.2): account-notify, extended-join and WHOX. #acc: the
+	"""Account markers: account-notify, extended-join and WHOX. #acc: the
 	WHOX answer has alice and carl logged in, bob and dave not. #noinfo: its
 	WHO is never answered, so nothing is known there. Saying "go" anywhere:
 	bob logs in, carl logs out, eve joins logged in and frank joins logged out
@@ -2757,7 +2757,7 @@ async def scenario_accounts(client):
 
 
 async def scenario_legacy_accounts(client):
-	"""Account markers on a legacy network (10.2), like QuakeNet: WHOX but no
+	"""Account markers on a legacy network, like QuakeNet: WHOX but no
 	IRCv3 capabilities. #legacy: the WHOX answer has alice and carl logged in,
 	bob not. Saying "go" anywhere: bob logs in (nothing tells the client) and
 	dave joins (a plain JOIN, account unknown); both show at the next WHO,
@@ -3075,7 +3075,7 @@ async def run_sts_scenario(port):
 		server.close()
 
 
-# WebSocket (9.14): a hand-written server side of RFC 6455, enough for one client
+# WebSocket: a hand-written server side of RFC 6455, enough for one client
 
 class WebSocketClient(Client):
 	"""A Client whose lines travel as WebSocket messages: one line per message,

@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class TLOUploadDestination;
 
-/* Setting up an upload address of the user's own (9.18 B): a sheet with the
+/* Setting up an upload address of the user's own: a sheet with the
  parts of a ShareX custom uploader, Import (.sxcu), and in Preferences the
  option to hide the paperclip where no address applies. */
 @interface TDCUploadDestinationSheet : NSObject

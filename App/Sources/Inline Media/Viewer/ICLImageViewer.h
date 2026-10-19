@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* Clicking an image in the chat view (E2.5, D-E2.9): the image at its own
+/* Clicking an image in the chat view: the image at its own
  size up to the screen, pinch to zoom; Open in Browser, Copy Link and Save
  to Downloads. WebKit decodes it, never Textual; saving writes the bytes
  as they were fetched, with the same checks. */

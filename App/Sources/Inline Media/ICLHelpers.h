@@ -63,7 +63,7 @@ FOUNDATION_EXPORT NSURL * _Nullable ICLResourceURL(NSString *name, NSString *ext
 + (void)requestJSONObject:(NSString *)objectKey ofType:(Class)objectType inHierarchy:(nullable NSArray<NSString *> *)hierarchy fromAddress:(NSString *)address session:(NSURLSession *)session completionBlock:(void (^)(id _Nullable object))completionBlock;
 @end
 
-/* Text out of HTML without an HTML parser (3.4: no parsing of untrusted
+/* Text out of HTML without an HTML parser (no parsing of untrusted
  markup beyond a bounded string search) */
 @interface ICLHelpers (HTML)
 /* Tags removed, <br> as line breaks, entities decoded, trimmed */

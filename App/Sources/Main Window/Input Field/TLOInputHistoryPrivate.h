@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithWindow:(TVCMainWindow *)mainWindow NS_DESIGNATED_INITIALIZER;
 
 /* Keeps the input field's text as the draft of the item left and shows the
- draft of treeItem (10.11) */
+ draft of treeItem */
 - (void)moveFocusTo:(IRCTreeItem *)treeItem;
 
 /* The unsent text kept for an item that isn't selected, or nil */
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* Added at the end of the draft of a channel that isn't selected (an uploaded file's link) */
 - (void)appendText:(NSString *)text toDraftForTreeItem:(IRCTreeItem *)treeItem;
 
-/* Replaces it (nil removes it): an item moving to another window takes its draft along (10.18) */
+/* Replaces it (nil removes it): an item moving to another window takes its draft along */
 - (void)setDraft:(nullable NSAttributedString *)draft forTreeItem:(IRCTreeItem *)treeItem;
 
 - (void)destroy:(IRCTreeItem *)treeItem;

@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TXMenuController (ServerChannelPrivate)
 - (IBAction)joinChannelClicked:(nullable id)sender;
 
-/* The network, channel or private message a mute menu item acts on (E3) */
+/* The network, channel or private message a mute menu item acts on */
 - (nullable IRCTreeItem *)_treeItemToMuteForMenuItem:(NSMenuItem *)menuItem;
 - (nullable IRCTreeItem *)_treeItemToPopOutForMenuItem:(NSMenuItem *)menuItem;
 @end
@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
  selection decides (a private message sends to its nickname); in the member
  list, the member in that row. */
 - (void)answerDroppedFiles:(NSArray<NSString *> *)files;
-- (void)answerPastedPictureOnPasteboard:(NSPasteboard *)pasteboard; // uploaded where the network offers it (9.18)
+- (void)answerPastedPictureOnPasteboard:(NSPasteboard *)pasteboard; // uploaded where the network offers it
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row;
 @end
 
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showServerPropertiesSheetForClient:(IRCClient *)client withSelection:(TDCServerPropertiesSheetSelection)selection context:(nullable id)context;
 
-/* The old Preferences window at one of its panes (a tag), while Settings is rebuilt (12.11) */
+/* The old Preferences window at one of its panes (a tag), while Settings is rebuilt */
 - (void)showLegacyPreferencesPaneWithTag:(NSInteger)tag;
 @end
 

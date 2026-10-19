@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 	];
 
 	/* Taken now, while the main window is still the key window, so the
-	 commands are enabled for what it shows (10.17 idea 3) */
+	 commands are enabled for what it shows */
 	self.menuActionResults = [TDCChannelSpotlightSearchResult searchResultsForActionsInMenu:NSApp.mainMenu];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(applicationAppearanceChanged:) name:TXApplicationAppearanceChangedNotification object:nil];

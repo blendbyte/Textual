@@ -224,7 +224,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	[self setupNotificationsController];
 }
 
-/* "Colors and formatting:" below the last checkbox of the General pane (10.10) */
+/* "Colors and formatting:" below the last checkbox of the General pane */
 - (void)addFormattingRow
 {
 	NSView *generalView = self.contentViewGeneralView;
@@ -272,7 +272,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self.formattingPopUp = popUp;
 }
 
-/* The message archive (10.9 F), below "Colors and formatting:" */
+/* The message archive, below "Colors and formatting:" */
 - (void)addArchiveRows
 {
 	NSView *generalView = self.contentViewGeneralView;

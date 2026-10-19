@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)destroyServerPasswordKeychainItem;
 
-/* WebSocket (9.14): the server as a ws:// or wss:// address; nil for a plain IRC connection */
+/* WebSocket: the server as a ws:// or wss:// address; nil for a plain IRC connection */
 @property (readonly, copy, nullable) NSString *webSocketAddress;
 
 /* A ws:// or wss:// address as host, port (80 or 443 when none), TLS and path

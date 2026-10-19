@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* A channel's own colors and formatting choice wins over the global one, both
- ways, and is kept when the configuration is saved (10.10) */
+ ways, and is kept when the configuration is saved */
 - (void)testChannelFormattingChoiceOverridesGlobal
 {
 	BOOL savedRemove = [TPCPreferences removeAllFormatting];

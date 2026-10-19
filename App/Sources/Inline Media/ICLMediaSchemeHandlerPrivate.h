@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
  the server's preview session and every rule of ICLURLSession (HTTPS, no
  local-network addresses, re-checked on each of at most 5 redirects, the
  proxy) plus a content type and size check, then hands WebKit the bytes.
- WebKit decodes them in its own process, never Textual (3.4). Range
+ WebKit decodes them in its own process, never Textual. Range
  requests pass through, so video can seek. Main thread only. */
 
 TEXTUAL_EXTERN NSString * const ICLMediaSchemeHandlerScheme; // "textual-media"

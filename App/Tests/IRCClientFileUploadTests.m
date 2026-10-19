@@ -288,7 +288,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[[NSFileManager defaultManager] removeItemAtURL:folder error:NULL];
 }
 
-/* Long pastes (9.18 D): dpaste.com gets the text as the "content" field, not a file */
+/* Long pastes: dpaste.com gets the text as the "content" field, not a file */
 - (void)testPasteServiceRequest
 {
 	NSURL *folder = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[NSUUID UUID].UUIDString isDirectory:YES];

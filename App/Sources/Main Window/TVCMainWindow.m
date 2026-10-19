@@ -94,13 +94,13 @@ NSString * const TVCMainWindowDidReloadThemeNotification = @"TVCMainWindowDidRel
 
 NSString * const TVCMainWindowSelectionChangedNotification = @"TVCMainWindowSelectionChangedNotification";
 
-/* Every window of this class, the main window first (7.13) */
+/* Every window of this class, the main window first */
 static NSPointerArray * _Nullable _windows = nil;
 
 /* The one that was key last */
 static __weak TVCMainWindow * _Nullable _lastKeyWindow = nil;
 
-/* A pop-out was opened this session (10.18) */
+/* A pop-out was opened this session */
 static BOOL _popOutsOpened = NO;
 
 @implementation TVCMainWindow
@@ -310,7 +310,7 @@ static BOOL _popOutsOpened = NO;
 	[super awakeFromNib];
 
 	/* -awakeFromNib is called multiple times because of reloads;
-	 once per window (7.13: there can be more than one) */
+	 once per window (there can be more than one) */
 	if (self.awakened == NO) {
 		self.awakened = YES;
 
@@ -328,7 +328,7 @@ static BOOL _popOutsOpened = NO;
 
 	self.alphaValue = [TPCPreferences mainWindowTransparency];
 
-	/* A pop-out (10.18): a window only, the application is up already */
+	/* A pop-out: a window only, the application is up already */
 	if ([self.class isLoadingPopOut]) {
 		[self awakeFromNibAsPopOut];
 
@@ -567,7 +567,7 @@ static BOOL _popOutsOpened = NO;
 	[self saveSelection];
 }
 
-/* Once, the scrollback into the message archive (10.9 B), and the
+/* Once, the scrollback into the message archive, and the
  scrollback of servers, channels and queries that no longer exist out */
 - (void)maintainHistoricLog
 {
@@ -743,7 +743,7 @@ static BOOL _popOutsOpened = NO;
 {
 	_lastKeyWindow = self;
 
-	/* With pop-outs (10.18), the window in front decides the menus (the
+	/* With pop-outs, the window in front decides the menus (the
 	 Channel menu for a channel) and which notifications go: as if its
 	 selection had just been made. Once the change of key window is done:
 	 a menu bar item shown during it kept a blank title. */
@@ -1060,7 +1060,7 @@ static BOOL _popOutsOpened = NO;
 		stringValue = [TVCInputMarkdown attributedStringByApplyingMarkdown:stringValue];
 	}
 
-	/* A reply (9.15) goes with a message, not with a command; /me is one */
+	/* A reply goes with a message, not with a command; /me is one */
 	IRCChannel *replyChannel = self.selectedChannel;
 
 	NSString *replyMsgid = replyChannel.pendingReply[@"msgid"];

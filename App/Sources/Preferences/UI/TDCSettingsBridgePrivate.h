@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* A picture of a style of one's own was taken */
 TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification;
 
-/* What the Settings window (12.11, SwiftUI) needs from the rest of the app
+/* What the Settings window (SwiftUI) needs from the rest of the app
  beyond plain preference keys, which it reads and writes itself */
 @interface TDCSettingsBridge : NSObject
 /* Updates (Sparkle builds only): 0 download and install, 1 only tell me, 2 don't check */
@@ -99,7 +99,7 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 /* The main window's light or dark look (nil: the Mac's), which Settings follows */
 @property (class, readonly, nullable) NSAppearance *mainWindowAppearance;
 
-/* Appearance (S2): the styles, as dictionaries with "name", "location"
+/* Appearance: the styles, as dictionaries with "name", "location"
  (TPCThemeStorageLocation), "displayName", "bundled" and "selected" */
 @property (class, readonly, copy) NSArray<NSDictionary<NSString *, id> *> *styles;
 + (void)selectStyleNamed:(NSString *)name location:(NSInteger)location;

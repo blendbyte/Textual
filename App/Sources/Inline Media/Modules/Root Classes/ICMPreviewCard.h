@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* What a preview card shows (E2.2, D-E2.4): a video (a large picture with
+/* What a preview card shows: a video (a large picture with
  ▶, the title, details such as the channel and length), a post (author,
  text, an image, details) or a page (a small picture, title, description,
  details). Providers fill it from a service's metadata; nothing in it is
@@ -61,8 +61,8 @@ typedef NS_ENUM(NSUInteger, ICMPreviewCardStyle) {
 @property (nonatomic, copy, nullable) NSURL *imageURL; // thumbnail, post image or page image
 @property (nonatomic, copy, nullable) NSArray<NSString *> *details; // shown joined with " · "
 @property (nonatomic, assign) NSTimeInterval duration; // a video's length, 0 if unknown
-@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *dataAttributes; // data-… on the card, for its script (E2.7)
-@property (nonatomic, assign) BOOL playsInWindow; // a video card's picture opens Textual's player (YouTube, E2.7); the rest opens the link
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *dataAttributes; // data-… on the card, for its script
+@property (nonatomic, assign) BOOL playsInWindow; // a video card's picture opens Textual's player (YouTube); the rest opens the link
 @end
 
 /* The root class of card providers */

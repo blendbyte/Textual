@@ -219,7 +219,7 @@ typedef NS_ENUM(NSInteger, TDCPreferencesPaneTag) {
 
  - (void)setUpToolbarItemsAndMenus
 {
-	/* History (10.9 F): the system's clock, which suits the others */
+	/* History: the system's clock, which suits the others */
 	for (NSToolbarItem *item in self.navigationToolbar.items) {
 		if (item.tag != TDCPreferencesPaneTagHistory) {
 			continue;

@@ -38,7 +38,7 @@
 import AppKit
 import SwiftUI
 
-/* The Settings window (12.11): a sidebar of sections with a search field, and
+/* The Settings window: a sidebar of sections with a search field, and
  each section one page of grouped rows (a grouped Form, like System Settings).
  Settings are read from and written to Textual's preferences directly; what
  depends on a key is updated through TDCSettingsBridge. Sections not rebuilt

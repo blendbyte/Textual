@@ -50,10 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
 #define _paneWidth			670
 #define _paneHeight			400
 
-/* Preferences → Inline Media (E2.6): General (previews on, image limits),
+/* Preferences → Inline Media: General (previews on, image limits),
  Services (web page cards, audio, each service) and Rules (which sites'
  links are previewed). Built in code; the old nib's Images & Video and
- Limitations tabs are gone with Textual 7's limits (D-E2.12). */
+ Limitations tabs are gone with Textual 7's limits. */
 @interface TDCPreferencesInlineMediaPane () <NSTableViewDataSource, NSTableViewDelegate, NSTextFieldDelegate>
 @property (nonatomic, strong) NSButton *showButton;
 @property (nonatomic, strong) NSPopUpButton *fileSizeButton;

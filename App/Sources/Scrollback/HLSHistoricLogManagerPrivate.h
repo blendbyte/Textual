@@ -73,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetDataForItem:(IRCTreeItem *)item;
 
 /* The view's saved lines, oldest first, a batch at a time (the message
- archive's import, 10.9 B). The block gets each batch on a background
+ archive's import). The block gets each batch on a background
  queue, with a block that fetches the next one after the work waiting on
  the log's queue, or nil after the last. Lines that can't be read are left
  out, so a batch can be empty and still have a next. */
@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
  launches come back with new identifiers. */
 - (void)forgetItemsOtherThan:(NSSet<NSString *> *)viewIds;
 
-/* Which of these lines the item's scrollback has (10.9 D: the archive's
+/* Which of these lines the item's scrollback has (the archive's
  lines past the scrollback leave those out). Called on a background queue. */
 - (void)fetchUniqueIdentifiers:(NSArray<NSString *> *)uniqueIdentifiers
 					   forItem:(IRCTreeItem *)item

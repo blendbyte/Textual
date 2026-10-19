@@ -87,12 +87,12 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 - (void)inputText:(id)string asCommand:(IRCRemoteCommand)command;
 
-/* Once, the scrollback into the message archive (10.9 B; again when it was
+/* Once, the scrollback into the message archive (again when it was
  turned off and on), and the scrollback of items that no longer exist out */
 - (void)maintainHistoricLog;
 @end
 
-/* Windows (7.13): the main window and windows showing one channel (10.18).
+/* Windows: the main window and windows showing one channel.
  Code that used to ask the main window asks these instead; with one window
  every answer is the main window's. */
 @interface TVCMainWindow (Windows)
@@ -124,7 +124,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 + (void)destroyInputHistoryOf:(IRCTreeItem *)item; // the channel or server is gone
 @end
 
-/* Pop-out windows (10.18): a channel, private message or server console in a
+/* Pop-out windows: a channel, private message or server console in a
  window of its own (this class from the same nib, its server list hidden).
  It is shown in one place at a time: selecting it in the main window brings
  its window forward. Closing the window puts it back in the main window. */
@@ -171,7 +171,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 /* The insertion point moved: the suggestion list follows */
 - (void)inputSelectionDidChange;
 
-/* Puts a channel's draft into the input field (10.11) without it counting as
+/* Puts a channel's draft into the input field without it counting as
  typing: the other side is told only once you edit it */
 - (void)restoreInputDraft:(nullable NSAttributedString *)draft;
 @end
@@ -180,13 +180,13 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)redirectKeyDown:(NSEvent *)e;
 @end
 
-/* File uploads (9.18): one after another, each link put in its channel's input field */
+/* File uploads: one after another, each link put in its channel's input field */
 @interface TVCMainWindow (UploadsPrivate)
 - (void)setUpUploads;
 - (void)updateUploadButton; // shown while the selected server offers uploads
 
 - (void)uploadFiles:(NSArray<NSString *> *)paths onClient:(IRCClient *)client toItem:(IRCTreeItem *)item;
-- (void)sendText:(NSString *)text asLinkOnClient:(IRCClient *)client toItem:(IRCTreeItem *)item asCommand:(IRCRemoteCommand)command; // a long paste (9.18 D)
+- (void)sendText:(NSString *)text asLinkOnClient:(IRCClient *)client toItem:(IRCTreeItem *)item asCommand:(IRCRemoteCommand)command; // a long paste
 
 - (void)chooseFilesToUpload:(nullable id)sender;
 
@@ -195,7 +195,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)editUploadDestinationForClient:(IRCClient *)client; // the server's own, or the one in Preferences
 @end
 
-/* Replies (9.15): the message being answered is kept per channel and shown
+/* Replies: the message being answered is kept per channel and shown
  above the input field until the next message is sent or it is cancelled */
 @interface TVCMainWindow (RepliesPrivate)
 - (void)setUpReplyBar;
@@ -204,20 +204,20 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (void)replyToMessage:(NSString *)msgid from:(NSString *)nickname excerpt:(NSString *)excerpt inChannel:(IRCChannel *)channel;
 - (BOOL)cancelPendingReply; // NO when there was none
 
-/* Reactions (9.15 B): a small field near the pointer with the macOS emoji
+/* Reactions: a small field near the pointer with the macOS emoji
  picker open; what is chosen (or typed and Return) is sent as the reaction */
 - (void)showReactionPickerForMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 
-/* Deleting (9.15 C): asks first, as it can't be undone */
+/* Deleting: asks first, as it can't be undone */
 - (void)confirmDeletingMessage:(NSString *)msgid inChannel:(IRCChannel *)channel;
 
-/* Keyboard focus on messages (9.15 D): ⌥↑ from the input field */
+/* Keyboard focus on messages: ⌥↑ from the input field */
 - (void)leaveMessageFocusInViewController:(nullable TVCLogController *)viewController;
 - (BOOL)handleMessageFocusKey:(NSEvent *)e;
 @end
 
 @interface TVCMainWindow (TitleAndWindowPrivate)
-/* The sidebars carry on up into a transparent title bar (10.1) */
+/* The sidebars carry on up into a transparent title bar */
 - (void)setUpUnifiedTitlebar;
 
 /* Translucent or opaque, as Settings → Appearance says */

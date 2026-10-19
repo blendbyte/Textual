@@ -476,7 +476,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSURL *textualURL = [self _textualFolderInGroupURL:groupURL];
 
-	/* Textual 7's inline media modules: listed, never copied (3.5) */
+	/* Textual 7's inline media modules: listed, never copied */
 	NSMutableArray *modules = [NSMutableArray array];
 
 	for (NSURL *file in [self _contentsOfFolder:[textualURL URLByAppendingPathComponent:@"Inline Media Modules"]]) {
@@ -577,7 +577,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Textual 7's default style (Simplified) and font (Lucida Grande 12) were
 	 never stored: without these, the import would quietly switch to Textual 8's
-	 (Lumen, the system font at 13). The new look is offered on purpose instead (10.6). */
+	 (Lumen, the system font at 13). The new look is offered on purpose instead. */
 	if (preferences[TPCPreferencesThemeNameDefaultsKey] == nil) {
 		[RZUserDefaults() _migrateObject:@"resource:Simplified" forKey:TPCPreferencesThemeNameDefaultsKey];
 	}
@@ -591,7 +591,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Suggestions while typing are new: off for Textual 7 users (decided
-	 2026-10-13), offered on purpose (10.6) */
+	 2026-10-13), offered on purpose */
 	for (NSString *key in TPCPreferencesInputCompletionDefaultsKeys()) {
 		[RZUserDefaults() _migrateObject:@(NO) forKey:key];
 	}
@@ -599,21 +599,21 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Markdown when sending is new too: off for Textual 7 users (decided 2026-10-13) */
 	[RZUserDefaults() _migrateObject:@(NO) forKey:TPCPreferencesInputMarkdownDefaultsKey];
 
-	/* Textual 7 showed no previews unless turned on; Textual 8 does (D-E2.14),
-	 which is offered on purpose too (10.6) */
+	/* Textual 7 showed no previews unless turned on; Textual 8 does,
+	 which is offered on purpose too */
 	if (preferences[TPCPreferencesShowInlineMediaDefaultsKey] == nil) {
 		[RZUserDefaults() _migrateObject:@(NO) forKey:TPCPreferencesShowInlineMediaDefaultsKey];
 	}
 
 	/* Textual 7's "Join, Part, Quit" checkbox (on unless turned off) is Show or Hide:
-	 collapsing them is offered on purpose too (10.6) */
+	 collapsing them is offered on purpose too */
 	TXGeneralEventDisplay generalEventDisplay =
 	[TPCPreferences generalEventDisplayForCheckboxValue:preferences[TPCPreferencesGeneralEventCheckboxDefaultsKey]];
 
 	[RZUserDefaults() _migrateObject:@(generalEventDisplay) forKey:TPCPreferencesGeneralEventDisplayDefaultsKey];
 
 	/* Textual 7's member list width, if never resized (120), becomes 190 at the
-	 restart (10.5): the one-time step runs again for the imported layout */
+	 restart: the one-time step runs again for the imported layout */
 	[RZUserDefaults() _migrateObject:nil forKey:@"TPCPreferences -> Migration -> Member List Width (800)"];
 
 	[RZUserDefaults() _migrateObject:self.servers forKey:IRCWorldClientListDefaultsKey];

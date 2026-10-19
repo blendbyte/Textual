@@ -281,7 +281,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[mutableStringValue addAttribute:NSForegroundColorAttributeName value:controlColor	range:stringValueRange];
 	}
 
-	/* Not logged in to an account (10.2): a faint dot after the name, only
+	/* Not logged in to an account: a faint dot after the name, only
 	 when that is known for this person (most members of an established
 	 channel are logged in, so the exception is marked) */
 	if (cellItem.user.accountKnown && cellItem.user.account.length == 0) {

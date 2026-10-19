@@ -131,7 +131,7 @@ Certificates must meet the following criteria:
 "upl-p1" = "Uploads";
 "upl-o1" = "Not set up";
 
-/* The message archive (10.9 F) */
+/* The message archive */
 "arc-c1" = "Keep this server's messages in the message archive";
 "arc-b1" = "Delete Archived Messages…";
 "arc-d1" = "Delete the archived messages of %@?";

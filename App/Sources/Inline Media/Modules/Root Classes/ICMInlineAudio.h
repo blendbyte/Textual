@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* An audio file (D-E2.8): a small card with the file name and WebKit's own
+/* An audio file: a small card with the file name and WebKit's own
  controls. Nothing loads until it is played (preload="none"); then it
  streams through Textual (ICLMediaSchemeHandler) with no size limit. A
  format WebKit can't play stays a plain link; a player that fails goes. */

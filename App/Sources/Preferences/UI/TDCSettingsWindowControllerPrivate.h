@@ -38,7 +38,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* The Settings window (12.11): sections in a sidebar with a search field,
+/* The Settings window: sections in a sidebar with a search field,
  each one page of grouped rows. Written in Swift (TDCSettingsWindow.swift). */
 @interface TDCSettingsWindowController : NSWindowController
 /* Opens the window, at a section ("general", "appearance", …) if given */

@@ -91,14 +91,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self updateHighlightNicknameButton];
 
-	/* A keyword's settings open in a sheet (E3, D-E3.8) */
+	/* A keyword's settings open in a sheet */
 	[self setUpKeywordTable:self.highlightKeywordsTable arrayController:self.highlightKeywordsArrayController action:@selector(onEditHighlightKeyword:)];
 	[self setUpKeywordTable:self.excludeKeywordsTable arrayController:self.excludeKeywordsArrayController action:@selector(onEditExcludeKeyword:)];
 
 	[self addMassHighlightRow];
 }
 
-/* Mass highlights (E3, 10.14, D-E3.9): "Not when a message names [5] or
+/* Mass highlights: "Not when a message names [5] or
  more people", under the other two checkboxes (moved from Incoming Data) */
 - (void)addMassHighlightRow
 {
@@ -519,7 +519,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self addKeepChannelListSortedCheck];
 }
 
-/* First of the General tab's options (10.10) */
+/* First of the General tab's options */
 - (void)addKeepChannelListSortedCheck
 {
 	NSButton *check = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[srt-c1]") target:self action:@selector(onChangedKeepChannelListSorted:)];
@@ -700,7 +700,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Events
 
-/* Each kind of event shown, dimmed or hidden, and collapsing (E1); second tab */
+/* Each kind of event shown, dimmed or hidden, and collapsing; second tab */
 - (void)addEventsTab
 {
 	NSTabView *tabView = nil;

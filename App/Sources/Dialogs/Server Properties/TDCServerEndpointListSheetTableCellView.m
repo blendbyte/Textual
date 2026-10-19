@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return @"";
 	}
 
-	/* WebSocket (9.14): shown as its ws:// or wss:// address */
+	/* WebSocket: shown as its ws:// or wss:// address */
 	return (objectValue.webSocketAddress ?: objectValue.serverAddress);
 }
 

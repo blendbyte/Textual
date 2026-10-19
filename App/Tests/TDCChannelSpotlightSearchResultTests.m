@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Channel Spotlight lists the commands that can be chosen now, with their menu,
- and not what can't be chosen or is listed elsewhere (10.17 idea 3) */
+ and not what can't be chosen or is listed elsewhere */
 - (void)testFindsOnlyCommandsThatCanBeChosen
 {
 	NSMenu *mainMenu = [NSMenu new];

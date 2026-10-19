@@ -140,7 +140,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	self.isImportingConfiguration = NO;
 
-	/* Servers whose highlight keywords moved (D-E3.8) are saved without them */
+	/* Servers whose highlight keywords moved are saved without them */
 	if (movedHighlightKeywords) {
 		[self save];
 	}
@@ -558,7 +558,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 {
 	NSParameterAssert(config != nil);
 
-	/* A server's own highlight keywords join Preferences → Highlights (D-E3.8) */
+	/* A server's own highlight keywords join Preferences → Highlights */
 	BOOL movedHighlightKeywords = NO;
 
 	if (config.highlightList.count > 0) {
@@ -696,7 +696,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 {
 	NSParameterAssert(target != nil);
 
-	/* Its own window (and a server's channels' windows) closes (10.18) */
+	/* Its own window (and a server's channels' windows) closes */
 	[TVCMainWindow closePopOutsForItem:target];
 
 	if (target.isClient) {

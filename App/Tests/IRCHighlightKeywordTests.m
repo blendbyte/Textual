@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* A server's own keywords move into the global lists without losing where
- they applied (D-E3.8): no channel = that whole server */
+ they applied: no channel = that whole server */
 - (void)testServerKeywordsMove
 {
 	NSArray *entries = @[
