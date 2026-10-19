@@ -46,7 +46,6 @@
 #import "TXMenuControllerPrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindow.h"
-#import "TVCMainWindowSegmentedControllerPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TVCMainWindowTextViewAppearancePrivate.h"
 #import "TVCMainWindowTextViewInternal.h"
@@ -134,36 +133,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.preferredFontColor = appearance.textViewTextColor;
 
-	[self reloadOriginPoints];
-
 	[self updateTextBoxCachedPreferredFontSize];
 
 	[self resetTypeSetterAttributes];
 
 	[self updateAllFontColorsToMatchTheDefaultFont];
-}
-
-#pragma mark -
-#pragma mark Segmented Controller
-
-- (void)reloadOriginPointsAndRecalculateSize
-{
-	[self reloadOriginPoints];
-
-	/* Reload size on next go around to allow constraint layout to occur before so */
-	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[self recalculateTextViewSizeForced];
-	});
-}
-
-- (void)reloadOriginPoints
-{
-	[self.segmentedController updateSegmentedControllerOrigin];
-}
-
-- (void)updateSegmentedController
-{
-	[self.segmentedController updateSegmentedController];
 }
 
 #pragma mark -

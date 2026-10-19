@@ -150,7 +150,7 @@ struct PreviewsSettings: View
 
 				ForEach(sites, id: \.self) { (site) in
 					HStack {
-						Text(site)
+						SettingLabel(title: site)
 
 						Spacer()
 

@@ -284,7 +284,7 @@ enum
 	MTWKGeneralQueryLogs = 1208, // "Query Logs"
 	MTWKGeneralChannelMenu = 1209, // "Channel"
 
-	/* Main window segmented controller */
+	/* Main window segmented controller (no longer used) */
 	MTMainWindowSegmentedControllerAddServer = 1300, // "Add Server…"
 	MTMainWindowSegmentedControllerAddServerSeparator = 1301, // "-"
 	MTMainWindowSegmentedControllerAddChannel = 1302, // "Add Channel…"
@@ -360,7 +360,7 @@ enum
 @property (readonly, weak) NSMenuItem *mainMenuQueryMenuItem;
 @property (readonly, weak) NSMenuItem *mainMenuServerMenuItem;
 
-@property (readonly, strong) NSMenu *mainWindowSegmentedControllerCellMenu;
+@property (readonly, strong) NSMenu *mainWindowSegmentedControllerCellMenu; // no longer used: nil
 
 @property (readonly, strong) NSMenu *serverListNoSelectionMenu;
 

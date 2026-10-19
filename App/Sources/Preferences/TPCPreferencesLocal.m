@@ -191,9 +191,15 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"DisableSidebarTranslucency"];
 }
 
+/* No longer a setting: the buttons beside the input field are gone */
 + (BOOL)hideMainWindowSegmentedController
 {
-	return [RZUserDefaults() boolForKey:@"DisableMainWindowSegmentedController"];
+	return YES;
+}
+
++ (TXInputFieldPlacement)inputFieldPlacement
+{
+	return [RZUserDefaults() unsignedIntegerForKey:@"InputFieldPlacement"];
 }
 
 /* No longer a setting: highlights are always kept (IRCClient.cachedHighlights) */

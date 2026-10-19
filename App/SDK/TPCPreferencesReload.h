@@ -61,7 +61,8 @@ typedef NS_OPTIONS(NSUInteger, TPCPreferencesReloadAction) {
 //	TPCPreferencesReloadActionStyleWithTableViews					= 1 << 18,
 	TPCPreferencesReloadActionTextDirection							= 1 << 19,
 	TPCPreferencesReloadActionTextFieldFontSize						= 1 << 20,
-	TPCPreferencesReloadActionTextFieldSegmentedControllerOrigin	= 1 << 21,
+	TPCPreferencesReloadActionTextFieldSegmentedControllerOrigin	= 1 << 21, // no longer used
+	TPCPreferencesReloadActionInputFieldPlacement					= 1 << 22,
 
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	TPCPreferencesReloadActionSparkleFrameworkFeedURL				= 1 << 23,

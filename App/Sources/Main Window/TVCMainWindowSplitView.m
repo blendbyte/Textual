@@ -37,7 +37,7 @@
  *********************************************************************** */
 
 #import "NSViewHelperPrivate.h"
-#import "TPCPreferencesLocal.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TVCServerList.h"
 #import "TVCServerListAppearance.h"
@@ -45,6 +45,7 @@
 #import "TVCMemberListAppearance.h"
 #import "TVCMainWindow.h"
 #import "TVCMainWindowAppearance.h"
+#import "TVCMainWindowTextViewPrivate.h"
 #import "TVCMainWindowSplitViewPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -163,6 +164,11 @@ static NSString * const _searchWidthDefaultsKey = @"Window -> Main Window -> Sea
 {
 	if (self.restoredPositions) {
 		[self updateSavedFrames];
+	}
+
+	/* Under the chat only, the input field is as wide as the chat */
+	if ([TPCPreferences inputFieldPlacement] == TXInputFieldPlacementChat) {
+		[self.mainWindow.inputTextField recalculateTextViewSize];
 	}
 }
 

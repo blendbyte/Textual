@@ -182,6 +182,8 @@
 	<integer>0</integer>
 	<key>InlineMediaWebPageCards</key>
 	<integer>0</integer>
+	<key>InputFieldPlacement</key>
+	<integer>0</integer>
 	<key>Internal Theme Settings Key-value Store -&gt; </key>
 	<integer>1</integer>
 	<key>InvertSidebarColors</key>

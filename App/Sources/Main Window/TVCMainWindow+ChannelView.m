@@ -304,8 +304,6 @@ NS_ASSUME_NONNULL_BEGIN
 		[self.inputTextField focus];
 	}
 
-	[self.inputTextField updateSegmentedController];
-
 	/* Setup text field value with history item when we have
 	 history setup to be channel specific. */
 	[self.inputHistoryManager moveFocusTo:itemChangedTo];

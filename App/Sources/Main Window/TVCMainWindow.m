@@ -356,6 +356,8 @@ static BOOL _popOutsOpened = NO;
 
 	[self setUpUploads];
 
+	[self setUpInputFieldPlacement];
+
 	[self addFormattingMenuToInputTextField];
 
 	[worldController() setupConfiguration];
@@ -396,6 +398,8 @@ static BOOL _popOutsOpened = NO;
 	[self setUpReplyBar];
 
 	[self setUpUploads];
+
+	[self setUpInputFieldPlacement];
 
 	[self addFormattingMenuToInputTextField];
 

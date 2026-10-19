@@ -382,11 +382,6 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			return [self _validateWebViewMenuItem:menuItem];
 		}
-		case 13: // Main window: add button
-		case 14: // Main window: server list
-		{
-			return [self _validateMainWindowMenuItem:menuItem];
-		}
 		default:
 		{
 			break;
@@ -1125,28 +1120,6 @@ NS_ASSUME_NONNULL_BEGIN
 			[menuItem.menu itemWithTag:MTWKGeneralPasteSeparator].hidden = (menuItem.hidden && queryLogs.hidden);
 
 			return YES;
-		}
-
-		default:
-		{
-			break;
-		}
-	}
-
-	return YES;
-}
-
-/* The main window's add button */
-- (BOOL)_validateMainWindowMenuItem:(NSMenuItem *)menuItem
-{
-	NSUInteger tag = menuItem.tag;
-
-	IRCClient *u = TVCMainWindow.currentWindow.selectedClient;
-
-	switch (tag) {
-		case MTMainWindowSegmentedControllerAddChannel: // "Add Channel…"
-		{
-			return (u != nil);
 		}
 
 		default:

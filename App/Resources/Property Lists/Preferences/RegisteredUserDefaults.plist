@@ -58,8 +58,6 @@
 	<string>textual</string>
 	<key>DestinationOfNonserverNotices</key>
 	<integer>0</integer>
-	<key>DisableMainWindowSegmentedController</key>
-	<false/>
 	<key>DisableRemoteNicknameColorHashing</key>
 	<false/>
 	<key>DisableSidebarTranslucency</key>
@@ -150,6 +148,8 @@
 	<integer>300</integer>
 	<key>InlineMediaWebPageCards</key>
 	<true/>
+	<key>InputFieldPlacement</key>
+	<integer>0</integer>
 	<key>Keyboard -&gt; Command+W Key Action</key>
 	<integer>0</integer>
 	<key>Keyboard -&gt; Tab Key Action</key>

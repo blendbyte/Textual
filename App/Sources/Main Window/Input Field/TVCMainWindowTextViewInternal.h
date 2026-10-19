@@ -47,8 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *windowContentViewMinimumHeight;
 @property (nonatomic, weak) IBOutlet TVCMainWindowTextViewBackground *backgroundView;
 @property (nonatomic, weak) IBOutlet TVCMainWindowTextViewContentView *contentView;
-@property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedController *segmentedController;
-@property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedControllerCell *segmentedControllerCell;
 @property (nonatomic, strong) TVCMainWindowTextViewAppearance *userInterfaceObjects;
 @property (readonly) NSArray<NSString *> *defaultSpellingIgnores;
 @property (nonatomic, assign) BOOL observingUserDefaults;

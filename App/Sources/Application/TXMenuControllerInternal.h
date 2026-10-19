@@ -66,7 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *mainMenuQueryMenuItem;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *mainMenuServerMenuItem;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *mainMenuWindowMenuItem;
-@property (nonatomic, strong, readwrite) IBOutlet NSMenu *mainWindowSegmentedControllerCellMenu;
 @property (nonatomic, strong, readwrite) IBOutlet NSMenu *serverListNoSelectionMenu;
 @property (nonatomic, strong, readwrite) IBOutlet NSMenu *userControlMenu;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *muteNotificationsDockMenuItem;

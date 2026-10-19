@@ -243,8 +243,6 @@ NS_ASSUME_NONNULL_BEGIN
 	textField.editable = NO;
 
 	textField.selectable = NO;
-
-	[textField updateSegmentedController];
 }
 
 - (void)enableBackgroundControlsStepOne
@@ -259,8 +257,6 @@ NS_ASSUME_NONNULL_BEGIN
 	textField.editable = YES;
 
 	textField.selectable = YES;
-
-	[textField updateSegmentedController];
 }
 
 @end

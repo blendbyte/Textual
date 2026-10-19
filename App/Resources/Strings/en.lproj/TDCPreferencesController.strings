@@ -128,7 +128,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-k-general" = "updates beta quit sleep awake away display links browser background close window cmd-w copy select";
 "set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface";
 "set-k-messages" = "time timestamp format nickname names colors colored mode symbol date marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming";
-"set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing buttons controls keyboard";
+"set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing width chat window keyboard";
 "set-k-notifications" = "alerts sounds dock badge bounce speak speech muted banner";
 "set-k-highlights" = "highlight words keywords mentions nickname exclude regular expression regex mass";
 "set-k-previews" = "inline media images videos cards youtube links sites";
@@ -420,8 +420,10 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-typ-ac" = "Correct spelling automatically";
 "set-typ-hi" = "Remember typed lines per channel";
 "set-typ-hih" = "↑ brings back what you sent in this channel. When off, in every channel.";
-"set-typ-b" = "Hide the buttons beside the field";
-"set-typ-bh" = "Add, the menu of the server or channel you’re in, and the address book, left of where you type.";
+"set-typ-w" = "Width";
+"set-typ-wh" = "Under the chat only, the server list and the member list reach down to the bottom of the window.";
+"set-typ-w0" = "Whole window";
+"set-typ-w1" = "Chat only";
 "set-typ-h3" = "Sending";
 "set-typ-cr" = "⌘↩ sends as an action";
 "set-typ-crh" = "Like /me: “• alice waves”.";

@@ -214,6 +214,12 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 - (BOOL)handleMessageFocusKey:(NSEvent *)e;
 @end
 
+/* The input field under the whole window or under the chat only */
+@interface TVCMainWindow (InputPlacementPrivate)
+- (void)setUpInputFieldPlacement; // after the reply and upload bars
+- (void)updateInputFieldPlacement;
+@end
+
 @interface TVCMainWindow (TitleAndWindowPrivate)
 /* The sidebars carry on up into a transparent title bar */
 - (void)setUpUnifiedTitlebar;

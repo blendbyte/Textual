@@ -42,7 +42,6 @@
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TVCMainWindow.h"
-#import "TVCMainWindowSegmentedControllerPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TVCMainWindowTextViewAppearancePrivate.h"
 #import "TVCMainWindowTextViewInternal.h"

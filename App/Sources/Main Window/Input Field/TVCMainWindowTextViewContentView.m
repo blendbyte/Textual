@@ -42,7 +42,6 @@
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TVCMainWindow.h"
-#import "TVCMainWindowSegmentedControllerPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TVCMainWindowTextViewAppearancePrivate.h"
 #import "TVCMainWindowTextViewInternal.h"
@@ -51,7 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMainWindowTextViewContentView ()
 @property (nonatomic, unsafe_unretained) IBOutlet TVCMainWindowTextView *textView;
-@property (nonatomic, weak) IBOutlet TVCMainWindowSegmentedController *segmentedController;
 @end
 
 #pragma mark -

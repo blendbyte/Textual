@@ -24,36 +24,8 @@
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="phB-0r-qij" userLabel="Text Field" customClass="TVCMainWindowTextViewContentView">
                         <rect key="frame" x="0.0" y="0.0" width="800" height="38"/>
                         <subviews>
-                            <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Q9x-Ny-Yn4" customClass="TVCMainWindowSegmentedController">
-                                <rect key="frame" x="9" y="7" width="154" height="23"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="152" id="1ir-ed-Ia3"/>
-                                </constraints>
-                                <segmentedCell key="cell" borderStyle="border" alignment="left" segmentDistribution="fillEqually" style="texturedSquare" trackingMode="momentary" id="l5w-Kh-b34" customClass="TVCMainWindowSegmentedControllerCell">
-                                    <font key="font" metaFont="system"/>
-                                    <segments>
-                                        <segment toolTip="Add Server or Channel" image="NSAddTemplate">
-                                            <nil key="label"/>
-                                        </segment>
-                                        <segment toolTip="Manage Selection" image="NSActionTemplate" tag="1">
-                                            <nil key="label"/>
-                                        </segment>
-                                        <segment toolTip="Open Address Book" image="MainWindowSegmentedControlUserTemplate" tag="2">
-                                            <nil key="label"/>
-                                        </segment>
-                                    </segments>
-                                    <connections>
-                                        <action selector="segmentedCellClicked:" target="Q9x-Ny-Yn4" id="OoN-TX-Sf0"/>
-                                    </connections>
-                                </segmentedCell>
-                                <accessibility description="Main Window Segmented Controller"/>
-                                <connections>
-                                    <outlet property="segmentedControllerLeadingConstraint" destination="BVS-64-Ck9" id="gEb-sq-vxO"/>
-                                    <outlet property="segmentedControllerWidthConstraint" destination="1ir-ed-Ia3" id="dNR-4h-5xG"/>
-                                </connections>
-                            </segmentedControl>
                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="nbK-l5-9k5" customClass="TVCMainWindowTextViewBackground">
-                                <rect key="frame" x="172" y="6" width="618" height="25"/>
+                                <rect key="frame" x="10" y="6" width="780" height="25"/>
                                 <subviews>
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xnK-JZ-PNd">
                                         <rect key="frame" x="0.0" y="3" width="608" height="19"/>
@@ -73,8 +45,6 @@
                                                     <connections>
                                                         <outlet property="backgroundView" destination="nbK-l5-9k5" id="9hb-sC-ujn"/>
                                                         <outlet property="contentView" destination="phB-0r-qij" id="q5a-XP-rcM"/>
-                                                        <outlet property="segmentedController" destination="Q9x-Ny-Yn4" id="Wfb-bb-UFY"/>
-                                                        <outlet property="segmentedControllerCell" destination="l5w-Kh-b34" id="bCl-8m-PYT"/>
                                                         <outlet property="textViewHeightConstraint" destination="4wi-57-9OA" id="WKH-Kh-F86"/>
                                                         <outlet property="windowContentViewMinimumHeight" destination="XJm-Dd-FjI" id="yUG-1i-yuZ"/>
                                                     </connections>
@@ -105,14 +75,11 @@
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="nbK-l5-9k5" secondAttribute="trailing" constant="10" id="4Uj-Jq-fdw"/>
                             <constraint firstAttribute="height" constant="38" id="4wi-57-9OA"/>
-                            <constraint firstItem="Q9x-Ny-Yn4" firstAttribute="leading" secondItem="phB-0r-qij" secondAttribute="leading" constant="10" id="BVS-64-Ck9"/>
-                            <constraint firstItem="Q9x-Ny-Yn4" firstAttribute="centerY" secondItem="phB-0r-qij" secondAttribute="centerY" id="WNs-kr-fBb"/>
                             <constraint firstItem="nbK-l5-9k5" firstAttribute="top" secondItem="phB-0r-qij" secondAttribute="top" constant="7" id="awN-Bn-Ddd"/>
-                            <constraint firstItem="nbK-l5-9k5" firstAttribute="leading" secondItem="Q9x-Ny-Yn4" secondAttribute="trailing" constant="10" id="bvY-ST-GSO"/>
+                            <constraint firstItem="nbK-l5-9k5" firstAttribute="leading" secondItem="phB-0r-qij" secondAttribute="leading" constant="10" id="bvY-ST-GSO"/>
                             <constraint firstAttribute="bottom" secondItem="nbK-l5-9k5" secondAttribute="bottom" constant="6" id="hXg-Rj-6BH"/>
                         </constraints>
                         <connections>
-                            <outlet property="segmentedController" destination="Q9x-Ny-Yn4" id="tS5-QF-8za"/>
                             <outlet property="textView" destination="Ub5-no-pBU" id="tIm-bm-cE5"/>
                         </connections>
                     </customView>
@@ -242,12 +209,22 @@
                                     <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="uvA-9N-e8z"/>
                                 </constraints>
                             </visualEffectView>
-                            <splitView dividerStyle="thin" translatesAutoresizingMaskIntoConstraints="NO" id="dCp-Wp-aIX" customClass="TVCMainWindowChannelView">
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="cHc-Ol-a01" userLabel="Chat Column">
                                 <rect key="frame" x="151" y="0.0" width="498" height="439"/>
+                                <subviews>
+                                    <splitView dividerStyle="thin" translatesAutoresizingMaskIntoConstraints="NO" id="dCp-Wp-aIX" customClass="TVCMainWindowChannelView">
+                                        <rect key="frame" x="0.0" y="0.0" width="498" height="439"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="mtt-4n-lrH"/>
+                                        </constraints>
+                                    </splitView>
+                                </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="mtt-4n-lrH"/>
+                                    <constraint firstItem="dCp-Wp-aIX" firstAttribute="top" secondItem="cHc-Ol-a01" secondAttribute="top" id="cHc-Tp-a02"/>
+                                    <constraint firstItem="dCp-Wp-aIX" firstAttribute="leading" secondItem="cHc-Ol-a01" secondAttribute="leading" id="cHc-Ld-a03"/>
+                                    <constraint firstAttribute="trailing" secondItem="dCp-Wp-aIX" secondAttribute="trailing" id="cHc-Tr-a04"/>
                                 </constraints>
-                            </splitView>
+                            </customView>
                             <visualEffectView blendingMode="behindWindow" material="underWindowBackground" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="2k7-ax-6YE">
                                 <rect key="frame" x="650" y="0.0" width="150" height="439"/>
                                 <subviews>
@@ -385,6 +362,7 @@
             </view>
             <connections>
                 <outlet property="channelView" destination="dCp-Wp-aIX" id="SRq-MD-Vzk"/>
+                <outlet property="chatColumn" destination="cHc-Ol-a01" id="cHc-Ou-a06"/>
                 <outlet property="contentSplitView" destination="dVR-2U-X51" id="UTS-m3-2nd"/>
                 <outlet property="formattingMenu" destination="j7v-mc-UwU" id="4X3-MP-pDp"/>
                 <outlet property="inputTextField" destination="Ub5-no-pBU" id="mCF-mM-bHc"/>
@@ -2096,7 +2074,6 @@ To continue using Textual, you will need to purchase it.</string>
         <image name="FormattingColor_8" width="16" height="16"/>
         <image name="FormattingColor_9" width="16" height="16"/>
         <image name="FormattingColor_Rainbow" width="16" height="16"/>
-        <image name="MainWindowSegmentedControlUserTemplate" width="20" height="18"/>
         <image name="NSActionTemplate" width="20" height="20"/>
         <image name="NSAddTemplate" width="18" height="17"/>
         <image name="NSLockUnlockedTemplate" width="21" height="19"/>

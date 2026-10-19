@@ -69,6 +69,13 @@ typedef NS_ENUM(NSInteger, TPCMessageArchiveKeepPeriod) {
 	TPCMessageArchiveKeepPeriodTwoYears = 730
 };
 
+/* Where the input field is: across the window, or under the chat only,
+ with the server and member lists running down to the window's bottom */
+typedef NS_ENUM(NSUInteger, TXInputFieldPlacement) {
+	TXInputFieldPlacementWindow = 0,
+	TXInputFieldPlacementChat = 1
+};
+
 typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 	TXInlineMediaDomainRuleModeExcept = 0, // links from every site except those listed
 	TXInlineMediaDomainRuleModeOnly = 1 // links only from the sites listed
@@ -118,6 +125,8 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 + (void)setShowInlineMedia:(BOOL)showInlineMedia;
 
 @property (class) BOOL inputMarkdownEnabled;
+
+@property (class, readonly) TXInputFieldPlacement inputFieldPlacement;
 
 /* Muted channels and networks still notify highlights */
 @property (class) BOOL highlightsNotifyWhenMuted;

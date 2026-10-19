@@ -127,9 +127,9 @@ NS_ASSUME_NONNULL_BEGIN
 		reloadAction |= TPCPreferencesReloadActionInputHistoryScope;
 	}
 
-	/* Main window segmented controller */
-	if ([keys containsObject:@"DisableMainWindowSegmentedController"]) {
-		reloadAction |= TPCPreferencesReloadActionTextFieldSegmentedControllerOrigin;
+	/* Where the input field is */
+	if ([keys containsObject:@"InputFieldPlacement"]) {
+		reloadAction |= TPCPreferencesReloadActionInputFieldPlacement;
 	}
 
 	/* Main window alpha level */
@@ -311,10 +311,10 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	/* Main window segmented controller */
-	if (_reloads(TPCPreferencesReloadActionTextFieldSegmentedControllerOrigin)) {
+	/* Where the input field is */
+	if (_reloads(TPCPreferencesReloadActionInputFieldPlacement)) {
 		for (TVCMainWindow *window in TVCMainWindow.windows) {
-			[window.inputTextField reloadOriginPointsAndRecalculateSize];
+			[window updateInputFieldPlacement];
 		}
 	}
 

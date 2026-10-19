@@ -65,6 +65,7 @@ struct TypingSettings: View
 	var body: some View
 	{
 		let fontSize = store.integer("Main Input Text Field -> Font Size")
+		let placement = store.integer("InputFieldPlacement")
 		let suffix = store.string("Keyboard -> Tab Key Completion Suffix")
 
 		Form {
@@ -135,8 +136,26 @@ struct TypingSettings: View
 				SettingToggle(title: SettingsText("set-typ-hi"), help: SettingsText("set-typ-hih"),
 							  isOn: store.bool("SaveInputHistoryPerSelection"))
 
-				SettingToggle(title: SettingsText("set-typ-b"), help: SettingsText("set-typ-bh"),
-							  isOn: store.bool("DisableMainWindowSegmentedController"))
+				VStack(alignment: .leading, spacing: 10) {
+					SettingLabel(title: SettingsText("set-typ-w"), help: SettingsText("set-typ-wh"))
+
+					HStack(spacing: 18) {
+						SettingsChoiceCard(title: SettingsText("set-typ-w0"), selected: (placement.wrappedValue == 0), height: 64) {
+							InputFieldSketch(underChatOnly: false)
+						} action: {
+							placement.wrappedValue = 0
+						}
+
+						SettingsChoiceCard(title: SettingsText("set-typ-w1"), selected: (placement.wrappedValue == 1), height: 64) {
+							InputFieldSketch(underChatOnly: true)
+						} action: {
+							placement.wrappedValue = 1
+						}
+
+						Spacer()
+					}
+				}
+				.padding(.vertical, 4)
 			}
 
 			Section(SettingsText("set-typ-h3")) {
@@ -222,5 +241,69 @@ struct TypingSample: View
 		.animation(.easeInOut(duration: 0.15), value: textSize)
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(SettingsText("set-typ-xa"))
+	}
+}
+
+/// The window with the input field across it, or under the chat only
+/// (the lists then reach the bottom)
+struct InputFieldSketch: View
+{
+	let underChatOnly: Bool
+
+	private var list: some View
+	{
+		Color.primary.opacity(0.1)
+	}
+
+	private var chat: some View
+	{
+		let line = Color.primary.opacity(0.22)
+
+		return VStack(alignment: .leading, spacing: 5) {
+			Capsule().fill(line).frame(width: 34, height: 4)
+			Capsule().fill(line).frame(width: 46, height: 4)
+			Capsule().fill(line).frame(width: 26, height: 4)
+		}
+		.padding(.leading, 6)
+		.padding(.top, 8)
+		.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+	}
+
+	private var field: some View
+	{
+		RoundedRectangle(cornerRadius: 2.5)
+			.fill(Color.accentColor.opacity(0.6))
+			.frame(height: 7)
+			.padding(.horizontal, 5)
+			.padding(.vertical, 4)
+			.background(Color.primary.opacity(0.06))
+	}
+
+	var body: some View
+	{
+		Group {
+			if (underChatOnly) {
+				HStack(spacing: 0) {
+					list.frame(width: 26)
+
+					VStack(spacing: 0) { chat; field }
+
+					list.frame(width: 22)
+				}
+			} else {
+				VStack(spacing: 0) {
+					HStack(spacing: 0) {
+						list.frame(width: 26)
+
+						chat
+
+						list.frame(width: 22)
+					}
+
+					field
+				}
+			}
+		}
+		.background(Color.primary.opacity(0.03))
 	}
 }

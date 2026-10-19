@@ -86,6 +86,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue((transcripts & TPCPreferencesReloadActionLogTranscripts) == TPCPreferencesReloadActionLogTranscripts);
 
+	/* The input field moves at once, in every window */
+	TPCPreferencesReloadAction placement = [TPCPreferences reloadActionForKeys:@[@"InputFieldPlacement"]];
+
+	XCTAssertTrue((placement & TPCPreferencesReloadActionInputFieldPlacement) == TPCPreferencesReloadActionInputFieldPlacement);
+
 	/* Every change ends in the general "preferences changed" pass */
 	XCTAssertEqual([TPCPreferences reloadActionForKeys:@[]], TPCPreferencesReloadActionPreferencesChanged);
 }

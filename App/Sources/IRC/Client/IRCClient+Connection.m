@@ -322,11 +322,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[TVCMainWindow updateTitleFor:self];
 
-		/* The Address Book segment needs a connection */
-		for (TVCMainWindow *window in TVCMainWindow.windows) {
-			[window.inputTextField updateSegmentedController];
-		}
-
 		/* No replies without a connection */
 		[self updateMessageActionsInViews];
 	}

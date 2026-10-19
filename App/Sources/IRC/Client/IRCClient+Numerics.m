@@ -229,10 +229,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[TVCMainWindow updateTitleFor:self];
 
-	for (TVCMainWindow *window in TVCMainWindow.windows) {
-		[window.inputTextField updateSegmentedController];
-	}
-
 	/* Everything else */
 	if (self.config.autojoinWaitsForNickServ == NO || [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL]) {
 		[self performAutoJoin];

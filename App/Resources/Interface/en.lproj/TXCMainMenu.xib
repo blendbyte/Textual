@@ -30,7 +30,6 @@
                 <outlet property="mainMenuQueryMenuItem" destination="d6g-it-Teq" id="BCp-Fd-2hl"/>
                 <outlet property="mainMenuServerMenuItem" destination="286" id="OSj-f8-vqi"/>
                 <outlet property="mainMenuWindowMenuItem" destination="19" id="w4D-Ns-fa4"/>
-                <outlet property="mainWindowSegmentedControllerCellMenu" destination="2953" id="oCb-R7-qbx"/>
                 <outlet property="muteNotificationsDockMenuItem" destination="dnc-ku-aQ3" id="Af9-tD-wlC"/>
                 <outlet property="muteNotificationsFileMenuItem" destination="QNy-Fk-SRO" id="nHn-Ki-RJX"/>
                 <outlet property="muteNotificationsSoundsDockMenuItem" destination="5jG-1t-WG4" id="bTl-Aa-XkS"/>
@@ -1296,26 +1295,6 @@ CA
                 <outlet property="delegate" destination="267" id="n8y-YA-LIK"/>
             </connections>
             <point key="canvasLocation" x="-510" y="-144"/>
-        </menu>
-        <menu title="Menu" id="2953" userLabel="Segmented Controller Menu">
-            <items>
-                <menuItem title="Add Server…" tag="1300" id="2954">
-                    <connections>
-                        <action selector="addServer:" target="267" id="2955"/>
-                    </connections>
-                </menuItem>
-                <menuItem isSeparatorItem="YES" tag="1301" id="2957"/>
-                <menuItem title="Add Channel…" tag="1302" keyEquivalent="+" id="2958">
-                    <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
-                    <connections>
-                        <action selector="addChannel:" target="267" id="2959"/>
-                    </connections>
-                </menuItem>
-            </items>
-            <connections>
-                <outlet property="delegate" destination="267" id="e4U-Ty-iAr"/>
-            </connections>
-            <point key="canvasLocation" x="-479" y="-38"/>
         </menu>
         <menu title="Menu" id="327" userLabel="User Controls Menu">
             <items>
