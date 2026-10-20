@@ -253,6 +253,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel withFormat:(nullable NSString *)format
 {
+	return [self formatNickname:nickname inChannel:channel withFormat:format modeSymbol:nil];
+}
+
+- (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel withFormat:(nullable NSString *)format modeSymbol:(nullable NSString *)modeSymbolIn
+{
 	NSParameterAssert(nickname != nil);
 
 	if (format.length == 0) {
@@ -267,9 +272,9 @@ NS_ASSUME_NONNULL_BEGIN
 		format = [TPCPreferences themeNicknameFormatDefault];
 	}
 
-	NSString *modeSymbol = @"";
+	NSString *modeSymbol = (modeSymbolIn ?: @"");
 
-	if (channel.isChannel) {
+	if (modeSymbolIn == nil && channel.isChannel) {
 		IRCChannelUser *member = [channel findMember:nickname];
 
 		if (member) {
@@ -585,6 +590,11 @@ NS_ASSUME_NONNULL_BEGIN
 	logLine.rendererAttributes = rendererAttributes;
 
 	logLine.nickname = nickname;
+
+	/* The sender's rank now, kept with the line (shown with it later) */
+	if (nickname && channel.isChannel) {
+		logLine.nicknameModeSymbol = ([channel findMember:nickname].mark ?: @"");
+	}
 
 	logLine.eventNicknames = eventNicknames;
 

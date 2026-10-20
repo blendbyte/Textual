@@ -39,7 +39,7 @@
 #import "NSObjectHelperPrivate.h"
 #import "NSStringHelper.h"
 #import "TXGlobalModels.h"
-#import "IRCClient.h"
+#import "IRCClientPrivate.h"
 #import "IRCChannel.h"
 #import "TPCNicknameColorStyleGeneratorPrivate.h"
 #import "TPCPreferencesLocal.h"
@@ -160,6 +160,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_nickname = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"nickname"];
 	self->_msgid = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"msgid"];
 	self->_replyToMsgid = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"replyToMsgid"];
+	self->_nicknameModeSymbol = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"nicknameModeSymbol"];
 	self->_sendFailedReason = [aDecoder decodeObjectOfClass:[NSString class] forKey:@"sendFailedReason"];
 
 	self->_lineType = [aDecoder decodeIntegerForKey:@"lineType"];
@@ -252,6 +253,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	[aCoder maybeEncodeObject:self.msgid forKey:@"msgid"];
 	[aCoder maybeEncodeObject:self.replyToMsgid forKey:@"replyToMsgid"];
+	[aCoder maybeEncodeObject:self.nicknameModeSymbol forKey:@"nicknameModeSymbol"];
 	[aCoder maybeEncodeObject:self.sendFailedReason forKey:@"sendFailedReason"];
 
 	[aCoder maybeEncodeObject:self.nickname forKey:@"nickname"];
@@ -412,7 +414,9 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		}
 	}
 
-	return [channel.associatedClient formatNickname:self.nickname inChannel:channel withFormat:format];
+	/* The sender's rank when the line was written: saved lines are shown at
+	 launch before the channel is joined, when nobody has one yet */
+	return [channel.associatedClient formatNickname:self.nickname inChannel:channel withFormat:format modeSymbol:self.nicknameModeSymbol];
 }
 
 - (NSString *)renderedBodyForTranscriptLog
@@ -494,6 +498,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	object->_msgid = self->_msgid;
 	object->_replyToMsgid = self->_replyToMsgid;
+	object->_nicknameModeSymbol = self->_nicknameModeSymbol;
 	object->_sendFailedReason = self->_sendFailedReason;
 
 	object->_receivedAt = self->_receivedAt;
@@ -537,6 +542,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic isPrivateInChannel;
 @dynamic msgid;
 @dynamic replyToMsgid;
+@dynamic nicknameModeSymbol;
 @dynamic reactions;
 @dynamic isRedacted;
 @dynamic sendFailedReason;
@@ -634,6 +640,13 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	if (self->_replyToMsgid != replyToMsgid) {
 		self->_replyToMsgid = [replyToMsgid copy];
+	}
+}
+
+- (void)setNicknameModeSymbol:(nullable NSString *)nicknameModeSymbol
+{
+	if (self->_nicknameModeSymbol != nicknameModeSymbol) {
+		self->_nicknameModeSymbol = [nicknameModeSymbol copy];
 	}
 }
 

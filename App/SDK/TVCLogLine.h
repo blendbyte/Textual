@@ -106,6 +106,7 @@ typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {
 @property (readonly) BOOL isPrivateInChannel; // a private message shown in the channel it is about (+channel-context)
 @property (readonly, copy, nullable) NSString *msgid; // the server's message ID (msgid tag): replies, reactions and deleting refer to it
 @property (readonly, copy, nullable) NSString *replyToMsgid; // +reply: the message ID this line answers
+@property (readonly, copy, nullable) NSString *nicknameModeSymbol; // the sender's mode symbol (@, +, …) when the line was written; nil for lines kept before it was
 @property (readonly, copy, nullable) NSArray<NSDictionary<NSString *, id> *> *reactions; // +draft/react: in order, each @{@"emoji" : …, @"nicknames" : @[…]}
 @property (readonly) BOOL isRedacted; // draft/message-redaction: deleted; messageBody then says so
 @property (readonly, copy, nullable) NSString *sendFailedReason; // our message the server refused, and why (shown dimmed, with Resend and Delete)
@@ -144,6 +145,7 @@ typedef NS_ENUM(NSUInteger, TVCLogLineMemberType) {
 @property (nonatomic, assign, readwrite) BOOL isPrivateInChannel;
 @property (nonatomic, copy, readwrite, nullable) NSString *msgid;
 @property (nonatomic, copy, readwrite, nullable) NSString *replyToMsgid;
+@property (nonatomic, copy, readwrite, nullable) NSString *nicknameModeSymbol;
 @property (nonatomic, copy, readwrite, nullable) NSArray<NSDictionary<NSString *, id> *> *reactions;
 @property (nonatomic, assign, readwrite) BOOL isRedacted;
 @property (nonatomic, copy, readwrite, nullable) NSString *sendFailedReason;

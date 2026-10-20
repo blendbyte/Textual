@@ -182,6 +182,9 @@ enum {
 - (void)printGeneralEvent:(NSString *)messageBody aboutNicknames:(NSArray<NSString *> *)nicknames inChannel:(IRCChannel *)channel asType:(TVCLogLineType)lineType command:(NSString *)command receivedAt:(NSDate *)receivedAt;
 
 - (void)logFileRecordSessionChanged:(BOOL)toNewSession inChannel:(nullable IRCChannel *)channel;
+
+/* modeSymbol nil: the member's current one in the channel */
+- (NSString *)formatNickname:(NSString *)nickname inChannel:(nullable IRCChannel *)channel withFormat:(nullable NSString *)format modeSymbol:(nullable NSString *)modeSymbol;
 @end
 
 @interface IRCClient (ReceiveCommandsPrivate)
