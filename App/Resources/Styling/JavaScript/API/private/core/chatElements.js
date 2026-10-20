@@ -235,6 +235,38 @@ _ChatElements.tidy = function() /* PRIVATE */
 			}
 		}
 	}
+
+	_ChatElements._placeMark(buffer);
+};
+
+/* The unread marker is added at the end while the view is in the background,
+ and the next message brings its date line below it: it goes below the date
+ and session lines that follow it ("Today", then "New") */
+_ChatElements._placeMark = function(buffer) /* PRIVATE */
+{
+	var mark = document.getElementById("mark");
+
+	if (mark === null || mark.parentNode !== buffer) {
+		return;
+	}
+
+	var lastSeparator = null;
+
+	for (var next = mark.nextElementSibling; next !== null; next = next.nextElementSibling) {
+		var shown = (next.getClientRects().length > 0);
+
+		if (next.classList.contains("date_indicator") || next.classList.contains("session_indicator")) {
+			if (shown) {
+				lastSeparator = next;
+			}
+		} else if (shown) {
+			break;
+		}
+	}
+
+	if (lastSeparator !== null) {
+		lastSeparator.insertAdjacentElement("afterend", mark);
+	}
 };
 
 /* Relabels the date lines after midnight ("Today" becomes "Yesterday") */
