@@ -63,6 +63,7 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 {
 	case server = 5
 	case you = 6
+	case account = 12
 	case channels = 2
 	case people = 1
 	case messages = 8
@@ -70,7 +71,6 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 	case connection = 14
 	case encoding = 4
 	case floodControl = 13
-	case certificate = 12
 	case proxy = 15
 	case fallbackServers = 16
 	case uploads = 17
@@ -81,15 +81,16 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 		rawValue
 	}
 
-	static let basics: [ServerPropertiesPage] = [.server, .you, .channels, .people, .messages]
+	static let basics: [ServerPropertiesPage] = [.server, .you, .account, .channels, .people, .messages]
 
-	static let advanced: [ServerPropertiesPage] = [.whenConnected, .connection, .encoding, .floodControl, .certificate, .proxy, .fallbackServers, .uploads, .znc]
+	static let advanced: [ServerPropertiesPage] = [.whenConnected, .connection, .encoding, .floodControl, .proxy, .fallbackServers, .uploads, .znc]
 
 	private var key: String
 	{
 		switch self {
 			case .server: return "server"
 			case .you: return "you"
+			case .account: return "account"
 			case .channels: return "channels"
 			case .people: return "people"
 			case .messages: return "messages"
@@ -97,7 +98,6 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 			case .connection: return "connection"
 			case .encoding: return "encoding"
 			case .floodControl: return "flood"
-			case .certificate: return "certificate"
 			case .proxy: return "proxy"
 			case .fallbackServers: return "fallback"
 			case .uploads: return "uploads"
@@ -120,6 +120,7 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 		switch self {
 			case .server: return "server.rack"
 			case .you: return "person.fill"
+			case .account: return "key.fill"
 			case .channels: return "number"
 			case .people: return "person.2.fill"
 			case .messages: return "text.bubble.fill"
@@ -127,7 +128,6 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 			case .connection: return "network"
 			case .encoding: return "textformat"
 			case .floodControl: return "gauge.with.dots.needle.50percent"
-			case .certificate: return "checkmark.seal.fill"
 			case .proxy: return "arrow.triangle.branch"
 			case .fallbackServers: return "list.number"
 			case .uploads: return "arrow.up.doc.fill"
@@ -140,10 +140,10 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 		switch self {
 			case .server: return Color(nsColor: .systemBlue)
 			case .you: return Color(nsColor: .systemPurple)
+			case .account: return Color(nsColor: .systemYellow)
 			case .channels: return Color(nsColor: .systemGreen)
 			case .people: return Color(nsColor: .systemOrange)
 			case .messages: return Color(nsColor: .systemTeal)
-			case .certificate: return Color(nsColor: .systemGreen)
 			default: return Color(nsColor: .systemGray)
 		}
 	}
@@ -354,7 +354,11 @@ struct ServerPropertiesPageView: View
 			case .fallbackServers:
 				FallbackServersPage(pane: model.serverPane)
 			default:
-				if let pane = model.panes[page.rawValue] {
+				if let pane = model.panes[page.rawValue] as? ServerPropertiesYouPane {
+					YouPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesAccountPane {
+					AccountPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] {
 					NibPaneGroup(page: page, pane: pane)
 				}
 		}

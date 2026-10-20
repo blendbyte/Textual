@@ -57,15 +57,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesChannelsPane *channelsPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *connectCommandsPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *encodingPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *identityPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *messagesPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *zncBouncerPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *clientCertificatePane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *floodControlPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *networkSocketPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *proxyServerPane;
 @property (nonatomic, strong) TDCServerPropertiesUploadsPane *uploadsPane; // built in code
 @property (nonatomic, strong) TDCServerPropertiesServerPane *serverPane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesYouPane *youPane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesAccountPane *accountPane; // in Swift
 @property (nonatomic, strong) TDCServerPropertiesWindow *windowContent;
 @property (nonatomic, copy) NSArray<TDCServerPropertiesPane *> *panes;
 @end
@@ -117,13 +117,20 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.serverPane = [TDCServerPropertiesServerPane new];
 
+	self.youPane = [TDCServerPropertiesYouPane new];
+
+	self.accountPane = [TDCServerPropertiesAccountPane new];
+
+	self.accountPane.serverPane = self.serverPane;
+
 	self.uploadsPane = [TDCServerPropertiesUploadsPane new];
 
 #define _pane(_pane_, _identifier_) 	\
 	(_pane_).selection = TDCServerPropertiesSheetSelection ##_identifier_;
 
 	_pane(self.serverPane, General)
-	_pane(self.identityPane, Identity)
+	_pane(self.youPane, You)
+	_pane(self.accountPane, Account)
 	_pane(self.channelsPane, Autojoin)
 	_pane(self.addressBookPane, AddressBook)
 	_pane(self.messagesPane, DisconnectMessages)
@@ -131,7 +138,6 @@ NS_ASSUME_NONNULL_BEGIN
 	_pane(self.networkSocketPane, NetworkSocket)
 	_pane(self.encodingPane, Encoding)
 	_pane(self.floodControlPane, FloodControl)
-	_pane(self.clientCertificatePane, ClientCertificate)
 	_pane(self.proxyServerPane, ProxyServer)
 	_pane(self.uploadsPane, Uploads)
 	_pane(self.zncBouncerPane, ZncBouncer)
@@ -140,7 +146,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.panes = @[
 		self.serverPane,
-		self.identityPane,
+		self.youPane,
+		self.accountPane,
 		self.channelsPane,
 		self.addressBookPane,
 		self.messagesPane,
@@ -148,7 +155,6 @@ NS_ASSUME_NONNULL_BEGIN
 		self.networkSocketPane,
 		self.encodingPane,
 		self.floodControlPane,
-		self.clientCertificatePane,
 		self.proxyServerPane,
 		self.uploadsPane,
 		self.zncBouncerPane
@@ -157,8 +163,6 @@ NS_ASSUME_NONNULL_BEGIN
 	for (TDCServerPropertiesPane *pane in self.panes) {
 		pane.propertiesSheet = self;
 	}
-
-	((TDCServerPropertiesClientCertificatePane *)self.clientCertificatePane).serverPane = self.serverPane;
 }
 
 - (void)setUpWindow

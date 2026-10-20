@@ -44,7 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCAddressBookEntry, IRCChannelConfig, IRCClientConfig, IRCClientConfigMutable, IRCServer;
 @class TVCBasicTableView;
-@class TDCServerPropertiesClientCertificatePane;
 
 /* One part of the Server Properties sheet: its view and the controls in it,
  in the sheet's nib (an object whose outlets and actions go to it). The sheet
@@ -132,18 +131,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol TDCServerPropertiesSecuredConnection <NSObject>
 /* A client certificate is only sent on a secured connection */
 - (void)turnOnSecuredConnection;
-@end
-
-/* Nicknames, user and real name, NickServ and the login key */
-@interface TDCServerPropertiesIdentityPane : TDCServerPropertiesPane
-@property (nonatomic, weak) IBOutlet TDCServerPropertiesClientCertificatePane *clientCertificatePane;
-@end
-
-@interface TDCServerPropertiesClientCertificatePane : TDCServerPropertiesPane
-@property (nonatomic, weak, nullable) id <TDCServerPropertiesSecuredConnection> serverPane;
-
-/* One is set, even when it is no longer in the Keychain */
-@property (readonly) BOOL hasCertificate;
 @end
 
 @interface TDCServerPropertiesConnectCommandsPane : TDCServerPropertiesPane

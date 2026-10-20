@@ -37,7 +37,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import "IRCClientConfig.h"
+#import "IRCClientConfigPrivate.h"
 #import "IRCServerPrivate.h"
 #import "TDCServerPropertiesWindowPrivate.h"
 
@@ -48,14 +48,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TDCServerPropertiesPaneTests
 
-- (TDCServerPropertiesPane *)serverPane
+/* In Swift: their classes are only known at run time here */
+- (TDCServerPropertiesPane *)paneNamed:(NSString *)className
 {
-	/* In Swift: its class is only known at run time here */
-	Class paneClass = NSClassFromString(@"TDCServerPropertiesServerPane");
+	Class paneClass = NSClassFromString(className);
 
 	XCTAssertNotNil(paneClass);
 
 	return [paneClass new];
+}
+
+- (TDCServerPropertiesPane *)serverPane
+{
+	return [self paneNamed:@"TDCServerPropertiesServerPane"];
 }
 
 /* The Server page saves what it loaded: nothing is lost or changed by
@@ -103,6 +108,51 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(saved.serverList.count, 2);
 	XCTAssertEqualObjects(saved.serverList[0].dictionaryValue, config.serverList[0].dictionaryValue);
 	XCTAssertEqualObjects(saved.serverList[1].dictionaryValue, config.serverList[1].dictionaryValue);
+}
+
+/* The You and Account pages save what they loaded */
+- (void)testYouAndAccountPanesSaveWhatTheyLoaded
+{
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	NSArray *alternateNicknames = @[@"alice_", @"alice__"];
+
+	config.nickname = @"alice";
+	config.alternateNicknames = alternateNicknames;
+	config.awayNickname = @"alice|away";
+	config.realName = @"Alice Example";
+	config.username = @"alice";
+	config.nicknamePassword = @"secret";
+	config.nickServHost = @"services.example.net";
+	config.autojoinWaitsForNickServ = YES;
+	config.hideAutojoinDelayedWarnings = YES;
+	config.saslECDSAKey = @"stored-key";
+
+	TDCServerPropertiesPane *youPane = [self paneNamed:@"TDCServerPropertiesYouPane"];
+	TDCServerPropertiesPane *accountPane = [self paneNamed:@"TDCServerPropertiesAccountPane"];
+
+	[youPane loadFromConfig:config];
+	[accountPane loadFromConfig:config];
+
+	XCTAssertFalse(youPane.hasInvalidField);
+	XCTAssertFalse(accountPane.hasInvalidField);
+
+	IRCClientConfigMutable *saved = [IRCClientConfigMutable new];
+
+	[youPane saveToConfig:saved];
+	[accountPane saveToConfig:saved];
+
+	XCTAssertEqualObjects(saved.nickname, @"alice");
+	XCTAssertEqualObjects(saved.alternateNicknames, alternateNicknames);
+	XCTAssertEqualObjects(saved.awayNickname, @"alice|away");
+	XCTAssertEqualObjects(saved.realName, @"Alice Example");
+	XCTAssertEqualObjects(saved.username, @"alice");
+	XCTAssertEqualObjects(saved.nicknamePassword, @"secret");
+	XCTAssertEqualObjects(saved.nickServHost, @"services.example.net");
+	XCTAssertTrue(saved.autojoinWaitsForNickServ);
+	XCTAssertTrue(saved.hideAutojoinDelayedWarnings);
+	XCTAssertEqualObjects(saved.saslECDSAKey, @"stored-key");
+	XCTAssertNil(saved.identityClientSideCertificate);
 }
 
 /* A new server can't be saved without an address */

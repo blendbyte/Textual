@@ -360,7 +360,7 @@ The identifier for a timer can be found using “/timer list”";
 "3yj-in" = "%1$@ (%2$@) tried to send you a private message, but it was ignored due to \002umode +g\002. Perform “/accept %1$@” to allow this user to communicate with you.";
 "5i4-qq" = "Reconnecting to proxy to rebuild internal state…"; // irssi proxy
 "5h5-sl" = "Server closed read stream";
-"r5h-fj" = "Joining channels has been delayed because because you haven't identified. Perform “/autojoin” to join channels without identifying.";
+"r5h-fj" = "Joining channels has been delayed because you haven't identified. Perform “/autojoin” to join channels without identifying.";
 "3oa-mv" = "%1$@ is connected from %2$@ (%3$@)";
 "x69-rz" = "%1$@ was connected from %2$@ (%3$@)";
 "js3-9v" = "Cannot use nickname “%@“ — Trying another…";

@@ -192,7 +192,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			[menuController() showServerPropertiesSheetForClient:client
-												   withSelection:TDCServerPropertiesSheetSelectionClientCertificate
+												   withSelection:TDCServerPropertiesSheetSelectionAccount
 														 context:nil];
 		}];
 	});

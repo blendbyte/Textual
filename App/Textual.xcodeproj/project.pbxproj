@@ -727,6 +727,7 @@
 		C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04FC68852CE7DF4B66C2767 /* TDCServerPropertiesWindow.swift */; };
 		B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */; };
 		36BC675C66E04EC0F413B3F0 /* TDCServerPropertiesPaneTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */; };
+		B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1647,6 +1648,7 @@
 		07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesServerPane.swift; sourceTree = "<group>"; };
 		42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerPropertiesWindowPrivate.h; sourceTree = "<group>"; };
 		42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesPaneTests.m; sourceTree = "<group>"; };
+		24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAccountPanes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1904,6 +1906,7 @@
 				D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */,
 				17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */,
 				7EFA353DAB553FAC1CFA9628 /* TDCServerPropertiesListPanes.m */,
+				24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */,
 				42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */,
 				07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */,
 				E04FC68852CE7DF4B66C2767 /* TDCServerPropertiesWindow.swift */,
@@ -3798,6 +3801,7 @@
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
 				8F5B29F2B32A14EEBE321D7C /* TDCServerPropertiesListPanes.m in Sources */,
+				B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */,
 				B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */,
 				C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */,
 				6D69D7405D02E9711DC3CDF5 /* TDCServerPropertiesSettingsPanes.m in Sources */,

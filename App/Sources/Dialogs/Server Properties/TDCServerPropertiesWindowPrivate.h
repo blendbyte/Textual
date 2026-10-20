@@ -44,6 +44,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCServerPropertiesServerPane : TDCServerPropertiesPane <TDCServerPropertiesSecuredConnection>
 @end
 
+/* The You and Account pages (TDCServerPropertiesAccountPanes.swift) */
+@interface TDCServerPropertiesYouPane : TDCServerPropertiesPane
+@end
+
+@interface TDCServerPropertiesAccountPane : TDCServerPropertiesPane
+@property (nonatomic, weak, nullable) id <TDCServerPropertiesSecuredConnection> serverPane;
+@end
+
 /* The sheet's window: a sidebar of pages, the page, Cancel and Save
  (TDCServerPropertiesWindow.swift). A pane without a page of its own in
  SwiftUI is shown with its view from the nib. */

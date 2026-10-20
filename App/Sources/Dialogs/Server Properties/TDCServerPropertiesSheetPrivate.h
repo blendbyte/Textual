@@ -51,10 +51,10 @@ typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
 	TDCServerPropertiesSheetSelectionConnectCommands = 3,
 	TDCServerPropertiesSheetSelectionEncoding = 4,
 	TDCServerPropertiesSheetSelectionGeneral = 5,
-	TDCServerPropertiesSheetSelectionIdentity = 6,
+	TDCServerPropertiesSheetSelectionYou = 6,
 	TDCServerPropertiesSheetSelectionDisconnectMessages = 8,
 	TDCServerPropertiesSheetSelectionZncBouncer = 10,
-	TDCServerPropertiesSheetSelectionClientCertificate = 12,
+	TDCServerPropertiesSheetSelectionAccount = 12, // with the client certificate
 	TDCServerPropertiesSheetSelectionFloodControl = 13,
 	TDCServerPropertiesSheetSelectionNetworkSocket = 14,
 	TDCServerPropertiesSheetSelectionProxyServer = 15,

@@ -39,39 +39,12 @@
 "f7o-x4" = "User Ignore";
 "b0g-0x" = "User Tracking";
 
-/* Server specific highlight entry things */
-
-/* Server properties navigation menu */
-"lww-pc" = "Server Properties";
-"v27-8w" = "Vendor Specific";
-"8uw-tz" = "Advanced";
-"8zc-6y" = "Address Book";
-"5oz-07" = "Channel List";
-"hip-13" = "Connect Commands";
-"8ug-ka" = "Encoding";
-"ehx-4d" = "General";
-"8ik-qo" = "Identity";
-"j34-yr" = "Messages";
-"fsj-7f" = "ZNC Bouncer";
-"ce7-kc" = "Client Certificate";
-"fcr-w8" = "Flood Control";
-"ffy-xt" = "Network Socket";
-"t52-7a" = "Proxy Server";
-"36n-u9" = "Redundancy";
-
 /* Error localizations */
 "8iw-q8" = "Please enter a properly formatted username.";
 "agy-bp" = "Please enter a properly formatted real name.";
 "tlo-b6" = "Please enter a properly formatted proxy address.";
-"wlz-tb" = "Please enter a list of properly formatted nicknames.
-
-Failed on nickname: “%@“
-
-List of nicknames should be space separated.
-For example: “Guest1 Guest2 Guest3“";
 
 /* Custom client-side certificate selection */
-"6xz-ec" = "No Certificate Selected";
 "c3r-m1" = "Certificate Not Found in the Keychain";
 
 "6wq-i4" = "Choose An Identity";
@@ -89,10 +62,6 @@ Certificates must meet the following criteria:
 "yko-5g" = "The “%@” includes the following cipher suites:";
 "k50-8n" = "%@\n\nThese cipher suites are ordered by preference with the most preferred at the top.";
 
-/* Enabling wait for NickServ without a password */
-"94r-eq" = "The preference you have enabled will not work correctly because you do not have a password set";
-"26u-j8" = "Enter your NickServ password into the field labeled “Personal Password”";
-
 /* Login key (SASL ECDSA-NIST256P-CHALLENGE) */
 "ek1-n0" = "None";
 "ek1-r0" = "Replace the login key?";
@@ -109,8 +78,6 @@ Certificates must meet the following criteria:
 "oz4-kb" = "You will loose unsaved changes if you click “Yes”";
 "sts-l1" = "The server asked for secure connections only (port %1$hu) until %2$@.";
 "sts-b1" = "Forget";
-"wsk-t1" = "A server name or address, or a WebSocket address such as wss://irc.example.com/webirc";
-"icn-l1" = "Icon:";
 "icn-a1" = "Icon";
 "icn-b1" = "Choose…";
 "icn-b2" = "Remove";
@@ -148,7 +115,9 @@ Certificates must meet the following criteria:
 "spp-t-server" = "Server";
 "spp-l-server" = "Where this server is and when to connect.";
 "spp-t-you" = "You";
-"spp-l-you" = "How others see you here, and logging in to your account.";
+"spp-l-you" = "How others see you here.";
+"spp-t-account" = "Account";
+"spp-l-account" = "Log in to your registered nickname.";
 "spp-t-channels" = "Channels";
 "spp-l-channels" = "Channels to join when you connect.";
 "spp-t-people" = "People";
@@ -163,8 +132,6 @@ Certificates must meet the following criteria:
 "spp-l-encoding" = "How the server's text is read, and yours is sent.";
 "spp-t-flood" = "Flood Control";
 "spp-l-flood" = "How fast Textual sends, so the server doesn't disconnect you.";
-"spp-t-certificate" = "Client Certificate";
-"spp-l-certificate" = "Log in with a certificate instead of a password.";
 "spp-t-proxy" = "Proxy";
 "spp-l-proxy" = "Connect through a proxy or Tor.";
 "spp-t-fallback" = "Fallback Servers";
@@ -184,7 +151,7 @@ Certificates must meet the following criteria:
 "spp-srv-tls" = "Connect securely";
 "spp-srv-tlsh" = "Encrypts the connection (TLS). Nearly every network offers it.";
 "spp-srv-pass" = "Server password";
-"spp-srv-passh" = "Only if the server asks for one. Your account's password goes on the You page.";
+"spp-srv-passh" = "Only if the server asks for one. Your account's password goes on the Account page.";
 "spp-srv-h2" = "Connecting";
 "spp-srv-c1" = "Connect when Textual opens";
 "spp-srv-c2" = "Reconnect if the connection drops";
@@ -195,3 +162,38 @@ Certificates must meet the following criteria:
 "spp-fb-none" = "No fallback servers yet.";
 "spp-fb-note" = "When Textual can't reach a server, it tries the next one. After connecting, it starts with the first one again.";
 "spp-fb-edit" = "Edit Servers…";
+"spp-more" = "More";
+"spp-you-nick" = "Nickname";
+"spp-you-nickh" = "What others see you as.";
+"spp-you-alt" = "If it's taken, try";
+"spp-you-alth" = "Other nicknames, separated by spaces.";
+"spp-you-e1" = "“%@” isn't a nickname.";
+"spp-you-away" = "Away nickname";
+"spp-you-awayh" = "Used while you're away.";
+"spp-you-real" = "Real name";
+"spp-you-realh" = "Shown when someone looks you up. It doesn't have to be your real name.";
+"spp-you-user" = "Username";
+"spp-you-userh" = "Part of your address (the ident). It rarely needs changing.";
+"spp-acc-pass" = "Password";
+"spp-acc-passh" = "The password of your registered nickname, sent to NickServ or with SASL.";
+"spp-acc-wait" = "Wait until logged in before joining channels";
+"spp-acc-waith" = "For channels that only let in people who are logged in.";
+"spp-acc-warn" = "Remind me while joining waits";
+"spp-acc-warnh" = "Says so in the console, and how to join anyway.";
+"spp-acc-nothing" = "There's nothing to log in with yet: enter your password, or add a login key or certificate under More.";
+"spp-acc-key" = "Login key";
+"spp-acc-keyh" = "Logs in with a key instead of the password (SASL ECDSA), tried first. Give the network its public key first.";
+"spp-acc-key-menu" = "Manage";
+"spp-acc-key-new" = "Generate New Key";
+"spp-acc-key-import" = "Import Key File…";
+"spp-acc-key-copy" = "Copy Public Key";
+"spp-acc-key-cmd" = "Copy NickServ Command";
+"spp-acc-key-remove" = "Remove Key…";
+"spp-acc-cert" = "Client certificate";
+"spp-acc-certh" = "Sent when you connect securely; the network can recognise you by it (CertFP).";
+"spp-acc-cert-choose" = "Choose…";
+"spp-acc-cert-remove" = "Remove";
+"spp-acc-cert-copy" = "Copy Command";
+"spp-acc-cert-copyh" = "Copies the NickServ command that adds this fingerprint to your account.";
+"spp-acc-host" = "NickServ host";
+"spp-acc-hosth" = "Your password is only sent to NickServ at this host. Leave it empty for the network's usual one.";

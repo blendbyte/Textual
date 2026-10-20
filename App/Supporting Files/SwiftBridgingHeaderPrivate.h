@@ -47,13 +47,15 @@
 #import "TDCSettingsBridgePrivate.h"
 #import "TVCMainWindow.h"
 
-// TDCServerPropertiesWindow.swift, TDCServerPropertiesServerPane.swift
+// TDCServerPropertiesWindow.swift, TDCServerPropertiesServerPane.swift, TDCServerPropertiesAccountPanes.swift
 #import "IRCClientPrivate.h"
 #import "NSStringHelper.h"
 #import "IRCNetworkList.h"
 #import "IRCServerPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
 #import "TDCServerPropertiesPanePrivate.h"
+#import "IRCClientConfigPrivate.h"
+#import "TXWebsiteLinks.h"
 
 // TLOLinkParser.swift
 #import "TVCLogLine.h"
