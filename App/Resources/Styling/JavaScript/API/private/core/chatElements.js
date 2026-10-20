@@ -47,7 +47,8 @@
 
 var _ChatElements = {};
 
-/* From the app: today, yesterday, loadingEarlier */
+/* From the app: today, yesterday, loadingEarlier, and for a view with nothing
+ said yet emptyTitle (its name) and emptyText (empty for a server console) */
 _ChatElements.strings = {}; /* PRIVATE */
 
 _ChatElements._observer = null; /* PRIVATE */
@@ -56,6 +57,7 @@ _ChatElements._midnightTimer = null; /* PRIVATE */
 _ChatElements._dateFloatTimer = null; /* PRIVATE */
 _ChatElements._loadingCount = 0; /* PRIVATE */
 _ChatElements._loadingTimer = null; /* PRIVATE */
+_ChatElements._emptyTimer = null; /* PRIVATE */
 
 _ChatElements.configure = function(strings) /* PRIVATE */
 {
@@ -186,6 +188,9 @@ _ChatElements.tidy = function() /* PRIVATE */
 	/* A separator shown with nothing shown after it yet */
 	var open = null;
 
+	/* Anything shown at all (a line, a group of events) */
+	var shown = false;
+
 	for (var element = buffer.firstElementChild; element !== null; element = element.nextElementSibling) {
 		if (element.classList.contains("date_indicator")) {
 			var day = element.getAttribute("data-day");
@@ -228,15 +233,81 @@ _ChatElements.tidy = function() /* PRIVATE */
 			}
 
 			open = element;
-		} else if (open !== null && element.id !== "mark" && element.id !== "typing-indicator") {
+		} else if ((open !== null || shown === false) && element.id !== "mark" && element.id !== "typing-indicator") {
 			/* Something shown: the next separator stands on its own */
 			if (element.getClientRects().length > 0) {
 				open = null;
+
+				shown = true;
 			}
 		}
 	}
 
+	/* A date line with nothing shown under it (a channel's first line is a
+	 hidden join) waits for something to show; one joined to "since …"
+	 stays, it says where this session starts */
+	if (open !== null && open.classList.contains("date_indicator") && !open._chatElementSince) {
+		open.hidden = true;
+	}
+
 	_ChatElements._placeMark(buffer);
+
+	_ChatElements._updateEmpty(shown === false);
+};
+
+/* ************************************************** */
+/*                   Nothing said yet                 */
+/* ************************************************** */
+
+/* A short note in the middle of a channel or private message with nothing
+ shown yet; it goes with the first line. Shown after a moment, so a view
+ whose saved lines are still loading doesn't flash it. */
+_ChatElements._updateEmpty = function(empty) /* PRIVATE */
+{
+	var note = document.getElementById("chatElementEmpty");
+
+	if (note === null && empty && _ChatElements.strings.emptyText) {
+		note = document.createElement("div");
+
+		note.id = "chatElementEmpty";
+
+		var title = document.createElement("div");
+
+		title.className = "chatElementEmptyTitle";
+		title.textContent = (_ChatElements.strings.emptyTitle || "");
+
+		var text = document.createElement("div");
+
+		text.className = "chatElementEmptyText";
+		text.textContent = _ChatElements.strings.emptyText;
+
+		note.appendChild(title);
+		note.appendChild(text);
+
+		document.body.appendChild(note);
+	}
+
+	if (note === null) {
+		return;
+	}
+
+	if (_ChatElements._emptyTimer !== null) {
+		clearTimeout(_ChatElements._emptyTimer);
+
+		_ChatElements._emptyTimer = null;
+	}
+
+	if (empty === false) {
+		note.removeAttribute("data-shown");
+
+		return;
+	}
+
+	_ChatElements._emptyTimer = setTimeout(function() {
+		_ChatElements._emptyTimer = null;
+
+		note.setAttribute("data-shown", "true");
+	}, 600);
 };
 
 /* The unread marker is added at the end while the view is in the background,

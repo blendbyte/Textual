@@ -49,6 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recalculateTextViewSizeForced;
 
 - (void)resetSpellingIgnores;
+
+/* Instead of "Send message…" while the view can't send ("Not connected"); nil for the usual */
+@property (nonatomic, copy, nullable) NSString *placeholderStatus;
 @end
 
 @interface TVCMainWindowTextViewBackground : NSView

@@ -99,6 +99,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSView *inputFieldStack; // the input field with the upload and reply bars above it
 @property (nonatomic, strong, nullable) NSVisualEffectView *inputFieldBackgroundView; // behind the stack: the sidebars' material
 @property (nonatomic, copy, nullable) NSArray<NSLayoutConstraint *> *inputFieldPlacementConstraints; // under the whole window or the chat
+@property (nonatomic, strong, nullable) NSView *stateBar; // "Not connected to …" or "You're not in …" above the input field
+@property (nonatomic, strong, nullable) NSTextField *stateBarLabel;
+@property (nonatomic, strong, nullable) NSButton *stateBarButton;
+@property (nonatomic, strong, nullable) NSLayoutConstraint *stateBarHeightConstraint;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
 @end
@@ -132,6 +136,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stopShowingPoppedOutItem:(IRCTreeItem *)item;
 + (nullable TVCMainWindow *)popOutItem:(IRCTreeItem *)item frame:(nullable NSValue *)frameValue memberListHidden:(BOOL)memberListHidden makeKey:(BOOL)makeKey;
 - (void)adjustSelectionWithItems:(NSArray<IRCTreeItem *> *)selectedItems selectedItem:(nullable IRCTreeItem *)selectedItem;
+@end
+
+@interface TVCMainWindow (InputPlacementInternal)
+- (void)updateStateBar;
 @end
 
 @interface TVCMainWindow (TitleAndWindowInternal)

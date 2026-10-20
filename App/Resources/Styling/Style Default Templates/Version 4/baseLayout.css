@@ -451,6 +451,34 @@ body[data-appearance="dark"] {
 	to { transform: rotate(360deg); }
 }
 
+/* Nothing said yet: a short note in the middle of the view (chatElements.js),
+ in the style's own text colour */
+:where(#chatElementEmpty) {
+	position: fixed;
+	inset: 0;
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.3em;
+	padding: 0 2em;
+	text-align: center;
+	pointer-events: none;
+}
+
+:where(#chatElementEmpty[data-shown="true"]) {
+	display: flex;
+}
+
+:where(#chatElementEmpty .chatElementEmptyTitle) {
+	font-size: 1.2em;
+	font-weight: 600;
+}
+
+:where(#chatElementEmpty .chatElementEmptyText) {
+	opacity: 0.65;
+}
+
 /* Standard replies from the server (FAIL, WARN, NOTE): red, amber or blue,
  with a sign in front; numbered error replies (400–599) look like FAIL.
  Not :where: a style colours its status lines grey */

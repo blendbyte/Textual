@@ -44,6 +44,7 @@
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
 #import "TVCMainWindow.h"
+#import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 #import "TVCMemberListCellPrivate.h"
 #import "TVCMemberListAppearancePrivate.h"
@@ -65,6 +66,7 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 @property (nonatomic, weak, readwrite) IBOutlet NSVisualEffectView *visualEffectView;
 @property (nonatomic, strong, readwrite) IBOutlet TVCMemberListUserInfoPopover *memberListUserInfoPopover;
 @property (nonatomic, strong, readonly) TVCMemberListController *controller;
+@property (nonatomic, strong, nullable) NSTextField *notJoinedHint;
 @end
 
 @implementation TVCMemberList
@@ -133,6 +135,44 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 	}
 
 	return self->_controller;
+}
+
+#pragma mark -
+#pragma mark Not Joined
+
+- (void)setShowsNotJoinedHint:(BOOL)showsHint
+{
+	NSScrollView *scrollView = self.enclosingScrollView;
+
+	if (scrollView == nil) {
+		return;
+	}
+
+	if (self.notJoinedHint == nil) {
+		if (showsHint == NO) {
+			return;
+		}
+
+		NSTextField *hint = [NSTextField wrappingLabelWithString:TXTLS(@"TVCMainWindow[mbl-h1]")];
+
+		hint.translatesAutoresizingMaskIntoConstraints = NO;
+
+		hint.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+		hint.textColor = [NSColor secondaryLabelColor];
+		hint.alignment = NSTextAlignmentCenter;
+
+		[scrollView addSubview:hint];
+
+		[NSLayoutConstraint activateConstraints:@[
+			[hint.topAnchor constraintEqualToAnchor:scrollView.topAnchor constant:14.0],
+			[hint.leadingAnchor constraintEqualToAnchor:scrollView.leadingAnchor constant:10.0],
+			[hint.trailingAnchor constraintEqualToAnchor:scrollView.trailingAnchor constant:(-10.0)]
+		]];
+
+		self.notJoinedHint = hint;
+	}
+
+	self.notJoinedHint.hidden = (showsHint == NO);
 }
 
 #pragma mark -

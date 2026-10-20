@@ -71,6 +71,24 @@
 "mrk-n1" = "New";
 "ldg-e1" = "Loading earlier messages…";
 
+/* A channel or private message with nothing said yet (%@ is the person) */
+"emp-c1" = "No messages yet.";
+"emp-q1" = "This is the start of your conversation with %@.";
+
+/* Above the input field when the selected server isn't connected or the channel isn't joined (%@ is the server or channel) */
+"stb-n1" = "Not connected to %@";
+"stb-n2" = "Connecting to %@…";
+"stb-b1" = "Connect";
+"stb-j1" = "You’re not in %@";
+"stb-b2" = "Join";
+
+/* The input field's placeholder in those cases */
+"stb-p1" = "Not connected";
+"stb-p2" = "Not in %@";
+
+/* The member list of a channel you're not in */
+"mbl-h1" = "Join to see who’s here";
+
 "vi3-23" = "(No Topic)";
 
 /* A collapsed run of joins, parts, quits and nickname changes: "3 joined, 1 left, 2 quit" (%@ is the count) */

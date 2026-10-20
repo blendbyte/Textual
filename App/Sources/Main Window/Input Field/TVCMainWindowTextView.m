@@ -315,19 +315,42 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.preferredFont = preferredFont;
 
-	/* Update the placeholder string */
-	NSColor *placeholderTextColor = appearance.textViewPlaceholderTextColor;
+	[self updatePlaceholderString];
+}
+
+- (void)setPlaceholderStatus:(nullable NSString *)placeholderStatus
+{
+	if (self->_placeholderStatus == placeholderStatus || [self->_placeholderStatus isEqualToString:placeholderStatus]) {
+		return;
+	}
+
+	self->_placeholderStatus = [placeholderStatus copy];
+
+	[self updatePlaceholderString];
+}
+
+- (void)updatePlaceholderString
+{
+	TVCMainWindowTextViewAppearance *appearance = self.userInterfaceObjects;
+
+	NSFont *preferredFont = self.preferredFont;
+
+	if (appearance == nil || preferredFont == nil) {
+		return;
+	}
+
+	NSString *placeholder = (self.placeholderStatus ?: TXTLS(@"TVCMainWindow[8r3-ih]"));
 
 	NSDictionary *placeholderStringAttributes = @{
 		NSFontAttributeName	: preferredFont,
-		NSForegroundColorAttributeName : placeholderTextColor
+		NSForegroundColorAttributeName : appearance.textViewPlaceholderTextColor
 	};
 
 	self.placeholderAttributedString =
-	[NSAttributedString attributedStringWithString:TXTLS(@"TVCMainWindow[8r3-ih]") attributes:placeholderStringAttributes];
+	[NSAttributedString attributedStringWithString:placeholder attributes:placeholderStringAttributes];
 
 	/* The placeholder is drawn by hand; VoiceOver reads this */
-	self.accessibilityPlaceholderValue = TXTLS(@"TVCMainWindow[8r3-ih]");
+	self.accessibilityPlaceholderValue = placeholder;
 
 	self.needsDisplay = YES;
 }

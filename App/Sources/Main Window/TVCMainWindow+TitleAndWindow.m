@@ -337,6 +337,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self updateAccessoryViewLockButton];
 
+	[self updateStateBar];
+
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 

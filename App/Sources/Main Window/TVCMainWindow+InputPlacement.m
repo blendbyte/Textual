@@ -34,12 +34,15 @@
  *
  *********************************************************************** */
 
+#import "IRCChannel.h"
 #import "IRCClientPrivate.h"
+#import "TLOLocalization.h"
 #import "TLONicknameCompletionStatusPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TVCMainWindowChannelViewPrivate.h"
 #import "TVCMainWindowLoadingScreenPrivate.h"
 #import "TVCMainWindowSplitViewPrivate.h"
+#import "TVCMemberListPrivate.h"
 #import "TVCMainWindowTextViewPrivate.h"
 #import "TVCMainWindowTextViewInternal.h"
 #import "TVCMainWindowInternal.h"
@@ -74,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	NSView *stateBar = [self makeStateBar];
+
 	NSView *stack = [NSView new];
 
 	stack.translatesAutoresizingMaskIntoConstraints = NO;
@@ -87,14 +92,17 @@ NS_ASSUME_NONNULL_BEGIN
 		[stack addSubview:view];
 	}
 
+	[stack addSubview:stateBar];
+
 	[NSLayoutConstraint activateConstraints:@[
 		[uploadBar.topAnchor constraintEqualToAnchor:stack.topAnchor],
 		[uploadBar.bottomAnchor constraintEqualToAnchor:replyBar.topAnchor],
-		[replyBar.bottomAnchor constraintEqualToAnchor:inputArea.topAnchor],
+		[replyBar.bottomAnchor constraintEqualToAnchor:stateBar.topAnchor],
+		[stateBar.bottomAnchor constraintEqualToAnchor:inputArea.topAnchor],
 		[inputArea.bottomAnchor constraintEqualToAnchor:stack.bottomAnchor]
 	]];
 
-	for (NSView *view in @[uploadBar, replyBar, inputArea]) {
+	for (NSView *view in @[uploadBar, replyBar, stateBar, inputArea]) {
 		[view.leadingAnchor constraintEqualToAnchor:stack.leadingAnchor].active = YES;
 		[view.trailingAnchor constraintEqualToAnchor:stack.trailingAnchor].active = YES;
 	}
@@ -122,6 +130,139 @@ NS_ASSUME_NONNULL_BEGIN
 	self.inputFieldStack = stack;
 
 	[self updateInputFieldPlacement];
+
+	[self updateStateBar];
+}
+
+#pragma mark -
+#pragma mark Not Connected, Not Joined
+
+/* "Not connected to Libera Chat [Connect]" or "You're not in #channel
+ [Join]" above the input field, on the same strip; the field stays usable
+ (/connect, /join, /msg) and its placeholder says why messages don't go */
+- (NSView *)makeStateBar
+{
+	NSView *bar = [NSView new];
+
+	bar.translatesAutoresizingMaskIntoConstraints = NO;
+
+	bar.hidden = YES;
+
+	NSTextField *label = [NSTextField labelWithString:@""];
+
+	label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	label.textColor = [NSColor secondaryLabelColor];
+	label.lineBreakMode = NSLineBreakByTruncatingTail;
+
+	[label setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+	/* The text takes the room up to the button */
+	[label setContentHuggingPriority:(NSLayoutPriorityDefaultLow - 1) forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+	NSButton *button = [NSButton buttonWithTitle:@"" target:self action:@selector(stateBarButtonClicked:)];
+
+	button.controlSize = NSControlSizeSmall;
+	button.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+
+	NSStackView *stack = [NSStackView stackViewWithViews:@[label, button]];
+
+	stack.translatesAutoresizingMaskIntoConstraints = NO;
+
+	stack.spacing = 8;
+	stack.edgeInsets = NSEdgeInsetsMake(0, 16, 0, 10);
+
+	stack.distribution = NSStackViewDistributionFill;
+
+	[bar addSubview:stack];
+
+	NSLayoutConstraint *heightConstraint = [bar.heightAnchor constraintEqualToConstant:0];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[stack.leadingAnchor constraintEqualToAnchor:bar.leadingAnchor],
+		[stack.trailingAnchor constraintEqualToAnchor:bar.trailingAnchor],
+		[stack.centerYAnchor constraintEqualToAnchor:bar.centerYAnchor],
+		heightConstraint
+	]];
+
+	self.stateBar = bar;
+	self.stateBarLabel = label;
+	self.stateBarButton = button;
+	self.stateBarHeightConstraint = heightConstraint;
+
+	return bar;
+}
+
+/* With the title: on selection, connection, join and part changes */
+- (void)updateStateBar
+{
+	IRCClient *client = self.selectedClient;
+
+	IRCChannel *channel = self.selectedChannel;
+
+	NSString *text = nil;
+	NSString *buttonTitle = nil;
+	NSString *placeholder = nil;
+
+	if (client == nil) {
+		;
+	} else if (client.isLoggedIn == NO && (client.isConnecting || client.isConnected)) {
+		text = TXTLS(@"TVCMainWindow[stb-n2]", client.name);
+	} else if (client.isLoggedIn == NO) {
+		text = TXTLS(@"TVCMainWindow[stb-n1]", client.name);
+
+		buttonTitle = TXTLS(@"TVCMainWindow[stb-b1]");
+
+		placeholder = TXTLS(@"TVCMainWindow[stb-p1]");
+	} else if (channel.isChannel && channel.status == IRCChannelStatusParted) {
+		text = TXTLS(@"TVCMainWindow[stb-j1]", channel.name);
+
+		buttonTitle = TXTLS(@"TVCMainWindow[stb-b2]");
+
+		placeholder = TXTLS(@"TVCMainWindow[stb-p2]", channel.name);
+	}
+
+	self.inputTextField.placeholderStatus = placeholder;
+
+	/* Who's here shows once joined */
+	[self.memberList setShowsNotJoinedHint:(channel.isChannel && (channel.status == IRCChannelStatusParted || client.isLoggedIn == NO))];
+
+	NSView *bar = self.stateBar;
+
+	if (bar == nil) {
+		return;
+	}
+
+	self.stateBarLabel.stringValue = (text ?: @"");
+
+	self.stateBarButton.title = (buttonTitle ?: @"");
+	self.stateBarButton.hidden = (buttonTitle == nil);
+
+	BOOL hidden = (text == nil);
+
+	if (bar.hidden == hidden) {
+		return;
+	}
+
+	bar.hidden = hidden;
+
+	self.stateBarHeightConstraint.constant = ((hidden) ? 0 : 30);
+}
+
+- (void)stateBarButtonClicked:(id)sender
+{
+	IRCClient *client = self.selectedClient;
+
+	IRCChannel *channel = self.selectedChannel;
+
+	if (client == nil) {
+		return;
+	}
+
+	if (client.isLoggedIn == NO) {
+		[client connect];
+	} else if (channel.isChannel && channel.status == IRCChannelStatusParted) {
+		[client joinChannel:channel];
+	}
 }
 
 - (void)updateInputFieldPlacement

@@ -1030,6 +1030,20 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 }
 
 /* The date line's day as year-month-day, for the view to tell how long ago it was */
+/* The note shown while nothing has been said: none for a server console */
+- (NSString *)emptyViewText
+{
+	IRCChannel *channel = self.associatedChannel;
+
+	if (channel.isChannel) {
+		return TXTLS(@"TVCMainWindow[emp-c1]");
+	} else if (channel.isPrivateMessage) {
+		return TXTLS(@"TVCMainWindow[emp-q1]", channel.name);
+	}
+
+	return @"";
+}
+
 - (NSString *)dateIndicatorDayWithDate:(NSDate *)date
 {
 	NSParameterAssert(date != nil);
@@ -3468,7 +3482,9 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"chatElementStrings" : @{
 				  @"today" : TXFormatDate([NSDate date], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),
 				  @"yesterday" : TXFormatDate([NSDate dateWithTimeIntervalSinceNow:(-86400.0)], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),
-				  @"loadingEarlier" : TXTLS(@"TVCMainWindow[ldg-e1]")
+				  @"loadingEarlier" : TXTLS(@"TVCMainWindow[ldg-e1]"),
+				  @"emptyTitle" : (channel.name ?: @""),
+				  @"emptyText" : [self emptyViewText]
 			  },
 			  @"messageActionStrings" : @{
 				  @"jumpToPresent" : TXTLS(@"TVCMainWindow[jtp-b1]"),

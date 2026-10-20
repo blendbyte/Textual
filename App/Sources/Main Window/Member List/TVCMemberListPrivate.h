@@ -56,6 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)assignToChannel:(nullable IRCChannel *)channel;
 
+/* "Join to see who's here", for a channel not joined */
+- (void)setShowsNotJoinedHint:(BOOL)showsHint;
+
 /* From its controller: rows now hold other people */
 - (void)memberListContentChanged;
 @end
