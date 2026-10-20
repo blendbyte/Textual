@@ -23,10 +23,11 @@
 	background, so the link gets harder to read the moment you point at it. */
 	--link-hover: #094ead;
 
-	/* Accents */
-	--notice: #e08600;
-	--notice-sender: #a35a00;
-	--notice-fill: rgba(224, 134, 0, 0.08);
+	/* Accents. Notices are blue (information), so that only a mention of
+	you is amber. */
+	--notice: #0a63e0;
+	--notice-sender: #0a4fb0;
+	--notice-fill: rgba(10, 99, 224, 0.07);
 
 	--mention: #e09400;
 	--mention-fill: rgba(224, 148, 0, 0.11);

@@ -1,6 +1,6 @@
-
-<div class="date_indicator">
+{{! "Today", "Yesterday" or the weekday and date (dateIndicatorLabel); data-day (year-month-day) and data-label (the weekday and date) let the view keep that right after midnight. The full date shows when pointed at. }}
+<div class="date_indicator" role="separator" data-day="{{dateIndicatorDay}}" data-label="{{dateIndicatorDayLabel}}" title="{{dateIndicatorMessage}}" aria-label="{{dateIndicatorMessage}}">
 	<hr />
-	<span>{{dateIndicatorMessage}}</span>
+	<span>{{dateIndicatorLabel}}</span>
 	<hr />
 </div>

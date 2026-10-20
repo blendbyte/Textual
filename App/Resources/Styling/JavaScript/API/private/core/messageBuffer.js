@@ -810,14 +810,17 @@ _MessageBuffer.reachedPresent = function() /* PRIVATE */
 /*                Loading Indicator                   */
 /* ************************************************** */
 
+/* "Loading earlier messages…" floats at the top of the chat (chatElements.js) */
 _MessageBuffer.addLoadingIndicator = function(before, toLine, callbackFunction) /* PRIVATE */
 {
+	_ChatElements.loadingStarted();
+
 	callbackFunction();
 };
 
 _MessageBuffer.removeLoadingIndicator = function(fromLine) /* PRIVATE */
 {
-
+	_ChatElements.loadingFinished();
 };
 
 /* ************************************************** */

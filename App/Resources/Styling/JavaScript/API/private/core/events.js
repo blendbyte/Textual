@@ -182,6 +182,8 @@ _Textual.viewFinishedLoading = function(configuration) /* PRIVATE */
 	_EventGroups.configure(collapseGeneralEvents, generalEventStrings, configuration.eventDisplay);
 
 	_MessageActions.configure(configuration.messageActions, configuration.messageActionStrings);
+
+	_ChatElements.configure(configuration.chatElementStrings);
 };
 
 _Textual.viewFinishedLoadingHistory = function() /* PRIVATE */

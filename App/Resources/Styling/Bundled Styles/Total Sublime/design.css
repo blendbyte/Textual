@@ -166,18 +166,6 @@ a:hover {
 	border-color: #8E8E8E;
 }
 
-/* Remember Line */
-
-#mark {
-	position: relative;
-	clear: both;
-	z-index: 295;
-	margin: 10px 0;
-	border-bottom: 1px dotted;
-	border-color: #444;
-	transition: 0.2s linear;
-}
-
 /* Selected User Message */
 
 .sender {
@@ -214,72 +202,6 @@ div.line.selectedUser[data-highlight="false"] {
 	border-top: 0px !important;
 	border-bottom: 0px !important;
   	background-color: #34352d !important;
-}
-
-/* Message buffer loading animation */
-
-.message_buffer_loading_indicator {
-	text-align: center;
-	height: 42px;
-	position: relative;
-	z-index: 200;
-}
-
-.message_buffer_loading_indicator span {
-	font-family: Optima !important;
-	font-size: 35px;
-	font-weight: 600;
-	letter-spacing: 5px;
-	line-height: 43px;
-	color: #797979;
-	animation: ellipsis-period 1.5s infinite;
-}
-
-.message_buffer_loading_indicator span:nth-child(1) {
-	animation-delay: 0.0s;
-}
-
-.message_buffer_loading_indicator span:nth-child(2) {
-	animation-delay: 0.1s;
-}
-
-.message_buffer_loading_indicator span:nth-child(3) {
-	animation-delay: 0.2s;
-}
-
-@keyframes ellipsis-period {
-	0% { opacity: 0.2; }
-	20% { opacity: 1.0; }
-	100% { opacity: 0.2; }
-}
-
-/* Message buffer session indicator */
-
-.date_indicator ,
-.session_indicator {
-	display: flex;
-	padding: 0.5em 0;
-}
-
-.date_indicator > hr,
-.session_indicator > hr {
-	background: #444;
-	border: 0;
-	height: 1px;
-	margin-top: 0.6em;
-	flex: 1;
-}
-
-.date_indicator > span,
-.session_indicator > span {
-	font-style: oblique;
-	margin: 0 1em;
-	color: #919191;
-}
-
-.date_indicator + #mark,
-.session_indicator + #mark {
-	display: none;
 }
 
 /* NOTICE/CTCP/WALLOPS */

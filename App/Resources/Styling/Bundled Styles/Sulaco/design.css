@@ -227,13 +227,6 @@ div.line.selectedUser[data-highlight="false"]:hover .time {
 	background-color: #68271d;
 }
 
-/* Remember Line */
-#mark {
-	border-bottom: 1px dotted #9f9f9f;
-	margin: 1px 0;
-	transition: 0.2s linear;
-}
-
 /* Loading Screen */
 #loadingScreen {
 	position: absolute;
@@ -302,68 +295,6 @@ body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb {
 
 body[data-custom-scroller="true"] #body::-webkit-scrollbar-thumb:hover {
 	background-color: #b0b0b0;
-}
-
-/* Message buffer loading animation */
-.message_buffer_loading_indicator {
-	text-align: center;
-	height: 42px;
-}
-
-.message_buffer_loading_indicator span {
-	font-family: Optima !important;
-	font-size: 35px;
-	font-weight: 600;
-	letter-spacing: 5px;
-	line-height: 43px;
-	color: #797979;
-	animation: ellipsis-period 1.5s infinite;
-}
-
-.message_buffer_loading_indicator span:nth-child(1) {
-	animation-delay: 0.0s;
-}
-
-.message_buffer_loading_indicator span:nth-child(2) {
-	animation-delay: 0.1s;
-}
-
-.message_buffer_loading_indicator span:nth-child(3) {
-	animation-delay: 0.2s;
-}
-
-@keyframes ellipsis-period {
-	0% { opacity: 0.2; }
-	20% { opacity: 1.0; }
-	100% { opacity: 0.2; }
-}
-
-/* Message buffer session indicator */
-.date_indicator ,
-.session_indicator {
-	display: flex;
-	padding: 0.5em 0;
-}
-
-.date_indicator > hr,
-.session_indicator > hr {
-	background: #444;
-	border: 0;
-	height: 1px;
-	margin-top: 0.6em;
-	flex: 1;
-}
-
-.date_indicator > span,
-.session_indicator > span {
-	font-style: oblique;
-	margin: 0 1em;
-	color: #919191;
-}
-
-.date_indicator + #mark,
-.session_indicator + #mark {
-	display: none;
 }
 
 /* Nickname Colors */

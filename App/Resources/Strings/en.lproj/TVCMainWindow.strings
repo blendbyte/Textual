@@ -65,7 +65,11 @@
 "iph-a9" = "Loading configuration…";
 "5g1-i9" = "Importing preferences…";
 
-"4yo-mk" = "Current Session";
+"4yo-mk" = "Since %@";
+"4yo-s1" = "since %@";
+"4yo-d1" = "Messages from here on arrived after Textual opened at %@.";
+"mrk-n1" = "New";
+"ldg-e1" = "Loading earlier messages…";
 
 "vi3-23" = "(No Topic)";
 

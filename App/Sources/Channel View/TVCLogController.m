@@ -106,6 +106,7 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @property (nonatomic, assign) NSInteger activeLineCount;
 @property (nonatomic, copy, nullable) NSString *lastVisitedHighlight;
 @property (atomic, copy, nullable, readwrite) NSString *newestLineNumberFromPreviousSession;
+@property (atomic, strong, nullable) NSDate *sessionStartDate; // when that line was found: where "Since 09:41" begins
 @property (nonatomic, copy, nullable, readwrite) NSString *oldestLineNumber;
 @property (nonatomic, copy, nullable, readwrite) NSString *newestLineNumber;
 @property (atomic, strong, nullable) TVCLogLine *lastLine; // atomic: history results set it off the main thread
@@ -714,7 +715,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 - (void)mark
 {
 	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
-		NSString *markTemplate = [TVCLogRenderer renderTemplateNamed:@"historyIndicator"];
+		NSString *markTemplate = [TVCLogRenderer renderTemplateNamed:@"historyIndicator" attributes:@{@"historyIndicatorLabel" : TXTLS(@"TVCMainWindow[mrk-n1]")}];
 
 		[self _evaluateFunction:@"_Textual.historyIndicatorAdd" withArguments:@[markTemplate]];
 	};
@@ -951,6 +952,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			NSString *newestLineNumber = lastLine.uniqueIdentifier;
 
 			self.newestLineNumberFromPreviousSession = newestLineNumber;
+
+			self.sessionStartDate = [NSDate date];
 		}
 
 		[self reloadOldLines:objects isReload:(firstTimeLoadingHistory == NO)];
@@ -1024,6 +1027,44 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	NSString *dateString = TXFormatDate(date, NSDateFormatterLongStyle, NSDateFormatterNoStyle, NO);
 
 	return dateString;
+}
+
+/* The date line's day as year-month-day, for the view to tell how long ago it was */
+- (NSString *)dateIndicatorDayWithDate:(NSDate *)date
+{
+	NSParameterAssert(date != nil);
+
+	NSDateComponents *components = [[NSCalendar currentCalendar] components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay) fromDate:date];
+
+	return [NSString stringWithFormat:@"%04ld-%02ld-%02ld", (long)components.year, (long)components.month, (long)components.day];
+}
+
+/* "Sunday, October 12"; the year only when it isn't this year */
+- (NSString *)dateIndicatorDayLabelWithDate:(NSDate *)date
+{
+	NSParameterAssert(date != nil);
+
+	BOOL thisYear = [[NSCalendar currentCalendar] isDate:date equalToDate:[NSDate date] toUnitGranularity:NSCalendarUnitYear];
+
+	NSDateFormatter *dateFormatter = [NSDateFormatter new];
+
+	[dateFormatter setLocalizedDateFormatFromTemplate:((thisYear) ? @"EEEEMMMMd" : @"EEEEMMMMdy")];
+
+	return [dateFormatter stringFromDate:date];
+}
+
+/* "Today", "Yesterday", or the weekday and date */
+- (NSString *)dateIndicatorLabelWithDate:(NSDate *)date
+{
+	NSParameterAssert(date != nil);
+
+	NSCalendar *calendar = [NSCalendar currentCalendar];
+
+	if ([calendar isDateInToday:date] || [calendar isDateInYesterday:date]) {
+		return TXFormatDate(date, NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES);
+	}
+
+	return [self dateIndicatorDayLabelWithDate:date];
 }
 
 #pragma mark -
@@ -3144,12 +3185,24 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		templateAttributes[@"showDateIndicator"] = @(YES);
 
 		templateAttributes[@"dateIndicatorMessage"] = [self dateIndicatorWithDate:receivedAt];
+
+		templateAttributes[@"dateIndicatorLabel"] = [self dateIndicatorLabelWithDate:receivedAt];
+
+		templateAttributes[@"dateIndicatorDay"] = [self dateIndicatorDayWithDate:receivedAt];
+
+		templateAttributes[@"dateIndicatorDayLabel"] = [self dateIndicatorDayLabelWithDate:receivedAt];
 	}
 
 	if ([lineNumber isEqualToString:self.newestLineNumberFromPreviousSession]) {
+		NSString *sessionStart = TXFormatDate((self.sessionStartDate ?: [NSDate date]), NSDateFormatterNoStyle, NSDateFormatterShortStyle, NO);
+
 		templateAttributes[@"showSessionIndicator"] = @(YES);
 
-		templateAttributes[@"sessionIndicatorMessage"] = TXTLS(@"TVCMainWindow[4yo-mk]");
+		templateAttributes[@"sessionIndicatorMessage"] = TXTLS(@"TVCMainWindow[4yo-mk]", sessionStart);
+
+		templateAttributes[@"sessionIndicatorSince"] = TXTLS(@"TVCMainWindow[4yo-s1]", sessionStart);
+
+		templateAttributes[@"sessionIndicatorDescription"] = TXTLS(@"TVCMainWindow[4yo-d1]", sessionStart);
 	}
 
 	// ************************************************************************** /
@@ -3396,6 +3449,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"collapseGeneralEvents" : @([TPCPreferences collapseEvents]),
 			  @"eventDisplay" : [TPCPreferences eventDisplayByLineType],
 			  @"messageActions" : self.messageActionsAvailability,
+			  @"chatElementStrings" : @{
+				  @"today" : TXFormatDate([NSDate date], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),
+				  @"yesterday" : TXFormatDate([NSDate dateWithTimeIntervalSinceNow:(-86400.0)], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),
+				  @"loadingEarlier" : TXTLS(@"TVCMainWindow[ldg-e1]")
+			  },
 			  @"messageActionStrings" : @{
 				  @"jumpToPresent" : TXTLS(@"TVCMainWindow[jtp-b1]"),
 				  @"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),

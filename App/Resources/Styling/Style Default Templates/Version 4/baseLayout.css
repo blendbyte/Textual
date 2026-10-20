@@ -262,29 +262,228 @@ body[data-selected="false"] #topicBar {
 	cursor: auto;
 }
 
-/* Typing indicator: zero specificity (:where), so any style's own rules win */
+/* Chat elements: the date and session lines, the unread marker, the typing
+ indicator and the floating labels (dates while scrolling, loading earlier
+ messages). One look for every style: hairlines with small labels, colours
+ taken from the style's own text colour, so they suit light and dark styles.
+ Zero specificity (:where), so any style's own rules win. Marking up the
+ separators (merged, repeated) is chatElements.js's. */
+body {
+	--textual-unread: #d70015;
+	--textual-error: #d70015;
+	--textual-warning: #b86e00;
+	--textual-note: #0a63e0;
+}
+
+body[data-appearance="dark"] {
+	--textual-unread: #ff6961;
+	--textual-error: #ff6961;
+	--textual-warning: #ffb224;
+	--textual-note: #64a8ff;
+}
+
+:where(.date_indicator, .session_indicator) {
+	display: flex;
+	align-items: center;
+	padding: 0.9em 0 0.5em;
+}
+
+:where(.date_indicator, .session_indicator) > :where(hr) {
+	flex: 1;
+	height: 1px;
+	margin: 0;
+	border: 0;
+	background-color: currentColor;
+	opacity: 0.16;
+}
+
+:where(.date_indicator, .session_indicator) > :where(span) {
+	margin: 0 0.9em;
+	font-size: 0.85em;
+	font-weight: 600;
+	white-space: nowrap;
+	opacity: 0.75;
+}
+
+/* "Since 09:41": where this session's messages begin */
+:where(.session_indicator) > :where(span),
+:where(.date_indicator .sessionSince) {
+	font-weight: normal;
+}
+
+/* A repeated date, or a session line joined to the date line next to it.
+ Not :where: it must win over a style's own display */
+.date_indicator[hidden],
+.session_indicator[hidden] {
+	display: none !important;
+}
+
+/* The unread marker: a line with "New" at its right end */
+:where(#mark) {
+	display: flex;
+	align-items: center;
+	margin: 3px 0 2px;
+	color: var(--textual-unread);
+}
+
+:where(#mark)::before {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background-color: currentColor;
+}
+
+:where(#mark > span) {
+	padding: 0 10px 0 8px;
+	font-size: 0.8em;
+	font-weight: bold;
+	line-height: 1;
+}
+
+/* Typing: a label that floats over the bottom right of the chat, so it takes
+ no room and nothing moves when it comes and goes. It is the buffer's last
+ element: sticky keeps it in view while scrolling, and the negative margin
+ cancels its height, so it sits over the empty end of the newest line */
 :where(#typing-indicator) {
-	padding: 2px 6px;
-	font-size: 0.9em;
-	font-style: italic;
-	opacity: 0.6;
+	position: sticky;
+	bottom: 6px;
+	z-index: 500;
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	box-sizing: border-box;
+	width: max-content;
+	max-width: calc(100% - 24px);
+	height: 1.8em;
+	margin: -1.8em 12px 0 auto;
+	padding: 0 10px 0 8px;
+	border-radius: 0.9em;
+	font-size: 0.8em;
+	white-space: nowrap;
+	background-color: var(--textual-float-background, Canvas);
+	box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.22), 0 2px 8px rgba(0, 0, 0, 0.18);
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+:where(#typing-indicator[data-shown="true"]) {
+	opacity: 1;
+}
+
+:where(#typing-indicator .typingIndicatorText) {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 0.8;
+}
+
+:where(#typing-indicator .typingIndicatorDots) {
+	display: inline-flex;
+	order: -1;
+	gap: 3px;
 }
 
 :where(#typing-indicator .typingIndicatorDots span) {
-	animation: typingIndicatorDot 1.4s infinite both;
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	font-size: 0;
+	background-color: currentColor;
+	animation: typingIndicatorDot 1.4s infinite ease-in-out both;
 }
 
 :where(#typing-indicator .typingIndicatorDots span:nth-child(2)) {
-	animation-delay: 0.2s;
+	animation-delay: 0.16s;
 }
 
 :where(#typing-indicator .typingIndicatorDots span:nth-child(3)) {
-	animation-delay: 0.4s;
+	animation-delay: 0.32s;
 }
 
 @keyframes typingIndicatorDot {
-	0%, 80%, 100% { opacity: 0.2; }
-	40% { opacity: 1; }
+	0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
+	40% { transform: scale(1); opacity: 1; }
+}
+
+/* Floating labels at the top of the chat: the date of what is shown while
+ scrolling, and loading earlier messages. They float, so nothing moves */
+:where(#chatElementFloats) {
+	position: sticky;
+	top: 0;
+	z-index: 500;
+	height: 0;
+	pointer-events: none;
+}
+
+:where(#chatElementFloats .chatElementFloat) {
+	position: absolute;
+	top: 8px;
+	left: 50%;
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	padding: 2px 10px;
+	border-radius: 10px;
+	font-size: 0.8em;
+	font-weight: 600;
+	white-space: nowrap;
+	background-color: var(--textual-float-background, Canvas);
+	box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.22), 0 2px 8px rgba(0, 0, 0, 0.18);
+	opacity: 0;
+	transform: translateX(-50%);
+	transition: opacity 0.2s ease;
+}
+
+:where(#chatElementFloats .chatElementFloat[data-shown="true"]) {
+	opacity: 1;
+}
+
+:where(#chatElementFloats .chatElementSpinner) {
+	width: 9px;
+	height: 9px;
+	border: 1.5px solid rgba(127, 127, 127, 0.35);
+	border-top-color: currentColor;
+	border-radius: 50%;
+	animation: chatElementSpin 0.8s linear infinite;
+}
+
+@keyframes chatElementSpin {
+	to { transform: rotate(360deg); }
+}
+
+/* Standard replies from the server (FAIL, WARN, NOTE): red, amber or blue,
+ with a sign in front. Not :where: a style colours its status lines grey */
+div.line[data-command="FAIL" i] .message,
+div.line[data-command="WARN" i] .message,
+div.line[data-command="NOTE" i] .message {
+	color: var(--textual-standard-reply);
+}
+
+div.line[data-command="FAIL" i] { --textual-standard-reply: var(--textual-error); }
+div.line[data-command="WARN" i] { --textual-standard-reply: var(--textual-warning); }
+div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note); }
+
+:where(div.line[data-command="FAIL" i], div.line[data-command="WARN" i], div.line[data-command="NOTE" i]) .message::before {
+	display: inline-block;
+	width: 1.2em;
+	font-weight: bold;
+	text-align: center;
+	text-indent: 0;
+}
+
+:where(div.line[data-command="FAIL" i] .message)::before { content: "!"; }
+:where(div.line[data-command="WARN" i] .message)::before { content: "!"; }
+:where(div.line[data-command="NOTE" i] .message)::before { content: "i"; font-style: italic; }
+
+@media (prefers-reduced-motion: reduce) {
+	:where(#typing-indicator .typingIndicatorDots span),
+	:where(#chatElementFloats .chatElementSpinner) {
+		animation: none;
+	}
+
+	:where(#chatElementFloats .chatElementFloat, #typing-indicator) {
+		transition: none;
+	}
 }
 
 /* Inline media: images, videos, clips, audio and preview cards share one look

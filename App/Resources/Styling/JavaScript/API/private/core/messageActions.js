@@ -84,8 +84,11 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 	}
 
 	var rules = [
-		":where(div.line .replyQuote) { display: block; margin: 0 0 0.15em 0; font-size: 0.85em; opacity: 0.7; cursor: pointer; " +
-			"white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }",
+		":where(div.line .replyQuote) { position: relative; display: block; margin: 0 0 0.1em 0; padding-left: 1.5em; font-size: 0.85em; " +
+			"opacity: 0.75; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-indent: 0; }",
+		/* A hook from the answer up to the message it answers */
+		":where(div.line .replyQuote)::before { content: \"\"; position: absolute; left: 0.4em; top: 0.7em; width: 0.65em; height: 0.55em; " +
+			"border-left: 1.5px solid currentColor; border-top: 1.5px solid currentColor; border-top-left-radius: 5px; opacity: 0.6; }",
 		":where(div.line .replyQuote:hover) { opacity: 1; }",
 		":where(div.line .replyQuote .replySender) { font-weight: 600; }",
 		":where(div.line.replyFlash) { animation: textualReplyFlash 1.6s ease-out; }",
@@ -244,7 +247,9 @@ _MessageActions._senderOfLine = function(line) /* PRIVATE */
 	return ((sender) ? sender.dataset.nickname : "");
 };
 
-/* ↩ alice: the message… (or "an earlier message" until it is found) */
+/* alice the message… (or "an earlier message" until it is found), after the
+ hook drawn by the rules above; the name in alice's colour when a line of
+ hers is in the view */
 _MessageActions._fillQuote = function(quote, line) /* PRIVATE */
 {
 	var nickname = line.dataset.replyNickname;
@@ -260,7 +265,7 @@ _MessageActions._fillQuote = function(quote, line) /* PRIVATE */
 		}
 	}
 
-	quote.textContent = "↩ ";
+	quote.textContent = "";
 
 	if (nickname) {
 		var sender = document.createElement("span");
@@ -269,10 +274,16 @@ _MessageActions._fillQuote = function(quote, line) /* PRIVATE */
 
 		sender.textContent = nickname;
 
+		var senderInView = document.querySelector("div.line .sender[data-nickname=\"" + CSS.escape(nickname) + "\"]");
+
+		if (senderInView && senderInView.style.color) {
+			sender.style.color = senderInView.style.color;
+		}
+
 		quote.appendChild(sender);
 
 		if (excerpt) {
-			quote.appendChild(document.createTextNode(": " + excerpt));
+			quote.appendChild(document.createTextNode(" " + excerpt));
 		}
 
 		quote.removeAttribute("data-pending");

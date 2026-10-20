@@ -209,6 +209,7 @@ static NSMutableArray<dispatch_block_t> *_loadsWaitingForContentRules = nil;
 		@"private/core/events.js",
 		@"private/core/eventGroups.js",
 		@"private/core/messageActions.js",
+		@"private/core/chatElements.js",
 		@"private/core/inlineMedia.js",
 		@"private/core/messageBuffer.js",
 		@"private/core/scrollTo.js",

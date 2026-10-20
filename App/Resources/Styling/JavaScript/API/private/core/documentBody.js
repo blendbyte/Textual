@@ -216,12 +216,30 @@ _Textual.historyIndicatorRemove = function() /* PRIVATE */
 	}
 };
 
-/* Typing indicator: the last element of the buffer (messageBuffer.js keeps it there) */
+/* Typing indicator: the last element of the buffer (messageBuffer.js keeps it
+ there). It floats over the bottom of the chat (baseLayout.css), so nothing
+ moves when it comes and goes; it fades in only when it wasn't shown before. */
 _Textual.typingIndicatorSet = function(templateHTML) /* PRIVATE */
 {
+	var wasShown = (document.getElementById("typing-indicator") !== null);
+
 	_Textual.typingIndicatorRemove();
 
 	MessageBuffer.bufferElementAppend(templateHTML);
+
+	var e = document.getElementById("typing-indicator");
+
+	if (e === null) {
+		return;
+	}
+
+	if (wasShown) {
+		e.setAttribute("data-shown", "true");
+	} else {
+		requestAnimationFrame(function() {
+			e.setAttribute("data-shown", "true");
+		});
+	}
 };
 
 _Textual.typingIndicatorRemove = function() /* PRIVATE */

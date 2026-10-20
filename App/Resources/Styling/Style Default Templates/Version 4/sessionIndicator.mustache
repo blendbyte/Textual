@@ -1,7 +1,6 @@
-
 {{! "message_buffer_session_indicator" is kept for backwards compatibility (<=7.0.10) }}
-
-<div class="session_indicator message_buffer_session_indicator">
+{{! Where this session's messages begin ("Since 09:41"); the view joins it to a date line next to it }}
+<div class="session_indicator message_buffer_session_indicator" role="separator" data-since="{{sessionIndicatorSince}}" title="{{sessionIndicatorDescription}}" aria-label="{{sessionIndicatorMessage}}">
 	<hr />
 	<span>{{sessionIndicatorMessage}}</span>
 	<hr />

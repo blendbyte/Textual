@@ -21,10 +21,11 @@
 	--link: #4c9dff;
 	--link-hover: #7ab8ff;
 
-	/* Accents */
-	--notice: #ff9f0a;
-	--notice-sender: #ffb340;
-	--notice-fill: rgba(255, 159, 10, 0.10);
+	/* Accents. Notices are blue (information), so that only a mention of
+	you is amber. */
+	--notice: #64a8ff;
+	--notice-sender: #8cbcff;
+	--notice-fill: rgba(100, 168, 255, 0.10);
 
 	/* Warmer than a pure amber: at this low an alpha over a near-neutral
 	dark background, #f2b400 mixes down to olive rather than to gold. */

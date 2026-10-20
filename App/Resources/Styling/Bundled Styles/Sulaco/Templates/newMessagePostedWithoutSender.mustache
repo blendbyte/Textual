@@ -1,8 +1,8 @@
 {{! Written out here: partials are looked up in this folder only, and a missing one makes Textual use its default template }}
 {{#showDateIndicator}}
-	<div class="date_indicator">
+	<div class="date_indicator" role="separator" data-day="{{dateIndicatorDay}}" data-label="{{dateIndicatorDayLabel}}" title="{{dateIndicatorMessage}}" aria-label="{{dateIndicatorMessage}}">
 		<hr />
-		<span>{{dateIndicatorMessage}}</span>
+		<span>{{dateIndicatorLabel}}</span>
 		<hr />
 	</div>
 {{/showDateIndicator}}
@@ -31,7 +31,7 @@
 </div>
 
 {{#showSessionIndicator}}
-	<div class="session_indicator message_buffer_session_indicator">
+	<div class="session_indicator message_buffer_session_indicator" role="separator" data-since="{{sessionIndicatorSince}}" title="{{sessionIndicatorDescription}}" aria-label="{{sessionIndicatorMessage}}">
 		<hr />
 		<span>{{sessionIndicatorMessage}}</span>
 		<hr />
