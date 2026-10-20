@@ -52,6 +52,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) id <TDCServerPropertiesSecuredConnection> serverPane;
 @end
 
+/* The Channels, People and Messages pages (TDCServerPropertiesListPages.swift) */
+@interface TDCServerPropertiesChannelsPane : TDCServerPropertiesPane
+@end
+
+@interface TDCServerPropertiesPeoplePane : TDCServerPropertiesPane
+/* From the sheet's start: an ignore for someone, or an entry to edit */
+- (void)addIgnoreEntryWithHostmask:(nullable NSString *)hostmask;
+- (void)editEntry:(IRCAddressBookEntry *)entry;
+@end
+
+@interface TDCServerPropertiesMessagesPane : TDCServerPropertiesPane
+@end
+
 /* The sheet's window: a sidebar of pages, the page, Cancel and Save
  (TDCServerPropertiesWindow.swift). A pane without a page of its own in
  SwiftUI is shown with its view from the nib. */

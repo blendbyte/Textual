@@ -37,6 +37,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import "IRCAddressBook.h"
+#import "IRCChannelConfig.h"
 #import "IRCClientConfigPrivate.h"
 #import "IRCServerPrivate.h"
 #import "TDCServerPropertiesWindowPrivate.h"
@@ -153,6 +155,49 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertTrue(saved.hideAutojoinDelayedWarnings);
 	XCTAssertEqualObjects(saved.saslECDSAKey, @"stored-key");
 	XCTAssertNil(saved.identityClientSideCertificate);
+}
+
+/* Channels, People and Messages save what they loaded: queries stay in
+ the channel list though only channels are shown */
+- (void)testListPanesSaveWhatTheyLoaded
+{
+	IRCChannelConfigMutable *query = [[IRCChannelConfig seedWithName:@"bob"] mutableCopy];
+
+	query.type = IRCChannelTypePrivateMessage;
+
+	NSArray *channelList = @[[IRCChannelConfig seedWithName:@"#one"], [query copy], [IRCChannelConfig seedWithName:@"#two"]];
+
+	NSArray *ignoreList = @[[IRCAddressBookEntry newIgnoreEntryForHostmask:@"spam!*@*"], [IRCAddressBookEntry newUserTrackingEntry]];
+
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	config.channelList = channelList;
+	config.ignoreList = ignoreList;
+	config.normalLeavingComment = @"Bye";
+	config.sleepModeLeavingComment = @"Sleeping";
+	config.excludedFromArchive = YES;
+
+	TDCServerPropertiesPane *channelsPane = [self paneNamed:@"TDCServerPropertiesChannelsPane"];
+	TDCServerPropertiesPane *peoplePane = [self paneNamed:@"TDCServerPropertiesPeoplePane"];
+	TDCServerPropertiesPane *messagesPane = [self paneNamed:@"TDCServerPropertiesMessagesPane"];
+
+	for (TDCServerPropertiesPane *pane in @[channelsPane, peoplePane, messagesPane]) {
+		[pane loadFromConfig:config];
+
+		XCTAssertFalse(pane.hasInvalidField);
+	}
+
+	IRCClientConfigMutable *saved = [IRCClientConfigMutable new];
+
+	for (TDCServerPropertiesPane *pane in @[channelsPane, peoplePane, messagesPane]) {
+		[pane saveToConfig:saved];
+	}
+
+	XCTAssertEqualObjects(saved.channelList, channelList);
+	XCTAssertEqualObjects(saved.ignoreList, ignoreList);
+	XCTAssertEqualObjects(saved.normalLeavingComment, @"Bye");
+	XCTAssertEqualObjects(saved.sleepModeLeavingComment, @"Sleeping");
+	XCTAssertTrue(saved.excludedFromArchive);
 }
 
 /* A new server can't be saved without an address */

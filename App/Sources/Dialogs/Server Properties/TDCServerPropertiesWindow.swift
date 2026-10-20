@@ -358,6 +358,12 @@ struct ServerPropertiesPageView: View
 					YouPage(pane: pane)
 				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesAccountPane {
 					AccountPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesChannelsPane {
+					ChannelsPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesPeoplePane {
+					PeoplePage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesMessagesPane {
+					MessagesPage(pane: pane)
 				} else if let pane = model.panes[page.rawValue] {
 					NibPaneGroup(page: page, pane: pane)
 				}

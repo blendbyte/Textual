@@ -78,55 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tearDown;
 @end
 
-/* A pane with a table of items, Add, Edit and Delete buttons, rows that can be
- dragged into another order, and a sheet that adds or edits one item. The
- table's rows come from an array controller (its arranged objects). */
-@interface TDCServerPropertiesListPane : TDCServerPropertiesPane <NSTableViewDataSource, NSTableViewDelegate>
-@property (nonatomic, weak) IBOutlet TVCBasicTableView *table;
-@property (nonatomic, strong) IBOutlet NSArrayController *arrayController;
-@property (nonatomic, weak) IBOutlet NSButton *addButton;
-@property (nonatomic, weak) IBOutlet NSButton *editButton;
-@property (nonatomic, weak) IBOutlet NSButton *deleteButton;
-
-/* The sheet that adds or edits an item while it is open */
-@property (nonatomic, strong, nullable) TDCSheetBase *childSheet;
-
-/* The items as the table shows them */
-@property (readonly, copy) NSArray *items;
-
-- (IBAction)addItem:(nullable id)sender;
-- (IBAction)editItem:(nullable id)sender;
-- (IBAction)deleteItem:(nullable id)sender;
-
-/* For each kind of list: */
-
-/* Opens the sheet that adds an item (nil) or edits one */
-- (void)showSheetForItem:(nullable id)item;
-
-- (nullable id)valueForColumn:(NSString *)columnId ofItem:(id)item;
-
-/* An edit made in the table itself (none by default) */
-- (void)setValue:(nullable id)value forColumn:(NSString *)columnId ofItem:(id)item;
-
-/* The item from the sheet replaces the one with its unique identifier, or is added */
-- (void)addOrReplaceItem:(id)item;
-- (void)removeItem:(id)item;
-
-/* NO when nothing moved */
-- (BOOL)moveItemAtIndex:(NSUInteger)fromIndex toIndex:(NSUInteger)toIndex;
-@end
-
-@interface TDCServerPropertiesChannelsPane : TDCServerPropertiesListPane
-@end
-
-@interface TDCServerPropertiesAddressBookPane : TDCServerPropertiesListPane
-@property (nonatomic, strong) IBOutlet NSMenu *addMenu;
-
-/* From the sheet's -startWithSelection:context: */
-- (void)addIgnoreEntryWithHostmask:(nullable NSString *)hostmask;
-- (void)editEntry:(IRCAddressBookEntry *)entry;
-@end
-
 /* The pane with the servers (TDCServerPropertiesServerPane, in Swift) */
 @protocol TDCServerPropertiesSecuredConnection <NSObject>
 /* A client certificate is only sent on a secured connection */
@@ -137,10 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TDCServerPropertiesEncodingPane : TDCServerPropertiesPane
-@end
-
-/* Quit messages */
-@interface TDCServerPropertiesMessagesPane : TDCServerPropertiesPane
 @end
 
 @interface TDCServerPropertiesZncBouncerPane : TDCServerPropertiesPane
@@ -157,12 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TDCServerPropertiesProxyServerPane : TDCServerPropertiesPane
-@end
-
-/* What panes need from the sheet */
-@interface TDCServerPropertiesSheet (Panes)
-/* The channels of the Autojoin pane, as shown */
-@property (readonly, copy) NSArray<IRCChannelConfig *> *channelList;
 @end
 
 NS_ASSUME_NONNULL_END

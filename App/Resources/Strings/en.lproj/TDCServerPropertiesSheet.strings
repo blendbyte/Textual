@@ -35,10 +35,6 @@
  *
  *********************************************************************** */
 
-/* Server properties Address Book entry types */
-"f7o-x4" = "User Ignore";
-"b0g-0x" = "User Tracking";
-
 /* Error localizations */
 "8iw-q8" = "Please enter a properly formatted username.";
 "agy-bp" = "Please enter a properly formatted real name.";
@@ -123,7 +119,7 @@ Certificates must meet the following criteria:
 "spp-t-people" = "People";
 "spp-l-people" = "Ignore someone, or get told when they're around.";
 "spp-t-messages" = "Messages";
-"spp-l-messages" = "What others see when you leave.";
+"spp-l-messages" = "What others see when you leave, and what's kept.";
 "spp-t-commands" = "When Connected";
 "spp-l-commands" = "Commands to send after connecting.";
 "spp-t-connection" = "Connection";
@@ -197,3 +193,37 @@ Certificates must meet the following criteria:
 "spp-acc-cert-copyh" = "Copies the NickServ command that adds this fingerprint to your account.";
 "spp-acc-host" = "NickServ host";
 "spp-acc-hosth" = "Your password is only sent to NickServ at this host. Leave it empty for the network's usual one.";
+"spp-move-up" = "Move Up";
+"spp-move-down" = "Move Down";
+"spp-chn-join" = "Join when you connect";
+"spp-chn-key" = "Has a key";
+"spp-chn-edit" = "Edit Channel…";
+"spp-chn-remove" = "Remove";
+"spp-chn-add" = "Add Channel…";
+"spp-chn-note" = "Joined in this order when you connect; drag to change it. Without a check, a channel keeps its settings but isn't joined.";
+"spp-ppl-h1" = "Ignored";
+"spp-ppl-n1" = "What they send is hidden. Each one can hide only some kinds, such as notices or highlights.";
+"spp-ppl-addi" = "Ignore Someone…";
+"spp-ppl-h2" = "Tracked";
+"spp-ppl-n2" = "Textual tells you when they come online or go offline.";
+"spp-ppl-addt" = "Track Someone…";
+"spp-ppl-edit" = "Edit…";
+"spp-ppl-remove" = "Remove";
+"spp-ppl-i0" = "Nothing hidden";
+"spp-ppl-ia" = "Everything";
+"spp-ppl-i1" = "channel messages";
+"spp-ppl-i2" = "private messages";
+"spp-ppl-i3" = "notices";
+"spp-ppl-i4" = "client requests (CTCP)";
+"spp-ppl-i5" = "highlights";
+"spp-ppl-i6" = "joins, leaves and other events";
+"spp-ppl-i7" = "file transfers";
+"spp-ppl-i8" = "previews";
+"spp-msg-leave" = "Leaving message";
+"spp-msg-leaveh" = "Shown to others when you leave a channel or disconnect.";
+"spp-msg-sleep" = "Leaving message when the Mac sleeps";
+"spp-msg-sleeph" = "Used when Textual disconnects because the Mac goes to sleep.";
+"spp-msg-h2" = "Message archive";
+"spp-msg-arch" = "Kept for searching and for history.";
+"spp-msg-archoff" = "The message archive is off in Settings › History.";
+"spp-msg-count" = "Messages in the archive: %@";

@@ -47,7 +47,7 @@
 #import "TDCSettingsBridgePrivate.h"
 #import "TVCMainWindow.h"
 
-// TDCServerPropertiesWindow.swift, TDCServerPropertiesServerPane.swift, TDCServerPropertiesAccountPanes.swift
+// TDCServerPropertiesWindow.swift, TDCServerPropertiesServerPane.swift, TDCServerPropertiesAccountPanes.swift, TDCServerPropertiesListPages.swift
 #import "IRCClientPrivate.h"
 #import "NSStringHelper.h"
 #import "IRCNetworkList.h"
@@ -56,6 +56,12 @@
 #import "TDCServerPropertiesPanePrivate.h"
 #import "IRCClientConfigPrivate.h"
 #import "TXWebsiteLinks.h"
+#import "IRCAddressBook.h"
+#import "IRCChannelConfig.h"
+#import "TDCAddressBookSheetPrivate.h"
+#import "TDCChannelPropertiesSheetPrivate.h"
+#import "TLOMessageArchivePrivate.h"
+#import "TPCPreferencesLocalPrivate.h"
 
 // TLOLinkParser.swift
 #import "TVCLogLine.h"

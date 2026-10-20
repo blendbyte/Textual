@@ -151,7 +151,6 @@
 		4C06E66820EC55B90055D09A /* TDCServerChannelListDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528620EB673E00448776 /* TDCServerChannelListDialog.m */; };
 		4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */; };
 		92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */ = {isa = PBXBuildFile; fileRef = D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */; };
-		8F5B29F2B32A14EEBE321D7C /* TDCServerPropertiesListPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 7EFA353DAB553FAC1CFA9628 /* TDCServerPropertiesListPanes.m */; };
 		6D69D7405D02E9711DC3CDF5 /* TDCServerPropertiesSettingsPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 09BC6FE07983C6F7547ACB56 /* TDCServerPropertiesSettingsPanes.m */; };
 		9333C24E1B8B729BFC45E642 /* TDCServerPropertiesConnectionPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */; };
 		4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528A20EB673E00448776 /* TDCSheetBase.m */; };
@@ -728,6 +727,7 @@
 		B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */; };
 		36BC675C66E04EC0F413B3F0 /* TDCServerPropertiesPaneTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */; };
 		B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */; };
+		46D3990D78A0D6FE05E500D8 /* TDCServerPropertiesListPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1255,7 +1255,6 @@
 		4C31526420EB673E00448776 /* TDCChannelPropertiesSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelPropertiesSheet.m; sourceTree = "<group>"; };
 		4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesSheet.m; sourceTree = "<group>"; };
 		D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesPane.m; sourceTree = "<group>"; };
-		7EFA353DAB553FAC1CFA9628 /* TDCServerPropertiesListPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesListPanes.m; sourceTree = "<group>"; };
 		09BC6FE07983C6F7547ACB56 /* TDCServerPropertiesSettingsPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesSettingsPanes.m; sourceTree = "<group>"; };
 		17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesConnectionPanes.m; sourceTree = "<group>"; };
 		4C31526620EB673E00448776 /* TDCChannelModifyModesSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelModifyModesSheet.m; sourceTree = "<group>"; };
@@ -1649,6 +1648,7 @@
 		42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerPropertiesWindowPrivate.h; sourceTree = "<group>"; };
 		42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesPaneTests.m; sourceTree = "<group>"; };
 		24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAccountPanes.swift; sourceTree = "<group>"; };
+		3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesListPages.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1905,7 +1905,7 @@
 				4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */,
 				D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */,
 				17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */,
-				7EFA353DAB553FAC1CFA9628 /* TDCServerPropertiesListPanes.m */,
+				3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */,
 				24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */,
 				42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */,
 				07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */,
@@ -3800,7 +3800,7 @@
 				4C06E66820EC55B90055D09A /* TDCServerChannelListDialog.m in Sources */,
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
-				8F5B29F2B32A14EEBE321D7C /* TDCServerPropertiesListPanes.m in Sources */,
+				46D3990D78A0D6FE05E500D8 /* TDCServerPropertiesListPages.swift in Sources */,
 				B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */,
 				B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */,
 				C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */,

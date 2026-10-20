@@ -53,11 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite, nullable) IRCClient *client;
 @property (nonatomic, copy, readwrite, nullable) NSString *clientId;
 @property (nonatomic, strong) IRCClientConfigMutable *config;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesAddressBookPane *addressBookPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesChannelsPane *channelsPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *connectCommandsPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *encodingPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *messagesPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *zncBouncerPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *floodControlPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *networkSocketPane;
@@ -66,6 +63,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) TDCServerPropertiesServerPane *serverPane; // in Swift
 @property (nonatomic, strong) TDCServerPropertiesYouPane *youPane; // in Swift
 @property (nonatomic, strong) TDCServerPropertiesAccountPane *accountPane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesChannelsPane *channelsPane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesPeoplePane *peoplePane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesMessagesPane *messagesPane; // in Swift
 @property (nonatomic, strong) TDCServerPropertiesWindow *windowContent;
 @property (nonatomic, copy) NSArray<TDCServerPropertiesPane *> *panes;
 @end
@@ -123,6 +123,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.accountPane.serverPane = self.serverPane;
 
+	self.channelsPane = [TDCServerPropertiesChannelsPane new];
+
+	self.peoplePane = [TDCServerPropertiesPeoplePane new];
+
+	self.messagesPane = [TDCServerPropertiesMessagesPane new];
+
 	self.uploadsPane = [TDCServerPropertiesUploadsPane new];
 
 #define _pane(_pane_, _identifier_) 	\
@@ -132,7 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 	_pane(self.youPane, You)
 	_pane(self.accountPane, Account)
 	_pane(self.channelsPane, Autojoin)
-	_pane(self.addressBookPane, AddressBook)
+	_pane(self.peoplePane, AddressBook)
 	_pane(self.messagesPane, DisconnectMessages)
 	_pane(self.connectCommandsPane, ConnectCommands)
 	_pane(self.networkSocketPane, NetworkSocket)
@@ -149,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.youPane,
 		self.accountPane,
 		self.channelsPane,
-		self.addressBookPane,
+		self.peoplePane,
 		self.messagesPane,
 		self.connectCommandsPane,
 		self.networkSocketPane,
@@ -204,9 +210,9 @@ NS_ASSUME_NONNULL_BEGIN
 		case TDCServerPropertiesSheetSelectionNewIgnoreEntry:
 		{
 			if ([context isKindOfClass:[NSString class]]) {
-				[self.addressBookPane addIgnoreEntryWithHostmask:context];
+				[self.peoplePane addIgnoreEntryWithHostmask:context];
 			} else if ([context isKindOfClass:[IRCAddressBookEntry class]]) {
-				[self.addressBookPane editEntry:context];
+				[self.peoplePane editEntry:context];
 			}
 
 			break;
@@ -356,14 +362,6 @@ NS_ASSUME_NONNULL_BEGIN
 	for (TDCServerPropertiesPane *pane in self.panes) {
 		[pane saveToConfig:self.config];
 	}
-}
-
-#pragma mark -
-#pragma mark Properties
-
-- (NSArray<IRCChannelConfig *> *)channelList
-{
-	return self.channelsPane.items;
 }
 
 #pragma mark -
