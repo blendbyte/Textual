@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isInverted;
 @property (nonatomic, assign) BOOL isSelected;
 @property (nonatomic, assign) BOOL isWindowActive;
+@property (nonatomic, assign) BOOL isEmphasized; // the row's selection is in the accent colour
 @end
 
 @implementation TVCMemberListCell
@@ -252,7 +253,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSColor *controlColor = nil;
 
 	if (isSelected) {
-		if (isWindowActive) {
+		if (drawingContext.isEmphasized) {
 			controlColor = appearance.cellSelectedTextColorActiveWindow;
 		} else {
 			controlColor = appearance.cellSelectedTextColorInactiveWindow;
@@ -362,8 +363,6 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(appearance != nil);
 	NSParameterAssert(drawingContext != nil);
 
-	BOOL isSelected = drawingContext.isSelected;
-
 	IRCChannelUser *cellItem = self.cellItem;
 
 	NSString *modeSymbol = cellItem.mark;
@@ -380,18 +379,13 @@ NS_ASSUME_NONNULL_BEGIN
 		userRankToDraw = cellItem.rank;
 	}
 
-	NSImage *cachedImage = nil;
-
-	if (isSelected == NO) {
-		cachedImage = [appearance cachedUserMarkBadgeForSymbol:modeSymbol rank:userRankToDraw];
-	}
+	/* The same badge on the selection bar, which is grey */
+	NSImage *cachedImage = [appearance cachedUserMarkBadgeForSymbol:modeSymbol rank:userRankToDraw];
 
 	if (cachedImage == nil) {
-		cachedImage = [self drawMarkBadgeForRank:userRankToDraw isSelected:isSelected withAppearance:appearance inContext:drawingContext];
+		cachedImage = [self drawMarkBadgeForRank:userRankToDraw isSelected:NO withAppearance:appearance inContext:drawingContext];
 
-		if (isSelected == NO) {
-			[appearance cacheUserMarkBadge:cachedImage forSymbol:modeSymbol rank:userRankToDraw];
-		}
+		[appearance cacheUserMarkBadge:cachedImage forSymbol:modeSymbol rank:userRankToDraw];
 	}
 
 	self.imageView.image = cachedImage;
@@ -632,6 +626,7 @@ NS_ASSUME_NONNULL_BEGIN
 	drawingContext.isInverted = appearance.isDarkAppearance;
 	drawingContext.isSelected = [memberList isRowSelected:rowIndex];
 	drawingContext.isWindowActive = mainWindow.isActiveForDrawing;
+	drawingContext.isEmphasized = ([self.superview isKindOfClass:[NSTableRowView class]] && ((NSTableRowView *)self.superview).isEmphasized);
 
 	return drawingContext;
 }

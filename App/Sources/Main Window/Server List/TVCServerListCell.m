@@ -58,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isSelected;
 @property (nonatomic, assign) BOOL isSelectedFrontmost;
 @property (nonatomic, assign) BOOL isWindowActive;
+@property (nonatomic, assign) BOOL isEmphasized; // the row's selection is in the accent colour
 @end
 
 @implementation TVCServerListCell
@@ -197,28 +198,29 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL isActive = drawingContext.isActive;
 	BOOL isGroupItem = drawingContext.isGroupItem;
 	BOOL isSelected = drawingContext.isSelected;
-	BOOL isWindowActive = drawingContext.isWindowActive;
 
 	if (isGroupItem == NO) {
 		IRCTreeItem *cellItem = self.cellItem;
 
 		IRCChannel *channel = (IRCChannel *)cellItem;
 
-		NSString *iconName = nil;
+		/* The system's outlined symbols, in the row's colour when selected and
+		 faint otherwise, fainter for a channel not joined */
+		NSString *symbolName = ((channel.isChannel) ? @"bubble.left" : @"person");
 
-		BOOL iconIsTemplate = NO;
+		NSImageSymbolConfiguration *configuration = [NSImageSymbolConfiguration configurationWithPointSize:12.0 weight:NSFontWeightRegular];
 
-		if (channel.isChannel) {
-			iconName = [appearance statusIconForActiveChannel:isActive selected:isSelected activeWindow:isWindowActive treatAsTemplate:&iconIsTemplate];
-		} else {
-			iconName = [appearance statusIconForActiveQuery:isActive selected:isSelected activeWindow:isWindowActive treatAsTemplate:&iconIsTemplate];
-		} // isChannel
-
-		NSImage *icon = [NSImage imageNamed:iconName];
-
-		icon.template = iconIsTemplate;
+		NSImage *icon = [[NSImage imageWithSystemSymbolName:symbolName accessibilityDescription:nil] imageWithSymbolConfiguration:configuration];
 
 		self.imageView.image = icon;
+
+		if (isSelected) {
+			self.imageView.contentTintColor = ((drawingContext.isEmphasized) ? appearance.channelSelectedTextColorActiveWindow : appearance.channelSelectedTextColorInactiveWindow);
+		} else if (isActive) {
+			self.imageView.contentTintColor = [NSColor secondaryLabelColor];
+		} else {
+			self.imageView.contentTintColor = [NSColor tertiaryLabelColor];
+		}
 	}
 
 	NSAttributedString *newValue = [self attributedTextFieldValueWithAppearance:appearance inContext:drawingContext];
@@ -261,14 +263,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL isErroneous = NO;
 
-	BOOL isHighlight = NO;
-
 	if (isGroupItem == NO) {
 		IRCChannel *associatedChannel = (id)cellItem;
 
 		isErroneous = associatedChannel.errorOnLastJoinAttempt;
-
-		isHighlight = (associatedChannel.nicknameHighlightCount > 0);
 	}
 
 	NSTextField *textField = self.cellTextField;
@@ -292,7 +290,7 @@ NS_ASSUME_NONNULL_BEGIN
 		} // isSelected
 
 		if (isSelected) {
-			if (isWindowActive) {
+			if (drawingContext.isEmphasized) {
 				controlColor = appearance.serverSelectedTextColorActiveWindow;
 			} else {
 				controlColor = appearance.serverSelectedTextColorInactiveWindow;
@@ -320,24 +318,13 @@ NS_ASSUME_NONNULL_BEGIN
 		} // isSelected
 
 		if (isSelected) {
-			if (isWindowActive) {
+			if (drawingContext.isEmphasized) {
 				controlColor = appearance.channelSelectedTextColorActiveWindow;
 			} else {
 				controlColor = appearance.channelSelectedTextColorInactiveWindow;
 			} // isWindowActive
-		} else if (isActive && isHighlight) {
-			NSColor *customColor = appearance.unreadBadgeHighlightBackgroundColorByUser;
-
-			if (customColor && [customColor isEqual:[NSColor clearColor]] == NO) {
-				controlColor = customColor;
-			} else {
-				if (isWindowActive) {
-					controlColor = appearance.channelHighlightTextColorActiveWindow;
-				} else {
-					controlColor = appearance.channelHighlightTextColorInactiveWindow;
-				} // isWindowActive
-			} // custom color set
 		} else if (isActive) {
+			/* A mention shows in its count (red), not in the name */
 			if (isWindowActive) {
 				controlColor = appearance.channelTextColorActiveWindow;
 			} else {
@@ -544,7 +531,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.messageCountBadgeImageView.image =
 	[TVCListBadge imageWithSize:rectToDraw.size
-				   cornerRadius:7.0
+				   cornerRadius:(rectToDraw.size.height / 2.0)
 				backgroundColor:backgroundColor
 						 string:stringToDraw];
 }
@@ -597,6 +584,7 @@ NS_ASSUME_NONNULL_BEGIN
 	drawingContext.isSelected = [serverList isRowSelected:rowIndex];
 	drawingContext.isSelectedFrontmost = [mainWindow isItemSelected:cellItem];
 	drawingContext.isWindowActive = mainWindow.isActiveForDrawing;
+	drawingContext.isEmphasized = ([self.superview isKindOfClass:[NSTableRowView class]] && ((NSTableRowView *)self.superview).isEmphasized);
 
 	return drawingContext;
 }

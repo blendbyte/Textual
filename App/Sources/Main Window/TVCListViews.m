@@ -72,15 +72,23 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSColor *selectionColor = [self selectionColorForActiveWindow:self.window.isActiveForDrawing];
+	BOOL activeWindow = self.window.isActiveForDrawing;
 
-	if (selectionColor) {
-		[selectionColor set];
+	/* An appearance's own colour, else the system's, as in Finder's sidebar:
+	 the accent colour while this list has the keyboard focus (emphasized),
+	 neutral grey otherwise, which fits every style */
+	NSColor *selectionColor = [self selectionColorForActiveWindow:activeWindow];
 
-		NSRectFill(self.bounds);
-	} else {
-		[super drawSelectionInRect:dirtyRect];
+	if (selectionColor == nil) {
+		selectionColor = ((self.isEmphasized) ? [NSColor selectedContentBackgroundColor] : [NSColor unemphasizedSelectedContentBackgroundColor]);
 	}
+
+	[selectionColor set];
+
+	/* A rounded bar inset from the edges, as in the system's sidebars */
+	NSRect selectionRect = NSInsetRect(self.bounds, 6.0, 1.0);
+
+	[[NSBezierPath bezierPathWithRoundedRect:selectionRect xRadius:5.0 yRadius:5.0] fill];
 }
 
 - (nullable NSColor *)selectionColorForActiveWindow:(BOOL)activeWindow
@@ -93,12 +101,32 @@ NS_ASSUME_NONNULL_BEGIN
 	return NO;
 }
 
+/* Lists that want it are emphasized while their window is key; the others
+ when the table has the keyboard focus (the table sets it) */
 - (BOOL)isEmphasized
 {
+	if (self.wantsEmphasis == NO) {
+		return super.isEmphasized;
+	}
+
 	NSWindow *window = self.window;
 
-	return (self.wantsEmphasis &&
-			(window == nil || window.isKeyWindow));
+	return (window == nil || window.isKeyWindow);
+}
+
+- (void)setEmphasized:(BOOL)emphasized
+{
+	if (super.isEmphasized == emphasized) {
+		return;
+	}
+
+	super.emphasized = emphasized;
+
+	if (self.selected) {
+		self.needsDisplay = YES;
+
+		[self setNeedsDisplayOnChild];
+	}
 }
 
 - (nullable __kindof NSTableCellView *)childCell

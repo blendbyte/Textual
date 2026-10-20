@@ -104,6 +104,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* Choosing a channel moves the keyboard focus to the input field, so the
+ accent colour would only flash: this list's selection stays grey */
+- (BOOL)isEmphasized
+{
+	return NO;
+}
+
 - (TVCServerListAppearance *)userInterfaceObjects
 {
 	return self.serverList.userInterfaceObjects;

@@ -73,8 +73,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nullable) NSColor *channelSelectedTextColorInactiveWindow;
 @property (readonly, copy, nullable) NSColor *channelErroneousTextColorActiveWindow;
 @property (readonly, copy, nullable) NSColor *channelErroneousTextColorInactiveWindow;
-@property (readonly, copy, nullable) NSColor *channelHighlightTextColorActiveWindow;
-@property (readonly, copy, nullable) NSColor *channelHighlightTextColorInactiveWindow;
+@property (readonly, copy, nullable) NSColor *channelHighlightTextColorActiveWindow; // no longer used: a mention shows in the count
+@property (readonly, copy, nullable) NSColor *channelHighlightTextColorInactiveWindow; // no longer used
 @property (readonly, copy, nullable) NSFont *channelFont;
 @property (readonly, copy, nullable) NSFont *channelFontSelected;
 
@@ -103,11 +103,13 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Accessors
 
+// no longer used: the server list shows system symbols
 - (nullable NSString *)statusIconForActiveChannel:(BOOL)isActive
 										 selected:(BOOL)isSelected
 									 activeWindow:(BOOL)isActiveWindow
 								  treatAsTemplate:(BOOL *)treatAsTemplate;
 
+// no longer used
 - (nullable NSString *)statusIconForActiveQuery:(BOOL)isActive
 									   selected:(BOOL)isSelected
 								   activeWindow:(BOOL)isActiveWindow

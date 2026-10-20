@@ -13,12 +13,12 @@
 		<key>Mark Badge</key>
 		<dict>
 			<key>leftMargin</key>
-			<integer>0</integer>
+			<integer>10</integer>
 		</dict>
 		<key>Member Cell</key>
 		<dict>
 			<key>rowEmphasized</key>
-			<true/>
+			<false/>
 		</dict>
 	</dict>
 	<key>CommonModern</key>
@@ -96,14 +96,14 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.4</string>
+					<string>0.35</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.4</string>
+					<string>0.35</string>
 				</dict>
 			</dict>
 			<key>selectedTextColor</key>
@@ -226,14 +226,14 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.55</string>
+					<string>0.62</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.55</string>
+					<string>0.62</string>
 				</dict>
 			</dict>
 			<key>selectedTextColor</key>
@@ -250,7 +250,7 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>1.0</string>
+					<string>0.1</string>
 				</dict>
 			</dict>
 		</dict>

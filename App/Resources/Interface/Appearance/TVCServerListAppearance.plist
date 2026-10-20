@@ -15,12 +15,12 @@
 			<key>labelLeftMargin</key>
 			<string>5</string>
 			<key>rowEmphasized</key>
-			<true/>
+			<false/>
 		</dict>
 		<key>Channel Cell</key>
 		<dict>
 			<key>rowEmphasized</key>
-			<true/>
+			<false/>
 		</dict>
 	</dict>
 	<key>CommonModern</key>
@@ -80,7 +80,7 @@
 			<key>minimumWidth</key>
 			<integer>22</integer>
 			<key>height</key>
-			<integer>14</integer>
+			<integer>16</integer>
 			<key>padding</key>
 			<integer>6</integer>
 		</dict>
@@ -222,16 +222,16 @@
 				<key>activeWindow</key>
 				<dict>
 					<key>type</key>
-					<integer>2</integer>
+					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.414 0.117</string>
+					<string>0.9</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
-					<integer>2</integer>
+					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.414 0.117</string>
+					<string>0.9</string>
 				</dict>
 			</dict>
 		</dict>
@@ -242,16 +242,16 @@
 				<key>activeWindow</key>
 				<dict>
 					<key>type</key>
-					<integer>1</integer>
+					<integer>2</integer>
 					<key>value</key>
-					<string>0.15</string>
+					<string>1.0 1.0 1.0 0.16</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
-					<integer>1</integer>
+					<integer>2</integer>
 					<key>value</key>
-					<string>0.15</string>
+					<string>1.0 1.0 1.0 0.16</string>
 				</dict>
 			</dict>
 			<key>selectedBackgroundColor</key>
@@ -278,14 +278,14 @@
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.0117 0.1562 0.0</string>
+					<string>0.55 0.03 0.03</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.0117 0.1562 0.0</string>
+					<string>0.55 0.03 0.03</string>
 				</dict>
 			</dict>
 			<key>normalTextColor</key>
@@ -395,7 +395,7 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>1.0</string>
+					<string>0.1</string>
 				</dict>
 			</dict>
 		</dict>
@@ -449,7 +449,7 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>1.0</string>
+					<string>0.1</string>
 				</dict>
 			</dict>
 			<key>erroneousTextColor</key>
@@ -474,16 +474,16 @@
 				<key>activeWindow</key>
 				<dict>
 					<key>type</key>
-					<integer>2</integer>
+					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.414 0.117</string>
+					<string>0.25</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
-					<integer>2</integer>
+					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.414 0.117</string>
+					<string>0.25</string>
 				</dict>
 			</dict>
 		</dict>
@@ -496,14 +496,14 @@
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.232 0.232 0.232 0.7</string>
+					<string>0.0 0.0 0.0 0.12</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.232 0.232 0.232 0.7</string>
+					<string>0.0 0.0 0.0 0.12</string>
 				</dict>
 			</dict>
 			<key>selectedBackgroundColor</key>
@@ -530,14 +530,14 @@
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.0 0.414 0.117 0.7</string>
+					<string>0.86 0.15 0.17</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.0 0.414 0.117 0.7</string>
+					<string>0.86 0.15 0.17</string>
 				</dict>
 			</dict>
 			<key>normalTextColor</key>
@@ -547,14 +547,14 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>1.0</string>
+					<string>0.2</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>1.0</string>
+					<string>0.2</string>
 				</dict>
 			</dict>
 			<key>selectedTextColor</key>

@@ -159,8 +159,8 @@
                                                                     <constraints>
                                                                         <constraint firstItem="68i-pd-Me5" firstAttribute="leading" secondItem="AKs-o3-7CO" secondAttribute="leading" constant="2" id="30q-JO-bxw"/>
                                                                         <constraint firstItem="Ybi-Bk-q6V" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="YvY-15-HQ3" secondAttribute="trailing" constant="8" id="4RY-SZ-rtF"/>
-                                                                        <constraint firstItem="68i-pd-Me5" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="3" id="4bj-uN-9BF"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="68i-pd-Me5" secondAttribute="bottom" constant="3" id="5La-r3-bcy"/>
+                                                                        <constraint firstItem="68i-pd-Me5" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="5" id="4bj-uN-9BF"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="68i-pd-Me5" secondAttribute="bottom" constant="5" id="5La-r3-bcy"/>
                                                                         <constraint firstItem="68i-pd-Me5" firstAttribute="centerY" secondItem="AKs-o3-7CO" secondAttribute="centerY" id="CqV-vG-O0t"/>
                                                                         <constraint firstAttribute="trailing" secondItem="Ybi-Bk-q6V" secondAttribute="trailing" constant="2" id="F6K-Cf-KhL"/>
                                                                         <constraint firstItem="YvY-15-HQ3" firstAttribute="centerY" secondItem="AKs-o3-7CO" secondAttribute="centerY" id="FCv-Qe-6RD"/>
@@ -168,7 +168,7 @@
                                                                         <constraint firstItem="YvY-15-HQ3" firstAttribute="top" relation="greaterThanOrEqual" secondItem="AKs-o3-7CO" secondAttribute="top" constant="2" id="hR7-ul-DBq"/>
                                                                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="YvY-15-HQ3" secondAttribute="trailing" constant="2" id="jg3-oa-ktd"/>
                                                                         <constraint firstItem="YvY-15-HQ3" firstAttribute="leading" secondItem="68i-pd-Me5" secondAttribute="trailing" constant="6" id="tLx-Q1-geB"/>
-                                                                        <constraint firstItem="Ybi-Bk-q6V" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="1" id="zDv-Ef-pSt"/>
+                                                                        <constraint firstItem="Ybi-Bk-q6V" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="3" id="zDv-Ef-pSt"/>
                                                                     </constraints>
                                                                     <connections>
                                                                         <outlet property="cellTextField" destination="YvY-15-HQ3" id="9HX-hd-ONy"/>
@@ -234,7 +234,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="150" height="439"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="20" rowSizeStyle="automatic" viewBased="YES" floatsGroupRows="NO" id="bgh-q2-4XX" customClass="TVCMemberList">
+                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="22" rowSizeStyle="custom" viewBased="YES" floatsGroupRows="NO" id="bgh-q2-4XX" customClass="TVCMemberList">
                                                     <rect key="frame" x="0.0" y="0.0" width="150" height="439"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -273,9 +273,9 @@
                                                                         </textField>
                                                                     </subviews>
                                                                     <constraints>
-                                                                        <constraint firstItem="jld-0X-vn0" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="P2i-Rd-QtT"/>
+                                                                        <constraint firstItem="jld-0X-vn0" firstAttribute="top" relation="greaterThanOrEqual" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="P2i-Rd-QtT"/>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="leading" secondItem="Lq2-t9-aDp" secondAttribute="trailing" constant="6" id="cd6-99-HOk"/>
-                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="fAn-nx-R4H"/>
+                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="3" id="fAn-nx-R4H"/>
                                                                         <constraint firstItem="Lq2-t9-aDp" firstAttribute="leading" secondItem="nyR-GE-ZXL" secondAttribute="leading" id="fBT-mI-gYa"/>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="centerY" secondItem="nyR-GE-ZXL" secondAttribute="centerY" id="pEP-xB-8EX"/>
                                                                         <constraint firstAttribute="trailing" secondItem="jld-0X-vn0" secondAttribute="trailing" id="xer-US-fgj"/>
