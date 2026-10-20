@@ -245,9 +245,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[itemChangedFrom.viewController notifySelectionChanged];
 	}
 
-	/* Typing: leaving a conversation pauses ours there while a draft stays
-, else ends it; the next one shows its own. The input field still
- holds the text of the conversation left (moveFocusTo: comes below). */
+	/* Typing: leaving a conversation pauses ours there while a draft stays,
+	 else ends it; the next one shows its own. The input field still holds
+	 the text of the conversation left (moveFocusTo: comes below). */
 	if (itemChangedFrom && itemChangedFrom.isClient == NO) {
 		IRCChannel *previousChannel = (IRCChannel *)itemChangedFrom;
 
