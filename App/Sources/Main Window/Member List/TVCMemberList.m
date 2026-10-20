@@ -64,22 +64,18 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 @property (nonatomic, strong, readwrite) TVCMemberListAppearance *userInterfaceObjects;
 @property (nonatomic, weak, readwrite) IBOutlet NSVisualEffectView *visualEffectView;
 @property (nonatomic, strong, readwrite) IBOutlet TVCMemberListUserInfoPopover *memberListUserInfoPopover;
-@property (nonatomic, strong) TVCMemberListController *controller;
+@property (nonatomic, strong, readonly) TVCMemberListController *controller;
 @end
 
 @implementation TVCMemberList
+
+@synthesize controller = _controller;
 
 - (void)awakeFromNib
 {
 	[super awakeFromNib];
 
-	/* The table's rows come from the channel it shows */
-	TVCMemberListController *controller = [[TVCMemberListController alloc] initWithMemberList:self];
-
-	self.controller = controller;
-
-	self.dataSource = controller;
-	self.delegate = controller;
+	(void)self.controller;
 
 	/* 0 was the first row: hovering it first showed nothing */
 	self.lastRowShownUserInfoPopover = (-1);
@@ -120,6 +116,23 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 							   selector:@selector(scrollViewBoundsDidChangeNotification:)
 								   name:NSViewBoundsDidChangeNotification
 								 object:[self scrollViewContentView]];
+}
+
+/* The table's rows come from the channel it shows. Made when first needed:
+ the window can select a channel at launch before this list's awakeFromNib
+ (nib objects wake in no set order), and that channel would be lost */
+- (TVCMemberListController *)controller
+{
+	if (self->_controller == nil) {
+		TVCMemberListController *controller = [[TVCMemberListController alloc] initWithMemberList:self];
+
+		self->_controller = controller;
+
+		self.dataSource = controller;
+		self.delegate = controller;
+	}
+
+	return self->_controller;
 }
 
 #pragma mark -
