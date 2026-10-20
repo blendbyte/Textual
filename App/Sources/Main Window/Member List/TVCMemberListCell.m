@@ -439,12 +439,8 @@ NS_ASSUME_NONNULL_BEGIN
 		} // custom color set
 	}
 
-	/* Set "x" if the user has no modes set */
+	/* Someone without a rank gets an empty badge */
 	NSString *stringToDraw = self.cellItem.mark;
-
-	if (stringToDraw.length == 0) {
-		stringToDraw = @"×";
-	}
 
 	/* The mode string, centred by its shape (TVCListBadge) */
 	NSAttributedString *badgeText = nil;

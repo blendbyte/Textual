@@ -263,14 +263,14 @@
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.232 0.232 0.232 0.7</string>
+					<string>0.0 0.0 0.0 0.13</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.232 0.232 0.232 0.7</string>
+					<string>0.0 0.0 0.0 0.13</string>
 				</dict>
 			</dict>
 			<key>selectedBackgroundColor</key>
