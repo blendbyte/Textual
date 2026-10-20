@@ -304,7 +304,6 @@ The identifier for a timer can be found using “/timer list”";
 "9b4-10" = "Disconnected";
 "bps-la" = "%.0f minutes have elapsed since last response from this connection. Disconnecting due to timeout.";
 "gzo-54" = "%.0f minutes have elapsed since last response from this connection. It's possible the connection is timing out.";
-"3yo-gw" = "Message(%1$d): %2$@";
 "o77-ls" = "Connecting to [%1$@] on port %2$hu";
 "wsk-c1" = "Connecting to %@ (WebSocket)";
 "rpl-n1" = "This network doesn't pass on replies or reactions, so Textual doesn't offer them here.";

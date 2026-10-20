@@ -452,18 +452,23 @@ body[data-appearance="dark"] {
 }
 
 /* Standard replies from the server (FAIL, WARN, NOTE): red, amber or blue,
- with a sign in front. Not :where: a style colours its status lines grey */
+ with a sign in front; numbered error replies (400–599) look like FAIL.
+ Not :where: a style colours its status lines grey */
 div.line[data-command="FAIL" i] .message,
 div.line[data-command="WARN" i] .message,
-div.line[data-command="NOTE" i] .message {
+div.line[data-command="NOTE" i] .message,
+div.line[data-command^="4"] .message,
+div.line[data-command^="5"] .message {
 	color: var(--textual-standard-reply);
 }
 
-div.line[data-command="FAIL" i] { --textual-standard-reply: var(--textual-error); }
+div.line[data-command="FAIL" i],
+div.line[data-command^="4"],
+div.line[data-command^="5"] { --textual-standard-reply: var(--textual-error); }
 div.line[data-command="WARN" i] { --textual-standard-reply: var(--textual-warning); }
 div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note); }
 
-:where(div.line[data-command="FAIL" i], div.line[data-command="WARN" i], div.line[data-command="NOTE" i]) .message::before {
+:where(div.line[data-command="FAIL" i], div.line[data-command="WARN" i], div.line[data-command="NOTE" i], div.line[data-command^="4"], div.line[data-command^="5"]) .message::before {
 	display: inline-block;
 	width: 1.2em;
 	font-weight: bold;
@@ -471,7 +476,7 @@ div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note);
 	text-indent: 0;
 }
 
-:where(div.line[data-command="FAIL" i] .message)::before { content: "!"; }
+:where(div.line[data-command="FAIL" i] .message, div.line[data-command^="4"] .message, div.line[data-command^="5"] .message)::before { content: "!"; }
 :where(div.line[data-command="WARN" i] .message)::before { content: "!"; }
 :where(div.line[data-command="NOTE" i] .message)::before { content: "i"; font-style: italic; }
 

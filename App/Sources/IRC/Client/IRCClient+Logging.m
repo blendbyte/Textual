@@ -736,13 +736,13 @@ NS_ASSUME_NONNULL_BEGIN
 		sequenceMessage = [message sequence:sequence];
 	}
 
-	NSString *errorMessage = TXTLS(@"IRC[3yo-gw]", message.commandNumeric, sequenceMessage);
-
 	if (channel == nil) {
 		channel = [self channelForReplyWithFallback:nil];
 	}
 
-	[self printDebugInformation:errorMessage inChannel:channel asCommand:message.command escapeMessage:YES];
+	/* The server's text alone ("Message(482): …" before): the line carries
+	 the number as its command, and styles show error replies in red */
+	[self printDebugInformation:sequenceMessage inChannel:channel asCommand:message.command escapeMessage:YES];
 }
 
 - (void)printError:(NSString *)errorMessage asCommand:(NSString *)command
