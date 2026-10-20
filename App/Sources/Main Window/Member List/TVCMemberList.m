@@ -407,7 +407,9 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 
 - (void)refreshDrawingForRow:(NSInteger)rowIndex skipOcclusionCheck:(BOOL)skipOcclusionCheck
 {
-	if (rowIndex < 0) {
+	/* The list can hold someone before the table has their row (a WHO reply
+	 while joining), and AppKit throws for a row it doesn't have */
+	if (rowIndex < 0 || rowIndex >= self.numberOfRows) {
 		return;
 	}
 
