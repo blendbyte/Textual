@@ -80,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) IRCServer *previousPrimaryServer;
 @property (nonatomic, strong, nullable) NSGridRow *strictTransportSecurityRow;
 @property (nonatomic, strong, nullable) NSTextField *strictTransportSecurityField;
+@property (nonatomic, strong, nullable) NSMutableSet<NSString *> *strictTransportSecurityForgottenHosts; // forgotten on Save
 @property (nonatomic, copy, nullable) NSData *customIcon;
 @property (nonatomic, strong, nullable) NSImageView *iconWell;
 @property (nonatomic, strong, nullable) NSButton *iconRemoveButton;
@@ -415,6 +416,10 @@ NS_ASSUME_NONNULL_BEGIN
 	uint16_t port = 0;
 
 	for (NSString *host in [self _serverHosts]) {
+		if ([self.strictTransportSecurityForgottenHosts containsObject:host]) {
+			continue;
+		}
+
 		expiry = [policies expiryForHost:host];
 
 		if (expiry) {
@@ -435,13 +440,14 @@ NS_ASSUME_NONNULL_BEGIN
 	self.strictTransportSecurityField.stringValue = TXTLS(@"TDCServerPropertiesSheet[sts-l1]", port, expiryString);
 }
 
+/* Forgotten on Save, like every other change: Cancel keeps it */
 - (void)forgetStrictTransportSecurity:(nullable id)sender
 {
-	IRCStrictTransportSecurity *policies = [IRCStrictTransportSecurity sharedPolicies];
-
-	for (NSString *host in [self _serverHosts]) {
-		[policies removePolicyForHost:host];
+	if (self.strictTransportSecurityForgottenHosts == nil) {
+		self.strictTransportSecurityForgottenHosts = [NSMutableSet set];
 	}
+
+	[self.strictTransportSecurityForgottenHosts addObjectsFromArray:[self _serverHosts]];
 
 	[self updateStrictTransportSecurityRow];
 }
@@ -478,6 +484,12 @@ NS_ASSUME_NONNULL_BEGIN
 	config.serverList = self.serverList;
 
 	config.customIcon = self.customIcon;
+
+	IRCStrictTransportSecurity *policies = [IRCStrictTransportSecurity sharedPolicies];
+
+	for (NSString *host in self.strictTransportSecurityForgottenHosts) {
+		[policies removePolicyForHost:host];
+	}
 }
 
 - (nullable NSControl *)firstInvalidField
@@ -553,9 +565,10 @@ NS_ASSUME_NONNULL_BEGIN
 	if (server == nil) {
 		self.serverAddressComboBox.stringValue = @"";
 
-		self.serverPortTextField.integerValue = IRCConnectionDefaultServerPort;
+		/* A new server connects securely: nearly every network offers it */
+		self.serverPortTextField.integerValue = IRCConnectionDefaultSecureServerPort;
 
-		self.prefersSecuredConnectionCheck.state = NSControlStateValueOff;
+		self.prefersSecuredConnectionCheck.state = NSControlStateValueOn;
 
 		self.serverPasswordTextField.stringValue = @"";
 
@@ -1483,7 +1496,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Uploads
 
 /* Where files go on this network if it offers no uploads: the
- address in Preferences, none, or this server's own */
+ address in Settings, none, or this server's own */
 @interface TDCServerPropertiesUploadsPane ()
 @property (nonatomic, strong) NSPopUpButton *uploadModeButton;
 @property (nonatomic, strong) NSButton *uploadEditButton;

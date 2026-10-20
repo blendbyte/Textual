@@ -88,7 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
 	defaults[@"floodControlDelayTimerInterval"] = @(IRCConnectionConfigFloodControlDefaultDelayInterval);
 	defaults[@"floodControlMaximumMessages"] = @(IRCConnectionConfigFloodControlDefaultMessageCount);
 	defaults[@"hideAutojoinDelayedWarnings"] = @(NO);
-	defaults[@"hideNetworkUnavailabilityNotices"] = @(NO);
 	defaults[@"normalLeavingComment"] = TXTLS(@"BasicLanguage[1dd-0f]");
 	defaults[@"performDisconnectOnPongTimer"] = @(NO);
 	defaults[@"performDisconnectOnReachabilityChange"] = @(YES);
@@ -259,7 +258,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_autoSleepModeDisconnect forKey:@"autoSleepModeDisconnect"];
 	[defaultsMutable assignBoolTo:&self->_autojoinWaitsForNickServ forKey:@"autojoinWaitsForNickServ"];
 	[defaultsMutable assignBoolTo:&self->_hideAutojoinDelayedWarnings forKey:@"hideAutojoinDelayedWarnings"];
-	[defaultsMutable assignBoolTo:&self->_hideNetworkUnavailabilityNotices forKey:@"hideNetworkUnavailabilityNotices"];
 	[defaultsMutable assignBoolTo:&self->_performDisconnectOnPongTimer forKey:@"performDisconnectOnPongTimer"];
 	[defaultsMutable assignBoolTo:&self->_performDisconnectOnReachabilityChange forKey:@"performDisconnectOnReachabilityChange"];
 	[defaultsMutable assignBoolTo:&self->_performPongTimer forKey:@"performPongTimer"];
@@ -712,7 +710,6 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic setBool:self.autoSleepModeDisconnect forKey:@"autoSleepModeDisconnect"];
 	[dic setBool:self.autojoinWaitsForNickServ forKey:@"autojoinWaitsForNickServ"];
 	[dic setBool:self.hideAutojoinDelayedWarnings forKey:@"hideAutojoinDelayedWarnings"];
-	[dic setBool:self.hideNetworkUnavailabilityNotices forKey:@"hideNetworkUnavailabilityNotices"];
 	[dic setBool:self.performDisconnectOnPongTimer forKey:@"performDisconnectOnPongTimer"];
 	[dic setBool:self.performDisconnectOnReachabilityChange forKey:@"performDisconnectOnReachabilityChange"];
 	[dic setBool:self.performPongTimer forKey:@"performPongTimer"];

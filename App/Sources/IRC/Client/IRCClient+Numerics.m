@@ -186,6 +186,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.successfulConnects += 1;
 
+	/* The next connect starts with the first server again: the others are
+	 only tried when connecting fails */
+	self.lastServerSelected = NSNotFound;
+
 	/* Begin enforcing flood control */
 	[self.socket enforceFloodControl];
 

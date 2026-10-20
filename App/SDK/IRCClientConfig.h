@@ -60,7 +60,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (readonly) BOOL autojoinWaitsForNickServ;
 @property (readonly) BOOL muted; // the whole network: no notifications or sounds (highlights depend on a preference)
 @property (readonly) BOOL hideAutojoinDelayedWarnings;
-@property (readonly) BOOL hideNetworkUnavailabilityNotices;
+@property (readonly) BOOL hideNetworkUnavailabilityNotices; // no longer used
 @property (readonly) BOOL performDisconnectOnPongTimer;
 @property (readonly) BOOL performDisconnectOnReachabilityChange;
 @property (readonly) BOOL performPongTimer;
@@ -127,7 +127,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (nonatomic, assign, readwrite) BOOL autojoinWaitsForNickServ;
 @property (nonatomic, assign, readwrite) BOOL muted;
 @property (nonatomic, assign, readwrite) BOOL hideAutojoinDelayedWarnings;
-@property (nonatomic, assign, readwrite) BOOL hideNetworkUnavailabilityNotices;
+@property (nonatomic, assign, readwrite) BOOL hideNetworkUnavailabilityNotices; // no longer used
 @property (nonatomic, assign, readwrite) BOOL performDisconnectOnPongTimer;
 @property (nonatomic, assign, readwrite) BOOL performDisconnectOnReachabilityChange;
 @property (nonatomic, assign, readwrite) BOOL performPongTimer;

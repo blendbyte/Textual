@@ -193,7 +193,8 @@ NS_ASSUME_NONNULL_BEGIN
 	if ([columnId isEqualToString:@"name"]) {
 		return config.channelName;
 	} else if ([columnId isEqualToString:@"pass"]) {
-		return [self secretKeyForChannelConfig:config];
+		/* Dots of one length, like Channel Properties: the key is a secret */
+		return (([self secretKeyForChannelConfig:config].length > 0) ? @"••••••••" : @"");
 	} else if ([columnId isEqualToString:@"join"]) {
 		return @(config.autoJoin);
 	}

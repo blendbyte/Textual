@@ -491,14 +491,14 @@ Gw
                         </button>
                         <button translatesAutoresizingMaskIntoConstraints="NO" id="1532">
                             <rect key="frame" x="-2" y="21" width="229" height="18"/>
-                            <buttonCell key="cell" type="check" title="Perform reconnect on disconnect" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1535">
+                            <buttonCell key="cell" type="check" title="Reconnect if the connection drops" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1535">
                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
                         </button>
                         <button translatesAutoresizingMaskIntoConstraints="NO" id="2250">
                             <rect key="frame" x="-2" y="-1" width="290" height="18"/>
-                            <buttonCell key="cell" type="check" title="Perform reconnect when waking from sleep" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2251">
+                            <buttonCell key="cell" type="check" title="Reconnect when the Mac wakes from sleep" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2251">
                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -1218,7 +1218,7 @@ Gw
                                         </textFieldCell>
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                     </tableColumn>
-                                    <tableColumn identifier="join" editable="NO" width="36" minWidth="10" maxWidth="1000" id="1806">
+                                    <tableColumn identifier="join" width="36" minWidth="10" maxWidth="1000" id="1806">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Join">
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -2023,14 +2023,14 @@ Gw
                     <subviews>
                         <button translatesAutoresizingMaskIntoConstraints="NO" id="2531">
                             <rect key="frame" x="-2" y="43" width="342" height="18"/>
-                            <buttonCell key="cell" type="check" title="Periodically PING the server to verify the connection" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2532">
+                            <buttonCell key="cell" type="check" title="Check the connection when the server goes quiet" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2532">
                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
                         </button>
                         <button translatesAutoresizingMaskIntoConstraints="NO" id="2536">
                             <rect key="frame" x="-2" y="21" width="359" height="18"/>
-                            <buttonCell key="cell" type="check" title="Force a disconnect when no PING response is received" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2537">
+                            <buttonCell key="cell" type="check" title="Disconnect after 6 minutes without hearing from the server" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2537">
                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>

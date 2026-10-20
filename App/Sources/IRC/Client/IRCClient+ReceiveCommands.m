@@ -248,7 +248,11 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Perform ignore check */
 	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
 
-	if (ignoreInfo.ignorePublicMessageHighlights) {
+	BOOL targetIsChannel = [self stringIsChannelName:target];
+
+	BOOL ignoreHighlights = ((targetIsChannel) ? ignoreInfo.ignorePublicMessageHighlights : ignoreInfo.ignorePrivateMessageHighlights);
+
+	if (ignoreHighlights) {
 		if (lineType == TVCLogLineTypeAction) {
 			lineType = TVCLogLineTypeActionNoHighlight;
 		} else if (lineType == TVCLogLineTypePrivateMessage) {
@@ -263,7 +267,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Public message (directed at channel) */
-	if ([self stringIsChannelName:target]) {
+	if (targetIsChannel) {
 		if (ignoreInfo.ignorePublicMessages) {
 			return;
 		}
