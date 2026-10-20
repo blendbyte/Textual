@@ -41,24 +41,22 @@
 #import "IRCAddressBook.h"
 #import "IRCChannel.h"
 #import "TLOLocalization.h"
-#import "TVCContentNavigationOutlineViewPrivate.h"
 #import "TVCValidatedTextField.h"
 #import "TDCAlert.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCServerPropertiesPanePrivate.h"
+#import "TDCServerPropertiesWindowPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TDCServerPropertiesSheet ()
+@interface TDCServerPropertiesSheet () <NSWindowDelegate>
 @property (nonatomic, strong, readwrite, nullable) IRCClient *client;
 @property (nonatomic, copy, readwrite, nullable) NSString *clientId;
 @property (nonatomic, strong) IRCClientConfigMutable *config;
-@property (nonatomic, weak) IBOutlet TVCContentNavigationOutlineView *navigationOutlineView;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesAddressBookPane *addressBookPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesChannelsPane *channelsPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *connectCommandsPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *encodingPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *generalPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *identityPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *messagesPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *zncBouncerPane;
@@ -66,8 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *floodControlPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *networkSocketPane;
 @property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *proxyServerPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *redundancyPane;
 @property (nonatomic, strong) TDCServerPropertiesUploadsPane *uploadsPane; // built in code
+@property (nonatomic, strong) TDCServerPropertiesServerPane *serverPane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesWindow *windowContent;
 @property (nonatomic, copy) NSArray<TDCServerPropertiesPane *> *panes;
 @end
 
@@ -103,82 +102,84 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self addConfigurationDidChangeObserver];
 
-	[self populateNavigationTree];
+	[self setUpPanes];
 
 	for (TDCServerPropertiesPane *pane in self.panes) {
 		[pane prepareInitialState];
 	}
+
+	[self setUpWindow];
 }
 
-/* Also lists the panes, in the order of the navigation tree: Save checks
- them for an invalid field in this order (after the visible one) */
-- (void)populateNavigationTree
+/* The panes in the order of the sidebar: Save checks them for an
+ invalid field in this order (after the visible one) */
+- (void)setUpPanes
 {
-	NSMutableArray<TDCServerPropertiesPane *> *panes = [NSMutableArray array];
+	self.serverPane = [TDCServerPropertiesServerPane new];
 
 	self.uploadsPane = [TDCServerPropertiesUploadsPane new];
 
-	self.uploadsPane.propertiesSheet = self;
+#define _pane(_pane_, _identifier_) 	\
+	(_pane_).selection = TDCServerPropertiesSheetSelection ##_identifier_;
 
-#define _groupItem(_label_, _children_) 	\
-	[[TVCContentNavigationOutlineViewItem alloc] initWithLabel:TXTLS(_label_) identifier:0 view:nil firstResponder:nil children:(_children_)]
+	_pane(self.serverPane, General)
+	_pane(self.identityPane, Identity)
+	_pane(self.channelsPane, Autojoin)
+	_pane(self.addressBookPane, AddressBook)
+	_pane(self.messagesPane, DisconnectMessages)
+	_pane(self.connectCommandsPane, ConnectCommands)
+	_pane(self.networkSocketPane, NetworkSocket)
+	_pane(self.encodingPane, Encoding)
+	_pane(self.floodControlPane, FloodControl)
+	_pane(self.clientCertificatePane, ClientCertificate)
+	_pane(self.proxyServerPane, ProxyServer)
+	_pane(self.uploadsPane, Uploads)
+	_pane(self.zncBouncerPane, ZncBouncer)
 
-#define _paneItem(_label_, _identifier_, _pane_) 	\
-	[self navigationItemWithLabel:TXTLS(_label_) selection:TDCServerPropertiesSheetSelection ##_identifier_ pane:(_pane_) addTo:panes]
+#undef _pane
 
-	NSArray *generalSectionChildren = @[
-		_paneItem(@"TDCServerPropertiesSheet[8zc-6y]", AddressBook, self.addressBookPane),
-		_paneItem(@"TDCServerPropertiesSheet[5oz-07]", Autojoin, self.channelsPane),
-		_paneItem(@"TDCServerPropertiesSheet[hip-13]", ConnectCommands, self.connectCommandsPane),
-		_paneItem(@"TDCServerPropertiesSheet[8ug-ka]", Encoding, self.encodingPane),
-		_paneItem(@"TDCServerPropertiesSheet[ehx-4d]", General, self.generalPane),
-		_paneItem(@"TDCServerPropertiesSheet[8ik-qo]", Identity, self.identityPane),
-		_paneItem(@"TDCServerPropertiesSheet[j34-yr]", DisconnectMessages, self.messagesPane),
-		_paneItem(@"TDCServerPropertiesSheet[upl-p1]", Uploads, self.uploadsPane),
+	self.panes = @[
+		self.serverPane,
+		self.identityPane,
+		self.channelsPane,
+		self.addressBookPane,
+		self.messagesPane,
+		self.connectCommandsPane,
+		self.networkSocketPane,
+		self.encodingPane,
+		self.floodControlPane,
+		self.clientCertificatePane,
+		self.proxyServerPane,
+		self.uploadsPane,
+		self.zncBouncerPane
 	];
 
-	NSArray *vendorSectionChildren = @[
-		_paneItem(@"TDCServerPropertiesSheet[fsj-7f]", ZncBouncer, self.zncBouncerPane)
-	];
+	for (TDCServerPropertiesPane *pane in self.panes) {
+		pane.propertiesSheet = self;
+	}
 
-	NSArray *advancedSectionChildren = @[
-		_paneItem(@"TDCServerPropertiesSheet[ce7-kc]", ClientCertificate, self.clientCertificatePane),
-		_paneItem(@"TDCServerPropertiesSheet[fcr-w8]", FloodControl, self.floodControlPane),
-		_paneItem(@"TDCServerPropertiesSheet[ffy-xt]", NetworkSocket, self.networkSocketPane),
-		_paneItem(@"TDCServerPropertiesSheet[t52-7a]", ProxyServer, self.proxyServerPane),
-		_paneItem(@"TDCServerPropertiesSheet[36n-u9]", Redundancy, self.redundancyPane)
-	];
-
-	NSArray *navigationTreeMatrix = @[
-		_groupItem(@"TDCServerPropertiesSheet[lww-pc]", generalSectionChildren),
-		_groupItem(@"TDCServerPropertiesSheet[v27-8w]", vendorSectionChildren),
-		_groupItem(@"TDCServerPropertiesSheet[8uw-tz]", advancedSectionChildren)
-	];
-
-#undef _groupItem
-#undef _paneItem
-
-	self.panes = panes;
-
-	self.navigationOutlineView.navigationTreeMatrix = navigationTreeMatrix;
-
-	/* Auto layout will grow view beyond these values.
-	 We are just declaring the default which doesn't matter much. */
-	self.navigationOutlineView.contentViewPreferredWidth = 100;
-	self.navigationOutlineView.contentViewPreferredHeight = 100;
-
-	self.navigationOutlineView.expandParentOnDoubleClick = YES;
-
-	[self.navigationOutlineView expandItem:navigationTreeMatrix[0]];
+	((TDCServerPropertiesClientCertificatePane *)self.clientCertificatePane).serverPane = self.serverPane;
 }
 
-- (TVCContentNavigationOutlineViewItem *)navigationItemWithLabel:(NSString *)label selection:(TDCServerPropertiesSheetSelection)selection pane:(TDCServerPropertiesPane *)pane addTo:(NSMutableArray<TDCServerPropertiesPane *> *)panes
+- (void)setUpWindow
 {
-	pane.selection = selection;
+	__weak TDCServerPropertiesSheet *weakSelf = self;
 
-	[panes addObject:pane];
+	self.windowContent =
+	[[TDCServerPropertiesWindow alloc] initWithPanes:self.panes
+										 serverPane:self.serverPane
+											   save:^{
+												   [weakSelf ok:nil];
+											   }
+											 cancel:^{
+												 [weakSelf cancel:nil];
+											 }];
 
-	return [[TVCContentNavigationOutlineViewItem alloc] initWithLabel:label identifier:selection view:pane.view firstResponder:nil];
+	NSWindow *window = self.windowContent.window;
+
+	window.delegate = self;
+
+	self.sheet = window;
 }
 
 #pragma mark -
@@ -221,9 +222,7 @@ NS_ASSUME_NONNULL_BEGIN
 		selection = TDCServerPropertiesSheetSelectionAddressBook;
 	}
 
-	[self.navigationOutlineView navigateToItemWithIdentifier:selection];
-
-	[self.sheet recalculateKeyViewLoop];
+	self.windowContent.selection = selection;
 }
 
 - (void)closeChildSheets
@@ -256,7 +255,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)okOrError
 {
-	TDCServerPropertiesSheetSelection selection = self.navigationOutlineView.selectedItem.identifier;
+	TDCServerPropertiesSheetSelection selection = self.windowContent.selection;
 
 	/* We want to show the error for the visible pane first so that
 	 the user isn't jerked around. */
@@ -276,18 +275,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	for (TDCServerPropertiesPane *pane in panes) {
-		id field = pane.firstInvalidField;
-
-		if (field == nil) {
+		if (pane.hasInvalidField == NO) {
 			continue;
 		}
 
 		[self navigateToSelection:pane.selection];
 
-		/* Give navigation time to settle before trying to attach popover */
-		XRPerformBlockAsynchronouslyOnMainQueue(^{
-			[field showValidationErrorPopover];
-		});
+		[pane showInvalidField];
 
 		return NO;
 	}

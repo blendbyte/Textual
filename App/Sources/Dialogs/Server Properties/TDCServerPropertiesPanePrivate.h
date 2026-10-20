@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCAddressBookEntry, IRCChannelConfig, IRCClientConfig, IRCClientConfigMutable, IRCServer;
 @class TVCBasicTableView;
-@class TDCServerPropertiesClientCertificatePane, TDCServerPropertiesGeneralPane;
+@class TDCServerPropertiesClientCertificatePane;
 
 /* One part of the Server Properties sheet: its view and the controls in it,
  in the sheet's nib (an object whose outlets and actions go to it). The sheet
@@ -65,6 +65,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* A validated text field or combo box whose value can't be saved, or nil */
 - (nullable NSControl *)firstInvalidField;
+
+/* Something can't be saved (by default: there is a -firstInvalidField) */
+@property (readonly) BOOL hasInvalidField;
+
+/* Points it out, once the pane is shown (by default: the field's popover) */
+- (void)showInvalidField;
 
 /* Sheets this pane opened on the Server Properties sheet */
 - (void)closeChildSheets;
@@ -122,14 +128,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)editEntry:(IRCAddressBookEntry *)entry;
 @end
 
-/* The connection name, the primary server and the alternate servers */
-@interface TDCServerPropertiesGeneralPane : TDCServerPropertiesPane <TDCServerEndpointListSheetDelegate>
-@property (readonly, copy) NSArray<IRCServer *> *serverList;
-
+/* The pane with the servers (TDCServerPropertiesServerPane, in Swift) */
+@protocol TDCServerPropertiesSecuredConnection <NSObject>
 /* A client certificate is only sent on a secured connection */
 - (void)turnOnSecuredConnection;
-
-- (IBAction)editServerEndpoints:(nullable id)sender;
 @end
 
 /* Nicknames, user and real name, NickServ and the login key */
@@ -138,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TDCServerPropertiesClientCertificatePane : TDCServerPropertiesPane
-@property (nonatomic, weak) IBOutlet TDCServerPropertiesGeneralPane *generalPane;
+@property (nonatomic, weak, nullable) id <TDCServerPropertiesSecuredConnection> serverPane;
 
 /* One is set, even when it is no longer in the Keychain */
 @property (readonly) BOOL hasCertificate;

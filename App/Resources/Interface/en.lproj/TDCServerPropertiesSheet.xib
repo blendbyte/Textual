@@ -8,13 +8,8 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TDCServerPropertiesSheet">
             <connections>
-                <outlet property="cancelButton" destination="1456" id="1463"/>
-                <outlet property="navigationOutlineView" destination="Uj0-Wm-eox" id="9jc-dy-sjg"/>
-                <outlet property="okButton" destination="1455" id="1464"/>
-                <outlet property="sheet" destination="5" id="1059"/>
                 <outlet property="channelsPane" destination="db5-T1-d1T" id="af2-bd-5a6"/>
                 <outlet property="addressBookPane" destination="473-1d-e92" id="5ca-66-e42"/>
-                <outlet property="generalPane" destination="1IM-En-yWX" id="HkH-K5-tq2"/>
                 <outlet property="identityPane" destination="JRG-6L-tpz" id="DNn-0S-uff"/>
                 <outlet property="connectCommandsPane" destination="FxL-rm-skV" id="v8l-Im-hnc"/>
                 <outlet property="encodingPane" destination="RSc-c0-tPp" id="hju-wq-cBt"/>
@@ -23,7 +18,6 @@
                 <outlet property="floodControlPane" destination="oRq-rK-yjS" id="0ew-E2-7ik"/>
                 <outlet property="networkSocketPane" destination="iRj-AM-Yw5" id="qb1-67-UBN"/>
                 <outlet property="proxyServerPane" destination="JQF-4s-sit" id="RA1-af-I3c"/>
-                <outlet property="redundancyPane" destination="oEZ-NI-NiU" id="d9H-yP-Zb1"/>
                 <outlet property="clientCertificatePane" destination="bnI-1W-geR" id="plG-XM-Srp"/>
             </connections>
         </customObject>
@@ -48,20 +42,6 @@
                 <outlet property="propertiesSheet" destination="-2" id="eT7-7b-d81"/>
                 <outlet property="table" destination="1851" id="b49-9T-251"/>
                 <outlet property="view" destination="1817" id="89b-3T-675"/>
-            </connections>
-        </customObject>
-        <customObject id="1IM-En-yWX" customClass="TDCServerPropertiesGeneralPane">
-            <connections>
-                <outlet property="autoConnectCheck" destination="1531" id="1935"/>
-                <outlet property="autoDisconnectOnSleepCheck" destination="2250" id="2253"/>
-                <outlet property="autoReconnectCheck" destination="1532" id="1936"/>
-                <outlet property="connectionNameTextField" destination="1539" id="f2G-5T-09V"/>
-                <outlet property="prefersSecuredConnectionCheck" destination="1545" id="yZI-S9-E8V"/>
-                <outlet property="propertiesSheet" destination="-2" id="nfW-mG-ujf"/>
-                <outlet property="serverAddressComboBox" destination="1548" id="KiZ-Pe-JGR"/>
-                <outlet property="serverPasswordTextField" destination="1543" id="QPw-Zo-tGM"/>
-                <outlet property="serverPortTextField" destination="1541" id="gpo-Oq-ZnG"/>
-                <outlet property="view" destination="1469" id="USi-gD-XZz"/>
             </connections>
         </customObject>
         <customObject id="JRG-6L-tpz" customClass="TDCServerPropertiesIdentityPane">
@@ -95,7 +75,6 @@
                 <outlet property="clientCertificateSHA2FingerprintField" destination="2ie-9H-xb2" id="D1L-7P-ktW"/>
                 <outlet property="clientCertificateSHA512FingerprintCopyButton" destination="YAo-Ly-Sf7" id="sHk-oB-HCl"/>
                 <outlet property="clientCertificateSHA512FingerprintField" destination="Ou1-Bl-kz1" id="V4S-rO-XS4"/>
-                <outlet property="generalPane" destination="1IM-En-yWX" id="eQX-EW-0Lf"/>
                 <outlet property="propertiesSheet" destination="-2" id="L7e-3t-IWs"/>
                 <outlet property="view" destination="Ti4-Q4-cYX" id="dRg-gZ-hNm"/>
             </connections>
@@ -170,361 +149,8 @@
                 <outlet property="view" destination="1887" id="Y6r-hB-Lvd"/>
             </connections>
         </customObject>
-        <customObject id="oEZ-NI-NiU" customClass="TDCServerPropertiesPane">
-            <connections>
-                <outlet property="propertiesSheet" destination="-2" id="BMy-Gm-YQY"/>
-                <outlet property="view" destination="O3J-xl-nwg" id="cB8-PX-TAQ"/>
-            </connections>
-        </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <window title="Server Properties" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="5" userLabel="Window">
-            <windowStyleMask key="styleMask" titled="YES"/>
-            <rect key="contentRect" x="382" y="280" width="706" height="350"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1055"/>
-            <view key="contentView" id="6">
-                <rect key="frame" x="0.0" y="0.0" width="706" height="350"/>
-                <autoresizingMask key="autoresizingMask"/>
-                <subviews>
-                    <scrollView autohidesScrollers="YES" horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" verticalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="dW6-eC-jo9">
-                        <rect key="frame" x="10" y="10" width="156" height="330"/>
-                        <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="c7A-uX-FoM">
-                            <rect key="frame" x="1" y="1" width="154" height="328"/>
-                            <autoresizingMask key="autoresizingMask"/>
-                            <subviews>
-                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="19" rowSizeStyle="automatic" usesAutomaticRowHeights="YES" viewBased="YES" floatsGroupRows="NO" indentationPerLevel="15" outlineTableColumn="9ke-X4-49Z" id="Uj0-Wm-eox" customClass="TVCContentNavigationOutlineView">
-                                    <rect key="frame" x="0.0" y="0.0" width="154" height="328"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <size key="intercellSpacing" width="2" height="3"/>
-                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
-                                    <tableColumns>
-                                        <tableColumn identifier="navEntry" width="142" minWidth="40" maxWidth="1000" id="9ke-X4-49Z">
-                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
-                                            </tableHeaderCell>
-                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="rPg-fR-uab">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                            <prototypeCellViews>
-                                                <tableCellView translatesAutoresizingMaskIntoConstraints="NO" id="yDz-eI-nqa">
-                                                    <rect key="frame" x="0.0" y="0.0" width="152" height="19"/>
-                                                    <subviews>
-                                                        <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="L6D-B7-wWc">
-                                                            <rect key="frame" x="0.0" y="2" width="152" height="15"/>
-                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="VCb-YR-fs2">
-                                                                <font key="font" metaFont="cellTitle"/>
-                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                            </textFieldCell>
-                                                            <connections>
-                                                                <binding destination="yDz-eI-nqa" name="value" keyPath="objectValue" id="f8r-Ef-YMe"/>
-                                                            </connections>
-                                                        </textField>
-                                                    </subviews>
-                                                    <constraints>
-                                                        <constraint firstItem="L6D-B7-wWc" firstAttribute="top" secondItem="yDz-eI-nqa" secondAttribute="top" constant="2" id="8Q0-X5-Kvp"/>
-                                                        <constraint firstItem="L6D-B7-wWc" firstAttribute="leading" secondItem="yDz-eI-nqa" secondAttribute="leading" constant="2" id="Dtq-z1-Q63"/>
-                                                        <constraint firstAttribute="trailing" secondItem="L6D-B7-wWc" secondAttribute="trailing" constant="2" id="ctT-N2-b5W"/>
-                                                        <constraint firstAttribute="bottom" secondItem="L6D-B7-wWc" secondAttribute="bottom" constant="2" id="hSt-Gl-U3R"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <outlet property="textField" destination="L6D-B7-wWc" id="2pk-nB-55V"/>
-                                                    </connections>
-                                                </tableCellView>
-                                            </prototypeCellViews>
-                                        </tableColumn>
-                                    </tableColumns>
-                                    <connections>
-                                        <outlet property="contentView" destination="PXC-XT-7RY" id="7Fy-9O-W2f"/>
-                                    </connections>
-                                </outlineView>
-                            </subviews>
-                            <nil key="backgroundColor"/>
-                        </clipView>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="156" id="qnv-yT-fuS"/>
-                        </constraints>
-                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="mUA-9Q-xgn">
-                            <rect key="frame" x="1" y="119" width="223" height="15"/>
-                            <autoresizingMask key="autoresizingMask"/>
-                        </scroller>
-                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="6Es-gk-o64">
-                            <rect key="frame" x="141" y="2" width="16" height="336"/>
-                            <autoresizingMask key="autoresizingMask"/>
-                        </scroller>
-                        <accessibility description="Navigation"/>
-                    </scrollView>
-                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1455">
-                        <rect key="frame" x="639" y="3" width="64" height="32"/>
-                        <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1458">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent" base64-UTF8="YES">
-DQ
-</string>
-                        </buttonCell>
-                        <accessibility description="Save"/>
-                        <connections>
-                            <action selector="ok:" target="-2" id="1466"/>
-                        </connections>
-                    </button>
-                    <box autoresizesSubviews="NO" borderType="line" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="Uo7-GS-DCO">
-                        <rect key="frame" x="173" y="36" width="526" height="306"/>
-                        <view key="contentView" id="xFq-35-m2l">
-                            <rect key="frame" x="4" y="5" width="518" height="298"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        </view>
-                    </box>
-                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="PXC-XT-7RY">
-                        <rect key="frame" x="176" y="40" width="520" height="300"/>
-                        <constraints>
-                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="300" id="5dl-BV-3w8"/>
-                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="520" id="haD-wg-EbG"/>
-                        </constraints>
-                    </customView>
-                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1456">
-                        <rect key="frame" x="565" y="3" width="76" height="32"/>
-                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1457">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent" base64-UTF8="YES">
-Gw
-</string>
-                        </buttonCell>
-                        <accessibility description="Cancel"/>
-                        <connections>
-                            <action selector="cancel:" target="-2" id="1465"/>
-                        </connections>
-                    </button>
-                </subviews>
-                <constraints>
-                    <constraint firstItem="dW6-eC-jo9" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="10" id="0YX-U9-vYj"/>
-                    <constraint firstItem="1455" firstAttribute="top" secondItem="PXC-XT-7RY" secondAttribute="bottom" constant="10" id="5f6-YC-jcU"/>
-                    <constraint firstItem="Uo7-GS-DCO" firstAttribute="leading" secondItem="PXC-XT-7RY" secondAttribute="leading" id="Kh2-PR-M57"/>
-                    <constraint firstAttribute="trailing" secondItem="PXC-XT-7RY" secondAttribute="trailing" constant="10" id="LNf-TZ-DCF"/>
-                    <constraint firstItem="1456" firstAttribute="firstBaseline" secondItem="1455" secondAttribute="firstBaseline" id="LQB-fo-Ith"/>
-                    <constraint firstItem="PXC-XT-7RY" firstAttribute="top" secondItem="6" secondAttribute="top" constant="10" id="Tbw-kd-vse"/>
-                    <constraint firstItem="PXC-XT-7RY" firstAttribute="leading" secondItem="dW6-eC-jo9" secondAttribute="trailing" constant="10" id="UAS-8i-0rJ"/>
-                    <constraint firstItem="Uo7-GS-DCO" firstAttribute="top" secondItem="PXC-XT-7RY" secondAttribute="top" id="Y6w-Sn-uyb"/>
-                    <constraint firstAttribute="trailing" secondItem="1455" secondAttribute="trailing" constant="10" id="ZIb-5J-NMR"/>
-                    <constraint firstItem="1455" firstAttribute="leading" secondItem="1456" secondAttribute="trailing" constant="12" symbolic="YES" id="ZQh-W7-qYp"/>
-                    <constraint firstAttribute="bottom" secondItem="1455" secondAttribute="bottom" constant="10" id="iZe-YE-Xj3"/>
-                    <constraint firstAttribute="bottom" secondItem="dW6-eC-jo9" secondAttribute="bottom" constant="10" id="oBZ-5D-A6Z"/>
-                    <constraint firstItem="Uo7-GS-DCO" firstAttribute="bottom" secondItem="PXC-XT-7RY" secondAttribute="bottom" id="rFk-j7-7mI"/>
-                    <constraint firstItem="1456" firstAttribute="leading" relation="lessThanOrEqual" secondItem="PXC-XT-7RY" secondAttribute="trailing" id="vZp-3d-RYZ"/>
-                    <constraint firstItem="dW6-eC-jo9" firstAttribute="top" secondItem="6" secondAttribute="top" constant="10" id="wwa-re-HeH"/>
-                    <constraint firstItem="Uo7-GS-DCO" firstAttribute="trailing" secondItem="PXC-XT-7RY" secondAttribute="trailing" id="zva-xk-h9a"/>
-                </constraints>
-            </view>
-            <connections>
-                <outlet property="delegate" destination="-2" id="2302"/>
-                <outlet property="initialFirstResponder" destination="1456" id="1467"/>
-            </connections>
-            <point key="canvasLocation" x="449" y="232"/>
-        </window>
-        <customView translatesAutoresizingMaskIntoConstraints="NO" id="1469" userLabel="General View">
-            <rect key="frame" x="0.0" y="0.0" width="520" height="368"/>
-            <subviews>
-                <gridView xPlacement="trailing" yPlacement="fill" rowAlignment="firstBaseline" rowSpacing="14" columnSpacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eEd-eF-L1L">
-                    <rect key="frame" x="80" y="149" width="360" height="130"/>
-                    <rows>
-                        <gridRow id="uAb-uY-dJ9"/>
-                        <gridRow id="hUK-uO-DWz"/>
-                        <gridRow id="akK-h8-k22"/>
-                        <gridRow id="FhT-p4-Yz2"/>
-                    </rows>
-                    <columns>
-                        <gridColumn xPlacement="fill" id="4RY-Yh-h0w"/>
-                        <gridColumn xPlacement="fill" id="kwW-4Q-r7S"/>
-                    </columns>
-                    <gridCells>
-                        <gridCell row="uAb-uY-dJ9" column="4RY-Yh-h0w" id="vk7-v2-TLn">
-                            <textField key="contentView" focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1538">
-                                <rect key="frame" x="-2" y="112" width="117" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Connection Name:" id="1559">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                        </gridCell>
-                        <gridCell row="uAb-uY-dJ9" column="kwW-4Q-r7S" id="xlG-iw-qu0">
-                            <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="1539" customClass="TVCValidatedTextField">
-                                <rect key="frame" x="121" y="108" width="239" height="22"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="9j5-dY-0rN"/>
-                                </constraints>
-                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Example IRC Network" id="1558" customClass="TVCValidatedTextFieldCell">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <connections>
-                                    <accessibilityConnection property="title" destination="1538" id="TQ6-9b-XVp"/>
-                                </connections>
-                            </textField>
-                        </gridCell>
-                        <gridCell row="hUK-uO-DWz" column="4RY-Yh-h0w" id="NPD-Vl-B1D">
-                            <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1540">
-                                <rect key="frame" x="-2" y="76" width="117" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Server Address:" id="1557">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                        </gridCell>
-                        <gridCell row="hUK-uO-DWz" column="kwW-4Q-r7S" id="ZvZ-NZ-lR2">
-                            <comboBox key="contentView" focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="1548" customClass="TVCValidatedComboBox">
-                                <rect key="frame" x="120" y="70" width="243" height="25"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="6ls-al-2Lu"/>
-                                </constraints>
-                                <comboBoxCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="irc.example.com" usesSingleLineMode="YES" numberOfVisibleItems="5" id="1549" customClass="TVCValidatedComboBoxCell">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </comboBoxCell>
-                                <connections>
-                                    <accessibilityConnection property="title" destination="1540" id="Vek-86-p4Z"/>
-                                </connections>
-                            </comboBox>
-                        </gridCell>
-                        <gridCell row="akK-h8-k22" column="4RY-Yh-h0w" id="Eny-p2-RoM">
-                            <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1542">
-                                <rect key="frame" x="-2" y="40" width="117" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Port:" id="1555">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                        </gridCell>
-                        <gridCell row="akK-h8-k22" column="kwW-4Q-r7S" id="VDu-lo-rfW">
-                            <stackView key="contentView" distribution="fill" orientation="horizontal" alignment="firstBaseline" horizontalStackHuggingPriority="250" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A6k-ee-dum">
-                                <rect key="frame" x="121" y="36" width="239" height="22"/>
-                                <subviews>
-                                    <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="1541" customClass="TVCValidatedTextField">
-                                        <rect key="frame" x="0.0" y="0.0" width="60" height="22"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="60" id="PuT-pr-arX"/>
-                                            <constraint firstAttribute="height" constant="22" id="RFQ-60-n62"/>
-                                        </constraints>
-                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" title="6667" placeholderString="6667" id="1556" customClass="TVCValidatedTextFieldCell">
-                                            <font key="font" metaFont="system"/>
-                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <allowedInputSourceLocales>
-                                                <string>NSAllRomanInputSourcesLocaleIdentifier</string>
-                                            </allowedInputSourceLocales>
-                                        </textFieldCell>
-                                        <connections>
-                                            <accessibilityConnection property="title" destination="1542" id="15n-da-FwL"/>
-                                            <outlet property="delegate" destination="1IM-En-yWX" id="1560"/>
-                                        </connections>
-                                    </textField>
-                                    <button translatesAutoresizingMaskIntoConstraints="NO" id="1545">
-                                        <rect key="frame" x="66" y="3" width="173" height="18"/>
-                                        <string key="toolTip">Attempt to secure the connection by performing a Transport Layer Security (TLS) negotiation. TLS is the modern equivalent of SSL (Secure Sockets Layer)</string>
-                                        <buttonCell key="cell" type="check" title="Connect Securely" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="1552">
-                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="system"/>
-                                        </buttonCell>
-                                        <connections>
-                                            <action selector="useSSLCheckChanged:" target="1IM-En-yWX" id="IhZ-Nw-b7g"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                                <visibilityPriorities>
-                                    <integer value="1000"/>
-                                    <integer value="1000"/>
-                                </visibilityPriorities>
-                                <customSpacing>
-                                    <real value="3.4028234663852886e+38"/>
-                                    <real value="3.4028234663852886e+38"/>
-                                </customSpacing>
-                            </stackView>
-                        </gridCell>
-                        <gridCell row="FhT-p4-Yz2" column="4RY-Yh-h0w" id="h1R-6C-hYu">
-                            <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1544">
-                                <rect key="frame" x="-2" y="4" width="117" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Server Password:" id="1553">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                        </gridCell>
-                        <gridCell row="FhT-p4-Yz2" column="kwW-4Q-r7S" id="3cc-iU-xNw">
-                            <textField key="contentView" toolTip="Password to be sent using the PASS command. This is NOT your password for NickServ." focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="1543" customClass="NSSecureTextField">
-                                <rect key="frame" x="121" y="0.0" width="239" height="22"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="KsP-sC-2yd"/>
-                                </constraints>
-                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Optional" drawsBackground="YES" id="1554">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <connections>
-                                    <accessibilityConnection property="title" destination="1544" id="RNc-08-gOk"/>
-                                    <outlet property="delegate" destination="1IM-En-yWX" id="6EP-Qu-3Of"/>
-                                </connections>
-                            </textField>
-                        </gridCell>
-                    </gridCells>
-                </gridView>
-                <stackView distribution="equalSpacing" orientation="vertical" alignment="leading" spacing="6" verticalStackHuggingPriority="750" verticalHuggingPriority="750" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Z7k-zB-mgb">
-                    <rect key="frame" x="116" y="69" width="288" height="60"/>
-                    <subviews>
-                        <button translatesAutoresizingMaskIntoConstraints="NO" id="1531">
-                            <rect key="frame" x="-2" y="43" width="201" height="18"/>
-                            <buttonCell key="cell" type="check" title="Connect when Textual opens" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1536">
-                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                        </button>
-                        <button translatesAutoresizingMaskIntoConstraints="NO" id="1532">
-                            <rect key="frame" x="-2" y="21" width="229" height="18"/>
-                            <buttonCell key="cell" type="check" title="Reconnect if the connection drops" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1535">
-                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                        </button>
-                        <button translatesAutoresizingMaskIntoConstraints="NO" id="2250">
-                            <rect key="frame" x="-2" y="-1" width="290" height="18"/>
-                            <buttonCell key="cell" type="check" title="Reconnect when the Mac wakes from sleep" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2251">
-                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                        </button>
-                    </subviews>
-                    <visibilityPriorities>
-                        <integer value="1000"/>
-                        <integer value="1000"/>
-                        <integer value="1000"/>
-                    </visibilityPriorities>
-                    <customSpacing>
-                        <real value="3.4028234663852886e+38"/>
-                        <real value="3.4028234663852886e+38"/>
-                        <real value="3.4028234663852886e+38"/>
-                    </customSpacing>
-                </stackView>
-            </subviews>
-            <constraints>
-                <constraint firstItem="eEd-eF-L1L" firstAttribute="centerX" secondItem="1469" secondAttribute="centerX" id="0fF-50-zeK"/>
-                <constraint firstItem="Z7k-zB-mgb" firstAttribute="centerX" secondItem="1469" secondAttribute="centerX" id="5mO-e2-X2p"/>
-                <constraint firstItem="eEd-eF-L1L" firstAttribute="top" secondItem="1469" secondAttribute="top" constant="35" id="8dl-FF-yZx"/>
-                <constraint firstItem="Z7k-zB-mgb" firstAttribute="top" secondItem="eEd-eF-L1L" secondAttribute="bottom" constant="20" id="MGf-Kp-m0S"/>
-                <constraint firstItem="eEd-eF-L1L" firstAttribute="leading" secondItem="1469" secondAttribute="leading" constant="80" id="xyP-at-d8i"/>
-            </constraints>
-            <point key="canvasLocation" x="535" y="664"/>
-        </customView>
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="1563" userLabel="Identity View">
             <rect key="frame" x="0.0" y="0.0" width="520" height="397"/>
             <subviews>
@@ -2426,38 +2052,6 @@ Gw
             <point key="canvasLocation" x="328.5" y="557.5"/>
         </menu>
         <userDefaultsController id="iuc-Sg-eeB" customClass="TPCPreferencesUserDefaultsController"/>
-        <customView translatesAutoresizingMaskIntoConstraints="NO" id="O3J-xl-nwg" userLabel="Redundancy">
-            <rect key="frame" x="0.0" y="0.0" width="520" height="300"/>
-            <subviews>
-                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="I5e-l8-5t3">
-                    <rect key="frame" x="33" y="217" width="454" height="48"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="SnQ-4b-NG2">
-                        <font key="font" metaFont="system"/>
-                        <string key="title">Textual is capable of automatically connecting to one or more alternate servers if the primary server fails to connect. Click the button presented below to modify the alternate servers for this connection.</string>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="InI-Fw-HoN">
-                    <rect key="frame" x="168" y="160" width="185" height="32"/>
-                    <buttonCell key="cell" type="push" title="Modify Alternate Servers" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8N1-4l-slN">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="editServerEndpoints:" target="1IM-En-yWX" id="p5S-03-DTi"/>
-                    </connections>
-                </button>
-            </subviews>
-            <constraints>
-                <constraint firstItem="I5e-l8-5t3" firstAttribute="leading" secondItem="O3J-xl-nwg" secondAttribute="leading" constant="35" id="Cqb-qW-NO5"/>
-                <constraint firstItem="I5e-l8-5t3" firstAttribute="top" secondItem="O3J-xl-nwg" secondAttribute="top" constant="35" id="FVa-gl-UpL"/>
-                <constraint firstItem="InI-Fw-HoN" firstAttribute="top" secondItem="I5e-l8-5t3" secondAttribute="bottom" constant="30" id="Okx-lj-vGZ"/>
-                <constraint firstAttribute="trailing" secondItem="I5e-l8-5t3" secondAttribute="trailing" constant="35" id="fNj-YT-k5G"/>
-                <constraint firstItem="InI-Fw-HoN" firstAttribute="centerX" secondItem="O3J-xl-nwg" secondAttribute="centerX" id="vRU-oE-jRr"/>
-            </constraints>
-            <point key="canvasLocation" x="582" y="6373"/>
-        </customView>
         <arrayController objectClassName="IRCAddressBookEntry" selectsInsertedObjects="NO" avoidsEmptySelection="NO" automaticallyRearrangesObjects="YES" id="aez-lt-zBV">
             <classReference key="objectClass" className="IRCAddressBookEntry"/>
         </arrayController>

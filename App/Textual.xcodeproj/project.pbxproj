@@ -724,6 +724,9 @@
 		4C03ABFF9E2EFDF00767BBCD /* IRCAliasTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C870CA064CDF0587168CD01 /* IRCAliasTests.m */; };
 		4C25AC984F529FACD80D31C3 /* HLSHistoricLogManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */; };
 		4CF374C58608F0C1AA8BD782 /* TLOMessageArchiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0661102FA15FB32C457BAF /* TLOMessageArchiveTests.m */; };
+		C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04FC68852CE7DF4B66C2767 /* TDCServerPropertiesWindow.swift */; };
+		B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */; };
+		36BC675C66E04EC0F413B3F0 /* TDCServerPropertiesPaneTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1640,6 +1643,10 @@
 		4C870CA064CDF0587168CD01 /* IRCAliasTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAliasTests.m; sourceTree = "<group>"; };
 		4C7CB29786A3E7B68BF1EA7B /* HLSHistoricLogManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HLSHistoricLogManagerTests.m; sourceTree = "<group>"; };
 		4C0661102FA15FB32C457BAF /* TLOMessageArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOMessageArchiveTests.m; sourceTree = "<group>"; };
+		E04FC68852CE7DF4B66C2767 /* TDCServerPropertiesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesWindow.swift; sourceTree = "<group>"; };
+		07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesServerPane.swift; sourceTree = "<group>"; };
+		42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerPropertiesWindowPrivate.h; sourceTree = "<group>"; };
+		42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesPaneTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1897,6 +1904,9 @@
 				D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */,
 				17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */,
 				7EFA353DAB553FAC1CFA9628 /* TDCServerPropertiesListPanes.m */,
+				42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */,
+				07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */,
+				E04FC68852CE7DF4B66C2767 /* TDCServerPropertiesWindow.swift */,
 				09BC6FE07983C6F7547ACB56 /* TDCServerPropertiesSettingsPanes.m */,
 				4C3151E920EB673E00448776 /* TDCServerPropertiesSheetPrivate.h */,
 				155FF385EF7736B43ADAC8CC /* TDCServerPropertiesPanePrivate.h */,
@@ -2988,6 +2998,7 @@
 				4C391A3D3C6A5394D2BB3975 /* IRCClientChannelLookupTests.m */,
 				4C389D23442B563ACD83FC9C /* IRCClientChatHistoryTests.m */,
 				4C100BE2C43E2BB68E04DF29 /* IRCClientConfigTests.m */,
+				42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
 				4C2E0C095E3CDA192F237123 /* IRCClientReadMarkerTests.m */,
 				4CD5D545AF3EC22B5F5DCBFA /* IRCClientStandardReplyTests.m */,
@@ -3787,6 +3798,8 @@
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
 				8F5B29F2B32A14EEBE321D7C /* TDCServerPropertiesListPanes.m in Sources */,
+				B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */,
+				C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */,
 				6D69D7405D02E9711DC3CDF5 /* TDCServerPropertiesSettingsPanes.m in Sources */,
 				9333C24E1B8B729BFC45E642 /* TDCServerPropertiesConnectionPanes.m in Sources */,
 				4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */,
@@ -4004,6 +4017,7 @@
 				4CD0E449CF7E02E65667B9C4 /* IRCClientAccountTrackingTests.m in Sources */,
 				4C6F6E1F814F60FDA7BC0766 /* IRCClientChannelLookupTests.m in Sources */,
 				4C7EF3CDF301C7E967AFD3D0 /* IRCClientConfigTests.m in Sources */,
+				36BC675C66E04EC0F413B3F0 /* TDCServerPropertiesPaneTests.m in Sources */,
 				4C68DED5D8394473C8E220C2 /* IRCSendingMessageTests.m in Sources */,
 				4C0713269A9999A36B1FF9EA /* IRCChannelUserTests.m in Sources */,
 				4C6971E9F5057FA3827828BB /* IRCAddressBookTests.m in Sources */,
