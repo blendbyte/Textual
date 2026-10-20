@@ -787,6 +787,20 @@ struct SettingValuePicker<Value: Hashable & Comparable>: View
 	}
 }
 
+/// A note under a section, on the left: macOS 14 puts one that fits on a line on the right
+struct SettingFooter: View
+{
+	let text: String
+
+	var body: some View
+	{
+		Text(text)
+			.foregroundStyle(.secondary)
+			.fixedSize(horizontal: false, vertical: true)
+			.frame(maxWidth: .infinity, alignment: .leading)
+	}
+}
+
 struct SettingToggle: View
 {
 	let title: String

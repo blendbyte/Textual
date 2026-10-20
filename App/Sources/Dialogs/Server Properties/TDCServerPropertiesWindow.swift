@@ -320,8 +320,10 @@ struct ServerPropertiesPageHeader: View
 	var body: some View
 	{
 		VStack(spacing: 6) {
+			/* Decoration: VoiceOver reads the title under it */
 			ServerPropertiesPageIcon(page: page, size: 48)
 				.padding(.bottom, 4)
+				.accessibilityHidden(true)
 
 			Text(page.title)
 				.font(.title.weight(.semibold))

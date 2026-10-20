@@ -230,8 +230,7 @@ struct ServersSettings: View
 			} header: {
 				Text(SettingsText("set-srv-h1"))
 			} footer: {
-				Text(SettingsText("set-srv-ih"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("set-srv-ih"))
 			}
 
 			Section(SettingsText("set-srv-h2")) {
@@ -340,8 +339,7 @@ struct CommandsSettings: View
 			} header: {
 				Text(SettingsText("set-cmd-h1"))
 			} footer: {
-				Text(SettingsText("set-cmd-ah"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("set-cmd-ah"))
 			}
 
 			Section(SettingsText("set-cmd-h2")) {
@@ -386,8 +384,7 @@ struct CommandsSettings: View
 			} header: {
 				Text(SettingsText("set-cmd-h4"))
 			} footer: {
-				Text(SettingsText("set-cmd-oh"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("set-cmd-oh"))
 			}
 		}
 	}
@@ -496,8 +493,7 @@ struct FilesSettings: View
 			} header: {
 				Text(SettingsText("set-fil-h3"))
 			} footer: {
-				Text(SettingsText("set-fil-h3h"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("set-fil-h3h"))
 			}
 		}
 	}

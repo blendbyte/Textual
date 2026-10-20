@@ -316,8 +316,7 @@ struct ChannelsPage: View
 				}
 				.buttonStyle(.borderless)
 			} footer: {
-				Text(ServerPropertiesText("spp-chn-note"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: ServerPropertiesText("spp-chn-note"))
 			}
 		}
 		.formStyle(.grouped)
@@ -501,8 +500,7 @@ struct PeoplePage: View
 			} header: {
 				Text(ServerPropertiesText("spp-ppl-h1"))
 			} footer: {
-				Text(ServerPropertiesText("spp-ppl-n1"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: ServerPropertiesText("spp-ppl-n1"))
 			}
 
 			Section {
@@ -519,8 +517,7 @@ struct PeoplePage: View
 			} header: {
 				Text(ServerPropertiesText("spp-ppl-h2"))
 			} footer: {
-				Text(ServerPropertiesText("spp-ppl-n2"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: ServerPropertiesText("spp-ppl-n2"))
 			}
 		}
 		.formStyle(.grouped)

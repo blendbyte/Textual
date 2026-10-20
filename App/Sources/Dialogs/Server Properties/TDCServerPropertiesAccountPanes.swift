@@ -610,6 +610,7 @@ struct AccountPage: View
 				if (pane.waitsForLogin && pane.hasNothingToLogInWith) {
 					Label(ServerPropertiesText("spp-acc-nothing"), systemImage: "exclamationmark.triangle.fill")
 						.foregroundStyle(.orange)
+						.frame(maxWidth: .infinity, alignment: .leading)
 				}
 			}
 

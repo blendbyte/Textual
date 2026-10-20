@@ -279,8 +279,7 @@ struct ConnectionPage: View
 			} header: {
 				Text(ServerPropertiesText("spp-con-h4"))
 			} footer: {
-				Text(ServerPropertiesText("spp-con-fln"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: ServerPropertiesText("spp-con-fln"))
 			}
 		}
 		.formStyle(.grouped)
@@ -581,8 +580,7 @@ struct ProxyPage: View
 						.fixedSize(horizontal: false, vertical: true)
 				}
 			} footer: {
-				Text(ServerPropertiesText("spp-prx-note"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: ServerPropertiesText("spp-prx-note"))
 			}
 		}
 		.formStyle(.grouped)
@@ -740,8 +738,7 @@ struct ZNCPage: View
 
 				SettingToggle(title: ServerPropertiesText("spp-znc-missed"), help: ServerPropertiesText("spp-znc-missedh"), isOn: $pane.playsBackOnlyMissed)
 			} footer: {
-				Text(ServerPropertiesText("spp-znc-note"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: ServerPropertiesText("spp-znc-note"))
 			}
 		}
 		.formStyle(.grouped)

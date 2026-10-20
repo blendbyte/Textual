@@ -85,8 +85,7 @@ struct TypingSettings: View
 			} header: {
 				Text(SettingsText("set-typ-h1"))
 			} footer: {
-				Text(SettingsText("set-typ-sh"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("set-typ-sh"))
 			}
 
 			Section {

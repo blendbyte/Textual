@@ -177,8 +177,7 @@ struct NotificationsSettings: View
 					}
 				} footer: {
 					if (index == 0) {
-						Text(SettingsText("set-not-h1h"))
-							.foregroundStyle(.secondary)
+						SettingFooter(text: SettingsText("set-not-h1h"))
 					}
 				}
 			}
@@ -216,8 +215,7 @@ struct NotificationsSettings: View
 			} header: {
 				Text(SettingsText("set-not-h3"))
 			} footer: {
-				Text(SettingsText("set-not-h3h"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("set-not-h3h"))
 			}
 		}
 	}

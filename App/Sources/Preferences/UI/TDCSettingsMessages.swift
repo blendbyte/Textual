@@ -418,8 +418,7 @@ struct MessagesEventsPage: View
 				}
 				.padding(.bottom, 6)
 			} footer: {
-				Text(SettingsText("evt-n1"))
-					.foregroundStyle(.secondary)
+				SettingFooter(text: SettingsText("evt-n1"))
 			}
 
 			Section {

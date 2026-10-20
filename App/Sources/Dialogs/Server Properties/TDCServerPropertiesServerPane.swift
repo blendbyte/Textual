@@ -1127,9 +1127,7 @@ struct FallbackServersPage: View
 				}
 				.buttonStyle(.borderless)
 			} footer: {
-				Text(ServerPropertiesText("spp-fb-note"))
-					.foregroundStyle(.secondary)
-					.fixedSize(horizontal: false, vertical: true)
+				SettingFooter(text: ServerPropertiesText("spp-fb-note"))
 			}
 		}
 		.formStyle(.grouped)
