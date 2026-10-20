@@ -317,6 +317,9 @@ _MessageBuffer.resizeBuffer = function(numberToRemove, fromTop) /* PRIVATE */
 			lineNumbers.push(elementId);
 
 			numberRemoved += 1;
+		} else if (fromTop && numberRemoved >= numberToRemove && currentElement.classList && currentElement.classList.contains("date_indicator")) {
+			/* The date line of the first line that stays */
+			break;
 		}
 
 		currentElement.remove();
@@ -562,7 +565,14 @@ _MessageBuffer.loadMessagesDuringScrollWithPayloadPostflight = function(requestP
 		if (before) {
 			line.prepareForMutation();
 
-			line.insertAdjacentHTML('beforebegin', htmlString);
+			/* Above the first line's date line too, which belongs to it */
+			var anchor = line;
+
+			while (anchor.previousElementSibling && anchor.previousElementSibling.classList.contains("date_indicator")) {
+				anchor = anchor.previousElementSibling;
+			}
+
+			anchor.insertAdjacentHTML('beforebegin', htmlString);
 		} else {
 			line.insertAdjacentHTML('afterend', htmlString);
 		}

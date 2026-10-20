@@ -2487,12 +2487,28 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			lineType == TVCLogLineTypeActionNoHighlight);
 }
 
+/* A date line where the day differs from the line drawn above it. The first
+ line of a batch has none above: it gets one, so a chat shortened to its
+ newest lines still starts with its day (the chat hides a repeated day).
+ The flag saved when printing was wrong for the first line after a launch,
+ before the saved lines were loaded. */
+- (BOOL)logLine:(TVCLogLine *)logLine isFirstForDayAfterLine:(nullable TVCLogLine *)previousLine
+{
+	NSParameterAssert(logLine != nil);
+
+	if (previousLine == nil) {
+		return YES;
+	}
+
+	return ([logLine.receivedAt isInSameDayAsDate:previousLine.receivedAt] == NO);
+}
+
 /* Shown under the sender's name of the line above it */
 - (BOOL)logLine:(TVCLogLine *)logLine isGroupedWithPreviousLine:(nullable TVCLogLine *)previousLine highlighted:(BOOL)highlighted
 {
 	NSParameterAssert(logLine != nil);
 
-	if (previousLine == nil || highlighted || logLine.isFirstForDay) {
+	if (previousLine == nil || highlighted || [self logLine:logLine isFirstForDayAfterLine:previousLine]) {
 		return NO;
 	}
 
@@ -3181,7 +3197,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	// ---- //
 
-	if (logLine.isFirstForDay && [TPCPreferences showDateChanges]) {
+	if ([self logLine:logLine isFirstForDayAfterLine:previousLine] && [TPCPreferences showDateChanges]) {
 		templateAttributes[@"showDateIndicator"] = @(YES);
 
 		templateAttributes[@"dateIndicatorMessage"] = [self dateIndicatorWithDate:receivedAt];
