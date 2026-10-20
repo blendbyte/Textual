@@ -57,42 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCMainWindowTextViewContentView
 
-- (void)drawRect:(NSRect)dirtyRect
-{
-	if ([self needsToDrawRect:dirtyRect] == NO) {
-		return;
-	}
-
-	TVCMainWindowTextViewAppearance *appearance = self.textView.userInterfaceObjects;
-
-	if (appearance == nil) {
-		return;
-	}
-
-	/* Draw background color */
-	NSColor *backgroundColor = appearance.backgroundViewBackgroundColor;
-
-	[backgroundColor set];
-
-	NSRectFill(dirtyRect);
-
-	/* Draw divider */
-	NSRect contentViewFrame = self.frame;
-
-	contentViewFrame.origin.x = 0.0;
-	contentViewFrame.origin.y = (NSMaxY(contentViewFrame) - 1.0);
-
-	contentViewFrame.size.height = 1.0;
-
-	NSBezierPath *dividerPath = [NSBezierPath bezierPathWithRect:contentViewFrame];
-
-	NSColor *dividerColor = appearance.backgroundViewDividerColor;
-
-	[dividerColor set];
-
-	[dividerPath fill];
-}
-
+/* Draws nothing: the strip behind the field is the sidebars' material
+ (TVCMainWindow+InputPlacement), as is the title bar's band */
 - (BOOL)allowsVibrancy
 {
 	return NO;
@@ -100,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isOpaque
 {
-	return YES;
+	return NO;
 }
 
 @end

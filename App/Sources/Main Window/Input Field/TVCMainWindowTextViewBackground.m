@@ -57,174 +57,34 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCMainWindowTextViewBackground
 
+/* A rounded field with a faint fill and a hairline edge, like the system's
+ text fields: quieter than the bright block (dark) and the shadows (light)
+ it was */
 - (void)drawControllerForWithAppearance:(TVCMainWindowTextViewAppearance *)appearance
 {
 	NSParameterAssert(appearance != nil);
 
-	if (appearance.isDarkAppearance == NO) {
-		[self drawLightControllerForWithAppearance:appearance];
-	} else {
-		[self drawDarkControllerForWithAppearance:appearance];
-	}
-}
-
-- (void)drawDarkControllerForWithAppearance:(TVCMainWindowTextViewAppearance *)appearance
-{
-	NSParameterAssert(appearance != nil);
-
 	BOOL isWindowActive = self.mainWindow.activeForDrawing;
 
-	NSRect cellBounds = self.frame;
+	NSColor *fillColor = ((isWindowActive) ? appearance.textViewBackgroundColorActiveWindow : appearance.textViewBackgroundColorInactiveWindow);
 
-	NSRect controlFrame = NSMakeRect(0.0, 1.0,   cellBounds.size.width,
-												(cellBounds.size.height - 2.0));
+	NSColor *edgeColor = ((isWindowActive) ? appearance.textViewOutsidePrimaryShadowColorActiveWindow : appearance.textViewOutsidePrimaryShadowColorInactiveWindow);
 
-	/* Inner background color */
-	NSColor *backgroundColor = nil;
+	CGFloat lineWidth = (1.0 / MAX(self.window.backingScaleFactor, 1.0));
 
-	if (isWindowActive) {
-		backgroundColor = appearance.textViewBackgroundColorActiveWindow;
-	} else {
-		backgroundColor = appearance.textViewBackgroundColorInactiveWindow;
-	} // isWindowActive
+	NSRect fieldRect = NSInsetRect(self.bounds, (lineWidth / 2.0), (lineWidth / 2.0));
 
-	/* Shadow colors */
-	NSShadow *outsideShadow = [NSShadow new];
+	NSBezierPath *fieldPath = [NSBezierPath bezierPathWithRoundedRect:fieldRect xRadius:8.0 yRadius:8.0];
 
-	outsideShadow.shadowBlurRadius = 0.0;
-	outsideShadow.shadowOffset = NSMakeSize(0.0, (-1.0));
+	[fillColor setFill];
 
-	if (isWindowActive) {
-		outsideShadow.shadowColor = appearance.textViewOutsidePrimaryShadowColorActiveWindow;
-	} else {
-		outsideShadow.shadowColor = appearance.textViewOutsidePrimaryShadowColorInactiveWindow;
-	} // isWindowActive
+	[fieldPath fill];
 
-	/* Rectangle drawing */
-	NSBezierPath *rectanglePath = [NSBezierPath bezierPathWithRoundedRect:controlFrame xRadius:3.0 yRadius:3.0];
+	fieldPath.lineWidth = lineWidth;
 
-	[NSGraphicsContext saveGraphicsState];
+	[edgeColor setStroke];
 
-	[outsideShadow set];
-
-	[backgroundColor setFill];
-
-	[rectanglePath fill];
-
-	[NSGraphicsContext restoreGraphicsState];
-}
-
-- (void)drawLightControllerForWithAppearance:(TVCMainWindowTextViewAppearance *)appearance
-{
-	NSParameterAssert(appearance != nil);
-
-	/* To be honest, I don't remember what any of this does. */
-
-	BOOL isWindowActive = self.mainWindow.activeForDrawing;
-
-	NSRect cellBounds = self.frame;
-
-	NSRect controlFrame = NSMakeRect(0.0, 1.0,   cellBounds.size.width,
-												(cellBounds.size.height - 2.0));
-
-	CGContextRef context = RZGraphicsCurrentContext().CGContext;
-
-	/* Inner gradient color */
-	NSGradient *insideGradient = nil;
-
-	if (isWindowActive) {
-		insideGradient = appearance.textViewInsideGradientActiveWindow;
-	} else {
-		insideGradient = appearance.textViewInsideGradientInactiveWindow;
-	} // isWindowActive
-
-	/* Inside shadow */
-	NSShadow *insideShadow = [NSShadow new];
-
-	insideShadow.shadowBlurRadius = 0.0;
-	insideShadow.shadowOffset = NSMakeSize(0.0, (-1.0));
-
-	NSColor *insideShadowColor = nil;
-
-	if (isWindowActive) {
-		insideShadowColor = appearance.textViewInsideShadowColorActiveWindow;
-	} else {
-		insideShadowColor = appearance.textViewInsideShadowColorInactiveWindow;
-	}
-
-	insideShadow.shadowColor = insideShadowColor;
-
-	/* Outside shadow */
-	NSShadow *outsideShadow = [NSShadow new];
-
-	if (appearance.isHighResolutionAppearance == NO) {
-		outsideShadow.shadowBlurRadius = 0.0;
-		outsideShadow.shadowOffset = NSMakeSize(0.0, (-1.0));
-	} else {
-		outsideShadow.shadowBlurRadius = 0.0;
-		outsideShadow.shadowOffset = NSMakeSize(0.0, (-0.5));
-	} // high resolution
-
-	if (isWindowActive) {
-		outsideShadow.shadowColor = appearance.textViewOutsidePrimaryShadowColorActiveWindow;
-	} else {
-		outsideShadow.shadowColor = appearance.textViewOutsidePrimaryShadowColorInactiveWindow;
-	} // isWindowActive
-
-	/* Rectangle drawing */
-	NSBezierPath *rectanglePath = [NSBezierPath bezierPathWithRoundedRect:controlFrame xRadius:3.0 yRadius:3.0];
-
-	[outsideShadow set];
-
-	CGContextBeginTransparencyLayer(context, NULL);
-
-	[insideGradient drawInBezierPath:rectanglePath angle:(-90)];
-
-	CGContextEndTransparencyLayer(context);
-
-	/* Prepare drawing for inside shadow */
-	CGContextSetShadowWithColor(context, CGSizeZero, 0, NULL);
-
-	CGContextSetAlpha(context, insideShadowColor.alphaComponent);
-
-	CGContextBeginTransparencyLayer(context, NULL);
-
-	{
-		/* Inside shadow drawing */
-		[insideShadow set];
-
-		CGContextSetBlendMode(context, kCGBlendModeSourceOut);
-
-		CGContextBeginTransparencyLayer(context, NULL);
-
-		/* Fill shadow */
-		[insideShadowColor setFill];
-
-		[rectanglePath fill];
-
-		/* Complete drawing */
-		CGContextEndTransparencyLayer(context);
-	}
-
-	CGContextEndTransparencyLayer(context);
-
-	/* On retina, we fake a second shadow under the bottommost one */
-	if (appearance.isHighResolutionAppearance) {
-		NSColor *controlColor = nil;
-
-		if (isWindowActive) {
-			controlColor = appearance.textViewOutsideSecondaryShadowColorActiveWindow;
-		} else {
-			controlColor = appearance.textViewOutsideSecondaryShadowColorInactiveWindow;
-		} // isWindowActive
-
-		[controlColor setStroke];
-
-		NSPoint linePoint1 = NSMakePoint(2.0, 0.0);
-		NSPoint linePoint2 = NSMakePoint((cellBounds.size.width - 2.0), 0.0);
-
-		[NSBezierPath strokeLineFromPoint:linePoint1 toPoint:linePoint2];
-	} // high resolution
+	[fieldPath stroke];
 }
 
 - (void)drawRect:(NSRect)dirtyRect

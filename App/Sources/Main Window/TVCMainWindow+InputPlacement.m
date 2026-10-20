@@ -99,6 +99,26 @@ NS_ASSUME_NONNULL_BEGIN
 		[view.trailingAnchor constraintEqualToAnchor:stack.trailingAnchor].active = YES;
 	}
 
+	/* One strip of the sidebars' material behind the field and the bars
+	 above it, like the title bar's band, so the chat sits in one frame */
+	NSVisualEffectView *backgroundView = [NSVisualEffectView new];
+
+	backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+	backgroundView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+
+	[self.class applySidebarTranslucencyToView:backgroundView];
+
+	[stack addSubview:backgroundView positioned:NSWindowBelow relativeTo:nil];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[backgroundView.topAnchor constraintEqualToAnchor:stack.topAnchor],
+		[backgroundView.bottomAnchor constraintEqualToAnchor:stack.bottomAnchor],
+		[backgroundView.leadingAnchor constraintEqualToAnchor:stack.leadingAnchor],
+		[backgroundView.trailingAnchor constraintEqualToAnchor:stack.trailingAnchor]
+	]];
+
+	self.inputFieldBackgroundView = backgroundView;
+
 	self.inputFieldStack = stack;
 
 	[self updateInputFieldPlacement];

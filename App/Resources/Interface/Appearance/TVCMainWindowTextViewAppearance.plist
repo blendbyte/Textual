@@ -8,16 +8,16 @@
 		<dict>
 			<key>inset</key>
 			<dict>
-				<key>width</key>
-				<integer>1</integer>
 				<key>height</key>
-				<integer>2</integer>
+				<integer>4</integer>
+				<key>width</key>
+				<integer>8</integer>
 			</dict>
 		</dict>
 		<key>Background View</key>
 		<dict>
 			<key>contentBorderPadding</key>
-			<integer>23</integer>
+			<integer>27</integer>
 		</dict>
 	</dict>
 	<key>CommonModern</key>
@@ -100,14 +100,14 @@
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.386 0.386 0.386</string>
+					<string>1.0 1.0 1.0 0.07</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.386 0.386 0.386</string>
+					<string>1.0 1.0 1.0 0.07</string>
 				</dict>
 			</dict>
 			<key>outsidePrimaryShadowColor</key>
@@ -117,14 +117,14 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.10</string>
+					<string>1.0 0.13</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.10</string>
+					<string>1.0 0.13</string>
 				</dict>
 			</dict>
 			<key>outsidePrimaryShadowColor@2x</key>
@@ -134,14 +134,14 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.15</string>
+					<string>1.0 0.13</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.15</string>
+					<string>1.0 0.13</string>
 				</dict>
 			</dict>
 		</dict>
@@ -190,14 +190,14 @@
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.0 0.0 0.0</string>
+					<string>1.0 1.0 1.0</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>2</integer>
 					<key>value</key>
-					<string>0.0 0.0 0.0</string>
+					<string>1.0 1.0 1.0</string>
 				</dict>
 			</dict>
 			<key>insideShadowColor</key>
@@ -257,14 +257,14 @@
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.15</string>
+					<string>0.0 0.12</string>
 				</dict>
 				<key>inactiveWindow</key>
 				<dict>
 					<key>type</key>
 					<integer>1</integer>
 					<key>value</key>
-					<string>0.0 0.15</string>
+					<string>0.0 0.12</string>
 				</dict>
 			</dict>
 			<key>outsideSecondaryShadowColor</key>
@@ -299,6 +299,23 @@
 					<integer>1</integer>
 					<key>value</key>
 					<string>0.0 0.06</string>
+				</dict>
+			</dict>
+			<key>outsidePrimaryShadowColor@2x</key>
+			<dict>
+				<key>activeWindow</key>
+				<dict>
+					<key>type</key>
+					<integer>1</integer>
+					<key>value</key>
+					<string>0.0 0.12</string>
+				</dict>
+				<key>inactiveWindow</key>
+				<dict>
+					<key>type</key>
+					<integer>1</integer>
+					<key>value</key>
+					<string>0.0 0.12</string>
 				</dict>
 			</dict>
 		</dict>

@@ -686,6 +686,10 @@ NS_ASSUME_NONNULL_BEGIN
 		frame.origin.x = NSMinX(visibleFrame);
 	}
 
+	/* The window's light or dark, which can differ from the Mac's (a panel
+	 of its own otherwise follows the Mac) */
+	self.panel.appearance = window.effectiveAppearance;
+
 	[self.panel setFrame:frame display:YES];
 
 	if (self.panel.visible == NO) {

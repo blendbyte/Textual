@@ -97,6 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) TVCMainWindowSearchPanel *searchPanel; // in the member list's column
 @property (nonatomic, weak) IBOutlet NSView *chatColumn; // the split view's middle column, holding the channel view
 @property (nonatomic, strong, nullable) NSView *inputFieldStack; // the input field with the upload and reply bars above it
+@property (nonatomic, strong, nullable) NSVisualEffectView *inputFieldBackgroundView; // behind the stack: the sidebars' material
 @property (nonatomic, copy, nullable) NSArray<NSLayoutConstraint *> *inputFieldPlacementConstraints; // under the whole window or the chat
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;

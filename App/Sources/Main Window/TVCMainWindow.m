@@ -499,6 +499,8 @@ static BOOL _popOutsOpened = NO;
 		[self.class applySidebarTranslucencyToView:(NSVisualEffectView *)self.titlebarBackgroundView];
 	}
 
+	[self.class applySidebarTranslucencyToView:self.inputFieldBackgroundView];
+
 	[self notifyApplicationAppearanceChanged];
 }
 
