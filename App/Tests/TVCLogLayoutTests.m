@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 							"var appPrivate = { finishedLayingOutView: function() { layoutsFinished += 1; } };"
 							"var _EventGroups = { configure: function() {}, linesAdded: function() {}, linesRemoved: function() {} };"
 							"var _MessageActions = { configure: function() {}, linesAdded: function() {} };"
+							"var _ChatElements = { configure: function() {} };"
 							"var document = { body: { dataset: {} }, addEventListener: function() {} };"
 							"var window = {"
 							"  requestAnimationFrame: function(f) { frames.push(f); return frames.length; },"
