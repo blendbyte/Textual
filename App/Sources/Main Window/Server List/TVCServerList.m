@@ -266,6 +266,33 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 	}
 }
 
+/* The fold arrow and the rows' contents a little to the right, so the arrow
+ is inside the selection bar (inset 6 points, TVCListRowView) */
+#define _contentOffset		4.0
+
+- (NSRect)frameOfOutlineCellAtRow:(NSInteger)row
+{
+	NSRect frame = [super frameOfOutlineCellAtRow:row];
+
+	if (NSIsEmptyRect(frame) == NO) {
+		frame.origin.x += _contentOffset;
+	}
+
+	return frame;
+}
+
+- (NSRect)frameOfCellAtColumn:(NSInteger)column row:(NSInteger)row
+{
+	NSRect frame = [super frameOfCellAtColumn:column row:row];
+
+	frame.origin.x += _contentOffset;
+	frame.size.width -= _contentOffset;
+
+	return frame;
+}
+
+#undef _contentOffset
+
 - (BOOL)allowsVibrancy
 {
 	return YES;
