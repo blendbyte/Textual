@@ -41,7 +41,6 @@
 #import "IRCAddressBook.h"
 #import "IRCChannel.h"
 #import "TLOLocalization.h"
-#import "TVCValidatedTextField.h"
 #import "TDCAlert.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCServerPropertiesPanePrivate.h"
@@ -53,19 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite, nullable) IRCClient *client;
 @property (nonatomic, copy, readwrite, nullable) NSString *clientId;
 @property (nonatomic, strong) IRCClientConfigMutable *config;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *connectCommandsPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *encodingPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *zncBouncerPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *floodControlPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *networkSocketPane;
-@property (nonatomic, strong) IBOutlet TDCServerPropertiesPane *proxyServerPane;
-@property (nonatomic, strong) TDCServerPropertiesUploadsPane *uploadsPane; // built in code
-@property (nonatomic, strong) TDCServerPropertiesServerPane *serverPane; // in Swift
-@property (nonatomic, strong) TDCServerPropertiesYouPane *youPane; // in Swift
-@property (nonatomic, strong) TDCServerPropertiesAccountPane *accountPane; // in Swift
-@property (nonatomic, strong) TDCServerPropertiesChannelsPane *channelsPane; // in Swift
-@property (nonatomic, strong) TDCServerPropertiesPeoplePane *peoplePane; // in Swift
-@property (nonatomic, strong) TDCServerPropertiesMessagesPane *messagesPane; // in Swift
+@property (nonatomic, strong) TDCServerPropertiesServerPane *serverPane;
+@property (nonatomic, strong) TDCServerPropertiesPeoplePane *peoplePane;
 @property (nonatomic, strong) TDCServerPropertiesWindow *windowContent;
 @property (nonatomic, copy) NSArray<TDCServerPropertiesPane *> *panes;
 @end
@@ -98,15 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareInitialState
 {
-	[self loadNib];
-
 	[self addConfigurationDidChangeObserver];
 
 	[self setUpPanes];
-
-	for (TDCServerPropertiesPane *pane in self.panes) {
-		[pane prepareInitialState];
-	}
 
 	[self setUpWindow];
 }
@@ -115,60 +97,55 @@ NS_ASSUME_NONNULL_BEGIN
  invalid field in this order (after the visible one) */
 - (void)setUpPanes
 {
-	self.serverPane = [TDCServerPropertiesServerPane new];
+	TDCServerPropertiesServerPane *serverPane = [TDCServerPropertiesServerPane new];
 
-	self.youPane = [TDCServerPropertiesYouPane new];
+	TDCServerPropertiesAccountPane *accountPane = [TDCServerPropertiesAccountPane new];
 
-	self.accountPane = [TDCServerPropertiesAccountPane new];
+	accountPane.serverPane = serverPane;
 
-	self.accountPane.serverPane = self.serverPane;
+	TDCServerPropertiesSecurityPane *securityPane = [TDCServerPropertiesSecurityPane new];
 
-	self.channelsPane = [TDCServerPropertiesChannelsPane new];
+	securityPane.serverPane = serverPane;
 
-	self.peoplePane = [TDCServerPropertiesPeoplePane new];
+	TDCServerPropertiesFallbackServersPane *fallbackServersPane = [TDCServerPropertiesFallbackServersPane new];
 
-	self.messagesPane = [TDCServerPropertiesMessagesPane new];
+	fallbackServersPane.serverPane = serverPane;
 
-	self.uploadsPane = [TDCServerPropertiesUploadsPane new];
+	TDCServerPropertiesPeoplePane *peoplePane = [TDCServerPropertiesPeoplePane new];
+
+	self.serverPane = serverPane;
+
+	self.peoplePane = peoplePane;
 
 #define _pane(_pane_, _identifier_) 	\
-	(_pane_).selection = TDCServerPropertiesSheetSelection ##_identifier_;
-
-	_pane(self.serverPane, General)
-	_pane(self.youPane, You)
-	_pane(self.accountPane, Account)
-	_pane(self.channelsPane, Autojoin)
-	_pane(self.peoplePane, AddressBook)
-	_pane(self.messagesPane, DisconnectMessages)
-	_pane(self.connectCommandsPane, ConnectCommands)
-	_pane(self.networkSocketPane, NetworkSocket)
-	_pane(self.encodingPane, Encoding)
-	_pane(self.floodControlPane, FloodControl)
-	_pane(self.proxyServerPane, ProxyServer)
-	_pane(self.uploadsPane, Uploads)
-	_pane(self.zncBouncerPane, ZncBouncer)
-
-#undef _pane
+	[self paneOf:(_pane_) selection:TDCServerPropertiesSheetSelection ##_identifier_]
 
 	self.panes = @[
-		self.serverPane,
-		self.youPane,
-		self.accountPane,
-		self.channelsPane,
-		self.peoplePane,
-		self.messagesPane,
-		self.connectCommandsPane,
-		self.networkSocketPane,
-		self.encodingPane,
-		self.floodControlPane,
-		self.proxyServerPane,
-		self.uploadsPane,
-		self.zncBouncerPane
+		_pane(serverPane, General),
+		_pane([TDCServerPropertiesYouPane new], You),
+		_pane(accountPane, Account),
+		_pane([TDCServerPropertiesChannelsPane new], Autojoin),
+		_pane(peoplePane, AddressBook),
+		_pane([TDCServerPropertiesMessagesPane new], DisconnectMessages),
+		_pane([TDCServerPropertiesWhenConnectedPane new], WhenConnected),
+		_pane([TDCServerPropertiesConnectionPane new], Connection),
+		_pane(securityPane, Security),
+		_pane([TDCServerPropertiesProxyPane new], ProxyServer),
+		_pane(fallbackServersPane, FallbackServers),
+		_pane([TDCServerPropertiesUploadsPane new], Uploads),
+		_pane([TDCServerPropertiesZNCPane new], ZncBouncer)
 	];
 
-	for (TDCServerPropertiesPane *pane in self.panes) {
-		pane.propertiesSheet = self;
-	}
+#undef _pane
+}
+
+- (TDCServerPropertiesPane *)paneOf:(TDCServerPropertiesPane *)pane selection:(TDCServerPropertiesSheetSelection)selection
+{
+	pane.selection = selection;
+
+	pane.propertiesSheet = self;
+
+	return pane;
 }
 
 - (void)setUpWindow
@@ -369,10 +346,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)windowWillClose:(NSNotification *)note
 {
-	for (TDCServerPropertiesPane *pane in self.panes) {
-		[pane tearDown];
-	}
-
 	[self.sheet makeFirstResponder:nil];
 
 	id delegate = self.delegate;

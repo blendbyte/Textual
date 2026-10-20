@@ -41,8 +41,7 @@ import SwiftUI
 /* The Server Properties sheet's window, in the look of Settings: a sidebar
  of pages in two groups, the page, and Cancel and Save under them. The
  sheet (TDCServerPropertiesSheet) keeps its panes: they load, check and
- save the configuration. A pane without a SwiftUI page of its own yet is
- shown with its view from the nib, under the page's header. */
+ save the configuration. */
 
 /// A string of the Server Properties sheet (TDCServerPropertiesSheet.strings)
 func ServerPropertiesText(_ key: String, _ arguments: CVarArg...) -> String
@@ -69,8 +68,7 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 	case messages = 8
 	case whenConnected = 3
 	case connection = 14
-	case encoding = 4
-	case floodControl = 13
+	case security = 18
 	case proxy = 15
 	case fallbackServers = 16
 	case uploads = 17
@@ -83,7 +81,7 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 
 	static let basics: [ServerPropertiesPage] = [.server, .you, .account, .channels, .people, .messages]
 
-	static let advanced: [ServerPropertiesPage] = [.whenConnected, .connection, .encoding, .floodControl, .proxy, .fallbackServers, .uploads, .znc]
+	static let advanced: [ServerPropertiesPage] = [.whenConnected, .connection, .security, .proxy, .fallbackServers, .uploads, .znc]
 
 	private var key: String
 	{
@@ -96,8 +94,7 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 			case .messages: return "messages"
 			case .whenConnected: return "commands"
 			case .connection: return "connection"
-			case .encoding: return "encoding"
-			case .floodControl: return "flood"
+			case .security: return "security"
 			case .proxy: return "proxy"
 			case .fallbackServers: return "fallback"
 			case .uploads: return "uploads"
@@ -126,8 +123,7 @@ enum ServerPropertiesPage: UInt, CaseIterable, Identifiable
 			case .messages: return "text.bubble.fill"
 			case .whenConnected: return "play.fill"
 			case .connection: return "network"
-			case .encoding: return "textformat"
-			case .floodControl: return "gauge.with.dots.needle.50percent"
+			case .security: return "lock.fill"
 			case .proxy: return "arrow.triangle.branch"
 			case .fallbackServers: return "list.number"
 			case .uploads: return "arrow.up.doc.fill"
@@ -353,6 +349,10 @@ struct ServerPropertiesPageView: View
 				ServerPage(pane: model.serverPane)
 			case .fallbackServers:
 				FallbackServersPage(pane: model.serverPane)
+			case .security:
+				if let pane = model.panes[page.rawValue] as? ServerPropertiesSecurityPane {
+					SecurityPage(pane: pane, serverPane: model.serverPane)
+				}
 			default:
 				if let pane = model.panes[page.rawValue] as? ServerPropertiesYouPane {
 					YouPage(pane: pane)
@@ -364,65 +364,17 @@ struct ServerPropertiesPageView: View
 					PeoplePage(pane: pane)
 				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesMessagesPane {
 					MessagesPage(pane: pane)
-				} else if let pane = model.panes[page.rawValue] {
-					NibPaneGroup(page: page, pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesWhenConnectedPane {
+					WhenConnectedPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesConnectionPane {
+					ConnectionPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesProxyPane {
+					ProxyPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesUploadsPane {
+					UploadsPage(pane: pane)
+				} else if let pane = model.panes[page.rawValue] as? ServerPropertiesZNCPane {
+					ZNCPage(pane: pane)
 				}
 		}
-	}
-}
-
-// MARK: - Panes from the nib
-
-/// A pane's view from the nib under the page's header, until it has a page of its own
-struct NibPaneGroup: View
-{
-	let page: ServerPropertiesPage
-	let pane: TDCServerPropertiesPane
-
-	var body: some View
-	{
-		let size = pane.view.fittingSize
-
-		ScrollView {
-			VStack(spacing: 12) {
-				ServerPropertiesPageHeader(page: page)
-
-				NibPaneView(pane: pane)
-					.frame(width: size.width, height: size.height)
-			}
-			.padding(.vertical, 10)
-			.frame(maxWidth: .infinity)
-		}
-	}
-}
-
-struct NibPaneView: NSViewRepresentable
-{
-	let pane: TDCServerPropertiesPane
-
-	func makeNSView(context: Context) -> NSView
-	{
-		let container = NSView()
-
-		let view = pane.view
-
-		view.removeFromSuperview()
-
-		view.translatesAutoresizingMaskIntoConstraints = false
-
-		container.addSubview(view)
-
-		NSLayoutConstraint.activate([
-			view.topAnchor.constraint(equalTo: container.topAnchor),
-			view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-			view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-			view.trailingAnchor.constraint(equalTo: container.trailingAnchor)
-		])
-
-		return container
-	}
-
-	func updateNSView(_ nsView: NSView, context: Context)
-	{
 	}
 }

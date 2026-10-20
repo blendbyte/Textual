@@ -40,12 +40,12 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /* The Server and Fallback Servers pages: the connection's name and icon,
- the servers (the first is the one on the Server page) and when to
- connect. Typing a known network's name or one of its servers fills in
+ the servers (the first on the Server page, the others on Fallback
+ Servers) and when to connect. Typing a known network's name or one of its servers fills in
  its port and security (a server is saved as typed, the same either way); typing something else gives back what was there
  before. A ws:// or wss:// address holds the port and security itself. */
 @objc(TDCServerPropertiesServerPane)
-final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObject, TDCServerPropertiesSecuredConnection, TDCServerEndpointListSheetDelegate
+final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObject, TDCServerPropertiesSecuredConnection
 {
 	@Published var name = ""
 	@Published private(set) var address = "" // as typed: a network's name, a server or a WebSocket address
@@ -56,18 +56,20 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 	@Published var autoReconnect = false
 	@Published var reconnectAfterWake = false
 	@Published private(set) var customIcon: Data?
-	@Published private(set) var serverList: [IRCServer] = []
+	@Published private(set) var primaryServer: IRCServer?
+	@Published var fallbackServers: [ServerPropertiesFallbackServer] = []
 	@Published private var forgottenHosts: [String] = [] // forgotten on Save
 
 	/* Errors show once Save found one; before, only for what was typed */
 	@Published var showsAllErrors = false
 	@Published private var editedFields: Set<String> = []
 
+	let fallbackErrors = ServerPropertiesFieldErrors()
+
 	let networkList = IRCNetworkList()
 
 	private var lastAddressValue: String?
 	private var previousPrimaryServer: IRCServer?
-	private var endpointSheet: TDCServerEndpointListSheet?
 
 	// MARK: - Loading and saving
 
@@ -79,7 +81,9 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 		autoReconnect = config.autoReconnect
 		reconnectAfterWake = config.autoSleepModeDisconnect
 
-		serverList = config.serverList
+		primaryServer = config.serverList.first
+
+		fallbackServers = config.serverList.dropFirst().map { ServerPropertiesFallbackServer(server: $0) }
 
 		loadPrimaryServer()
 
@@ -113,11 +117,6 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 	override func showInvalidField()
 	{
 		showsAllErrors = true
-	}
-
-	override func closeChildSheets()
-	{
-		endpointSheet?.close()
 	}
 
 	// MARK: - Fields
@@ -290,7 +289,7 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 			return
 		}
 
-		if let server = serverList.first {
+		if let server = primaryServer {
 			previousPrimaryServer = server
 
 			return
@@ -320,10 +319,24 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 
 	// MARK: - Servers
 
+	/* The servers to save: empty fallback servers are left out */
+	var serverList: [IRCServer]
+	{
+		var servers: [IRCServer] = []
+
+		if let primaryServer = primaryServer {
+			servers.append(primaryServer)
+		}
+
+		servers.append(contentsOf: fallbackServers.compactMap(\.server))
+
+		return servers
+	}
+
 	/* The fields show the first server; a new server connects securely */
 	private func loadPrimaryServer()
 	{
-		guard let server = serverList.first else {
+		guard let server = primaryServer else {
 			address = ""
 			port = String(IRCConnectionDefaultSecureServerPort)
 			secure = true
@@ -347,14 +360,10 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 		password = (server.serverPassword ?? "")
 	}
 
-	/* The first server follows the fields (not while the list is edited in its sheet) */
+	/* The first server follows the fields */
 	private func rebuildPrimaryServer()
 	{
-		if (endpointSheet != nil) {
-			return
-		}
-
-		let server = ((serverList.first?.mutableCopy() as? IRCServerMutable) ?? IRCServerMutable())
+		let server = ((primaryServer?.mutableCopy() as? IRCServerMutable) ?? IRCServerMutable())
 
 		let value = addressValue
 
@@ -381,42 +390,99 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 
 		server.serverPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
 
-		var servers = serverList
-
-		if (servers.isEmpty) {
-			servers.append(server.copy() as! IRCServer)
-		} else {
-			servers[0] = (server.copy() as! IRCServer)
-		}
-
-		serverList = servers
+		primaryServer = (server.copy() as! IRCServer)
 	}
 
-	func editServers()
+	// MARK: - Fallback servers
+
+	/* A new one connects securely, as a new server does */
+	func addFallbackServer() -> UUID
 	{
-		guard let window = propertiesSheet?.sheet else {
+		var server = ServerPropertiesFallbackServer()
+
+		server.port = String(IRCConnectionDefaultSecureServerPort)
+		server.secure = true
+
+		fallbackServers.append(server)
+
+		return server.id
+	}
+
+	func removeFallbackServer(_ id: UUID)
+	{
+		fallbackServers.removeAll { $0.id == id }
+	}
+
+	func moveFallbackServer(withId serverId: String, to id: UUID)
+	{
+		guard let fromIndex = fallbackServers.firstIndex(where: { $0.id.uuidString == serverId }),
+			  let toIndex = fallbackServers.firstIndex(where: { $0.id == id }),
+			  fromIndex != toIndex else {
 			return
 		}
 
-		let sheet = TDCServerEndpointListSheet(window: window)
-
-		sheet.delegate = self
-
-		sheet.start(withServerList: serverList)
-
-		endpointSheet = sheet
+		fallbackServers.move(fromOffsets: IndexSet(integer: fromIndex), toOffset: ((toIndex > fromIndex) ? (toIndex + 1) : toIndex))
 	}
 
-	func serverEndpointListSheet(_ ender: TDCServerEndpointListSheet, onOk serverList: [IRCServer])
+	func moveFallbackServer(_ id: UUID, by offset: Int)
 	{
-		self.serverList = serverList
+		guard let index = fallbackServers.firstIndex(where: { $0.id == id }) else {
+			return
+		}
+
+		let newIndex = (index + offset)
+
+		guard newIndex >= 0, newIndex < fallbackServers.count else {
+			return
+		}
+
+		fallbackServers.swapAt(index, newIndex)
+	}
+
+	/* It goes to the Server page, and the server there takes its place */
+	func makeMainServer(_ id: UUID)
+	{
+		guard let index = fallbackServers.firstIndex(where: { $0.id == id }),
+			  let server = fallbackServers[index].server else {
+			NSSound.beep()
+
+			return
+		}
+
+		if let primaryServer = primaryServer {
+			fallbackServers[index] = ServerPropertiesFallbackServer(server: primaryServer)
+		} else {
+			fallbackServers.remove(at: index)
+		}
+
+		primaryServer = server
+
+		previousPrimaryServer = nil
 
 		loadPrimaryServer()
+
+		lastAddressValue = addressValue
 	}
 
-	func serverEndpointListSheetWillClose(_ sender: TDCServerEndpointListSheet)
+	/* A row being removed is still drawn once: it keeps its last values */
+	func fallbackBinding<Value>(_ server: ServerPropertiesFallbackServer, _ keyPath: WritableKeyPath<ServerPropertiesFallbackServer, Value>, field: String) -> Binding<Value>
 	{
-		endpointSheet = nil
+		Binding {
+			(self.fallbackServers.first(where: { $0.id == server.id }) ?? server)[keyPath: keyPath]
+		} set: { (value) in
+			guard let index = self.fallbackServers.firstIndex(where: { $0.id == server.id }) else {
+				return
+			}
+
+			self.fallbackServers[index][keyPath: keyPath] = value
+
+			self.fallbackErrors.edit("\(server.id)-\(field)")
+		}
+	}
+
+	var hasInvalidFallbackServer: Bool
+	{
+		fallbackServers.contains { $0.addressError != nil || $0.portError != nil }
 	}
 
 	// MARK: - Errors
@@ -604,6 +670,169 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 	}
 }
 
+/// A fallback server as edited on its page: the address as typed (a
+/// WebSocket address too), and the server it came from, for what isn't
+/// edited here
+struct ServerPropertiesFallbackServer: Identifiable
+{
+	let id = UUID()
+
+	var address = ""
+	var port = ""
+	var secure = false
+	var password = ""
+
+	private var original: IRCServer?
+
+	init()
+	{
+	}
+
+	init(server: IRCServer)
+	{
+		address = (server.webSocketAddress ?? server.serverAddress)
+		port = String(server.serverPort)
+		secure = server.prefersSecuredConnection
+		password = (server.serverPassword ?? "")
+
+		original = server
+	}
+
+	/* A secure connection is usually on 6697, a plain one on 6667 */
+	var secureSwitchingPort: Bool
+	{
+		get {
+			secure
+		}
+		set {
+			secure = newValue
+
+			let portValue = port.trimmingCharacters(in: .whitespacesAndNewlines)
+
+			if (newValue && portValue == "6667") {
+				port = "6697"
+			} else if (newValue == false && portValue == "6697") {
+				port = "6667"
+			}
+		}
+	}
+
+	private var addressValue: String
+	{
+		String(address.split(whereSeparator: { $0.isWhitespace }).first ?? "")
+	}
+
+	var webSocketAddress: (host: String, port: UInt16, secure: Bool, path: String)?
+	{
+		var host: NSString?
+		var path: NSString?
+		var port: UInt16 = 0
+		var secure: ObjCBool = false
+
+		guard IRCServer.parseWebSocketAddress(addressValue, host: &host, port: &port, secure: &secure, path: &path),
+			  let host = host, let path = path else {
+			return nil
+		}
+
+		return (host as String, port, secure.boolValue, path as String)
+	}
+
+	/* Without an address it isn't saved */
+	var addressError: String?
+	{
+		let value = addressValue
+
+		if (value.isEmpty || webSocketAddress != nil || (value as NSString).isValidInternetAddress) {
+			return nil
+		}
+
+		return LocalizedKey("CommonErrors[yyx-l3]")
+	}
+
+	var portError: String?
+	{
+		if (addressValue.isEmpty || webSocketAddress != nil) {
+			return nil
+		}
+
+		if ((port.trimmingCharacters(in: .whitespacesAndNewlines) as NSString).isValidInternetPort == false) {
+			return LocalizedKey("CommonErrors[l0c-nb]")
+		}
+
+		return nil
+	}
+
+	var server: IRCServer?
+	{
+		let value = addressValue
+
+		if (value.isEmpty) {
+			return nil
+		}
+
+		let server = ((original?.mutableCopy() as? IRCServerMutable) ?? IRCServerMutable())
+
+		if let webSocket = webSocketAddress {
+			server.serverAddress = webSocket.host
+			server.serverPort = webSocket.port
+
+			server.prefersSecuredConnection = webSocket.secure
+
+			server.webSocketPath = webSocket.path
+		} else {
+			server.serverAddress = value.lowercased()
+			server.serverPort = UInt16(clamping: Int(port.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0)
+
+			server.prefersSecuredConnection = secure
+
+			server.webSocketPath = nil
+		}
+
+		server.serverPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+
+		return (server.copy() as! IRCServer)
+	}
+
+	/* How the list shows it */
+	var summary: String
+	{
+		let value = addressValue
+
+		if (webSocketAddress != nil) {
+			return value
+		}
+
+		if (value.isEmpty) {
+			return ServerPropertiesText("spp-fb-new")
+		}
+
+		return (value.lowercased() + ":" + port.trimmingCharacters(in: .whitespacesAndNewlines))
+	}
+
+	var isSecure: Bool
+	{
+		(webSocketAddress?.secure ?? secure)
+	}
+}
+
+/// The Fallback Servers page's place in the sheet: the list itself is
+/// the Server pane's, which loads and saves it
+@objc(TDCServerPropertiesFallbackServersPane)
+final class ServerPropertiesFallbackServersPane: TDCServerPropertiesPane
+{
+	@objc weak var serverPane: ServerPropertiesServerPane?
+
+	override var hasInvalidField: Bool
+	{
+		(serverPane?.hasInvalidFallbackServer ?? false)
+	}
+
+	override func showInvalidField()
+	{
+		serverPane?.fallbackErrors.showsAll = true
+	}
+}
+
 // MARK: - Server page
 
 struct ServerPage: View
@@ -662,16 +891,6 @@ struct ServerPage: View
 
 				SettingToggle(title: ServerPropertiesText("spp-srv-tls"), help: ServerPropertiesText("spp-srv-tlsh"), isOn: pane.secureBinding)
 					.disabled(pane.isWebSocket)
-
-				if let notice = pane.strictTransportSecurityNotice {
-					LabeledContent {
-						Button(ServerPropertiesText("sts-b1")) {
-							pane.forgetStrictTransportSecurity()
-						}
-					} label: {
-						SettingLabel(title: notice)
-					}
-				}
 
 				ServerPropertiesField(title: ServerPropertiesText("spp-srv-pass"),
 									  help: ServerPropertiesText("spp-srv-passh"),
@@ -810,55 +1029,231 @@ struct ServerIconWell: NSViewRepresentable
 struct FallbackServersPage: View
 {
 	@ObservedObject var pane: ServerPropertiesServerPane
+	@ObservedObject var errors: ServerPropertiesFieldErrors
 
-	private func describe(_ server: IRCServer) -> String
+	/* The one whose fields show under it */
+	@State private var openServer: UUID?
+
+	init(pane: ServerPropertiesServerPane)
 	{
-		if let webSocketAddress = server.webSocketAddress {
-			return webSocketAddress
+		self.pane = pane
+		self.errors = pane.fallbackErrors
+	}
+
+	private var mainServerSummary: String
+	{
+		guard let server = pane.primaryServer, server.serverAddress.isEmpty == false else {
+			return ServerPropertiesText("spp-fb-nomain")
 		}
 
-		return "\(server.serverAddress):\(server.serverPort)"
+		return (server.webSocketAddress ?? "\(server.serverAddress):\(server.serverPort)")
 	}
 
 	var body: some View
 	{
+		let servers = pane.fallbackServers
+
 		Form {
 			Section {
 				ServerPropertiesPageHeader(page: .fallbackServers)
 			}
 
 			Section {
-				ForEach(Array(pane.serverList.enumerated()), id: \.offset) { (index, server) in
-					LabeledContent {
-						if (server.prefersSecuredConnection) {
-							Image(systemName: "lock.fill")
-								.foregroundStyle(.secondary)
-								.help(ServerPropertiesText("spp-fb-secure"))
+				LabeledContent {
+					if (pane.primaryServer?.prefersSecuredConnection ?? false) {
+						FallbackServerLock()
+					}
+				} label: {
+					SettingLabel(title: mainServerSummary, help: ServerPropertiesText("spp-fb-first"))
+				}
+			}
+
+			Section {
+				ForEach(servers) { (server) in
+					FallbackServerRow(pane: pane, server: server, isOpen: openBinding(server.id))
+						.draggable(server.id.uuidString) {
+							Text(server.summary)
 						}
-					} label: {
-						SettingLabel(title: describe(server),
-									 help: ((index == 0) ? ServerPropertiesText("spp-fb-first") : nil))
+						.dropDestination(for: String.self) { (serverIds, _) in
+							guard let serverId = serverIds.first else {
+								return false
+							}
+
+							pane.moveFallbackServer(withId: serverId, to: server.id)
+
+							return true
+						}
+						.contextMenu {
+							Button(ServerPropertiesText("spp-fb-main")) {
+								pane.makeMainServer(server.id)
+							}
+							.disabled(server.server == nil)
+
+							Divider()
+
+							Button(ServerPropertiesText("spp-move-up")) {
+								pane.moveFallbackServer(server.id, by: -1)
+							}
+							.disabled(server.id == servers.first?.id)
+
+							Button(ServerPropertiesText("spp-move-down")) {
+								pane.moveFallbackServer(server.id, by: 1)
+							}
+							.disabled(server.id == servers.last?.id)
+
+							Divider()
+
+							Button(ServerPropertiesText("spp-fb-remove")) {
+								pane.removeFallbackServer(server.id)
+							}
+						}
+
+					if (openServer == server.id) {
+						FallbackServerFields(pane: pane, errors: errors, server: server)
 					}
 				}
 
-				if (pane.serverList.count < 2) {
+				if (servers.isEmpty) {
 					Text(ServerPropertiesText("spp-fb-none"))
 						.foregroundStyle(.secondary)
 				}
-			} footer: {
-				HStack {
-					Text(ServerPropertiesText("spp-fb-note"))
-						.foregroundStyle(.secondary)
-						.fixedSize(horizontal: false, vertical: true)
 
-					Spacer()
-
-					Button(ServerPropertiesText("spp-fb-edit")) {
-						pane.editServers()
+				Button {
+					withAnimation {
+						openServer = pane.addFallbackServer()
 					}
+				} label: {
+					Label(ServerPropertiesText("spp-fb-add"), systemImage: "plus.circle.fill")
 				}
+				.buttonStyle(.borderless)
+			} footer: {
+				Text(ServerPropertiesText("spp-fb-note"))
+					.foregroundStyle(.secondary)
+					.fixedSize(horizontal: false, vertical: true)
 			}
 		}
 		.formStyle(.grouped)
+		.onChange(of: errors.showsAll) { (_, showsAll) in
+			/* Save found something: open the first server with a problem */
+			if (showsAll), let server = pane.fallbackServers.first(where: { $0.addressError != nil || $0.portError != nil }) {
+				openServer = server.id
+			}
+		}
+		.onAppear {
+			if (errors.showsAll), let server = pane.fallbackServers.first(where: { $0.addressError != nil || $0.portError != nil }) {
+				openServer = server.id
+			}
+		}
+	}
+
+	private func openBinding(_ id: UUID) -> Binding<Bool>
+	{
+		Binding {
+			openServer == id
+		} set: { (isOpen) in
+			withAnimation {
+				openServer = (isOpen ? id : nil)
+			}
+		}
+	}
+}
+
+struct FallbackServerLock: View
+{
+	var body: some View
+	{
+		Image(systemName: "lock.fill")
+			.font(.callout)
+			.foregroundStyle(.secondary)
+			.help(ServerPropertiesText("spp-fb-secure"))
+			.accessibilityLabel(ServerPropertiesText("spp-fb-secure"))
+	}
+}
+
+/// A fallback server: a click shows its fields under it
+struct FallbackServerRow: View
+{
+	@ObservedObject var pane: ServerPropertiesServerPane
+	let server: ServerPropertiesFallbackServer
+	@Binding var isOpen: Bool
+
+	var body: some View
+	{
+		HStack(spacing: 8) {
+			Button {
+				isOpen.toggle()
+			} label: {
+				HStack(spacing: 8) {
+					Image(systemName: "chevron.right")
+						.font(.callout.weight(.semibold))
+						.foregroundStyle(.secondary)
+						.rotationEffect(.degrees(isOpen ? 90 : 0))
+
+					Text(server.summary)
+						.foregroundStyle((server.server == nil) ? .secondary : .primary)
+
+					if (server.isSecure) {
+						FallbackServerLock()
+					}
+
+					if (server.addressError != nil || server.portError != nil) {
+						Image(systemName: "exclamationmark.triangle.fill")
+							.font(.callout)
+							.foregroundStyle(.red)
+					}
+
+					Spacer()
+				}
+				.contentShape(Rectangle())
+			}
+			.buttonStyle(.plain)
+			.accessibilityHint(ServerPropertiesText("spp-fb-edit"))
+
+			ServerPropertiesRowButton(symbol: "minus.circle.fill", help: ServerPropertiesText("spp-fb-remove")) {
+				pane.removeFallbackServer(server.id)
+			}
+		}
+	}
+}
+
+/// What a fallback server is set to, under its row
+struct FallbackServerFields: View
+{
+	@ObservedObject var pane: ServerPropertiesServerPane
+	@ObservedObject var errors: ServerPropertiesFieldErrors
+	let server: ServerPropertiesFallbackServer
+
+	private func shown(_ error: String?, _ field: String) -> String?
+	{
+		errors.shown(error, for: "\(server.id)-\(field)")
+	}
+
+	var body: some View
+	{
+		let isWebSocket = (server.webSocketAddress != nil)
+
+		Group {
+			ServerPropertiesField(title: ServerPropertiesText("spp-srv-addr"),
+								  help: ServerPropertiesText("spp-fb-addrh"),
+								  error: shown(server.addressError, "address")) {
+				TextField(ServerPropertiesText("spp-srv-addr"), text: pane.fallbackBinding(server, \.address, field: "address"), prompt: Text(verbatim: "irc.example.com"))
+			}
+
+			ServerPropertiesField(title: ServerPropertiesText("spp-srv-port"),
+								  help: (isWebSocket ? ServerPropertiesText("spp-srv-wsh") : nil),
+								  error: shown(server.portError, "port")) {
+				TextField(ServerPropertiesText("spp-srv-port"), text: pane.fallbackBinding(server, \.port, field: "port"))
+					.frame(width: 80)
+			}
+			.disabled(isWebSocket)
+
+			SettingToggle(title: ServerPropertiesText("spp-srv-tls"), isOn: pane.fallbackBinding(server, \.secureSwitchingPort, field: "secure"))
+				.disabled(isWebSocket)
+
+			ServerPropertiesField(title: ServerPropertiesText("spp-srv-pass"), error: nil) {
+				SecureField(ServerPropertiesText("spp-srv-pass"), text: pane.fallbackBinding(server, \.password, field: "password"), prompt: Text(ServerPropertiesText("spp-optional")))
+			}
+		}
+		.padding(.leading, 20)
 	}
 }

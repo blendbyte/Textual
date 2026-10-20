@@ -37,73 +37,38 @@
  *
  *********************************************************************** */
 
-#import "TDCServerEndpointListSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCAddressBookEntry, IRCChannelConfig, IRCClientConfig, IRCClientConfigMutable, IRCServer;
-@class TVCBasicTableView;
+@class IRCAddressBookEntry, IRCClientConfig, IRCClientConfigMutable;
 
-/* One part of the Server Properties sheet: its view and the controls in it,
- in the sheet's nib (an object whose outlets and actions go to it). The sheet
- loads every pane from the configuration, asks each for an invalid field
- before saving, then saves through each. */
+/* One page of the Server Properties sheet, in Swift (a SwiftUI page and
+ what it edits). The sheet loads every pane from the configuration, asks
+ each whether something can't be saved, then saves through each. */
 @interface TDCServerPropertiesPane : NSObject
-@property (nonatomic, weak) IBOutlet TDCServerPropertiesSheet *propertiesSheet;
-@property (nonatomic, strong) IBOutlet NSView *view;
+@property (nonatomic, weak) TDCServerPropertiesSheet *propertiesSheet;
 
-/* Its item in the sheet's navigation list */
+/* Its page in the sheet's sidebar */
 @property (nonatomic, assign) TDCServerPropertiesSheetSelection selection;
-
-/* After the nib loaded, before -loadFromConfig: */
-- (void)prepareInitialState;
 
 - (void)loadFromConfig:(IRCClientConfig *)config;
 - (void)saveToConfig:(IRCClientConfigMutable *)config;
 
-/* A validated text field or combo box whose value can't be saved, or nil */
-- (nullable NSControl *)firstInvalidField;
-
-/* Something can't be saved (by default: there is a -firstInvalidField) */
+/* Something can't be saved (by default: nothing) */
 @property (readonly) BOOL hasInvalidField;
 
-/* Points it out, once the pane is shown (by default: the field's popover) */
+/* Points it out, once the page is shown */
 - (void)showInvalidField;
 
 /* Sheets this pane opened on the Server Properties sheet */
 - (void)closeChildSheets;
-
-/* The sheet's window is closing */
-- (void)tearDown;
 @end
 
 /* The pane with the servers (TDCServerPropertiesServerPane, in Swift) */
 @protocol TDCServerPropertiesSecuredConnection <NSObject>
 /* A client certificate is only sent on a secured connection */
 - (void)turnOnSecuredConnection;
-@end
-
-@interface TDCServerPropertiesConnectCommandsPane : TDCServerPropertiesPane
-@end
-
-@interface TDCServerPropertiesEncodingPane : TDCServerPropertiesPane
-@end
-
-@interface TDCServerPropertiesZncBouncerPane : TDCServerPropertiesPane
-@end
-
-@interface TDCServerPropertiesFloodControlPane : TDCServerPropertiesPane
-@end
-
-/* Address type, ping timeouts, certificate checks and cipher suites */
-@interface TDCServerPropertiesNetworkSocketPane : TDCServerPropertiesPane
-@end
-
-@interface TDCServerPropertiesUploadsPane : TDCServerPropertiesPane
-@end
-
-@interface TDCServerPropertiesProxyServerPane : TDCServerPropertiesPane
 @end
 
 NS_ASSUME_NONNULL_END

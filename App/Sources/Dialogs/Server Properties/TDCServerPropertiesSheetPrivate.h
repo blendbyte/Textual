@@ -48,18 +48,17 @@ typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
 
 	TDCServerPropertiesSheetSelectionAddressBook = 1,
 	TDCServerPropertiesSheetSelectionAutojoin = 2,
-	TDCServerPropertiesSheetSelectionConnectCommands = 3,
-	TDCServerPropertiesSheetSelectionEncoding = 4,
+	TDCServerPropertiesSheetSelectionWhenConnected = 3,
 	TDCServerPropertiesSheetSelectionGeneral = 5,
 	TDCServerPropertiesSheetSelectionYou = 6,
 	TDCServerPropertiesSheetSelectionDisconnectMessages = 8,
 	TDCServerPropertiesSheetSelectionZncBouncer = 10,
 	TDCServerPropertiesSheetSelectionAccount = 12, // with the client certificate
-	TDCServerPropertiesSheetSelectionFloodControl = 13,
-	TDCServerPropertiesSheetSelectionNetworkSocket = 14,
+	TDCServerPropertiesSheetSelectionConnection = 14, // with the text encoding and flood control
 	TDCServerPropertiesSheetSelectionProxyServer = 15,
-	TDCServerPropertiesSheetSelectionRedundancy = 16,
+	TDCServerPropertiesSheetSelectionFallbackServers = 16,
 	TDCServerPropertiesSheetSelectionUploads = 17,
+	TDCServerPropertiesSheetSelectionSecurity = 18,
 
 	TDCServerPropertiesSheetSelectionNewIgnoreEntry = 200
 };

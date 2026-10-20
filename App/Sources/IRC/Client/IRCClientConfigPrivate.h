@@ -67,6 +67,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCClientConfigMutable ()
 @property (nonatomic, assign, readwrite) BOOL connectionPrefersIPv4 TEXTUAL_DEPRECATED("Use -addressType instead");
 @property (nonatomic, copy, readwrite, nullable) NSString *saslECDSAKey; // an empty string removes it
+
+/* Chosen in Server Properties: also unsets -connectionPrefersIPv4 */
+- (void)setAddressTypeChosenByUser:(IRCConnectionAddressType)addressType;
 @end
 
 NS_ASSUME_NONNULL_END

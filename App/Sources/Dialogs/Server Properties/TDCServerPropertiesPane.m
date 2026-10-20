@@ -37,17 +37,11 @@
  *
  *********************************************************************** */
 
-#import "TVCValidatedTextField.h"
 #import "TDCServerPropertiesPanePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation TDCServerPropertiesPane
-
-- (void)prepareInitialState
-{
-
-}
 
 - (void)loadFromConfig:(IRCClientConfig *)config
 {
@@ -59,28 +53,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 }
 
-- (nullable NSControl *)firstInvalidField
-{
-	return nil;
-}
-
 - (BOOL)hasInvalidField
 {
-	return (self.firstInvalidField != nil);
+	return NO;
 }
 
 - (void)showInvalidField
 {
-	id field = self.firstInvalidField;
 
-	if (field == nil) {
-		return;
-	}
-
-	/* Give navigation time to settle before trying to attach popover */
-	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[field showValidationErrorPopover];
-	});
 }
 
 - (void)closeChildSheets
@@ -88,12 +68,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 }
 
-- (void)tearDown
-{
-
-}
-
 @end
-
 
 NS_ASSUME_NONNULL_END

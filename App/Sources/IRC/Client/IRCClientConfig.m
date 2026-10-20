@@ -1221,6 +1221,19 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	}
 }
 
+- (void)setAddressTypeChosenByUser:(IRCConnectionAddressType)addressType
+{
+TEXTUAL_IGNORE_DEPRECATION_BEGIN
+	/* Changing the property logs a deprecation to the console,
+	 which isn't needed when it isn't set */
+	if (self.connectionPrefersIPv4) {
+		self.connectionPrefersIPv4 = NO;
+	}
+TEXTUAL_IGNORE_DEPRECATION_END
+
+	self.addressType = addressType;
+}
+
 - (void)setProxyType:(IRCConnectionProxyType)proxyType
 {
 	if (self->_proxyType != proxyType) {

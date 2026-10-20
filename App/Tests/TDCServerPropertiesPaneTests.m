@@ -200,6 +200,107 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertTrue(saved.excludedFromArchive);
 }
 
+/* The Advanced pages save what they loaded */
+- (void)testAdvancedPanesSaveWhatTheyLoaded
+{
+	NSArray *loginCommands = @[@"/mode alice +x", @"/join #help"];
+
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	config.loginCommands = loginCommands;
+	config.setInvisibleModeOnConnect = YES;
+	config.primaryEncoding = NSISOLatin1StringEncoding;
+	config.fallbackEncoding = NSUTF8StringEncoding;
+	config.performPongTimer = NO;
+	config.performDisconnectOnPongTimer = YES;
+	config.performDisconnectOnReachabilityChange = YES;
+	config.floodControlMaximumMessages = 9;
+	config.floodControlDelayTimerInterval = 7;
+	config.validateServerCertificateChain = NO;
+	config.cipherSuites = RCMCipherSuiteCollectionMozilla2015;
+	config.proxyType = IRCConnectionProxyTypeHTTPS;
+	config.proxyAddress = @"proxy.example.net";
+	config.proxyPort = 3128;
+	config.proxyUsername = @"alice";
+	config.proxyPassword = @"secret";
+	config.uploadDestinationMode = IRCClientUploadDestinationModeOff;
+	config.zncIgnoreConfiguredAutojoin = YES;
+	config.zncIgnorePlaybackNotifications = YES;
+	config.zncOnlyPlaybackLatest = YES;
+
+	NSArray *panes = @[
+		[self paneNamed:@"TDCServerPropertiesWhenConnectedPane"],
+		[self paneNamed:@"TDCServerPropertiesConnectionPane"],
+		[self paneNamed:@"TDCServerPropertiesSecurityPane"],
+		[self paneNamed:@"TDCServerPropertiesProxyPane"],
+		[self paneNamed:@"TDCServerPropertiesUploadsPane"],
+		[self paneNamed:@"TDCServerPropertiesZNCPane"]
+	];
+
+	for (TDCServerPropertiesPane *pane in panes) {
+		[pane loadFromConfig:config];
+
+		XCTAssertFalse(pane.hasInvalidField);
+	}
+
+	IRCClientConfigMutable *saved = [IRCClientConfigMutable new];
+
+	for (TDCServerPropertiesPane *pane in panes) {
+		[pane saveToConfig:saved];
+	}
+
+	XCTAssertEqualObjects(saved.loginCommands, loginCommands);
+	XCTAssertTrue(saved.setInvisibleModeOnConnect);
+	XCTAssertEqual(saved.primaryEncoding, NSISOLatin1StringEncoding);
+	XCTAssertEqual(saved.fallbackEncoding, NSUTF8StringEncoding);
+	XCTAssertFalse(saved.performPongTimer);
+	XCTAssertTrue(saved.performDisconnectOnPongTimer);
+	XCTAssertTrue(saved.performDisconnectOnReachabilityChange);
+	XCTAssertEqual(saved.floodControlMaximumMessages, 9);
+	XCTAssertEqual(saved.floodControlDelayTimerInterval, 7);
+	XCTAssertFalse(saved.validateServerCertificateChain);
+	XCTAssertEqual(saved.cipherSuites, RCMCipherSuiteCollectionMozilla2015);
+	XCTAssertEqual(saved.proxyType, IRCConnectionProxyTypeHTTPS);
+	XCTAssertEqualObjects(saved.proxyAddress, @"proxy.example.net");
+	XCTAssertEqual(saved.proxyPort, 3128);
+	XCTAssertEqualObjects(saved.proxyUsername, @"alice");
+	XCTAssertEqualObjects(saved.proxyPassword, @"secret");
+	XCTAssertEqual(saved.uploadDestinationMode, IRCClientUploadDestinationModeOff);
+	XCTAssertTrue(saved.zncIgnoreConfiguredAutojoin);
+	XCTAssertTrue(saved.zncIgnorePlaybackNotifications);
+	XCTAssertTrue(saved.zncOnlyPlaybackLatest);
+}
+
+/* A fallback server whose address isn't one keeps Save from closing the
+ sheet, on the Fallback Servers page */
+- (void)testFallbackServerNeedsAValidAddress
+{
+	IRCServerMutable *server = [IRCServerMutable new];
+
+	server.serverAddress = @"irc.example.net";
+	server.serverPort = 6697;
+
+	IRCServerMutable *fallbackServer = [IRCServerMutable new];
+
+	fallbackServer.serverAddress = @"irc.example.net!";
+	fallbackServer.serverPort = 6697;
+
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	config.serverList = @[[server copy], [fallbackServer copy]];
+
+	TDCServerPropertiesServerPane *serverPane = (TDCServerPropertiesServerPane *)[self serverPane];
+
+	TDCServerPropertiesFallbackServersPane *fallbackServersPane = (TDCServerPropertiesFallbackServersPane *)[self paneNamed:@"TDCServerPropertiesFallbackServersPane"];
+
+	fallbackServersPane.serverPane = serverPane;
+
+	[serverPane loadFromConfig:config];
+
+	XCTAssertFalse(serverPane.hasInvalidField);
+	XCTAssertTrue(fallbackServersPane.hasInvalidField);
+}
+
 /* A new server can't be saved without an address */
 - (void)testNewServerNeedsAnAddress
 {

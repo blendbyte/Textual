@@ -15,8 +15,6 @@
 		4C06DF3820EC49A60055D09A /* StaticStore.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A420EB676400448776 /* StaticStore.plist */; };
 		4C06DF3920EC49A60055D09A /* TemplateLineTypes.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A120EB676400448776 /* TemplateLineTypes.plist */; };
 		4C06DF4420EC49B90055D09A /* RemoteLicenseSystemPublicKey.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4C3152EE20EB676400448776 /* RemoteLicenseSystemPublicKey.pub */; };
-		4C06E18C20EC4AC40055D09A /* TDCServerPropertiesSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E13920EC4AC40055D09A /* TDCServerPropertiesSheet.xib */; };
-		4C06E19820EC4AC40055D09A /* TDCServerEndpointListSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E13F20EC4AC40055D09A /* TDCServerEndpointListSheet.xib */; };
 		4C06E19C20EC4AC40055D09A /* TDCChannelModifyModesSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14120EC4AC40055D09A /* TDCChannelModifyModesSheet.xib */; };
 		4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14320EC4AC40055D09A /* TDCChannelSpotlightController.xib */; };
 		4C06E1A420EC4AC40055D09A /* TDCFileTransferDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14520EC4AC40055D09A /* TDCFileTransferDialog.xib */; };
@@ -73,7 +71,6 @@
 		4C06E31E20EC4FF00055D09A /* TVCMainWindow.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2C720EC4FF00055D09A /* TVCMainWindow.strings */; };
 		4C06E32220EC4FF00055D09A /* Notifications.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2C920EC4FF00055D09A /* Notifications.strings */; };
 		4C06E32A20EC4FF00055D09A /* TVCNotificationConfigurationView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2CD20EC4FF00055D09A /* TVCNotificationConfigurationView.strings */; };
-		4C06E32E20EC4FF00055D09A /* TDCServerEndpointListSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2CF20EC4FF00055D09A /* TDCServerEndpointListSheet.strings */; };
 		4C06E33220EC4FF00055D09A /* TDCServerChannelListDialog.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D120EC4FF00055D09A /* TDCServerChannelListDialog.strings */; };
 		4C06E33620EC4FF00055D09A /* TDCChannelSpotlightController.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D320EC4FF00055D09A /* TDCChannelSpotlightController.strings */; };
 		4C06E33A20EC4FF00055D09A /* TDCAddressBookSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D520EC4FF00055D09A /* TDCAddressBookSheet.strings */; };
@@ -131,8 +128,6 @@
 		9D35529E80B44E7A9466F627 /* TDCSettingsMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C4CC3B0EBD847F88FA38CE7 /* TDCSettingsMessages.swift */; };
 		4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CAC638BD0D0C2A96DBCD449 /* TDCSettingsWindow.swift */; };
 		4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC61C5016FE3A9B4F848A0B /* TDCSettingsBridge.m */; };
-		4C06E65820EC55B90055D09A /* TDCServerEndpointListSheetTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528E20EB673E00448776 /* TDCServerEndpointListSheetTableCellView.m */; };
-		4C06E65920EC55B90055D09A /* TDCServerEndpointListSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528F20EB673E00448776 /* TDCServerEndpointListSheet.m */; };
 		4C1C0F11E0A0000000000A17 /* TDCUploadDestinationSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A18 /* TDCUploadDestinationSheet.m */; };
 		4C06E65B20EC55B90055D09A /* TDCAddressBookSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31527020EB673E00448776 /* TDCAddressBookSheet.m */; };
 		D38D22B4B1626E628EBF04B5 /* TDCAddressBookIgnoreSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = C5B729C718A0A7309B6F9C36 /* TDCAddressBookIgnoreSheet.m */; };
@@ -151,8 +146,6 @@
 		4C06E66820EC55B90055D09A /* TDCServerChannelListDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528620EB673E00448776 /* TDCServerChannelListDialog.m */; };
 		4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */; };
 		92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */ = {isa = PBXBuildFile; fileRef = D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */; };
-		6D69D7405D02E9711DC3CDF5 /* TDCServerPropertiesSettingsPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 09BC6FE07983C6F7547ACB56 /* TDCServerPropertiesSettingsPanes.m */; };
-		9333C24E1B8B729BFC45E642 /* TDCServerPropertiesConnectionPanes.m in Sources */ = {isa = PBXBuildFile; fileRef = 17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */; };
 		4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528A20EB673E00448776 /* TDCSheetBase.m */; };
 		4C06E66C20EC55B90055D09A /* TDCWelcomeSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528B20EB673E00448776 /* TDCWelcomeSheet.m */; };
 		4C06E66D20EC55B90055D09A /* TDCWindowBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528420EB673E00448776 /* TDCWindowBase.m */; };
@@ -430,9 +423,7 @@
 		4C31572620EB6D0500448776 /* TDCProgressIndicatorSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DC20EB673E00448776 /* TDCProgressIndicatorSheetPrivate.h */; };
 		4C31572720EB6D0500448776 /* TDCServerChangeNicknameSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151EF20EB673E00448776 /* TDCServerChangeNicknameSheetPrivate.h */; };
 		4C31572820EB6D0500448776 /* TDCServerChannelListDialogPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151C320EB673E00448776 /* TDCServerChannelListDialogPrivate.h */; };
-		4C31572920EB6D0500448776 /* TDCServerEndpointListSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522F20EB673E00448776 /* TDCServerEndpointListSheetPrivate.h */; };
 		4C1C0F11E0A0000000000A19 /* TDCUploadDestinationSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A1A /* TDCUploadDestinationSheetPrivate.h */; };
-		4C31572A20EB6D0500448776 /* TDCServerEndpointListSheetTableCellViewPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151EB20EB673E00448776 /* TDCServerEndpointListSheetTableCellViewPrivate.h */; };
 		4C31572C20EB6D0500448776 /* TDCServerPropertiesSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151E920EB673E00448776 /* TDCServerPropertiesSheetPrivate.h */; };
 		DEC244443E7DF9D92C2A9223 /* TDCServerPropertiesPanePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 155FF385EF7736B43ADAC8CC /* TDCServerPropertiesPanePrivate.h */; };
 		4C31572D20EB6D0500448776 /* TDCSharedProtocolDefinitionsPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151FB20EB673E00448776 /* TDCSharedProtocolDefinitionsPrivate.h */; };
@@ -727,6 +718,7 @@
 		B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */; };
 		36BC675C66E04EC0F413B3F0 /* TDCServerPropertiesPaneTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */; };
 		B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */; };
+		7C96A0ADB32BD953F1688040 /* TDCServerPropertiesAdvancedPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7BC06CEC4262E2C3EB54380 /* TDCServerPropertiesAdvancedPages.swift */; };
 		46D3990D78A0D6FE05E500D8 /* TDCServerPropertiesListPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */; };
 /* End PBXBuildFile section */
 
@@ -863,8 +855,6 @@
 		3A9DB13D20BACE1E29109487 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		2D75A1AA0A8CBC7C36A7D76B /* Plugin.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Plugin.xcconfig; sourceTree = "<group>"; };
 		464D7EB2DFFFEC2E2F93C1EE /* Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Framework.xcconfig; sourceTree = "<group>"; };
-		4C06E13A20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCServerPropertiesSheet.xib; sourceTree = "<group>"; };
-		4C06E14020EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCServerEndpointListSheet.xib; sourceTree = "<group>"; };
 		4C06E14220EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelModifyModesSheet.xib; sourceTree = "<group>"; };
 		4C06E14420EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelSpotlightController.xib; sourceTree = "<group>"; };
 		4C06E14620EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCFileTransferDialog.xib; sourceTree = "<group>"; };
@@ -927,7 +917,6 @@
 		4C06E2C820EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TVCMainWindow.strings; sourceTree = "<group>"; };
 		4C06E2CA20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Notifications.strings; sourceTree = "<group>"; };
 		4C06E2CE20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TVCNotificationConfigurationView.strings; sourceTree = "<group>"; };
-		4C06E2D020EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCServerEndpointListSheet.strings; sourceTree = "<group>"; };
 		4C06E2D220EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCServerChannelListDialog.strings; sourceTree = "<group>"; };
 		4C06E2D420EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCChannelSpotlightController.strings; sourceTree = "<group>"; };
 		4C06E2D620EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCAddressBookSheet.strings; sourceTree = "<group>"; };
@@ -1149,7 +1138,6 @@
 		4C3151E920EB673E00448776 /* TDCServerPropertiesSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerPropertiesSheetPrivate.h; sourceTree = "<group>"; };
 		155FF385EF7736B43ADAC8CC /* TDCServerPropertiesPanePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerPropertiesPanePrivate.h; sourceTree = "<group>"; };
 		4C3151EA20EB673E00448776 /* IRCAddressBookUserTrackingPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCAddressBookUserTrackingPrivate.h; sourceTree = "<group>"; };
-		4C3151EB20EB673E00448776 /* TDCServerEndpointListSheetTableCellViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerEndpointListSheetTableCellViewPrivate.h; sourceTree = "<group>"; };
 		4C3151ED20EB673E00448776 /* IRCISupportInfoPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCISupportInfoPrivate.h; sourceTree = "<group>"; };
 		4C3151EE20EB673E00448776 /* TPCApplicationInfoPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCApplicationInfoPrivate.h; sourceTree = "<group>"; };
 		4C3151EF20EB673E00448776 /* TDCServerChangeNicknameSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerChangeNicknameSheetPrivate.h; sourceTree = "<group>"; };
@@ -1202,7 +1190,6 @@
 		4C31522A20EB673E00448776 /* TXWindowControllerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXWindowControllerPrivate.h; sourceTree = "<group>"; };
 		4C31522B20EB673E00448776 /* TDCChannelSpotlightControllerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCChannelSpotlightControllerPrivate.h; sourceTree = "<group>"; };
 		4C31522C20EB673E00448776 /* TDCChannelSpotlightSearchResultsTablePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCChannelSpotlightSearchResultsTablePrivate.h; sourceTree = "<group>"; };
-		4C31522F20EB673E00448776 /* TDCServerEndpointListSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerEndpointListSheetPrivate.h; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A1A /* TDCUploadDestinationSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCUploadDestinationSheetPrivate.h; sourceTree = "<group>"; };
 		4C31523020EB673E00448776 /* TVCLogLinePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogLinePrivate.h; sourceTree = "<group>"; };
 		4C31523220EB673E00448776 /* TXGlobalModelsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXGlobalModelsPrivate.h; sourceTree = "<group>"; };
@@ -1255,8 +1242,6 @@
 		4C31526420EB673E00448776 /* TDCChannelPropertiesSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelPropertiesSheet.m; sourceTree = "<group>"; };
 		4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesSheet.m; sourceTree = "<group>"; };
 		D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesPane.m; sourceTree = "<group>"; };
-		09BC6FE07983C6F7547ACB56 /* TDCServerPropertiesSettingsPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesSettingsPanes.m; sourceTree = "<group>"; };
-		17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesConnectionPanes.m; sourceTree = "<group>"; };
 		4C31526620EB673E00448776 /* TDCChannelModifyModesSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelModifyModesSheet.m; sourceTree = "<group>"; };
 		4C8B178AD6EFE4D659798959 /* TDCHighlightKeywordSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCHighlightKeywordSheet.m; sourceTree = "<group>"; };
 		4CA934DABCFC7F896F9DDA98 /* TDCHighlightKeywordSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCHighlightKeywordSheetPrivate.h; sourceTree = "<group>"; };
@@ -1298,8 +1283,6 @@
 		4C31528A20EB673E00448776 /* TDCSheetBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCSheetBase.m; sourceTree = "<group>"; };
 		4C31528B20EB673E00448776 /* TDCWelcomeSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCWelcomeSheet.m; sourceTree = "<group>"; };
 		4C31528C20EB673E00448776 /* TDCServerChangeNicknameSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerChangeNicknameSheet.m; sourceTree = "<group>"; };
-		4C31528E20EB673E00448776 /* TDCServerEndpointListSheetTableCellView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerEndpointListSheetTableCellView.m; sourceTree = "<group>"; };
-		4C31528F20EB673E00448776 /* TDCServerEndpointListSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerEndpointListSheet.m; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A18 /* TDCUploadDestinationSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCUploadDestinationSheet.m; sourceTree = "<group>"; };
 		4C31529120EB673E00448776 /* TDCFileTransferDialog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCFileTransferDialog.m; sourceTree = "<group>"; };
 		4C31529220EB673E00448776 /* TDCFileTransferDialogTransferController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCFileTransferDialogTransferController.m; sourceTree = "<group>"; };
@@ -1648,6 +1631,7 @@
 		42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerPropertiesWindowPrivate.h; sourceTree = "<group>"; };
 		42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerPropertiesPaneTests.m; sourceTree = "<group>"; };
 		24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAccountPanes.swift; sourceTree = "<group>"; };
+		D7BC06CEC4262E2C3EB54380 /* TDCServerPropertiesAdvancedPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAdvancedPages.swift; sourceTree = "<group>"; };
 		3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesListPages.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1896,21 +1880,16 @@
 				8CF7EBB3D5A10546C2FCEE6F /* TDCAddressBookUserTrackingSheet.m */,
 				4C3151BA20EB673E00448776 /* TDCAddressBookSheetPrivate.h */,
 				E5827991787F9CF9F3596537 /* TDCAddressBookSheetInternal.h */,
-				4C31528F20EB673E00448776 /* TDCServerEndpointListSheet.m */,
-				4C31522F20EB673E00448776 /* TDCServerEndpointListSheetPrivate.h */,
 				4C1C0F11E0A0000000000A18 /* TDCUploadDestinationSheet.m */,
 				4C1C0F11E0A0000000000A1A /* TDCUploadDestinationSheetPrivate.h */,
-				4C31528E20EB673E00448776 /* TDCServerEndpointListSheetTableCellView.m */,
-				4C3151EB20EB673E00448776 /* TDCServerEndpointListSheetTableCellViewPrivate.h */,
 				4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */,
 				D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */,
-				17463DDCB42AFAEE24DD7064 /* TDCServerPropertiesConnectionPanes.m */,
+				D7BC06CEC4262E2C3EB54380 /* TDCServerPropertiesAdvancedPages.swift */,
 				3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */,
 				24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */,
 				42F2CB175C9B47F97C39140E /* TDCServerPropertiesWindowPrivate.h */,
 				07201D12245B560F9A9650F4 /* TDCServerPropertiesServerPane.swift */,
 				E04FC68852CE7DF4B66C2767 /* TDCServerPropertiesWindow.swift */,
-				09BC6FE07983C6F7547ACB56 /* TDCServerPropertiesSettingsPanes.m */,
 				4C3151E920EB673E00448776 /* TDCServerPropertiesSheetPrivate.h */,
 				155FF385EF7736B43ADAC8CC /* TDCServerPropertiesPanePrivate.h */,
 			);
@@ -2860,8 +2839,6 @@
 				4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */,
 				4C06E16D20EC4AC40055D09A /* TDCServerChangeNicknameSheet.xib */,
 				4C06E14720EC4AC40055D09A /* TDCServerChannelListDialog.xib */,
-				4C06E13F20EC4AC40055D09A /* TDCServerEndpointListSheet.xib */,
-				4C06E13920EC4AC40055D09A /* TDCServerPropertiesSheet.xib */,
 				4C06E16320EC4AC40055D09A /* TDCWelcomeSheet.xib */,
 				4C06E16920EC4AC40055D09A /* TVCAlert.xib */,
 				4C06E15520EC4AC40055D09A /* TVCChannelSelectionView.xib */,
@@ -2942,7 +2919,6 @@
 				4C06E2B720EC4FF00055D09A /* TDCPreferencesController.strings */,
 				4CEFEDAE22B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings */,
 				4C06E2D120EC4FF00055D09A /* TDCServerChannelListDialog.strings */,
-				4C06E2CF20EC4FF00055D09A /* TDCServerEndpointListSheet.strings */,
 				4C06E2BF20EC4FF00055D09A /* TDCServerPropertiesSheet.strings */,
 				4C06E2C320EC4FF00055D09A /* TLOLicenseManager.strings */,
 				4C06E2C720EC4FF00055D09A /* TVCMainWindow.strings */,
@@ -3203,7 +3179,6 @@
 				4C3155C420EB6CB400448776 /* Textual.h in Headers */,
 				4C3155AE20EB6CB400448776 /* IRCConnection.h in Headers */,
 				4C3156F920EB6D0500448776 /* IRCTreeItemPrivate.h in Headers */,
-				4C31572A20EB6D0500448776 /* TDCServerEndpointListSheetTableCellViewPrivate.h in Headers */,
 				4C3158C920EB6D1000448776 /* IRCChannelUserInternal.h in Headers */,
 				4C3155F920EB6CB400448776 /* TXSharedApplication.h in Headers */,
 				4C7B05011D12110500295E82 /* BuildConfig.h in Headers */,
@@ -3330,7 +3305,6 @@
 				4C31572820EB6D0500448776 /* TDCServerChannelListDialogPrivate.h in Headers */,
 				4C3155A520EB6CB400448776 /* IRCAddressBookUserTracking.h in Headers */,
 				4C31573720EB6D0500448776 /* TLONotificationControllerPrivate.h in Headers */,
-				4C31572920EB6D0500448776 /* TDCServerEndpointListSheetPrivate.h in Headers */,
 				4C1C0F11E0A0000000000A19 /* TDCUploadDestinationSheetPrivate.h in Headers */,
 				4C31576320EB6D0500448776 /* TVCMainWindowTitlebarAccessoryViewPrivate.h in Headers */,
 				4C31577020EB6D0500448776 /* TXApplicationPrivate.h in Headers */,
@@ -3533,7 +3507,6 @@
 				4C06E1EC20EC4AC50055D09A /* TVCAlert.xib in Resources */,
 				4C06E32220EC4FF00055D09A /* Notifications.strings in Resources */,
 				4C06E2F620EC4FF00055D09A /* TDCChannelPropertiesSheet.strings in Resources */,
-				4C06E32E20EC4FF00055D09A /* TDCServerEndpointListSheet.strings in Resources */,
 				4C06E31220EC4FF00055D09A /* IRC.strings in Resources */,
 				4C06E1E420EC4AC40055D09A /* TDCProgressIndicatorSheet.xib in Resources */,
 				4C06E34220EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings in Resources */,
@@ -3541,7 +3514,6 @@
 				4C06E19C20EC4AC40055D09A /* TDCChannelModifyModesSheet.xib in Resources */,
 				4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */,
 				4C06E1D820EC4AC40055D09A /* TDCChannelInviteSheet.xib in Resources */,
-				4C06E19820EC4AC40055D09A /* TDCServerEndpointListSheet.xib in Resources */,
 				4C06DF3920EC49A60055D09A /* TemplateLineTypes.plist in Resources */,
 				4C06E2F220EC4FF00055D09A /* Accessibility.strings in Resources */,
 				4C33341E20CC471A00ACB9AD /* Bundled Scripts in Resources */,
@@ -3561,7 +3533,6 @@
 				4C06E30E20EC4FF00055D09A /* TDCServerPropertiesSheet.strings in Resources */,
 				4C06E2FA20EC4FF00055D09A /* TDCChannelBanListSheet.strings in Resources */,
 				4C06E1B420EC4AC40055D09A /* TDCLicenseManagerMigrateAppStoreSheet.xib in Resources */,
-				4C06E18C20EC4AC40055D09A /* TDCServerPropertiesSheet.xib in Resources */,
 				4C06DF3820EC49A60055D09A /* StaticStore.plist in Resources */,
 				4C06E22C20EC4AC50055D09A /* TVCMainWindowTextViewAppearance.plist in Resources */,
 				4CCD93FF1CA7291300335381 /* JavaScript in Resources */,
@@ -3780,8 +3751,6 @@
 				9D35529E80B44E7A9466F627 /* TDCSettingsMessages.swift in Sources */,
 				4CED063F01D7BE6833C04B45 /* TDCSettingsWindow.swift in Sources */,
 				4CE8F520DB67A8B1AB2C7C2D /* TDCSettingsBridge.m in Sources */,
-				4C06E65820EC55B90055D09A /* TDCServerEndpointListSheetTableCellView.m in Sources */,
-				4C06E65920EC55B90055D09A /* TDCServerEndpointListSheet.m in Sources */,
 				4C1C0F11E0A0000000000A17 /* TDCUploadDestinationSheet.m in Sources */,
 				4C06E65B20EC55B90055D09A /* TDCAddressBookSheet.m in Sources */,
 				D38D22B4B1626E628EBF04B5 /* TDCAddressBookIgnoreSheet.m in Sources */,
@@ -3800,12 +3769,11 @@
 				4C06E66820EC55B90055D09A /* TDCServerChannelListDialog.m in Sources */,
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
+				7C96A0ADB32BD953F1688040 /* TDCServerPropertiesAdvancedPages.swift in Sources */,
 				46D3990D78A0D6FE05E500D8 /* TDCServerPropertiesListPages.swift in Sources */,
 				B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */,
 				B3DB97403F5FA9ADB00463B4 /* TDCServerPropertiesServerPane.swift in Sources */,
 				C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */,
-				6D69D7405D02E9711DC3CDF5 /* TDCServerPropertiesSettingsPanes.m in Sources */,
-				9333C24E1B8B729BFC45E642 /* TDCServerPropertiesConnectionPanes.m in Sources */,
 				4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */,
 				4C06E66C20EC55B90055D09A /* TDCWelcomeSheet.m in Sources */,
 				4C06E66D20EC55B90055D09A /* TDCWindowBase.m in Sources */,
@@ -4069,22 +4037,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		4C06E13920EC4AC40055D09A /* TDCServerPropertiesSheet.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E13A20EC4AC40055D09A /* en */,
-			);
-			name = TDCServerPropertiesSheet.xib;
-			sourceTree = "<group>";
-		};
-		4C06E13F20EC4AC40055D09A /* TDCServerEndpointListSheet.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E14020EC4AC40055D09A /* en */,
-			);
-			name = TDCServerEndpointListSheet.xib;
-			sourceTree = "<group>";
-		};
 		4C06E14120EC4AC40055D09A /* TDCChannelModifyModesSheet.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -4411,14 +4363,6 @@
 				4C06E2CE20EC4FF00055D09A /* en */,
 			);
 			name = TVCNotificationConfigurationView.strings;
-			sourceTree = "<group>";
-		};
-		4C06E2CF20EC4FF00055D09A /* TDCServerEndpointListSheet.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E2D020EC4FF00055D09A /* en */,
-			);
-			name = TDCServerEndpointListSheet.strings;
 			sourceTree = "<group>";
 		};
 		4C06E2D120EC4FF00055D09A /* TDCServerChannelListDialog.strings */ = {

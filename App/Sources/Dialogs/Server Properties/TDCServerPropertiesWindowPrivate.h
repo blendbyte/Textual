@@ -44,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCServerPropertiesServerPane : TDCServerPropertiesPane <TDCServerPropertiesSecuredConnection>
 @end
 
+/* The Fallback Servers page's place: the Server pane keeps the list */
+@interface TDCServerPropertiesFallbackServersPane : TDCServerPropertiesPane
+@property (nonatomic, weak, nullable) TDCServerPropertiesServerPane *serverPane;
+@end
+
 /* The You and Account pages (TDCServerPropertiesAccountPanes.swift) */
 @interface TDCServerPropertiesYouPane : TDCServerPropertiesPane
 @end
@@ -65,9 +70,29 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCServerPropertiesMessagesPane : TDCServerPropertiesPane
 @end
 
+/* The Advanced pages (TDCServerPropertiesAdvancedPages.swift) */
+@interface TDCServerPropertiesWhenConnectedPane : TDCServerPropertiesPane
+@end
+
+@interface TDCServerPropertiesConnectionPane : TDCServerPropertiesPane
+@end
+
+@interface TDCServerPropertiesSecurityPane : TDCServerPropertiesPane
+/* For what its servers asked about secure connections */
+@property (nonatomic, weak, nullable) TDCServerPropertiesServerPane *serverPane;
+@end
+
+@interface TDCServerPropertiesProxyPane : TDCServerPropertiesPane
+@end
+
+@interface TDCServerPropertiesUploadsPane : TDCServerPropertiesPane
+@end
+
+@interface TDCServerPropertiesZNCPane : TDCServerPropertiesPane
+@end
+
 /* The sheet's window: a sidebar of pages, the page, Cancel and Save
- (TDCServerPropertiesWindow.swift). A pane without a page of its own in
- SwiftUI is shown with its view from the nib. */
+ (TDCServerPropertiesWindow.swift) */
 @interface TDCServerPropertiesWindow : NSObject
 - (instancetype)initWithPanes:(NSArray<TDCServerPropertiesPane *> *)panes
 				   serverPane:(TDCServerPropertiesServerPane *)serverPane
