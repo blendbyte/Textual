@@ -1162,8 +1162,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 			/* We have to wait until names are processed before populating
 			 defaults for a channel so that we are certain there is actually
-			 only one user, which is us. */
-			if (channel.numberOfMembers == 1 && self.isBrokenIRCd_aka_Twitch == NO) {
+			 only one user, which is us. Only as its operator, as when we
+			 created it: alone in a registered channel we can't set them. */
+			if (channel.numberOfMembers == 1 && self.isBrokenIRCd_aka_Twitch == NO &&
+				[channel findMember:self.userNickname].isOp)
+			{
 				NSString *defaultModes = channel.config.defaultModes;
 
 				if (defaultModes.length > 0) {

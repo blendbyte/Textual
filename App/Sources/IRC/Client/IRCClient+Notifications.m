@@ -510,6 +510,11 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	/* "Not while I'm away": no sound, speech or bounce either */
+	if (self.userIsAway && [sharedNotificationController() disabledWhileAwayForEvent:eventType inChannel:target]) {
+		return YES;
+	}
+
 	if ([sharedNotificationController() bounceDockIconForEvent:eventType inChannel:target]) {
 		if ([sharedNotificationController() bounceDockIconRepeatedlyForEvent:eventType inChannel:target]) {
 			[NSApp requestUserAttention:NSCriticalRequest];
@@ -569,12 +574,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (postNotificationsWhileFocused == NO && windowIsFocused) {
 		if (eventType != TXNotificationTypeAddressBookMatch) {
-			return YES;
-		}
-	}
-
-	if ([sharedNotificationController() disabledWhileAwayForEvent:eventType inChannel:target]) {
-		if (self.userIsAway) {
 			return YES;
 		}
 	}

@@ -51,6 +51,7 @@
 #import "TVCLogViewPrivate.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMemberList.h"
+#import "TVCDockIconPrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowSplitView.h"
 #import "TVCMainWindowTextView.h"
@@ -142,6 +143,11 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[c updateConfig:config];
+
+	/* The label, the unread count and the Dock's count follow the new settings */
+	[mainWindow() reloadTreeItem:c];
+
+	[TVCDockIcon updateDockIcon];
 
 	[worldController() save];
 }

@@ -390,10 +390,6 @@ NS_ASSUME_NONNULL_BEGIN
 							(isSelectedFrontmost == NO && isSelected && multipleRowsSelected) ||
 							(isWindowActive == NO && isSelected));
 
-	if (associatedChannel.config.showTreeBadgeCount == NO) {
-		drawMessageBadge = NO;
-	}
-
 	NSUInteger treeUnreadCount = associatedChannel.treeUnreadCount;
 	NSUInteger nicknameHighlightCount = associatedChannel.nicknameHighlightCount;
 
@@ -401,6 +397,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (associatedChannel.config.ignoreHighlights) {
 		isHighlight = NO;
+	}
+
+	/* Without the unread count, a highlight still shows its badge */
+	if (associatedChannel.config.showTreeBadgeCount == NO && isHighlight == NO) {
+		drawMessageBadge = NO;
 	}
 
 	/* Begin draw if we want to. */

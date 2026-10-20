@@ -267,9 +267,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *s2 = objectCast.dictionaryValue;
 
-	return ([s1 isEqualToDictionary:s2] &&
-			((self->_secretKey == nil && objectCast->_secretKey == nil) ||
-			 [self->_secretKey isEqualToString:objectCast->_secretKey]));
+	if ([s1 isEqualToDictionary:s2] == NO) {
+		return NO;
+	}
+
+	/* Both in the Keychain: the same item */
+	if (self->_secretKey == nil && objectCast->_secretKey == nil) {
+		return YES;
+	}
+
+	/* A key being edited against the saved one: the Keychain is read only then */
+	NSString *secretKey1 = (self.secretKey ?: @"");
+	NSString *secretKey2 = (objectCast.secretKey ?: @"");
+
+	return [secretKey1 isEqualToString:secretKey2];
 }
 
 - (NSUInteger)hash
@@ -332,6 +343,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)writeSecretKeyToKeychain
 {
 	if (self->_secretKey == nil) {
+		return;
+	}
+
+	/* Cleared: no key, rather than an empty one */
+	if (self->_secretKey.length == 0) {
+		[self destroySecretKeyKeychainItem];
+
 		return;
 	}
 
