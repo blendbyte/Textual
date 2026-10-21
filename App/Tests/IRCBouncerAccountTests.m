@@ -139,21 +139,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	IRCBouncerAccount *account = [self accountOfKind:IRCBouncerKindZNC password:@"secret"];
 
-	IRCServerMutable *server = [IRCServerMutable new];
-
-	server.serverAddress = @"BNC.example.com";
-	server.serverPort = 6697;
-	server.serverPassword = @"dan/libera:secret";
-
 	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
 
-	config.serverList = @[[server copy]];
+	/* The objects themselves: a copy reads its password from the Keychain */
+	config.serverList = @[[self serverAt:@"BNC.example.com" port:6697 password:@"dan/libera:secret"]];
 
 	XCTAssertEqualObjects([account networkOfServerAddedByHand:config], @"libera");
 
-	server.serverPassword = nil;
-
-	config.serverList = @[[server copy]];
+	config.serverList = @[[self serverAt:@"bnc.example.com" port:6697 password:nil]];
 	config.username = @"dan/oftc@laptop";
 
 	XCTAssertEqualObjects([account networkOfServerAddedByHand:config], @"oftc");
@@ -163,14 +156,22 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([account networkOfServerAddedByHand:config]);
 
 	config.username = @"dan/oftc";
-
-	server.serverPort = 6667;
-
-	config.serverList = @[[server copy]];
+	config.serverList = @[[self serverAt:@"bnc.example.com" port:6667 password:nil]];
 
 	XCTAssertNil([account networkOfServerAddedByHand:config]);
 
 	XCTAssertNil([account networkOfServerAddedByHand:[self configLinkedTo:account network:@"oftc"]]);
+}
+
+- (IRCServer *)serverAt:(NSString *)address port:(uint16_t)port password:(nullable NSString *)password
+{
+	IRCServerMutable *server = [IRCServerMutable new];
+
+	server.serverAddress = address;
+	server.serverPort = port;
+	server.serverPassword = password;
+
+	return server;
 }
 
 /* One change to the account reaches every network linked to it */
