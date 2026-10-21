@@ -255,9 +255,10 @@ NS_ASSUME_NONNULL_BEGIN
 		[logins addObject:config.username];
 	}
 
-	NSString *serverPassword = (server.serverPassword ?: server.serverPasswordFromKeychain);
+	/* (nil would answer location 0 for the colon) */
+	NSString *serverPassword = server.serverPassword;
 
-	NSRange colon = [serverPassword rangeOfString:@":"];
+	NSRange colon = ((serverPassword) ? [serverPassword rangeOfString:@":"] : NSMakeRange(NSNotFound, 0));
 
 	if (colon.location != NSNotFound) {
 		[logins addObject:[serverPassword substringToIndex:colon.location]];
