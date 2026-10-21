@@ -51,6 +51,9 @@
 #define TXWebsitePrivacyPolicy				@"https://www.textualapp.com/privacy"
 #define TXWebsiteTerms						@"https://www.textualapp.com/terms"
 
+/* Add Bouncer's "No bouncer yet?" line (the direct build only) */
+#define TXWebsiteZNCHost					@"https://znchost.com"
+
 #define TXGitHubRepository					@"https://github.com/blendbyte/Textual"
 #define TXGitHubNewBugReport				@"https://github.com/blendbyte/Textual/issues/new"
 #define TXGitHubDiscussions					@"https://github.com/blendbyte/Textual/discussions"

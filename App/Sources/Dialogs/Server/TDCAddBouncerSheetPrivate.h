@@ -52,9 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) NSWindow *window;
 
-/* The first step filled in from servers added by hand, offered for linking:
- they're ticked in the last */
+/* The first step filled in (servers added by hand, a setup link) */
 - (void)fillInAddress:(NSString *)address port:(uint16_t)port secured:(BOOL)secured username:(NSString *)username password:(nullable NSString *)password;
+
+@property (nonatomic, assign) BOOL linksServersAddedByHand; // offered for linking: they're ticked in the last step
+@property (nonatomic, copy, nullable) NSURL *hostingOfferURL; // "No bouncer yet? ZNCHost runs one for you." under the login
 
 - (void)beginInWindow:(NSWindow *)window;
 @end

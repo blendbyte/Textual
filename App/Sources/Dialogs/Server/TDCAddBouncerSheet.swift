@@ -125,6 +125,9 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 	/* Opened to link servers added by hand: they're ticked */
 	var linksServersAddedByHand = false
 
+	/* A bouncer host to sign up with, under the login */
+	var hostingOfferURL: URL?
+
 	private let existingClient: (IRCBouncerNetwork, IRCBouncerAccount) -> IRCClient?
 	private let add: (IRCBouncerAccount, [IRCBouncerNetwork], [String: IRCClient], Bool) -> Void
 	private let addAsServer: (String, UInt16, Bool) -> Void
@@ -356,8 +359,7 @@ final class AddBouncerSheet: NSObject
 		}
 	}
 
-	/* The first step filled in from servers added by hand, offered for
-	 linking: they're ticked in the last */
+	/* The first step filled in (servers added by hand, a setup link) */
 	@objc(fillInAddress:port:secured:username:password:)
 	func fillIn(address: String, port: UInt16, secured: Bool, username: String, password: String?)
 	{
@@ -366,8 +368,20 @@ final class AddBouncerSheet: NSObject
 		model.port = String(port)
 		model.username = username
 		model.password = (password ?? "")
+	}
 
-		model.linksServersAddedByHand = true
+	/* Offered for linking: servers added by hand are ticked in the last step */
+	@objc var linksServersAddedByHand: Bool
+	{
+		get { model.linksServersAddedByHand }
+		set { model.linksServersAddedByHand = newValue }
+	}
+
+	/* "No bouncer yet?" under the login (the direct build only) */
+	@objc var hostingOfferURL: URL?
+	{
+		get { model.hostingOfferURL }
+		set { model.hostingOfferURL = newValue }
 	}
 
 	@objc(beginInWindow:)
@@ -507,6 +521,14 @@ struct AddBouncerLoginPage: View
 				}
 			} footer: {
 				SettingFooter(text: AddBouncerText((model.logsInWithCertificate) ? "ab-1-nc" : "ab-1-n"))
+			}
+
+			if let offerURL = model.hostingOfferURL,
+			   let offer = try? AttributedString(markdown: AddBouncerText("ab-zh", offerURL.absoluteString)) {
+				Section {
+					Text(offer)
+						.foregroundStyle(.secondary)
+				}
 			}
 		}
 		.formStyle(.grouped)

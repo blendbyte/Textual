@@ -58,8 +58,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable IRCTreeItem *)_treeItemToMuteForMenuItem:(NSMenuItem *)menuItem;
 - (nullable IRCTreeItem *)_treeItemToPopOutForMenuItem:(NSMenuItem *)menuItem;
 
-/* Add Bouncer with the address and login of a server added by hand */
+/* Add Bouncer with the address and login of a server added by hand (they're
+ ticked to be linked), or from textual://add-bouncer?host=…&port=…&tls=…&user=…
+ (a bouncer host's setup link: filled in only, never a password, nothing
+ connects until Connect) */
 - (void)addBouncerFilledInWith:(nullable IRCClient *)client;
+- (void)addBouncerWithSetupLink:(NSString *)location;
 
 /* The Edit Bouncer sheet for an account (Server › Edit Bouncer…, a bouncer's heading),
  or on another sheet (Server Properties) */

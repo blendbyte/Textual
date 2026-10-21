@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 	Reserved tokens:
 
 	acknowledgements					— Open acknowledgements file
+	add-bouncer							— Add Bouncer filled in (?host=&port=&tls=&user=, never a password)
 	activate-license					— Activate a license key
 	application-support-folder			— Open the Application Support folder
 	contributors						— Open contributors file
@@ -102,6 +103,10 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 #endif
 
+	else if ([action isEqualToString:@"add-bouncer"])
+	{
+		[menuController() addBouncerWithSetupLink:sourceLocation];
+	}
 	else if ([action isEqualToString:@"application-support-folder"])
 	{
 		[RZWorkspace() openURL:[TPCPathInfo applicationSupportURL]];

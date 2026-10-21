@@ -142,3 +142,6 @@
 "eb-c-need" = "Type your password once, so Textual can set the certificate up on your bouncer.";
 "eb-c-pass" = "Type the password Textual should log in with.";
 "eb-c-fail" = "The certificate couldn’t be set up on %@.";
+
+/* Under the login, in the direct build (Markdown: the part in brackets links to %@, ZNCHost's website) */
+"ab-zh" = "No bouncer yet? [ZNCHost runs one for you.](%@)";

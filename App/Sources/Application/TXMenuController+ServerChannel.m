@@ -69,6 +69,7 @@
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
+#import "TXWebsiteLinks.h"
 #import "TDCAddBouncerSheetPrivate.h"
 #import "TDCEditBouncerSheetPrivate.h"
 #import "IRCBouncerAccountPrivate.h"
@@ -182,10 +183,76 @@ NS_ASSUME_NONNULL_BEGIN
 /* The Add Bouncer sheet: the account and a server per network it adds here */
 - (void)addBouncer:(nullable id)sender
 {
-	[self addBouncerFilledInWith:nil];
+	[self openAddBouncerSheetFillingIn:nil];
 }
 
 - (void)addBouncerFilledInWith:(nullable IRCClient *)client
+{
+	/* Its address and login, the network left out */
+	IRCClientConfig *config = client.config;
+
+	IRCServer *server = config.serverList.firstObject;
+
+	NSArray<NSString *> *login = ((config) ? [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config].firstObject : nil);
+
+	if (config == nil || server == nil || login == nil) {
+		[self openAddBouncerSheetFillingIn:nil];
+
+		return;
+	}
+
+	NSString *password = [IRCBouncerAccount bouncerPasswordOfServerAddedByHand:config];
+
+	[self openAddBouncerSheetFillingIn:^(TDCAddBouncerSheet *sheet) {
+		[sheet fillInAddress:server.serverAddress
+						port:server.serverPort
+					 secured:server.prefersSecuredConnection
+					username:login[0]
+					password:password];
+
+		sheet.linksServersAddedByHand = YES;
+	}];
+}
+
+- (void)addBouncerWithSetupLink:(NSString *)location
+{
+	NSParameterAssert(location != nil);
+
+	NSURLComponents *components = [NSURLComponents componentsWithString:location];
+
+	NSMutableDictionary<NSString *, NSString *> *values = [NSMutableDictionary dictionary];
+
+	for (NSURLQueryItem *item in components.queryItems) {
+		if (item.value) {
+			values[item.name.lowercaseString] = item.value;
+		}
+	}
+
+	NSString *address = [values[@"host"] trim];
+
+	/* A link never carries a password: one in it is left out */
+	if (address.length == 0) {
+		[self openAddBouncerSheetFillingIn:nil];
+
+		return;
+	}
+
+	NSString *tls = values[@"tls"].lowercaseString;
+
+	BOOL secured = (tls == nil || [tls isEqualToString:@"1"] || [tls isEqualToString:@"true"] || [tls isEqualToString:@"yes"]);
+
+	NSInteger portValue = values[@"port"].integerValue;
+
+	uint16_t port = (((portValue > 0 && portValue <= UINT16_MAX)) ? (uint16_t)portValue : ((secured) ? 6697 : 6667));
+
+	NSString *username = ([values[@"user"] trim] ?: @"");
+
+	[self openAddBouncerSheetFillingIn:^(TDCAddBouncerSheet *sheet) {
+		[sheet fillInAddress:address port:port secured:secured username:username password:nil];
+	}];
+}
+
+- (void)openAddBouncerSheetFillingIn:(nullable void (^)(TDCAddBouncerSheet *sheet))fillIn
 {
 	[windowController() popMainWindowSheetIfExists];
 
@@ -217,19 +284,13 @@ NS_ASSUME_NONNULL_BEGIN
 		[weakSelf addServerFilledInWith:config];
 	}];
 
-	/* Its address and login, the network left out */
-	IRCClientConfig *config = client.config;
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	/* "No bouncer yet?" (not in the App Store build) */
+	sheet.hostingOfferURL = [NSURL URLWithString:TXWebsiteZNCHost];
+#endif
 
-	IRCServer *server = config.serverList.firstObject;
-
-	NSArray<NSString *> *login = ((config) ? [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config].firstObject : nil);
-
-	if (config && server && login) {
-		[sheet fillInAddress:server.serverAddress
-						port:server.serverPort
-					 secured:server.prefersSecuredConnection
-					username:login[0]
-					password:[IRCBouncerAccount bouncerPasswordOfServerAddedByHand:config]];
+	if (fillIn) {
+		fillIn(sheet);
 	}
 
 	[sheet beginInWindow:TVCMainWindow.currentWindow];
