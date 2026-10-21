@@ -205,6 +205,13 @@ NS_ASSUME_NONNULL_BEGIN
 	[worldController() save];
 }
 
+- (void)toggleGroupingServersByBouncer:(nullable id)sender
+{
+	TVCMainWindow *window = mainWindow();
+
+	window.serverListGroupsServersByBouncer = (window.serverListGroupsServersByBouncer == NO);
+}
+
 - (void)markAllAsRead:(nullable id)sender
 {
 	[mainWindow() markAllAsRead];

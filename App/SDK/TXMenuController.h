@@ -216,6 +216,7 @@ enum
 	MTMMWindowResetWindowToDefaultSizeSeparator = 811, // "-"
 	MTMMWindowMainWindow = 812, // "Main Window"
 	MTMMWindowOpenInNewWindow = 820, // "Open in New Window"
+	MTMMWindowGroupServersByBouncer = 821, // "Group Servers by Bouncer"
 	MTMMWindowAddressBook = 813, // "Address Book"
 	MTMMWindowIgnoreList = 814, // "Ignore List"
 	MTMMWindowViewLogs = 815, // "View Logs"
@@ -489,6 +490,7 @@ enum
 - (IBAction)showMainWindow:(nullable id)sender;
 
 - (IBAction)sortChannelListNames:(nullable id)sender;
+- (IBAction)toggleGroupingServersByBouncer:(nullable id)sender;
 
 - (IBAction)toggleFullscreen:(nullable id)sender;
 @end

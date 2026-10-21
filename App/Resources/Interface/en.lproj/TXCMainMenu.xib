@@ -894,6 +894,12 @@ CQ
                                     <action selector="sortChannelListNames:" target="267" id="2579"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Group Servers by Bouncer" tag="821" id="gSb-Bn-c01">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleGroupingServersByBouncer:" target="267" id="gSb-Bn-c02"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" tag="808" id="EnE-LZ-pWA"/>
                             <menuItem title="Center Window" tag="809" id="1524">
                                 <modifierMask key="keyEquivalentModifierMask"/>

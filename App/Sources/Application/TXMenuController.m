@@ -928,6 +928,17 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
+		case MTMMWindowGroupServersByBouncer: // "Group Servers by Bouncer", shown once a server goes through a bouncer
+		{
+			TVCMainWindow *window = TVCMainWindow.currentWindow;
+
+			menuItem.hidden = (window.mainWindow == NO || [mainWindow() serverListHasServersOfBouncers] == NO);
+
+			menuItem.state = (([mainWindow() serverListGroupsServersByBouncer]) ? NSControlStateValueOn : NSControlStateValueOff);
+
+			return (window.isPopOut == NO);
+		}
+
 		case MTMMWindowMainWindow: // "Main Window"
 		{
 			BOOL isMainWindowMain = mainWindow().mainWindow;

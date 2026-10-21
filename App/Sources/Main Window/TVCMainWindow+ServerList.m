@@ -578,12 +578,36 @@ NS_ASSUME_NONNULL_BEGIN
 /* Account identifiers of the bouncer sections folded in the server list */
 static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Main Window -> Folded Bouncers";
 
+/* Window → Group Servers by Bouncer (off: a plain list) */
+static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Window -> Main Window -> Group Servers by Bouncer";
+
+- (BOOL)serverListGroupsServersByBouncer
+{
+	return [RZUserDefaults() boolForKey:TVCMainWindowGroupsServersByBouncerDefaultsKey];
+}
+
+- (void)setServerListGroupsServersByBouncer:(BOOL)groupsServersByBouncer
+{
+	if ([self serverListGroupsServersByBouncer] == groupsServersByBouncer) {
+		return;
+	}
+
+	[RZUserDefaults() setBool:groupsServersByBouncer forKey:TVCMainWindowGroupsServersByBouncerDefaultsKey];
+
+	[self reloadServerListStructure];
+}
+
 - (BOOL)serverListShowsBouncerHeadings
 {
-	if (self.isPopOut) {
+	if (self.isPopOut || [self serverListGroupsServersByBouncer] == NO) {
 		return NO;
 	}
 
+	return [self serverListHasServersOfBouncers];
+}
+
+- (BOOL)serverListHasServersOfBouncers
+{
 	for (IRCClient *client in worldController().clientList) {
 		NSString *accountIdentifier = client.config.bouncerAccountIdentifier;
 

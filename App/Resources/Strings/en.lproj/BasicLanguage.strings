@@ -92,3 +92,6 @@
 "bnc-m3" = "Edit Bouncer…";
 "bnc-k1" = "soju";
 "bnc-k2" = "ZNC";
+
+/* A server going through a bouncer, on hover in the server list */
+"bnc-t1" = "Through %@";

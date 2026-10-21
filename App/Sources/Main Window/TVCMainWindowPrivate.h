@@ -154,10 +154,13 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowMouseLocation) {
 
 - (void)shiftSelection:(nullable IRCTreeItem *)oldItem toItem:(nullable IRCTreeItem *)newItem options:(TVCMainWindowShiftSelectionFlags)selectionOptions;
 
-/* Bouncer headings: a server linked to a bouncer account follows its bouncer's
- heading. While there are any, a server added, removed or moved reloads the
- list (its rows aren't the server list's order any more). */
+/* Bouncer headings, shown when the servers are grouped by bouncer: a server
+ linked to a bouncer account follows its bouncer's heading. While there are
+ any, a server added, removed or moved reloads the list (its rows aren't the
+ server list's order any more). */
 - (BOOL)serverListShowsBouncerHeadings;
+- (BOOL)serverListHasServersOfBouncers; // any server linked to a bouncer account
+@property (nonatomic, assign) BOOL serverListGroupsServersByBouncer; // off by default
 - (void)reloadServerListStructure;
 
 - (NSMenu *)serverListMenuForBouncerHeading:(TVCServerListBouncerHeading *)heading; // right-click on a heading

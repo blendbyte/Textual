@@ -41,6 +41,7 @@
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 #import "IRCClientPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
 #import "IRCChannel.h"
 #import "IRCClientConfig.h"
 #import "IRCChannelConfig.h"
@@ -628,6 +629,21 @@ NS_ASSUME_NONNULL_BEGIN
 	[super updateDrawingForWithAppearance:appearance inContext:drawingContext];
 
 	[self updateNetworkIconWithAppearance:appearance inContext:drawingContext];
+
+	[self updateBouncerToolTip];
+}
+
+/* A server going through a bouncer names it on hover (without headings,
+ nothing else in the list shows it) */
+- (void)updateBouncerToolTip
+{
+	IRCBouncerAccount *account = ((IRCClient *)self.cellItem).bouncerAccount;
+
+	NSString *toolTip = ((account) ? TXTLS(@"BasicLanguage[bnc-t1]", account.displayName) : nil);
+
+	if (NSObjectsAreEqual(self.toolTip, toolTip) == NO) {
+		self.toolTip = toolTip;
+	}
 }
 
 - (void)updateNetworkIconWithAppearance:(TVCServerListAppearance *)appearance inContext:(TVCServerListCellDrawingContext *)drawingContext
