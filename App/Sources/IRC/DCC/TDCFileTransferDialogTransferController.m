@@ -42,7 +42,6 @@
 #import "GCDAsyncSocket.h"
 #import "TXGlobalModels.h"
 #import "IRCClientPrivate.h"
-#import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
 #import "TPCPreferencesUserDefaultsPrivate.h"
 #import "TLOLocalization.h"
@@ -354,17 +353,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 - (void)open
 {
 	[self openWithPath:nil];
-}
-
-- (void)openWithPathOrUserDownloads
-{
-	NSString *path = nil;
-
-	if (self.path == nil) {
-		path = [TPCPathInfo userDownloads];
-	}
-
-	[self openWithPath:path];
 }
 
 - (void)openWithPath:(nullable NSString *)path

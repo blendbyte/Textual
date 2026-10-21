@@ -100,7 +100,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)open;
-- (void)openWithPathOrUserDownloads;
 - (void)openWithPath:(nullable NSString *)path; // Only changes path if self.path == nil
 
 - (void)close;

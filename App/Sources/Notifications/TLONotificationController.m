@@ -736,7 +736,7 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 			return;
 		}
 
-		[fileTransfer openWithPathOrUserDownloads];
+		[[TXSharedApplication sharedFileTransferDialog] startFileTransfers:@[fileTransfer]];
 	}
 
 	/* Handle all other IRC related notifications. */

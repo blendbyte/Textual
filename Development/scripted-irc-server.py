@@ -558,7 +558,7 @@ async def scenario_dcc_receive(client):
 	await peer.listen(Events.dcc_port)
 
 	await client.send(f":alice!a@peer.test PRIVMSG {client.nickname} :{ctcp(f'DCC SEND {name} {DCC_ADDRESS} {Events.dcc_port} {len(data)}')}")
-	await wait_while_collecting(client, peer.done, 15)
+	await wait_while_collecting(client, peer.done, 60)  # time to accept by hand with "Ask me"
 	peer.close()
 
 	path = os.path.join(DOWNLOADS, name)

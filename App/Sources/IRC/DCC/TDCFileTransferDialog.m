@@ -258,9 +258,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateClearButton
 {
-	NSArray *stoppedFileTransfers = [self stoppedFileTransfers];
+	NSArray *finishedFileTransfers = [self finishedFileTransfers];
 
-	self.clearButton.enabled = (stoppedFileTransfers.count > 0);
+	self.clearButton.enabled = (finishedFileTransfers.count > 0);
 }
 
 - (void)addFileTransfer:(TDCFileTransferDialogTransferController *)controller
@@ -360,14 +360,11 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case 3006: // Reveal In Finder
 		{
+			/* A file being sent is there from the start */
 			for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
 				TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
 
-				if (fileTransfer.isSender != NO) {
-					continue;
-				}
-
-				if (transferStatus == TDCFileTransferDialogTransferStatusComplete) {
+				if (fileTransfer.isSender || transferStatus == TDCFileTransferDialogTransferStatusComplete) {
 					return YES;
 				}
 			}
@@ -381,43 +378,50 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clear:(nullable id)sender
 {
-	NSArray *stoppedFileTransfers = [self stoppedFileTransfers];
+	NSArray *finishedFileTransfers = [self finishedFileTransfers];
 
-	[stoppedFileTransfers makeObjectsPerformSelector:@selector(prepareForPermanentDestruction)];
+	[finishedFileTransfers makeObjectsPerformSelector:@selector(prepareForPermanentDestruction)];
 
-	[self.fileTransfersController removeObjects:stoppedFileTransfers];
+	[self.fileTransfersController removeObjects:finishedFileTransfers];
 
 	[self updateClearButton];
 }
 
 - (void)startTransferOfFile:(nullable id)sender
 {
+	[self startFileTransfers:[self selectedFileTransfers]];
+}
+
+- (void)startFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
+{
+	NSParameterAssert(fileTransfers != nil);
+
 	NSString *savePath = self.downloadDestination.URL.path;
 
 	NSMutableArray<TDCFileTransferDialogTransferController *> *fileTransfersPending = [NSMutableArray array];
 
 	/* Open all file transfers who are senders or have a path */
-	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
+	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
 		TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
 
 		if (transferStatus != TDCFileTransferDialogTransferStatusStopped &&
 			transferStatus != TDCFileTransferDialogTransferStatusRecoverableError)
 		{
-			return;
+			continue;
 		}
 
 		if (fileTransfer.isSender || fileTransfer.path != nil) {
 			[fileTransfer open];
 
-			return;
+			continue;
 		} else if (fileTransfer.path == nil && savePath != nil) {
 			[fileTransfer openWithPath:savePath];
 
-			return;
+			continue;
 		}
 
 		[fileTransfersPending addObject:fileTransfer];
-	}];
+	}
 
 	/* If there are file transfers that weren't opened because of a missing
 	 path, then we now prompt the user for where they want to save the files. */
@@ -484,11 +488,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)revealReceivedFileInFinder:(nullable id)sender
 {
 	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
-		if (fileTransfer.isSender != NO) {
+		NSString *filePath = fileTransfer.filePath;
+
+		if (filePath == nil || (fileTransfer.isSender == NO && fileTransfer.transferStatus != TDCFileTransferDialogTransferStatusComplete)) {
 			return;
 		}
 
-		[RZWorkspace() selectFile:fileTransfer.filePath inFileViewerRootedAtPath:@""];
+		[RZWorkspace() selectFile:filePath inFileViewerRootedAtPath:@""];
 	}];
 }
 
@@ -664,10 +670,15 @@ NS_ASSUME_NONNULL_BEGIN
 	return receiverCount;
 }
 
-- (NSArray<TDCFileTransferDialogTransferController *> *)stoppedFileTransfers
+/* Done or failed: not offers waiting for an answer, nor transfers you stopped */
+- (NSArray<TDCFileTransferDialogTransferController *> *)finishedFileTransfers
 {
 	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *fileTransfer) {
-		return fileTransfer.isStopped;
+		TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
+
+		return (transferStatus == TDCFileTransferDialogTransferStatusComplete ||
+				transferStatus == TDCFileTransferDialogTransferStatusFatalError ||
+				transferStatus == TDCFileTransferDialogTransferStatusRecoverableError);
 	}];
 }
 

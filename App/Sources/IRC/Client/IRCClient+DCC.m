@@ -123,16 +123,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *description = nil;
 
+	NSString *filesize = [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile];
+
 	switch (type) {
 		case TXNotificationTypeFileTransferSendSuccessful:
 		{
-			description = TXTLS(@"Notifications[fhn-dd]", filename, totalFilesize);
+			description = TXTLS(@"Notifications[fhn-dd]", filename, filesize);
 
 			break;
 		}
 		case TXNotificationTypeFileTransferReceiveSuccessful:
 		{
-			description = TXTLS(@"Notifications[oqh-pn]", filename, totalFilesize);
+			description = TXTLS(@"Notifications[oqh-pn]", filename, filesize);
 
 			break;
 		}
@@ -150,7 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case TXNotificationTypeFileTransferReceiveRequested:
 		{
-			description = TXTLS(@"Notifications[wik-wq]", filename, totalFilesize);
+			description = TXTLS(@"Notifications[wik-wq]", filename, filesize);
 
 			break;
 		}
@@ -418,7 +420,7 @@ present_error:
 	NSParameterAssert(filename != nil);
 	NSParameterAssert(address != nil);
 
-	NSString *message = TXTLS(@"IRC[snf-45]", nickname, filename, totalFilesize);
+	NSString *message = TXTLS(@"IRC[snf-45]", nickname, filename, [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile]);
 
 	[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
 

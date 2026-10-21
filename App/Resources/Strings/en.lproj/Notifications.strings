@@ -98,11 +98,11 @@
 "bif-2c" = "Disconnection successful";
 "xl5-dn" = "%1$@ invited you to join %2$@";
 "fkt-p3" = "%1$@ kicked you from %2$@ with reason: %3$@";
-"fhn-dd" = "%1$@ (%2$qi bytes)";
-"oqh-pn" = "%1$@ (%2$qi bytes)";
+"fhn-dd" = "%1$@ (%2$@)";
+"oqh-pn" = "%1$@ (%2$@)";
 "9r4-cq" = "%@";
 "cqq-ci" = "%@";
-"wik-wq" = "%1$@ (%2$qi bytes)";
+"wik-wq" = "%1$@ (%2$@)";
 "97r-0l" = "User with nickname “%1$@” is available";
 "rif-9r" = "User with nickname “%1$@” is no longer available";
 "xk2-1l" = "User with nickname “%1$@” is now available";

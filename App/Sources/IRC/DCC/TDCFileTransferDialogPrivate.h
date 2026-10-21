@@ -106,6 +106,10 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDropAnswer) {
 
 - (BOOL)fileTransferExistsWithToken:(NSString *)transferToken;
 
+/* Accept offers and restart stopped or failed transfers: into the download
+ folder from Settings, or one chosen now when that is "Ask each time" */
+- (void)startFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;
+
 /* The transfer with this peer on this client that a DCC reply refers to:
  by token when there is one, otherwise by port. */
 - (nullable TDCFileTransferDialogTransferController *)fileTransferForClient:(IRCClient *)client
