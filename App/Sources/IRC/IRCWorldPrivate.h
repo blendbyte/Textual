@@ -40,7 +40,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCBouncerAccount;
+@class IRCBouncerAccount, IRCBouncerNetwork;
 
 TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 
@@ -92,6 +92,20 @@ TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 
 /* Its servers stay as normal servers (unlinked, same address and login) or go too */
 - (void)removeBouncerAccount:(IRCBouncerAccount *)account keepServers:(BOOL)keepServers;
+
+/* The Add Bouncer sheet: the account (or the one for the same bouncer and
+ login, updated), and a server for each network (named
+ after it, the bouncer's nickname, no autojoin of its own: the bouncer
+ rejoins); a network in linkedClients (by identifier) links that server added
+ by hand instead. Returns the servers added and linked, in that order. */
+- (NSArray<IRCClient *> *)addBouncerAccount:(IRCBouncerAccount *)account
+							   withNetworks:(NSArray<IRCBouncerNetwork *> *)networks
+							  linkedClients:(NSDictionary<NSString *, IRCClient *> *)linkedClients
+									connect:(BOOL)connect;
+
+/* A server for this network of the bouncer already: linked to an account for
+ the same bouncer and login, or added by hand (see -[IRCBouncerAccount networkOfServerAddedByHand:]) */
+- (nullable IRCClient *)clientAddedByHandForNetwork:(IRCBouncerNetwork *)network ofAccount:(IRCBouncerAccount *)account;
 
 /* Read again from the preferences (after an import) */
 - (void)reloadBouncerAccounts;

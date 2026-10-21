@@ -37,7 +37,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCServer;
+@class IRCClientConfig, IRCServer;
 
 /* Which bouncer an account logs in to: found when it is added */
 typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
@@ -68,6 +68,12 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
  TLS, and for ZNC the login "username/network:password" as the server
  password (ZNC offers SASL only with an extra module). soju logs in with SASL. */
 - (IRCServer *)serverForNetwork:(nullable NSString *)network;
+
+/* The network a server added by hand reaches through this bouncer: its
+ address and port are the account's, and its username or server password
+ is "username/network" (ZNC's and soju's login, "@client" ignored); nil
+ for anything else */
+- (nullable NSString *)networkOfServerAddedByHand:(IRCClientConfig *)config;
 
 - (void)writePasswordToKeychain;
 - (void)destroyPasswordKeychainItem;

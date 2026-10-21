@@ -69,6 +69,10 @@
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
+#import "TDCAddBouncerSheetPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
+#import "IRCClientConfigPrivate.h"
+#import "IRCServerPrivate.h"
 #import "TDCWelcomeSheetPrivate.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesImportExport.h"
@@ -151,10 +155,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addServer:(nullable id)sender
 {
+	[self addServerFilledInWith:nil];
+}
+
+- (void)addServerFilledInWith:(nullable IRCClientConfig *)config
+{
 	[windowController() popMainWindowSheetIfExists];
 
 	TDCServerPropertiesSheet *sheet =
 	[[TDCServerPropertiesSheet alloc] initWithClient:nil];
+
+	if (config) {
+		[sheet fillInNewServer:config];
+	}
 
 	sheet.delegate = self;
 
@@ -163,6 +176,42 @@ NS_ASSUME_NONNULL_BEGIN
 	[sheet startWithSelection:TDCServerPropertiesSheetSelectionDefault context:nil];
 
 	[windowController() addWindowToWindowList:sheet];
+}
+
+/* The Add Bouncer sheet: the account and a server per network it adds here */
+- (void)addBouncer:(nullable id)sender
+{
+	[windowController() popMainWindowSheetIfExists];
+
+	__weak TXMenuController *weakSelf = self;
+
+	TDCAddBouncerSheet *sheet =
+	[[TDCAddBouncerSheet alloc] initWithExistingClient:^IRCClient *(IRCBouncerNetwork *network, IRCBouncerAccount *account) {
+		return [worldController() clientAddedByHandForNetwork:network ofAccount:account];
+	} add:^(IRCBouncerAccount *account, NSArray<IRCBouncerNetwork *> *networks, NSDictionary<NSString *, IRCClient *> *linkedClients, BOOL connect) {
+		NSArray *clients = [worldController() addBouncerAccount:account withNetworks:networks linkedClients:linkedClients connect:connect];
+
+		IRCClient *firstClient = clients.firstObject;
+
+		if (firstClient) {
+			[mainWindow() select:firstClient];
+		}
+	} addAsServer:^(NSString *address, uint16_t port, BOOL secured) {
+		IRCServerMutable *server = [IRCServerMutable new];
+
+		server.serverAddress = address;
+		server.serverPort = port;
+		server.prefersSecuredConnection = secured;
+
+		IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+		config.connectionName = address;
+		config.serverList = @[[server copy]];
+
+		[weakSelf addServerFilledInWith:config];
+	}];
+
+	[sheet beginInWindow:TVCMainWindow.currentWindow];
 }
 
 - (void)duplicateServer:(nullable id)sender

@@ -131,6 +131,7 @@ enum
 	MTMMServerServerProperties = 514, // "Server Properties…"
 	MTMMServerMuteNetwork = 515, // "Mute Network"
 	MTMMServerOpenInNewWindow = 516, // "Open in New Window"
+	MTMMServerAddBouncer = 517, // "Add Bouncer…"
 
 	/* Main menu - Channel menu */
 	MTMMChannelJoinChannel = 600, // "Join Channel"
@@ -291,6 +292,7 @@ enum
 
 	/* Empty server list menu */
 	MTMainWindowServerListAddServer = 1400, // "Add Server…"
+	MTMainWindowServerListAddBouncer = 1401, // "Add Bouncer…"
 
 	/* User context menu */
 	MTUserControlsLowestTag = 1600,
@@ -396,6 +398,7 @@ enum
 - (IBAction)deleteChannel:(nullable id)sender;
 
 - (IBAction)addServer:(nullable id)sender;
+- (IBAction)addBouncer:(nullable id)sender;
 - (IBAction)duplicateServer:(nullable id)sender;
 - (IBAction)deleteServer:(nullable id)sender;
 

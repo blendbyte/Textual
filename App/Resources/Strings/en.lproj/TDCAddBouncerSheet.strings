@@ -1,0 +1,102 @@
+/* *********************************************************************
+ *                  _____         _               _
+ *                 |_   _|____  _| |_ _   _  __ _| |
+ *                   | |/ _ \ \/ / __| | | |/ _` | |
+ *                   | |  __/>  <| |_| |_| | (_| | |
+ *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
+ *
+ *    Copyright (c) 2026 Blendbyte GmbH & respective contributors.
+ *       Please see Acknowledgements.pdf for additional information.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  * Neither the name of Textual, "Codeux Software, LLC", nor the
+ *    names of its contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *********************************************************************** */
+
+
+/* Add Bouncer (TDCAddBouncerSheet.swift) */
+"ab-title" = "Add Bouncer";
+
+/* Where and who */
+"ab-1-t" = "Add a Bouncer";
+"ab-1-s" = "ZNC or soju. Textual finds its networks.";
+"ab-addr" = "Address";
+"ab-port" = "Port";
+"ab-tls" = "Secure connection (TLS)";
+"ab-user" = "Username";
+"ab-pass" = "Password";
+"ab-1-n" = "Your bouncer’s own login, without a network name.";
+"ab-b-cancel" = "Cancel";
+"ab-b-connect" = "Connect";
+
+/* The check */
+"ab-2-t" = "Checking %@";
+"ab-2-s" = "This takes a few seconds.";
+"ab-c-cing" = "Connecting to %@…";
+"ab-c-sec" = "Connected (secure)";
+"ab-c-nsec" = "Connected (not secure)";
+"ab-c-nconn" = "Not connected";
+"ab-c-ling" = "Logging in as %@…";
+"ab-c-lin" = "Logged in as %@";
+"ab-c-lno" = "Not logged in";
+"ab-c-soju" = "soju — bouncer networks supported";
+"ab-c-sojuv" = "soju %@ — bouncer networks supported";
+"ab-c-znc" = "ZNC";
+"ab-c-nbnc" = "Neither ZNC nor soju";
+"ab-c-ring" = "Reading your networks…";
+"ab-c-rin" = "Networks read";
+
+"ab-e-conn" = "Textual can’t reach %@ on port %@. Check the address and port, and that the bouncer is running.";
+"ab-e-time" = "%@ didn’t answer on port %@. Check the port, and whether the bouncer expects a secure connection.";
+"ab-e-list" = "%@ didn’t send its list of networks. Try again in a moment.";
+"ab-e-cert" = "The certificate of %@ isn’t trusted. Look at it, and trust it only if you expect it, for example for a bouncer you run yourself.";
+"ab-e-login" = "The bouncer refused the login. Check the username and password; for ZNC use your ZNC login, not the network’s.";
+"ab-e-nbnc" = "%@ is an IRC server, but not ZNC or soju. Add it as a normal server instead?";
+"ab-e-clsd" = "The bouncer ended the connection.";
+"ab-e-said" = "It said: “%@”";
+"ab-e-det" = "Details: %@";
+"ab-b-back" = "Back";
+"ab-b-retry" = "Try Again";
+"ab-b-cert" = "Show Certificate…";
+"ab-b-server" = "Add as Server…";
+
+/* The networks */
+"ab-3-t1" = "1 network on your bouncer";
+"ab-3-tn" = "%@ networks on your bouncer";
+"ab-3-t0" = "No networks on your bouncer";
+"ab-3-s" = "%@ at %@";
+"ab-3-st-c" = "Connected";
+"ab-3-st-cing" = "Connecting";
+"ab-3-st-d" = "Disconnected";
+"ab-3-in" = "Already in Textual";
+"ab-3-hand" = "Added by hand before: ticked, it is linked to the bouncer instead of added again";
+"ab-3-none" = "No networks yet. Add one on your bouncer, then Refresh.";
+"ab-now" = "Connect now";
+"ab-notify" = "Tell me when networks are added or removed";
+"ab-3-n" = "Channels stay with the bouncer: Textual doesn’t join them a second time.";
+"ab-b-refresh" = "Refresh";
+"ab-b-add0" = "Add Networks";
+"ab-b-add1" = "Add 1 Network";
+"ab-b-addn" = "Add %@ Networks";

@@ -278,6 +278,130 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	[self save];
 }
 
+- (NSArray<IRCClient *> *)addBouncerAccount:(IRCBouncerAccount *)account
+							   withNetworks:(NSArray<IRCBouncerNetwork *> *)networks
+							  linkedClients:(NSDictionary<NSString *, IRCClient *> *)linkedClients
+									connect:(BOOL)connect
+{
+	NSParameterAssert(account != nil);
+	NSParameterAssert(networks != nil);
+	NSParameterAssert(linkedClients != nil);
+
+	/* The same bouncer and login again: that account, with what was typed now */
+	for (IRCBouncerAccount *existingAccount in self.bouncerAccounts) {
+		if ([existingAccount.serverAddress isEqualToStringIgnoringCase:account.serverAddress] == NO ||
+			existingAccount.serverPort != account.serverPort ||
+			[existingAccount.username isEqualToStringIgnoringCase:account.username] == NO)
+		{
+			continue;
+		}
+
+		IRCBouncerAccountMutable *updatedAccount = [existingAccount mutableCopy];
+
+		updatedAccount.kind = account.kind;
+		updatedAccount.prefersSecuredConnection = account.prefersSecuredConnection;
+		updatedAccount.password = account.password;
+		updatedAccount.checksForNetworkChanges = account.checksForNetworkChanges;
+
+		account = [updatedAccount copy];
+
+		break;
+	}
+
+	[self addBouncerAccount:account];
+
+	NSMutableArray<IRCClient *> *addedClients = [NSMutableArray array];
+	NSMutableArray<IRCClient *> *linkedClientsInOrder = [NSMutableArray array];
+
+	for (IRCBouncerNetwork *network in networks) {
+		IRCClient *client = linkedClients[network.networkIdentifier];
+
+		IRCClientConfigMutable *config = nil;
+
+		if (client) {
+			config = [client.config mutableCopy];
+		} else {
+			config = [IRCClientConfigMutable new];
+
+			config.connectionName = network.name;
+
+			NSString *nickname = network.attributes[@"nickname"];
+
+			if (nickname.length > 0) {
+				config.nickname = nickname;
+			}
+
+			/* Shown in Server Properties until it has its own page; the login stays with the account */
+			IRCServerMutable *server = [[account serverForNetwork:network.networkIdentifier] mutableCopy];
+
+			server.serverPassword = nil;
+
+			config.serverList = @[[server copy]];
+		}
+
+		config.bouncerAccountIdentifier = account.uniqueIdentifier;
+		config.bouncerNetwork = network.networkIdentifier;
+
+		/* The bouncer rejoins its channels */
+		config.zncIgnoreConfiguredAutojoin = YES;
+
+		if (client) {
+			[client updateConfig:config];
+
+			[linkedClientsInOrder addObject:client];
+		} else {
+			client = [self createClientWithConfig:config reload:YES];
+
+			[addedClients addObject:client];
+		}
+
+		if (connect && client.isConnected == NO && client.isConnecting == NO) {
+			[client connect];
+		}
+	}
+
+	[self save];
+
+	return [addedClients arrayByAddingObjectsFromArray:linkedClientsInOrder];
+}
+
+- (nullable IRCClient *)clientAddedByHandForNetwork:(IRCBouncerNetwork *)network ofAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(network != nil);
+	NSParameterAssert(account != nil);
+
+	for (IRCClient *client in self.clientList) {
+		/* Already linked to an account for the same bouncer and login */
+		IRCBouncerAccount *linkedAccount = client.bouncerAccount;
+
+		if (linkedAccount) {
+			if ([linkedAccount.serverAddress isEqualToStringIgnoringCase:account.serverAddress] &&
+				linkedAccount.serverPort == account.serverPort &&
+				[linkedAccount.username isEqualToStringIgnoringCase:account.username] &&
+				[client.config.bouncerNetwork isEqualToString:network.networkIdentifier])
+			{
+				return client;
+			}
+
+			continue;
+		}
+
+		NSString *networkName = [account networkOfServerAddedByHand:client.config];
+
+		if (networkName == nil) {
+			continue;
+		}
+
+		if ([networkName isEqualToStringIgnoringCase:network.name] ||
+			[networkName isEqualToStringIgnoringCase:network.networkIdentifier])
+		{
+			return client;
+		}
+	}
+
+	return nil;
+}
+
 - (void)removeBouncerAccount:(IRCBouncerAccount *)account keepServers:(BOOL)keepServers
 {
 	NSParameterAssert(account != nil);

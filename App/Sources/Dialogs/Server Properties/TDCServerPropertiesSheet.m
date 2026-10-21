@@ -327,6 +327,16 @@ NS_ASSUME_NONNULL_BEGIN
 				   }];
 }
 
+- (void)fillInNewServer:(IRCClientConfig *)config
+{
+	NSParameterAssert(config != nil);
+	NSParameterAssert(self.client == nil);
+
+	self.config = [config mutableCopy];
+
+	[self loadConfig];
+}
+
 - (void)loadConfig
 {
 	for (TDCServerPropertiesPane *pane in self.panes) {

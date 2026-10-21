@@ -41,6 +41,7 @@
 #import "IRC.h"
 #import "IRCConnectionConfig.h"
 #import "IRCServerPrivate.h"
+#import "IRCClientConfigPrivate.h"
 #import "IRCBouncerAccountPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -229,6 +230,60 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return [TLOKeychain passwordOfKind:TLOKeychainItemKindBouncerPassword forIdentifier:self.uniqueIdentifier];
+}
+
+- (nullable NSString *)networkOfServerAddedByHand:(IRCClientConfig *)config
+{
+	NSParameterAssert(config != nil);
+
+	if (config.bouncerAccountIdentifier != nil) {
+		return nil;
+	}
+
+	IRCServer *server = config.serverList.firstObject;
+
+	if (server == nil ||
+		[server.serverAddress isEqualToStringIgnoringCase:self.serverAddress] == NO ||
+		server.serverPort != self.serverPort)
+	{
+		return nil;
+	}
+
+	NSMutableArray<NSString *> *logins = [NSMutableArray array];
+
+	if (config.username.length > 0) {
+		[logins addObject:config.username];
+	}
+
+	NSString *serverPassword = (server.serverPassword ?: server.serverPasswordFromKeychain);
+
+	NSRange colon = [serverPassword rangeOfString:@":"];
+
+	if (colon.location != NSNotFound) {
+		[logins addObject:[serverPassword substringToIndex:colon.location]];
+	}
+
+	for (NSString *login in logins) {
+		NSRange slash = [login rangeOfString:@"/"];
+
+		if (slash.location == NSNotFound || [[login substringToIndex:slash.location] isEqualToStringIgnoringCase:self.username] == NO) {
+			continue;
+		}
+
+		NSString *network = [login substringFromIndex:NSMaxRange(slash)];
+
+		NSRange at = [network rangeOfString:@"@"];
+
+		if (at.location != NSNotFound) {
+			network = [network substringToIndex:at.location];
+		}
+
+		if (network.length > 0) {
+			return network;
+		}
+	}
+
+	return nil;
 }
 
 - (void)writePasswordToKeychain

@@ -69,6 +69,9 @@ typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
 - (instancetype)initWithClient:(nullable IRCClient *)client NS_DESIGNATED_INITIALIZER;
 
 - (void)startWithSelection:(TDCServerPropertiesSheetSelection)selection context:(nullable id)context;
+
+/* A new server, filled in (before -startWithSelection:) */
+- (void)fillInNewServer:(IRCClientConfig *)config;
 @end
 
 @protocol TDCServerPropertiesSheetDelegate <NSObject>

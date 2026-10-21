@@ -45,6 +45,11 @@
                         <action selector="addServer:" target="267" id="2606"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Add Bouncer…" tag="1401" id="aB1-bN-c01">
+                    <connections>
+                        <action selector="addBouncer:" target="267" id="aB1-bN-c02"/>
+                    </connections>
+                </menuItem>
             </items>
             <connections>
                 <outlet property="delegate" destination="267" id="oPr-nd-Yxd"/>
@@ -584,6 +589,12 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="addServer:" target="267" id="2605"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Add Bouncer…" tag="517" id="aB1-bN-c03">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="addBouncer:" target="267" id="aB1-bN-c04"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Duplicate Server" tag="509" id="304">

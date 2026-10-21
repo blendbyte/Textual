@@ -132,6 +132,47 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([[self accountOfKind:IRCBouncerKindZNC password:nil] serverForNetwork:@"libera"].serverPassword);
 }
 
+/* Servers added by hand before (dan/libera logins) are recognised, to be
+ linked: the network from the username or the server password, only with
+ the account's address, port and user, and not when already linked */
+- (void)testServerAddedByHandIsRecognised
+{
+	IRCBouncerAccount *account = [self accountOfKind:IRCBouncerKindZNC password:@"secret"];
+
+	IRCServerMutable *server = [IRCServerMutable new];
+
+	server.serverAddress = @"BNC.example.com";
+	server.serverPort = 6697;
+	server.serverPassword = @"dan/libera:secret";
+
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	config.serverList = @[[server copy]];
+
+	XCTAssertEqualObjects([account networkOfServerAddedByHand:config], @"libera");
+
+	server.serverPassword = nil;
+
+	config.serverList = @[[server copy]];
+	config.username = @"dan/oftc@laptop";
+
+	XCTAssertEqualObjects([account networkOfServerAddedByHand:config], @"oftc");
+
+	config.username = @"bob/oftc";
+
+	XCTAssertNil([account networkOfServerAddedByHand:config]);
+
+	config.username = @"dan/oftc";
+
+	server.serverPort = 6667;
+
+	config.serverList = @[[server copy]];
+
+	XCTAssertNil([account networkOfServerAddedByHand:config]);
+
+	XCTAssertNil([account networkOfServerAddedByHand:[self configLinkedTo:account network:@"oftc"]]);
+}
+
 /* One change to the account reaches every network linked to it */
 - (void)testPasswordChangeReachesEveryNetwork
 {

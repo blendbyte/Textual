@@ -79,3 +79,7 @@
 #import "IRCConnectionTransportPrivate.h"
 #import "TLOKeychainPrivate.h"
 #import "TLOTimer.h"
+
+// TDCAddBouncerSheet.swift
+#import "IRCBouncerAccountPrivate.h"
+#import "IRCBouncerProbePrivate.h"
