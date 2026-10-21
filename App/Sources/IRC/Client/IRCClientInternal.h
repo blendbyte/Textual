@@ -47,7 +47,7 @@
 @class TDCServerChannelListDialog, TLOFileLogger, TLOTimer;
 @class IRCSASLECDSAKey, IRCSASLSCRAM;
 @class IRCUserList;
-@class IRCBouncerNetworkList;
+@class IRCBouncerNetworkList, IRCZNCNetworkListReader;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -180,6 +180,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
 @property (nonatomic, strong, nullable) IRCBouncerNetworkList *bouncerNetworksReceived; // backs bouncerNetworks
 @property (nonatomic, strong, nullable) IRCBouncerNetworkList *bouncerNetworksBatchList; // while a soju.im/bouncer-networks batch is processed
+@property (nonatomic, strong, nullable) IRCZNCNetworkListReader *zncNetworkListReader; // while the answer to our ListNetworks comes
+@property (nonatomic, copy, nullable) NSDate *zncNetworkListRequestDate;
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
 @property (nonatomic, strong) TLOTimer *autojoinTimer;
 @property (nonatomic, strong) TLOTimer *autojoinNextJoinTimer;
@@ -263,6 +265,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetBouncerNetworks;
 - (void)receiveBouncer:(IRCMessage *)m;
 - (void)processBouncerNetworksBatchMessage:(IRCMessageBatchMessage *)batchMessage;
+- (void)requestBouncerNetworksAfterRegistration;
+- (BOOL)receiveZNCNetworkListLine:(IRCMessage *)m; // YES when it was part of the answer to our ListNetworks
 @end
 
 @interface IRCClient (ZNCInternal)

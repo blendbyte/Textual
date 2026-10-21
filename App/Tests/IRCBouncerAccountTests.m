@@ -217,6 +217,78 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([list networkWithIdentifier:@"1"]);
 }
 
+/* ZNC's ListNetworks answer as captured from ZNC 1.10.3 (1.7 draws the same
+ table), a network without a server included */
+- (void)testZNCNetworkListReadFromItsTable
+{
+	NSArray<NSString *> *lines = @[
+		@"+---------+--------+------------------+------------------------------+----------+",
+		@"| Network | On IRC | IRC Server       | IRC User                     | Channels |",
+		@"+---------+--------+------------------+------------------------------+----------+",
+		@"| ergo    | Yes    | irc.textual.test | zncdan!~u@skgexaezgkdqy.irc  | 0        |",
+		@"| ergotwo | Yes    | irc.textual.test | zncdan2!~u@skgexaezgkdqy.irc | 0        |",
+		@"| offline | No     |                  |                              |          |",
+		@"+---------+--------+------------------+------------------------------+----------+"
+	];
+
+	IRCZNCNetworkListReader *reader = [IRCZNCNetworkListReader new];
+
+	for (NSString *line in lines) {
+		XCTAssertTrue([reader readLine:line], @"%@", line);
+	}
+
+	XCTAssertTrue(reader.finished);
+	XCTAssertFalse([reader readLine:@"Network deleted"]);
+
+	NSArray *names = [reader.networkList.networks valueForKey:@"name"];
+	NSArray *expectedNames = @[@"ergo", @"ergotwo", @"offline"];
+
+	XCTAssertEqualObjects(names, expectedNames);
+
+	IRCBouncerNetwork *ergotwo = [reader.networkList networkWithIdentifier:@"ergotwo"];
+
+	XCTAssertEqualObjects(ergotwo.state, @"connected");
+	XCTAssertEqualObjects(ergotwo.attributes[@"host"], @"irc.textual.test");
+	XCTAssertEqualObjects(ergotwo.attributes[@"nickname"], @"zncdan2");
+
+	XCTAssertEqualObjects([reader.networkList networkWithIdentifier:@"offline"].state, @"disconnected");
+}
+
+/* In German (ZNC's de_DE translation) the words differ and ZNC pads by bytes,
+ so "Kanäle" is a character short; a nickname may have a "|". Without
+ networks, ZNC sends one line instead of the table. */
+- (void)testZNCNetworkListReadInAnotherLanguage
+{
+	NSArray<NSString *> *lines = @[
+		@"+----------+--------+-----------------+------------------+---------+",
+		@"| Netzwerk | Im IRC | IRC-Server      | IRC-Benutzer     | Kanäle |",
+		@"+----------+--------+-----------------+------------------+---------+",
+		@"| libera   | Ja     | irc.libera.chat | dan|away!~d@host | 3       |",
+		@"| oftc     | Nein   |                 |                  |         |",
+		@"+----------+--------+-----------------+------------------+---------+"
+	];
+
+	IRCZNCNetworkListReader *reader = [IRCZNCNetworkListReader new];
+
+	for (NSString *line in lines) {
+		XCTAssertTrue([reader readLine:line], @"%@", line);
+	}
+
+	XCTAssertTrue(reader.finished);
+
+	IRCBouncerNetwork *libera = [reader.networkList networkWithIdentifier:@"libera"];
+
+	XCTAssertEqualObjects(libera.state, @"connected");
+	XCTAssertEqualObjects(libera.attributes[@"nickname"], @"dan|away");
+	XCTAssertEqualObjects([reader.networkList networkWithIdentifier:@"oftc"].state, @"disconnected");
+
+	IRCZNCNetworkListReader *emptyReader = [IRCZNCNetworkListReader new];
+
+	XCTAssertTrue([emptyReader readLine:@"Keine Netzwerke"]);
+	XCTAssertTrue(emptyReader.finished);
+	XCTAssertEqual(emptyReader.networkList.networks.count, 0);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

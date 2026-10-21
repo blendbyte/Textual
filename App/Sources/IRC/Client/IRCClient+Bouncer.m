@@ -50,7 +50,12 @@ NSString * const IRCClientBouncerNetworksDidChangeNotification = @"IRCClientBoun
 /* soju.im/bouncer-networks: a server linked to a soju account logs in to
  the account with SASL and is bound to its network (BOUNCER BIND) before
  registration ends; the bouncer's networks are kept in bouncerNetworks
- (all of them when a list arrives, then each change soju reports). */
+ (all of them when a list arrives, then each change soju reports).
+ ZNC has no such interface: its networks come from ListNetworks to *status,
+ a table read by its layout (IRCZNCNetworkListReader) and kept out of view. */
+
+/* How long the answer to an automatic ListNetworks is waited for */
+static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 
 - (BOOL)isLinkedToSojuAccount
 {
@@ -117,11 +122,66 @@ NSString * const IRCClientBouncerNetworksDidChangeNotification = @"IRCClientBoun
 
 - (void)requestBouncerNetworks
 {
-	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityBouncerNetworks] == NO) {
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityBouncerNetworks]) {
+		[self send:@"BOUNCER", @"LISTNETWORKS", nil];
+
 		return;
 	}
 
-	[self send:@"BOUNCER", @"LISTNETWORKS", nil];
+	if (self.isConnectedToZNC && self.bouncerAccount.kind == IRCBouncerKindZNC) {
+		self.zncNetworkListReader = [IRCZNCNetworkListReader new];
+		self.zncNetworkListRequestDate = [NSDate date];
+
+		[self sendCommand:@"ListNetworks" toZNCModuleNamed:@"status"];
+	}
+}
+
+/* soju sends its list unasked (-notify); ZNC is asked once registered */
+- (void)requestBouncerNetworksAfterRegistration
+{
+	IRCBouncerAccount *account = self.bouncerAccount;
+
+	if (account.kind != IRCBouncerKindZNC || account.checksForNetworkChanges == NO) {
+		return;
+	}
+
+	[self requestBouncerNetworks];
+}
+
+/* A line of the answer to our ListNetworks: read, not shown */
+- (BOOL)receiveZNCNetworkListLine:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	IRCZNCNetworkListReader *reader = self.zncNetworkListReader;
+
+	if (reader == nil) {
+		return NO;
+	}
+
+	if ([m.command isEqualToString:@"PRIVMSG"] == NO || m.paramsCount < 2 || [self nickname:m.senderNickname isZNCUser:@"status"] == NO) {
+		return NO;
+	}
+
+	if ([self.zncNetworkListRequestDate timeIntervalSinceNow] < (-IRCClientZNCNetworkListTimeout)) {
+		self.zncNetworkListReader = nil;
+
+		return NO;
+	}
+
+	if ([reader readLine:[m paramAt:1]] == NO) {
+		return NO;
+	}
+
+	if (reader.finished) {
+		self.zncNetworkListReader = nil;
+
+		self.bouncerNetworksReceived = reader.networkList;
+
+		[self bouncerNetworksChanged];
+	}
+
+	return YES;
 }
 
 - (nullable IRCBouncerNetworkList *)bouncerNetworks
@@ -133,6 +193,9 @@ NSString * const IRCClientBouncerNetworksDidChangeNotification = @"IRCClientBoun
 {
 	self.bouncerNetworksReceived = nil;
 	self.bouncerNetworksBatchList = nil;
+
+	self.zncNetworkListReader = nil;
+	self.zncNetworkListRequestDate = nil;
 }
 
 /* BOUNCER NETWORK <netid> <attributes>; the other replies (BIND and the

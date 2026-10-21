@@ -444,6 +444,19 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.networksMutable[index];
 }
 
+- (void)addNetwork:(IRCBouncerNetwork *)network
+{
+	NSParameterAssert(network != nil);
+
+	NSUInteger index = [self indexOfNetworkWithIdentifier:network.networkIdentifier];
+
+	if (index == NSNotFound) {
+		[self.networksMutable addObject:network];
+	} else {
+		self.networksMutable[index] = network;
+	}
+}
+
 - (IRCBouncerNetworkChange)updateNetwork:(NSString *)networkIdentifier attributes:(NSString *)attributes
 {
 	NSParameterAssert(networkIdentifier != nil);
@@ -518,6 +531,139 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return [dictionary copy];
+}
+
+@end
+
+#pragma mark -
+
+@interface IRCZNCNetworkListReader ()
+@property (nonatomic, assign, readwrite) BOOL finished;
+@property (nonatomic, strong, readwrite) IRCBouncerNetworkList *networkList;
+@property (nonatomic, assign) NSUInteger bordersRead;
+@property (nonatomic, assign) NSUInteger columnCount; // from the header
+@end
+
+@implementation IRCZNCNetworkListReader
+
+- (instancetype)init
+{
+	if ((self = [super init])) {
+		self.networkList = [IRCBouncerNetworkList new];
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (BOOL)readLine:(NSString *)line
+{
+	NSParameterAssert(line != nil);
+
+	if (self.finished) {
+		return NO;
+	}
+
+	line = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+	BOOL isBorder = [self.class lineIsBorder:line];
+
+	if (self.bordersRead == 0) {
+		if (isBorder) {
+			self.bordersRead = 1;
+		} else {
+			/* "No networks", in the user's language */
+			self.finished = YES;
+		}
+
+		return YES;
+	}
+
+	if (isBorder) {
+		self.bordersRead += 1;
+
+		if (self.bordersRead > 2) {
+			self.finished = YES;
+		}
+
+		return YES;
+	}
+
+	NSArray<NSString *> *cells = [self.class cellsOfTableRow:line];
+
+	if (cells == nil) {
+		return NO;
+	}
+
+	/* The header */
+	if (self.bordersRead == 1) {
+		self.columnCount = cells.count;
+
+		return YES;
+	}
+
+	if (cells.count != self.columnCount || cells.firstObject.length == 0) {
+		return NO;
+	}
+
+	NSMutableDictionary<NSString *, NSString *> *attributes = [NSMutableDictionary dictionary];
+
+	attributes[@"name"] = cells[0];
+
+	NSString *host = ((cells.count > 2) ? cells[2] : @"");
+
+	if (host.length > 0) {
+		attributes[@"host"] = host;
+		attributes[@"state"] = @"connected";
+	} else {
+		attributes[@"state"] = @"disconnected";
+	}
+
+	NSString *nicknameMask = ((cells.count > 3) ? cells[3] : @"");
+
+	if (nicknameMask.length > 0) {
+		NSRange exclamationMark = [nicknameMask rangeOfString:@"!"];
+
+		attributes[@"nickname"] = ((exclamationMark.location == NSNotFound) ? nicknameMask : [nicknameMask substringToIndex:exclamationMark.location]);
+	}
+
+	[self.networkList addNetwork:[[IRCBouncerNetwork alloc] initWithIdentifier:cells[0] attributes:attributes]];
+
+	return YES;
+}
+
+/* +-----+----+ */
++ (BOOL)lineIsBorder:(NSString *)line
+{
+	if (line.length < 3 || [line hasPrefix:@"+"] == NO || [line hasSuffix:@"+"] == NO) {
+		return NO;
+	}
+
+	NSCharacterSet *borderCharacters = [NSCharacterSet characterSetWithCharactersInString:@"+-"];
+
+	return ([line rangeOfCharacterFromSet:borderCharacters.invertedSet].location == NSNotFound);
+}
+
+/* | ergo | Yes | irc.example.com | dan!~u@host | 2 |, cells split at " | " rather
+ than by the border's widths: ZNC pads by bytes, so a translated header with
+ "ä" is a character short. Nothing in a cell has a space (names, hosts and
+ nickmasks), so " | " never occurs inside one; a nickname may have a "|". */
++ (nullable NSArray<NSString *> *)cellsOfTableRow:(NSString *)line
+{
+	if (line.length < 2 || [line hasPrefix:@"|"] == NO || [line hasSuffix:@"|"] == NO) {
+		return nil;
+	}
+
+	NSString *inner = [line substringWithRange:NSMakeRange(1, (line.length - 2))];
+
+	NSMutableArray<NSString *> *cells = [NSMutableArray array];
+
+	for (NSString *cell in [inner componentsSeparatedByString:@" | "]) {
+		[cells addObject:[cell stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+	}
+
+	return [cells copy];
 }
 
 @end

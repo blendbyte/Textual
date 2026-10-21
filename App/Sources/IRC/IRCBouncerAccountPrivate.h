@@ -90,6 +90,8 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
  an identifier that never changes and attributes such as name, state
  (connected, connecting, disconnected), host, port, tls, nickname, error */
 @interface IRCBouncerNetwork : NSObject
+- (instancetype)initWithIdentifier:(NSString *)networkIdentifier attributes:(NSDictionary<NSString *, NSString *> *)attributes;
+
 @property (readonly, copy) NSString *networkIdentifier;
 @property (readonly, copy) NSDictionary<NSString *, NSString *> *attributes;
 @property (readonly, copy) NSString *name; // the name attribute, else the host, else the identifier
@@ -109,6 +111,9 @@ typedef NS_ENUM(NSUInteger, IRCBouncerNetworkChange) {
 
 - (nullable IRCBouncerNetwork *)networkWithIdentifier:(NSString *)networkIdentifier;
 
+/* Added at the end, or in place of one with the same identifier */
+- (void)addNetwork:(IRCBouncerNetwork *)network;
+
 /* BOUNCER NETWORK <netid> <attributes>: "*" removes the network; otherwise
  the attributes are added to it (a new one is added), and an attribute
  without a value is removed */
@@ -117,6 +122,19 @@ typedef NS_ENUM(NSUInteger, IRCBouncerNetworkChange) {
 /* "name=My\sNetwork;state=connected" as a dictionary, values unescaped as
  message tags; an attribute without a value is an empty string */
 + (NSDictionary<NSString *, NSString *> *)attributesFromString:(NSString *)attributes;
+@end
+
+/* ZNC's answer to ListNetworks, read by its layout only (the headers, Yes and
+ No are translated): a border of + and -, the header, a border, one row per
+ network, a border. A network's identifier is its name (the first column);
+ it is connected when the IRC Server column is filled, its nickname is the
+ IRC User column's up to "!". Without networks, ZNC sends one line instead. */
+@interface IRCZNCNetworkListReader : NSObject
+@property (readonly) BOOL finished;
+@property (readonly, strong) IRCBouncerNetworkList *networkList;
+
+/* A line from *status; NO when it isn't part of the answer */
+- (BOOL)readLine:(NSString *)line;
 @end
 
 NS_ASSUME_NONNULL_END

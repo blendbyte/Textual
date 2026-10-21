@@ -217,6 +217,9 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Request playback since the last seen message when previously connected */
 	[self requestPlayback];
 
+	/* ZNC's networks, for a server linked to a ZNC account */
+	[self requestBouncerNetworksAfterRegistration];
+
 	/* draft/chathistory: missed private messages (channels ask once joined) */
 	[self requestChatHistoryForQueries];
 

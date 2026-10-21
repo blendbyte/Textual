@@ -153,6 +153,11 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Ours, taken by the server (failed sends) */
 	[self outgoingMessageEchoed:m];
 
+	/* The answer to a ListNetworks Textual sent itself */
+	if ([self receiveZNCNetworkListLine:m]) {
+		return;
+	}
+
 	NSString *text = [m paramAt:1];
 
 	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityIdentifyCTCP] && ([text hasPrefix:@"+\x01"] || [text hasPrefix:@"-\x01"])) {

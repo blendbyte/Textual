@@ -58,7 +58,7 @@ enum : unsigned long long {
 	ClientIRCv3SupportedCapabilityBouncerNetworksNotify	= 1ULL << 39  // soju.im/bouncer-networks-notify
 };
 
-/* A soju network's list changed (object: the IRCClient; see bouncerNetworks) */
+/* A bouncer's list of networks changed (object: the IRCClient; see bouncerNetworks) */
 TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 @interface IRCClient ()
@@ -120,11 +120,13 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
  bouncerAccountIdentifier); nil for a normal server or a removed account */
 @property (readonly, nullable) IRCBouncerAccount *bouncerAccount;
 
-/* soju's networks, from the list soju sends a linked server and its changes
- (soju.im/bouncer-networks-notify); nil until a list arrived */
+/* The bouncer's networks: from the list soju sends a linked server and its
+ changes (soju.im/bouncer-networks-notify), or from ZNC's ListNetworks;
+ nil until a list arrived */
 @property (readonly, nullable) IRCBouncerNetworkList *bouncerNetworks;
 
-/* BOUNCER LISTNETWORKS, when soju.im/bouncer-networks is enabled */
+/* Asks the bouncer for its networks: BOUNCER LISTNETWORKS (soju), or
+ ListNetworks to *status (ZNC), whose answer isn't shown */
 - (void)requestBouncerNetworks;
 
 /* The channel list window: opened and filled, or brought forward as it is */
