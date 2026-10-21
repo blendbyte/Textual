@@ -13,7 +13,7 @@
 		<key>Mark Badge</key>
 		<dict>
 			<key>leftMargin</key>
-			<integer>10</integer>
+			<integer>0</integer>
 		</dict>
 		<key>Member Cell</key>
 		<dict>

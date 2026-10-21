@@ -96,6 +96,13 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.userInterfaceObjects.cellRowEmphasized;
 }
 
+/* Grey like the server list's selection, also while this list has the
+ keyboard focus */
+- (BOOL)isEmphasized
+{
+	return NO;
+}
+
 - (TVCMemberListAppearance *)userInterfaceObjects
 {
 	return self.memberList.userInterfaceObjects;

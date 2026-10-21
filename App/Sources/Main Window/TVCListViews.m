@@ -85,10 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[selectionColor set];
 
-	/* A rounded bar inset from the edges, as in the system's sidebars */
-	NSRect selectionRect = NSInsetRect(self.bounds, 6.0, 1.0);
-
-	[[NSBezierPath bezierPathWithRoundedRect:selectionRect xRadius:5.0 yRadius:5.0] fill];
+	/* The whole row, as in Textual 7 */
+	NSRectFill(self.bounds);
 }
 
 - (nullable NSColor *)selectionColorForActiveWindow:(BOOL)activeWindow
