@@ -40,7 +40,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCBouncerAccount, IRCBouncerNetwork;
+@class IRCBouncerAccount, IRCBouncerNetwork, IRCBouncerNetworkList;
 
 TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 
@@ -109,6 +109,20 @@ TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 
 /* Read again from the preferences (after an import) */
 - (void)reloadBouncerAccounts;
+
+/* Network changes on a bouncer, from the list one of its connected servers
+ has (soju's as they happen, ZNC's from when the server connected); none
+ when the account doesn't check for them. New: networks without a server in
+ Textual; removed: linked servers whose network the bouncer doesn't have. */
+- (nullable IRCBouncerNetworkList *)networkListOfBouncerAccount:(IRCBouncerAccount *)account;
+- (NSArray<IRCBouncerNetwork *> *)networksAddedToBouncerAccount:(IRCBouncerAccount *)account;
+- (NSArray<IRCClient *> *)clientsRemovedFromBouncerAccount:(IRCBouncerAccount *)account;
+
+/* Not told about again (Ignore, Keep): kept in the account's ignoredNetworks */
+- (void)ignoreChangesOfNetworks:(NSArray<NSString *> *)networks ofBouncerAccount:(IRCBouncerAccount *)account;
+
+/* The notices of its servers' windows again */
+- (void)bouncerNetworksOfAccountChanged:(IRCBouncerAccount *)account;
 @end
 
 NS_ASSUME_NONNULL_END

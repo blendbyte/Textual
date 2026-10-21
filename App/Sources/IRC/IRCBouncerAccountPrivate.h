@@ -37,7 +37,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCClientConfig, IRCServer;
+@class IRCBouncerNetwork, IRCBouncerNetworkList, IRCClientConfig, IRCServer;
 
 /* Which bouncer an account logs in to: found when it is added */
 typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
@@ -74,6 +74,17 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
  is "username/network" (ZNC's and soju's login, "@client" ignored); nil
  for anything else */
 - (nullable NSString *)networkOfServerAddedByHand:(IRCClientConfig *)config;
+
+/* What changed on the bouncer, from its list of networks: its networks
+ without a server in Textual (knownNetworks: the networks of the servers
+ linked to it or added by hand, identifiers or names), and the networks of
+ linked servers it doesn't have any more. Ignored networks are left out;
+ for ZNC a name matches in any case, as ZNC finds them. */
+- (NSArray<IRCBouncerNetwork *> *)networksAddedIn:(IRCBouncerNetworkList *)networkList knownNetworks:(NSArray<NSString *> *)knownNetworks;
+- (NSArray<NSString *> *)networksRemovedFrom:(IRCBouncerNetworkList *)networkList linkedNetworks:(NSArray<NSString *> *)linkedNetworks;
+
+- (BOOL)isNetwork:(NSString *)network sameAsNetwork:(NSString *)otherNetwork;
+- (BOOL)isNetwork:(NSString *)network inNetworks:(NSArray<NSString *> *)networks;
 
 - (void)writePasswordToKeychain;
 - (void)destroyPasswordKeychainItem;

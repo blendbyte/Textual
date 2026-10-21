@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
  or on another sheet (Server Properties) */
 - (void)editBouncerAccount:(IRCBouncerAccount *)account;
 - (void)editBouncerAccount:(IRCBouncerAccount *)account inWindow:(nullable NSWindow *)window;
+- (void)editBouncerAccount:(IRCBouncerAccount *)account inWindow:(nullable NSWindow *)window showingNetworks:(BOOL)showingNetworks; // its networks in view (to add some)
 @end
 
 @interface TXMenuController (MembersPrivate)

@@ -82,6 +82,23 @@
 "stb-j1" = "You’re not in %@";
 "stb-b2" = "Join";
 
+/* Above the input field on a bouncer's networks when networks were added to or removed from it (%@ is a list of networks, %ld how many) */
+"bnb-n1" = "Your bouncer has a new network: %@";
+"bnb-n2" = "Your bouncer has %ld new networks: %@";
+"bnb-b1" = "Ignore";
+"bnb-b2" = "Add…";
+"bnb-r1" = "%@ was removed from your bouncer";
+"bnb-r2" = "%@ were removed from your bouncer";
+"bnb-b3" = "Keep";
+"bnb-b4" = "Remove from Textual";
+
+/* Asked before Remove from Textual (%@ is the list of servers) */
+"bnb-a1" = "Remove %@ from Textual?";
+"bnb-a2" = "Its channels and settings in Textual are removed. Nothing changes on your bouncer.";
+"bnb-a5" = "Their channels and settings in Textual are removed. Nothing changes on your bouncer.";
+"bnb-a3" = "Remove";
+"bnb-a4" = "Cancel";
+
 /* The input field's placeholder in those cases */
 "stb-p1" = "Not connected";
 "stb-p2" = "Not in %@";

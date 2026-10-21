@@ -40,6 +40,8 @@
 #import "IRCMessagePrivate.h"
 #import "IRCMessageBatchPrivate.h"
 #import "IRCClientInternal.h"
+#import "IRCWorldPrivate.h"
+#import "TXMasterControllerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -145,6 +147,11 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 		return;
 	}
 
+	/* One list for the bouncer: through the first of its servers that connects */
+	if ([worldController() networkListOfBouncerAccount:account]) {
+		return;
+	}
+
 	[self requestBouncerNetworks];
 }
 
@@ -191,11 +198,20 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 
 - (void)resetBouncerNetworks
 {
+	BOOL hadNetworks = (self.bouncerNetworksReceived != nil);
+
 	self.bouncerNetworksReceived = nil;
 	self.bouncerNetworksBatchList = nil;
 
 	self.zncNetworkListReader = nil;
 	self.zncNetworkListRequestDate = nil;
+
+	/* Its notices went with the list */
+	IRCBouncerAccount *account = self.bouncerAccount;
+
+	if (hadNetworks && account) {
+		[worldController() bouncerNetworksOfAccountChanged:account];
+	}
 }
 
 /* BOUNCER NETWORK <netid> <attributes>; the other replies (BIND and the
@@ -258,6 +274,12 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 	LogToConsoleInfo("Bouncer networks: %{public}@", [self.bouncerNetworksReceived.networks componentsJoinedByString:@", "]);
 
 	[RZNotificationCenter() postNotificationName:IRCClientBouncerNetworksDidChangeNotification object:self];
+
+	IRCBouncerAccount *account = self.bouncerAccount;
+
+	if (account) {
+		[worldController() bouncerNetworksOfAccountChanged:account];
+	}
 }
 
 @end

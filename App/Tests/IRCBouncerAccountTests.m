@@ -273,6 +273,56 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([list networkWithIdentifier:@"1"]);
 }
 
+/* The notice of network changes: new networks without a server in Textual
+ (one added by hand for soju names the network), linked servers whose
+ network is gone; ignored networks never come back */
+- (void)testNetworkChangesLeaveOutKnownAndIgnoredNetworks
+{
+	IRCBouncerAccount *soju = [self accountOfKind:IRCBouncerKindSoju password:nil]; // ignores "2"
+
+	IRCBouncerNetworkList *sojuList = [IRCBouncerNetworkList new];
+
+	[sojuList updateNetwork:@"1" attributes:@"name=Ergo"];
+	[sojuList updateNetwork:@"2" attributes:@"name=Ergo\\sTwo"];
+	[sojuList updateNetwork:@"3" attributes:@"name=OFTC"];
+	[sojuList updateNetwork:@"4" attributes:@"name=hackint"];
+
+	NSArray *knownNetworks = @[@"1", @"hackint"];
+
+	NSArray *added = [[soju networksAddedIn:sojuList knownNetworks:knownNetworks] valueForKey:@"networkIdentifier"];
+	NSArray *expectedAdded = @[@"3"];
+
+	XCTAssertEqualObjects(added, expectedAdded);
+
+	NSArray *linkedNetworks = @[@"1", @"5", @"5"];
+
+	NSArray *removed = [soju networksRemovedFrom:sojuList linkedNetworks:linkedNetworks];
+	NSArray *expectedRemoved = @[@"5"];
+
+	XCTAssertEqualObjects(removed, expectedRemoved);
+
+	/* Kept: not told about again */
+	IRCBouncerAccountMutable *sojuKeeping = [soju mutableCopy];
+
+	sojuKeeping.ignoredNetworks = @[@"2", @"5"];
+
+	XCTAssertEqual([sojuKeeping networksRemovedFrom:sojuList linkedNetworks:linkedNetworks].count, 0);
+
+	/* ZNC knows its networks by name, in any case */
+	IRCBouncerAccount *znc = [self accountOfKind:IRCBouncerKindZNC password:nil];
+
+	IRCBouncerNetworkList *zncList = [IRCBouncerNetworkList new];
+
+	[zncList addNetwork:[[IRCBouncerNetwork alloc] initWithIdentifier:@"Libera" attributes:@{}]];
+	[zncList addNetwork:[[IRCBouncerNetwork alloc] initWithIdentifier:@"oftc" attributes:@{}]];
+
+	NSArray *zncKnown = @[@"libera"];
+	NSArray *zncLinked = @[@"libera", @"OFTC"];
+
+	XCTAssertEqual([znc networksAddedIn:zncList knownNetworks:zncKnown].count, 1);
+	XCTAssertEqual([znc networksRemovedFrom:zncList linkedNetworks:zncLinked].count, 0);
+}
+
 /* ZNC's ListNetworks answer as captured from ZNC 1.10.3 (1.7 draws the same
  table), a network without a server included */
 - (void)testZNCNetworkListReadFromItsTable

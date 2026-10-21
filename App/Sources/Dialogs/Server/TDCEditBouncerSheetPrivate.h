@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) NSWindow *window;
 
+@property (nonatomic, assign) BOOL showsNetworksFirst; // opened to add networks: their list in view
+
 - (void)beginInWindow:(NSWindow *)window;
 @end
 

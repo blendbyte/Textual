@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _bouncerHeadingDragPrefix	@"bouncer-heading " // a bouncer's heading being dragged: this and its account's identifier
 
-@class TVCInputCompletionController, TVCMainWindowSearchPanel;
+@class IRCBouncerAccount, IRCBouncerNetwork, TVCInputCompletionController, TVCMainWindowSearchPanel;
 
 @interface TVCMainWindow ()
 @property (nonatomic, weak, readwrite) IBOutlet TVCMainWindowChannelView *channelView;
@@ -105,6 +105,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSTextField *stateBarLabel;
 @property (nonatomic, strong, nullable) NSButton *stateBarButton;
 @property (nonatomic, strong, nullable) NSLayoutConstraint *stateBarHeightConstraint;
+@property (nonatomic, strong, nullable) NSView *bouncerBar; // "Your bouncer has 2 new networks: …" above the state bar
+@property (nonatomic, strong, nullable) NSTextField *bouncerBarLabel;
+@property (nonatomic, strong, nullable) NSButton *bouncerBarIgnoreButton; // Ignore, Keep
+@property (nonatomic, strong, nullable) NSButton *bouncerBarActionButton; // Add…, Remove from Textual
+@property (nonatomic, strong, nullable) NSLayoutConstraint *bouncerBarHeightConstraint;
+@property (nonatomic, strong, nullable) IRCBouncerAccount *bouncerBarAccount; // the bouncer it tells about
+@property (nonatomic, copy, nullable) NSArray<IRCBouncerNetwork *> *bouncerBarAddedNetworks; // its new networks, or
+@property (nonatomic, copy, nullable) NSArray<IRCClient *> *bouncerBarRemovedClients; // the servers of its removed ones
 @property (nonatomic, copy, nullable) NSArray *serverListTopLevelItemsCache; // servers and bouncer headings, while there are headings
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *serverListBouncerHeadings; // account identifier → its heading (the same object across reloads)
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;

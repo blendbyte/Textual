@@ -67,6 +67,9 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 
 	var close: () -> Void = {}
 
+	/* Opened to add networks (the notice of new ones): their list in view */
+	var showsNetworksFirst = false
+
 	private let existingClient: (IRCBouncerNetwork, IRCBouncerAccount) -> IRCClient?
 	private let save: (IRCBouncerAccount) -> Void
 	private let addNetwork: (IRCBouncerNetwork) -> Void
@@ -280,6 +283,12 @@ final class EditBouncerSheet: NSObject
 		}
 	}
 
+	@objc var showsNetworksFirst: Bool
+	{
+		get { model.showsNetworksFirst }
+		set { model.showsNetworksFirst = newValue }
+	}
+
 	@objc(beginInWindow:)
 	func begin(in parentWindow: NSWindow)
 	{
@@ -305,54 +314,69 @@ struct EditBouncerView: View
 	static let width: CGFloat = 540
 	static let height: CGFloat = 600
 
+	private static let networksSection = "networks"
+
 	@ObservedObject var model: EditBouncerModel
 
 	var body: some View
 	{
 		VStack(spacing: 0) {
-			Form {
-				Section {
-					AddBouncerHeader(title: model.account.displayName,
-									 subtitle: AddBouncerText("eb-sub", model.kindName, model.account.serverAddress, model.account.username))
-				}
+			ScrollViewReader { scrollView in
+				Form {
+					Section {
+						AddBouncerHeader(title: model.account.displayName,
+										 subtitle: AddBouncerText("eb-sub", model.kindName, model.account.serverAddress, model.account.username))
+					}
 
-				Section {
-					ServerPropertiesField(title: AddBouncerText("eb-name"), help: AddBouncerText("eb-nameh"), error: nil) {
-						TextField(AddBouncerText("eb-name"), text: $model.name, prompt: Text(verbatim: model.account.serverAddress))
+					Section {
+						ServerPropertiesField(title: AddBouncerText("eb-name"), help: AddBouncerText("eb-nameh"), error: nil) {
+							TextField(AddBouncerText("eb-name"), text: $model.name, prompt: Text(verbatim: model.account.serverAddress))
+						}
+					}
+
+					Section {
+						ServerPropertiesField(title: AddBouncerText("ab-addr"), error: nil) {
+							TextField(AddBouncerText("ab-addr"), text: $model.address)
+						}
+
+						ServerPropertiesField(title: AddBouncerText("ab-port"), error: nil) {
+							TextField(AddBouncerText("ab-port"), text: $model.port)
+						}
+
+						SettingToggle(title: AddBouncerText("ab-tls"), isOn: $model.prefersSecuredConnection)
+
+						ServerPropertiesField(title: AddBouncerText("ab-user"), error: nil) {
+							TextField(AddBouncerText("ab-user"), text: $model.username)
+						}
+
+						ServerPropertiesField(title: AddBouncerText("ab-pass"), error: nil) {
+							SecureField(AddBouncerText("ab-pass"), text: $model.password, prompt: Text(AddBouncerText("eb-pass-p")))
+						}
+					} footer: {
+						SettingFooter(text: AddBouncerText("eb-1-n"))
+					}
+
+					Section(AddBouncerText("eb-net-h")) {
+						networkRows
+					}
+					.id(Self.networksSection)
+
+					Section {
+						SettingToggle(title: AddBouncerText("ab-notify"), isOn: $model.checksForChanges)
 					}
 				}
-
-				Section {
-					ServerPropertiesField(title: AddBouncerText("ab-addr"), error: nil) {
-						TextField(AddBouncerText("ab-addr"), text: $model.address)
+				.formStyle(.grouped)
+				.onAppear {
+					guard model.showsNetworksFirst else {
+						return
 					}
 
-					ServerPropertiesField(title: AddBouncerText("ab-port"), error: nil) {
-						TextField(AddBouncerText("ab-port"), text: $model.port)
+					/* Once the form has its rows */
+					DispatchQueue.main.async {
+						scrollView.scrollTo(Self.networksSection, anchor: .top)
 					}
-
-					SettingToggle(title: AddBouncerText("ab-tls"), isOn: $model.prefersSecuredConnection)
-
-					ServerPropertiesField(title: AddBouncerText("ab-user"), error: nil) {
-						TextField(AddBouncerText("ab-user"), text: $model.username)
-					}
-
-					ServerPropertiesField(title: AddBouncerText("ab-pass"), error: nil) {
-						SecureField(AddBouncerText("ab-pass"), text: $model.password, prompt: Text(AddBouncerText("eb-pass-p")))
-					}
-				} footer: {
-					SettingFooter(text: AddBouncerText("eb-1-n"))
-				}
-
-				Section(AddBouncerText("eb-net-h")) {
-					networkRows
-				}
-
-				Section {
-					SettingToggle(title: AddBouncerText("ab-notify"), isOn: $model.checksForChanges)
 				}
 			}
-			.formStyle(.grouped)
 
 			AddBouncerButtons {
 				Button(AddBouncerText("eb-b-remove")) {

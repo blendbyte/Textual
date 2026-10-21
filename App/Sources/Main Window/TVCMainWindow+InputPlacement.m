@@ -36,6 +36,11 @@
 
 #import "IRCChannel.h"
 #import "IRCClientPrivate.h"
+#import "IRCClientConfigPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
+#import "IRCWorldPrivate.h"
+#import "TXMasterControllerPrivate.h"
+#import "TXMenuControllerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLONicknameCompletionStatusPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
@@ -79,6 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSView *stateBar = [self makeStateBar];
 
+	NSView *bouncerBar = [self makeBouncerBar];
+
 	NSView *stack = [NSView new];
 
 	stack.translatesAutoresizingMaskIntoConstraints = NO;
@@ -92,17 +99,19 @@ NS_ASSUME_NONNULL_BEGIN
 		[stack addSubview:view];
 	}
 
+	[stack addSubview:bouncerBar];
 	[stack addSubview:stateBar];
 
 	[NSLayoutConstraint activateConstraints:@[
 		[uploadBar.topAnchor constraintEqualToAnchor:stack.topAnchor],
 		[uploadBar.bottomAnchor constraintEqualToAnchor:replyBar.topAnchor],
-		[replyBar.bottomAnchor constraintEqualToAnchor:stateBar.topAnchor],
+		[replyBar.bottomAnchor constraintEqualToAnchor:bouncerBar.topAnchor],
+		[bouncerBar.bottomAnchor constraintEqualToAnchor:stateBar.topAnchor],
 		[stateBar.bottomAnchor constraintEqualToAnchor:inputArea.topAnchor],
 		[inputArea.bottomAnchor constraintEqualToAnchor:stack.bottomAnchor]
 	]];
 
-	for (NSView *view in @[uploadBar, replyBar, stateBar, inputArea]) {
+	for (NSView *view in @[uploadBar, replyBar, bouncerBar, stateBar, inputArea]) {
 		[view.leadingAnchor constraintEqualToAnchor:stack.leadingAnchor].active = YES;
 		[view.trailingAnchor constraintEqualToAnchor:stack.trailingAnchor].active = YES;
 	}
@@ -142,12 +151,26 @@ NS_ASSUME_NONNULL_BEGIN
  (/connect, /join, /msg) and its placeholder says why messages don't go */
 - (NSView *)makeStateBar
 {
-	NSView *bar = [NSView new];
+	NSTextField *label = [self makeNoticeBarLabel];
 
-	bar.translatesAutoresizingMaskIntoConstraints = NO;
+	NSButton *button = [self makeNoticeBarButtonWithAction:@selector(stateBarButtonClicked:)];
 
-	bar.hidden = YES;
+	NSLayoutConstraint *heightConstraint = nil;
 
+	NSView *bar = [self makeNoticeBarWithViews:@[label, button] heightConstraint:&heightConstraint];
+
+	self.stateBar = bar;
+	self.stateBarLabel = label;
+	self.stateBarButton = button;
+	self.stateBarHeightConstraint = heightConstraint;
+
+	return bar;
+}
+
+/* The state bar's and the bouncer bar's parts: small grey text taking the
+ room up to its buttons, on the input field's strip */
+- (NSTextField *)makeNoticeBarLabel
+{
 	NSTextField *label = [NSTextField labelWithString:@""];
 
 	label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -159,12 +182,32 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The text takes the room up to the button */
 	[label setContentHuggingPriority:(NSLayoutPriorityDefaultLow - 1) forOrientation:NSLayoutConstraintOrientationHorizontal];
 
-	NSButton *button = [NSButton buttonWithTitle:@"" target:self action:@selector(stateBarButtonClicked:)];
+	return label;
+}
+
+- (NSButton *)makeNoticeBarButtonWithAction:(SEL)action
+{
+	NSButton *button = [NSButton buttonWithTitle:@"" target:self action:action];
 
 	button.controlSize = NSControlSizeSmall;
 	button.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 
-	NSStackView *stack = [NSStackView stackViewWithViews:@[label, button]];
+	return button;
+}
+
+/* Hidden, with no height, until there is something to say */
+- (NSView *)makeNoticeBarWithViews:(NSArray<NSView *> *)views heightConstraint:(NSLayoutConstraint * __autoreleasing *)heightConstraintOut
+{
+	NSParameterAssert(views != nil);
+	NSParameterAssert(heightConstraintOut != NULL);
+
+	NSView *bar = [NSView new];
+
+	bar.translatesAutoresizingMaskIntoConstraints = NO;
+
+	bar.hidden = YES;
+
+	NSStackView *stack = [NSStackView stackViewWithViews:views];
 
 	stack.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -184,10 +227,7 @@ NS_ASSUME_NONNULL_BEGIN
 		heightConstraint
 	]];
 
-	self.stateBar = bar;
-	self.stateBarLabel = label;
-	self.stateBarButton = button;
-	self.stateBarHeightConstraint = heightConstraint;
+	*heightConstraintOut = heightConstraint;
 
 	return bar;
 }
@@ -195,6 +235,8 @@ NS_ASSUME_NONNULL_BEGIN
 /* With the title: on selection, connection, join and part changes */
 - (void)updateStateBar
 {
+	[self updateBouncerBar];
+
 	IRCClient *client = self.selectedClient;
 
 	IRCChannel *channel = self.selectedChannel;
@@ -263,6 +305,199 @@ NS_ASSUME_NONNULL_BEGIN
 	} else if (channel.isChannel && channel.status == IRCChannelStatusParted) {
 		[client joinChannel:channel];
 	}
+}
+
+#pragma mark -
+#pragma mark Bouncer Changes
+
+/* On the networks of a bouncer whose networks changed (when its account
+ checks for that): "Your bouncer has 2 new networks: OFTC and hackint
+ [Ignore] [Add…]", then "hackint was removed from your bouncer [Keep]
+ [Remove from Textual]". Ignore and Keep are remembered per network;
+ nothing is ever changed on the bouncer. */
+- (NSView *)makeBouncerBar
+{
+	NSTextField *label = [self makeNoticeBarLabel];
+
+	NSButton *ignoreButton = [self makeNoticeBarButtonWithAction:@selector(bouncerBarIgnoreClicked:)];
+
+	NSButton *actionButton = [self makeNoticeBarButtonWithAction:@selector(bouncerBarActionClicked:)];
+
+	NSLayoutConstraint *heightConstraint = nil;
+
+	NSView *bar = [self makeNoticeBarWithViews:@[label, ignoreButton, actionButton] heightConstraint:&heightConstraint];
+
+	self.bouncerBar = bar;
+	self.bouncerBarLabel = label;
+	self.bouncerBarIgnoreButton = ignoreButton;
+	self.bouncerBarActionButton = actionButton;
+	self.bouncerBarHeightConstraint = heightConstraint;
+
+	return bar;
+}
+
+- (void)updateBouncerBar
+{
+	NSView *bar = self.bouncerBar;
+
+	if (bar == nil) {
+		return;
+	}
+
+	IRCBouncerAccount *account = self.selectedClient.bouncerAccount;
+
+	NSArray<IRCBouncerNetwork *> *addedNetworks = nil;
+
+	NSArray<IRCClient *> *removedClients = nil;
+
+	NSString *text = nil;
+
+	if (account) {
+		addedNetworks = [worldController() networksAddedToBouncerAccount:account];
+
+		if (addedNetworks.count == 0) {
+			addedNetworks = nil;
+
+			removedClients = [worldController() clientsRemovedFromBouncerAccount:account];
+
+			if (removedClients.count == 0) {
+				removedClients = nil;
+			}
+		}
+	}
+
+	if (addedNetworks) {
+		NSMutableArray<NSString *> *names = [NSMutableArray arrayWithCapacity:addedNetworks.count];
+
+		for (IRCBouncerNetwork *network in addedNetworks) {
+			[names addObject:network.name];
+		}
+
+		NSString *namesList = [NSListFormatter localizedStringByJoiningStrings:names];
+
+		if (names.count == 1) {
+			text = TXTLS(@"TVCMainWindow[bnb-n1]", namesList);
+		} else {
+			text = TXTLS(@"TVCMainWindow[bnb-n2]", names.count, namesList);
+		}
+
+		self.bouncerBarIgnoreButton.title = TXTLS(@"TVCMainWindow[bnb-b1]");
+		self.bouncerBarActionButton.title = TXTLS(@"TVCMainWindow[bnb-b2]");
+	} else if (removedClients) {
+		NSMutableArray<NSString *> *names = [NSMutableArray arrayWithCapacity:removedClients.count];
+
+		for (IRCClient *client in removedClients) {
+			[names addObject:client.name];
+		}
+
+		NSString *namesList = [NSListFormatter localizedStringByJoiningStrings:names];
+
+		if (names.count == 1) {
+			text = TXTLS(@"TVCMainWindow[bnb-r1]", namesList);
+		} else {
+			text = TXTLS(@"TVCMainWindow[bnb-r2]", namesList);
+		}
+
+		self.bouncerBarIgnoreButton.title = TXTLS(@"TVCMainWindow[bnb-b3]");
+		self.bouncerBarActionButton.title = TXTLS(@"TVCMainWindow[bnb-b4]");
+	}
+
+	self.bouncerBarAccount = ((text) ? account : nil);
+	self.bouncerBarAddedNetworks = addedNetworks;
+	self.bouncerBarRemovedClients = removedClients;
+
+	self.bouncerBarLabel.stringValue = (text ?: @"");
+
+	BOOL hidden = (text == nil);
+
+	if (bar.hidden == hidden) {
+		return;
+	}
+
+	bar.hidden = hidden;
+
+	self.bouncerBarHeightConstraint.constant = ((hidden) ? 0 : 30);
+}
+
+/* Ignore (new networks) or Keep (removed ones) */
+- (void)bouncerBarIgnoreClicked:(id)sender
+{
+	IRCBouncerAccount *account = self.bouncerBarAccount;
+
+	if (account == nil) {
+		return;
+	}
+
+	NSMutableArray<NSString *> *networks = [NSMutableArray array];
+
+	for (IRCBouncerNetwork *network in self.bouncerBarAddedNetworks) {
+		[networks addObject:network.networkIdentifier];
+	}
+
+	for (IRCClient *client in self.bouncerBarRemovedClients) {
+		NSString *network = client.config.bouncerNetwork;
+
+		if (network.length > 0) {
+			[networks addObject:network];
+		}
+	}
+
+	[worldController() ignoreChangesOfNetworks:networks ofBouncerAccount:account];
+}
+
+/* Add… (Edit Bouncer, where its networks not in Textual have Add) or Remove from Textual */
+- (void)bouncerBarActionClicked:(id)sender
+{
+	IRCBouncerAccount *account = self.bouncerBarAccount;
+
+	if (account == nil) {
+		return;
+	}
+
+	if (self.bouncerBarAddedNetworks) {
+		[menuController() editBouncerAccount:account inWindow:self showingNetworks:YES];
+
+		return;
+	}
+
+	NSArray<IRCClient *> *clients = self.bouncerBarRemovedClients;
+
+	if (clients.count == 0) {
+		return;
+	}
+
+	NSMutableArray<NSString *> *names = [NSMutableArray arrayWithCapacity:clients.count];
+
+	for (IRCClient *client in clients) {
+		[names addObject:client.name];
+	}
+
+	NSAlert *alert = [NSAlert new];
+
+	alert.messageText = TXTLS(@"TVCMainWindow[bnb-a1]", [NSListFormatter localizedStringByJoiningStrings:names]);
+	alert.informativeText = TXTLS((clients.count == 1) ? @"TVCMainWindow[bnb-a2]" : @"TVCMainWindow[bnb-a5]");
+
+	[alert addButtonWithTitle:TXTLS(@"TVCMainWindow[bnb-a3]")];
+	[alert addButtonWithTitle:TXTLS(@"TVCMainWindow[bnb-a4]")];
+
+	alert.buttons.firstObject.hasDestructiveAction = YES;
+
+	[alert beginSheetModalForWindow:self completionHandler:^(NSModalResponse returnCode) {
+		if (returnCode != NSAlertFirstButtonReturn) {
+			return;
+		}
+
+		for (IRCClient *client in clients) {
+			/* Gone already (removed some other way meanwhile) */
+			if ([worldController().clientList containsObject:client] == NO) {
+				continue;
+			}
+
+			[worldController() destroyClient:client];
+		}
+
+		[worldController() save];
+	}];
 }
 
 - (void)updateInputFieldPlacement

@@ -233,6 +233,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)editBouncerAccount:(IRCBouncerAccount *)account inWindow:(nullable NSWindow *)window
 {
+	[self editBouncerAccount:account inWindow:window showingNetworks:NO];
+}
+
+- (void)editBouncerAccount:(IRCBouncerAccount *)account inWindow:(nullable NSWindow *)window showingNetworks:(BOOL)showingNetworks
+{
 	NSParameterAssert(account != nil);
 
 	if (window == nil) {
@@ -301,6 +306,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[worldController() removeBouncerAccount:currentAccount keepServers:keepServers];
 	}];
+
+	sheet.showsNetworksFirst = showingNetworks;
 
 	[sheet beginInWindow:window];
 }

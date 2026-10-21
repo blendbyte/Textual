@@ -279,6 +279,9 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	/* Its heading (a new name, or servers that now have one) */
 	[mainWindow() reloadServerListStructure];
+
+	/* Its notice of network changes (ignored ones, or turned off) */
+	[self bouncerNetworksOfAccountChanged:accountToAdd];
 }
 
 - (NSArray<IRCClient *> *)addBouncerAccount:(IRCBouncerAccount *)account
@@ -373,30 +376,47 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	return [addedClients arrayByAddingObjectsFromArray:linkedClientsInOrder];
 }
 
+/* The network a server reaches through the bouncer of this account: linked
+ to an account for the same bouncer and login, or added by hand */
+- (nullable NSString *)networkOfClient:(IRCClient *)client onBouncerOfAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(client != nil);
+	NSParameterAssert(account != nil);
+
+	IRCBouncerAccount *linkedAccount = client.bouncerAccount;
+
+	if (linkedAccount == nil) {
+		return [account networkOfServerAddedByHand:client.config];
+	}
+
+	if ([linkedAccount.serverAddress isEqualToStringIgnoringCase:account.serverAddress] &&
+		linkedAccount.serverPort == account.serverPort &&
+		[linkedAccount.username isEqualToStringIgnoringCase:account.username])
+	{
+		return client.config.bouncerNetwork;
+	}
+
+	return nil;
+}
+
 - (nullable IRCClient *)clientAddedByHandForNetwork:(IRCBouncerNetwork *)network ofAccount:(IRCBouncerAccount *)account
 {
 	NSParameterAssert(network != nil);
 	NSParameterAssert(account != nil);
 
 	for (IRCClient *client in self.clientList) {
-		/* Already linked to an account for the same bouncer and login */
-		IRCBouncerAccount *linkedAccount = client.bouncerAccount;
+		NSString *networkName = [self networkOfClient:client onBouncerOfAccount:account];
 
-		if (linkedAccount) {
-			if ([linkedAccount.serverAddress isEqualToStringIgnoringCase:account.serverAddress] &&
-				linkedAccount.serverPort == account.serverPort &&
-				[linkedAccount.username isEqualToStringIgnoringCase:account.username] &&
-				[client.config.bouncerNetwork isEqualToString:network.networkIdentifier])
-			{
-				return client;
-			}
-
+		if (networkName == nil) {
 			continue;
 		}
 
-		NSString *networkName = [account networkOfServerAddedByHand:client.config];
+		/* A linked server knows the network by its identifier */
+		if (client.bouncerAccount) {
+			if ([networkName isEqualToString:network.networkIdentifier]) {
+				return client;
+			}
 
-		if (networkName == nil) {
 			continue;
 		}
 
@@ -408,6 +428,121 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	}
 
 	return nil;
+}
+
+#pragma mark -
+#pragma mark Bouncer Network Changes
+
+- (nullable IRCBouncerNetworkList *)networkListOfBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	for (IRCClient *client in [self clientsOfBouncerAccount:account]) {
+		IRCBouncerNetworkList *networkList = client.bouncerNetworks;
+
+		if (networkList) {
+			return networkList;
+		}
+	}
+
+	return nil;
+}
+
+- (NSArray<IRCBouncerNetwork *> *)networksAddedToBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	IRCBouncerNetworkList *networkList = [self networkListOfBouncerAccount:account];
+
+	if (networkList == nil || account.checksForNetworkChanges == NO) {
+		return @[];
+	}
+
+	NSMutableArray<NSString *> *knownNetworks = [NSMutableArray array];
+
+	for (IRCClient *client in self.clientList) {
+		NSString *network = [self networkOfClient:client onBouncerOfAccount:account];
+
+		if (network) {
+			[knownNetworks addObject:network];
+		}
+	}
+
+	return [account networksAddedIn:networkList knownNetworks:knownNetworks];
+}
+
+- (NSArray<IRCClient *> *)clientsRemovedFromBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	IRCBouncerNetworkList *networkList = [self networkListOfBouncerAccount:account];
+
+	if (networkList == nil || account.checksForNetworkChanges == NO) {
+		return @[];
+	}
+
+	NSArray<IRCClient *> *clients = [self clientsOfBouncerAccount:account];
+
+	NSMutableArray<NSString *> *linkedNetworks = [NSMutableArray arrayWithCapacity:clients.count];
+
+	for (IRCClient *client in clients) {
+		NSString *network = client.config.bouncerNetwork;
+
+		if (network.length > 0) {
+			[linkedNetworks addObject:network];
+		}
+	}
+
+	NSArray<NSString *> *removedNetworks = [account networksRemovedFrom:networkList linkedNetworks:linkedNetworks];
+
+	NSMutableArray<IRCClient *> *removedClients = [NSMutableArray arrayWithCapacity:removedNetworks.count];
+
+	for (IRCClient *client in clients) {
+		NSString *network = client.config.bouncerNetwork;
+
+		if (network.length == 0) {
+			continue;
+		}
+
+		for (NSString *removedNetwork in removedNetworks) {
+			if ([account isNetwork:network sameAsNetwork:removedNetwork]) {
+				[removedClients addObject:client];
+
+				break;
+			}
+		}
+	}
+
+	return [removedClients copy];
+}
+
+- (void)ignoreChangesOfNetworks:(NSArray<NSString *> *)networks ofBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(networks != nil);
+	NSParameterAssert(account != nil);
+
+	IRCBouncerAccountMutable *accountMutable = [account mutableCopy];
+
+	NSMutableArray<NSString *> *ignoredNetworks = [account.ignoredNetworks mutableCopy];
+
+	for (NSString *network in networks) {
+		if ([account isNetwork:network inNetworks:ignoredNetworks] == NO) {
+			[ignoredNetworks addObject:network];
+		}
+	}
+
+	accountMutable.ignoredNetworks = ignoredNetworks;
+
+	[self addBouncerAccount:accountMutable];
+}
+
+- (void)bouncerNetworksOfAccountChanged:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	for (IRCClient *client in [self clientsOfBouncerAccount:account]) {
+		[TVCMainWindow updateTitleFor:client];
+	}
 }
 
 - (void)removeBouncerAccount:(IRCBouncerAccount *)account keepServers:(BOOL)keepServers
@@ -873,6 +1008,13 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	[menuController() populateNavigationChannelList];
 
+	/* Its bouncer's notice of new networks */
+	IRCBouncerAccount *bouncerAccount = client.bouncerAccount;
+
+	if (bouncerAccount) {
+		[self bouncerNetworksOfAccountChanged:bouncerAccount];
+	}
+
 	[self postClientListWasModifiedNotification];
 
 	if (movedHighlightKeywords && self.isImportingConfiguration == NO) {
@@ -990,6 +1132,8 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	[RZNotificationCenter() postNotificationName:IRCWorldWillDestroyClientNotification object:client];
 
+	IRCBouncerAccount *bouncerAccount = client.bouncerAccount;
+
 	[self selectOtherBeforeDestroy:client];
 
 	[client prepareForPermanentDestruction];
@@ -1020,6 +1164,11 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	[mainWindow() reloadLoadingScreen];
 
 	[menuController() populateNavigationChannelList];
+
+	/* Its bouncer's notice of removed networks */
+	if (bouncerAccount) {
+		[self bouncerNetworksOfAccountChanged:bouncerAccount];
+	}
 }
 
 - (void)destroyChannel:(IRCChannel *)channel

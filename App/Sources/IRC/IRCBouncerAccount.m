@@ -287,6 +287,97 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
+#pragma mark -
+#pragma mark Network Changes
+
+- (BOOL)isNetwork:(NSString *)network sameAsNetwork:(NSString *)otherNetwork
+{
+	NSParameterAssert(network != nil);
+	NSParameterAssert(otherNetwork != nil);
+
+	/* ZNC finds a network by its name in any case */
+	if (self.kind == IRCBouncerKindZNC) {
+		return [network isEqualToStringIgnoringCase:otherNetwork];
+	}
+
+	return [network isEqualToString:otherNetwork];
+}
+
+- (BOOL)isNetwork:(NSString *)network inNetworks:(NSArray<NSString *> *)networks
+{
+	NSParameterAssert(network != nil);
+	NSParameterAssert(networks != nil);
+
+	for (NSString *otherNetwork in networks) {
+		if ([self isNetwork:network sameAsNetwork:otherNetwork]) {
+			return YES;
+		}
+	}
+
+	return NO;
+}
+
+- (NSArray<IRCBouncerNetwork *> *)networksAddedIn:(IRCBouncerNetworkList *)networkList knownNetworks:(NSArray<NSString *> *)knownNetworks
+{
+	NSParameterAssert(networkList != nil);
+	NSParameterAssert(knownNetworks != nil);
+
+	NSArray<NSString *> *ignoredNetworks = self.ignoredNetworks;
+
+	NSMutableArray<IRCBouncerNetwork *> *networks = [NSMutableArray array];
+
+	for (IRCBouncerNetwork *network in networkList.networks) {
+		NSString *networkIdentifier = network.networkIdentifier;
+
+		if ([self isNetwork:networkIdentifier inNetworks:ignoredNetworks]) {
+			continue;
+		}
+
+		/* A server added by hand for soju names the network, not its identifier */
+		if ([self isNetwork:networkIdentifier inNetworks:knownNetworks] ||
+			[self isNetwork:network.name inNetworks:knownNetworks])
+		{
+			continue;
+		}
+
+		[networks addObject:network];
+	}
+
+	return [networks copy];
+}
+
+- (NSArray<NSString *> *)networksRemovedFrom:(IRCBouncerNetworkList *)networkList linkedNetworks:(NSArray<NSString *> *)linkedNetworks
+{
+	NSParameterAssert(networkList != nil);
+	NSParameterAssert(linkedNetworks != nil);
+
+	NSArray<NSString *> *ignoredNetworks = self.ignoredNetworks;
+
+	NSMutableArray<NSString *> *bouncerNetworks = [NSMutableArray array];
+
+	for (IRCBouncerNetwork *network in networkList.networks) {
+		[bouncerNetworks addObject:network.networkIdentifier];
+	}
+
+	NSMutableArray<NSString *> *networks = [NSMutableArray array];
+
+	for (NSString *network in linkedNetworks) {
+		if ([self isNetwork:network inNetworks:bouncerNetworks] ||
+			[self isNetwork:network inNetworks:ignoredNetworks] ||
+			[self isNetwork:network inNetworks:networks])
+		{
+			continue;
+		}
+
+		[networks addObject:network];
+	}
+
+	return [networks copy];
+}
+
+#pragma mark -
+#pragma mark Keychain Items
+
 - (void)writePasswordToKeychain
 {
 	if (self->_password == nil) {
