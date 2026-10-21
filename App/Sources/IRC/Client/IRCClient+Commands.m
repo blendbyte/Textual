@@ -133,6 +133,29 @@ NS_ASSUME_NONNULL_BEGIN
  place. Nil if the identity is gone; the connection goes ahead without it. */
 - (nullable NSData *)clientCertificateReferenceForConnecting
 {
+	/* A bouncer's network shows the account's certificate (or none) */
+	IRCBouncerAccount *bouncerAccount = self.bouncerAccount;
+
+	if (bouncerAccount) {
+		NSData *accountReference = bouncerAccount.identityClientSideCertificate;
+
+		if (accountReference == nil) {
+			return nil;
+		}
+
+		SecIdentityRef accountIdentity = [TLOKeychain copyClientCertificateIdentityForReference:accountReference];
+
+		if (accountIdentity == NULL) {
+			[self printDebugInformation:TXTLS(@"IRC[c3r-c2]")];
+
+			return nil;
+		}
+
+		CFRelease(accountIdentity);
+
+		return accountReference;
+	}
+
 	NSData *reference = self.config.identityClientSideCertificate;
 
 	if (reference == nil) {

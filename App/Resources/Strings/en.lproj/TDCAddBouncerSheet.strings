@@ -120,3 +120,25 @@
 "eb-r-b" = "Its servers in Textual can stay as normal servers or go too. Nothing is deleted on the bouncer.";
 "eb-r-keep" = "Keep Servers";
 "eb-r-all" = "Remove Servers Too";
+
+/* Log in with the password or a client certificate (%@ is the bouncer's address) */
+"ab-with" = "Log in with";
+"ab-with-p" = "Password";
+"ab-with-c" = "Certificate";
+"ab-cert" = "Certificate";
+"ab-cert-none" = "None";
+"ab-cert-gone" = "Not in the Keychain";
+"ab-cert-choose" = "Choose…";
+"ab-pass-c" = "Once, to set it up";
+"ab-1-nc" = "With your password, Textual sets the certificate up on your bouncer once and then logs in with it alone. Without a password, your bouncer must know the certificate already.";
+"ab-c-certing" = "Setting up the certificate…";
+"ab-e-certlogin" = "Your bouncer didn’t take the certificate. If it doesn’t know it yet, type your password once: Textual then sets it up.";
+"ab-3-cok" = "Textual logs in with the certificate and doesn’t keep your password.";
+"ab-3-cno" = "%@ doesn’t take certificate logins, so Textual logs in with your password.";
+
+/* Edit Bouncer: the certificate login (%@ is the bouncer's name) */
+"eb-1-nc" = "A new certificate is set up on your bouncer with your password when you save; then Textual logs in with it alone and doesn’t keep the password.";
+"eb-pass-n" = "Required";
+"eb-c-need" = "Type your password once, so Textual can set the certificate up on your bouncer.";
+"eb-c-pass" = "Type the password Textual should log in with.";
+"eb-c-fail" = "The certificate couldn’t be set up on %@.";

@@ -302,6 +302,52 @@ struct YouPage: View
 	}
 }
 
+// MARK: - Client Certificate
+
+/// A client certificate chosen from the Keychain (Server Properties, the
+/// bouncer sheets): its Keychain reference, or nil when none was chosen.
+/// Without any, an alert says so, with the help on making one.
+func ChooseClientCertificate() -> Data?
+{
+	let query: [CFString: Any] = [
+		kSecClass: kSecClassIdentity,
+		kSecMatchLimit: kSecMatchLimitAll,
+		kSecReturnRef: true
+	]
+
+	var result: CFTypeRef?
+
+	SecItemCopyMatching(query as CFDictionary, &result)
+
+	guard let identities = result as? [Any], identities.isEmpty == false else {
+		TDCAlert.alert(withMessage: ServerPropertiesText("489-hG"),
+					   title: ServerPropertiesText("pmk-os"),
+					   defaultButton: LocalizedKey("Prompts[c7s-dq]"),
+					   alternateButton: nil,
+					   otherButton: ServerPropertiesText("3ju-lo")) { (response, _, _) in
+			if (response == .other) {
+				OpenLink.open(string: TXWebsiteClientCertificates, inBackground: false)
+			}
+		}
+
+		return nil
+	}
+
+	let panel = SFChooseIdentityPanel.shared()!
+
+	panel.setInformativeText(ServerPropertiesText("mi4-fd"))
+	panel.setAlternateButtonTitle(LocalizedKey("Prompts[qso-2g]"))
+
+	let response = panel.runModal(forIdentities: identities, message: ServerPropertiesText("6wq-i4"))
+
+	guard response == NSApplication.ModalResponse.OK.rawValue,
+		  let identity = panel.identity()?.takeUnretainedValue() else {
+		return nil
+	}
+
+	return TLOKeychain.reference(forClientCertificateIdentity: identity)
+}
+
 // MARK: - Account
 
 @objc(TDCServerPropertiesAccountPane)
@@ -490,7 +536,7 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 		let fingerprints: [(name: String, value: String)]
 	}
 
-	private static func certificate(forReference reference: Data?) -> Certificate?
+	static func certificate(forReference reference: Data?) -> Certificate?
 	{
 		guard let reference = reference,
 			  let identity = TLOKeychain.copyClientCertificateIdentity(forReference: reference) else {
@@ -536,44 +582,13 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 
 	func chooseCertificate()
 	{
-		let query: [CFString: Any] = [
-			kSecClass: kSecClassIdentity,
-			kSecMatchLimit: kSecMatchLimitAll,
-			kSecReturnRef: true
-		]
-
-		var result: CFTypeRef?
-
-		SecItemCopyMatching(query as CFDictionary, &result)
-
-		guard let identities = result as? [Any], identities.isEmpty == false else {
-			TDCAlert.alert(withMessage: ServerPropertiesText("489-hG"),
-						   title: ServerPropertiesText("pmk-os"),
-						   defaultButton: LocalizedKey("Prompts[c7s-dq]"),
-						   alternateButton: nil,
-						   otherButton: ServerPropertiesText("3ju-lo")) { (response, _, _) in
-				if (response == .other) {
-					OpenLink.open(string: TXWebsiteClientCertificates, inBackground: false)
-				}
-			}
-
-			return
-		}
-
-		let panel = SFChooseIdentityPanel.shared()!
-
-		panel.setInformativeText(ServerPropertiesText("mi4-fd"))
-		panel.setAlternateButtonTitle(LocalizedKey("Prompts[qso-2g]"))
-
 		choosingCertificate = true
 
-		let response = panel.runModal(forIdentities: identities, message: ServerPropertiesText("6wq-i4"))
+		let chosenReference = ChooseClientCertificate()
 
 		choosingCertificate = false
 
-		guard response == NSApplication.ModalResponse.OK.rawValue,
-			  let identity = panel.identity()?.takeUnretainedValue(),
-			  let reference = TLOKeychain.reference(forClientCertificateIdentity: identity) else {
+		guard let reference = chosenReference else {
 			return
 		}
 

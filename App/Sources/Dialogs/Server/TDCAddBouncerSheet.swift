@@ -98,6 +98,20 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 		}
 	}
 
+	/* Log in with the password, or a client certificate from the Keychain
+	 (set up on the bouncer with the password, once) */
+	@Published var logsInWithCertificate = false
+	{
+		didSet {
+			/* A client certificate is only sent on a secured connection */
+			if logsInWithCertificate {
+				prefersSecuredConnection = true
+			}
+		}
+	}
+
+	@Published var certificateReference: Data?
+
 	@Published var rows: [NetworkRow] = []
 	@Published var connectsNow = true
 	@Published var checksForChanges = true
@@ -142,7 +156,20 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 
 	var canConnect: Bool
 	{
-		(trimmedAddress.isEmpty == false && portNumber != nil && username.trimmingCharacters(in: .whitespaces).isEmpty == false)
+		(trimmedAddress.isEmpty == false && portNumber != nil && username.trimmingCharacters(in: .whitespaces).isEmpty == false &&
+		 (logsInWithCertificate == false || certificateReference != nil))
+	}
+
+	var certificateName: String?
+	{
+		ServerPropertiesAccountPane.certificate(forReference: certificateReference)?.name
+	}
+
+	func chooseCertificate()
+	{
+		if let reference = ChooseClientCertificate() {
+			certificateReference = reference
+		}
 	}
 
 	var chosenCount: Int
@@ -160,8 +187,22 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 		account.prefersSecuredConnection = prefersSecuredConnection
 		account.username = username.trimmingCharacters(in: .whitespaces)
 		account.password = ((password.isEmpty) ? nil : password)
+		account.identityClientSideCertificate = ((logsInWithCertificate) ? certificateReference : nil)
 		account.kind = (probe?.kind ?? .unknown)
 		account.checksForNetworkChanges = checksForChanges
+
+		/* Trusted in the check: its networks don't ask again */
+		account.trustedServerCertificate = probe?.trustedCertificate
+
+		/* What the check found about the certificate */
+		switch (probe?.certificateLogin ?? .none) {
+			case .works:
+				account.password = nil // not kept: the certificate logs in
+			case .unsupported:
+				account.identityClientSideCertificate = nil
+			default:
+				break
+		}
 
 		return account
 	}
@@ -450,11 +491,22 @@ struct AddBouncerLoginPage: View
 					TextField(AddBouncerText("ab-user"), text: $model.username, prompt: Text(verbatim: "dan"))
 				}
 
+				Picker(AddBouncerText("ab-with"), selection: $model.logsInWithCertificate) {
+					Text(AddBouncerText("ab-with-p")).tag(false)
+					Text(AddBouncerText("ab-with-c")).tag(true)
+				}
+
+				if model.logsInWithCertificate {
+					BouncerCertificateRow(name: model.certificateName, hasReference: (model.certificateReference != nil)) {
+						model.chooseCertificate()
+					}
+				}
+
 				ServerPropertiesField(title: AddBouncerText("ab-pass"), error: nil) {
-					SecureField(AddBouncerText("ab-pass"), text: $model.password)
+					SecureField(AddBouncerText("ab-pass"), text: $model.password, prompt: ((model.logsInWithCertificate) ? Text(AddBouncerText("ab-pass-c")) : nil))
 				}
 			} footer: {
-				SettingFooter(text: AddBouncerText("ab-1-n"))
+				SettingFooter(text: AddBouncerText((model.logsInWithCertificate) ? "ab-1-nc" : "ab-1-n"))
 			}
 		}
 		.formStyle(.grouped)
@@ -475,6 +527,32 @@ struct AddBouncerLoginPage: View
 			}
 			.keyboardShortcut(.defaultAction)
 			.disabled(model.canConnect == false)
+		}
+	}
+}
+
+/// "Certificate: name [Choose…]" for a bouncer's certificate login
+struct BouncerCertificateRow: View
+{
+	let name: String?
+	let hasReference: Bool // chosen, but maybe gone from the Keychain
+	let choose: () -> Void
+
+	var body: some View
+	{
+		LabeledContent {
+			HStack(spacing: 8) {
+				if let name = name {
+					Text(name)
+				} else {
+					Text(AddBouncerText((hasReference) ? "ab-cert-gone" : "ab-cert-none"))
+						.foregroundStyle(hasReference ? Color.orange : Color.secondary)
+				}
+
+				Button(AddBouncerText("ab-cert-choose"), action: choose)
+			}
+		} label: {
+			Text(AddBouncerText("ab-cert"))
 		}
 	}
 }
@@ -643,10 +721,17 @@ struct AddBouncerCheckPage: View
 		}
 
 		/* The networks */
-		if (probe.finished && error == .none) {
+		let networksRead = ((probe.finished && error == .none) || probe.certificateLogin == .settingUp)
+
+		if networksRead {
 			lines.append(AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-rin")))
 		} else {
 			lines.append(AddBouncerCheckLine(state: ((error == .none) ? .working : .failed), text: AddBouncerText("ab-c-ring")))
+		}
+
+		/* The certificate, registered and then tried alone */
+		if (probe.certificateLogin == .settingUp) {
+			lines.append(AddBouncerCheckLine(state: .working, text: AddBouncerText("ab-c-certing")))
 		}
 
 		return lines
@@ -669,6 +754,11 @@ struct AddBouncerCheckPage: View
 			case .certificateNotTrusted:
 				return AddBouncerText("ab-e-cert", address)
 			case .wrongLogin:
+				/* The certificate alone, which the bouncer may not know yet */
+				if (model.logsInWithCertificate && model.password.isEmpty) {
+					return AddBouncerText("ab-e-certlogin")
+				}
+
 				return AddBouncerText("ab-e-login")
 			case .notABouncer:
 				return AddBouncerText("ab-e-nbnc", address)
@@ -681,6 +771,23 @@ struct AddBouncerCheckPage: View
 struct AddBouncerNetworksPage: View
 {
 	@ObservedObject var model: AddBouncerModel
+
+	/* What the check found about the certificate login */
+	private var certificateNote: (text: String, symbol: String, works: Bool)?
+	{
+		guard model.logsInWithCertificate else {
+			return nil
+		}
+
+		switch (model.probe?.certificateLogin ?? .none) {
+			case .works:
+				return (AddBouncerText("ab-3-cok"), "checkmark.seal", true)
+			case .unsupported:
+				return (AddBouncerText("ab-3-cno", model.trimmedAddress), "exclamationmark.triangle.fill", false)
+			default:
+				return nil
+		}
+	}
 
 	var body: some View
 	{
@@ -707,6 +814,14 @@ struct AddBouncerNetworksPage: View
 				SettingToggle(title: AddBouncerText("ab-notify"), isOn: $model.checksForChanges)
 			} footer: {
 				SettingFooter(text: AddBouncerText("ab-3-n"))
+			}
+
+			if let note = certificateNote {
+				Section {
+					Label(note.text, systemImage: note.symbol)
+						.foregroundStyle(note.works ? Color.primary : Color.orange)
+						.fixedSize(horizontal: false, vertical: true)
+				}
 			}
 		}
 		.formStyle(.grouped)

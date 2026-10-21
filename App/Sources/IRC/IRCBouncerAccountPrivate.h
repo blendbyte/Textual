@@ -60,13 +60,16 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
 @property (readonly) BOOL prefersSecuredConnection;
 @property (readonly, copy) NSString *username; // the bouncer's own, without a network
 @property (readonly, copy, nullable) NSString *password; // from the Keychain unless changed in this copy
-@property (readonly, copy, nullable) NSData *identityClientSideCertificate; // a Keychain reference, as in IRCClientConfig
+@property (readonly, copy, nullable) NSData *identityClientSideCertificate; // a Keychain reference, as in IRCClientConfig; logs in without the password once registered
+@property (readonly, copy, nullable) NSData *trustedServerCertificate; // the bouncer's own (DER), trusted in Add or Edit Bouncer: its networks take exactly that one without asking
 @property (readonly) BOOL checksForNetworkChanges; // tells when networks are added or removed (on by default)
 @property (readonly, copy) NSArray<NSString *> *ignoredNetworks; // networks whose change notices were ignored
 
 /* The server a linked network connects to: the account's address, port and
  TLS, and for ZNC the login "username/network:password" as the server
- password (ZNC offers SASL only with an extra module). soju logs in with SASL. */
+ password (ZNC offers SASL only with an extra module), or "username/network:"
+ without a password when its client certificate logs in (certauth). soju logs in with
+ SASL (EXTERNAL with the certificate). */
 - (IRCServer *)serverForNetwork:(nullable NSString *)network;
 
 /* The network a server added by hand reaches through this bouncer: its
@@ -106,6 +109,7 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
 @property (nonatomic, copy, readwrite) NSString *username;
 @property (nonatomic, copy, readwrite, nullable) NSString *password;
 @property (nonatomic, copy, readwrite, nullable) NSData *identityClientSideCertificate;
+@property (nonatomic, copy, readwrite, nullable) NSData *trustedServerCertificate;
 @property (nonatomic, assign, readwrite) BOOL checksForNetworkChanges;
 @property (nonatomic, copy, readwrite) NSArray<NSString *> *ignoredNetworks;
 @end

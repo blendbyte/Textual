@@ -294,6 +294,7 @@ NS_ASSUME_NONNULL_BEGIN
 		 previousAccount.serverPort != updatedAccount.serverPort ||
 		 previousAccount.prefersSecuredConnection != updatedAccount.prefersSecuredConnection ||
 		 [previousAccount.username isEqualToString:updatedAccount.username] == NO ||
+		 NSObjectsAreEqual(previousAccount.identityClientSideCertificate, updatedAccount.identityClientSideCertificate) == NO ||
 		 NSObjectsAreEqual(previousAccount.password, updatedAccount.password) == NO);
 
 		[worldController() addBouncerAccount:updatedAccount];

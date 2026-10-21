@@ -130,6 +130,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertNil([[self accountOfKind:IRCBouncerKindSoju password:@"secret"] serverForNetwork:@"1"].serverPassword);
 	XCTAssertNil([[self accountOfKind:IRCBouncerKindZNC password:nil] serverForNetwork:@"libera"].serverPassword);
+
+	/* certauth: the certificate logs in; the colon makes ZNC take the user from PASS, not USER */
+	IRCBouncerAccountMutable *zncWithCertificate = [[self accountOfKind:IRCBouncerKindZNC password:nil] mutableCopy];
+
+	zncWithCertificate.identityClientSideCertificate = [@"a Keychain reference" dataUsingEncoding:NSUTF8StringEncoding];
+
+	XCTAssertEqualObjects([zncWithCertificate serverForNetwork:@"libera"].serverPassword, @"dan/libera:");
 }
 
 /* Servers added by hand before (dan/libera logins) are recognised, to be

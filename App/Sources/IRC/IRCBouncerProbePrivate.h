@@ -53,11 +53,20 @@ typedef NS_ENUM(NSUInteger, IRCBouncerProbeError) {
 	IRCBouncerProbeErrorClosed // the bouncer ended the connection; errorDetail: its words
 };
 
+/* A certificate login (the account has a client certificate) */
+typedef NS_ENUM(NSUInteger, IRCBouncerProbeCertificateLogin) {
+	IRCBouncerProbeCertificateLoginNone = 0, // no certificate, or not known yet
+	IRCBouncerProbeCertificateLoginSettingUp, // being registered, then tried alone
+	IRCBouncerProbeCertificateLoginWorks, // the bouncer logged in with the certificate alone
+	IRCBouncerProbeCertificateLoginUnsupported // it doesn't take it (no certauth, soju's client-cert-auth off): the password stays
+};
+
 /* A short connection for the Add Bouncer sheet: logs in to a bouncer with
  an account's address, port, TLS, username and password, recognises soju
  (soju.im/bouncer-networks) or ZNC (irc.znc.in), reads its networks
  (BOUNCER LISTNETWORKS, or ListNetworks to *status) and quits. Nothing is
- saved and no server is added. It uses the defaults of a new server
+ saved and no server is added (a certificate may be registered on the
+ bouncer, see certificateLogin). It uses the defaults of a new server
  (proxy, ciphers, certificate checks). */
 @interface IRCBouncerProbe : NSObject
 - (instancetype)initWithAccount:(IRCBouncerAccount *)account NS_DESIGNATED_INITIALIZER;
@@ -74,11 +83,24 @@ typedef NS_ENUM(NSUInteger, IRCBouncerProbeError) {
 @property (readonly) BOOL finished; // the networks were read (networkList), or an error
 @property (readonly, strong, nullable) IRCBouncerNetworkList *networkList;
 
+/* With a client certificate and a password, the certificate is registered on
+ the bouncer once the networks are read (ZNC: *certauth add; soju: BouncerServ
+ device-certificate create), then a second connection logs in with it alone:
+ it works only if that succeeds. With a certificate and no password, the
+ login is the certificate's (soju: SASL EXTERNAL; ZNC: PASS without a
+ password), and a refusal is a wrong login. */
+@property (readonly) IRCBouncerProbeCertificateLogin certificateLogin;
+
 @property (readonly) IRCBouncerProbeError error;
 @property (readonly, copy, nullable) NSString *errorDetail;
 
 - (void)start;
 - (void)cancel; // quits; no more delegate calls
+
+/* The bouncer's certificate (DER) when it was trusted in -trustCertificateInWindow:
+ (or was the account's trustedServerCertificate): kept in the account, so its
+ networks don't ask again */
+@property (readonly, copy, nullable) NSData *trustedCertificate;
 
 /* The certificate isn't trusted and nobody was asked yet: show it now */
 @property (readonly) BOOL wantsCertificateTrust;

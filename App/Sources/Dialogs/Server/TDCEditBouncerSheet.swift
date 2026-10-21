@@ -57,6 +57,28 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 	@Published var password = "" // empty: unchanged
 	@Published var checksForChanges: Bool
 
+	/* Log in with the password, or a client certificate (set up on Save) */
+	@Published var logsInWithCertificate: Bool
+	{
+		didSet {
+			/* A client certificate is only sent on a secured connection */
+			if logsInWithCertificate {
+				prefersSecuredConnection = true
+			}
+		}
+	}
+
+	@Published var certificateReference: Data?
+
+	/* Registering the certificate on the bouncer before saving */
+	@Published private(set) var settingUpCertificate = false
+
+	private var setupProbe: IRCBouncerProbe?
+	private var accountBeingSetUp: IRCBouncerAccountMutable?
+
+	/* The bouncer's certificate when trusted in this sheet's checks: kept in the account */
+	private var trustedCertificate: Data?
+
 	@Published private(set) var networks: [IRCBouncerNetwork]?
 	@Published private(set) var networksError: String?
 	@Published private(set) var addedNetworks: Set<String> = []
@@ -94,6 +116,8 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 		prefersSecuredConnection = account.prefersSecuredConnection
 		username = account.username
 		checksForChanges = account.checksForNetworkChanges
+		certificateReference = account.identityClientSideCertificate
+		logsInWithCertificate = (account.identityClientSideCertificate != nil)
 
 		super.init()
 
@@ -122,7 +146,27 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 	{
 		(address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false &&
 		 portNumber != nil &&
-		 username.trimmingCharacters(in: .whitespaces).isEmpty == false)
+		 username.trimmingCharacters(in: .whitespaces).isEmpty == false &&
+		 (logsInWithCertificate == false || certificateReference != nil) &&
+		 settingUpCertificate == false)
+	}
+
+	var certificateName: String?
+	{
+		ServerPropertiesAccountPane.certificate(forReference: certificateReference)?.name
+	}
+
+	func chooseCertificate()
+	{
+		if let reference = ChooseClientCertificate() {
+			certificateReference = reference
+		}
+	}
+
+	/* The certificate logs in already: no password is kept */
+	var logsInWithCertificateAlone: Bool
+	{
+		(account.identityClientSideCertificate != nil && account.password == nil)
 	}
 
 	/// A short check with the saved login, when no network of the bouncer is connected
@@ -139,6 +183,18 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 
 	func bouncerProbeDidChange(_ changedProbe: IRCBouncerProbe)
 	{
+		if (changedProbe === setupProbe) {
+			if changedProbe.wantsCertificateTrust, let window = window {
+				changedProbe.trustCertificate(in: window)
+			}
+
+			if changedProbe.finished {
+				certificateSetUpFinished(changedProbe)
+			}
+
+			return
+		}
+
 		guard changedProbe === probe else {
 			return
 		}
@@ -152,6 +208,8 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 		}
 
 		if (changedProbe.error == IRCBouncerProbeError.none) {
+			trustedCertificate = changedProbe.trustedCertificate
+
 			networks = (changedProbe.networkList?.networks ?? [])
 		} else {
 			networksError = (changedProbe.errorDetail ?? AddBouncerText("ab-e-clsd"))
@@ -177,6 +235,9 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 		probe?.delegate = nil
 		probe?.cancel()
 
+		setupProbe?.delegate = nil
+		setupProbe?.cancel()
+
 		close()
 	}
 
@@ -199,12 +260,145 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 			updated.password = password
 		}
 
+		if logsInWithCertificate {
+			/* A new certificate, or one not set up yet (the password still
+			 logs in): registered on the bouncer first */
+			let certificateChanged = (certificateReference != account.identityClientSideCertificate)
+
+			if (certificateChanged || updated.password != nil) {
+				updated.identityClientSideCertificate = certificateReference
+
+				setUpCertificate(for: updated)
+
+				return
+			}
+		} else if (account.identityClientSideCertificate != nil) {
+			/* Back to the password, which must be there */
+			guard (updated.password ?? "").isEmpty == false else {
+				showAlert(AddBouncerText("eb-c-pass"))
+
+				return
+			}
+
+			updated.identityClientSideCertificate = nil
+		}
+
+		finishSaving(updated)
+	}
+
+	private func finishSaving(_ updated: IRCBouncerAccountMutable)
+	{
+		if let trusted = trustedCertificate {
+			updated.trustedServerCertificate = trusted
+		}
+
 		probe?.delegate = nil
 		probe?.cancel()
 
 		close()
 
 		save(updated)
+	}
+
+	private func showAlert(_ text: String, then: (() -> Void)? = nil)
+	{
+		guard let window = window else {
+			return
+		}
+
+		let alert = NSAlert()
+
+		alert.messageText = text
+
+		alert.beginSheetModal(for: window) { (_) in
+			then?()
+		}
+	}
+
+	/* The certificate is registered with the password, then tried alone */
+	private func setUpCertificate(for updated: IRCBouncerAccountMutable)
+	{
+		guard (updated.password ?? "").isEmpty == false else {
+			showAlert(AddBouncerText("eb-c-need"))
+
+			return
+		}
+
+		let newProbe = IRCBouncerProbe(account: updated)
+
+		newProbe.delegate = self
+
+		setupProbe = newProbe
+		accountBeingSetUp = updated
+
+		settingUpCertificate = true
+
+		newProbe.start()
+	}
+
+	/* What went wrong, as the Add Bouncer sheet says it */
+	private func reason(of failedProbe: IRCBouncerProbe, for updated: IRCBouncerAccount) -> String
+	{
+		let address = updated.serverAddress
+		let port = String(updated.serverPort)
+
+		switch (failedProbe.error) {
+			case .cannotConnect:
+				return AddBouncerText("ab-e-conn", address, port)
+			case .timedOut:
+				return AddBouncerText("ab-e-time", address, port)
+			case .certificateNotTrusted:
+				return AddBouncerText("ab-e-cert", address)
+			case .wrongLogin:
+				return AddBouncerText("ab-e-login")
+			case .notABouncer:
+				return AddBouncerText("ab-e-nbnc", address)
+			default:
+				return AddBouncerText("ab-e-clsd")
+		}
+	}
+
+	private func certificateSetUpFinished(_ finishedProbe: IRCBouncerProbe)
+	{
+		settingUpCertificate = false
+
+		setupProbe = nil
+
+		guard let updated = accountBeingSetUp else {
+			return
+		}
+
+		accountBeingSetUp = nil
+
+		if let trusted = finishedProbe.trustedCertificate {
+			trustedCertificate = trusted
+		}
+
+		if (finishedProbe.error != IRCBouncerProbeError.none) {
+			var text = AddBouncerText("eb-c-fail", account.displayName) + " " + reason(of: finishedProbe, for: updated)
+
+			if let detail = finishedProbe.errorDetail, detail.isEmpty == false {
+				text += "\n\n" + AddBouncerText(((finishedProbe.error == .cannotConnect) ? "ab-e-det" : "ab-e-said"), detail)
+			}
+
+			showAlert(text)
+
+			return
+		}
+
+		switch (finishedProbe.certificateLogin) {
+			case .works:
+				updated.password = "" // removed from the Keychain: the certificate logs in
+
+				finishSaving(updated)
+			default:
+				/* Not taken: the password stays, without the certificate */
+				updated.identityClientSideCertificate = nil
+
+				showAlert(AddBouncerText("ab-3-cno", account.serverAddress)) { [weak self] in
+					self?.finishSaving(updated)
+				}
+		}
 	}
 
 	func confirmRemoval()
@@ -349,11 +543,22 @@ struct EditBouncerView: View
 							TextField(AddBouncerText("ab-user"), text: $model.username)
 						}
 
+						Picker(AddBouncerText("ab-with"), selection: $model.logsInWithCertificate) {
+							Text(AddBouncerText("ab-with-p")).tag(false)
+							Text(AddBouncerText("ab-with-c")).tag(true)
+						}
+
+						if model.logsInWithCertificate {
+							BouncerCertificateRow(name: model.certificateName, hasReference: (model.certificateReference != nil)) {
+								model.chooseCertificate()
+							}
+						}
+
 						ServerPropertiesField(title: AddBouncerText("ab-pass"), error: nil) {
-							SecureField(AddBouncerText("ab-pass"), text: $model.password, prompt: Text(AddBouncerText("eb-pass-p")))
+							SecureField(AddBouncerText("ab-pass"), text: $model.password, prompt: Text(AddBouncerText(passwordPrompt)))
 						}
 					} footer: {
-						SettingFooter(text: AddBouncerText("eb-1-n"))
+						SettingFooter(text: AddBouncerText((model.logsInWithCertificate) ? "eb-1-nc" : "eb-1-n"))
 					}
 
 					Section(AddBouncerText("eb-net-h")) {
@@ -390,6 +595,12 @@ struct EditBouncerView: View
 				}
 				.keyboardShortcut(.cancelAction)
 
+				if model.settingUpCertificate {
+					ProgressView()
+						.controlSize(.small)
+						.accessibilityLabel(AddBouncerText("ab-c-certing"))
+				}
+
 				Button(AddBouncerText("eb-b-save")) {
 					model.saveChanges()
 				}
@@ -398,6 +609,17 @@ struct EditBouncerView: View
 			}
 		}
 		.frame(width: Self.width, height: Self.height)
+	}
+
+	/* Unchanged; with the certificate alone there's none to change: one
+	 only to set a new certificate up, or to go back to the password */
+	private var passwordPrompt: String
+	{
+		if model.logsInWithCertificateAlone {
+			return ((model.logsInWithCertificate) ? "ab-pass-c" : "eb-pass-n")
+		}
+
+		return "eb-pass-p"
 	}
 
 	@ViewBuilder

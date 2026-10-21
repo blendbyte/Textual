@@ -52,6 +52,10 @@ NS_ASSUME_NONNULL_BEGIN
  certificate is being looked at) */
 static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 
+/* How long the answer to registering a certificate is waited for; the
+ login with it alone decides either way */
+static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
+
 @interface IRCBouncerProbe () <IRCConnectionTransportDelegate>
 @property (nonatomic, copy) IRCBouncerAccount *account;
 @property (nonatomic, strong, nullable) IRCConnectionTransport *transport;
@@ -74,6 +78,10 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 @property (nonatomic, strong, readwrite, nullable) IRCBouncerNetworkList *networkList;
 @property (nonatomic, assign, readwrite) IRCBouncerProbeError error;
 @property (nonatomic, copy, readwrite, nullable) NSString *errorDetail;
+@property (nonatomic, assign, readwrite) IRCBouncerProbeCertificateLogin certificateLogin;
+@property (nonatomic, assign) BOOL triesCertificateAlone; // the second connection, after registering it
+@property (nonatomic, assign) BOOL awaitsRegistrationReply;
+@property (nonatomic, assign) BOOL usesExternalLogin; // SASL EXTERNAL asked for
 @end
 
 @implementation IRCBouncerProbe
@@ -84,6 +92,9 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 
 	if ((self = [super init])) {
 		self.account = account;
+
+		/* Trusted before: not asked again */
+		self.acceptedCertificate = account.trustedServerCertificate;
 
 		self.offeredCapabilities = [NSMutableArray array];
 
@@ -117,6 +128,8 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 
 	socketConfig.connectionPrefersSecuredConnection = account.prefersSecuredConnection;
 	socketConfig.connectionShouldValidateCertificateChain = defaults.validateServerCertificateChain;
+
+	socketConfig.identityClientSideCertificate = account.identityClientSideCertificate;
 	socketConfig.connectionPrefersModernCiphersOnly = [TPCPreferences preferModernCiphers];
 
 	socketConfig.cipherSuites = defaults.cipherSuites;
@@ -173,6 +186,17 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 
 	self.networkList = networkList;
 
+	/* The networks are read: now the certificate is registered */
+	if (self.setsUpCertificate && self.triesCertificateAlone == NO) {
+		[self registerCertificate];
+
+		return;
+	}
+
+	if (self.logsInWithCertificateAlone) {
+		self.certificateLogin = IRCBouncerProbeCertificateLoginWorks;
+	}
+
 	self.finished = YES;
 
 	[self closeConnection];
@@ -183,6 +207,16 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 - (void)failWithError:(IRCBouncerProbeError)error detail:(nullable NSString *)detail
 {
 	if (self.finished) {
+		return;
+	}
+
+	/* The certificate alone, after registering it, wasn't taken: the
+	 networks were read with the password, which stays */
+	if (self.triesCertificateAlone && self.setsUpCertificate && error != IRCBouncerProbeErrorCertificateNotTrusted) {
+		LogToConsoleInfo("Bouncer probe: the certificate alone wasn't taken (%ld)", (long)error);
+
+		[self finishWithCertificateLogin:IRCBouncerProbeCertificateLoginUnsupported];
+
 		return;
 	}
 
@@ -224,6 +258,11 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 
 #pragma mark -
 #pragma mark Certificate
+
+- (nullable NSData *)trustedCertificate
+{
+	return self.acceptedCertificate;
+}
 
 - (BOOL)wantsCertificateTrust
 {
@@ -291,6 +330,9 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 		return;
 	}
 
+	/* Not asked again on the next connection (the certificate login's second) */
+	self.acceptedCertificate = self.untrustedCertificateChain.firstObject;
+
 	/* The bouncer is still waiting */
 	if (trustBlock && self.transport) {
 		self.error = IRCBouncerProbeErrorNone;
@@ -333,6 +375,151 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 	self.finished = NO;
 
 	[self start];
+
+	[self changed];
+}
+
+#pragma mark -
+#pragma mark Certificate Login
+
+/* A certificate and a password: the password logs in, the certificate is registered */
+- (BOOL)setsUpCertificate
+{
+	return (self.account.identityClientSideCertificate != nil && self.account.password.length > 0);
+}
+
+- (BOOL)logsInWithCertificateAlone
+{
+	if (self.account.identityClientSideCertificate == nil) {
+		return NO;
+	}
+
+	return (self.triesCertificateAlone || self.account.password.length == 0);
+}
+
+- (void)registerCertificate
+{
+	self.certificateLogin = IRCBouncerProbeCertificateLoginSettingUp;
+
+	switch (self.kind) {
+		case IRCBouncerKindSoju:
+		{
+			/* Offered only with client-cert-auth on */
+			if ([self.offeredCapabilities containsObject:@"soju.im/client-cert"] == NO) {
+				[self finishWithCertificateLogin:IRCBouncerProbeCertificateLoginUnsupported];
+
+				return;
+			}
+
+			[self sendLine:@"PRIVMSG BouncerServ :device-certificate create -label Textual"];
+
+			break;
+		}
+		case IRCBouncerKindZNC:
+		{
+			[self sendLine:@"PRIVMSG *certauth :add"];
+
+			break;
+		}
+		default:
+		{
+			[self finishWithCertificateLogin:IRCBouncerProbeCertificateLoginUnsupported];
+
+			return;
+		}
+	}
+
+	self.awaitsRegistrationReply = YES;
+
+	[self restartTimeout];
+
+	[self performSelector:@selector(registrationReplyTimedOut) withObject:nil afterDelay:IRCBouncerProbeRegistrationTimeout];
+
+	[self changed];
+}
+
+/* *certauth or BouncerServ answered (in any language): the login with the
+ certificate alone tells whether it took. *status answers for a module
+ ZNC doesn't have. */
+- (BOOL)receiveRegistrationReply:(IRCMessage *)m
+{
+	if (self.awaitsRegistrationReply == NO) {
+		return NO;
+	}
+
+	NSString *sender = m.senderNickname;
+
+	if (self.kind == IRCBouncerKindZNC && [sender isEqualToString:@"*status"]) {
+		self.awaitsRegistrationReply = NO;
+
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(registrationReplyTimedOut) object:nil];
+
+		LogToConsoleInfo("Bouncer probe: ZNC has no certauth");
+
+		[self finishWithCertificateLogin:IRCBouncerProbeCertificateLoginUnsupported];
+
+		return YES;
+	}
+
+	if ([sender isEqualToString:@"*certauth"] == NO && [sender isEqualToString:@"BouncerServ"] == NO) {
+		return NO;
+	}
+
+	[self registrationReplyTimedOut];
+
+	return YES;
+}
+
+- (void)registrationReplyTimedOut
+{
+	if (self.awaitsRegistrationReply == NO) {
+		return;
+	}
+
+	self.awaitsRegistrationReply = NO;
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(registrationReplyTimedOut) object:nil];
+
+	[self startWithCertificateAlone];
+}
+
+/* A second connection, the networks kept */
+- (void)startWithCertificateAlone
+{
+	[self closeConnection];
+
+	self.triesCertificateAlone = YES;
+
+	self.offeredCapabilities = [NSMutableArray array];
+	self.networksBatchToken = nil;
+	self.zncReader = nil;
+	self.usesExternalLogin = NO;
+
+	self.isConnected = NO;
+	self.isSecured = NO;
+	self.isLoggedIn = NO;
+
+	[self start];
+
+	[self changed];
+}
+
+/* Done, with the networks read before */
+- (void)finishWithCertificateLogin:(IRCBouncerProbeCertificateLogin)certificateLogin
+{
+	if (self.finished) {
+		return;
+	}
+
+	self.certificateLogin = certificateLogin;
+
+	self.awaitsRegistrationReply = NO;
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(registrationReplyTimedOut) object:nil];
+
+	self.finished = YES;
+
+	[self closeConnection];
 
 	[self changed];
 }
@@ -508,7 +695,11 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 	}
 
 	if ([command isEqualToString:@"AUTHENTICATE"]) {
-		[self sendPlainLogin];
+		if (self.usesExternalLogin) {
+			[self sendLine:@"AUTHENTICATE +"];
+		} else {
+			[self sendPlainLogin];
+		}
 
 		return;
 	}
@@ -526,7 +717,9 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 	}
 
 	if ([command isEqualToString:@"PRIVMSG"]) {
-		[self receiveZNCStatusMessage:m];
+		if ([self receiveRegistrationReply:m] == NO) {
+			[self receiveZNCStatusMessage:m];
+		}
 
 		return;
 	}
@@ -610,7 +803,9 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 		NSArray *acknowledged = [[m paramAt:2] componentsSeparatedByString:@" "];
 
 		if ([acknowledged containsObject:@"sasl"]) {
-			[self sendLine:@"AUTHENTICATE PLAIN"];
+			self.usesExternalLogin = self.logsInWithCertificateAlone;
+
+			[self sendLine:((self.usesExternalLogin) ? @"AUTHENTICATE EXTERNAL" : @"AUTHENTICATE PLAIN")];
 		} else {
 			[self sendLine:@"CAP END"];
 		}
@@ -644,8 +839,14 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 		/* By its name only: other servers offer znc.in/ capabilities too (Ergo's playback) */
 		self.kind = IRCBouncerKindZNC;
 
-		/* Without a network: ZNC picks the first, or none */
-		[self sendLine:[NSString stringWithFormat:@"PASS %@:%@", self.account.username, (self.account.password ?: @"")]];
+		/* Without a network: ZNC picks the first, or none. With certauth
+		 the certificate logs in, and PASS only names the user (the colon
+		 keeps ZNC from taking the user from USER). */
+		if (self.logsInWithCertificateAlone) {
+			[self sendLine:[NSString stringWithFormat:@"PASS %@:", self.account.username]];
+		} else {
+			[self sendLine:[NSString stringWithFormat:@"PASS %@:%@", self.account.username, (self.account.password ?: @"")]];
+		}
 
 		[self sendLine:@"CAP END"];
 	} else {
@@ -676,6 +877,15 @@ static NSTimeInterval const IRCBouncerProbeTimeout = 20.0;
 
 - (void)registered
 {
+	/* Logged in with the certificate alone, after registering it */
+	if (self.triesCertificateAlone && self.setsUpCertificate) {
+		self.isLoggedIn = YES;
+
+		[self finishWithCertificateLogin:IRCBouncerProbeCertificateLoginWorks];
+
+		return;
+	}
+
 	switch (self.kind) {
 		case IRCBouncerKindSoju:
 		{

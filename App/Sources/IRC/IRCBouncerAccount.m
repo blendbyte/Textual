@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_username;
 	NSString *_password;
 	NSData *_identityClientSideCertificate;
+	NSData *_trustedServerCertificate;
 	BOOL _checksForNetworkChanges;
 	NSArray<NSString *> *_ignoredNetworks;
 
@@ -113,6 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_prefersSecuredConnection forKey:@"prefersSecuredConnection"];
 
 	[defaultsMutable assignObjectTo:&self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
+	[defaultsMutable assignObjectTo:&self->_trustedServerCertificate forKey:@"trustedServerCertificate"];
 
 	[defaultsMutable assignStringTo:&self->_name forKey:@"name"];
 	[defaultsMutable assignStringTo:&self->_serverAddress forKey:@"serverAddress"];
@@ -147,6 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[dic setBool:self.prefersSecuredConnection forKey:@"prefersSecuredConnection"];
 
 	[dic maybeSetObject:self.identityClientSideCertificate forKey:@"identityClientSideCertificate"];
+	[dic maybeSetObject:self.trustedServerCertificate forKey:@"trustedServerCertificate"];
 	[dic maybeSetObject:self.ignoredNetworks forKey:@"ignoredNetworks"];
 	[dic maybeSetObject:self.name forKey:@"name"];
 	[dic maybeSetObject:self.serverAddress forKey:@"serverAddress"];
@@ -207,14 +210,20 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *password = self.password;
 
 	/* In memory only: the account's Keychain item is the one kept */
-	if (self.kind == IRCBouncerKindZNC && password.length > 0) {
+	if (self.kind == IRCBouncerKindZNC) {
 		NSString *login = self.username;
 
 		if (network.length > 0) {
 			login = [NSString stringWithFormat:@"%@/%@", login, network];
 		}
 
-		server.serverPassword = [NSString stringWithFormat:@"%@:%@", login, password];
+		if (password.length > 0) {
+			server.serverPassword = [NSString stringWithFormat:@"%@:%@", login, password];
+		} else if (self.identityClientSideCertificate) {
+			/* certauth: the certificate logs in, PASS only names the user (with
+			 the colon: without one, ZNC takes the user from USER instead) */
+			server.serverPassword = [login stringByAppendingString:@":"];
+		}
 	}
 
 	return [server copy];
@@ -459,6 +468,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic username;
 @dynamic password;
 @dynamic identityClientSideCertificate;
+@dynamic trustedServerCertificate;
 @dynamic checksForNetworkChanges;
 @dynamic ignoredNetworks;
 
@@ -523,6 +533,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_identityClientSideCertificate != identityClientSideCertificate) {
 		self->_identityClientSideCertificate = [identityClientSideCertificate copy];
+	}
+}
+
+- (void)setTrustedServerCertificate:(nullable NSData *)trustedServerCertificate
+{
+	if (self->_trustedServerCertificate != trustedServerCertificate) {
+		self->_trustedServerCertificate = [trustedServerCertificate copy];
 	}
 }
 

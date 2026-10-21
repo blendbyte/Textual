@@ -544,6 +544,12 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	/* Before registration, a soju network logs in to its bouncer account */
 	BOOL linkedToBouncer = ([self bouncerSASLUsername] != nil);
 
+	/* A bouncer account's certificate is for the bouncer's own login only:
+	 not for the network's SASL soju passes on, nor for ZNC (PASS) */
+	if (self.bouncerAccount && linkedToBouncer == NO) {
+		canUseExternal = NO;
+	}
+
 	BOOL haveECDSAKey = (linkedToBouncer == NO && self.config.saslECDSAKey.length > 0);
 
 	BOOL havePassword = ([self saslPassword].length > 0);

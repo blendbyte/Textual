@@ -41,10 +41,11 @@
 #import "TPCPreferencesLocalPrivate.h"
 #import "TXMasterController.h"
 #import "TVCMainWindowPrivate.h"
-#import "IRCClient.h"
+#import "IRCClientPrivate.h"
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionErrors.h"
 #import "IRCConnectionPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
 #import "IRCConnectionTransportPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -484,6 +485,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ircConnectionRequestInsecureCertificateTrust:(RCMTrustResponse)trustBlock
 {
+	/* A bouncer's own certificate, trusted in Add or Edit Bouncer: exactly that one */
+	NSData *trustedCertificate = self.client.bouncerAccount.trustedServerCertificate;
+
+	if (trustedCertificate) {
+		__block NSData *presentedCertificate = nil;
+
+		[self.transport exportSecureConnectionInformation:^(NSString * _Nullable policyName, tls_protocol_version_t protocolType, tls_ciphersuite_t cipherSuites, NSArray<NSData *> *certificateChain) {
+			presentedCertificate = certificateChain.firstObject;
+		}];
+
+		if ([presentedCertificate isEqualToData:trustedCertificate]) {
+			trustBlock(YES);
+
+			return;
+		}
+	}
+
 	[self openInsecureCertificateTrustPanel:trustBlock];
 }
 
