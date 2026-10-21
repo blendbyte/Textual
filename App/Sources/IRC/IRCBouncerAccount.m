@@ -249,10 +249,25 @@ NS_ASSUME_NONNULL_BEGIN
 		return nil;
 	}
 
-	NSMutableArray<NSString *> *logins = [NSMutableArray array];
+	for (NSArray<NSString *> *login in [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config]) {
+		if ([login[0] isEqualToStringIgnoringCase:self.username]) {
+			return login[1];
+		}
+	}
+
+	return nil;
+}
+
++ (NSArray<NSArray<NSString *> *> *)bouncerLoginsOfServerAddedByHand:(IRCClientConfig *)config
+{
+	NSParameterAssert(config != nil);
+
+	IRCServer *server = config.serverList.firstObject;
+
+	NSMutableArray<NSString *> *candidates = [NSMutableArray array];
 
 	if (config.username.length > 0) {
-		[logins addObject:config.username];
+		[candidates addObject:config.username];
 	}
 
 	/* (nil would answer location 0 for the colon) */
@@ -261,17 +276,21 @@ NS_ASSUME_NONNULL_BEGIN
 	NSRange colon = ((serverPassword) ? [serverPassword rangeOfString:@":"] : NSMakeRange(NSNotFound, 0));
 
 	if (colon.location != NSNotFound) {
-		[logins addObject:[serverPassword substringToIndex:colon.location]];
+		[candidates addObject:[serverPassword substringToIndex:colon.location]];
 	}
 
-	for (NSString *login in logins) {
-		NSRange slash = [login rangeOfString:@"/"];
+	NSMutableArray<NSArray<NSString *> *> *logins = [NSMutableArray array];
 
-		if (slash.location == NSNotFound || [[login substringToIndex:slash.location] isEqualToStringIgnoringCase:self.username] == NO) {
+	for (NSString *candidate in candidates) {
+		NSRange slash = [candidate rangeOfString:@"/"];
+
+		if (slash.location == NSNotFound || slash.location == 0) {
 			continue;
 		}
 
-		NSString *network = [login substringFromIndex:NSMaxRange(slash)];
+		NSString *user = [candidate substringToIndex:slash.location];
+
+		NSString *network = [candidate substringFromIndex:NSMaxRange(slash)];
 
 		NSRange at = [network rangeOfString:@"@"];
 
@@ -280,11 +299,33 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		if (network.length > 0) {
-			return network;
+			[logins addObject:@[user, network]];
 		}
 	}
 
-	return nil;
+	return [logins copy];
+}
+
++ (nullable NSString *)bouncerPasswordOfServerAddedByHand:(IRCClientConfig *)config
+{
+	NSParameterAssert(config != nil);
+
+	NSString *serverPassword = config.serverList.firstObject.serverPassword;
+
+	if (serverPassword.length == 0) {
+		return nil;
+	}
+
+	/* ZNC's "user/network:password"; else the password as it is (soju) */
+	NSRange colon = [serverPassword rangeOfString:@":"];
+
+	if (colon.location != NSNotFound && [[serverPassword substringToIndex:colon.location] containsString:@"/"]) {
+		NSString *password = [serverPassword substringFromIndex:NSMaxRange(colon)];
+
+		return ((password.length > 0) ? password : nil);
+	}
+
+	return serverPassword;
 }
 
 #pragma mark -

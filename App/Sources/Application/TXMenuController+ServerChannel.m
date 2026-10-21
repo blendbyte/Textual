@@ -182,6 +182,11 @@ NS_ASSUME_NONNULL_BEGIN
 /* The Add Bouncer sheet: the account and a server per network it adds here */
 - (void)addBouncer:(nullable id)sender
 {
+	[self addBouncerFilledInWith:nil];
+}
+
+- (void)addBouncerFilledInWith:(nullable IRCClient *)client
+{
 	[windowController() popMainWindowSheetIfExists];
 
 	__weak TXMenuController *weakSelf = self;
@@ -211,6 +216,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[weakSelf addServerFilledInWith:config];
 	}];
+
+	/* Its address and login, the network left out */
+	IRCClientConfig *config = client.config;
+
+	IRCServer *server = config.serverList.firstObject;
+
+	NSArray<NSString *> *login = ((config) ? [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config].firstObject : nil);
+
+	if (config && server && login) {
+		[sheet fillInAddress:server.serverAddress
+						port:server.serverPort
+					 secured:server.prefersSecuredConnection
+					username:login[0]
+					password:[IRCBouncerAccount bouncerPasswordOfServerAddedByHand:config]];
+	}
 
 	[sheet beginInWindow:TVCMainWindow.currentWindow];
 }

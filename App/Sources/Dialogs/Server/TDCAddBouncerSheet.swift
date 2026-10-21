@@ -108,6 +108,9 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 
 	var close: () -> Void = {}
 
+	/* Opened to link servers added by hand: they're ticked */
+	var linksServersAddedByHand = false
+
 	private let existingClient: (IRCBouncerNetwork, IRCBouncerAccount) -> IRCClient?
 	private let add: (IRCBouncerAccount, [IRCBouncerNetwork], [String: IRCClient], Bool) -> Void
 	private let addAsServer: (String, UInt16, Bool) -> Void
@@ -208,7 +211,9 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 		rows = (probe?.networkList?.networks ?? []).map { (network) in
 			let client = existingClient(network, account)
 
-			return NetworkRow(network: network, existingClient: client, isChosen: (client == nil))
+			let addedByHand = (client != nil && client?.config.bouncerAccountIdentifier == nil)
+
+			return NetworkRow(network: network, existingClient: client, isChosen: (client == nil || (addedByHand && linksServersAddedByHand)))
 		}
 
 		page = .networks
@@ -308,6 +313,20 @@ final class AddBouncerSheet: NSObject
 		model.close = { [weak self] in
 			self?.end()
 		}
+	}
+
+	/* The first step filled in from servers added by hand, offered for
+	 linking: they're ticked in the last */
+	@objc(fillInAddress:port:secured:username:password:)
+	func fillIn(address: String, port: UInt16, secured: Bool, username: String, password: String?)
+	{
+		model.address = address
+		model.prefersSecuredConnection = secured // before the port: it changes a usual one
+		model.port = String(port)
+		model.username = username
+		model.password = (password ?? "")
+
+		model.linksServersAddedByHand = true
 	}
 
 	@objc(beginInWindow:)

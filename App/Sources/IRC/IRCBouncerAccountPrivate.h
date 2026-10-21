@@ -75,6 +75,13 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
  for anything else */
 - (nullable NSString *)networkOfServerAddedByHand:(IRCClientConfig *)config;
 
+/* The bouncer logins of a server added by hand: "user/network" as its
+ username or before ":" in its server password ("@client" left out), as
+ pairs of user and network; and the password the bouncer gets (after ":",
+ else the server password) */
++ (NSArray<NSArray<NSString *> *> *)bouncerLoginsOfServerAddedByHand:(IRCClientConfig *)config;
++ (nullable NSString *)bouncerPasswordOfServerAddedByHand:(IRCClientConfig *)config;
+
 /* What changed on the bouncer, from its list of networks: its networks
  without a server in Textual (knownNetworks: the networks of the servers
  linked to it or added by hand, identifiers or names), and the networks of

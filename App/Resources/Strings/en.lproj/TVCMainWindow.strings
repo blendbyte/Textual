@@ -92,6 +92,11 @@
 "bnb-b3" = "Keep";
 "bnb-b4" = "Remove from Textual";
 
+/* Above the input field on servers added by hand that log in to one bouncer (%ld is how many, %@ the bouncer's address) */
+"bnb-l1" = "These %ld servers go through the same bouncer at %@";
+"bnb-b5" = "Not Now";
+"bnb-b6" = "Link…";
+
 /* Asked before Remove from Textual (%@ is the list of servers) */
 "bnb-a1" = "Remove %@ from Textual?";
 "bnb-a2" = "Its channels and settings in Textual are removed. Nothing changes on your bouncer.";

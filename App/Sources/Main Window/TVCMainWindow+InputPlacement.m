@@ -37,6 +37,7 @@
 #import "IRCChannel.h"
 #import "IRCClientPrivate.h"
 #import "IRCClientConfigPrivate.h"
+#import "IRCServer.h"
 #import "IRCBouncerAccountPrivate.h"
 #import "IRCWorldPrivate.h"
 #import "TXMasterControllerPrivate.h"
@@ -314,7 +315,9 @@ NS_ASSUME_NONNULL_BEGIN
  checks for that): "Your bouncer has 2 new networks: OFTC and hackint
  [Ignore] [Add…]", then "hackint was removed from your bouncer [Keep]
  [Remove from Textual]". Ignore and Keep are remembered per network;
- nothing is ever changed on the bouncer. */
+ nothing is ever changed on the bouncer. On servers added by hand that go
+ through one bouncer, once: "These 3 servers go through the same bouncer at
+ bnc.example.com [Not Now] [Link…]" (Add Bouncer, filled in). */
 - (NSView *)makeBouncerBar
 {
 	NSTextField *label = [self makeNoticeBarLabel];
@@ -344,15 +347,25 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	IRCBouncerAccount *account = self.selectedClient.bouncerAccount;
+	IRCClient *client = self.selectedClient;
+
+	IRCBouncerAccount *account = client.bouncerAccount;
 
 	NSArray<IRCBouncerNetwork *> *addedNetworks = nil;
 
 	NSArray<IRCClient *> *removedClients = nil;
 
+	NSArray<IRCClient *> *linkableClients = nil;
+
 	NSString *text = nil;
 
-	if (account) {
+	if (client && account == nil) {
+		linkableClients = [worldController() clientsToOfferLinkingWith:client];
+
+		if (linkableClients.count == 0) {
+			linkableClients = nil;
+		}
+	} else if (account) {
 		addedNetworks = [worldController() networksAddedToBouncerAccount:account];
 
 		if (addedNetworks.count == 0) {
@@ -366,7 +379,14 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	if (addedNetworks) {
+	if (linkableClients) {
+		NSString *address = client.config.serverList.firstObject.serverAddress;
+
+		text = TXTLS(@"TVCMainWindow[bnb-l1]", linkableClients.count, address);
+
+		self.bouncerBarIgnoreButton.title = TXTLS(@"TVCMainWindow[bnb-b5]");
+		self.bouncerBarActionButton.title = TXTLS(@"TVCMainWindow[bnb-b6]");
+	} else if (addedNetworks) {
 		NSMutableArray<NSString *> *names = [NSMutableArray arrayWithCapacity:addedNetworks.count];
 
 		for (IRCBouncerNetwork *network in addedNetworks) {
@@ -405,6 +425,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.bouncerBarAccount = ((text) ? account : nil);
 	self.bouncerBarAddedNetworks = addedNetworks;
 	self.bouncerBarRemovedClients = removedClients;
+	self.bouncerBarLinkableClients = linkableClients;
 
 	self.bouncerBarLabel.stringValue = (text ?: @"");
 
@@ -419,9 +440,17 @@ NS_ASSUME_NONNULL_BEGIN
 	self.bouncerBarHeightConstraint.constant = ((hidden) ? 0 : 30);
 }
 
-/* Ignore (new networks) or Keep (removed ones) */
+/* Ignore (new networks), Keep (removed ones) or Not Now (linking) */
 - (void)bouncerBarIgnoreClicked:(id)sender
 {
+	NSArray<IRCClient *> *linkableClients = self.bouncerBarLinkableClients;
+
+	if (linkableClients) {
+		[worldController() rememberLinkingOfferedForClients:linkableClients];
+
+		return;
+	}
+
 	IRCBouncerAccount *account = self.bouncerBarAccount;
 
 	if (account == nil) {
@@ -445,9 +474,22 @@ NS_ASSUME_NONNULL_BEGIN
 	[worldController() ignoreChangesOfNetworks:networks ofBouncerAccount:account];
 }
 
-/* Add… (Edit Bouncer, where its networks not in Textual have Add) or Remove from Textual */
+/* Add… (Edit Bouncer, where its networks not in Textual have Add), Remove
+ from Textual, or Link… (Add Bouncer, which offers these servers as Link) */
 - (void)bouncerBarActionClicked:(id)sender
 {
+	NSArray<IRCClient *> *linkableClients = self.bouncerBarLinkableClients;
+
+	if (linkableClients) {
+		IRCClient *client = self.selectedClient;
+
+		[worldController() rememberLinkingOfferedForClients:linkableClients];
+
+		[menuController() addBouncerFilledInWith:client];
+
+		return;
+	}
+
 	IRCBouncerAccount *account = self.bouncerBarAccount;
 
 	if (account == nil) {

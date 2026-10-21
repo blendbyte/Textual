@@ -123,6 +123,14 @@ TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 
 /* The notices of its servers' windows again */
 - (void)bouncerNetworksOfAccountChanged:(IRCBouncerAccount *)account;
+
+/* Servers added by hand that go through one bouncer (the same address and
+ port, the same user before "/" in their logins), offered once for linking:
+ two or more with this one, else none */
+- (NSArray<IRCClient *> *)clientsToOfferLinkingWith:(IRCClient *)client;
+
+/* Not offered again (Link… or Not Now) */
+- (void)rememberLinkingOfferedForClients:(NSArray<IRCClient *> *)clients;
 @end
 
 NS_ASSUME_NONNULL_END

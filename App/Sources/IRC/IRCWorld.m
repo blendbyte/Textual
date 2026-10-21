@@ -536,6 +536,94 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	[self addBouncerAccount:accountMutable];
 }
 
+#pragma mark -
+#pragma mark Linking Servers Added by Hand
+
+/* The bouncers whose servers added by hand were offered for linking:
+ "address:port:user", in lower case */
+static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Controller -> Bouncer Linking Offered";
+
+/* "address:port:user" for each bouncer login of a server added by hand */
+- (NSArray<NSString *> *)bouncerLinkingKeysOfClient:(IRCClient *)client
+{
+	NSParameterAssert(client != nil);
+
+	IRCClientConfig *config = client.config;
+
+	IRCServer *server = config.serverList.firstObject;
+
+	if (config.bouncerAccountIdentifier != nil || server.serverAddress.length == 0) {
+		return @[];
+	}
+
+	NSMutableArray<NSString *> *keys = [NSMutableArray array];
+
+	for (NSArray<NSString *> *login in [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config]) {
+		NSString *key = [NSString stringWithFormat:@"%@:%u:%@", server.serverAddress, server.serverPort, login[0]].lowercaseString;
+
+		if ([keys containsObject:key] == NO) {
+			[keys addObject:key];
+		}
+	}
+
+	return [keys copy];
+}
+
+- (NSArray<IRCClient *> *)clientsToOfferLinkingWith:(IRCClient *)client
+{
+	NSParameterAssert(client != nil);
+
+	NSArray<NSString *> *keys = [self bouncerLinkingKeysOfClient:client];
+
+	if (keys.count == 0) {
+		return @[];
+	}
+
+	NSArray *offeredKeys = ([RZUserDefaults() arrayForKey:IRCWorldBouncerLinkingOfferedDefaultsKey] ?: @[]);
+
+	for (NSString *key in keys) {
+		if ([offeredKeys containsObject:key]) {
+			continue;
+		}
+
+		NSMutableArray<IRCClient *> *clients = [NSMutableArray array];
+
+		for (IRCClient *otherClient in self.clientList) {
+			if ([[self bouncerLinkingKeysOfClient:otherClient] containsObject:key]) {
+				[clients addObject:otherClient];
+			}
+		}
+
+		/* Several servers: one alone may be a network's own "user/…" login */
+		if (clients.count >= 2) {
+			return [clients copy];
+		}
+	}
+
+	return @[];
+}
+
+- (void)rememberLinkingOfferedForClients:(NSArray<IRCClient *> *)clients
+{
+	NSParameterAssert(clients != nil);
+
+	NSMutableArray *offeredKeys = [([RZUserDefaults() arrayForKey:IRCWorldBouncerLinkingOfferedDefaultsKey] ?: @[]) mutableCopy];
+
+	for (IRCClient *client in clients) {
+		for (NSString *key in [self bouncerLinkingKeysOfClient:client]) {
+			if ([offeredKeys containsObject:key] == NO) {
+				[offeredKeys addObject:key];
+			}
+		}
+	}
+
+	[RZUserDefaults() setObject:offeredKeys forKey:IRCWorldBouncerLinkingOfferedDefaultsKey];
+
+	for (IRCClient *client in clients) {
+		[TVCMainWindow updateTitleFor:client];
+	}
+}
+
 - (void)bouncerNetworksOfAccountChanged:(IRCBouncerAccount *)account
 {
 	NSParameterAssert(account != nil);

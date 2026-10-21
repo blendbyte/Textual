@@ -107,12 +107,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSLayoutConstraint *stateBarHeightConstraint;
 @property (nonatomic, strong, nullable) NSView *bouncerBar; // "Your bouncer has 2 new networks: …" above the state bar
 @property (nonatomic, strong, nullable) NSTextField *bouncerBarLabel;
-@property (nonatomic, strong, nullable) NSButton *bouncerBarIgnoreButton; // Ignore, Keep
-@property (nonatomic, strong, nullable) NSButton *bouncerBarActionButton; // Add…, Remove from Textual
+@property (nonatomic, strong, nullable) NSButton *bouncerBarIgnoreButton; // Ignore, Keep, Not Now
+@property (nonatomic, strong, nullable) NSButton *bouncerBarActionButton; // Add…, Remove from Textual, Link…
 @property (nonatomic, strong, nullable) NSLayoutConstraint *bouncerBarHeightConstraint;
 @property (nonatomic, strong, nullable) IRCBouncerAccount *bouncerBarAccount; // the bouncer it tells about
 @property (nonatomic, copy, nullable) NSArray<IRCBouncerNetwork *> *bouncerBarAddedNetworks; // its new networks, or
 @property (nonatomic, copy, nullable) NSArray<IRCClient *> *bouncerBarRemovedClients; // the servers of its removed ones
+@property (nonatomic, copy, nullable) NSArray<IRCClient *> *bouncerBarLinkableClients; // or servers added by hand to offer linking
 @property (nonatomic, copy, nullable) NSArray *serverListTopLevelItemsCache; // servers and bouncer headings, while there are headings
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *serverListBouncerHeadings; // account identifier → its heading (the same object across reloads)
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;

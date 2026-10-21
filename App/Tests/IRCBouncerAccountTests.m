@@ -161,6 +161,25 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([account networkOfServerAddedByHand:config]);
 
 	XCTAssertNil([account networkOfServerAddedByHand:[self configLinkedTo:account network:@"oftc"]]);
+
+	/* What Add Bouncer is filled in with when such servers are offered for linking */
+	config.username = @"textual";
+	config.serverList = @[[self serverAt:@"bnc.example.com" port:6697 password:@"dan/libera:se:cret"]];
+
+	NSArray *zncLogins = [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config];
+	NSArray *expectedZNCLogins = @[@[@"dan", @"libera"]];
+
+	XCTAssertEqualObjects(zncLogins, expectedZNCLogins);
+	XCTAssertEqualObjects([IRCBouncerAccount bouncerPasswordOfServerAddedByHand:config], @"se:cret");
+
+	config.username = @"dan/oftc";
+	config.serverList = @[[self serverAt:@"bnc.example.com" port:6697 password:@"plain"]];
+
+	XCTAssertEqualObjects([IRCBouncerAccount bouncerPasswordOfServerAddedByHand:config], @"plain");
+
+	config.username = @"textual";
+
+	XCTAssertEqual([IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config].count, 0);
 }
 
 - (IRCServer *)serverAt:(NSString *)address port:(uint16_t)port password:(nullable NSString *)password
