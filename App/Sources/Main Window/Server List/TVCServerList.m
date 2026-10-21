@@ -43,6 +43,7 @@
 #import "TVCServerListAppearancePrivate.h"
 #import "TVCServerListCellPrivate.h"
 #import "TVCServerListPrivate.h"
+#import "TVCServerListBouncerHeadingPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -346,6 +347,13 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 - (nullable NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
 	NSInteger rowBeneathMouse = self.rowBeneathMouse;
+
+	/* A bouncer's heading has its own menu, and isn't selected */
+	id itemBeneathMouse = ((rowBeneathMouse >= 0) ? [self itemAtRow:rowBeneathMouse] : nil);
+
+	if ([itemBeneathMouse isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		return [self.mainWindow serverListMenuForBouncerHeading:itemBeneathMouse];
+	}
 
 	if (rowBeneathMouse >= 0) {
 		if (rowBeneathMouse != self.selectedRow || self.numberOfSelectedRows > 1) {

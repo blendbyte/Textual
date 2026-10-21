@@ -729,6 +729,15 @@ NS_ASSUME_NONNULL_BEGIN
 			return u.isConnected;
 		}
 
+		case MTMMServerEditBouncer: // "Edit Bouncer…", shown for a server going through one
+		{
+			BOOL linked = (u.bouncerAccount != nil);
+
+			menuItem.hidden = (linked == NO);
+
+			return linked;
+		}
+
 		case MTMMServerDuplicateServer: // "Duplicate Server"
 		case MTMMServerAddChannel: // "Add Channel…"
 		case MTMMServerServerProperties: // "Server Properties…"

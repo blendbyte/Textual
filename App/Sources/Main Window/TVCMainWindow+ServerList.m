@@ -57,6 +57,9 @@
 #import "TVCServerListPrivate.h"
 #import "TVCServerListAppearancePrivate.h"
 #import "TVCServerListCellPrivate.h"
+#import "TVCServerListBouncerHeadingPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
+#import "IRCClientConfigPrivate.h"
 #import "TVCMemberListPrivate.h"
 #import "TVCTextViewIRCFormattingMenuPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
@@ -149,7 +152,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[self.serverList selectItemAtIndex:n];
 	} else {
-		[self.serverList selectItemAtIndex:0];
+		/* The first server: row 0 may be a bouncer's heading */
+		IRCClient *firstClient = worldController().clientList.firstObject;
+
+		NSInteger firstRow = ((firstClient) ? [self.serverList rowForItem:firstClient] : -1);
+
+		[self.serverList selectItemAtIndex:MAX(firstRow, 0)];
 	}
 }
 
@@ -166,6 +174,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.serverList.dataSource = (id)self;
 
 	self.serverList.target = self;
+	self.serverList.action = @selector(outlineViewClicked:);
 	self.serverList.doubleAction = @selector(outlineViewDoubleClicked:);
 
 	/* Inform the table we want drag events */
@@ -232,6 +241,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)adjustSelectionWithItems:(NSArray<IRCTreeItem *> *)selectedItems selectedItem:(nullable IRCTreeItem *)selectedItem
 {
 	NSParameterAssert(selectedItems != nil);
+
+	/* What is selected isn't hidden in a folded bouncer section */
+	[self unfoldBouncerHeadingsHidingItems:selectedItems];
 
 	/* What has a window of its own isn't shown here as well */
 	if (self.isPopOut == NO) {
@@ -533,6 +545,9 @@ NS_ASSUME_NONNULL_BEGIN
 				nextSelectionRow = (-1);
 			}
 
+			/* Not a bouncer's heading: the nearest server or channel beyond it */
+			nextSelectionRow = [self serverListSelectableRowFrom:nextSelectionRow around:itemIndexOld forbidden:selectedRowsForbidden];
+
 			/* Add new selection index if there is one. */
 			if (nextSelectionRow >= 0) {
 				[selectedRowsNew addIndex:nextSelectionRow];
@@ -555,6 +570,491 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.serverList selectRowIndexes:selectedRowsNew
 				 byExtendingSelection:NO
 					scrollToSelection:YES];
+}
+
+#pragma mark -
+#pragma mark Bouncer Headings
+
+/* Account identifiers of the bouncer sections folded in the server list */
+static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Main Window -> Folded Bouncers";
+
+- (BOOL)serverListShowsBouncerHeadings
+{
+	if (self.isPopOut) {
+		return NO;
+	}
+
+	for (IRCClient *client in worldController().clientList) {
+		NSString *accountIdentifier = client.config.bouncerAccountIdentifier;
+
+		if (accountIdentifier && [worldController() findBouncerAccountWithId:accountIdentifier]) {
+			return YES;
+		}
+	}
+
+	return NO;
+}
+
+/* The servers, each bouncer's heading before its servers (kept together
+ wherever they are in the list) and none of a folded bouncer's */
+- (NSArray *)serverListTopLevelItems
+{
+	NSArray *cache = self.serverListTopLevelItemsCache;
+
+	if (cache) {
+		return cache;
+	}
+
+	NSArray<IRCClient *> *clientList = worldController().clientList;
+
+	if ([self serverListShowsBouncerHeadings] == NO) {
+		return clientList;
+	}
+
+	NSSet *foldedBouncers = [self foldedBouncers];
+
+	NSMutableArray *items = [NSMutableArray arrayWithCapacity:clientList.count];
+
+	NSMutableSet *accountsShown = [NSMutableSet set];
+
+	for (IRCClient *client in clientList) {
+		NSString *accountIdentifier = client.config.bouncerAccountIdentifier;
+
+		if (accountIdentifier == nil || [worldController() findBouncerAccountWithId:accountIdentifier] == nil) {
+			[items addObject:client];
+
+			continue;
+		}
+
+		if ([accountsShown containsObject:accountIdentifier]) {
+			continue;
+		}
+
+		[accountsShown addObject:accountIdentifier];
+
+		[items addObject:[self bouncerHeadingForAccountIdentifier:accountIdentifier]];
+
+		if ([foldedBouncers containsObject:accountIdentifier]) {
+			continue;
+		}
+
+		for (IRCClient *member in clientList) {
+			if ([member.config.bouncerAccountIdentifier isEqualToString:accountIdentifier]) {
+				[items addObject:member];
+			}
+		}
+	}
+
+	self.serverListTopLevelItemsCache = items;
+
+	return items;
+}
+
+/* The same object for an account across reloads: the outline view knows its rows by object */
+- (TVCServerListBouncerHeading *)bouncerHeadingForAccountIdentifier:(NSString *)accountIdentifier
+{
+	NSParameterAssert(accountIdentifier != nil);
+
+	NSMutableDictionary *headings = self.serverListBouncerHeadings;
+
+	if (headings == nil) {
+		headings = [NSMutableDictionary dictionary];
+
+		self.serverListBouncerHeadings = headings;
+	}
+
+	TVCServerListBouncerHeading *heading = headings[accountIdentifier];
+
+	if (heading == nil) {
+		heading = [[TVCServerListBouncerHeading alloc] initWithAccountIdentifier:accountIdentifier];
+
+		headings[accountIdentifier] = heading;
+	}
+
+	return heading;
+}
+
+- (void)reloadServerListStructure
+{
+	NSArray *selectedItems = self.selectedItems;
+
+	IRCTreeItem *selectedItem = self.selectedItem;
+
+	[self reloadServerListRows];
+
+	if (selectedItems.count > 0) {
+		[self adjustSelectionWithItems:selectedItems selectedItem:selectedItem];
+	}
+}
+
+/* Rows again, with the servers that were open opened again; the selection
+ isn't touched (the caller puts it back) */
+- (void)reloadServerListRows
+{
+	self.serverListTopLevelItemsCache = nil;
+
+	BOOL ignoredSelectionChanges = self.ignoreOutlineViewSelectionChanges;
+
+	self.ignoreOutlineViewSelectionChanges = YES;
+
+	[self.serverList reloadData];
+
+	for (IRCClient *client in worldController().clientList) {
+		if (client.sidebarItemIsExpanded && [self.serverList rowForItem:client] >= 0) {
+			[self.serverList expandItem:client];
+		}
+	}
+
+	self.ignoreOutlineViewSelectionChanges = ignoredSelectionChanges;
+}
+
+- (NSSet<NSString *> *)foldedBouncers
+{
+	NSArray *folded = [RZUserDefaults() arrayForKey:TVCMainWindowFoldedBouncersDefaultsKey];
+
+	return [NSSet setWithArray:(folded ?: @[])];
+}
+
+- (void)setFoldedBouncers:(NSSet<NSString *> *)foldedBouncers
+{
+	NSParameterAssert(foldedBouncers != nil);
+
+	if (foldedBouncers.count == 0) {
+		[RZUserDefaults() removeObjectForKey:TVCMainWindowFoldedBouncersDefaultsKey];
+
+		return;
+	}
+
+	[RZUserDefaults() setObject:foldedBouncers.allObjects forKey:TVCMainWindowFoldedBouncersDefaultsKey];
+}
+
+- (void)toggleFoldingOfBouncerHeading:(TVCServerListBouncerHeading *)heading
+{
+	NSParameterAssert(heading != nil);
+
+	NSMutableSet *foldedBouncers = [[self foldedBouncers] mutableCopy];
+
+	NSString *accountIdentifier = heading.accountIdentifier;
+
+	if ([foldedBouncers containsObject:accountIdentifier]) {
+		[foldedBouncers removeObject:accountIdentifier];
+	} else {
+		/* The selection moves to a server that stays in view */
+		NSArray *clients = heading.clients;
+
+		IRCClient *selectedClient = self.selectedClient;
+
+		if (selectedClient && [clients containsObject:selectedClient]) {
+			IRCClient *otherClient = nil;
+
+			for (id item in [self serverListTopLevelItems]) {
+				if ([item isKindOfClass:[IRCClient class]] && [clients containsObject:item] == NO) {
+					otherClient = item;
+
+					break;
+				}
+			}
+
+			if (otherClient == nil) {
+				NSBeep();
+
+				return;
+			}
+
+			[self select:otherClient];
+		}
+
+		[foldedBouncers addObject:accountIdentifier];
+	}
+
+	[self setFoldedBouncers:foldedBouncers];
+
+	[self reloadServerListStructure];
+}
+
+- (void)unfoldBouncerHeadingsHidingItems:(NSArray<IRCTreeItem *> *)items
+{
+	NSParameterAssert(items != nil);
+
+	NSMutableSet *foldedBouncers = [[self foldedBouncers] mutableCopy];
+
+	if (foldedBouncers.count == 0) {
+		return;
+	}
+
+	BOOL unfolded = NO;
+
+	for (IRCTreeItem *item in items) {
+		NSString *accountIdentifier = item.associatedClient.config.bouncerAccountIdentifier;
+
+		if (accountIdentifier && [foldedBouncers containsObject:accountIdentifier]) {
+			[foldedBouncers removeObject:accountIdentifier];
+
+			unfolded = YES;
+		}
+	}
+
+	if (unfolded == NO) {
+		return;
+	}
+
+	[self setFoldedBouncers:foldedBouncers];
+
+	[self reloadServerListRows];
+}
+
+- (NSView *)viewForBouncerHeading:(TVCServerListBouncerHeading *)heading
+{
+	NSParameterAssert(heading != nil);
+
+	TVCServerListBouncerHeadingView *view = [self.serverList makeViewWithIdentifier:[TVCServerListBouncerHeadingView viewIdentifier] owner:self];
+
+	if (view == nil) {
+		view = [[TVCServerListBouncerHeadingView alloc] initWithFrame:NSZeroRect];
+	}
+
+	[view showHeading:heading folded:[[self foldedBouncers] containsObject:heading.accountIdentifier]];
+
+	__weak TVCMainWindow *weakSelf = self;
+
+	view.toggleFolding = ^{
+		[weakSelf toggleFoldingOfBouncerHeading:heading];
+	};
+
+	return view;
+}
+
+/* The row itself, or the nearest one that can be selected (not a bouncer's
+ heading, not what is going away), first in the direction it lies from the
+ old row; -1 when there is none */
+- (NSInteger)serverListSelectableRowFrom:(NSInteger)row around:(NSInteger)oldRow forbidden:(nullable NSIndexSet *)forbidden
+{
+	if (row < 0) {
+		return row;
+	}
+
+	TVCServerList *serverList = self.serverList;
+
+	NSInteger numberOfRows = serverList.numberOfRows;
+
+	BOOL (^selectable)(NSInteger) = ^BOOL(NSInteger candidate) {
+		if (candidate < 0 || candidate >= numberOfRows || candidate == oldRow) {
+			return NO;
+		}
+
+		if (forbidden && [forbidden containsIndex:candidate]) {
+			return NO;
+		}
+
+		return ([[serverList itemAtRow:candidate] isKindOfClass:[TVCServerListBouncerHeading class]] == NO);
+	};
+
+	NSInteger step = ((row > oldRow) ? 1 : -1);
+
+	for (NSInteger candidate = row; candidate >= 0 && candidate < numberOfRows; candidate += step) {
+		if (selectable(candidate)) {
+			return candidate;
+		}
+	}
+
+	for (NSInteger candidate = (row - step); candidate >= 0 && candidate < numberOfRows; candidate -= step) {
+		if (selectable(candidate)) {
+			return candidate;
+		}
+	}
+
+	return (-1);
+}
+
+/* A click on a heading folds or unfolds it */
+- (void)outlineViewClicked:(nullable id)sender
+{
+	NSInteger clickedRow = self.serverList.clickedRow;
+
+	if (clickedRow < 0) {
+		return;
+	}
+
+	id item = [self.serverList itemAtRow:clickedRow];
+
+	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		[self toggleFoldingOfBouncerHeading:item];
+	}
+}
+
+- (NSMenu *)serverListMenuForBouncerHeading:(TVCServerListBouncerHeading *)heading
+{
+	NSParameterAssert(heading != nil);
+
+	NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
+
+	NSMenuItem *editItem = [menu addItemWithTitle:TXTLS(@"BasicLanguage[bnc-m3]") action:@selector(editBouncerOfHeading:) keyEquivalent:@""];
+
+	editItem.target = self;
+	editItem.representedObject = heading;
+
+	[menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenuItem *connectItem = [menu addItemWithTitle:TXTLS(@"BasicLanguage[bnc-m1]") action:@selector(connectBouncerHeadingServers:) keyEquivalent:@""];
+
+	connectItem.target = self;
+	connectItem.representedObject = heading;
+
+	NSMenuItem *disconnectItem = [menu addItemWithTitle:TXTLS(@"BasicLanguage[bnc-m2]") action:@selector(disconnectBouncerHeadingServers:) keyEquivalent:@""];
+
+	disconnectItem.target = self;
+	disconnectItem.representedObject = heading;
+
+	return menu;
+}
+
+- (void)editBouncerOfHeading:(NSMenuItem *)sender
+{
+	IRCBouncerAccount *account = ((TVCServerListBouncerHeading *)sender.representedObject).account;
+
+	if (account) {
+		[menuController() editBouncerAccount:account];
+	}
+}
+
+- (void)connectBouncerHeadingServers:(NSMenuItem *)sender
+{
+	for (IRCClient *client in ((TVCServerListBouncerHeading *)sender.representedObject).clients) {
+		if (client.isConnecting == NO && client.isConnected == NO) {
+			[client connect];
+		}
+	}
+}
+
+- (void)disconnectBouncerHeadingServers:(NSMenuItem *)sender
+{
+	for (IRCClient *client in ((TVCServerListBouncerHeading *)sender.representedObject).clients) {
+		if (client.isConnecting || client.isConnected) {
+			[client quit];
+		}
+	}
+}
+
+- (nullable id)serverListTopLevelItemForDragToken:(NSString *)token
+{
+	NSParameterAssert(token != nil);
+
+	if ([token hasPrefix:_bouncerHeadingDragPrefix]) {
+		return self.serverListBouncerHeadings[[token substringFromIndex:_bouncerHeadingDragPrefix.length]];
+	}
+
+	IRCTreeItem *item = [worldController() findItemWithPasteboardString:token];
+
+	return ((item.isClient) ? item : nil);
+}
+
+- (nullable NSString *)bouncerSectionOfTopLevelItem:(nullable id)item
+{
+	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		return ((TVCServerListBouncerHeading *)item).accountIdentifier;
+	}
+
+	if ([item isKindOfClass:[IRCClient class]]) {
+		NSString *accountIdentifier = ((IRCClient *)item).config.bouncerAccountIdentifier;
+
+		if (accountIdentifier && [worldController() findBouncerAccountWithId:accountIdentifier]) {
+			return accountIdentifier;
+		}
+	}
+
+	return nil;
+}
+
+/* A bouncer's server moves within its section; a heading takes its section
+ along, and it and other servers go between sections, never into one */
+- (BOOL)serverListAcceptsDropOf:(id)draggedItem atIndex:(NSInteger)index
+{
+	NSArray *items = [self serverListTopLevelItems];
+
+	if (index < 0 || index > (NSInteger)items.count) {
+		return NO;
+	}
+
+	id previousItem = ((index > 0) ? items[(index - 1)] : nil);
+	id nextItem = ((index < (NSInteger)items.count) ? items[index] : nil);
+
+	BOOL draggedIsHeading = [draggedItem isKindOfClass:[TVCServerListBouncerHeading class]];
+
+	NSString *draggedSection = ((draggedIsHeading) ? nil : [self bouncerSectionOfTopLevelItem:draggedItem]);
+
+	if (draggedSection) {
+		return [[self bouncerSectionOfTopLevelItem:previousItem] isEqualToString:draggedSection];
+	}
+
+	/* Not before a section's server: that's inside the section */
+	if ([nextItem isKindOfClass:[IRCClient class]] && [self bouncerSectionOfTopLevelItem:nextItem]) {
+		return NO;
+	}
+
+	return YES;
+}
+
+- (void)serverListMoveTopLevelItem:(id)draggedItem toIndex:(NSInteger)index
+{
+	NSMutableArray *items = [[self serverListTopLevelItems] mutableCopy];
+
+	/* A heading takes the servers shown after it along */
+	NSMutableArray *movingItems = [NSMutableArray arrayWithObject:draggedItem];
+
+	if ([draggedItem isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		NSString *section = ((TVCServerListBouncerHeading *)draggedItem).accountIdentifier;
+
+		for (id item in items) {
+			if ([item isKindOfClass:[IRCClient class]] && [[self bouncerSectionOfTopLevelItem:item] isEqualToString:section]) {
+				[movingItems addObject:item];
+			}
+		}
+	}
+
+	NSInteger targetIndex = index;
+
+	for (id item in movingItems) {
+		NSUInteger itemIndex = [items indexOfObjectIdenticalTo:item];
+
+		if (itemIndex != NSNotFound && (NSInteger)itemIndex < index) {
+			targetIndex -= 1;
+		}
+	}
+
+	[items removeObjectsInArray:movingItems];
+
+	[items insertObjects:movingItems atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(targetIndex, movingItems.count)]];
+
+	/* Back to the server list's order: a folded section's servers where its heading is */
+	NSMutableArray<IRCClient *> *clientList = [NSMutableArray array];
+
+	NSSet *foldedBouncers = [self foldedBouncers];
+
+	for (id item in items) {
+		if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+			TVCServerListBouncerHeading *heading = item;
+
+			if ([foldedBouncers containsObject:heading.accountIdentifier]) {
+				[clientList addObjectsFromArray:heading.clients];
+			}
+
+			continue;
+		}
+
+		if ([clientList containsObject:item] == NO) {
+			[clientList addObject:item];
+		}
+	}
+
+	for (IRCClient *client in worldController().clientList) {
+		if ([clientList containsObject:client] == NO) {
+			[clientList addObject:client];
+		}
+	}
+
+	worldController().clientList = clientList;
+
+	[self reloadServerListStructure];
 }
 
 #pragma mark -
@@ -617,7 +1117,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return [item numberOfChildren];
 	}
 
-	return worldController().clientCount;
+	return [self serverListTopLevelItems].count;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
@@ -631,7 +1131,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return [item childAtIndex:index];
 	}
 
-	return worldController().clientList[index];
+	return [self serverListTopLevelItems][index];
 }
 
 - (nullable id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(nullable NSTableColumn *)tableColumn byItem:(nullable id)item
@@ -641,6 +1141,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSTableRowView *)outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
 {
+	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		return [NSTableRowView new];
+	}
+
 	if (item == nil || [item isClient]) {
 		return [[TVCServerListGroupRowCell alloc] initWithServerList:(id)outlineView];
 	} else {
@@ -656,6 +1160,11 @@ NS_ASSUME_NONNULL_BEGIN
  and will make an assert. */
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
+	/* A little space above the section */
+	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		return 28.0;
+	}
+
 	if (item == nil || [item isClient]) {
 		return 25.0;
 	}
@@ -665,6 +1174,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(nullable NSTableColumn *)tableColumn item:(id)item
 {
+	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		return [self viewForBouncerHeading:item];
+	}
+
 	NSString *viewIdentifier = nil;
 
 	if (item == nil || [item isClient]) {
@@ -701,6 +1214,11 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCClient *u = [itemBeingCollapsed associatedClient];
 
 	u.sidebarItemIsExpanded = YES;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
+{
+	return ([item isKindOfClass:[TVCServerListBouncerHeading class]] == NO);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldExpandItem:(id)item
@@ -778,6 +1296,19 @@ NS_ASSUME_NONNULL_BEGIN
 	 clicked alone, its window comes forward */
 	NSMutableIndexSet *rowsShownHere = [proposedSelectionIndexes mutableCopy];
 
+	/* Nor a bouncer's heading: clicked alone, the selection stays as it is */
+	[proposedSelectionIndexes enumerateIndexesUsingBlock:^(NSUInteger row, BOOL *stop) {
+		if ([[outlineView itemAtRow:row] isKindOfClass:[TVCServerListBouncerHeading class]]) {
+			[rowsShownHere removeIndex:row];
+		}
+	}];
+
+	if (rowsShownHere.count == 0 && proposedSelectionIndexes.count > 0) {
+		return outlineView.selectedRowIndexes;
+	}
+
+	proposedSelectionIndexes = [rowsShownHere copy];
+
 	__block TVCMainWindow *popOutWindow = nil;
 
 	[proposedSelectionIndexes enumerateIndexesUsingBlock:^(NSUInteger row, BOOL *stop) {
@@ -848,7 +1379,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	/* TODO (March 27, 2016): Support dragging multiple items */
 	if (items.count == 1) {
-		NSString *itemToken = [worldController() pasteboardStringForItem:items[0]];
+		NSString *itemToken = nil;
+
+		if ([items[0] isKindOfClass:[TVCServerListBouncerHeading class]]) {
+			itemToken = [_bouncerHeadingDragPrefix stringByAppendingString:((TVCServerListBouncerHeading *)items[0]).accountIdentifier];
+		} else {
+			itemToken = [worldController() pasteboardStringForItem:items[0]];
+		}
 
 		[pasteboard declareTypes:_treeDragItemTypes owner:self];
 
@@ -900,6 +1437,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (draggedItemToken == nil) {
 		return NSDragOperationNone;
+	}
+
+	/* Servers and headings among bouncer sections */
+	id draggedTopLevelItem = [self serverListTopLevelItemForDragToken:draggedItemToken];
+
+	if (draggedTopLevelItem && [self serverListShowsBouncerHeadings]) {
+		if (item || [self serverListAcceptsDropOf:draggedTopLevelItem atIndex:index] == NO) {
+			return NSDragOperationNone;
+		}
+
+		return NSDragOperationGeneric;
 	}
 
 	IRCTreeItem *draggedItem = [worldController() findItemWithPasteboardString:draggedItemToken];
@@ -973,6 +1521,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (draggedItemToken == nil) {
 		return NSDragOperationNone;
+	}
+
+	id draggedTopLevelItem = [self serverListTopLevelItemForDragToken:draggedItemToken];
+
+	if (draggedTopLevelItem && [self serverListShowsBouncerHeadings]) {
+		if (item || [self serverListAcceptsDropOf:draggedTopLevelItem atIndex:index] == NO) {
+			return NO;
+		}
+
+		[self serverListMoveTopLevelItem:draggedTopLevelItem toIndex:index];
+
+		[menuController() populateNavigationChannelList];
+
+		return YES;
 	}
 
 	IRCTreeItem *draggedItem = [worldController() findItemWithPasteboardString:draggedItemToken];

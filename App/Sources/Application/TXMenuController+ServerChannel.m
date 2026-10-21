@@ -70,6 +70,7 @@
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCAddBouncerSheetPrivate.h"
+#import "TDCEditBouncerSheetPrivate.h"
 #import "IRCBouncerAccountPrivate.h"
 #import "IRCClientConfigPrivate.h"
 #import "IRCServerPrivate.h"
@@ -209,6 +210,87 @@ NS_ASSUME_NONNULL_BEGIN
 		config.serverList = @[[server copy]];
 
 		[weakSelf addServerFilledInWith:config];
+	}];
+
+	[sheet beginInWindow:TVCMainWindow.currentWindow];
+}
+
+- (void)editBouncer:(nullable id)sender
+{
+	IRCBouncerAccount *account = self.selectedClient.bouncerAccount;
+
+	if (account == nil) {
+		return;
+	}
+
+	[self editBouncerAccount:account];
+}
+
+- (void)editBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	[windowController() popMainWindowSheetIfExists];
+
+	/* The networks as a connected network of the bouncer knows them */
+	IRCBouncerNetworkList *networks = nil;
+
+	for (IRCClient *client in [worldController() clientsOfBouncerAccount:account]) {
+		if (client.bouncerNetworks) {
+			networks = client.bouncerNetworks;
+
+			break;
+		}
+	}
+
+	NSString *accountIdentifier = account.uniqueIdentifier;
+
+	TDCEditBouncerSheet *sheet =
+	[[TDCEditBouncerSheet alloc] initWithAccount:account
+										networks:networks
+								  existingClient:^IRCClient *(IRCBouncerNetwork *network, IRCBouncerAccount *anAccount) {
+		return [worldController() clientAddedByHandForNetwork:network ofAccount:anAccount];
+	} save:^(IRCBouncerAccount *updatedAccount) {
+		IRCBouncerAccount *previousAccount = [worldController() findBouncerAccountWithId:accountIdentifier];
+
+		/* Connected networks reconnect with a changed login */
+		BOOL loginChanged =
+		(previousAccount == nil ||
+		 [previousAccount.serverAddress isEqualToString:updatedAccount.serverAddress] == NO ||
+		 previousAccount.serverPort != updatedAccount.serverPort ||
+		 previousAccount.prefersSecuredConnection != updatedAccount.prefersSecuredConnection ||
+		 [previousAccount.username isEqualToString:updatedAccount.username] == NO ||
+		 NSObjectsAreEqual(previousAccount.password, updatedAccount.password) == NO);
+
+		[worldController() addBouncerAccount:updatedAccount];
+
+		if (loginChanged == NO) {
+			return;
+		}
+
+		for (IRCClient *client in [worldController() clientsOfBouncerAccount:updatedAccount]) {
+			if (client.isConnecting || client.isConnected) {
+				[client quitThen:^(IRCClient *disconnectedClient) {
+					[disconnectedClient connect];
+				}];
+			}
+		}
+	} addNetwork:^(IRCBouncerNetwork *network) {
+		IRCBouncerAccount *currentAccount = [worldController() findBouncerAccountWithId:accountIdentifier];
+
+		if (currentAccount == nil) {
+			return;
+		}
+
+		[worldController() addBouncerAccount:currentAccount withNetworks:@[network] linkedClients:@{} connect:YES];
+	} remove:^(BOOL keepServers) {
+		IRCBouncerAccount *currentAccount = [worldController() findBouncerAccountWithId:accountIdentifier];
+
+		if (currentAccount == nil) {
+			return;
+		}
+
+		[worldController() removeBouncerAccount:currentAccount keepServers:keepServers];
 	}];
 
 	[sheet beginInWindow:TVCMainWindow.currentWindow];

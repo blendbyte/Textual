@@ -132,6 +132,7 @@ enum
 	MTMMServerMuteNetwork = 515, // "Mute Network"
 	MTMMServerOpenInNewWindow = 516, // "Open in New Window"
 	MTMMServerAddBouncer = 517, // "Add Bouncer…"
+	MTMMServerEditBouncer = 518, // "Edit Bouncer…"
 
 	/* Main menu - Channel menu */
 	MTMMChannelJoinChannel = 600, // "Join Channel"
@@ -399,6 +400,7 @@ enum
 
 - (IBAction)addServer:(nullable id)sender;
 - (IBAction)addBouncer:(nullable id)sender;
+- (IBAction)editBouncer:(nullable id)sender;
 - (IBAction)duplicateServer:(nullable id)sender;
 - (IBAction)deleteServer:(nullable id)sender;
 

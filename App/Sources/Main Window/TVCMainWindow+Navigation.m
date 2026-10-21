@@ -136,6 +136,11 @@ NS_ASSUME_NONNULL_BEGIN
 			item = [self.serverList itemAtRow:currentPosition];
 		}
 
+		/* A bouncer's heading isn't a place to go */
+		if ([item isKindOfClass:[IRCTreeItem class]] == NO) {
+			continue;
+		}
+
 		/* Skip entries depending on navigation type */
 		if (selectionType == TVCServerListNavigationSelectionTypeChannel)
 		{

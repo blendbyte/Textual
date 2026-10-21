@@ -597,6 +597,12 @@
                                     <action selector="addBouncer:" target="267" id="aB1-bN-c04"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Edit Bouncer…" tag="518" id="aB1-bN-c05">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editBouncer:" target="267" id="aB1-bN-c06"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Duplicate Server" tag="509" id="304">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>

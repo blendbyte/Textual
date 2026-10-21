@@ -276,6 +276,9 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	self.bouncerAccountsPrivate = accounts;
 
 	[self save];
+
+	/* Its heading (a new name, or servers that now have one) */
+	[mainWindow() reloadServerListStructure];
 }
 
 - (NSArray<IRCClient *> *)addBouncerAccount:(IRCBouncerAccount *)account
@@ -362,6 +365,11 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	[self save];
 
+	/* Servers linked now join its heading */
+	if (linkedClientsInOrder.count > 0) {
+		[mainWindow() reloadServerListStructure];
+	}
+
 	return [addedClients arrayByAddingObjectsFromArray:linkedClientsInOrder];
 }
 
@@ -431,6 +439,8 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	[account destroyPasswordKeychainItem];
 
 	[self save];
+
+	[mainWindow() reloadServerListStructure];
 }
 
 - (void)savePeriodically
@@ -844,9 +854,14 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 		[self.clients addObject:client];
 
 		if (reload) {
-			NSInteger index = [self.clients indexOfObject:client];
+			/* With bouncer headings the rows aren't this order */
+			if ([mainWindow() serverListShowsBouncerHeadings]) {
+				[mainWindow() reloadServerListStructure];
+			} else {
+				NSInteger index = [self.clients indexOfObject:client];
 
-			[mainWindowServerList() addItemToList:index inParent:nil];
+				[mainWindowServerList() addItemToList:index inParent:nil];
+			}
 		}
 
 		if (self.clients.count == 1) {
@@ -979,16 +994,25 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	[client prepareForPermanentDestruction];
 
-	@try {
-		[mainWindowServerList() removeItemFromList:client];
-	}
-	@catch (NSException *exception) {
-		LogToConsoleError("Caught exception: %{public}@", exception.reason);
-		LogStackTrace();
+	/* With bouncer headings the rows aren't this order: all of them again, after */
+	BOOL showsBouncerHeadings = [mainWindow() serverListShowsBouncerHeadings];
+
+	if (showsBouncerHeadings == NO) {
+		@try {
+			[mainWindowServerList() removeItemFromList:client];
+		}
+		@catch (NSException *exception) {
+			LogToConsoleError("Caught exception: %{public}@", exception.reason);
+			LogStackTrace();
+		}
 	}
 
 	@synchronized(self.clients) {
 		[self.clients removeObjectIdenticalTo:client];
+	}
+
+	if (showsBouncerHeadings) {
+		[mainWindow() reloadServerListStructure];
 	}
 
 	[self postClientListWasModifiedNotification];

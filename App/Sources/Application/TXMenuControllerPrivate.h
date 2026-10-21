@@ -41,6 +41,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class IRCBouncerAccount;
+
 @class IRCTreeItem;
 
 @interface TXMenuController ()
@@ -55,6 +57,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* The network, channel or private message a mute menu item acts on */
 - (nullable IRCTreeItem *)_treeItemToMuteForMenuItem:(NSMenuItem *)menuItem;
 - (nullable IRCTreeItem *)_treeItemToPopOutForMenuItem:(NSMenuItem *)menuItem;
+
+/* The Edit Bouncer sheet for an account (Server › Edit Bouncer…, a bouncer's heading) */
+- (void)editBouncerAccount:(IRCBouncerAccount *)account;
 @end
 
 @interface TXMenuController (MembersPrivate)

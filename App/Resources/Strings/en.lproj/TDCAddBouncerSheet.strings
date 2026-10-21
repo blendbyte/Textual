@@ -100,3 +100,23 @@
 "ab-b-add0" = "Add Networks";
 "ab-b-add1" = "Add 1 Network";
 "ab-b-addn" = "Add %@ Networks";
+
+/* Edit Bouncer (TDCEditBouncerSheet.swift) */
+"eb-title" = "Edit Bouncer";
+"eb-sub" = "%@ at %@ · logged in as %@";
+"eb-name" = "Name";
+"eb-nameh" = "Shown above its networks in the server list.";
+"eb-pass-p" = "Unchanged";
+"eb-1-n" = "A change here reaches every network of this bouncer; connected ones reconnect.";
+"eb-net-h" = "Networks";
+"eb-net-load" = "Reading the bouncer’s networks…";
+"eb-net-fail" = "The bouncer’s networks couldn’t be read: %@";
+"eb-net-none" = "No networks on the bouncer yet.";
+"eb-net-in" = "In Textual";
+"eb-b-add" = "Add";
+"eb-b-remove" = "Remove Bouncer…";
+"eb-b-save" = "Save";
+"eb-r-t" = "Remove the bouncer “%@”?";
+"eb-r-b" = "Its servers in Textual can stay as normal servers or go too. Nothing is deleted on the bouncer.";
+"eb-r-keep" = "Keep Servers";
+"eb-r-all" = "Remove Servers Too";

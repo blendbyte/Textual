@@ -81,3 +81,14 @@
 
 "iwp-cg" = "IRC Colors";
 "ham-vk" = "Color %ld";
+
+/* A bouncer's heading in the server list */
+"bnc-h1" = "%@, %@ bouncer";
+"bnc-h2" = "%@, folded";
+"bnc-h3" = "Unfold";
+"bnc-h4" = "Fold";
+"bnc-m1" = "Connect All";
+"bnc-m2" = "Disconnect All";
+"bnc-m3" = "Edit Bouncer…";
+"bnc-k1" = "soju";
+"bnc-k2" = "ZNC";

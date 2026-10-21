@@ -46,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _treeDragItemTypes		[NSArray arrayWithObject:_treeDragItemType]
 
+#define _bouncerHeadingDragPrefix	@"bouncer-heading " // a bouncer's heading being dragged: this and its account's identifier
+
 @class TVCInputCompletionController, TVCMainWindowSearchPanel;
 
 @interface TVCMainWindow ()
@@ -103,6 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSTextField *stateBarLabel;
 @property (nonatomic, strong, nullable) NSButton *stateBarButton;
 @property (nonatomic, strong, nullable) NSLayoutConstraint *stateBarHeightConstraint;
+@property (nonatomic, copy, nullable) NSArray *serverListTopLevelItemsCache; // servers and bouncer headings, while there are headings
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *serverListBouncerHeadings; // account identifier → its heading (the same object across reloads)
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
 @end

@@ -142,6 +142,7 @@
 		4C06E66820EC55B90055D09A /* TDCServerChannelListDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528620EB673E00448776 /* TDCServerChannelListDialog.m */; };
 		70DEA2CD92EB6BF9261210FD /* TDCServerChannelListWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28DE3D3D5E6BD859A59A670F /* TDCServerChannelListWindow.swift */; };
 		1ABBCF3DF17D4D66F9492FE7 /* TDCAddBouncerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EA62D84ABAA047A6F65E32 /* TDCAddBouncerSheet.swift */; };
+		6A68928D099CAFE3F857B5A0 /* TDCEditBouncerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7FD94DEEBEE567D1A7B8A7 /* TDCEditBouncerSheet.swift */; };
 		4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */; };
 		92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */ = {isa = PBXBuildFile; fileRef = D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */; };
 		4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528A20EB673E00448776 /* TDCSheetBase.m */; };
@@ -648,6 +649,7 @@
 		4C2205C61432734D38349EA1 /* TVCLogScriptEventSink+Styles.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C441DCB97FA7367AE098E61 /* TVCLogScriptEventSink+Styles.m */; };
 		4C524FAC8413A9AC4E4A6D3D /* TVCLogScriptEventSinkContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA189FE687A38980FADAF0E /* TVCLogScriptEventSinkContext.m */; };
 		4C5EEB9F6A42B6688230B93D /* TVCServerListRowCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CB8EEF401DDED38925BAC5F /* TVCServerListRowCell.m */; };
+		9A5691A71882DF7E66E9B80F /* TVCServerListBouncerHeading.m in Sources */ = {isa = PBXBuildFile; fileRef = BA9403CE0C7F2E5B91632A02 /* TVCServerListBouncerHeading.m */; };
 		4C86A6B0505CBE4D1C5AC1E9 /* THOPluginProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8D6FA065CBEEDE636282F5 /* THOPluginProtocol.m */; };
 		4C7F2345E39B3979EA374808 /* TPCThemeSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C3E00E5AD533464D5597C /* TPCThemeSettings.m */; };
 		4C366954FB86F38DC0168697 /* TPCThemeVariety.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C4EE743B82CC66D4BA2BA3F /* TPCThemeVariety.m */; };
@@ -1276,6 +1278,8 @@
 		28DE3D3D5E6BD859A59A670F /* TDCServerChannelListWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerChannelListWindow.swift; sourceTree = "<group>"; };
 		5231116661FFA9E62660993F /* TDCServerChannelListWindowPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerChannelListWindowPrivate.h; sourceTree = "<group>"; };
 		C8EA62D84ABAA047A6F65E32 /* TDCAddBouncerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCAddBouncerSheet.swift; sourceTree = "<group>"; };
+		DC7FD94DEEBEE567D1A7B8A7 /* TDCEditBouncerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCEditBouncerSheet.swift; sourceTree = "<group>"; };
+		B086BE77030A91B52B053E7F /* TDCEditBouncerSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCEditBouncerSheetPrivate.h; sourceTree = "<group>"; };
 		179AE946975360F9C138E76D /* TDCAddBouncerSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCAddBouncerSheetPrivate.h; sourceTree = "<group>"; };
 		4C31528820EB673E00448776 /* TDCProgressIndicatorSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCProgressIndicatorSheet.m; sourceTree = "<group>"; };
 		4C31528920EB673E00448776 /* TDCChannelModifyTopicSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelModifyTopicSheet.m; sourceTree = "<group>"; };
@@ -1545,6 +1549,8 @@
 		4CA189FE687A38980FADAF0E /* TVCLogScriptEventSinkContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogScriptEventSinkContext.m; sourceTree = "<group>"; };
 		4C65D46647CE07C7DF2E24A9 /* TVCLogScriptEventSinkInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogScriptEventSinkInternal.h; sourceTree = "<group>"; };
 		4CB8EEF401DDED38925BAC5F /* TVCServerListRowCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCServerListRowCell.m; sourceTree = "<group>"; };
+		BA9403CE0C7F2E5B91632A02 /* TVCServerListBouncerHeading.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCServerListBouncerHeading.m; sourceTree = "<group>"; };
+		D13E69F6E6223AA2637FC9D7 /* TVCServerListBouncerHeadingPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCServerListBouncerHeadingPrivate.h; sourceTree = "<group>"; };
 		4C8D6FA065CBEEDE636282F5 /* THOPluginProtocol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = THOPluginProtocol.m; sourceTree = "<group>"; };
 		4C6C3E00E5AD533464D5597C /* TPCThemeSettings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCThemeSettings.m; sourceTree = "<group>"; };
 		4C4EE743B82CC66D4BA2BA3F /* TPCThemeVariety.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCThemeVariety.m; sourceTree = "<group>"; };
@@ -1871,6 +1877,8 @@
 				28DE3D3D5E6BD859A59A670F /* TDCServerChannelListWindow.swift */,
 				5231116661FFA9E62660993F /* TDCServerChannelListWindowPrivate.h */,
 				C8EA62D84ABAA047A6F65E32 /* TDCAddBouncerSheet.swift */,
+				DC7FD94DEEBEE567D1A7B8A7 /* TDCEditBouncerSheet.swift */,
+				B086BE77030A91B52B053E7F /* TDCEditBouncerSheetPrivate.h */,
 				179AE946975360F9C138E76D /* TDCAddBouncerSheetPrivate.h */,
 			);
 			path = Server;
@@ -2465,6 +2473,8 @@
 				4C3151F720EB673E00448776 /* TVCServerListCellPrivate.h */,
 				4C3151CA20EB673E00448776 /* TVCServerListPrivate.h */,
 				4CB8EEF401DDED38925BAC5F /* TVCServerListRowCell.m */,
+				BA9403CE0C7F2E5B91632A02 /* TVCServerListBouncerHeading.m */,
+				D13E69F6E6223AA2637FC9D7 /* TVCServerListBouncerHeadingPrivate.h */,
 			);
 			path = "Server List";
 			sourceTree = "<group>";
@@ -3671,6 +3681,7 @@
 				4C366954FB86F38DC0168697 /* TPCThemeVariety.m in Sources */,
 				4C86A6B0505CBE4D1C5AC1E9 /* THOPluginProtocol.m in Sources */,
 				4C5EEB9F6A42B6688230B93D /* TVCServerListRowCell.m in Sources */,
+				9A5691A71882DF7E66E9B80F /* TVCServerListBouncerHeading.m in Sources */,
 				4C2CA7393183FB51B0F0C0E7 /* TVCLogScriptEventSink+Actions.m in Sources */,
 				4C3B4788761BB2B531150DD0 /* TVCLogScriptEventSink+Queries.m in Sources */,
 				4CB6DA20AFF4C9F4BCADF9A9 /* TVCLogScriptEventSink+Rendering.m in Sources */,
@@ -3765,6 +3776,7 @@
 				4C06E66820EC55B90055D09A /* TDCServerChannelListDialog.m in Sources */,
 				70DEA2CD92EB6BF9261210FD /* TDCServerChannelListWindow.swift in Sources */,
 				1ABBCF3DF17D4D66F9492FE7 /* TDCAddBouncerSheet.swift in Sources */,
+				6A68928D099CAFE3F857B5A0 /* TDCEditBouncerSheet.swift in Sources */,
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
 				7C96A0ADB32BD953F1688040 /* TDCServerPropertiesAdvancedPages.swift in Sources */,

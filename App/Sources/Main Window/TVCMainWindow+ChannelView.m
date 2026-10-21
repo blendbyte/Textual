@@ -140,8 +140,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(selectedRows != nil);
 
 	/* Create list of selected items and notify those newly selected items
-	 that they are now visible + part of a stacked view */
-	NSArray *selectedItems = self.serverList.selectedObjects;
+	 that they are now visible + part of a stacked view (a bouncer's heading,
+	 selected by row, isn't one) */
+	NSArray *selectedItems = [self.serverList.selectedObjects filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id item, NSDictionary *bindings) {
+		return [item isKindOfClass:[IRCTreeItem class]];
+	}]];
 
 	/* Update selected item even if group hasn't changed */
 	if ([selectedItems isEqualToArray:self.selectedItems]) { /* Update selected item even if group hasn't changed */
