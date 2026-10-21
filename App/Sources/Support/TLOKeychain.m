@@ -65,6 +65,8 @@ static BOOL _reportsFailures = YES;
 			return @"Textual (SASL Login Key)";
 		case TLOKeychainItemKindUploadSecrets:
 			return @"Textual (Upload Address)";
+		case TLOKeychainItemKindBouncerPassword:
+			return @"Textual (Bouncer Password)";
 	}
 }
 
@@ -92,6 +94,9 @@ static BOOL _reportsFailures = YES;
 			break;
 		case TLOKeychainItemKindUploadSecrets:
 			prefix = @"textual.upload-address";
+			break;
+		case TLOKeychainItemKindBouncerPassword:
+			prefix = @"textual.bouncer";
 			break;
 	}
 
@@ -171,6 +176,9 @@ static BOOL _reportsFailures = YES;
 			break;
 		case TLOKeychainItemKindUploadSecrets:
 			kindName = TXTLS(@"Prompts[k3y-n6]");
+			break;
+		case TLOKeychainItemKindBouncerPassword:
+			kindName = TXTLS(@"Prompts[k3y-n7]");
 			break;
 	}
 

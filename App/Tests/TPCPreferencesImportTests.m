@@ -53,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 		@"AutojoinChannelOnInvite" : @YES,
 		@"Theme -> Name" : @"resource:Simplified",
 		@"World Controller Client Configurations" : @[],
+		@"World Controller Bouncer Accounts" : @[],
 
 		@"ReplyUnignoredExternalCTCPRequests" : @"YES", // wrong type
 		@"Theme -> Name -> Did Not Exist During Last Sync" : @YES, // not exported
@@ -63,8 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *importable = [TPCPreferencesImportExport importableContentsOfDictionary:file];
 
-	XCTAssertEqualObjects([NSSet setWithArray:importable.allKeys],
-						  ([NSSet setWithArray:@[@"AutojoinChannelOnInvite", @"Theme -> Name", @"World Controller Client Configurations"]]));
+	NSSet *expected = [NSSet setWithArray:@[@"AutojoinChannelOnInvite", @"Theme -> Name", @"World Controller Client Configurations", @"World Controller Bouncer Accounts"]];
+
+	XCTAssertEqualObjects([NSSet setWithArray:importable.allKeys], expected);
 }
 
 @end

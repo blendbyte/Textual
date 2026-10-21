@@ -41,7 +41,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class TLOSpokenNotification;
-@class IRCAddressBookUserTrackingContainer, IRCTimedCommand, IRCUserMutable;
+@class IRCAddressBookUserTrackingContainer, IRCBouncerAccount, IRCTimedCommand, IRCUserMutable;
 
 enum {
 	ClientIRCv3SupportedCapabilitySASLGeneric			= 1 << 22,
@@ -107,6 +107,10 @@ enum {
 - (void)postEventToViewController:(NSString *)eventToken forChannel:(IRCChannel *)channel;
 
 - (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
+
+/* The bouncer account this server is a network of (IRCClientConfig's
+ bouncerAccountIdentifier); nil for a normal server or a removed account */
+@property (readonly, nullable) IRCBouncerAccount *bouncerAccount;
 
 /* The channel list window: opened and filled, or brought forward as it is */
 - (void)showChannelList;

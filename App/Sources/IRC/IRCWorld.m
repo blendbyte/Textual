@@ -46,7 +46,8 @@
 #import "TPCPreferencesUserDefaults.h"
 #import "TPCThemeController.h"
 #import "TPCTheme.h"
-#import "IRCClientConfig.h"
+#import "IRCBouncerAccountPrivate.h"
+#import "IRCClientConfigPrivate.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelPrivate.h"
 #import "IRCServer.h"
@@ -63,6 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString * const IRCWorldClientListDefaultsKey = @"World Controller Client Configurations";
 
+NSString * const IRCWorldBouncerAccountsDefaultsKey = @"World Controller Bouncer Accounts";
+
 NSString * const IRCWorldClientListWasModifiedNotification = @"IRCWorldClientListWasModifiedNotification";
 
 NSString * const IRCWorldDateHasChangedNotification = @"IRCWorldDateHasChangedNotification";
@@ -72,6 +75,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 @interface IRCWorld ()
 @property (nonatomic, strong) NSMutableArray<IRCClient *> *clients;
+@property (nonatomic, copy) NSArray<IRCBouncerAccount *> *bouncerAccountsPrivate;
 @property (nonatomic, assign) BOOL preferencesDidChangeTimerIsActive;
 @property (nonatomic, assign) CFAbsoluteTime savePeriodicallyLastSave;
 @property (nonatomic, copy) NSDate *lastDateHasChangedDate;
@@ -114,6 +118,9 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 - (void)setupConfiguration
 {
 	self.isImportingConfiguration = YES;
+
+	/* Before the servers that are linked to them */
+	[self reloadBouncerAccounts];
 
 	/* Not one batch of updates: with automatic row heights, AppKit re-entered its
 	 row height cache while ending a batch of many inserts (and warned) */
@@ -179,6 +186,127 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	NSArray *clientList = [self clientConfigurations];
 
 	[TPCPreferences setClientList:clientList];
+
+	[self saveBouncerAccounts];
+}
+
+#pragma mark -
+#pragma mark Bouncer Accounts
+
+- (NSArray<IRCBouncerAccount *> *)bouncerAccounts
+{
+	return (self.bouncerAccountsPrivate ?: @[]);
+}
+
+- (void)reloadBouncerAccounts
+{
+	NSMutableArray<IRCBouncerAccount *> *accounts = [NSMutableArray array];
+
+	for (id dictionary in [TPCPreferences bouncerAccounts]) {
+		/* A damaged entry is skipped */
+		if ([dictionary isKindOfClass:[NSDictionary class]] == NO) {
+			continue;
+		}
+
+		[accounts addObject:[[IRCBouncerAccount alloc] initWithDictionary:dictionary]];
+	}
+
+	self.bouncerAccountsPrivate = accounts;
+}
+
+- (void)saveBouncerAccounts
+{
+	NSMutableArray<NSDictionary *> *accounts = [NSMutableArray array];
+
+	for (IRCBouncerAccount *account in self.bouncerAccounts) {
+		[accounts addObject:account.dictionaryValue];
+	}
+
+	[TPCPreferences setBouncerAccounts:accounts];
+}
+
+- (nullable IRCBouncerAccount *)findBouncerAccountWithId:(NSString *)identifier
+{
+	NSParameterAssert(identifier != nil);
+
+	for (IRCBouncerAccount *account in self.bouncerAccounts) {
+		if ([account.uniqueIdentifier isEqualToString:identifier]) {
+			return account;
+		}
+	}
+
+	return nil;
+}
+
+- (NSArray<IRCClient *> *)clientsOfBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	NSMutableArray<IRCClient *> *clients = [NSMutableArray array];
+
+	for (IRCClient *client in self.clientList) {
+		if ([client.config.bouncerAccountIdentifier isEqualToString:account.uniqueIdentifier]) {
+			[clients addObject:client];
+		}
+	}
+
+	return [clients copy];
+}
+
+- (void)addBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	IRCBouncerAccount *accountToAdd = [account copy];
+
+	[accountToAdd writePasswordToKeychain];
+
+	NSMutableArray<IRCBouncerAccount *> *accounts = [self.bouncerAccounts mutableCopy];
+
+	NSUInteger index = [accounts indexOfObjectPassingTest:^BOOL(IRCBouncerAccount *object, NSUInteger objectIndex, BOOL *stop) {
+		return [object.uniqueIdentifier isEqualToString:accountToAdd.uniqueIdentifier];
+	}];
+
+	if (index == NSNotFound) {
+		[accounts addObject:accountToAdd];
+	} else {
+		accounts[index] = accountToAdd;
+	}
+
+	self.bouncerAccountsPrivate = accounts;
+
+	[self save];
+}
+
+- (void)removeBouncerAccount:(IRCBouncerAccount *)account keepServers:(BOOL)keepServers
+{
+	NSParameterAssert(account != nil);
+
+	for (IRCClient *client in [self clientsOfBouncerAccount:account]) {
+		if (keepServers == NO) {
+			[self destroyClient:client];
+
+			continue;
+		}
+
+		IRCClientConfigMutable *config = [client.config mutableCopy];
+
+		[config unlinkFromBouncerAccount:account];
+
+		[client updateConfig:config];
+	}
+
+	NSMutableArray<IRCBouncerAccount *> *accounts = [self.bouncerAccounts mutableCopy];
+
+	[accounts removeObjectsAtIndexes:[accounts indexesOfObjectsPassingTest:^BOOL(IRCBouncerAccount *object, NSUInteger objectIndex, BOOL *stop) {
+		return [object.uniqueIdentifier isEqualToString:account.uniqueIdentifier];
+	}]];
+
+	self.bouncerAccountsPrivate = accounts;
+
+	[account destroyPasswordKeychainItem];
+
+	[self save];
 }
 
 - (void)savePeriodically

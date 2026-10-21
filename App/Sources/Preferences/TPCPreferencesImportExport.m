@@ -267,6 +267,17 @@ NS_ASSUME_NONNULL_BEGIN
 			[self importClientConfiguration:object];
 		}];
 	}
+	else if ([key isEqualToString:IRCWorldBouncerAccountsDefaultsKey])
+	{
+		if ([object isKindOfClass:[NSArray class]] == NO) {
+			return;
+		}
+
+		/* Before the servers linked to them connect (their passwords stay in this Mac's Keychain) */
+		[RZUserDefaults() _migrateObject:object forKey:key];
+
+		[worldController() reloadBouncerAccounts];
+	}
 	else
 	{
 		[RZUserDefaults() _migrateObject:object forKey:key];

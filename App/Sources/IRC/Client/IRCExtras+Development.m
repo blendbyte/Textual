@@ -52,7 +52,8 @@
 #import "TVCMainWindowPrivate.h"
 #import "TVCLogController.h"
 #import "TVCLogView.h"
-#import "IRCClientConfig.h"
+#import "IRCBouncerAccountPrivate.h"
+#import "IRCClientConfigPrivate.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelConfig.h"
 #import "IRCChannel.h"
@@ -107,6 +108,10 @@ static BOOL _developmentConnectRequested = NO;
 		return YES;
 	} else if ([location hasPrefix:@"textual://dev-config?"]) {
 		[self performDevelopmentConfigurationWithURL:location];
+
+		return YES;
+	} else if ([location hasPrefix:@"textual://dev-bouncer?"]) {
+		[self performDevelopmentBouncerWithURL:location];
 
 		return YES;
 	}
@@ -274,6 +279,57 @@ static BOOL _developmentConnectRequested = NO;
 	} else {
 		[client connect];
 	}
+}
+
+/* textual://dev-bouncer?kind=znc|soju&host=…&port=…&tls=0|1&user=…&password=…&networks=a,b&connect=1
+ adds a bouncer account and one server per network linked to it (named after
+ the network), until the Add Bouncer sheet exists. */
++ (void)performDevelopmentBouncerWithURL:(NSString *)location
+{
+	NSURLComponents *components = [NSURLComponents componentsWithString:location];
+
+	NSMutableDictionary<NSString *, NSString *> *values = [NSMutableDictionary dictionary];
+
+	for (NSURLQueryItem *item in components.queryItems) {
+		if (item.value) {
+			values[item.name] = item.value;
+		}
+	}
+
+	IRCBouncerAccountMutable *account = [IRCBouncerAccountMutable new];
+
+	account.kind = ([values[@"kind"] isEqualToString:@"soju"] ? IRCBouncerKindSoju : IRCBouncerKindZNC);
+	account.serverAddress = (values[@"host"] ?: @"127.0.0.1");
+	account.serverPort = (uint16_t)(values[@"port"] ?: @"6672").integerValue;
+	account.prefersSecuredConnection = [values[@"tls"] isEqualToString:@"1"];
+	account.username = (values[@"user"] ?: @"dan");
+	account.password = values[@"password"];
+	account.name = values[@"name"];
+
+	[worldController() addBouncerAccount:account];
+
+	BOOL connect = [values[@"connect"] isEqualToString:@"1"];
+
+	for (NSString *network in [values[@"networks"] componentsSeparatedByString:@","]) {
+		if (network.length == 0) {
+			continue;
+		}
+
+		IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+		config.connectionName = network;
+		config.bouncerAccountIdentifier = account.uniqueIdentifier;
+		config.bouncerNetwork = network;
+		config.zncIgnoreConfiguredAutojoin = YES;
+
+		IRCClient *client = [worldController() createClientWithConfig:config reload:YES];
+
+		if (connect) {
+			[client connect];
+		}
+	}
+
+	[worldController() save];
 }
 
 /* textual://dev-send?nickname=<nickname>&path=<path> offers a file to a user

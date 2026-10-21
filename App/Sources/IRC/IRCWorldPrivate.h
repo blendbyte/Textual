@@ -40,6 +40,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class IRCBouncerAccount;
+
+TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
+
 @interface IRCWorld ()
 @property (nonatomic, assign, readwrite) NSUInteger messagesSent;
 @property (nonatomic, assign, readwrite) NSUInteger messagesReceived;
@@ -74,6 +78,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)destroyChannel:(IRCChannel *)channel reload:(BOOL)reload;
 - (void)destroyChannel:(IRCChannel *)channel reload:(BOOL)reload part:(BOOL)partChannel;
+
+/* Bouncer accounts: saved with the server list, their servers linked by identifier */
+@property (readonly, copy) NSArray<IRCBouncerAccount *> *bouncerAccounts;
+
+- (nullable IRCBouncerAccount *)findBouncerAccountWithId:(NSString *)identifier;
+
+/* The servers linked to it, in the server list's order */
+- (NSArray<IRCClient *> *)clientsOfBouncerAccount:(IRCBouncerAccount *)account;
+
+/* Adds it, or replaces the account with its identifier; saves its password to the Keychain */
+- (void)addBouncerAccount:(IRCBouncerAccount *)account;
+
+/* Its servers stay as normal servers (unlinked, same address and login) or go too */
+- (void)removeBouncerAccount:(IRCBouncerAccount *)account keepServers:(BOOL)keepServers;
+
+/* Read again from the preferences (after an import) */
+- (void)reloadBouncerAccounts;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -37,7 +37,7 @@
  *********************************************************************** */
 
 #import "TXGlobalModels.h"
-#import "IRCWorld.h"
+#import "IRCWorldPrivate.h"
 #import "TPCNicknameColorStyleGeneratorPrivate.h"
 #import "TPCApplicationInfoPrivate.h"
 #import "TPCPathInfoPrivate.h"
@@ -1528,6 +1528,23 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 + (void)setClientList:(nullable NSArray<NSDictionary *> *)clientList
 {
 	[RZUserDefaults() setObject:clientList forKey:IRCWorldClientListDefaultsKey];
+}
+
++ (nullable NSArray<NSDictionary *> *)bouncerAccounts
+{
+	return [RZUserDefaults() arrayForKey:IRCWorldBouncerAccountsDefaultsKey];
+}
+
++ (void)setBouncerAccounts:(nullable NSArray<NSDictionary *> *)bouncerAccounts
+{
+	/* Nothing saved until there is an account */
+	if (bouncerAccounts.count == 0) {
+		[RZUserDefaults() removeObjectForKey:IRCWorldBouncerAccountsDefaultsKey];
+
+		return;
+	}
+
+	[RZUserDefaults() setObject:bouncerAccounts forKey:IRCWorldBouncerAccountsDefaultsKey];
 }
 
 #pragma mark -

@@ -218,6 +218,10 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 
 + (void)setClientList:(nullable NSArray<NSDictionary *> *)clientList;
 
+/* Bouncer accounts (IRCBouncerAccount dictionaries), saved by IRCWorld with the server list */
++ (nullable NSArray<NSDictionary *> *)bouncerAccounts;
++ (void)setBouncerAccounts:(nullable NSArray<NSDictionary *> *)bouncerAccounts;
+
 + (void)cleanUpHighlightKeywords;
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;

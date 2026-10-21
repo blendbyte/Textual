@@ -42,7 +42,8 @@ typedef NS_ENUM(NSUInteger, TLOKeychainItemKind) {
 	TLOKeychainItemKindProxyPassword,
 	TLOKeychainItemKindChannelKey,
 	TLOKeychainItemKindSASLECDSAKey,
-	TLOKeychainItemKindUploadSecrets // an upload address's headers and fields (tokens), as JSON
+	TLOKeychainItemKindUploadSecrets, // an upload address's headers and fields (tokens), as JSON
+	TLOKeychainItemKindBouncerPassword // a bouncer account's password (IRCBouncerAccount)
 };
 
 /* The app's secrets in the Keychain (server, NickServ and proxy passwords,

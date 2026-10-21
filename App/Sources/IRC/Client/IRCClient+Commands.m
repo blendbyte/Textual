@@ -85,6 +85,7 @@
 #import "IRCChannelModePrivate.h"
 #import "IRCChannelUserPrivate.h"
 #import "IRCChannelPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
 #import "IRCClientConfigPrivate.h"
 #import "IRCClientRequestedCommandsPrivate.h"
 #import "IRCColorFormatPrivate.h"
@@ -213,8 +214,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* Do we have somewhere to connect to? */
+	/* Do we have somewhere to connect to? A bouncer's network connects
+	 where its account says, with the account's login */
 	NSArray *servers = self.config.serverList;
+
+	IRCBouncerAccount *bouncerAccount = self.bouncerAccount;
+
+	if (bouncerAccount) {
+		servers = @[[bouncerAccount serverForNetwork:self.config.bouncerNetwork]];
+	}
 
 	if (servers.count == 0) {
 		[self printDebugInformationToConsole:TXTLS(@"IRC[iaa-0u]")];

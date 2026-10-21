@@ -39,6 +39,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class IRCBouncerAccount;
+
 @interface IRCClientConfig ()
 /* To provide user with similar behavior, when migrating -connectionPrefersIPv4
  in IRCClientConfig, we set the address type to IRCConnectionAddressTypeIPv4.
@@ -52,6 +54,11 @@ NS_ASSUME_NONNULL_BEGIN
 /* The SASL ECDSA-NIST256P-CHALLENGE key (IRCSASLECDSAKey's stored value): from the
  Keychain unless changed in this copy. Not in the SDK: plugins don't get the private key. */
 @property (readonly, copy, nullable) NSString *saslECDSAKey;
+
+/* A network of a bouncer account (IRCBouncerAccount): it connects with the
+ account's address and login. The network is ZNC's name or soju's network ID. */
+@property (readonly, copy, nullable) NSString *bouncerAccountIdentifier;
+@property (readonly, copy, nullable) NSString *bouncerNetwork;
 
 - (void)writeNicknamePasswordToKeychain;
 - (void)writeProxyPasswordToKeychain;
@@ -67,6 +74,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCClientConfigMutable ()
 @property (nonatomic, assign, readwrite) BOOL connectionPrefersIPv4 TEXTUAL_DEPRECATED("Use -addressType instead");
 @property (nonatomic, copy, readwrite, nullable) NSString *saslECDSAKey; // an empty string removes it
+
+@property (nonatomic, copy, readwrite, nullable) NSString *bouncerAccountIdentifier;
+@property (nonatomic, copy, readwrite, nullable) NSString *bouncerNetwork;
+
+/* A normal server again: the account's address, port, TLS and login (for ZNC
+ the network's "user/network:password") as its only server */
+- (void)unlinkFromBouncerAccount:(IRCBouncerAccount *)account;
 
 /* Chosen in Server Properties: also unsets -connectionPrefersIPv4 */
 - (void)setAddressTypeChosenByUser:(IRCConnectionAddressType)addressType;

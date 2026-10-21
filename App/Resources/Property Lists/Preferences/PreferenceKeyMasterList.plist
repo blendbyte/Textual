@@ -426,6 +426,8 @@
 	<integer>0</integer>
 	<key>Window -&gt; Main Window -&gt; Split Channel View Saved Frames</key>
 	<integer>0</integer>
+	<key>World Controller Bouncer Accounts</key>
+	<integer>0</integer>
 	<key>World Controller Client Configurations</key>
 	<integer>0</integer>
 </dict>

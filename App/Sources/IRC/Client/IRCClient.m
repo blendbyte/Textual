@@ -129,6 +129,7 @@
 #import "IRCChannelModePrivate.h"
 #import "IRCChannelUserPrivate.h"
 #import "IRCChannelPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
 #import "IRCClientConfigPrivate.h"
 #import "IRCClientRequestedCommandsPrivate.h"
 #import "IRCColorFormatPrivate.h"
@@ -813,6 +814,17 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 - (TDCFileTransferDialog *)fileTransferController
 {
 	return [TXSharedApplication sharedFileTransferDialog];
+}
+
+- (nullable IRCBouncerAccount *)bouncerAccount
+{
+	NSString *identifier = self.config.bouncerAccountIdentifier;
+
+	if (identifier == nil) {
+		return nil;
+	}
+
+	return [worldController() findBouncerAccountWithId:identifier];
 }
 
 - (BOOL)isReconnecting

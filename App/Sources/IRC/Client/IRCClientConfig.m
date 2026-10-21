@@ -41,6 +41,7 @@
 #import "NSStringHelper.h"
 #import "IRC.h"
 #import "IRCAddressBook.h"
+#import "IRCBouncerAccountPrivate.h"
 #import "IRCChannelConfig.h"
 #import "IRCHighlightMatchCondition.h"
 #import "IRCNetworkList.h"
@@ -279,6 +280,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignObjectTo:&self->_customIcon forKey:@"customIcon"];
 	[defaultsMutable assignObjectTo:&self->_uploadDestination forKey:@"uploadDestination"];
 	[defaultsMutable assignStringTo:&self->_awayNickname forKey:@"awayNickname"];
+	[defaultsMutable assignStringTo:&self->_bouncerAccountIdentifier forKey:@"bouncerAccountIdentifier"];
+	[defaultsMutable assignStringTo:&self->_bouncerNetwork forKey:@"bouncerNetwork"];
 	[defaultsMutable assignStringTo:&self->_nickServHost forKey:@"nickServHost"];
 	[defaultsMutable assignStringTo:&self->_connectionName forKey:@"connectionName"];
 	[defaultsMutable assignStringTo:&self->_nickname forKey:@"nickname"];
@@ -697,6 +700,8 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic maybeSetObject:self.loginCommands forKey:@"onConnectCommands"];
 	[dic maybeSetObject:self.nickname forKey:@"nickname"];
 	[dic maybeSetObject:self.normalLeavingComment forKey:@"normalLeavingComment"];
+	[dic maybeSetObject:self.bouncerAccountIdentifier forKey:@"bouncerAccountIdentifier"];
+	[dic maybeSetObject:self.bouncerNetwork forKey:@"bouncerNetwork"];
 	[dic maybeSetObject:self.proxyAddress forKey:@"proxyAddress"];
 	[dic maybeSetObject:self.proxyUsername forKey:@"proxyUsername"];
 	[dic maybeSetObject:self.realName forKey:@"realName"];
@@ -1027,6 +1032,8 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic performPongTimer;
 @dynamic primaryEncoding;
 @dynamic saslECDSAKey;
+@dynamic bouncerAccountIdentifier;
+@dynamic bouncerNetwork;
 @dynamic proxyAddress;
 @dynamic proxyPassword;
 @dynamic proxyPort;
@@ -1367,6 +1374,33 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	if (self->_saslECDSAKey != saslECDSAKey) {
 		self->_saslECDSAKey = [saslECDSAKey copy];
 	}
+}
+
+- (void)setBouncerAccountIdentifier:(nullable NSString *)bouncerAccountIdentifier
+{
+	if (self->_bouncerAccountIdentifier != bouncerAccountIdentifier) {
+		self->_bouncerAccountIdentifier = [bouncerAccountIdentifier copy];
+	}
+}
+
+- (void)setBouncerNetwork:(nullable NSString *)bouncerNetwork
+{
+	if (self->_bouncerNetwork != bouncerNetwork) {
+		self->_bouncerNetwork = [bouncerNetwork copy];
+	}
+}
+
+- (void)unlinkFromBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	/* A normal server again, at the same address with the same login */
+	IRCServerMutable *server = [[account serverForNetwork:self.bouncerNetwork] mutableCopy];
+
+	self.serverList = @[[server copy]];
+
+	self.bouncerAccountIdentifier = nil;
+	self.bouncerNetwork = nil;
 }
 
 - (void)setNormalLeavingComment:(NSString *)normalLeavingComment

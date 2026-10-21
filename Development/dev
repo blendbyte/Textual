@@ -535,6 +535,20 @@ print("textual://dev-config?" + urllib.parse.urlencode(pairs, quote_via=urllib.p
 	open_dev_url "${url}"
 }
 
+# A bouncer account and its networks as servers, until the Add Bouncer sheet exists
+cmd_bouncer-account() {
+	check_app
+
+	[ $# -gt 0 ] || die "bouncer-account needs key=value pairs, e.g. kind=znc port=6672 user=dan password=textual networks=ergo,ergotwo connect=1"
+
+	local url
+	url=$(python3 -c 'import sys, urllib.parse
+pairs = [tuple(argument.split("=", 1)) for argument in sys.argv[1:]]
+print("textual://dev-bouncer?" + urllib.parse.urlencode(pairs, quote_via=urllib.parse.quote))' "$@")
+
+	open_dev_url "${url}"
+}
+
 cmd_send() {
 	check_app
 
@@ -608,6 +622,10 @@ cmd_help() {
 	  screenshot [file]     Capture Textual Dev's window
 	  server [start|stop|status]
 	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
+	  bouncer-account key=value …
+	                        Add a bouncer account and a server per network linked to it
+	                        (kind=znc|soju host port tls=0|1 user password name
+	                        networks=a,b connect=1)
 	  bouncer build         Build soju and ZNC for the test VM (vm-bundle does too); in the
 	                        VM, vm-dev bouncer start|stop|status|log runs them (soju 6670,
 	                        TLS 6671; ZNC 6672, TLS 6673; user dan, password textual)
@@ -627,6 +645,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|bouncer|scripted|proxy|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|bouncer|bouncer-account|scripted|proxy|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac

@@ -189,6 +189,7 @@
 		4C06E68F20EC55B90055D09A /* IRCPrefix.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31512520EB673E00448776 /* IRCPrefix.m */; };
 		4C06E69020EC55B90055D09A /* IRCSendingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31512C20EB673E00448776 /* IRCSendingMessage.m */; };
 		4C06E69120EC55B90055D09A /* IRCServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31512920EB673E00448776 /* IRCServer.m */; };
+		C4F450A5504575B3CF4999EC /* IRCBouncerAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = C2157ECA1B2E144EE9FAD543 /* IRCBouncerAccount.m */; };
 		4C06E69220EC55B90055D09A /* IRCTimedCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31512F20EB673E00448776 /* IRCTimedCommand.m */; };
 		4C06E69320EC55B90055D09A /* IRCTreeItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514220EB673E00448776 /* IRCTreeItem.m */; };
 		4C06E69420EC55B90055D09A /* IRCWorld.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31513A20EB673E00448776 /* IRCWorld.m */; };
@@ -672,6 +673,7 @@
 		4C3D92E576791929A989FCF6 /* IRCClientChatHistoryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C389D23442B563ACD83FC9C /* IRCClientChatHistoryTests.m */; };
 		4CF1DD0FFE1F92EB021F9272 /* IRCClient+ReadMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC4B1068CF35E0BAE7F074B /* IRCClient+ReadMarker.m */; };
 		4CAA51424F39CA15DD7B0560 /* IRCClientReadMarkerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2E0C095E3CDA192F237123 /* IRCClientReadMarkerTests.m */; };
+		969B79C9181F0C65CE52A0A7 /* IRCBouncerAccountTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5C1889EB3932356AF9DA5851 /* IRCBouncerAccountTests.m */; };
 		4C9B5092714BBC81389CF0D2 /* IRCSASLSCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C65B8EE2C71D14B10E4EFF6 /* IRCSASLSCRAM.m */; };
 		4C6F236CB78B0A2ED9AAE50B /* IRCSASLSCRAMTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */; };
 		4C8A8FF026AD1A66B60B9389 /* IRCTextDecoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDD4EFAB50498233E4983C3 /* IRCTextDecoding.swift */; };
@@ -933,6 +935,8 @@
 		4C31512620EB673E00448776 /* IRCHighlightLogEntry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCHighlightLogEntry.m; sourceTree = "<group>"; };
 		4C31512820EB673E00448776 /* IRCChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCChannel.m; sourceTree = "<group>"; };
 		4C31512920EB673E00448776 /* IRCServer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCServer.m; sourceTree = "<group>"; };
+		C2157ECA1B2E144EE9FAD543 /* IRCBouncerAccount.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCBouncerAccount.m; sourceTree = "<group>"; };
+		4B4C9E1DA15E9284D92547E4 /* IRCBouncerAccountPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCBouncerAccountPrivate.h; sourceTree = "<group>"; };
 		4C31512A20EB673E00448776 /* IRCHighlightMatchCondition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCHighlightMatchCondition.m; sourceTree = "<group>"; };
 		4C6B65A09213BD938609E130 /* IRCHighlightKeyword.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCHighlightKeyword.m; sourceTree = "<group>"; };
 		4C92C104117A1BED4EAF8438 /* IRCHighlightKeywordPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCHighlightKeywordPrivate.h; sourceTree = "<group>"; };
@@ -1572,6 +1576,7 @@
 		4C389D23442B563ACD83FC9C /* IRCClientChatHistoryTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientChatHistoryTests.m; sourceTree = "<group>"; };
 		4CC4B1068CF35E0BAE7F074B /* IRCClient+ReadMarker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+ReadMarker.m"; sourceTree = "<group>"; };
 		4C2E0C095E3CDA192F237123 /* IRCClientReadMarkerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCClientReadMarkerTests.m; sourceTree = "<group>"; };
+		5C1889EB3932356AF9DA5851 /* IRCBouncerAccountTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCBouncerAccountTests.m; sourceTree = "<group>"; };
 		4C65B8EE2C71D14B10E4EFF6 /* IRCSASLSCRAM.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSASLSCRAM.m; sourceTree = "<group>"; };
 		4CDE29638C97F18101B500F8 /* IRCSASLSCRAMPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCSASLSCRAMPrivate.h; sourceTree = "<group>"; };
 		4C67DFD350323347BDBD6865 /* IRCSASLSCRAMTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCSASLSCRAMTests.m; sourceTree = "<group>"; };
@@ -2336,6 +2341,8 @@
 				4C31518B20EB673E00448776 /* IRCPrefixInternal.h */,
 				4C31512C20EB673E00448776 /* IRCSendingMessage.m */,
 				4C31512920EB673E00448776 /* IRCServer.m */,
+				C2157ECA1B2E144EE9FAD543 /* IRCBouncerAccount.m */,
+				4B4C9E1DA15E9284D92547E4 /* IRCBouncerAccountPrivate.h */,
 				4C31518520EB673E00448776 /* IRCServerInternal.h */,
 				4C3151C120EB673E00448776 /* IRCServerPrivate.h */,
 				4C31514220EB673E00448776 /* IRCTreeItem.m */,
@@ -2959,6 +2966,7 @@
 				42E7CF611D2EE83DBDCAE8DB /* TDCServerPropertiesPaneTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3A /* IRCClientNickServTests.m */,
 				4C2E0C095E3CDA192F237123 /* IRCClientReadMarkerTests.m */,
+				5C1889EB3932356AF9DA5851 /* IRCBouncerAccountTests.m */,
 				4CD5D545AF3EC22B5F5DCBFA /* IRCClientStandardReplyTests.m */,
 				4C98A942ED469AAB59CA9C3E /* IRCClientTypingTests.m */,
 				4C1C0F11E0A0000000000A06 /* IRCClientRepliesTests.m */,
@@ -3788,6 +3796,7 @@
 				4C51327A20F76E980033B703 /* TLOLocalization.swift in Sources */,
 				4C06E69020EC55B90055D09A /* IRCSendingMessage.m in Sources */,
 				4C06E69120EC55B90055D09A /* IRCServer.m in Sources */,
+				C4F450A5504575B3CF4999EC /* IRCBouncerAccount.m in Sources */,
 				4C06E69220EC55B90055D09A /* IRCTimedCommand.m in Sources */,
 				4C06E69320EC55B90055D09A /* IRCTreeItem.m in Sources */,
 				4C06E69420EC55B90055D09A /* IRCWorld.m in Sources */,
@@ -3952,6 +3961,7 @@
 				4CD75E099AF55687724BBB3B /* IRCWhoReplyTests.m in Sources */,
 				4C6F236CB78B0A2ED9AAE50B /* IRCSASLSCRAMTests.m in Sources */,
 				4CAA51424F39CA15DD7B0560 /* IRCClientReadMarkerTests.m in Sources */,
+				969B79C9181F0C65CE52A0A7 /* IRCBouncerAccountTests.m in Sources */,
 				4C3D92E576791929A989FCF6 /* IRCClientChatHistoryTests.m in Sources */,
 				4CBC61A966CB1FF149620881 /* IRCStrictTransportSecurityTests.m in Sources */,
 				4CC5F8D17179503D974EE804 /* IRCClientStandardReplyTests.m in Sources */,

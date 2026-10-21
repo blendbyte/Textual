@@ -53,6 +53,7 @@
 "k3y-n4" = "channel key";
 "k3y-n5" = "login key";
 "k3y-n6" = "upload address token";
+"k3y-n7" = "bouncer password";
 "t7c-r1" = "Replace the custom style “%@”?";
 "t7c-r2" = "A custom style with this name already exists. Copying replaces it; the existing one is moved to the Trash.";
 "t7c-r3" = "Replace";
