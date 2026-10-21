@@ -35,16 +35,12 @@
  *
  *********************************************************************** */
 
-"zf2-r7" = "You have exceeded the secret key length defined by %1$@ which is %2$ld characters";
-"op4-gg" = "If you continue typing, the end of your secret key may be cut off.";
 
 "1nd-7x" = "Please enter a properly formatted channel name.";
 
 "mvl-r5" = "This channel's configuration has changed. Do you want to reload the Channel Properties dialog?";
 "qby-hi" = "You will loose unsaved changes if you click “Yes”";
 
-"fmt-l1" = "Colors and formatting:";
-"fmt-p1" = "Use global setting (%@)";
 "fmt-p2" = "Remove";
 "fmt-p3" = "Show";
 
@@ -54,3 +50,51 @@
 "arc-d1" = "Delete the archived messages of %@?";
 "arc-d2" = "Its %@ messages are deleted from the message archive. The saved scrollback stays.";
 "arc-d3" = "Delete";
+"cp-title" = "Channel Properties";
+"cp-title-new" = "New Channel";
+"cp-name" = "Name";
+"cp-nameh" = "Starts with # on most networks.";
+"cp-key" = "Key";
+"cp-keyh" = "Only if the channel needs a password to join.";
+"cp-key-e1" = "A key can't contain spaces.";
+"cp-key-n1" = "%1$@ allows keys of up to %2$lu characters: a longer one may be cut off.";
+"cp-label" = "Label";
+"cp-labelh" = "Shown in the channel list instead of the name.";
+"cp-join" = "Join when you connect";
+"cp-joinh" = "Also after reconnecting.";
+"cp-ntf-h" = "Notifications";
+"cp-ntf" = "Notify me";
+"cp-ntf-0" = "As in Settings";
+"cp-ntf-1" = "Only highlights";
+"cp-ntf-2" = "Never";
+"cp-ntf-h0" = "Messages and events here alert you as set in Settings › Notifications.";
+"cp-ntf-h1" = "Only messages that mention you alert you here.";
+"cp-ntf-h2" = "No alerts from this channel, not even highlights. The same as Channel › Mute Channel.";
+"cp-badge" = "Show unread count";
+"cp-badgeh" = "The number next to the channel in the list. A highlight always shows it.";
+"cp-alt-h" = "Alerts in this channel";
+"cp-alt-0" = "Same as Settings";
+"cp-alt-1" = "Custom";
+"cp-alt-n" = "Custom alerts apply to this channel only. Everything else follows Settings › Notifications.";
+"cp-msg-h" = "Messages";
+"cp-same" = "Same as Settings (%@)";
+"cp-pre" = "Previews";
+"cp-preh" = "Pictures, videos and link previews under messages.";
+"cp-pre-on" = "Show";
+"cp-pre-off" = "Don't show";
+"cp-fmt" = "Colors and formatting";
+"cp-fmth" = "Colors, bold and other styles people use in their messages.";
+"cp-hil" = "Treat mentions as highlights";
+"cp-hilh" = "Turn off where your name comes up a lot: messages that mention you are then ordinary ones.";
+"cp-evt" = "Show joins, leaves and other events";
+"cp-evth" = "Also nickname changes, away, kicks and mode changes. Yours always show.";
+"cp-arc-t" = "Message archive";
+"cp-arc-h" = "Kept for searching and for history.";
+"cp-arc-off" = "The message archive is off in Settings › History.";
+"cp-arc-srv" = "Nothing is kept: the whole server is left out (Server Properties › Messages).";
+"cp-arc-n" = "Messages in the archive: %@";
+"cp-empty-h" = "When the channel is empty";
+"cp-empty-n" = "Set when you join a channel nobody else is in and you are its operator, as when you create it.";
+"cp-topic" = "Topic";
+"cp-modes" = "Modes";
+"cp-modesh" = "Such as +nt or +k key.";

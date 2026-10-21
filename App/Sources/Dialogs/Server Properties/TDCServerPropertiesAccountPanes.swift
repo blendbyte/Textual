@@ -157,6 +157,11 @@ final class ServerPropertiesYouPane: TDCServerPropertiesPane, ObservableObject
 		Binding {
 			self[keyPath: keyPath]
 		} set: { (value) in
+			/* A field with the keyboard focus sets what it has: not an edit */
+			if (self[keyPath: keyPath] == value) {
+				return
+			}
+
 			self[keyPath: keyPath] = value
 
 			self.errors.edit(field)

@@ -186,15 +186,10 @@ final class ServerPropertiesChannelsPane: TDCServerPropertiesPane, ObservableObj
 			return
 		}
 
-		let sheet: TDCChannelPropertiesSheet
+		/* With the server, for its name and what its network allows */
+		let sheet = TDCChannelPropertiesSheet(config: config, on: propertiesSheet?.client)
 
-		if let config = config {
-			sheet = TDCChannelPropertiesSheet(config: config)
-
-			sheet.window = window
-		} else {
-			sheet = TDCChannelPropertiesSheet(window: window)
-		}
+		sheet.window = window
 
 		sheet.delegate = self
 
@@ -579,6 +574,11 @@ final class ServerPropertiesMessagesPane: TDCServerPropertiesPane, ObservableObj
 		Binding {
 			self[keyPath: keyPath]
 		} set: { (value) in
+			/* A field with the keyboard focus sets what it has: not an edit */
+			if (self[keyPath: keyPath] == value) {
+				return
+			}
+
 			self[keyPath: keyPath] = value
 
 			self.errors.edit(field)

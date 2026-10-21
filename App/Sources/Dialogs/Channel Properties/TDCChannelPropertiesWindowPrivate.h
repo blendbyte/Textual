@@ -5,7 +5,8 @@
  *                   | |  __/>  <| |_| |_| | (_| | |
  *                   |_|\___/_/\_\\__|\__,_|\__,_|_|
  *
-  * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
+ * Copyright (c) 2008 - 2010 Satoshi Nakagawa <psychs AT limechat DOT net>
+ * Copyright (c) 2010 - 2018 Codeux Software, LLC & respective contributors.
  *       Please see Acknowledgements.pdf for additional information.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,32 +36,24 @@
  *
  *********************************************************************** */
 
-#import "TLONotificationController.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NSString *TLONotificationAlertSound NS_EXTENSIBLE_STRING_ENUM;
+@class IRCClient, IRCChannelConfigMutable;
 
-TEXTUAL_EXTERN TLONotificationAlertSound const TXDefaultAlertSoundPreferenceValue;
-TEXTUAL_EXTERN TLONotificationAlertSound const TXNoAlertSoundPreferenceValue;
-
-@interface TLONotificationConfiguration : NSObject
-@property (readonly) TXNotificationType eventType;
-@property (readonly, copy) NSString *displayName;
-@property (nonatomic, copy, nullable) TLONotificationAlertSound alertSound;
-@property (nonatomic, assign) NSUInteger speakEvent;
-@property (nonatomic, assign) NSUInteger pushNotification;
-@property (nonatomic, assign) NSUInteger disabledWhileAway;
-@property (nonatomic, assign) NSUInteger bounceDockIcon;
-@property (nonatomic, assign) NSUInteger bounceDockIconRepeatedly;
-
-+ (NSString *)localizedAlertDefaultSoundTitle;
-+ (NSString *)localizedAlertNoSoundTitle;
-
-+ (instancetype)configurationWithEventType:(TXNotificationType)eventType;
+/* The sheet's window: one page of the channel's settings, Cancel and Save
+ (TDCChannelPropertiesWindow.swift). It edits the configuration it's given. */
+@interface TDCChannelPropertiesWindow : NSObject
+- (instancetype)initWithConfig:(IRCChannelConfigMutable *)config
+						client:(nullable IRCClient *)client
+						  save:(void (^)(void))saveBlock
+						cancel:(void (^)(void))cancelBlock;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithEventType:(TXNotificationType)aEventType NS_DESIGNATED_INITIALIZER;
+
+@property (readonly) NSWindow *window;
+
+/* Into the configuration; NO while something can't be saved (shown under it) */
+- (BOOL)applyChanges;
 @end
 
 NS_ASSUME_NONNULL_END

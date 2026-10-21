@@ -126,6 +126,10 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 		Binding {
 			self.name
 		} set: { (value) in
+			if (self.name == value) {
+				return
+			}
+
 			self.name = value
 			self.editedFields.insert("name")
 		}
@@ -136,6 +140,10 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 		Binding {
 			self.address
 		} set: { (value) in
+			if (self.address == value) {
+				return
+			}
+
 			self.setAddress(value)
 		}
 	}
@@ -145,6 +153,10 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 		Binding {
 			self.port
 		} set: { (value) in
+			if (self.port == value) {
+				return
+			}
+
 			self.port = value
 			self.editedFields.insert("port")
 

@@ -35,64 +35,21 @@
  *
  *********************************************************************** */
 
-#import "NSObjectHelperPrivate.h"
-#import "NSStringHelper.h"
-#import "NSViewHelper.h"
 #import "IRCClient.h"
 #import "IRCChannel.h"
-#import "IRCISupportInfo.h"
-#import "TPCPreferencesLocalPrivate.h"
-#import "TLOMessageArchivePrivate.h"
 #import "TLOLocalization.h"
-#import "TVCNotificationConfigurationViewControllerPrivate.h"
-#import "TVCValidatedTextField.h"
 #import "TDCAlert.h"
-#import "TDCChannelPropertiesNotificationConfigurationPrivate.h"
 #import "TDCChannelPropertiesSheetInternal.h"
+#import "TDCChannelPropertiesWindowPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, TDCChannelPropertiesSheetSelection)
-{
-	TDCChannelPropertiesSheetSelectionGeneral = 0,
-	TDCChannelPropertiesSheetSelectionDefaults = 1,
-	TDCChannelPropertiesSheetSelectionNotifications = 2
-};
-
-@interface TDCChannelPropertiesSheet () <NSControlTextEditingDelegate>
+@interface TDCChannelPropertiesSheet () <NSWindowDelegate>
 @property (nonatomic, strong, readwrite, nullable) IRCClient *client;
 @property (nonatomic, strong, readwrite, nullable) IRCChannel *channel;
 @property (nonatomic, copy, readwrite, nullable) NSString *clientId;
 @property (nonatomic, copy, readwrite, nullable) NSString *channelId;
-@property (nonatomic, assign) BOOL isNewConfiguration;
-@property (nonatomic, assign) BOOL secretKeyLengthAlertDisplayed;
-@property (nonatomic, copy) NSArray *navigationTree;
-@property (nonatomic, weak) IBOutlet NSButton *autoJoinCheck;
-@property (nonatomic, weak) IBOutlet NSButton *disableInlineMediaCheck;
-@property (nonatomic, weak) IBOutlet NSButton *enableInlineMediaCheck;
-@property (nonatomic, weak) IBOutlet NSButton *pushNotificationsCheck;
-@property (nonatomic, weak) IBOutlet NSButton *showTreeBadgeCountCheck;
-@property (nonatomic, weak) IBOutlet NSButton *ignoreHighlightsCheck;
-@property (nonatomic, weak) IBOutlet NSButton *ignoreGeneralEventMessagesCheck;
-@property (nonatomic, strong) NSPopUpButton *formattingPopUp;
-@property (nonatomic, strong) NSButton *keepInArchiveCheck;
-@property (nonatomic, strong) NSButton *deleteArchivedMessagesButton;
-@property (nonatomic, weak) IBOutlet NSSegmentedControl *contentViewTabView;
-@property (nonatomic, weak) IBOutlet TVCValidatedTextField *channelNameTextField;
-@property (nonatomic, weak) IBOutlet NSTextField *labelTextField;
-@property (nonatomic, weak) IBOutlet NSTextField *defaultModesTextField;
-@property (nonatomic, weak) IBOutlet NSTextField *defaultTopicTextField;
-@property (nonatomic, weak) IBOutlet NSTextField *secretKeyTextField;
-@property (nonatomic, strong) IBOutlet NSView *contentView;
-@property (nonatomic, strong) IBOutlet NSView *contentViewDefaultsView;
-@property (nonatomic, strong) IBOutlet NSView *contentViewGeneralView;
-@property (nonatomic, strong) IBOutlet NSView *contentViewNotifications;
-@property (nonatomic, strong) IBOutlet NSView *contentViewNotificationsHost;
-@property (nonatomic, strong) IBOutlet TVCNotificationConfigurationViewController *notificationsController;
-
-- (IBAction)onMenuBarItemChanged:(nullable id)sender;
-
-- (IBAction)onPushNotificationsCheckChanged:(nullable id)sender;
+@property (nonatomic, strong) TDCChannelPropertiesWindow *windowContent;
 @end
 
 @implementation TDCChannelPropertiesSheet
@@ -104,8 +61,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_BEGIN
 		self.config = [IRCChannelConfigMutable new];
 
 		[self prepareInitialState];
-
-		[self loadConfig];
 
 		return self;
 	}
@@ -135,15 +90,9 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		self.channel = channel;
 		self.channelId = channel.uniqueIdentifier;
 
-		if (channel) {
-			self.config = [channel.config mutableCopy];
-		} else {
-			self.config = [IRCChannelConfigMutable new];
-		}
+		self.config = [channel.config mutableCopy];
 
 		[self prepareInitialState];
-
-		[self loadConfig];
 
 		return self;
 	}
@@ -170,8 +119,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 		[self prepareInitialState];
 
-		[self loadConfig];
-
 		return self;
 	}
 
@@ -181,7 +128,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 - (instancetype)initWithConfig:(nullable IRCChannelConfig *)config onClientWithId:(nullable NSString *)clientId
 {
 	/* Through the designated initializer: calling our -initWithWindow: and then
-	 loading again loaded the nib and the config twice */
+	 loading again built the window and loaded the config twice */
 	if ((self = [self initWithConfig:config onClient:nil])) {
 		self.clientId = clientId;
 
@@ -193,300 +140,30 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (void)prepareInitialState
 {
-	[self loadNib];
+	__weak TDCChannelPropertiesSheet *weakSelf = self;
 
-	self.navigationTree = @[
-		//		view								first responder
-		@[self.contentViewGeneralView,			self.channelNameTextField],
-		@[self.contentViewDefaultsView,			self.defaultTopicTextField],
-		@[self.contentViewNotifications,		[NSNull null]],
-	];
+	self.windowContent =
+	[[TDCChannelPropertiesWindow alloc] initWithConfig:self.config
+												client:self.client
+												  save:^{
+													  [weakSelf ok:nil];
+												  }
+												cancel:^{
+													[weakSelf cancel:nil];
+												}];
 
-	self.channelNameTextField.stringValueIsInvalidOnEmpty = YES;
-	self.channelNameTextField.stringValueUsesOnlyFirstToken = YES;
+	NSWindow *window = self.windowContent.window;
 
-	self.channelNameTextField.textDidChangeCallback = self;
+	window.delegate = self;
 
-	self.channelNameTextField.validationBlock = ^NSString *(NSString *currentValue) {
-		if (currentValue.isChannelName == NO) {
-			return TXTLS(@"TDCChannelPropertiesSheet[1nd-7x]");
-		}
-
-		return nil;
-	};
-
-	[self addFormattingRow];
-
-	[self addArchiveRows];
+	self.sheet = window;
 
 	[self addConfigurationDidChangeObserver];
-
-	[self setupNotificationsController];
-}
-
-/* "Colors and formatting:" below the last checkbox of the General pane */
-- (void)addFormattingRow
-{
-	NSView *generalView = self.contentViewGeneralView;
-
-	NSView *lastCheck = self.ignoreHighlightsCheck;
-
-	for (NSLayoutConstraint *constraint in generalView.constraints) {
-		if (constraint.firstItem == generalView && constraint.firstAttribute == NSLayoutAttributeBottom && constraint.secondItem == lastCheck) {
-			constraint.active = NO;
-		}
-	}
-
-	NSTextField *label = [NSTextField labelWithString:TXTLS(@"TDCChannelPropertiesSheet[fmt-l1]")];
-
-	NSPopUpButton *popUp = [NSPopUpButton new];
-
-	NSString *globalChoice = (([TPCPreferences removeAllFormatting]) ? TXTLS(@"TDCChannelPropertiesSheet[fmt-p2]") : TXTLS(@"TDCChannelPropertiesSheet[fmt-p3]"));
-
-	/* Item tags are IRCChannelFormatting values */
-	[popUp addItemWithTitle:TXTLS(@"TDCChannelPropertiesSheet[fmt-p1]", globalChoice)];
-	popUp.lastItem.tag = IRCChannelFormattingGlobal;
-
-	[popUp.menu addItem:[NSMenuItem separatorItem]];
-
-	[popUp addItemWithTitle:TXTLS(@"TDCChannelPropertiesSheet[fmt-p2]")];
-	popUp.lastItem.tag = IRCChannelFormattingRemove;
-
-	[popUp addItemWithTitle:TXTLS(@"TDCChannelPropertiesSheet[fmt-p3]")];
-	popUp.lastItem.tag = IRCChannelFormattingShow;
-
-	NSStackView *row = [NSStackView stackViewWithViews:@[label, popUp]];
-
-	row.alignment = NSLayoutAttributeFirstBaseline;
-	row.spacing = 8;
-	row.translatesAutoresizingMaskIntoConstraints = NO;
-
-	[generalView addSubview:row];
-
-	[NSLayoutConstraint activateConstraints:@[
-		[row.topAnchor constraintEqualToAnchor:lastCheck.bottomAnchor constant:13],
-		[row.leadingAnchor constraintEqualToAnchor:lastCheck.leadingAnchor],
-		[row.trailingAnchor constraintLessThanOrEqualToAnchor:generalView.trailingAnchor constant:-20]
-	]];
-
-	self.formattingPopUp = popUp;
-}
-
-/* The message archive, below "Colors and formatting:" */
-- (void)addArchiveRows
-{
-	NSView *generalView = self.contentViewGeneralView;
-
-	NSView *formattingRow = self.formattingPopUp.superview;
-
-	NSButton *keepInArchiveCheck = [NSButton checkboxWithTitle:TXTLS(@"TDCChannelPropertiesSheet[arc-c1]") target:nil action:nil];
-
-	NSButton *deleteButton = [NSButton buttonWithTitle:TXTLS(@"TDCChannelPropertiesSheet[arc-b1]") target:self action:@selector(deleteArchivedMessages:)];
-
-	keepInArchiveCheck.translatesAutoresizingMaskIntoConstraints = NO;
-	deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
-
-	[generalView addSubview:keepInArchiveCheck];
-	[generalView addSubview:deleteButton];
-
-	[NSLayoutConstraint activateConstraints:@[
-		[keepInArchiveCheck.topAnchor constraintEqualToAnchor:formattingRow.bottomAnchor constant:13],
-		[keepInArchiveCheck.leadingAnchor constraintEqualToAnchor:formattingRow.leadingAnchor],
-		[keepInArchiveCheck.trailingAnchor constraintLessThanOrEqualToAnchor:generalView.trailingAnchor constant:-20],
-		[deleteButton.topAnchor constraintEqualToAnchor:keepInArchiveCheck.bottomAnchor constant:8],
-		[deleteButton.leadingAnchor constraintEqualToAnchor:formattingRow.leadingAnchor constant:14],
-		[generalView.bottomAnchor constraintEqualToAnchor:deleteButton.bottomAnchor constant:18]
-	]];
-
-	self.keepInArchiveCheck = keepInArchiveCheck;
-	self.deleteArchivedMessagesButton = deleteButton;
-}
-
-/* While the archive is off there's nothing to leave out; the delete button
- when it has this channel's messages */
-- (void)updateArchiveControls
-{
-	self.keepInArchiveCheck.enabled = ([TPCPreferences messageArchiveKeepPeriod] != TPCMessageArchiveKeepPeriodOff);
-
-	self.deleteArchivedMessagesButton.enabled = NO;
-
-	NSString *viewId = self.config.uniqueIdentifier;
-
-	if (viewId == nil) {
-		return;
-	}
-
-	[sharedMessageArchive() countMessagesOfServer:nil inView:viewId completionHandler:^(NSUInteger count) {
-		self.deleteArchivedMessagesButton.enabled = (count > 0);
-	}];
-}
-
-- (void)deleteArchivedMessages:(nullable id)sender
-{
-	NSString *viewId = self.config.uniqueIdentifier;
-
-	NSString *channelName = self.config.channelName;
-
-	if (viewId == nil) {
-		return;
-	}
-
-	[sharedMessageArchive() countMessagesOfServer:nil inView:viewId completionHandler:^(NSUInteger count) {
-		NSAlert *alert = [NSAlert new];
-
-		alert.alertStyle = NSAlertStyleWarning;
-		alert.messageText = TXTLS(@"TDCChannelPropertiesSheet[arc-d1]", channelName);
-		alert.informativeText = TXTLS(@"TDCChannelPropertiesSheet[arc-d2]", [NSNumberFormatter localizedStringFromNumber:@(count) numberStyle:NSNumberFormatterDecimalStyle]);
-
-		[alert addButtonWithTitle:TXTLS(@"TDCChannelPropertiesSheet[arc-d3]")];
-		[alert addButtonWithTitle:TXTLS(@"Prompts[qso-2g]")];
-
-		alert.buttons.firstObject.hasDestructiveAction = YES;
-
-		[alert beginSheetModalForWindow:self.sheet completionHandler:^(NSModalResponse response) {
-			if (response != NSAlertFirstButtonReturn) {
-				return;
-			}
-
-			[sharedMessageArchive() deleteMessagesOfServer:nil inView:viewId completionHandler:^{
-				[self updateArchiveControls];
-			}];
-		}];
-	}];
-}
-
-- (void)setupNotificationsController
-{
-	self.notificationsController.allowsMixedState = YES;
-
-	NSMutableArray *notifications = [NSMutableArray array];
-
-	[notifications addObject:[[TDCChannelPropertiesNotificationConfiguration alloc] initWithEventType:TXNotificationTypeHighlight inSheet:self]];
-	[notifications addObject:@" "];
-	[notifications addObject:[[TDCChannelPropertiesNotificationConfiguration alloc] initWithEventType:TXNotificationTypeChannelMessage inSheet:self]];
-	[notifications addObject:[[TDCChannelPropertiesNotificationConfiguration alloc] initWithEventType:TXNotificationTypeChannelNotice inSheet:self]];
-	[notifications addObject:@" "];
-	[notifications addObject:[[TDCChannelPropertiesNotificationConfiguration alloc] initWithEventType:TXNotificationTypeUserJoined inSheet:self]];
-	[notifications addObject:[[TDCChannelPropertiesNotificationConfiguration alloc] initWithEventType:TXNotificationTypeUserParted inSheet:self]];
-
-	self.notificationsController.notifications = notifications;
-
-	[self.notificationsController attachToView:self.contentViewNotificationsHost];
-}
-
-- (void)updateNavigationEnabledState
-{
-	[self.contentViewTabView setEnabled:(self.pushNotificationsCheck.state == NSControlStateValueOn)
-							 forSegment:TDCChannelPropertiesSheetSelectionNotifications];
-}
-
-- (void)loadConfig
-{
-	self.channelNameTextField.stringValue = self.config.channelName;
-	self.channelNameTextField.editable = (self.config.channelName.length == 0);
-
-	self.labelTextField.stringValue = (self.config.label ?: @"");
-
-	self.defaultModesTextField.stringValue = (self.config.defaultModes ?: @"");
-	self.defaultTopicTextField.stringValue = (self.config.defaultTopic ?: @"");
-
-	self.secretKeyTextField.stringValue = (self.config.secretKey ?: @"");
-
-	self.autoJoinCheck.state = self.config.autoJoin;
-	self.pushNotificationsCheck.state = self.config.pushNotifications;
-	self.showTreeBadgeCountCheck.state = self.config.showTreeBadgeCount;
-
-	self.ignoreGeneralEventMessagesCheck.state = self.config.ignoreGeneralEventMessages;
-	self.ignoreGeneralEventMessagesCheck.enabled = [TPCPreferences showJoinLeave]; // nothing to disable while they are hidden everywhere
-	self.ignoreHighlightsCheck.state = self.config.ignoreHighlights;
-
-	self.disableInlineMediaCheck.state = self.config.inlineMediaDisabled;
-	self.enableInlineMediaCheck.state = self.config.inlineMediaEnabled;
-
-	[self.formattingPopUp selectItemWithTag:self.config.formatting];
-
-	self.keepInArchiveCheck.state = ((self.config.excludedFromArchive) ? NSControlStateValueOff : NSControlStateValueOn);
-
-	[self updateArchiveControls];
-
-	[self updateNavigationEnabledState];
-}
-
-- (void)onMenuBarItemChanged:(nullable id)sender
-{
-	[self _navigateToSelection:[sender indexOfSelectedItem]];
-}
-
-- (void)navigateToSelection:(TDCChannelPropertiesSheetSelection)selection
-{
-	if (self.contentViewTabView.indexOfSelectedItem == selection) {
-		return;
-	}
-
-	[self.contentViewTabView selectSegmentWithTag:selection];
-
-	[self _navigateToSelection:selection];
-}
-
-- (void)_navigateToSelection:(TDCChannelPropertiesSheetSelection)selection
-{
-	[self selectPane:self.navigationTree[selection][0]];
-
-	id firstResponder = self.navigationTree[selection][1];
-
-	if ([firstResponder isKindOfClass:[NSControl class]]) {
-		[self.sheet makeFirstResponder:firstResponder];
-	}
-}
-
-- (void)selectPane:(NSView *)view
-{
-	[self.contentView replaceFirstSubview:view];
 }
 
 - (void)start
 {
 	[self startSheet];
-
-	[self _navigateToSelection:TDCChannelPropertiesSheetSelectionGeneral];
-}
-
-- (void)controlTextDidChange:(NSNotification *)aNotification
-{
-	if (aNotification.object == self.secretKeyTextField) {
-		[self updateSecretKeyLengthAlert];
-	}
-}
-
-- (void)updateSecretKeyLengthAlert
-{
-	NSUInteger maximumKeyLength = self.client.supportInfo.maximumKeyLength;
-
-	if (maximumKeyLength == 0) {
-		return;
-	}
-
-	NSUInteger currentKeyLength = self.secretKeyTextField.stringValue.length;
-
-	if (currentKeyLength <= maximumKeyLength) {
-		return;
-	}
-
-	if (self.secretKeyLengthAlertDisplayed == NO) {
-		self.secretKeyLengthAlertDisplayed = YES;
-	} else {
-		return;
-	}
-
-	[TDCAlert alertSheetWithWindow:self.sheet
-							  body:TXTLS(@"TDCChannelPropertiesSheet[op4-gg]")
-							 title:TXTLS(@"TDCChannelPropertiesSheet[zf2-r7]", self.client.networkNameAlt, maximumKeyLength)
-					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
-				   alternateButton:nil
-					   otherButton:nil
-					suppressionKey:@"maximum_secret_key_length"
-				   suppressionText:nil
-				   completionBlock:nil];
 }
 
 - (void)addConfigurationDidChangeObserver
@@ -530,11 +207,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 				   }];
 }
 
-- (void)onPushNotificationsCheckChanged:(nullable id)sender
-{
-	[self updateNavigationEnabledState];
-}
-
 #pragma mark -
 #pragma mark Actions
 
@@ -547,61 +219,18 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (void)ok:(nullable id)sender
 {
-	if ([self okOrError] == NO) {
+	/* Problems show under their fields */
+	if ([self.windowContent applyChanges] == NO) {
 		return;
 	}
 
 	[self removeConfigurationDidChangeObserver];
-
-	self.config.channelName = self.channelNameTextField.value;
-
-	self.config.label = self.labelTextField.trimmedStringValue;
-
-	self.config.defaultModes = self.defaultModesTextField.trimmedStringValue;
-	self.config.defaultTopic = self.defaultTopicTextField.trimmedStringValue;
-
-	self.config.secretKey = self.secretKeyTextField.trimmedFirstTokenStringValue;
-
-	self.config.autoJoin = self.autoJoinCheck.state;
-	self.config.pushNotifications = self.pushNotificationsCheck.state;
-	self.config.showTreeBadgeCount = self.showTreeBadgeCountCheck.state;
-
-	self.config.ignoreGeneralEventMessages = self.ignoreGeneralEventMessagesCheck.state;
-	self.config.ignoreHighlights = self.ignoreHighlightsCheck.state;
-
-	self.config.inlineMediaDisabled = self.disableInlineMediaCheck.state;
-	self.config.inlineMediaEnabled = self.enableInlineMediaCheck.state;
-
-	self.config.formatting = self.formattingPopUp.selectedTag;
-
-	self.config.excludedFromArchive = (self.keepInArchiveCheck.state == NSControlStateValueOff);
 
 	if ([self.delegate respondsToSelector:@selector(channelPropertiesSheet:onOk:)]) {
 		[self.delegate channelPropertiesSheet:self onOk:[self.config copy]];
 	}
 
 	[super ok:nil];
-}
-
-- (BOOL)okOrError
-{
-	return [self okOrErrorForTextField:self.channelNameTextField inSelection:TDCChannelPropertiesSheetSelectionGeneral];
-}
-
-- (BOOL)okOrErrorForTextField:(TVCValidatedTextField *)textField inSelection:(TDCChannelPropertiesSheetSelection)selection
-{
-	if (textField.valueIsValid) {
-		return YES;
-	}
-
-	[self navigateToSelection:selection];
-
-	/* Give navigation time to settle before trying to attach popover */
-	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[textField showValidationErrorPopover];
-	});
-
-	return NO;
 }
 
 #pragma mark -

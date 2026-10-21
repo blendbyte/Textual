@@ -39,7 +39,6 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <AudioToolbox/AudioToolbox.h>
 
-#import "TLONotificationConfigurationPrivate.h"
 #import "TLOSoundPlayer.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -198,7 +197,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(name != nil);
 
-	if ([name isEqualToString:TXNoAlertSoundPreferenceValue]) {
+	/* No sound, as stored for an event */
+	if ([name isEqualToString:@"None"]) {
 		return;
 	}
 
