@@ -2752,6 +2752,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* soju's list of networks */
+	if ([batchType isEqualToString:@"soju.im/bouncer-networks"]) {
+		[self processBouncerNetworksBatchMessage:batchMessage];
+
+		[self labeledBatchFinished:batchMessage];
+
+		return;
+	}
+
 	/* A multi-line message: its lines are one message */
 	if ([batchType isEqualToString:@"draft/multiline"]) {
 		[self processMultilineBatchMessage:batchMessage];

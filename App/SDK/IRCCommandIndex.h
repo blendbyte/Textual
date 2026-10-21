@@ -154,6 +154,7 @@ typedef NS_ENUM(NSUInteger, IRCRemoteCommand) {
 	IRCRemoteCommandAuthenticate = 1005,
 	IRCRemoteCommandAway = 1050,
 	IRCRemoteCommandBatch = 1054,
+	IRCRemoteCommandBouncer = 1068,
 	IRCRemoteCommandCap = 1004,
 	IRCRemoteCommandCertinfo = 1055,
 	IRCRemoteCommandChatops = 1006,

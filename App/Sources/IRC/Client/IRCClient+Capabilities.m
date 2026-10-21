@@ -191,6 +191,8 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 	{ "sasl",					ClientIRCv3SupportedCapabilitySASLGeneric,			ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL }, // enabled once authenticated
 	{ "server-time",			ClientIRCv3SupportedCapabilityServerTime,			ClientIRCv3SupportedCapabilityServerTime },
 	{ "setname",				ClientIRCv3SupportedCapabilitySetName,				ClientIRCv3SupportedCapabilitySetName },
+	{ "soju.im/bouncer-networks",	ClientIRCv3SupportedCapabilityBouncerNetworks,	ClientIRCv3SupportedCapabilityBouncerNetworks },
+	{ "soju.im/bouncer-networks-notify",	ClientIRCv3SupportedCapabilityBouncerNetworksNotify,	ClientIRCv3SupportedCapabilityBouncerNetworksNotify },
 	{ "standard-replies",		ClientIRCv3SupportedCapabilityStandardReplies,		ClientIRCv3SupportedCapabilityStandardReplies },
 	{ "userhost-in-names",		ClientIRCv3SupportedCapabilityUserhostInNames,		ClientIRCv3SupportedCapabilityUserhostInNames },
 	{ "plan.io/playback",		ClientIRCv3SupportedCapabilityPlanioPlayback,		ClientIRCv3SupportedCapabilityPlayback },
@@ -335,6 +337,8 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	self.accountRegistrationAccount = nil;
 	self.accountRegistrationPassword = nil;
 
+	[self resetBouncerNetworks];
+
 	[self.capabilityNegotiator reset];
 }
 
@@ -372,6 +376,8 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	appendValue(ClientIRCv3SupportedCapabilityPlayback, @"playback");
 	appendValue(ClientIRCv3SupportedCapabilityServerTime, @"server-time");
 	appendValue(ClientIRCv3SupportedCapabilitySetName, @"setname");
+	appendValue(ClientIRCv3SupportedCapabilityBouncerNetworks, @"soju.im/bouncer-networks");
+	appendValue(ClientIRCv3SupportedCapabilityBouncerNetworksNotify, @"soju.im/bouncer-networks-notify");
 	appendValue(ClientIRCv3SupportedCapabilityStandardReplies, @"standard-replies");
 	appendValue(ClientIRCv3SupportedCapabilityUserhostInNames, @"userhost-in-names");
 	appendValue(ClientIRCv3SupportedCapabilityZNCCertInfoModule, @"znc.in/tlsinfo");
@@ -455,6 +461,13 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		return [self processMultilineCapabilityValue:value];
 	}
 
+	/* soju's networks: only for a server linked to a soju account */
+	if (entry->request == ClientIRCv3SupportedCapabilityBouncerNetworks ||
+		entry->request == ClientIRCv3SupportedCapabilityBouncerNetworksNotify)
+	{
+		return [self shouldRequestBouncerCapability:entry->request];
+	}
+
 	/* What REGISTER needs (an email address, a name of one's own) */
 	if (entry->request == ClientIRCv3SupportedCapabilityAccountRegistration) {
 		[self processAccountRegistrationCapabilityValue:value];
@@ -512,6 +525,11 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 - (void)capabilityNegotiator:(IRCCapabilityNegotiator *)negotiator sendCapabilityCommand:(NSString *)subcommand data:(nullable NSString *)data
 {
+	/* A soju network is chosen after logging in, before registration ends */
+	if ([subcommand isEqualToString:@"END"]) {
+		[self bindBouncerNetworkBeforeRegistration];
+	}
+
 	[self sendCapability:subcommand data:data];
 }
 
@@ -523,9 +541,12 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	BOOL canUseExternal = (self.socket.isConnectedWithClientSideCertificate &&
 						   self.config.saslAuthenticationDisableExternalMechanism == NO);
 
-	BOOL haveECDSAKey = (self.config.saslECDSAKey.length > 0);
+	/* Before registration, a soju network logs in to its bouncer account */
+	BOOL linkedToBouncer = ([self bouncerSASLUsername] != nil);
 
-	BOOL havePassword = (self.config.nicknamePassword.length > 0);
+	BOOL haveECDSAKey = (linkedToBouncer == NO && self.config.saslECDSAKey.length > 0);
+
+	BOOL havePassword = ([self saslPassword].length > 0);
 
 	NSArray *mechanisms = IRCSASLMechanismsToTry((capabilityOptions ?: @[]), canUseExternal, haveECDSAKey, havePassword);
 
@@ -536,9 +557,16 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	}
 }
 
-/* Like registration (USER), an empty username means the nickname (R3.14) */
+/* Like registration (USER), an empty username means the nickname (R3.14);
+ a soju network logs in with its bouncer account's */
 - (NSString *)saslUsername
 {
+	NSString *bouncerUsername = [self bouncerSASLUsername];
+
+	if (bouncerUsername.length > 0) {
+		return bouncerUsername;
+	}
+
 	NSString *username = self.config.username;
 
 	if (username.length == 0) {
@@ -546,6 +574,15 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	}
 
 	return username;
+}
+
+- (nullable NSString *)saslPassword
+{
+	if ([self bouncerSASLUsername] != nil) {
+		return [self bouncerSASLPassword];
+	}
+
+	return self.config.nicknamePassword;
 }
 
 - (BOOL)sendSASLIdentificationRequest
@@ -595,7 +632,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	if ([IRCSASLSCRAM hash:&hash forMechanismName:mechanism]) {
 		self.saslSCRAM = [[IRCSASLSCRAM alloc] initWithHash:hash
 												   username:[self saslUsername]
-												   password:self.config.nicknamePassword
+												   password:[self saslPassword]
 												clientNonce:nil];
 	} else if ([mechanism isEqualToString:IRCSASLECDSAMechanismName]) {
 		NSString *storedKey = self.config.saslECDSAKey;
@@ -714,7 +751,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	if ([mechanism isEqualToString:@"PLAIN"]) {
 		NSString *username = [self saslUsername];
 
-		[self sendSASLResponse:[NSString stringWithFormat:@"%@%C%@%C%@", username, 0x00, username, 0x00, self.config.nicknamePassword]];
+		[self sendSASLResponse:[NSString stringWithFormat:@"%@%C%@%C%@", username, 0x00, username, 0x00, [self saslPassword]]];
 	} else if ([mechanism isEqualToString:@"EXTERNAL"]) {
 		[self sendCapabilityAuthenticate:@"+"];
 	} else if (self.saslECDSAKey) {

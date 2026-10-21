@@ -621,6 +621,7 @@
 		4C3E38EF023ED09A33D7EB38 /* IRCClient+Users.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC09B56304AD18920BFA48C /* IRCClient+Users.m */; };
 		4C6F1B13D9A19F721E8D49E7 /* IRCClient+UserTracking.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */; };
 		4CF0F5F094B96BD5F6D0798D /* IRCClient+ZNC.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */; };
+		B7C1D40C3C263D259DAAA659 /* IRCClient+Bouncer.m in Sources */ = {isa = PBXBuildFile; fileRef = C883A9F5E880D84E0F3D123E /* IRCClient+Bouncer.m */; };
 		4C5C538983AACF279B5E4DB4 /* TXMenuController+App.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CD54006C6E560E700F8BB0E /* TXMenuController+App.m */; };
 		4C2A3E6FA64FB2AA171C6395 /* TXMenuController+Edit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C2C36E104979603AE00C563 /* TXMenuController+Edit.m */; };
 		4CF2822F48BF6CAA57B12C77 /* TXMenuController+Members.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CABF77627D27EB46C79789E /* TXMenuController+Members.m */; };
@@ -1507,6 +1508,7 @@
 		4CC09B56304AD18920BFA48C /* IRCClient+Users.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Users.m"; sourceTree = "<group>"; };
 		4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+UserTracking.m"; sourceTree = "<group>"; };
 		4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+ZNC.m"; sourceTree = "<group>"; };
+		C883A9F5E880D84E0F3D123E /* IRCClient+Bouncer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IRCClient+Bouncer.m"; sourceTree = "<group>"; };
 		4C7B0328BA27D76D63EE7755 /* IRCClientInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCClientInternal.h; sourceTree = "<group>"; };
 		4CD54006C6E560E700F8BB0E /* TXMenuController+App.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+App.m"; sourceTree = "<group>"; };
 		4C2C36E104979603AE00C563 /* TXMenuController+Edit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TXMenuController+Edit.m"; sourceTree = "<group>"; };
@@ -2213,6 +2215,7 @@
 				4CC09B56304AD18920BFA48C /* IRCClient+Users.m */,
 				4C9A1F723ADC297CF2EDCF35 /* IRCClient+UserTracking.m */,
 				4C5DA9F85977C1CA7D412241 /* IRCClient+ZNC.m */,
+				C883A9F5E880D84E0F3D123E /* IRCClient+Bouncer.m */,
 				4C31513B20EB673E00448776 /* IRCClient.m */,
 				4C31513C20EB673E00448776 /* IRCClientConfig.m */,
 				4C31518D20EB673E00448776 /* IRCClientConfigInternal.h */,
@@ -3694,6 +3697,7 @@
 				4C3E38EF023ED09A33D7EB38 /* IRCClient+Users.m in Sources */,
 				4C6F1B13D9A19F721E8D49E7 /* IRCClient+UserTracking.m in Sources */,
 				4CF0F5F094B96BD5F6D0798D /* IRCClient+ZNC.m in Sources */,
+				B7C1D40C3C263D259DAAA659 /* IRCClient+Bouncer.m in Sources */,
 				4C9C2DCF311FD2AE36EE722D /* HistoricLogFileStorageModel.xcdatamodeld in Sources */,
 				4C06E63820EC55B90055D09A /* TXAppearance.m in Sources */,
 				4C06E63920EC55B90055D09A /* TXApplication.m in Sources */,

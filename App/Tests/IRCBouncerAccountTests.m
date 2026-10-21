@@ -184,6 +184,39 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(server.serverPassword, @"dan/libera:secret");
 }
 
+/* soju's list as captured from soju (3dec1ed44), then changes as its
+ notifications send them: only what changed, an empty value removes an
+ attribute, "*" removes the network */
+- (void)testSojuNetworkListFollowsItsReplies
+{
+	IRCBouncerNetworkList *list = [IRCBouncerNetworkList new];
+
+	XCTAssertEqual([list updateNetwork:@"1" attributes:@"realname=sojudan;tls=0;host=127.0.0.1;port=6667;name=Ergo;state=connected;nickname=sojudan"], IRCBouncerNetworkChangeAdded);
+	XCTAssertEqual([list updateNetwork:@"2" attributes:@"nickname=sojudan2;realname=sojudan2;tls=0;host=127.0.0.1;port=6667;name=Ergo\\sTwo;state=connected"], IRCBouncerNetworkChangeAdded);
+
+	NSArray *names = [list.networks valueForKey:@"name"];
+	NSArray *expectedNames = @[@"Ergo", @"Ergo Two"];
+
+	XCTAssertEqualObjects(names, expectedNames);
+
+	XCTAssertEqual([list updateNetwork:@"2" attributes:@"state=disconnected;error=Connection\\srefused"], IRCBouncerNetworkChangeChanged);
+
+	IRCBouncerNetwork *network = [list networkWithIdentifier:@"2"];
+
+	XCTAssertEqualObjects(network.name, @"Ergo Two");
+	XCTAssertEqualObjects(network.state, @"disconnected");
+	XCTAssertEqualObjects(network.attributes[@"error"], @"Connection refused");
+	XCTAssertEqualObjects(network.attributes[@"nickname"], @"sojudan2");
+
+	XCTAssertEqual([list updateNetwork:@"2" attributes:@"error="], IRCBouncerNetworkChangeChanged);
+	XCTAssertNil([list networkWithIdentifier:@"2"].attributes[@"error"]);
+
+	XCTAssertEqual([list updateNetwork:@"1" attributes:@"*"], IRCBouncerNetworkChangeRemoved);
+	XCTAssertEqual([list updateNetwork:@"1" attributes:@"*"], IRCBouncerNetworkChangeNone);
+	XCTAssertEqual(list.networks.count, 1);
+	XCTAssertNil([list networkWithIdentifier:@"1"]);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

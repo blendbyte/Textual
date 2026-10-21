@@ -41,7 +41,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class TLOSpokenNotification;
-@class IRCAddressBookUserTrackingContainer, IRCBouncerAccount, IRCTimedCommand, IRCUserMutable;
+@class IRCAddressBookUserTrackingContainer, IRCBouncerAccount, IRCBouncerNetworkList, IRCTimedCommand, IRCUserMutable;
 
 enum {
 	ClientIRCv3SupportedCapabilitySASLGeneric			= 1 << 22,
@@ -52,6 +52,14 @@ enum {
 	/* 1 << 27 is ClientIRCv3SupportedCapabilityZNCPlaybackModule (IRCClient.h, which has the bit allocation table) */
 	ClientIRCv3SupportedCapabilityPlanioPlayback		= 1 << 28  // YES if the plan.io vendor specific CAP supported.
 };
+
+enum : unsigned long long {
+	ClientIRCv3SupportedCapabilityBouncerNetworks		= 1ULL << 38, // soju.im/bouncer-networks
+	ClientIRCv3SupportedCapabilityBouncerNetworksNotify	= 1ULL << 39  // soju.im/bouncer-networks-notify
+};
+
+/* A soju network's list changed (object: the IRCClient; see bouncerNetworks) */
+TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 @interface IRCClient ()
 @property (nonatomic, copy, nullable) dispatch_block_t disconnectCallback;
@@ -111,6 +119,13 @@ enum {
 /* The bouncer account this server is a network of (IRCClientConfig's
  bouncerAccountIdentifier); nil for a normal server or a removed account */
 @property (readonly, nullable) IRCBouncerAccount *bouncerAccount;
+
+/* soju's networks, from the list soju sends a linked server and its changes
+ (soju.im/bouncer-networks-notify); nil until a list arrived */
+@property (readonly, nullable) IRCBouncerNetworkList *bouncerNetworks;
+
+/* BOUNCER LISTNETWORKS, when soju.im/bouncer-networks is enabled */
+- (void)requestBouncerNetworks;
 
 /* The channel list window: opened and filled, or brought forward as it is */
 - (void)showChannelList;

@@ -283,7 +283,8 @@ static BOOL _developmentConnectRequested = NO;
 
 /* textual://dev-bouncer?kind=znc|soju&host=…&port=…&tls=0|1&user=…&password=…&networks=a,b&connect=1
  adds a bouncer account and one server per network linked to it (named after
- the network), until the Add Bouncer sheet exists. */
+ the network), until the Add Bouncer sheet exists. A soju network is given as
+ id:name (1:Ergo), as soju binds by id. */
 + (void)performDevelopmentBouncerWithURL:(NSString *)location
 {
 	NSURLComponents *components = [NSURLComponents componentsWithString:location];
@@ -315,11 +316,21 @@ static BOOL _developmentConnectRequested = NO;
 			continue;
 		}
 
+		NSString *networkName = network;
+		NSString *networkIdentifier = network;
+
+		NSRange colon = [network rangeOfString:@":"];
+
+		if (colon.location != NSNotFound) {
+			networkIdentifier = [network substringToIndex:colon.location];
+			networkName = [network substringFromIndex:NSMaxRange(colon)];
+		}
+
 		IRCClientConfigMutable *config = [IRCClientConfigMutable new];
 
-		config.connectionName = network;
+		config.connectionName = networkName;
 		config.bouncerAccountIdentifier = account.uniqueIdentifier;
-		config.bouncerNetwork = network;
+		config.bouncerNetwork = networkIdentifier;
 		config.zncIgnoreConfiguredAutojoin = YES;
 
 		IRCClient *client = [worldController() createClientWithConfig:config reload:YES];

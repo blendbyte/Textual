@@ -354,4 +354,172 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#pragma mark -
+
+@implementation IRCBouncerNetwork
+
+- (instancetype)initWithIdentifier:(NSString *)networkIdentifier attributes:(NSDictionary<NSString *, NSString *> *)attributes
+{
+	NSParameterAssert(networkIdentifier != nil);
+	NSParameterAssert(attributes != nil);
+
+	if ((self = [super init])) {
+		self->_networkIdentifier = [networkIdentifier copy];
+		self->_attributes = [attributes copy];
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (NSString *)name
+{
+	NSString *name = self.attributes[@"name"];
+
+	if (name.length == 0) {
+		name = self.attributes[@"host"];
+	}
+
+	if (name.length == 0) {
+		name = self.networkIdentifier;
+	}
+
+	return name;
+}
+
+- (nullable NSString *)state
+{
+	return self.attributes[@"state"];
+}
+
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"%@ %@ (%@)", self.networkIdentifier, self.name, self.state];
+}
+
+@end
+
+#pragma mark -
+
+@interface IRCBouncerNetworkList ()
+@property (nonatomic, strong) NSMutableArray<IRCBouncerNetwork *> *networksMutable;
+@end
+
+@implementation IRCBouncerNetworkList
+
+- (instancetype)init
+{
+	if ((self = [super init])) {
+		self.networksMutable = [NSMutableArray array];
+
+		return self;
+	}
+
+	return nil;
+}
+
+- (NSArray<IRCBouncerNetwork *> *)networks
+{
+	return [self.networksMutable copy];
+}
+
+- (NSUInteger)indexOfNetworkWithIdentifier:(NSString *)networkIdentifier
+{
+	return [self.networksMutable indexOfObjectPassingTest:^BOOL(IRCBouncerNetwork *network, NSUInteger index, BOOL *stop) {
+		return [network.networkIdentifier isEqualToString:networkIdentifier];
+	}];
+}
+
+- (nullable IRCBouncerNetwork *)networkWithIdentifier:(NSString *)networkIdentifier
+{
+	NSParameterAssert(networkIdentifier != nil);
+
+	NSUInteger index = [self indexOfNetworkWithIdentifier:networkIdentifier];
+
+	if (index == NSNotFound) {
+		return nil;
+	}
+
+	return self.networksMutable[index];
+}
+
+- (IRCBouncerNetworkChange)updateNetwork:(NSString *)networkIdentifier attributes:(NSString *)attributes
+{
+	NSParameterAssert(networkIdentifier != nil);
+	NSParameterAssert(attributes != nil);
+
+	if (networkIdentifier.length == 0) {
+		return IRCBouncerNetworkChangeNone;
+	}
+
+	NSUInteger index = [self indexOfNetworkWithIdentifier:networkIdentifier];
+
+	if ([attributes isEqualToString:@"*"]) {
+		if (index == NSNotFound) {
+			return IRCBouncerNetworkChangeNone;
+		}
+
+		[self.networksMutable removeObjectAtIndex:index];
+
+		return IRCBouncerNetworkChangeRemoved;
+	}
+
+	NSMutableDictionary *merged = [NSMutableDictionary dictionary];
+
+	if (index != NSNotFound) {
+		[merged addEntriesFromDictionary:self.networksMutable[index].attributes];
+	}
+
+	[[self.class attributesFromString:attributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+		if (value.length == 0) {
+			[merged removeObjectForKey:key];
+		} else {
+			merged[key] = value;
+		}
+	}];
+
+	IRCBouncerNetwork *network = [[IRCBouncerNetwork alloc] initWithIdentifier:networkIdentifier attributes:merged];
+
+	if (index == NSNotFound) {
+		[self.networksMutable addObject:network];
+
+		return IRCBouncerNetworkChangeAdded;
+	}
+
+	self.networksMutable[index] = network;
+
+	return IRCBouncerNetworkChangeChanged;
+}
+
++ (NSDictionary<NSString *, NSString *> *)attributesFromString:(NSString *)attributes
+{
+	NSParameterAssert(attributes != nil);
+
+	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+	/* An escaped ";" is "\:", so splitting at ";" is safe */
+	for (NSString *attribute in [attributes componentsSeparatedByString:@";"]) {
+		NSRange equalSign = [attribute rangeOfString:@"="];
+
+		NSString *key = attribute;
+		NSString *value = @"";
+
+		if (equalSign.location != NSNotFound) {
+			key = [attribute substringToIndex:equalSign.location];
+			value = [attribute substringFromIndex:NSMaxRange(equalSign)].decodedMessageTagString;
+		}
+
+		if (key.length == 0) {
+			continue;
+		}
+
+		dictionary[key] = value;
+	}
+
+	return [dictionary copy];
+}
+
+@end
+
 NS_ASSUME_NONNULL_END

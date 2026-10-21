@@ -86,4 +86,37 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
 @property (nonatomic, copy, readwrite) NSArray<NSString *> *ignoredNetworks;
 @end
 
+/* A network on a bouncer as soju describes it (soju.im/bouncer-networks):
+ an identifier that never changes and attributes such as name, state
+ (connected, connecting, disconnected), host, port, tls, nickname, error */
+@interface IRCBouncerNetwork : NSObject
+@property (readonly, copy) NSString *networkIdentifier;
+@property (readonly, copy) NSDictionary<NSString *, NSString *> *attributes;
+@property (readonly, copy) NSString *name; // the name attribute, else the host, else the identifier
+@property (readonly, copy, nullable) NSString *state;
+@end
+
+typedef NS_ENUM(NSUInteger, IRCBouncerNetworkChange) {
+	IRCBouncerNetworkChangeNone = 0,
+	IRCBouncerNetworkChangeAdded,
+	IRCBouncerNetworkChangeChanged,
+	IRCBouncerNetworkChangeRemoved
+};
+
+/* The networks of a bouncer, kept from BOUNCER NETWORK messages */
+@interface IRCBouncerNetworkList : NSObject
+@property (readonly, copy) NSArray<IRCBouncerNetwork *> *networks; // in the order the bouncer named them
+
+- (nullable IRCBouncerNetwork *)networkWithIdentifier:(NSString *)networkIdentifier;
+
+/* BOUNCER NETWORK <netid> <attributes>: "*" removes the network; otherwise
+ the attributes are added to it (a new one is added), and an attribute
+ without a value is removed */
+- (IRCBouncerNetworkChange)updateNetwork:(NSString *)networkIdentifier attributes:(NSString *)attributes;
+
+/* "name=My\sNetwork;state=connected" as a dictionary, values unescaped as
+ message tags; an attribute without a value is an empty string */
++ (NSDictionary<NSString *, NSString *> *)attributesFromString:(NSString *)attributes;
+@end
+
 NS_ASSUME_NONNULL_END

@@ -74,7 +74,8 @@ typedef NS_ENUM(NSUInteger, IRCClientDisconnectMode) {
   35     public: draft/pre-away
   36     public: draft/account-registration
   37     public: draft/message-redaction
-  38+    new values, written as 1ULL << n (1 << 31 overflows an int) */
+  38–39  private: soju.im/bouncer-networks, -notify
+  40+    new values, written as 1ULL << n (1 << 31 overflows an int) */
 typedef NS_OPTIONS(NSUInteger, ClientIRCv3SupportedCapability) {
 	ClientIRCv3SupportedCapabilityAwayNotify			= 1 << 0, // YES if away-notify CAP supported
 	ClientIRCv3SupportedCapabilityBatch					= 1 << 1, // YES if batch CAP supported

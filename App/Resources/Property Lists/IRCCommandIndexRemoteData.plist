@@ -5,7 +5,7 @@
 	<key>Reserved Information</key>
 	<dict>
 		<key>Next Index Value</key>
-		<real>1068</real>
+		<real>1069</real>
 	</dict>
 	<key>account</key>
 	<dict>
@@ -31,6 +31,11 @@
 	<dict>
 		<key>indexValue</key>
 		<real>1054</real>
+	</dict>
+	<key>bouncer</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1068</integer>
 	</dict>
 	<key>cap</key>
 	<dict>

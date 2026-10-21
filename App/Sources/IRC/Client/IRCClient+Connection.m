@@ -737,6 +737,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 				break;
 			}
+			case IRCRemoteCommandBouncer: // Command: BOUNCER (soju.im/bouncer-networks)
+			{
+				[self receiveBouncer:message];
+
+				break;
+			}
 			case IRCRemoteCommandFail: // Commands: FAIL, WARN, NOTE (standard-replies)
 			case IRCRemoteCommandWarn:
 			case IRCRemoteCommandNote:

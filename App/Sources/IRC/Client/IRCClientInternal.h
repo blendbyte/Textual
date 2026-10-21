@@ -47,6 +47,7 @@
 @class TDCServerChannelListDialog, TLOFileLogger, TLOTimer;
 @class IRCSASLECDSAKey, IRCSASLSCRAM;
 @class IRCUserList;
+@class IRCBouncerNetworkList;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -177,6 +178,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSData *customIconSourceData; // the data it was drawn from
 @property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
+@property (nonatomic, strong, nullable) IRCBouncerNetworkList *bouncerNetworksReceived; // backs bouncerNetworks
+@property (nonatomic, strong, nullable) IRCBouncerNetworkList *bouncerNetworksBatchList; // while a soju.im/bouncer-networks batch is processed
 @property (nonatomic, strong, nullable) TLOFileLogger *logFile;
 @property (nonatomic, strong) TLOTimer *autojoinTimer;
 @property (nonatomic, strong) TLOTimer *autojoinNextJoinTimer;
@@ -252,6 +255,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)notifyText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text;
 @end
 
+@interface IRCClient (BouncerInternal)
+- (BOOL)shouldRequestBouncerCapability:(ClientIRCv3SupportedCapability)capability;
+- (nullable NSString *)bouncerSASLUsername; // a server linked to a soju account logs in with the account's, until that succeeded
+- (nullable NSString *)bouncerSASLPassword;
+- (void)bindBouncerNetworkBeforeRegistration; // right before CAP END
+- (void)resetBouncerNetworks;
+- (void)receiveBouncer:(IRCMessage *)m;
+- (void)processBouncerNetworksBatchMessage:(IRCMessageBatchMessage *)batchMessage;
+@end
+
 @interface IRCClient (ZNCInternal)
 - (void)zncPlaybackClearChannel:(IRCChannel *)channel;
 - (BOOL)isSafeToPostNotificationForMessage:(IRCMessage *)message inChannel:(nullable IRCChannel *)channel;
@@ -320,6 +333,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface IRCClient (ReceiveCommandsInternal)
 - (BOOL)filterBatchCommandIncomingData:(IRCMessage *)m;
+- (void)recursivelyProcessBatchMessage:(IRCMessageBatchMessage *)batchMessage;
 - (void)receiveBatch:(IRCMessage *)m;
 - (void)receiveError:(IRCMessage *)m;
 - (void)receiveInvite:(IRCMessage *)m;

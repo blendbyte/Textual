@@ -625,7 +625,8 @@ cmd_help() {
 	  bouncer-account key=value …
 	                        Add a bouncer account and a server per network linked to it
 	                        (kind=znc|soju host port tls=0|1 user password name
-	                        networks=a,b connect=1)
+	                        networks=a,b connect=1; soju networks as id:name, e.g.
+	                        networks='1:Ergo,2:Ergo Two')
 	  bouncer build         Build soju and ZNC for the test VM (vm-bundle does too); in the
 	                        VM, vm-dev bouncer start|stop|status|log runs them (soju 6670,
 	                        TLS 6671; ZNC 6672, TLS 6673; user dan, password textual)
