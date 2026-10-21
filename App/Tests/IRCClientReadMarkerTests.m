@@ -68,6 +68,19 @@ NS_ASSUME_NONNULL_BEGIN
 	return [NSDate dateWithTimeIntervalSince1970:(1700000000 + seconds)];
 }
 
+- (IRCChannel *)windowNamed:(NSString *)name type:(IRCChannelType)type
+{
+	IRCChannelConfigMutable *config = [[IRCChannelConfig seedWithName:name] mutableCopy];
+
+	config.type = type;
+
+	IRCChannel *channel = [[IRCChannel alloc] initWithConfig:config];
+
+	channel.associatedClient = self.client;
+
+	return channel;
+}
+
 - (BOOL)apply:(NSString *)timestamp
 {
 	NSString *line = [NSString stringWithFormat:@":irc.test MARKREAD #textual timestamp=%@", timestamp];
@@ -88,6 +101,22 @@ NS_ASSUME_NONNULL_BEGIN
 	self.channel.readMarkerTime = [self dateAt:20];
 
 	XCTAssertNil([self.client readMarkerRequestForChannel:self.channel]);
+}
+
+/* No marker for what the server can't take as a target */
+- (void)testNoRequestForBouncerModulesOrUtilityWindows
+{
+	IRCChannel *person = [self windowNamed:@"carol" type:IRCChannelTypePrivateMessage];
+	IRCChannel *module = [self windowNamed:@"*playback" type:IRCChannelTypePrivateMessage];
+	IRCChannel *utility = [self windowNamed:@"Server Traffic" type:IRCChannelTypeUtility];
+
+	for (IRCChannel *channel in @[person, module, utility]) {
+		[self.client readMarkerNoteMessageAt:[self dateAt:20] inChannel:channel];
+	}
+
+	XCTAssertEqualObjects([self.client readMarkerRequestForChannel:person], @"MARKREAD carol timestamp=2023-11-14T22:13:40.000Z");
+	XCTAssertNil([self.client readMarkerRequestForChannel:module]);
+	XCTAssertNil([self.client readMarkerRequestForChannel:utility]);
 }
 
 /* Another client's marker clears the badges only when it covers everything shown */

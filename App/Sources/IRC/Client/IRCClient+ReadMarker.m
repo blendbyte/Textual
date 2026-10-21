@@ -35,6 +35,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "NSStringHelper.h"
 #import "TXGlobalModelsPrivate.h"
 #import "TXMasterControllerPrivate.h"
 #import "TVCDockIconPrivate.h"
@@ -97,9 +98,32 @@ static NSTimeInterval const IRCClientReadMarkerDelay = 2.0;
 	}
 }
 
+/* Channels and people only: not utility windows (Server Traffic) nor a
+ bouncer's modules (*status, *playback), which the server refuses */
+- (BOOL)readMarkerCanTarget:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if (channel.isChannel) {
+		return YES;
+	}
+
+	if (channel.isPrivateMessage == NO) {
+		return NO;
+	}
+
+	NSString *name = channel.name;
+
+	return ([name hasPrefix:@"*"] == NO && [name isHostmaskNicknameOn:self]);
+}
+
 - (nullable NSString *)readMarkerRequestForChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(channel != nil);
+
+	if ([self readMarkerCanTarget:channel] == NO) {
+		return nil;
+	}
 
 	NSDate *newestMessageTime = channel.newestMessageTime;
 
