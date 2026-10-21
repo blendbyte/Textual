@@ -28,6 +28,15 @@ ERGO_SHA256_ARM64="1bd97a0917036061e2dcdfc29149c2e252e3bc856282e0956afa2aaaa54dd
 ERGO_SHA256_X86_64="68b388a49034257082ee0292703874630a2c10cfba86c73bb2adc37b515c57a3"
 ERGO_DIR="${DATA}/ergo"
 
+# Test bouncers for the VM (bouncer accounts): built here, run only in the VM
+SOJU_REPOSITORY="https://codeberg.org/emersion/soju.git"
+SOJU_COMMIT="3dec1ed4474263ed6057abb665731e61b2da1b11"
+ZNC_VERSION="1.10.3"
+ZNC_SHA256="68f3f6641b480c041010c5596e1234043e05c9137eda06233845017603095f5b"
+BOUNCER_DIR="${DATA}/bouncers"
+# Where ZNC looks for its modules in the VM (the bundle lands in ~/TextualTest)
+ZNC_VM_PREFIX="/Users/textual/TextualTest/data/bouncers/znc"
+
 # Standalone Python for the VM, which has no developer tools (python-build-standalone)
 PYTHON_RELEASE="20261003"
 PYTHON_VERSION="3.13.16"
@@ -223,6 +232,84 @@ ergo_install() {
 	mv "${staging}" "${ERGO_DIR}"
 }
 
+# soju, without C code (it then runs on macOS 14 too)
+soju_build() {
+	[ -x "${BOUNCER_DIR}/soju/soju" ] && return
+
+	command -v go > /dev/null || die "soju needs Go (brew install go)"
+
+	local source="${DATA}/src/soju"
+
+	if [ ! -d "${source}/.git" ]; then
+		echo "Downloading soju…"
+		mkdir -p "${DATA}/src"
+		git clone -q "${SOJU_REPOSITORY}" "${source}"
+	fi
+
+	git -C "${source}" fetch -q origin "${SOJU_COMMIT}" 2> /dev/null || true
+	git -C "${source}" checkout -q "${SOJU_COMMIT}"
+
+	echo "Building soju…"
+	mkdir -p "${BOUNCER_DIR}/soju.partial"
+	(cd "${source}" &&
+		CGO_ENABLED=0 go build -tags moderncsqlite -trimpath -o "${BOUNCER_DIR}/soju.partial/soju" ./cmd/soju &&
+		CGO_ENABLED=0 go build -tags moderncsqlite -trimpath -o "${BOUNCER_DIR}/soju.partial/sojuctl" ./cmd/sojuctl)
+
+	rm -rf "${BOUNCER_DIR}/soju"
+	mv "${BOUNCER_DIR}/soju.partial" "${BOUNCER_DIR}/soju"
+}
+
+# ZNC without Perl, Python, Tcl, translations or Argon2, OpenSSL built in:
+# only system libraries, for macOS 14 and later
+znc_build() {
+	[ -x "${BOUNCER_DIR}/znc/bin/znc" ] && return
+
+	command -v cmake > /dev/null || die "ZNC needs CMake (brew install cmake)"
+
+	local openssl
+	openssl=$(brew --prefix openssl@3 2> /dev/null) || die "ZNC needs OpenSSL (brew install openssl@3)"
+
+	local work="${DATA}/src/znc-${ZNC_VERSION}"
+
+	rm -rf "${work}"
+	mkdir -p "${work}/source"
+
+	echo "Downloading ZNC ${ZNC_VERSION}…"
+	curl -fsSL -o "${work}/znc.tar.gz" "https://znc.in/releases/znc-${ZNC_VERSION}.tar.gz"
+
+	echo "${ZNC_SHA256}  ${work}/znc.tar.gz" | shasum -a 256 -c - > /dev/null ||
+		die "ZNC download does not match its checksum"
+
+	tar -xzf "${work}/znc.tar.gz" -C "${work}/source" --strip-components=1
+
+	echo "Building ZNC…"
+	(cd "${work}" && mkdir build && cd build &&
+		cmake ../source -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+			-DCMAKE_INSTALL_PREFIX="${ZNC_VM_PREFIX}" -DWANT_OPENSSL=YES -DOPENSSL_USE_STATIC_LIBS=TRUE -DOPENSSL_ROOT_DIR="${openssl}" \
+			-DWANT_ZLIB=YES -DWANT_CYRUS=NO -DWANT_ARGON=NO -DWANT_ICU=NO -DWANT_I18N=NO -DWANT_PERL=NO -DWANT_PYTHON=NO -DWANT_TCL=NO -DWANT_SWIG=NO > ../cmake.log &&
+		make -j4 > ../make.log &&
+		make install DESTDIR="${work}/stage" > ../install.log) || die "ZNC did not build; see ${work}/*.log"
+
+	rm -rf "${BOUNCER_DIR}/znc"
+	mkdir -p "${BOUNCER_DIR}"
+	mv "${work}/stage${ZNC_VM_PREFIX}" "${BOUNCER_DIR}/znc"
+	rm -rf "${work}"
+}
+
+# Built here; started only in the test VM (vm-dev bouncer start)
+cmd_bouncer() {
+	case "${1:-build}" in
+		build)
+			soju_build
+			znc_build
+			echo "soju and ZNC are built; vm-bundle packs them, vm-dev bouncer start runs them in the VM."
+			;;
+		*)
+			die "the bouncers run only in the test VM: vm-dev bouncer start|stop|status|log"
+			;;
+	esac
+}
+
 ergo_pid() { pgrep -f "^$(regex_escape "${ERGO_DIR}")/ergo run" || true; }
 
 cmd_server() {
@@ -284,6 +371,8 @@ python_download() {
 cmd_vm-bundle() {
 	check_app
 	ergo_install
+	soju_build
+	znc_build
 	mkdir -p "${DATA}"
 
 	local python_archive
@@ -297,7 +386,10 @@ cmd_vm-bundle() {
 	local bundle="${staging}/TextualTest"
 	mkdir -p "${bundle}/Development" "${bundle}/data"
 
-	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/test-proxy.py" "${ROOT}/Development/ergo-config.py" "${ROOT}/Development/window-id.swift" "${bundle}/Development/"
+	cp "${ROOT}/Development/dev" "${ROOT}/Development/scripted-irc-server.py" "${ROOT}/Development/test-proxy.py" "${ROOT}/Development/ergo-config.py" "${ROOT}/Development/window-id.swift" "${ROOT}/Development/bouncers.sh" "${ROOT}/Development/bouncer-probe.py" "${bundle}/Development/"
+	# The programs only: vm-dev bouncer start writes their configuration and data
+	mkdir -p "${bundle}/data/bouncers"
+	cp -R "${BOUNCER_DIR}/soju" "${BOUNCER_DIR}/znc" "${bundle}/data/bouncers/"
 	# Without the database and lock of the Ergo running here; vm-dev creates its own
 	rsync -a --exclude ircd.db --exclude ircd.lock "${ERGO_DIR}/" "${bundle}/data/ergo/"
 	# The configuration as ergo-config.py makes it now, not as it was at install
@@ -347,6 +439,21 @@ cmd_vm-bundle() {
 			case "${2:-start}" in
 				start) job ergo "${ergo}" "${ergo}/ergo" run --conf ircd.yaml; sleep 1; exec "${here}/Development/dev" server status ;;
 				stop) launchctl bootout "${domain}/com.textualapp.app.dev.vm.ergo" 2> /dev/null; exit 0 ;;
+			esac ;;
+		bouncer)
+			bouncers="${data}/bouncers"
+			case "${2:-start}" in
+				start)
+					sh "${here}/Development/bouncers.sh" setup "${bouncers}" || exit 1
+					job soju "${bouncers}/soju" "${bouncers}/soju/soju" -config "${bouncers}/soju/config"
+					job znc "${bouncers}/znc-data" "${bouncers}/znc/bin/znc" --datadir "${bouncers}/znc-data" --foreground
+					sleep 2
+					exec sh "${here}/Development/bouncers.sh" accounts "${bouncers}" ;;
+				stop)
+					launchctl bootout "${domain}/com.textualapp.app.dev.vm.soju" 2> /dev/null
+					launchctl bootout "${domain}/com.textualapp.app.dev.vm.znc" 2> /dev/null
+					exit 0 ;;
+				status|log) exec sh "${here}/Development/bouncers.sh" "$2" "${bouncers}" ;;
 			esac ;;
 		scripted)
 			shift
@@ -501,6 +608,9 @@ cmd_help() {
 	  screenshot [file]     Capture Textual Dev's window
 	  server [start|stop|status]
 	                        Local Ergo server on 127.0.0.1 (6667, TLS 6697)
+	  bouncer build         Build soju and ZNC for the test VM (vm-bundle does too); in the
+	                        VM, vm-dev bouncer start|stop|status|log runs them (soju 6670,
+	                        TLS 6671; ZNC 6672, TLS 6673; user dan, password textual)
 	  scripted <scenario>   Scripted server for edge cases (scripted --help)
 	  proxy socks5|http [--port n] [--auth user:password]
 	                        Test proxy on 127.0.0.1 that logs what it is asked to connect to
@@ -517,6 +627,6 @@ command="${1:-help}"
 shift || true
 
 case "${command}" in
-	build|run|start|stop|reset|logs|server|scripted|proxy|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
+	build|run|start|stop|reset|logs|server|bouncer|scripted|proxy|connect|input|config|send|eval|screenshot|vm-bundle|help) "cmd_${command}" "$@" ;;
 	*) cmd_help; exit 1 ;;
 esac
