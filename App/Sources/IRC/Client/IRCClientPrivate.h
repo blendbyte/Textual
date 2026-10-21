@@ -108,6 +108,12 @@ enum {
 
 - (nullable NSString *)formatNotificationToSpeak:(TLOSpokenNotification *)notification;
 
+/* The channel list window: opened and filled, or brought forward as it is */
+- (void)showChannelList;
+
+/* LIST with what follows /list (a mask such as *linux* or >50), or all */
+- (void)requestChannelListMatching:(nullable NSString *)arguments;
+
 /* draft/read-marker: tells the server a channel being viewed is read up to its newest message */
 - (void)markChannelAsRead:(IRCChannel *)channel;
 

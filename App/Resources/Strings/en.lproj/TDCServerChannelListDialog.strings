@@ -35,5 +35,32 @@
  *
  *********************************************************************** */
 
-"7qf-r0" = "Channel List for “%@”";
-"ct4-wh" = "Channel List — %@ Public Channels"; // %@ = channel count.
+"cl-title" = "Channels on %@";
+"cl-search" = "Search names and topics";
+"cl-refresh" = "Refresh";
+
+"cl-loading" = "Loading… %@ channels so far";
+"cl-loading-0" = "Loading channels…";
+"cl-count" = "%@ channels";
+"cl-count-of" = "%1$@ of %2$@ channels";
+"cl-updated" = "%1$@ · updated %2$@";
+
+"cl-col-channel" = "Channel";
+"cl-col-people" = "People";
+"cl-col-topic" = "Topic";
+"cl-joined" = "Joined";
+
+"cl-join" = "Join";
+"cl-join1" = "Join %@";
+"cl-joinn" = "Join %ld Channels";
+"cl-show" = "Show %@";
+"cl-limit" = "You can join up to 8 channels at a time.";
+
+"cl-select" = "Select a channel to read its topic.";
+"cl-n-selected" = "%ld channels selected";
+"cl-no-topic" = "No topic";
+"cl-people1" = "1 person";
+"cl-peoplen" = "%@ people";
+
+"cl-empty-search" = "No channels match “%@”";
+"cl-empty-none" = "This server lists no public channels.";

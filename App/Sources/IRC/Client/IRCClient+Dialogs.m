@@ -216,6 +216,18 @@ NS_ASSUME_NONNULL_BEGIN
 	[windowController() addWindowToWindowList:channelListDialog withDescription:[self channelListDialogWindowKey]];
 }
 
+- (void)showChannelList
+{
+	/* Already open: the list it has stays (Refresh fetches it again) */
+	BOOL isOpen = ([self channelListDialog] != nil);
+
+	[self createChannelListDialog];
+
+	if (isOpen == NO) {
+		[self requestChannelList];
+	}
+}
+
 - (void)serverChannelListDialogOnUpdate:(TDCServerChannelListDialog *)sender
 {
 	[self requestChannelList];

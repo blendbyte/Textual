@@ -580,6 +580,52 @@ async def scenario_dcc_receive(client):
 	remove_downloads(name)
 
 
+async def scenario_list_large(client):
+	"""(Channel List) LIST answers with 30,000 channels over about 5 s (some topics formatted, 500 about linux);
+	"LIST *linux*" with only those. Answers every LIST for three minutes."""
+	words = ["chat", "help", "music", "games", "dev", "news", "art", "books", "travel", "food"]
+	channels = []
+
+	for index in range(30_000):
+		word = words[index % len(words)]
+		name = f"#linux-{index}" if index % 60 == 0 else f"#{word}-{index}"
+		people = (index * 7919) % 2000 + 1
+		topic = f"\x02{word.title()}\x02 room {index}, see https://example.com/{index}" if index % 3 == 0 else f"Talk about {word} here"
+		channels.append((name, people, topic))
+
+	end = time.monotonic() + 180
+	answered = 0
+
+	while time.monotonic() < end:
+		count = len(client.received)
+
+		if not await client.collect(0.5):
+			break
+
+		for line in client.received[count:]:
+			command, _, rest = line.partition(" ")
+
+			if command.upper() != "LIST":
+				continue
+
+			mask = rest.strip().strip("*").lower()
+			listed = [entry for entry in channels if mask in entry[0]] if mask else channels
+
+			lines = [f":{SERVER} 321 {client.nickname} Channel :Users  Name"]
+			lines += [f":{SERVER} 322 {client.nickname} {name} {people} :{topic}" for (name, people, topic) in listed]
+			lines += [f":{SERVER} 323 {client.nickname} :End of /LIST"]
+
+			# Over about five seconds, as a big network's list arrives
+			for start in range(0, len(lines), 2000):
+				await client.send_raw(("\r\n".join(lines[start:start + 2000]) + "\r\n").encode())
+				await asyncio.sleep(0.3)
+
+			answered += 1
+			log("--", f"LIST {rest.strip() or '(all)'}: {len(listed)} channels")
+
+	result(answered > 0, f"answered {answered} LIST requests")
+
+
 async def scenario_dcc_slow(client):
 	"""(DCC) alice offers 3 MB sent at 150 KB/s (about 20 s), to watch the progress."""
 	name = "textual-dev-dcc-slow.bin"
@@ -2877,6 +2923,7 @@ SCENARIOS = {
 	"conn-tls": scenario_conn_tls,
 	"dcc-receive": scenario_dcc_receive,
 	"dcc-slow": scenario_dcc_slow,
+	"list-large": scenario_list_large,
 	"dcc-oversized": scenario_dcc_oversized,
 	"dcc-dotfile": scenario_dcc_dotfile,
 	"dcc-resume-foreign": scenario_dcc_resume_foreign,

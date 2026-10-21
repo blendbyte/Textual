@@ -1185,11 +1185,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)requestChannelList
 {
+	[self requestChannelListMatching:nil];
+}
+
+- (void)requestChannelListMatching:(nullable NSString *)arguments
+{
 	if (self.isLoggedIn == NO) {
 		return;
 	}
 
-	[self send:@"LIST", nil];
+	arguments = arguments.trim;
+
+	/* Not every server says when a list starts (RPL_LISTSTART) */
+	[[self channelListDialog] clear];
+
+	if (arguments.length == 0) {
+		[self send:@"LIST", nil];
+	} else {
+		[self sendLine:[@"LIST " stringByAppendingString:arguments]];
+	}
 }
 
 - (void)sendPassword:(NSString *)password

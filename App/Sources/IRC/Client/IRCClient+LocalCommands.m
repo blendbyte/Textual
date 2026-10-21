@@ -1492,13 +1492,11 @@ static NSUInteger _aliasDepth = 0;
 {
 	NSAssertReturn(self.isLoggedIn);
 
-	TDCServerChannelListDialog *channelListDialog = [self channelListDialog];
+	/* Opened, or brought forward when it's behind */
+	[self createChannelListDialog];
 
-	if (channelListDialog == nil) {
-		[self createChannelListDialog];
-	}
-
-	[self requestChannelList];
+	/* Typed: the list again, with what follows /list for the server */
+	[self requestChannelListMatching:context.stringIn.string];
 }
 
 /* M / MODE */

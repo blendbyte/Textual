@@ -45,12 +45,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol TDCServerChannelListDialogDelegate;
 
+/* One channel of the list, as the server sent it */
+@interface TDCServerChannelListDialogEntry : NSObject
+@property (nonatomic, copy) NSString *channelName;
+@property (nonatomic, assign) NSUInteger channelMemberCount;
+@property (nonatomic, copy) NSString *channelTopic; // With IRC formatting
+@end
+
 @interface TDCServerChannelListDialog : TDCWindowBase <TDCClientPrototype>
 @property (nonatomic, assign) BOOL contentAlreadyReceived;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithClient:(IRCClient *)client NS_DESIGNATED_INITIALIZER;
 
+/* A new list is coming: empties the window and shows it loading */
 - (void)clear;
 
 - (void)addChannel:(NSString *)channel count:(NSUInteger)count topic:(nullable NSString *)topic;

@@ -146,9 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[u createChannelListDialog];
-
-	[u requestChannelList];
+	[u showChannelList];
 }
 
 - (void)addServer:(nullable id)sender

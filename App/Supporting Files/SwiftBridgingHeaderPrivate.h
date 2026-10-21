@@ -67,6 +67,7 @@
 #import "IRCISupportInfo.h"
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
+#import "TDCServerChannelListDialogPrivate.h"
 
 // TLOLinkParser.swift
 #import "TVCLogLine.h"
