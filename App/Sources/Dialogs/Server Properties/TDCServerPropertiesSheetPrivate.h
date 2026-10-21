@@ -41,6 +41,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class IRCBouncerAccount;
+
 @class IRCClient, IRCClientConfig;
 
 typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
@@ -72,6 +74,10 @@ typedef NS_ENUM(NSUInteger, TDCServerPropertiesSheetSelection) {
 
 /* A new server, filled in (before -startWithSelection:) */
 - (void)fillInNewServer:(IRCClientConfig *)config;
+
+/* For the Server page of a network going through a bouncer */
+- (nullable IRCBouncerAccount *)bouncerAccountWithIdentifier:(NSString *)accountIdentifier NS_SWIFT_NAME(bouncerAccount(withIdentifier:));
+- (void)editBouncerAccount:(IRCBouncerAccount *)account NS_SWIFT_NAME(editBouncerAccount(_:)); // the Edit Bouncer sheet on this one
 @end
 
 @protocol TDCServerPropertiesSheetDelegate <NSObject>

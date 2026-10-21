@@ -78,9 +78,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *bouncerAccountIdentifier;
 @property (nonatomic, copy, readwrite, nullable) NSString *bouncerNetwork;
 
-/* A normal server again: the account's address, port, TLS and login (for ZNC
- the network's "user/network:password") as its only server */
-- (void)unlinkFromBouncerAccount:(IRCBouncerAccount *)account;
+/* A normal server again: the account's address, port, TLS and login as its
+ only server; ZNC's as the server password ("user/network:password"), soju's
+ as the server password and the username "user/network" (the server's name) */
+- (void)unlinkFromBouncerAccount:(IRCBouncerAccount *)account NS_SWIFT_NAME(unlinkFromBouncerAccount(_:));
+
+/* The same for a server whose link is already gone (Server Properties' Unlink) */
+- (void)takeLoginOfBouncerAccount:(IRCBouncerAccount *)account network:(nullable NSString *)network;
 
 /* Chosen in Server Properties: also unsets -connectionPrefersIPv4 */
 - (void)setAddressTypeChosenByUser:(IRCConnectionAddressType)addressType;

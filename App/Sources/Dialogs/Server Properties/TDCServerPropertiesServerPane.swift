@@ -60,6 +60,10 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 	@Published var fallbackServers: [ServerPropertiesFallbackServer] = []
 	@Published private var forgottenHosts: [String] = [] // forgotten on Save
 
+	/* A network going through a bouncer: address, port and login come from its account */
+	@Published private(set) var bouncerAccountIdentifier: String?
+	@Published var unlinksFromBouncer = false // on Save; the login is taken from the account then
+
 	/* Errors show once Save found one; before, only for what was typed */
 	@Published var showsAllErrors = false
 	@Published private var editedFields: Set<String> = []
@@ -83,6 +87,9 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 
 		primaryServer = config.serverList.first
 
+		bouncerAccountIdentifier = config.bouncerAccountIdentifier
+		unlinksFromBouncer = false
+
 		fallbackServers = config.serverList.dropFirst().map { ServerPropertiesFallbackServer(server: $0) }
 
 		loadPrimaryServer()
@@ -100,6 +107,11 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 
 		config.serverList = serverList
 
+		if (unlinksFromBouncer) {
+			config.bouncerAccountIdentifier = nil
+			config.bouncerNetwork = nil
+		}
+
 		config.customIcon = customIcon
 
 		let policies = IRCStrictTransportSecurity.sharedPolicies
@@ -111,7 +123,34 @@ final class ServerPropertiesServerPane: TDCServerPropertiesPane, ObservableObjec
 
 	override var hasInvalidField: Bool
 	{
-		(nameError != nil || addressError != nil || portError != nil)
+		/* A bouncer's network has no address of its own to check */
+		(nameError != nil || (bouncerAccountIdentifier == nil && (addressError != nil || portError != nil)))
+	}
+
+	var bouncerAccount: IRCBouncerAccount?
+	{
+		guard let identifier = bouncerAccountIdentifier else {
+			return nil
+		}
+
+		return propertiesSheet?.bouncerAccount(withIdentifier: identifier)
+	}
+
+	/// "soju at bnc.example.com as dan · network “OFTC”"
+	func bouncerDescription(_ account: IRCBouncerAccount) -> String
+	{
+		let kind = ((account.kind == .ZNC) ? "ZNC" : "soju")
+
+		return ServerPropertiesText("spp-bnc-desc", kind, account.serverAddress, account.username, name)
+	}
+
+	func editBouncer()
+	{
+		guard let account = bouncerAccount else {
+			return
+		}
+
+		propertiesSheet?.editBouncerAccount(account)
 	}
 
 	override func showInvalidField()
@@ -872,42 +911,47 @@ struct ServerPage: View
 				}
 			}
 
-			Section {
-				ServerPropertiesField(title: ServerPropertiesText("spp-srv-addr"),
-									  help: ServerPropertiesText("spp-srv-addrh"),
-									  error: pane.shownAddressError) {
-					HStack(spacing: 6) {
-						TextField(ServerPropertiesText("spp-srv-addr"), text: pane.addressBinding, prompt: Text(verbatim: "irc.example.com"))
+			/* Through a bouncer: its address and login, not the server's own */
+			if let account = pane.bouncerAccount {
+				ServerBouncerSection(pane: pane, account: account)
+			} else {
+				Section {
+					ServerPropertiesField(title: ServerPropertiesText("spp-srv-addr"),
+										  help: ServerPropertiesText("spp-srv-addrh"),
+										  error: pane.shownAddressError) {
+						HStack(spacing: 6) {
+							TextField(ServerPropertiesText("spp-srv-addr"), text: pane.addressBinding, prompt: Text(verbatim: "irc.example.com"))
 
-						Menu {
-							ForEach(pane.networkList.listOfNetworks, id: \.networkName) { (network) in
-								Button(network.networkName) {
-									pane.chooseNetwork(network)
+							Menu {
+								ForEach(pane.networkList.listOfNetworks, id: \.networkName) { (network) in
+									Button(network.networkName) {
+										pane.chooseNetwork(network)
+									}
 								}
+							} label: {
+								Text(ServerPropertiesText("spp-srv-networks"))
 							}
-						} label: {
-							Text(ServerPropertiesText("spp-srv-networks"))
+							.menuStyle(.borderlessButton)
+							.fixedSize()
 						}
-						.menuStyle(.borderlessButton)
-						.fixedSize()
 					}
-				}
 
-				ServerPropertiesField(title: ServerPropertiesText("spp-srv-port"),
-									  help: (pane.isWebSocket ? ServerPropertiesText("spp-srv-wsh") : nil),
-									  error: pane.shownPortError) {
-					TextField(ServerPropertiesText("spp-srv-port"), text: pane.portBinding)
-						.frame(width: 80)
-				}
-				.disabled(pane.isWebSocket)
-
-				SettingToggle(title: ServerPropertiesText("spp-srv-tls"), help: ServerPropertiesText("spp-srv-tlsh"), isOn: pane.secureBinding)
+					ServerPropertiesField(title: ServerPropertiesText("spp-srv-port"),
+										  help: (pane.isWebSocket ? ServerPropertiesText("spp-srv-wsh") : nil),
+										  error: pane.shownPortError) {
+						TextField(ServerPropertiesText("spp-srv-port"), text: pane.portBinding)
+							.frame(width: 80)
+					}
 					.disabled(pane.isWebSocket)
 
-				ServerPropertiesField(title: ServerPropertiesText("spp-srv-pass"),
-									  help: ServerPropertiesText("spp-srv-passh"),
-									  error: nil) {
-					SecureField(ServerPropertiesText("spp-srv-pass"), text: pane.passwordBinding, prompt: Text(ServerPropertiesText("spp-optional")))
+					SettingToggle(title: ServerPropertiesText("spp-srv-tls"), help: ServerPropertiesText("spp-srv-tlsh"), isOn: pane.secureBinding)
+						.disabled(pane.isWebSocket)
+
+					ServerPropertiesField(title: ServerPropertiesText("spp-srv-pass"),
+										  help: ServerPropertiesText("spp-srv-passh"),
+										  error: nil) {
+						SecureField(ServerPropertiesText("spp-srv-pass"), text: pane.passwordBinding, prompt: Text(ServerPropertiesText("spp-optional")))
+					}
 				}
 			}
 
@@ -920,6 +964,50 @@ struct ServerPage: View
 			}
 		}
 		.formStyle(.grouped)
+	}
+}
+
+/// The Server page of a network going through a bouncer: the bouncer
+/// instead of address, port and password; Edit Bouncer… and Unlink
+struct ServerBouncerSection: View
+{
+	@ObservedObject var pane: ServerPropertiesServerPane
+
+	let account: IRCBouncerAccount
+
+	var body: some View
+	{
+		Section {
+			if pane.unlinksFromBouncer {
+				LabeledContent {
+					Button(ServerPropertiesText("spp-bnc-keep")) {
+						pane.unlinksFromBouncer = false
+					}
+				} label: {
+					SettingLabel(title: ServerPropertiesText("spp-bnc-unl"), help: ServerPropertiesText("spp-bnc-pend"))
+				}
+			} else {
+				LabeledContent {
+					Button(ServerPropertiesText("spp-bnc-edit")) {
+						pane.editBouncer()
+					}
+				} label: {
+					SettingLabel(title: ServerPropertiesText("spp-bnc-thru"), help: pane.bouncerDescription(account))
+				}
+
+				LabeledContent {
+					Button(ServerPropertiesText("spp-bnc-unlb")) {
+						pane.unlinksFromBouncer = true
+					}
+				} label: {
+					SettingLabel(title: ServerPropertiesText("spp-bnc-unl"), help: ServerPropertiesText("spp-bnc-unlh"))
+				}
+			}
+		} footer: {
+			if (pane.unlinksFromBouncer == false) {
+				SettingFooter(text: ServerPropertiesText("spp-bnc-note"))
+			}
+		}
 	}
 }
 

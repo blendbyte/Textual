@@ -1394,13 +1394,29 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	NSParameterAssert(account != nil);
 
-	/* A normal server again, at the same address with the same login */
-	IRCServerMutable *server = [[account serverForNetwork:self.bouncerNetwork] mutableCopy];
-
-	self.serverList = @[[server copy]];
+	[self takeLoginOfBouncerAccount:account network:self.bouncerNetwork];
 
 	self.bouncerAccountIdentifier = nil;
 	self.bouncerNetwork = nil;
+}
+
+- (void)takeLoginOfBouncerAccount:(IRCBouncerAccount *)account network:(nullable NSString *)network
+{
+	NSParameterAssert(account != nil);
+
+	/* A normal server again, at the same address with the same login */
+	IRCServerMutable *server = [[account serverForNetwork:network] mutableCopy];
+
+	/* soju: the password as PASS and the network (by its name) in the
+	 username, which soju reads from USER: a name with a space can't be
+	 told this way. Not SASL: Textual offers that to the network too. */
+	if (account.kind == IRCBouncerKindSoju) {
+		server.serverPassword = account.password;
+
+		self.username = [NSString stringWithFormat:@"%@/%@", account.username, self.connectionName];
+	}
+
+	self.serverList = @[[server copy]];
 }
 
 - (void)setNormalLeavingComment:(NSString *)normalLeavingComment

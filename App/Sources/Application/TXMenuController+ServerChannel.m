@@ -228,9 +228,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)editBouncerAccount:(IRCBouncerAccount *)account
 {
+	[self editBouncerAccount:account inWindow:nil];
+}
+
+- (void)editBouncerAccount:(IRCBouncerAccount *)account inWindow:(nullable NSWindow *)window
+{
 	NSParameterAssert(account != nil);
 
-	[windowController() popMainWindowSheetIfExists];
+	if (window == nil) {
+		[windowController() popMainWindowSheetIfExists];
+
+		window = TVCMainWindow.currentWindow;
+	}
 
 	/* The networks as a connected network of the bouncer knows them */
 	IRCBouncerNetworkList *networks = nil;
@@ -293,7 +302,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[worldController() removeBouncerAccount:currentAccount keepServers:keepServers];
 	}];
 
-	[sheet beginInWindow:TVCMainWindow.currentWindow];
+	[sheet beginInWindow:window];
 }
 
 - (void)duplicateServer:(nullable id)sender

@@ -45,6 +45,10 @@
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCServerPropertiesPanePrivate.h"
 #import "TDCServerPropertiesWindowPrivate.h"
+#import "TXGlobalModels.h"
+#import "TXMasterControllerPrivate.h"
+#import "TXMenuControllerPrivate.h"
+#import "IRCWorldPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -335,6 +339,26 @@ NS_ASSUME_NONNULL_BEGIN
 	self.config = [config mutableCopy];
 
 	[self loadConfig];
+}
+
+- (nullable IRCBouncerAccount *)bouncerAccountWithIdentifier:(NSString *)accountIdentifier
+{
+	NSParameterAssert(accountIdentifier != nil);
+
+	return [worldController() findBouncerAccountWithId:accountIdentifier];
+}
+
+- (void)editBouncerAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	NSWindow *window = self.sheet;
+
+	if (window == nil) {
+		return;
+	}
+
+	[menuController() editBouncerAccount:account inWindow:window];
 }
 
 - (void)loadConfig

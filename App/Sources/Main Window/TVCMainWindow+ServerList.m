@@ -645,9 +645,55 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 		}
 	}
 
-	self.serverListTopLevelItemsCache = items;
+	/* A gap where a section is followed by a normal server */
+	NSMutableArray *itemsWithGaps = [NSMutableArray arrayWithCapacity:(items.count + accountsShown.count)];
 
-	return items;
+	for (NSUInteger index = 0; index < items.count; index++) {
+		id item = items[index];
+
+		[itemsWithGaps addObject:item];
+
+		NSString *section = [self bouncerSectionOfTopLevelItem:item];
+
+		if (section == nil || (index + 1) >= items.count) {
+			continue;
+		}
+
+		id nextItem = items[(index + 1)];
+
+		if ([nextItem isKindOfClass:[IRCClient class]] && [self bouncerSectionOfTopLevelItem:nextItem] == nil) {
+			[itemsWithGaps addObject:[self sectionGapForAccountIdentifier:section]];
+		}
+	}
+
+	self.serverListTopLevelItemsCache = itemsWithGaps;
+
+	return itemsWithGaps;
+}
+
+- (TVCServerListSectionGap *)sectionGapForAccountIdentifier:(NSString *)accountIdentifier
+{
+	NSParameterAssert(accountIdentifier != nil);
+
+	NSMutableDictionary *headings = self.serverListBouncerHeadings;
+
+	if (headings == nil) {
+		headings = [NSMutableDictionary dictionary];
+
+		self.serverListBouncerHeadings = headings;
+	}
+
+	NSString *key = [@"gap " stringByAppendingString:accountIdentifier];
+
+	TVCServerListSectionGap *gap = headings[key];
+
+	if (gap == nil) {
+		gap = [TVCServerListSectionGap new];
+
+		headings[key] = gap;
+	}
+
+	return gap;
 }
 
 /* The same object for an account across reloads: the outline view knows its rows by object */
@@ -846,7 +892,7 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 			return NO;
 		}
 
-		return ([[serverList itemAtRow:candidate] isKindOfClass:[TVCServerListBouncerHeading class]] == NO);
+		return (TVCServerListItemIsDecoration([serverList itemAtRow:candidate]) == NO);
 	};
 
 	NSInteger step = ((row > oldRow) ? 1 : -1);
@@ -1041,7 +1087,8 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 			continue;
 		}
 
-		if ([clientList containsObject:item] == NO) {
+		/* (not the space after a section) */
+		if ([item isKindOfClass:[IRCClient class]] && [clientList containsObject:item] == NO) {
 			[clientList addObject:item];
 		}
 	}
@@ -1141,7 +1188,7 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 
 - (nullable NSTableRowView *)outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
 {
-	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
+	if (TVCServerListItemIsDecoration(item)) {
 		return [NSTableRowView new];
 	}
 
@@ -1165,6 +1212,11 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 		return 28.0;
 	}
 
+	/* And after it, before a normal server */
+	if ([item isKindOfClass:[TVCServerListSectionGap class]]) {
+		return 10.0;
+	}
+
 	if (item == nil || [item isClient]) {
 		return 25.0;
 	}
@@ -1176,6 +1228,10 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 {
 	if ([item isKindOfClass:[TVCServerListBouncerHeading class]]) {
 		return [self viewForBouncerHeading:item];
+	}
+
+	if ([item isKindOfClass:[TVCServerListSectionGap class]]) {
+		return [[NSView alloc] initWithFrame:NSZeroRect];
 	}
 
 	NSString *viewIdentifier = nil;
@@ -1218,7 +1274,7 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
-	return ([item isKindOfClass:[TVCServerListBouncerHeading class]] == NO);
+	return (TVCServerListItemIsDecoration(item) == NO);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldExpandItem:(id)item
@@ -1298,7 +1354,7 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 
 	/* Nor a bouncer's heading: clicked alone, the selection stays as it is */
 	[proposedSelectionIndexes enumerateIndexesUsingBlock:^(NSUInteger row, BOOL *stop) {
-		if ([[outlineView itemAtRow:row] isKindOfClass:[TVCServerListBouncerHeading class]]) {
+		if (TVCServerListItemIsDecoration([outlineView itemAtRow:row])) {
 			[rowsShownHere removeIndex:row];
 		}
 	}];
@@ -1378,6 +1434,10 @@ static NSString * const TVCMainWindowFoldedBouncersDefaultsKey = @"Window -> Mai
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
 	/* TODO (March 27, 2016): Support dragging multiple items */
+	if (items.count == 1 && [items[0] isKindOfClass:[TVCServerListSectionGap class]]) {
+		return NO;
+	}
+
 	if (items.count == 1) {
 		NSString *itemToken = nil;
 

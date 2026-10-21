@@ -224,6 +224,20 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(server.serverPort, 6697);
 	XCTAssertTrue(server.prefersSecuredConnection);
 	XCTAssertEqualObjects(server.serverPassword, @"dan/libera:secret");
+
+	/* soju: the network (by the server's name) in the username, the password as PASS */
+	IRCBouncerAccount *soju = [self accountOfKind:IRCBouncerKindSoju password:@"secret"];
+
+	IRCClientConfigMutable *sojuConfig = [[self configLinkedTo:soju network:@"2"] mutableCopy];
+
+	sojuConfig.connectionName = @"OFTC";
+
+	[sojuConfig unlinkFromBouncerAccount:soju];
+
+	XCTAssertNil(sojuConfig.bouncerAccountIdentifier);
+	XCTAssertEqualObjects(sojuConfig.username, @"dan/OFTC");
+	XCTAssertEqualObjects(sojuConfig.serverList.firstObject.serverAddress, @"bnc.example.com");
+	XCTAssertEqualObjects(sojuConfig.serverList.firstObject.serverPassword, @"secret");
 }
 
 /* soju's list as captured from soju (3dec1ed44), then changes as its

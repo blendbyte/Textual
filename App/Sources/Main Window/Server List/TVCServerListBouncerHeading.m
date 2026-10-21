@@ -103,6 +103,37 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 
+@implementation TVCServerListSectionGap
+
+- (BOOL)isClient
+{
+	return NO;
+}
+
+- (BOOL)isChannel
+{
+	return NO;
+}
+
+- (BOOL)isPrivateMessage
+{
+	return NO;
+}
+
+- (NSUInteger)numberOfChildren
+{
+	return 0;
+}
+
+@end
+
+BOOL TVCServerListItemIsDecoration(id _Nullable item)
+{
+	return ([item isKindOfClass:[TVCServerListBouncerHeading class]] || [item isKindOfClass:[TVCServerListSectionGap class]]);
+}
+
+#pragma mark -
+
 @interface TVCServerListBouncerHeadingView ()
 @property (nonatomic, strong) NSTextField *titleField;
 @property (nonatomic, strong) NSTextField *kindField;

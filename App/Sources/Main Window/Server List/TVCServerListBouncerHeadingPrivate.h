@@ -58,6 +58,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSUInteger numberOfChildren;
 @end
 
+/* A little space after a bouncer's section, where a normal server follows it
+ (the user: mixed order, a gap marks where a section ends) */
+@interface TVCServerListSectionGap : NSObject
+@property (readonly) BOOL isClient;
+@property (readonly) BOOL isChannel;
+@property (readonly) BOOL isPrivateMessage;
+@property (readonly) NSUInteger numberOfChildren;
+@end
+
+/* A heading or a gap: rows that aren't a server or channel, never selected */
+TEXTUAL_EXTERN BOOL TVCServerListItemIsDecoration(id _Nullable item);
+
 /* The heading's row: the bouncer's name, its kind small after it, and a chevron */
 @interface TVCServerListBouncerHeadingView : NSTableCellView
 + (NSString *)viewIdentifier;

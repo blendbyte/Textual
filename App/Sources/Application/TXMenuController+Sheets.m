@@ -53,6 +53,8 @@
 #import "TVCMemberList.h"
 #import "TVCDockIconPrivate.h"
 #import "TVCMainWindowPrivate.h"
+#import "IRCClientConfigPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
 #import "TVCMainWindowSplitView.h"
 #import "TVCMainWindowTextView.h"
 #import "TLOLicenseManagerPrivate.h"
@@ -366,7 +368,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL sameEncoding = (config.primaryEncoding == u.config.primaryEncoding);
 
+	NSString *previousAccountIdentifier = u.config.bouncerAccountIdentifier;
+
+	BOOL sameBouncer = NSObjectsAreEqual(config.bouncerAccountIdentifier, previousAccountIdentifier);
+
+	/* Unlinked on the Server page: the bouncer's login, now that every page saved */
+	if (previousAccountIdentifier && config.bouncerAccountIdentifier == nil) {
+		IRCBouncerAccount *account = [worldController() findBouncerAccountWithId:previousAccountIdentifier];
+
+		if (account) {
+			IRCClientConfigMutable *configMutable = [config mutableCopy];
+
+			[configMutable takeLoginOfBouncerAccount:account network:u.config.bouncerNetwork];
+
+			config = [configMutable copy];
+		}
+	}
+
 	[u updateConfig:config];
+
+	/* Unlinked from its bouncer: out of its section */
+	if (sameBouncer == NO) {
+		[mainWindow() reloadServerListStructure];
+	}
 
 	if (sameEncoding == NO) {
 		[mainWindow() reloadTheme];

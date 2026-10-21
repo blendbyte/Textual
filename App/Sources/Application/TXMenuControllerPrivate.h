@@ -58,8 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable IRCTreeItem *)_treeItemToMuteForMenuItem:(NSMenuItem *)menuItem;
 - (nullable IRCTreeItem *)_treeItemToPopOutForMenuItem:(NSMenuItem *)menuItem;
 
-/* The Edit Bouncer sheet for an account (Server › Edit Bouncer…, a bouncer's heading) */
+/* The Edit Bouncer sheet for an account (Server › Edit Bouncer…, a bouncer's heading),
+ or on another sheet (Server Properties) */
 - (void)editBouncerAccount:(IRCBouncerAccount *)account;
+- (void)editBouncerAccount:(IRCBouncerAccount *)account inWindow:(nullable NSWindow *)window;
 @end
 
 @interface TXMenuController (MembersPrivate)

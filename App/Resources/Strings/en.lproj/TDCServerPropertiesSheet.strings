@@ -129,8 +129,8 @@ Certificates must meet the following criteria:
 "spp-l-fallback" = "Tried in order when a server can't be reached.";
 "spp-t-uploads" = "Uploads";
 "spp-l-uploads" = "Where files go when you share them here.";
-"spp-t-znc" = "ZNC";
-"spp-l-znc" = "Options for the ZNC bouncer.";
+"spp-t-znc" = "Bouncer";
+"spp-l-znc" = "Options for ZNC and other bouncers.";
 "spp-srv-name" = "Name";
 "spp-srv-nameh" = "Shown in the server list.";
 "spp-srv-iconh" = "Shown in front of the name.";
@@ -291,3 +291,14 @@ Certificates must meet the following criteria:
 "spp-znc-missed" = "Only play back messages you missed";
 "spp-znc-missedh" = "Needs ZNC's “playback” module.";
 "spp-znc-note" = "For ZNC 1.2 and later.";
+
+/* A network going through a bouncer (the Server page) */
+"spp-bnc-thru" = "Through bouncer";
+"spp-bnc-desc" = "%@ at %@ as %@ · network “%@”";
+"spp-bnc-edit" = "Edit Bouncer…";
+"spp-bnc-note" = "Address, port, password and certificate come from the bouncer, for all its networks.";
+"spp-bnc-unl" = "Unlink from Bouncer";
+"spp-bnc-unlh" = "A normal server again, at the bouncer’s address with its own login.";
+"spp-bnc-unlb" = "Unlink";
+"spp-bnc-pend" = "Unlinked when you save: a normal server at the bouncer’s address with its own login.";
+"spp-bnc-keep" = "Keep Linked";

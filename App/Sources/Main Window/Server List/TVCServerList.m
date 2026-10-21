@@ -355,6 +355,11 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 		return [self.mainWindow serverListMenuForBouncerHeading:itemBeneathMouse];
 	}
 
+	/* Nor the space after a section */
+	if ([itemBeneathMouse isKindOfClass:[TVCServerListSectionGap class]]) {
+		return nil;
+	}
+
 	if (rowBeneathMouse >= 0) {
 		if (rowBeneathMouse != self.selectedRow || self.numberOfSelectedRows > 1) {
 			[self selectItemAtIndex:rowBeneathMouse];
