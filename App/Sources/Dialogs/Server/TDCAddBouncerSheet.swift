@@ -126,7 +126,7 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 	var linksServersAddedByHand = false
 
 	/* A bouncer host to sign up with, under the login */
-	var hostingOfferURL: URL?
+	@Published var hostingOfferURL: URL?
 
 	private let existingClient: (IRCBouncerNetwork, IRCBouncerAccount) -> IRCClient?
 	private let add: (IRCBouncerAccount, [IRCBouncerNetwork], [String: IRCClient], Bool) -> Void
@@ -339,7 +339,7 @@ final class AddBouncerSheet: NSObject
 	{
 		model = AddBouncerModel(existingClient: existingClient, add: add, addAsServer: addAsServer)
 
-		window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: AddBouncerView.width, height: AddBouncerView.height),
+		window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: AddBouncerView.width, height: AddBouncerView.height(showingOffer: false)),
 						  styleMask: [.titled],
 						  backing: .buffered,
 						  defer: true)
@@ -381,7 +381,11 @@ final class AddBouncerSheet: NSObject
 	@objc var hostingOfferURL: URL?
 	{
 		get { model.hostingOfferURL }
-		set { model.hostingOfferURL = newValue }
+		set {
+			model.hostingOfferURL = newValue
+
+			window.setContentSize(NSSize(width: AddBouncerView.width, height: AddBouncerView.height(showingOffer: (newValue != nil))))
+		}
 	}
 
 	@objc(beginInWindow:)
@@ -407,7 +411,12 @@ final class AddBouncerSheet: NSObject
 struct AddBouncerView: View
 {
 	static let width: CGFloat = 540
-	static let height: CGFloat = 540
+
+	/* Taller with the hosting offer, so it shows under the login without scrolling */
+	static func height(showingOffer: Bool) -> CGFloat
+	{
+		return ((showingOffer) ? 650 : 580)
+	}
 
 	@ObservedObject var model: AddBouncerModel
 
@@ -423,7 +432,7 @@ struct AddBouncerView: View
 					AddBouncerNetworksPage(model: model)
 			}
 		}
-		.frame(width: Self.width, height: Self.height)
+		.frame(width: Self.width, height: Self.height(showingOffer: (model.hostingOfferURL != nil)))
 	}
 }
 
