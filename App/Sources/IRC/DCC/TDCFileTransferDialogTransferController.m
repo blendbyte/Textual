@@ -45,7 +45,6 @@
 #import "TPCPreferencesLocal.h"
 #import "TPCPreferencesUserDefaultsPrivate.h"
 #import "TLOLocalization.h"
-#import "TDCFileTransferDialogTableCellPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
 #import "TDCFileTransferDialogInternal.h"
 
@@ -249,8 +248,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 - (void)prepareForPermanentDestruction
 {
-	self.transferTableCell = nil;
-
 	[self closeAndPostNotification:NO];
 
 	[RZNotificationCenter() removeObserver:self];
@@ -1307,20 +1304,9 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 #pragma mark -
 #pragma mark Actions
 
-- (void)updateClearButton
-{
-	[self.transferDialog updateClearButton];
-}
-
 - (void)reloadStatusInformation
 {
-	TDCFileTransferDialogTableCell *transferTableCell = self.transferTableCell;
-
-	if (transferTableCell == nil) {
-		return;
-	}
-
-	[transferTableCell reloadStatusInformation];
+	[self.transferDialog fileTransferDidChange:self];
 }
 
 #pragma mark -

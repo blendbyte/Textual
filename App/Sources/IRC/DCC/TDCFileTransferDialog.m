@@ -43,9 +43,9 @@
 #import "TLOInternetAddressLookup.h"
 #import "TLOLocalization.h"
 #import "TLOTimer.h"
+#import "TXMasterControllerPrivate.h"
 #import "IRCWorld.h"
-#import "TVCBasicTableView.h"
-#import "TDCFileTransferDialogTableCellPrivate.h"
+#import "TDCFileTransfersWindowPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
 #import "TPCSecurityScopedFolderPrivate.h"
 #import "TDCFileTransferDialogInternal.h"
@@ -55,27 +55,13 @@ NS_ASSUME_NONNULL_BEGIN
 /* Refuse more than this many unfinished incoming transfers at a time. */
 #define _addReceiverHardLimit			120
 
-@interface TDCFileTransferDialog () <NSMenuItemValidation>
-@property (nonatomic, weak) IBOutlet NSButton *clearButton;
-@property (nonatomic, weak) IBOutlet NSSegmentedCell *navigationControllerCell;
-@property (nonatomic, weak, readwrite) IBOutlet TVCBasicTableView *fileTransferTable;
-@property (nonatomic, strong) IBOutlet NSArrayController *fileTransfersController;
+@interface TDCFileTransferDialog () <NSWindowDelegate>
+/* Newest first; changed on the main queue only */
+@property (nonatomic, strong) NSMutableArray<TDCFileTransferDialogTransferController *> *fileTransfersPrivate;
+@property (nonatomic, strong) TDCFileTransfersWindow *windowContent;
 @property (nonatomic, strong, nullable) TLOInternetAddressLookup *IPAddressRequest;
-@property (readonly) TDCFileTransferDialogSelection navigationSelection;
 @property (nonatomic, strong) TLOTimer *maintenanceTimer;
 @property (nonatomic, strong) TPCSecurityScopedFolder *downloadDestination;
-
-- (IBAction)hideWindow:(nullable id)sender;
-
-- (IBAction)clear:(nullable id)sender;
-
-- (IBAction)startTransferOfFile:(nullable id)sender;
-- (IBAction)stopTransferOfFile:(nullable id)sender;
-- (IBAction)removeTransferFromList:(nullable id)sender;
-- (IBAction)openReceivedFile:(nullable id)sender;
-- (IBAction)revealReceivedFileInFinder:(nullable id)sender;
-
-- (IBAction)navigationSelectionDidChange:(nullable id)sender;
 @end
 
 @implementation TDCFileTransferDialog
@@ -91,7 +77,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareInitialState
 {
-	[self loadNib];
+	self.fileTransfersPrivate = [NSMutableArray array];
+
+	/* The window is SwiftUI (TDCFileTransfersWindow.swift) */
+	self.windowContent = [[TDCFileTransfersWindow alloc] initWithDialog:self];
+
+	self.window = self.windowContent.window;
+
+	self.window.delegate = self;
 
 	/* On the main queue: it reads the array controller; each transfer
 	 then does its own work on its queue */
@@ -256,24 +249,28 @@ NS_ASSUME_NONNULL_BEGIN
 	return controller.uniqueIdentifier;
 }
 
-- (void)updateClearButton
+- (NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
 {
-	NSArray *finishedFileTransfers = [self finishedFileTransfers];
+	return [self.fileTransfersPrivate copy];
+}
 
-	self.clearButton.enabled = (finishedFileTransfers.count > 0);
+- (BOOL)showsServerNames
+{
+	return (worldController().clientList.count > 1);
+}
+
+- (void)fileTransferDidChange:(TDCFileTransferDialogTransferController *)fileTransfer
+{
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self.windowContent reload];
+	});
 }
 
 - (void)addFileTransfer:(TDCFileTransferDialogTransferController *)controller
 {
-	/* Resetting the predicate the each time a controller is added is stupid,
-	 but this is a low frequency task that we can forgive. */
-	NSPredicate *filterPredicate = self.fileTransfersController.filterPredicate;
+	[self.fileTransfersPrivate insertObject:controller atIndex:0];
 
-	self.fileTransfersController.filterPredicate = nil;
-
-	[self.fileTransfersController insertObject:controller atArrangedObjectIndex:0];
-
-	self.fileTransfersController.filterPredicate = filterPredicate;
+	[self.windowContent reload];
 }
 
 - (void)removeFileTransfersMatchingClient:(IRCClient *)client
@@ -286,9 +283,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[fileTransfers makeObjectsPerformSelector:@selector(prepareForPermanentDestruction)];
-
-	[self.fileTransfersController removeObjects:fileTransfers];
+	[self removeFileTransfers:fileTransfers];
 }
 
 #pragma mark -
@@ -302,94 +297,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Actions
 
-- (BOOL)validateMenuItem:(NSMenuItem *)item
+- (void)clearFinishedFileTransfers
 {
-	NSInteger tag = item.tag;
-
-	NSArray *selectedFileTransfers = [self selectedFileTransfers];
-
-	if (selectedFileTransfers.count == 0) {
-		return NO;
-	}
-
-	/* Begin actual validation. */
-	switch (tag) {
-		case 3001:	// Start Download
-		{
-			for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
-				TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
-
-				if (transferStatus == TDCFileTransferDialogTransferStatusStopped ||
-					transferStatus == TDCFileTransferDialogTransferStatusRecoverableError)
-				{
-					return YES;
-				}
-			}
-
-			return NO;
-		}
-		case 3003: // Stop Download
-		{
-			for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
-				if (fileTransfer.isStopped == NO) {
-					return YES;
-				}
-			}
-
-			return NO;
-		}
-		case 3004: // Remove Item
-		{
-			return YES;
-		}
-		case 3005: // Open File
-		{
-			for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
-				TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
-
-				if (fileTransfer.isSender != NO) {
-					continue;
-				}
-
-				if (transferStatus == TDCFileTransferDialogTransferStatusComplete) {
-					return YES;
-				}
-			}
-
-			return NO;
-		}
-		case 3006: // Reveal In Finder
-		{
-			/* A file being sent is there from the start */
-			for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
-				TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
-
-				if (fileTransfer.isSender || transferStatus == TDCFileTransferDialogTransferStatusComplete) {
-					return YES;
-				}
-			}
-
-			return NO;
-		}
-	}
-
-	return NO; // Default validation to NO.
-}
-
-- (void)clear:(nullable id)sender
-{
-	NSArray *finishedFileTransfers = [self finishedFileTransfers];
-
-	[finishedFileTransfers makeObjectsPerformSelector:@selector(prepareForPermanentDestruction)];
-
-	[self.fileTransfersController removeObjects:finishedFileTransfers];
-
-	[self updateClearButton];
-}
-
-- (void)startTransferOfFile:(nullable id)sender
-{
-	[self startFileTransfers:[self selectedFileTransfers]];
+	[self removeFileTransfers:[self finishedFileTransfers]];
 }
 
 - (void)startFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
@@ -456,46 +366,79 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-- (void)stopTransferOfFile:(nullable id)sender
+- (void)stopFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
 {
-	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
+	NSParameterAssert(fileTransfers != nil);
+
+	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
+		if (fileTransfer.isStopped) {
+			continue;
+		}
+
 		[fileTransfer closeAndPostNotification:NO];
-	}];
+	}
 }
 
-- (void)removeTransferFromList:(nullable id)sender
+- (void)removeFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
 {
-	NSArray *selectedFileTransfers = [self selectedFileTransfers];
+	NSParameterAssert(fileTransfers != nil);
 
-	for (TDCFileTransferDialogTransferController *fileTransfer in selectedFileTransfers) {
-		[fileTransfer prepareForPermanentDestruction];
+	if (fileTransfers.count == 0) {
+		return;
 	}
 
-	[self.fileTransfersController removeObjects:selectedFileTransfers];
+	[fileTransfers makeObjectsPerformSelector:@selector(prepareForPermanentDestruction)];
+
+	[self.fileTransfersPrivate removeObjectsInArray:fileTransfers];
+
+	[self.windowContent reload];
 }
 
-- (void)openReceivedFile:(nullable id)sender
+- (void)openFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
 {
-	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
-		if (fileTransfer.isSender != NO) {
-			return;
+	NSParameterAssert(fileTransfers != nil);
+
+	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
+		if (fileTransfer.isSender || fileTransfer.transferStatus != TDCFileTransferDialogTransferStatusComplete) {
+			continue;
 		}
 
-		[RZWorkspace() openURL:fileTransfer.fileURL];
-	}];
+		NSURL *fileURL = fileTransfer.fileURL;
+
+		if (fileURL == nil) {
+			continue;
+		}
+
+		[RZWorkspace() openURL:fileURL];
+	}
 }
 
-- (void)revealReceivedFileInFinder:(nullable id)sender
+- (void)revealFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers
 {
-	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
-		NSString *filePath = fileTransfer.filePath;
+	NSParameterAssert(fileTransfers != nil);
 
-		if (filePath == nil || (fileTransfer.isSender == NO && fileTransfer.transferStatus != TDCFileTransferDialogTransferStatusComplete)) {
-			return;
+	NSMutableArray<NSURL *> *fileURLs = [NSMutableArray array];
+
+	/* A file being sent is there from the start */
+	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
+		if (fileTransfer.isSender == NO && fileTransfer.transferStatus != TDCFileTransferDialogTransferStatusComplete) {
+			continue;
 		}
 
-		[RZWorkspace() selectFile:filePath inFileViewerRootedAtPath:@""];
-	}];
+		NSURL *fileURL = fileTransfer.fileURL;
+
+		if (fileURL == nil) {
+			continue;
+		}
+
+		[fileURLs addObject:fileURL];
+	}
+
+	if (fileURLs.count == 0) {
+		return;
+	}
+
+	[RZWorkspace() activateFileViewerSelectingURLs:fileURLs];
 }
 
 #pragma mark -
@@ -530,29 +473,6 @@ NS_ASSUME_NONNULL_BEGIN
 	for (TDCFileTransferDialogTransferController *fileTransfer in activeFileTransfers) {
 		[fileTransfer onMaintenanceTimer];
 	}
-}
-
-#pragma mark -
-#pragma mark Table View Delegate
-
-- (nullable NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row
-{
-	TDCFileTransferDialogTransferController *fileTransfer = self.fileTransfersController.arrangedObjects[row];
-
-	TDCFileTransferDialogTableCell *newView =
-	(TDCFileTransferDialogTableCell *)[tableView makeViewWithIdentifier:@"GroupView" owner:self];
-
-	fileTransfer.transferTableCell = newView;
-
-	return newView;
-}
-
-- (void)tableView:(NSTableView *)tableView didAddRowView:(NSTableRowView *)rowView forRow:(NSInteger)row
-{
-	/* Through the row view: asking the table while it adds the row is reentrant */
-	TDCFileTransferDialogTableCell *tableCell = [rowView viewAtColumn:0];
-
-	[tableCell prepareInitialState];
 }
 
 #pragma mark -
@@ -621,29 +541,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 
 	self.IPAddressRequest = nil;
-}
-
-#pragma mark -
-#pragma mark Navigation
-
-- (TDCFileTransferDialogSelection)navigationSelection
-{
-	return self.navigationControllerCell.selectedSegment;
-}
-
-- (void)navigationSelectionDidChange:(nullable id)sender
-{
-	TDCFileTransferDialogSelection selection = self.navigationSelection;
-
-	NSPredicate *filterPredicate = nil;
-
-	if (selection == TDCFileTransferDialogSelectionSending) {
-		filterPredicate = [NSPredicate predicateWithFormat:@"isSender == YES"];
-	} else if (selection == TDCFileTransferDialogSelectionReceiving) {
-		filterPredicate = [NSPredicate predicateWithFormat:@"isSender == NO"];
-	}
-
-	self.fileTransfersController.filterPredicate = filterPredicate;
 }
 
 #pragma mark -
@@ -721,34 +618,12 @@ NS_ASSUME_NONNULL_BEGIN
 	return fileTransferMatched;
 }
 
-- (NSArray<TDCFileTransferDialogTransferController *> *)selectedFileTransfers
-{
-	NSMutableArray<TDCFileTransferDialogTransferController *> *selectedFileTransfers = [NSMutableArray array];
-
-	[self enumerateSelectedFileTransfers:^(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop) {
-		[selectedFileTransfers addObject:fileTransfer];
-	}];
-
-	return [selectedFileTransfers copy];
-}
-
 - (NSArray<TDCFileTransferDialogTransferController *> *)fileTransfersMatchingClient:(IRCClient *)client
 {
 	NSParameterAssert(client != nil);
 
 	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController * _Nonnull fileTransfer) {
 		return (fileTransfer.client == client);
-	}];
-}
-
-- (void)enumerateSelectedFileTransfers:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, NSUInteger index, BOOL *stop))enumerationBlock
-{
-	NSIndexSet *selectedRows = self.fileTransferTable.selectedRowIndexes;
-
-	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-		TDCFileTransferDialogTransferController *fileTransfer = self.fileTransfersController.arrangedObjects[index];
-
-		enumerationBlock(fileTransfer, index, stop);
 	}];
 }
 
@@ -766,8 +641,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(enumerationBlock != nil);
 
-	/* All transfers, not only those the Sending/Receiving tab shows */
-	NSArray<TDCFileTransferDialogTransferController *> *fileTransfers = [self.fileTransfersController.content copy];
+	NSArray<TDCFileTransferDialogTransferController *> *fileTransfers = [self.fileTransfersPrivate copy];
 
 	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
 		if (limitScope && limitScopeToSenders != fileTransfer.isSender) {
@@ -792,11 +666,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.window saveWindowStateForClass:self.class];
 
 	[super windowWillClose:note];
-}
-
-- (void)hideWindow:(nullable id)sender
-{
-	[self close];
 }
 
 #pragma mark -

@@ -35,40 +35,56 @@
  *
  *********************************************************************** */
 
-"nvm-nd" = "%1$@ of %2$@ (%3$@/s) sent to %4$@";
-"u17-ql" = "%1$@ of %2$@ (%3$@/s) sent to %4$@ — %5$@ remaining";
-
-"w3h-p8" = "Transfer to %@ is stopped. Control click to start.";
-"j1z-88" = "Transfer to %@: Attempting to map listening port";
-"onl-av" = "Transfer to %@: Determining local IP address";
-"pcv-kg" = "Transfer to %@ is initializing";
-"ca5-2v" = "Transfer to %@ is ready. Waiting for them to accept.";
-"rx7-xy" = "Transfer to %@ is complete";
-"cku-24" = "Transfer to %@ is ready. Waiting for them to accept.";
-
-"7dk-lp" = "%1$@ of %2$@ (%3$@/s) received from %4$@";
-"9xn-7j" = "%1$@ of %2$@ (%3$@/s) received from %4$@ — %5$@ remaining";
-
-"jvh-u7" = "Transfer from %@ is stopped. Control click to start.";
-"495-90" = "Transfer from %@: Attempting to map listening port";
-"6t1-mb" = "Transfer from %@: Determining local IP address";
-"gxq-zu" = "Transfer from %@: Waiting for response to resume transfer";
-"42z-mg" = "Transfer from %@ is initializing";
-"pip-z6" = "Transfer from %@ is ready. Control click to start.";
-"6gu-za" = "Transfer from %@ is complete. Control click to open in Finder.";
-
-"7nf-fr" = "Connecting to %@";
-
-"fn8-sx" = "Transfer with %@ failed. Could not establish connection";
-"vxc-sd" = "Transfer with %@ failed. There is no open port";
-"nab-dx" = "Transfer with %@ failed. Could not read source file";
-"47s-1s" = "Transfer with %@ failed. Unknown source IP address";
-"coa-ii" = "Transfer with %@ failed. Connection was disconnected";
-"0ov-tr" = "Transfer with %@ failed. Proposed resume position is bad";
-"12p-0v" = "Transfer with %@ failed. You are not connected to IRC";
-"79f-s0" = "Transfer with %@ failed. No space left on device";
-"05g-c8" = "Transfer with %@ failed. File handler threw an exception";
-"s79-3a" = "Transfer with %@ failed: %@";
-"dr5-tq" = "Transfer with %@ failed. They did not respond in time";
+/* Errors, shown after "Failed:" (the peer, then for s79-3a the system's description) */
+"fn8-sx" = "Couldn’t connect to %@";
+"vxc-sd" = "No free port to wait on (Settings › Files › Ports)";
+"nab-dx" = "Couldn’t read the file";
+"47s-1s" = "Couldn’t find your address (Settings › Files › Your address)";
+"0ov-tr" = "%@ asked to continue at a point that doesn’t fit the file";
+"12p-0v" = "Not connected to the server";
+"79f-s0" = "The disk is full";
+"05g-c8" = "Couldn’t write the file";
+"s79-3a" = "Lost the connection to %1$@: %2$@";
+"dr5-tq" = "%@ didn’t answer in time";
 
 "dcm-w7" = "Select the folder in which this file will be saved";
+
+/* The window */
+"ftw-title" = "File Transfers";
+"ftw-on" = "%1$@ on %2$@";
+
+"ftw-offer" = "%@ wants to send you this file";
+"ftw-preparing" = "Getting ready…";
+"ftw-wait-accept" = "Waiting for %@ to accept";
+"ftw-wait-connect" = "Waiting for %@ to connect";
+"ftw-connecting" = "Connecting to %@…";
+"ftw-resume" = "Asking %@ to continue where it stopped…";
+"ftw-progress" = "%1$@ of %2$@ · %3$@/s";
+"ftw-progress-left" = "%1$@ of %2$@ · %3$@/s · %4$@ left";
+"ftw-stopped-to" = "Stopped · to %@";
+"ftw-stopped-from" = "Stopped · from %@";
+"ftw-sent" = "Sent to %@";
+"ftw-received" = "From %1$@ · saved in %2$@";
+"ftw-failed" = "Failed: %@";
+
+"ftw-sending" = "Sending";
+"ftw-receiving" = "Receiving";
+
+"ftw-accept" = "Accept";
+"ftw-decline" = "Decline";
+"ftw-stop" = "Stop";
+"ftw-retry" = "Try Again";
+"ftw-open" = "Open";
+"ftw-reveal" = "Show in Finder";
+"ftw-remove" = "Remove from List";
+"ftw-clear" = "Clear Finished";
+"ftw-settings" = "Settings…";
+
+"ftw-empty" = "No File Transfers";
+"ftw-empty-h" = "To send someone a file, drag it onto your private chat with them. Or right-click their name and choose Client-to-Client › Send file…";
+
+"ftw-remove-q1" = "Stop and remove “%@”?";
+"ftw-remove-qn" = "Stop and remove %ld transfers?";
+"ftw-remove-h" = "Removing a transfer that is still running stops it.";
+"ftw-remove-b" = "Stop and Remove";
+"ftw-cancel" = "Cancel";

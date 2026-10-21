@@ -798,17 +798,11 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
-		NSTableView *fileTransferTable = self.fileTransferController.fileTransferTable;
-
-		[fileTransferTable beginUpdates];
-
 		for (NSString *nickname in nicknames) {
 			for (NSURL *path in openPanel.URLs) {
 				[self.fileTransferController addSenderForClient:u nickname:nickname path:path.path autoOpen:YES];
 			}
 		}
-
-		[fileTransferTable endUpdates];
 	}];
 }
 
@@ -1097,15 +1091,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSTableView *fileTransferTable = self.fileTransferController.fileTransferTable;
-
-	[fileTransferTable beginUpdates];
-
 	for (NSString *file in files) {
 		[self.fileTransferController addSenderForClient:client nickname:nickname path:file autoOpen:YES];
 	}
-
-	[fileTransferTable endUpdates];
 }
 
 @end

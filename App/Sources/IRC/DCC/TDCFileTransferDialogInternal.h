@@ -42,8 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TDCFileTransferDialog ()
 @property (nonatomic, copy, readwrite, nullable) NSString *IPAddress;
 
-- (void)updateClearButton;
-
 - (void)updateMaintenanceTimer;
 @end
 

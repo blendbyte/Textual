@@ -65,6 +65,8 @@
 #import "TLOUploadDestinationPrivate.h"
 #import "TDCUploadDestinationSheetPrivate.h"
 #import "IRCISupportInfo.h"
+#import "TDCFileTransferDialogPrivate.h"
+#import "TDCFileTransferDialogTransferControllerPrivate.h"
 
 // TLOLinkParser.swift
 #import "TVCLogLine.h"

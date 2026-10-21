@@ -492,7 +492,7 @@ present_error:
 
 	[self sendCTCPQuery:nickname command:@"DCC SEND" text:stringToSend];
 
-	NSString *message = TXTLS(@"IRC[ags-s8]", nickname, filename, totalFilesize);
+	NSString *message = TXTLS(@"IRC[ags-s8]", nickname, filename, [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile]);
 
 	[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
 }

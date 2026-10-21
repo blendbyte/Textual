@@ -459,10 +459,11 @@ def ctcp(text):
 class DCCSender:
 	"""The peer side of a DCC SEND: the client connects and receives data[start:stop]."""
 
-	def __init__(self, data, start=0, stop=None):
+	def __init__(self, data, start=0, stop=None, rate=None):
 		self.data = data
 		self.start = start
 		self.stop = stop
+		self.rate = rate  # bytes a second, or all at once
 		self.connections = 0
 		self.acks = []
 		self.done = asyncio.Event()
@@ -473,8 +474,18 @@ class DCCSender:
 	async def handle(self, reader, writer):
 		self.connections += 1
 
-		writer.write(self.data[self.start:self.stop])
-		await writer.drain()
+		data = self.data[self.start:self.stop]
+
+		if self.rate is None:
+			writer.write(data)
+			await writer.drain()
+		else:
+			chunk = max(1, self.rate // 10)
+
+			for offset in range(0, len(data), chunk):
+				writer.write(data[offset:offset + chunk])
+				await writer.drain()
+				await asyncio.sleep(0.1)
 
 		# Stopping early simulates a broken transfer
 		if self.stop is not None:
@@ -559,6 +570,29 @@ async def scenario_dcc_receive(client):
 
 	await client.send(f":alice!a@peer.test PRIVMSG {client.nickname} :{ctcp(f'DCC SEND {name} {DCC_ADDRESS} {Events.dcc_port} {len(data)}')}")
 	await wait_while_collecting(client, peer.done, 60)  # time to accept by hand with "Ask me"
+	peer.close()
+
+	path = os.path.join(DOWNLOADS, name)
+	saved = open(path, "rb").read() if os.path.exists(path) else b""
+
+	result(saved == data, f"{len(saved)} of {len(data)} bytes saved, identical to what was sent")
+
+	remove_downloads(name)
+
+
+async def scenario_dcc_slow(client):
+	"""(DCC) alice offers 3 MB sent at 150 KB/s (about 20 s), to watch the progress."""
+	name = "textual-dev-dcc-slow.bin"
+	remove_downloads(name)
+
+	await client.collect(1)
+
+	data = os.urandom(3_000_000)
+	peer = DCCSender(data, rate=150_000)
+	await peer.listen(Events.dcc_port)
+
+	await client.send(f":alice!a@peer.test PRIVMSG {client.nickname} :{ctcp(f'DCC SEND {name} {DCC_ADDRESS} {Events.dcc_port} {len(data)}')}")
+	await wait_while_collecting(client, peer.done, 120)
 	peer.close()
 
 	path = os.path.join(DOWNLOADS, name)
@@ -2842,6 +2876,7 @@ SCENARIOS = {
 	"redirect-tls": scenario_redirect_tls,
 	"conn-tls": scenario_conn_tls,
 	"dcc-receive": scenario_dcc_receive,
+	"dcc-slow": scenario_dcc_slow,
 	"dcc-oversized": scenario_dcc_oversized,
 	"dcc-dotfile": scenario_dcc_dotfile,
 	"dcc-resume-foreign": scenario_dcc_resume_foreign,

@@ -41,11 +41,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCClient, TDCFileTransferDialogTableCell;
+@class IRCClient;
 
 @interface TDCFileTransferDialogTransferController : NSObject <TDCClientPrototype>
-@property (nonatomic, weak) TDCFileTransferDialogTableCell *transferTableCell;
-
 @property (readonly) BOOL isResume;
 @property (readonly) BOOL isReversed;
 @property (readonly) BOOL isSender;
@@ -116,8 +114,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)didReceiveResumeRequest:(uint64_t)proposedPosition;
 
 - (void)onMaintenanceTimer;
-
-- (void)updateClearButton;
 
 - (void)reloadStatusInformation;
 @end

@@ -40,7 +40,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class IRCClient, TDCFileTransferDialogTransferController, TVCBasicTableView;
+@class IRCClient, TDCFileTransferDialogTransferController;
 
 typedef NS_ENUM(NSUInteger, TDCFileTransferDialogTransferStatus) {
 	TDCFileTransferDialogTransferStatusComplete,
@@ -59,12 +59,6 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDialogTransferStatus) {
 	TDCFileTransferDialogTransferStatusWaitingForResumeAccept
 };
 
-typedef NS_ENUM(NSUInteger, TDCFileTransferDialogSelection) {
-	TDCFileTransferDialogSelectionAll			= 0,
-	TDCFileTransferDialogSelectionSending		= 1,
-	TDCFileTransferDialogSelectionReceiving		= 2
-};
-
 @class TDCFileTransferDialogTransferController;
 
 /* What files dropped or pasted somewhere can do there */
@@ -76,8 +70,16 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDropAnswer) {
 };
 
 @interface TDCFileTransferDialog : TDCWindowBase
-@property (readonly, weak) TVCBasicTableView *fileTransferTable;
 @property (readonly, copy, nullable) NSString *IPAddress;
+
+/* Newest first */
+@property (readonly, copy) NSArray<TDCFileTransferDialogTransferController *> *fileTransfers;
+
+/* Connected to several servers: rows name the server too */
+@property (readonly) BOOL showsServerNames;
+
+/* From any queue: the window shows the change */
+- (void)fileTransferDidChange:(TDCFileTransferDialogTransferController *)fileTransfer;
 
 - (void)show:(BOOL)makeKeyWindow;
 - (void)show:(BOOL)makeKeyWindow restorePosition:(BOOL)restorePosition;
@@ -109,6 +111,14 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDropAnswer) {
 /* Accept offers and restart stopped or failed transfers: into the download
  folder from Settings, or one chosen now when that is "Ask each time" */
 - (void)startFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;
+
+- (void)stopFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;
+- (void)removeFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers; // Stops them too
+- (void)openFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers; // Received files
+- (void)revealFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;
+
+/* Done and failed ones */
+- (void)clearFinishedFileTransfers;
 
 /* The transfer with this peer on this client that a DCC reply refers to:
  by token when there is one, otherwise by port. */
