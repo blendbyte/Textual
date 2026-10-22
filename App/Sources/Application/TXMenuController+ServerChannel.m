@@ -48,6 +48,7 @@
 #import "IRCWorldPrivate.h"
 #import "TVCBasicTableView.h"
 #import "TVCLogController.h"
+#import "TVCLogPolicyPrivate.h"
 #import "TVCLogViewPrivate.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMemberList.h"
@@ -534,6 +535,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 #pragma mark Other Actions
+
+- (void)openUrl:(nullable id)sender
+{
+	NSString *pointedUrl = ((NSMenuItem *)sender).userInfo;
+
+	if (pointedUrl.length == 0) {
+		return;
+	}
+
+	NSURL *url = [NSURL URLWithString:pointedUrl];
+
+	if (url == nil) {
+		return;
+	}
+
+	[self.selectedViewControllerBackingView.webViewPolicy openWebpage:url];
+}
 
 - (void)copyUrl:(nullable id)sender
 {

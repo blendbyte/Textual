@@ -276,7 +276,8 @@ enum
 	MTWKChannelNameJoinChannel = 1000, // "Join Channel"
 
 	/* WebKit URL menu */
-	MTWKURLCopyURL = 1100, // "Copy URL"
+	MTWKURLCopyURL = 1100, // "Copy Link"
+	MTWKURLOpenURL = 1101, // "Open Link"
 
 	/* WebKit general menu */
 	MTWKGeneralChangeNickname = 1200, // "Change Nickname…"
@@ -433,6 +434,7 @@ enum
 - (IBAction)copyUniqueIdentifier:(nullable id)sender;
 
 - (IBAction)copyUrl:(nullable id)sender;
+- (IBAction)openUrl:(nullable id)sender;
 @end
 
 @interface TXMenuController (Members)

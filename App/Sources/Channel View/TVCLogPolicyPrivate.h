@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)nicknameDoubleClicked;
 - (void)topicBarDoubleClicked;
 
+/* A link from a message, as when it's clicked: untrusted schemes ask first */
+- (void)openWebpage:(NSURL *)webpageURL;
+
 - (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
 - (void)webView2:(WKWebView *)webView logView:(TVCLogView *)logView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler;
 - (NSMenu *)webView2:(WKWebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenu:(NSMenu *)defaultMenu;

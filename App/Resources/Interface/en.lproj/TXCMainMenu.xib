@@ -1272,7 +1272,12 @@ CA
         </menu>
         <menu title="Menu" id="426" userLabel="Open URL Menu">
             <items>
-                <menuItem title="Copy URL" tag="1100" id="427">
+                <menuItem title="Open Link" tag="1101" id="Opn-Lk-itm">
+                    <connections>
+                        <action selector="openUrl:" target="267" id="Opn-Lk-act"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Copy Link" tag="1100" id="427">
                     <connections>
                         <action selector="copyUrl:" target="267" id="2645"/>
                     </connections>
