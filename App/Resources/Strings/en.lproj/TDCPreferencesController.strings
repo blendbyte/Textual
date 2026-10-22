@@ -138,7 +138,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-k-servers" = "nickname username real name identity invite kick rejoin join delay flood control who away ctcp";
 "set-k-commands" = "aliases msg notices amsg away nick clearall kick ban operator kill gline shun command scope";
 "set-k-extensions" = "addons plugins scripts applescript";
-"set-k-advanced" = "css custom style reload lines memory hidden";
+"set-k-advanced" = "css custom style reload lines memory hidden developer mode web inspector warnings don’t ask again reset troubleshooting";
 
 "set-gen-u" = "Updates";
 "set-gen-uh" = "Textual checks once a day.";
@@ -299,6 +299,13 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-adv-v" = "Lines kept in a chat view";
 "set-adv-vh" = "Older lines load again as you scroll up. More lines use more memory.";
 "set-adv-vd" = "Standard";
+"set-adv-h3" = "Troubleshooting";
+"set-adv-d" = "Developer Mode";
+"set-adv-dh" = "Adds the Web Inspector to the chat view, commands for developers, and Copy Unique Identifier to the Channel menu.";
+"set-adv-w" = "Warnings you turned off";
+"set-adv-wh" = "Shows every warning again that you told not to ask again.";
+"set-adv-wd" = "Done: they show again.";
+"set-adv-we" = "Show Again";
 
 /* Settings › Appearance */
 "set-app-a0" = "Like the Mac";

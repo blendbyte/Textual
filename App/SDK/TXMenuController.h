@@ -205,12 +205,15 @@ enum
 	MTMMWindowMinimize = 800, // "Minimize"
 	MTMMWindowZoom = 801, // "Zoom"
 	MTMMWindowZoomSeparator = 802, // "-"
-	MTMMWindowToggleVisibilityOfMemberList = 803, // "Toggle Visibility of Member List"
-	MTMMWindowToggleVisibilityOfServerList = 804, // "Toggle Visibility of Server List"
-	MTMMWindowToggleWindowAppearance = 805, // "Toggle Window Appearance"
-	MTMMWindowToggleWindowAppearanceSeparator = 806, // "-"
-	MTMMWindowSortChannelList = 807, // "Sort Channel List"
-	MTMMWindowSortChannelListSeparator = 808, // "-"
+	MTMMWindowToggleVisibilityOfMemberList = 803, // "Show/Hide Member List" (in View)
+	MTMMWindowToggleVisibilityOfServerList = 804, // "Show/Hide Server List" (in View)
+	MTMMWindowToggleWindowAppearance = 805, // "Appearance" (in View; was "Toggle Window Appearance")
+	MTMMWindowToggleWindowAppearanceSystem = 8050000, // "System"
+	MTMMWindowToggleWindowAppearanceLight = 8050001, // "Light"
+	MTMMWindowToggleWindowAppearanceDark = 8050002, // "Dark"
+	MTMMWindowToggleWindowAppearanceSeparator = 806, // "-" (in View)
+	MTMMWindowSortChannelList = 807, // "Sort Channels by Name" (in View)
+	MTMMWindowSortChannelListSeparator = 808, // "-" (in View)
 	MTMMWindowCenterWindow = 809, // "Center Window" (no longer in the menu)
 	MTMMWindowResetWindowToDefaultSize = 810, // "Reset Window to Default Size"
 	MTMMWindowResetWindowToDefaultSizeSeparator = 811, // "-"
@@ -512,6 +515,7 @@ enum
 - (IBAction)openAcknowledgements:(nullable id)sender;
 
 - (IBAction)toggleMainWindowAppearance:(nullable id)sender;
+- (IBAction)changeMainWindowAppearance:(nullable id)sender; // the sender's tag: System, Light or Dark
 - (IBAction)resetMainWindowAppearance:(nullable id)sender;
 
 - (IBAction)toggleDeveloperMode:(nullable id)sender;

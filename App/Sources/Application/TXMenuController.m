@@ -144,7 +144,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* A second shortcut for an item, unseen: the menu shows the item's own */
+/* A second shortcut for an item, unseen: the menu shows the item's own
+ (Textual 7's, where the menus changed) */
 - (void)addHiddenShortcuts
 {
 	/* Mentions shows ⌃5 with the other windows; ⇧⌘M from Textual 7 still works */
@@ -165,6 +166,36 @@ NS_ASSUME_NONNULL_BEGIN
 	shortcutItem.allowsKeyEquivalentWhenHidden = YES;
 
 	[windowMenu insertItem:shortcutItem atIndex:([windowMenu indexOfItem:mentionsItem] + 1)];
+
+	/* View: the server list's ⌥⌘S (now ⌃⌘S) and the appearance's ⇧⌘D (now a submenu) */
+	NSMenu *viewMenu = [NSApp.mainMenu itemWithTag:MTMainMenuView].submenu;
+
+	NSMenuItem *serverListItem = [viewMenu itemWithTag:MTMMWindowToggleVisibilityOfServerList];
+
+	if (serverListItem) {
+		NSMenuItem *serverListShortcut = [serverListItem copy];
+
+		serverListShortcut.keyEquivalent = @"s";
+		serverListShortcut.keyEquivalentModifierMask = (NSEventModifierFlagCommand | NSEventModifierFlagOption);
+
+		serverListShortcut.hidden = YES;
+		serverListShortcut.allowsKeyEquivalentWhenHidden = YES;
+
+		[viewMenu insertItem:serverListShortcut atIndex:([viewMenu indexOfItem:serverListItem] + 1)];
+	}
+
+	NSMenuItem *appearanceItem = [viewMenu itemWithTag:MTMMWindowToggleWindowAppearance];
+
+	if (appearanceItem) {
+		NSMenuItem *appearanceShortcut = [NSMenuItem menuItemWithTitle:appearanceItem.title target:self action:@selector(toggleMainWindowAppearance:) keyEquivalent:@"d" keyEquivalentMask:(NSEventModifierFlagCommand | NSEventModifierFlagShift)];
+
+		appearanceShortcut.tag = MTMMWindowToggleWindowAppearance;
+
+		appearanceShortcut.hidden = YES;
+		appearanceShortcut.allowsKeyEquivalentWhenHidden = YES;
+
+		[viewMenu insertItem:appearanceShortcut atIndex:([viewMenu indexOfItem:appearanceItem] + 1)];
+	}
 }
 
 - (void)setupOtherServices
@@ -242,6 +273,11 @@ NS_ASSUME_NONNULL_BEGIN
 		    the trial has expired.
 	 */
 	BOOL validationResult = [self _validateMenuItem:menuItem];
+
+	/* A hidden second shortcut (-addHiddenShortcuts) shares its item's tag */
+	if (menuItem.allowsKeyEquivalentWhenHidden) {
+		menuItem.hidden = YES;
+	}
 
 	if (validationResult == NO) {
 		return NO;
@@ -393,6 +429,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if (tag >= 10000) {
 		tag /= 10000;
 	}
+
+	/* Moved to another menu, an item keeps its tag (plugins look items up
+	 by it), so its first menu's validator still handles it: View has items
+	 from Window (8xx) and Go (7xx), File and the app menu from Help (9xx)
+	 and File (2xx). */
 
 	switch (tag / 100) {
 		case 1: // App
@@ -984,11 +1025,17 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
-		case MTMMWindowToggleVisibilityOfServerList: // "Toggle Visibility of Server List"
-		case MTMMWindowSortChannelList: // "Sort Channel List"
+		case MTMMWindowToggleVisibilityOfServerList: // "Show Server List" / "Hide Server List" (View menu)
+		case MTMMWindowSortChannelList: // "Sort Channels by Name" (View menu)
 		case MTMMWindowResetWindowToDefaultSize: // "Reset Window to Default Size"
 		{
 			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
+
+			if (tag == MTMMWindowToggleVisibilityOfServerList) {
+				BOOL collapsed = TVCMainWindow.currentWindow.contentSplitView.serverListCollapsed;
+
+				menuItem.title = TXTLS((collapsed) ? @"BasicLanguage[app-v1]" : @"BasicLanguage[app-v2]");
+			}
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
@@ -1027,16 +1074,31 @@ NS_ASSUME_NONNULL_BEGIN
 			return (isMainWindowDisabled == NO);
 		}
 
-		case MTMMWindowToggleVisibilityOfMemberList: // "Toggle Visibility of Member List"
+		case MTMMWindowToggleVisibilityOfMemberList: // "Show Member List" / "Hide Member List" (View menu)
 		{
 			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 
 			menuItem.hidden = (isMainWindowMain == NO);
 
+			BOOL collapsed = TVCMainWindow.currentWindow.contentSplitView.memberListCollapsed;
+
+			menuItem.title = TXTLS((collapsed) ? @"BasicLanguage[app-v3]" : @"BasicLanguage[app-v4]");
+
 			return c.isChannel;
 		}
 
-		case MTMMWindowToggleWindowAppearance: // "Toggle Window Appearance"
+		case MTMMWindowToggleWindowAppearanceSystem: // "Appearance" › "System", "Light", "Dark"
+		case MTMMWindowToggleWindowAppearanceLight:
+		case MTMMWindowToggleWindowAppearanceDark:
+		{
+			TXPreferredAppearance appearance = (TXPreferredAppearance)(tag - MTMMWindowToggleWindowAppearanceSystem);
+
+			menuItem.state = (([TPCPreferences appearance] == appearance) ? NSControlStateValueOn : NSControlStateValueOff);
+
+			return YES;
+		}
+
+		case MTMMWindowToggleWindowAppearance: // "Appearance" (View menu)
 		{
 			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
 

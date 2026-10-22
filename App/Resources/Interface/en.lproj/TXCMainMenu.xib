@@ -175,6 +175,19 @@
                             <menuItem isSeparatorItem="YES" tag="106" id="143">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
+                            <menuItem title="Mute Notifications" tag="200" id="QNy-Fk-SRO">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleMuteOnNotifications:" target="267" id="BG4-hs-ZvW"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Mute Sounds" tag="201" keyEquivalent="M" id="3092">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleMuteOnNotificationSounds:" target="267" id="Ox8-g0-Y9n"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="202" id="3093"/>
                             <menuItem title="Services" tag="107" id="131">
                                 <menu key="submenu" title="Services" systemMenu="services" id="130">
                                     <connections>
@@ -222,34 +235,40 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="File" id="1747">
                         <items>
-                            <menuItem title="Mute Notifications" tag="200" id="QNy-Fk-SRO">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Close Window" tag="205" keyEquivalent="w" id="1770">
                                 <connections>
-                                    <action selector="toggleMuteOnNotifications:" target="267" id="BG4-hs-ZvW"/>
+                                    <action selector="closeWindow:" target="267" id="CHQ-u4-kTI"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Mute Sounds" tag="201" keyEquivalent="M" id="3092">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                <connections>
-                                    <action selector="toggleMuteOnNotificationSounds:" target="267" id="Ox8-g0-Y9n"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="202" id="3093"/>
-                            <menuItem title="Print" tag="203" keyEquivalent="p" id="3oe-sP-dbd">
-                                <connections>
-                                    <action selector="print:" target="267" id="67R-xe-x0s"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="204" id="Cel-Q1-WOk"/>
+                            <menuItem isSeparatorItem="YES" tag="207" id="Lg7-Im-s3p"/>
                             <menuItem title="Import Settings from Textual 7…" tag="206" id="Lg7-Im-p0r">
                                 <connections>
                                     <action selector="importSettingsFromTextual7:" target="267" id="Lg7-Im-a1c"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="207" id="Lg7-Im-s3p"/>
-                            <menuItem title="Close Window" tag="205" keyEquivalent="w" id="1770">
+                            <menuItem title="Import Settings…" tag="9100005" id="3086">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="closeWindow:" target="267" id="CHQ-u4-kTI"/>
+                                    <action selector="importPreferences:" target="267" id="3090"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Export Settings…" tag="9100004" id="3088">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="exportPreferences:" target="267" id="3091"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="204" id="Cel-Q1-WOk"/>
+                            <menuItem title="Show All Logs in Finder" tag="815" id="1378">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="openLogLocation:" target="267" id="2574"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="208" id="m8s-01-sep"/>
+                            <menuItem title="Print" tag="203" keyEquivalent="p" id="3oe-sP-dbd">
+                                <connections>
+                                    <action selector="print:" target="267" id="67R-xe-x0s"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -507,6 +526,19 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="402" id="2307"/>
+                            <menuItem title="Jump to Current Session" tag="711" id="Z6x-pq-6mw">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="jumpToCurrentSession:" target="267" id="ffs-z9-79e"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Jump to Present" tag="712" keyEquivalent="b" id="S3s-dt-aIR">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="jumpToPresent:" target="267" id="f6S-m2-EOq"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="710" id="pdm-79-JE9"/>
                             <menuItem title="Mark All as Read" tag="403" keyEquivalent="U" id="1924">
                                 <connections>
                                     <action selector="markAllAsRead:" target="267" id="2596"/>
@@ -529,6 +561,56 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="408" id="1918"/>
+                            <menuItem title="Show Server List" tag="804" keyEquivalent="s" id="6od-OR-qNS">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleServerListVisibility:" target="267" id="QZ5-GG-Vjc"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Show Member List" tag="803" keyEquivalent="u" id="qom-q3-cE2">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleMemberListVisibility:" target="267" id="BE4-sJ-zAs"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Group Servers by Bouncer" tag="821" id="gSb-Bn-c01">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleGroupingServersByBouncer:" target="267" id="gSb-Bn-c02"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Sort Channels by Name" tag="807" keyEquivalent="r" id="1306">
+                                <connections>
+                                    <action selector="sortChannelListNames:" target="267" id="2579"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="806" id="Jza-lS-TTR"/>
+                            <menuItem title="Appearance" tag="805" id="Apr-00-mnu">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Appearance" id="Apr-01-mnu">
+                                    <items>
+                                        <menuItem title="System" tag="8050000" id="Apr-10-itm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeMainWindowAppearance:" target="267" id="Apr-20-act"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Light" tag="8050001" id="Apr-11-itm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeMainWindowAppearance:" target="267" id="Apr-21-act"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Dark" tag="8050002" id="Apr-12-itm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="changeMainWindowAppearance:" target="267" id="Apr-22-act"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" tag="808" id="EnE-LZ-pWA"/>
                             <menuItem title="Enter Full Screen" tag="409" keyEquivalent="f" id="1790">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
@@ -807,19 +889,6 @@ CQ
                                     <action selector="onPreviousHighlight:" target="267" id="2304"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="710" id="pdm-79-JE9"/>
-                            <menuItem title="Jump to Current Session" tag="711" id="Z6x-pq-6mw">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="jumpToCurrentSession:" target="267" id="ffs-z9-79e"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Jump to Present" tag="712" keyEquivalent="b" id="S3s-dt-aIR">
-                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
-                                <connections>
-                                    <action selector="jumpToPresent:" target="267" id="f6S-m2-EOq"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" tag="713" id="4n1-ds-J5l"/>
                             <menuItem title="Go to Channel" tag="714" id="FbN-9g-vFD">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -867,36 +936,6 @@ CQ
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="802" id="477"/>
-                            <menuItem title="Toggle Visibility of Member List" tag="803" keyEquivalent="u" id="qom-q3-cE2">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                <connections>
-                                    <action selector="toggleMemberListVisibility:" target="267" id="BE4-sJ-zAs"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Toggle Visibility of Server List" tag="804" keyEquivalent="s" id="6od-OR-qNS">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                <connections>
-                                    <action selector="toggleServerListVisibility:" target="267" id="QZ5-GG-Vjc"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Toggle Window Appearance" tag="805" keyEquivalent="D" id="FMz-pu-hpN">
-                                <connections>
-                                    <action selector="toggleMainWindowAppearance:" target="267" id="zCO-93-Kgg"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="806" id="Jza-lS-TTR"/>
-                            <menuItem title="Sort Channel List" tag="807" keyEquivalent="r" id="1306">
-                                <connections>
-                                    <action selector="sortChannelListNames:" target="267" id="2579"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Group Servers by Bouncer" tag="821" id="gSb-Bn-c01">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="toggleGroupingServersByBouncer:" target="267" id="gSb-Bn-c02"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="808" id="EnE-LZ-pWA"/>
                             <menuItem title="Reset Window to Default Size" tag="810" id="3096">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -926,12 +965,6 @@ CQ
                                 <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                 <connections>
                                     <action selector="showIgnoreList:" target="267" id="Vza-RY-BtS"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Show All Logs in Finder" tag="815" keyEquivalent="4" id="1378">
-                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
-                                <connections>
-                                    <action selector="openLogLocation:" target="267" id="2574"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Mentions" tag="816" keyEquivalent="5" id="2268">
@@ -1027,66 +1060,6 @@ CQ
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="openAcknowledgements:" target="267" id="2556"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" tag="918" id="fXV-9Y-PrA"/>
-                            <menuItem title="Advanced" tag="910" id="2718">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Advanced" id="2719">
-                                    <items>
-                                        <menuItem title="Enable Developer Mode" tag="9100000" id="2280">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="toggleDeveloperMode:" target="267" id="2281"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" tag="9100001" id="2721"/>
-                                        <menuItem title="Hidden Preferences…" tag="9100002" id="2725">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="showHiddenPreferences:" target="267" id="SSd-K5-dFp"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" tag="9100003" id="3085"/>
-                                        <menuItem title="Export Preferences" tag="9100004" id="3088">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="exportPreferences:" target="267" id="3091"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Import Preferences" tag="9100005" id="3086">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="importPreferences:" target="267" id="3090"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" tag="9100006" id="gIQ-2m-VHD">
-                                            <connections>
-                                                <binding destination="TlT-Ik-3QP" name="hidden" keyPath="values.TextualDeveloperEnvironment" id="7wz-iv-L8K">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Reset &quot;Don't Ask Me&quot; Warnings" tag="9100007" id="UfC-Uf-EFM">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="resetDoNotAskMePopupWarnings:" target="267" id="z5V-jK-Ms7"/>
-                                                <binding destination="TlT-Ik-3QP" name="hidden" keyPath="values.TextualDeveloperEnvironment" id="B8q-Zl-Mul">
-                                                    <dictionary key="options">
-                                                        <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                    <connections>
-                                        <outlet property="delegate" destination="267" id="Vke-2T-jD9"/>
-                                    </connections>
-                                </menu>
-                                <connections>
-                                    <action selector="emptyAction:" target="267" id="c1K-oo-2Iu"/>
                                 </connections>
                             </menuItem>
                         </items>

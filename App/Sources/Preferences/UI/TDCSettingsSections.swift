@@ -584,6 +584,8 @@ struct AdvancedSettings: View
 
 	private static let visibleLimits = [0, 500, 1000, 2500, 5000, 10000, 15000]
 
+	@State private var warningsReset = false
+
 	var body: some View
 	{
 		Form {
@@ -615,6 +617,22 @@ struct AdvancedSettings: View
 					}
 				} label: {
 					SettingLabel(title: SettingsText("set-adv-v"), help: SettingsText("set-adv-vh"))
+				}
+			}
+
+			Section(SettingsText("set-adv-h3")) {
+				SettingToggle(title: SettingsText("set-adv-d"), help: SettingsText("set-adv-dh"),
+							  isOn: store.value(get: { TDCSettingsBridge.developerModeEnabled }, set: { TDCSettingsBridge.developerModeEnabled = $0 }))
+
+				LabeledContent {
+					Button(SettingsText("set-adv-we")) {
+						TDCSettingsBridge.resetSuppressedWarnings()
+
+						warningsReset = true
+					}
+					.disabled(warningsReset)
+				} label: {
+					SettingLabel(title: SettingsText("set-adv-w"), help: SettingsText((warningsReset) ? "set-adv-wd" : "set-adv-wh"))
 				}
 			}
 		}

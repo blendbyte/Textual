@@ -239,6 +239,19 @@ NS_ASSUME_NONNULL_BEGIN
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionAppearance];
 }
 
+- (void)changeMainWindowAppearance:(nullable id)sender
+{
+	NSInteger choice = (((NSMenuItem *)sender).tag - MTMMWindowToggleWindowAppearanceSystem);
+
+	if (choice < TXPreferredAppearanceInherited || choice > TXPreferredAppearanceDark) {
+		return;
+	}
+
+	[TPCPreferences setAppearance:(TXPreferredAppearance)choice];
+
+	[TPCPreferences performReloadAction:TPCPreferencesReloadActionAppearance];
+}
+
 - (void)toggleMainWindowAppearance:(nullable id)sender
 {
 	TXPreferredAppearance appearance = [TPCPreferences appearance];

@@ -103,3 +103,7 @@
 "app-n4" = "%@ Help";
 "app-f1" = "Enter Full Screen";
 "app-f2" = "Exit Full Screen";
+"app-v1" = "Show Server List";
+"app-v2" = "Hide Server List";
+"app-v3" = "Show Member List";
+"app-v4" = "Hide Member List";

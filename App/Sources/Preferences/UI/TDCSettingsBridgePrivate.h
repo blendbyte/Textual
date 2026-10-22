@@ -56,6 +56,10 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class) BOOL keepChannelListSorted;
 @property (class) NSInteger noticeDestination; // TXNoticeSendLocation
 @property (class) NSInteger scrollbackVisibleLimit; // 0 the default
+@property (class) BOOL developerModeEnabled;
+
+/* Every warning turned off with "Don't ask me again" shows again */
++ (void)resetSuppressedWarnings;
 
 /* Colors stored as archives; nil is the default */
 + (nullable NSColor *)colorForKey:(NSString *)key;

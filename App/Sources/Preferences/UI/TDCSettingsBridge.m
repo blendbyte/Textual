@@ -221,6 +221,23 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	[TPCPreferences performReloadAction:TPCPreferencesReloadActionScrollbackVisibleLimit];
 }
 
++ (BOOL)developerModeEnabled
+{
+	return [TPCPreferences developerModeEnabled];
+}
+
++ (void)setDeveloperModeEnabled:(BOOL)developerModeEnabled
+{
+	[TPCPreferences setDeveloperModeEnabled:developerModeEnabled];
+
+	[TPCPreferences performReloadAction:TPCPreferencesReloadActionIRCCommandCache];
+}
+
++ (void)resetSuppressedWarnings
+{
+	[menuController() resetDoNotAskMePopupWarnings:nil];
+}
+
 #pragma mark -
 #pragma mark Colors
 
