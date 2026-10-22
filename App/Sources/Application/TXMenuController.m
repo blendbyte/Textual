@@ -99,6 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self nameMenuItemsAfterApplication];
 
+	[self addHiddenShortcuts];
+
 	[self setupOtherServices];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(menuItemWillPerformedAction:) name:NSMenuWillSendActionNotification object:nil];
@@ -109,13 +111,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* The interface file says "Textual": Textual Dev says its own name (the
  bundle's; the product name is "Textual" in both) */
-- (void)nameMenuItemsAfterApplication
+- (NSString *)applicationNameForMenus
 {
 	NSString *applicationName = [RZMainBundle() objectForInfoDictionaryKey:@"CFBundleName"];
 
 	if (applicationName.length == 0) {
 		applicationName = [TPCApplicationInfo applicationName];
 	}
+
+	return applicationName;
+}
+
+- (void)nameMenuItemsAfterApplication
+{
+	NSString *applicationName = [self applicationNameForMenus];
 
 	NSDictionary<NSNumber *, NSString *> *titles = @{
 		@(MTMMAppAboutApp) : TXTLS(@"BasicLanguage[app-n1]", applicationName),
@@ -133,6 +142,29 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 		}
 	}
+}
+
+/* A second shortcut for an item, unseen: the menu shows the item's own */
+- (void)addHiddenShortcuts
+{
+	/* Mentions shows ⌃5 with the other windows; ⇧⌘M from Textual 7 still works */
+	NSMenu *windowMenu = self.mainMenuWindowMenuItem.submenu;
+
+	NSMenuItem *mentionsItem = [windowMenu itemWithTag:MTMMWindowHighlightList];
+
+	if (mentionsItem == nil) {
+		return;
+	}
+
+	NSMenuItem *shortcutItem = [mentionsItem copy];
+
+	shortcutItem.keyEquivalent = @"m";
+	shortcutItem.keyEquivalentModifierMask = (NSEventModifierFlagCommand | NSEventModifierFlagShift);
+
+	shortcutItem.hidden = YES;
+	shortcutItem.allowsKeyEquivalentWhenHidden = YES;
+
+	[windowMenu insertItem:shortcutItem atIndex:([windowMenu indexOfItem:mentionsItem] + 1)];
 }
 
 - (void)setupOtherServices
@@ -277,14 +309,14 @@ NS_ASSUME_NONNULL_BEGIN
 		switch (tag) {
 			case MTMMAppAboutApp: // "About Textual"
 			case MTMMAppPreferences: // "Preferences…"
-			case MTMMAppManageLicense: // "Manage license…"
-			case MTMMAppCheckForUpdates: // "Check for updates…"
+			case MTMMAppManageLicense: // "Manage License…"
+			case MTMMAppCheckForUpdates: // "Check for Updates…"
 			case MTMMHelpAdvancedMenuEnableDeveloperMode: // "Enable Developer Mode"
 			case MTMMHelpAdvancedMenuHiddenPreferences: // "Hidden Preferences…"
-			case MTMMFileDisableAllNotifications: // "Disable All Notifications"
-			case MTMMFileDisableAllNotificationSounds: // "Disable All Notification Sounds"
-			case MTDockMenuDisableAllNotifications: // "Disable All Notifications"
-			case MTDockMenuDisableAllNotificationSounds: // "Disable All Notification Sounds"
+			case MTMMFileDisableAllNotifications: // "Mute Notifications"
+			case MTMMFileDisableAllNotificationSounds: // "Mute Sounds"
+			case MTDockMenuDisableAllNotifications: // "Mute Notifications"
+			case MTDockMenuDisableAllNotificationSounds: // "Mute Sounds"
 			{
 				validationResult = YES;
 
@@ -301,11 +333,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if (validationResult == NO) {
 		switch (tag) {
 			case MTMMAppAboutApp: // "About Textual"
-			case MTMMAppQuitApp: // "Quit Textual & IRC"
+			case MTMMAppQuitApp: // "Quit Textual"
 			case MTMMFilePrint: // "Print"
 			case MTMMFileCloseWindow: // "Close Window"
 			case MTMMEditPaste: // "Paste"
-			case MTMMViewToggleFullscreen: // "Toggle Fullscreen"
+			case MTMMViewToggleFullscreen: // "Enter Full Screen"
 			case MTMMWindowMainWindow: // "Main Window"
 			case MTMMHelpTextualHelp: // "Textual Help"
 			case MTMMHelpKeyboardShortcuts: // "Keyboard Shortcuts"
@@ -473,12 +505,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 		menuItem.hidden = NO;
 
-		/* Shown again as a pop-out window becomes key: the menu bar
-		 kept an empty slot for it until the next menu was opened. Taken
-		 out and put back in its place, it is drawn. */
+		/* Shown again outside menu tracking (a channel selected, a pop-out
+		 window becoming key): the menu bar kept an empty slot for it until
+		 the next menu was opened. Taken out and put back in its place, it
+		 is drawn. */
 		NSMenu *menuBar = menuItem.menu;
 
-		if (wasHidden && menuBar == NSApp.mainMenu && TVCMainWindow.windows.count > 1) {
+		if (wasHidden && menuBar == NSApp.mainMenu) {
 			NSInteger index = [menuBar indexOfItem:menuItem];
 
 			if (index >= 0) {
@@ -497,7 +530,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSUInteger tag = menuItem.tag;
 
 	switch (tag) {
-		case MTMMAppManageLicense: // "Manage license…"
+		case MTMMAppManageLicense: // "Manage License…"
 		{
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 0
 			menuItem.hidden = YES;
@@ -506,7 +539,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
-		case MTMMAppCheckForUpdates: // "Check for Updates"
+		case MTMMAppCheckForUpdates: // "Check for Updates…"
 		{
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 0
 			menuItem.hidden = YES;
@@ -582,7 +615,7 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 				case TXCommandWKeyActionTerminate:
 				{
-					menuItem.title = TXTLS(@"BasicLanguage[x97-ro]");
+					menuItem.title = TXTLS(@"BasicLanguage[x97-ro]", [self applicationNameForMenus]);
 
 					break;
 				}
@@ -657,10 +690,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSUInteger tag = menuItem.tag;
 
 	switch (tag) {
-		case MTMMViewMarkScrollback: // "Mark Scrollback"
-		case MTMMViewScrollbackMarker: // "Scrollback Marker"
+		case MTMMViewMarkScrollback: // "Add Marker"
+		case MTMMViewScrollbackMarker: // "Go to Marker"
 		case MTMMViewMarkAllAsRead: // "Mark All as Read"
-		case MTMMViewClearScrollback: // "Clear Scrollback"
+		case MTMMViewClearScrollback: // "Clear Messages"
 		case MTMMViewIncreaseFontSize: // "Increase Font Size"
 		case MTMMViewDecreaseFontSize: // "Decrease Font Size"
 		{
@@ -669,7 +702,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 		case MTMMViewToggleFullscreen:
 		{
-			NSWindowCollectionBehavior collectionBehavior = [NSApp keyWindow].collectionBehavior;
+			NSWindow *keyWindow = NSApp.keyWindow;
+
+			BOOL inFullScreen = ((keyWindow.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen);
+
+			menuItem.title = TXTLS((inFullScreen) ? @"BasicLanguage[app-f2]" : @"BasicLanguage[app-f1]");
+
+			NSWindowCollectionBehavior collectionBehavior = keyWindow.collectionBehavior;
 
 			return ((collectionBehavior & NSWindowCollectionBehaviorFullScreenAuxiliary) == NSWindowCollectionBehaviorFullScreenAuxiliary ||
 					(collectionBehavior & NSWindowCollectionBehaviorFullScreenPrimary) == NSWindowCollectionBehaviorFullScreenPrimary);
@@ -750,7 +789,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return reconnecting;
 		}
 
-		case MTMMServerChannelList: // "Channel List…"
+		case MTMMServerChannelList: // "Browse Channels…"
 		{
 			return u.isLoggedIn;
 		}
@@ -822,33 +861,42 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u != nil);
 		}
 
-		case MTMMChannelViewLogs: // "View Logs"
+		case MTMMChannelViewLogs: // "Show Logs in Finder"
 		{
 			return [TPCPreferences logToDiskIsEnabled];
 		}
 
-		case MTMMChannelModifyTopic: // "Modify Topic"
+		case MTMMChannelModifyTopic: // "Edit Topic…"
 		case MTMMChannelModesMenu: // "Modes"
-		case MTMMChannelListOfBans: // "List of Bans"
+		case MTMMChannelListOfBans: // "Bans…"
 		{
 			return (u.isLoggedIn && c.isActive);
 		}
 
-		case MTMMChannelListOfBanExceptions: // "List of Ban Exceptions"
+		case MTMMChannelListOfBanExceptions: // "Ban Exceptions…"
 		{
 			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeBanException] == NO);
 
 			return (u.isLoggedIn && c.isActive);
 		}
 
-		case MTMMChannelListOfInviteExceptions: // "List of Invite Exceptions"
+		case MTMMChannelListOfInviteExceptions: // "Invite Exceptions…"
 		{
 			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeInviteException] == NO);
 
 			return (u.isLoggedIn && c.isActive);
 		}
 
-		case MTMMChannelListOfQuiets: // "List of Quiets"
+		case MTMMChannelCopyUniqueIdentifier: // "Copy Unique Identifier"
+		{
+			/* For scripts and support: with Developer Mode on */
+			menuItem.hidden = ([TPCPreferences developerModeEnabled] == NO);
+
+			[menuItem.menu itemWithTag:MTMMChannelChannelPropertiesSeparator].hidden = menuItem.hidden;
+
+			return (c != nil);
+		}
+		case MTMMChannelListOfQuiets: // "Quiets…"
 		{
 			menuItem.hidden = ([u.supportInfo isListSupported:IRCISupportInfoListTypeQuiet] == NO);
 
@@ -872,10 +920,10 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
-		case MTMMQueryQueryLogs: // "Query Logs"
+		case MTMMQueryQueryLogs: // "Show Logs in Finder"
 		{
 			/* Query menu is used for utility windows too so we
-			 hide "Query Logs" for anything except private messages. */
+			 hide "Show Logs in Finder" for anything except private messages. */
 			BOOL isQuery = c.isPrivateMessage;
 
 			menuItem.hidden = (isQuery == NO);
@@ -938,7 +986,6 @@ NS_ASSUME_NONNULL_BEGIN
 	switch (tag) {
 		case MTMMWindowToggleVisibilityOfServerList: // "Toggle Visibility of Server List"
 		case MTMMWindowSortChannelList: // "Sort Channel List"
-		case MTMMWindowCenterWindow: // "Center Window"
 		case MTMMWindowResetWindowToDefaultSize: // "Reset Window to Default Size"
 		{
 			BOOL isMainWindowMain = TVCMainWindow.currentWindow.mainWindow;
@@ -1010,7 +1057,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u != nil);
 		}
 
-		case MTMMWindowViewLogs: // "View Logs"
+		case MTMMWindowViewLogs: // "Show All Logs in Finder"
 		{
 			return [TPCPreferences logToDiskIsEnabled];
 		}
@@ -1151,7 +1198,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return webView.hasSelection;
 		}
 
-		case MTWKGeneralQueryLogs: // "Query Logs" (WebKit)
+		case MTWKGeneralQueryLogs: // "Show Logs in Finder" (WebKit)
 		{
 			menuItem.hidden = (c.isPrivateMessage == NO);
 
@@ -1162,7 +1209,7 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			menuItem.hidden = (c.isChannel == NO);
 
-			/* "Query Logs" will appear above this menu item,
+			/* "Show Logs in Finder" will appear above this menu item,
 			 but if this is neither channel or query, then we
 			 have to hide the separator above that so it's not
 			 just sitting there with nothing beneath it. */
@@ -1424,7 +1471,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u.isLoggedIn && c.isUtility == NO);
 		}
 
-		case MTUserControlsPrivateMessage: // "Private Message (Query)"
+		case MTUserControlsPrivateMessage: // "Send Private Message"
 		{
 			menuItem.hidden = (c.isChannel == NO);
 

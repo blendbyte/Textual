@@ -58,7 +58,7 @@
         </menu>
         <menu title="Menu" id="374" userLabel="Channel View Menu">
             <items>
-                <menuItem title="Change Nickname..." tag="1200" id="377">
+                <menuItem title="Change Nickname…" tag="1200" id="377">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="showServerChangeNicknameSheet:" target="267" id="tlA-ze-pwa"/>
@@ -92,7 +92,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" tag="1207" id="1397"/>
-                <menuItem title="Query Logs" tag="1208" keyEquivalent="L" id="1492">
+                <menuItem title="Show Logs in Finder" tag="1208" keyEquivalent="L" id="1492">
                     <connections>
                         <action selector="openChannelLogs:" target="267" id="2571"/>
                     </connections>
@@ -111,13 +111,13 @@
         </menu>
         <menu title="File" id="Q9Y-E0-gAT" userLabel="Dock Menu">
             <items>
-                <menuItem title="Disable All Notifications" tag="1700" id="dnc-ku-aQ3">
+                <menuItem title="Mute Notifications" tag="1700" id="dnc-ku-aQ3">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="toggleMuteOnNotifications:" target="267" id="Hrx-oO-Zow"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Disable All Notification Sounds" tag="1701" keyEquivalent="M" id="5jG-1t-WG4">
+                <menuItem title="Mute Sounds" tag="1701" keyEquivalent="M" id="5jG-1t-WG4">
                     <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                     <connections>
                         <action selector="toggleMuteOnNotificationSounds:" target="267" id="rBT-LB-lUy"/>
@@ -160,13 +160,13 @@
                                     <action selector="showPreferencesWindow:" target="267" id="nJn-8N-O42"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Manage license…" tag="103" id="yeF-9Q-Tlt">
+                            <menuItem title="Manage License…" tag="103" id="yeF-9Q-Tlt">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="manageLicense:" target="267" id="9xt-Qu-8UP"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Check for updates…" tag="105" id="SKm-yR-9hI">
+                            <menuItem title="Check for Updates…" tag="105" id="SKm-yR-9hI">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="checkForUpdates:" target="267" id="Khl-F9-d2t"/>
@@ -222,13 +222,13 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="File" id="1747">
                         <items>
-                            <menuItem title="Disable All Notifications" tag="200" id="QNy-Fk-SRO">
+                            <menuItem title="Mute Notifications" tag="200" id="QNy-Fk-SRO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="toggleMuteOnNotifications:" target="267" id="BG4-hs-ZvW"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Disable All Notification Sounds" tag="201" keyEquivalent="M" id="3092">
+                            <menuItem title="Mute Sounds" tag="201" keyEquivalent="M" id="3092">
                                 <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                 <connections>
                                     <action selector="toggleMuteOnNotificationSounds:" target="267" id="Ox8-g0-Y9n"/>
@@ -495,24 +495,24 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="View" id="1783">
                         <items>
-                            <menuItem title="Mark Scrollback" tag="400" keyEquivalent="l" id="1786">
+                            <menuItem title="Add Marker" tag="400" keyEquivalent="l" id="1786">
                                 <connections>
                                     <action selector="markScrollback:" target="267" id="2593"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Scrollback Marker" tag="401" keyEquivalent="l" id="2305">
+                            <menuItem title="Go to Marker" tag="401" keyEquivalent="l" id="2305">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
                                     <action selector="gotoScrollbackMarker:" target="267" id="2595"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="402" id="2307"/>
-                            <menuItem title="Mark All As Read" tag="403" keyEquivalent="U" id="1924">
+                            <menuItem title="Mark All as Read" tag="403" keyEquivalent="U" id="1924">
                                 <connections>
                                     <action selector="markAllAsRead:" target="267" id="2596"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Clear Scrollback" tag="404" keyEquivalent="k" id="2299">
+                            <menuItem title="Clear Messages" tag="404" keyEquivalent="k" id="2299">
                                 <connections>
                                     <action selector="clearScrollback:" target="267" id="2594"/>
                                 </connections>
@@ -529,7 +529,7 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="408" id="1918"/>
-                            <menuItem title="Toggle Fullscreen" tag="409" keyEquivalent="f" id="1790">
+                            <menuItem title="Enter Full Screen" tag="409" keyEquivalent="f" id="1790">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
                                     <action selector="toggleFullscreen:" target="267" id="v4x-I2-JVb"/>
@@ -570,7 +570,7 @@
                             <menuItem isSeparatorItem="YES" tag="504" id="293">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Channel List…" tag="505" id="492">
+                            <menuItem title="Browse Channels…" tag="505" id="492">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="showServerChannelList:" target="267" id="2604"/>
@@ -585,8 +585,7 @@
                             <menuItem isSeparatorItem="YES" tag="507" id="298">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Add Server…" tag="508" id="300">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Add Server…" tag="508" keyEquivalent="n" id="300">
                                 <connections>
                                     <action selector="addServer:" target="267" id="2605"/>
                                 </connections>
@@ -675,9 +674,9 @@ CA
                         <action selector="emptyAction:" target="267" id="btc-wk-RoB"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Navigation" tag="8" id="1542">
+                <menuItem title="Go" tag="8" id="1542">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Navigation" id="1543">
+                    <menu key="submenu" title="Go" id="1543">
                         <items>
                             <menuItem title="Servers" tag="700" id="1545">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -773,17 +772,14 @@ CQ
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="702" id="1576"/>
-                            <menuItem title="Move Backward" tag="703" id="4BH-0G-zyN">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Back" tag="703" keyEquivalent="[" id="4BH-0G-zyN">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
                                     <action selector="performNavigationAction:" target="267" id="TYh-BI-Pqn"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Move Forward" tag="704" id="1577">
-                                <string key="keyEquivalent" base64-UTF8="YES">
-CQ
-</string>
-                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                            <menuItem title="Forward" tag="704" keyEquivalent="]" id="1577">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
                                     <action selector="performNavigationAction:" target="267" id="yn1-bX-GHN"/>
                                 </connections>
@@ -825,7 +821,7 @@ CQ
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="713" id="4n1-ds-J5l"/>
-                            <menuItem title="Channel List…" tag="714" id="FbN-9g-vFD">
+                            <menuItem title="Go to Channel" tag="714" id="FbN-9g-vFD">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Channel List…" id="89a-J1-2zg">
                                     <items>
@@ -901,12 +897,6 @@ CQ
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="808" id="EnE-LZ-pWA"/>
-                            <menuItem title="Center Window" tag="809" id="1524">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="centerMainWindow:" target="267" id="2554"/>
-                                </connections>
-                            </menuItem>
                             <menuItem title="Reset Window to Default Size" tag="810" id="3096">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -938,13 +928,14 @@ CQ
                                     <action selector="showIgnoreList:" target="267" id="Vza-RY-BtS"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="View Logs" tag="815" keyEquivalent="4" id="1378">
+                            <menuItem title="Show All Logs in Finder" tag="815" keyEquivalent="4" id="1378">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                 <connections>
                                     <action selector="openLogLocation:" target="267" id="2574"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Mentions" tag="816" keyEquivalent="M" id="2268">
+                            <menuItem title="Mentions" tag="816" keyEquivalent="5" id="2268">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                 <connections>
                                     <action selector="showMentions:" target="267" id="QzC-Mq-UeU"/>
                                 </connections>
@@ -1134,7 +1125,7 @@ CQ
                         <action selector="addChannel:" target="267" id="fCm-ro-Nf1"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Delete Channel" tag="604" id="Z4A-oQ-yoK">
+                <menuItem title="Delete Channel…" tag="604" id="Z4A-oQ-yoK">
                     <string key="keyEquivalent" base64-UTF8="YES">
 CA
 </string>
@@ -1146,7 +1137,7 @@ CA
                 <menuItem isSeparatorItem="YES" tag="605" id="O0y-AX-HXr">
                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                 </menuItem>
-                <menuItem title="View Logs" tag="606" keyEquivalent="L" id="1VV-Oq-Rk6">
+                <menuItem title="Show Logs in Finder" tag="606" keyEquivalent="L" id="1VV-Oq-Rk6">
                     <connections>
                         <action selector="openChannelLogs:" target="267" id="47A-tT-tZa"/>
                     </connections>
@@ -1154,7 +1145,7 @@ CA
                 <menuItem isSeparatorItem="YES" tag="607" id="avn-dz-Qmm">
                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                 </menuItem>
-                <menuItem title="Modify Topic" tag="608" keyEquivalent="t" id="RId-Ia-xg5">
+                <menuItem title="Edit Topic…" tag="608" keyEquivalent="t" id="RId-Ia-xg5">
                     <connections>
                         <action selector="showChannelModifyTopicSheet:" target="267" id="at7-Bz-xYc"/>
                     </connections>
@@ -1189,7 +1180,7 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Azs-Ib-6y7"/>
-                            <menuItem title="Manage All Modes" tag="6090004" keyEquivalent="o" id="2Em-53-ZkH">
+                            <menuItem title="Edit Modes…" tag="6090004" keyEquivalent="o" id="2Em-53-ZkH">
                                 <connections>
                                     <action selector="showChannelModifyModesSheet:" target="267" id="4Cq-dH-L56"/>
                                 </connections>
@@ -1204,29 +1195,29 @@ CA
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" tag="610" id="RqG-lo-Gxd"/>
-                <menuItem title="List of Bans" tag="611" keyEquivalent="B" id="3Th-KI-FDa">
+                <menuItem title="Bans…" tag="611" keyEquivalent="B" id="3Th-KI-FDa">
                     <connections>
                         <action selector="showChannelBanList:" target="267" id="ljO-i2-HSo"/>
                     </connections>
                 </menuItem>
-                <menuItem title="List of Ban Exceptions" tag="612" keyEquivalent="E" id="JDw-Hy-xwD">
+                <menuItem title="Ban Exceptions…" tag="612" keyEquivalent="E" id="JDw-Hy-xwD">
                     <connections>
                         <action selector="showChannelBanExceptionList:" target="267" id="8ov-fX-8lN"/>
                     </connections>
                 </menuItem>
-                <menuItem title="List of Invite Exceptions" tag="613" keyEquivalent="I" id="fgw-tx-l9L">
+                <menuItem title="Invite Exceptions…" tag="613" keyEquivalent="I" id="fgw-tx-l9L">
                     <connections>
                         <action selector="showChannelInviteExceptionList:" target="267" id="oCP-WI-lax"/>
                     </connections>
                 </menuItem>
-                <menuItem title="List of Quiets" tag="614" id="0Ea-Ek-qd7">
+                <menuItem title="Quiets…" tag="614" id="0Ea-Ek-qd7">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="showChannelQuietList:" target="267" id="1cz-cj-aO6"/>
                     </connections>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" tag="614" id="ELz-5M-mXc"/>
-                <menuItem title="Channel Properties…" tag="615" keyEquivalent="i" id="rP5-rz-Tdf">
+                <menuItem isSeparatorItem="YES" tag="615" id="ELz-5M-mXc"/>
+                <menuItem title="Channel Properties…" tag="616" keyEquivalent="i" id="rP5-rz-Tdf">
                     <connections>
                         <action selector="showChannelPropertiesSheet:" target="267" id="uB4-c9-8pW"/>
                     </connections>
@@ -1243,7 +1234,7 @@ CA
                         <action selector="openInNewWindow:" target="267" id="pOw-a2-d8y"/>
                     </connections>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" tag="616" id="G83-kQ-M4p">
+                <menuItem isSeparatorItem="YES" tag="617" id="G83-kQ-M4p">
                     <connections>
                         <binding destination="TlT-Ik-3QP" name="hidden" keyPath="values.TextualDeveloperEnvironment" id="Oq2-DH-zfe">
                             <dictionary key="options">
@@ -1252,7 +1243,7 @@ CA
                         </binding>
                     </connections>
                 </menuItem>
-                <menuItem title="Copy Unique Identifier" tag="617" id="DuZ-FR-y17">
+                <menuItem title="Copy Unique Identifier" tag="618" id="DuZ-FR-y17">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="copyUniqueIdentifier:" target="267" id="AP7-Yd-CKd"/>
@@ -1283,12 +1274,12 @@ CA
                 <menuItem isSeparatorItem="YES" tag="1801" id="4Jy-dg-PdG">
                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                 </menuItem>
-                <menuItem title="Query Logs" tag="1802" keyEquivalent="L" id="HNx-8u-amC">
+                <menuItem title="Show Logs in Finder" tag="1802" keyEquivalent="L" id="HNx-8u-amC">
                     <connections>
                         <action selector="openChannelLogs:" target="267" id="Fgb-hr-F9e"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Mute Private Message" tag="1803" id="mTq-s3-c2m">
+                <menuItem title="Mute Conversation" tag="1803" id="mTq-s3-c2m">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="toggleMute:" target="267" id="mTq-a3-e7z"/>
@@ -1346,7 +1337,7 @@ CA
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" tag="1603" id="lgn-Pi-rSn"/>
-                <menuItem title="Invite to..." tag="1604" id="1003">
+                <menuItem title="Invite to…" tag="1604" id="1003">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="memberSendInvite:" target="267" id="2627"/>
@@ -1358,7 +1349,7 @@ CA
                         <action selector="memberSendWhois:" target="267" id="2625"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Private Message (Query)" tag="1607" id="329">
+                <menuItem title="Send Private Message" tag="1607" id="329">
                     <connections>
                         <action selector="memberStartPrivateMessage:" target="267" id="2924"/>
                     </connections>
@@ -1456,7 +1447,7 @@ CA
                 <menuItem title="Client-to-Client" tag="1623" id="437">
                     <menu key="submenu" title="Client-to-Client" id="438">
                         <items>
-                            <menuItem title="Send file…" tag="16230000" id="Ckj-P4-1K5">
+                            <menuItem title="Send File…" tag="16230000" id="Ckj-P4-1K5">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="memberSendFileRequest:" target="267" id="ILQ-5P-8gU"/>
