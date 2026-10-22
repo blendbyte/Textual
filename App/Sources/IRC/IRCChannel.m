@@ -88,15 +88,6 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	return nil;
 }
 
-- (instancetype)initWithConfigDictionary:(NSDictionary<NSString *, id> *)dic
-{
-	NSParameterAssert(dic != nil);
-
-	IRCChannelConfig *config = [[IRCChannelConfig alloc] initWithDictionary:dic];
-
-	return [self initWithConfig:config];
-}
-
 - (instancetype)initWithConfig:(IRCChannelConfig *)config
 {
 	if ((self = [super init])) {

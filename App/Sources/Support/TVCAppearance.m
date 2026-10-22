@@ -259,17 +259,6 @@ typedef NS_ENUM(NSUInteger, TVCListAppearanceImageType)
 #pragma mark -
 #pragma mark Utilities
 
-- (nullable id)_valueForKey:(NSString *)key expectedType:(Class)expectedType
-{
-	NSDictionary *group = self.appearanceProperties;
-
-	if (group == nil) {
-		return nil;
-	}
-
-	return [self _valueInGroup:group withKey:key expectedType:expectedType];
-}
-
 - (nullable id)_valueInGroup:(NSDictionary<NSString *, id> *)group withKey:(NSString *)key expectedType:(Class)expectedType
 {
 	NSParameterAssert(group != nil);

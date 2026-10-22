@@ -42,7 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showMessage:(NSString *)message forView:(NSView *)view;
 
-- (void)closeMessage;
 - (void)closeMessageForView:(NSView *)view;
 @end
 

@@ -185,8 +185,6 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Create popover */
 	NSPopover *popover = [TVCErrorMessagePopoverView new];
 
-	popover.delegate = (id)self;
-
 	popover.contentViewController = viewController;
 
 	popover.behavior = NSPopoverBehaviorTransient;
@@ -221,34 +219,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[popover close];
 
 	self.popover = nil;
-}
-
-- (void)popoverWillShow:(NSNotification *)notification
-{
-	if ([self.delegate respondsToSelector:@selector(errorMessagePopoverWillShow:)]) {
-		[self.delegate errorMessagePopoverWillShow:self];
-	}
-}
-
-- (void)popoverDidShow:(NSNotification *)notification
-{
-	if ([self.delegate respondsToSelector:@selector(errorMessagePopoverDidShow:)]) {
-		[self.delegate errorMessagePopoverDidShow:self];
-	}
-}
-
-- (void)popoverWillClose:(NSNotification *)notification
-{
-	if ([self.delegate respondsToSelector:@selector(errorMessagePopoverWillClose:)]) {
-		[self.delegate errorMessagePopoverWillClose:self];
-	}
-}
-
-- (void)popoverDidClose:(NSNotification *)notification
-{
-	if ([self.delegate respondsToSelector:@selector(errorMessagePopoverDidClose:)]) {
-		[self.delegate errorMessagePopoverDidClose:self];
-	}
 }
 
 @end

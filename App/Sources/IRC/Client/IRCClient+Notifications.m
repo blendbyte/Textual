@@ -402,11 +402,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[[TXSharedApplication sharedSpeechSynthesizer] speak:notification];
 }
 
-- (BOOL)notifyText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text
-{
-	return [self notifyEvent:eventType lineType:lineType target:target nickname:nickname text:text userInfo:nil];
-}
-
 - (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType
 {
 	return [self notifyEvent:eventType lineType:lineType target:nil nickname:nil text:nil userInfo:nil];

@@ -277,7 +277,6 @@
 		66DFD10C7E3C644C01D898A6 /* TVCMemberListController.m in Sources */ = {isa = PBXBuildFile; fileRef = E5554E128D5404764DD44D7B /* TVCMemberListController.m */; };
 		4C06E6ED20EC55B90055D09A /* TVCAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152C420EB673E00448776 /* TVCAppearance.m */; };
 		4C06E6EE20EC55B90055D09A /* TVCBasicTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152A320EB673E00448776 /* TVCBasicTableView.m */; };
-		4C06E6EF20EC55B90055D09A /* TVCContentNavigationOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152B520EB673E00448776 /* TVCContentNavigationOutlineView.m */; };
 		4C06E6F020EC55B90055D09A /* TVCDockIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152C520EB673E00448776 /* TVCDockIcon.m */; };
 		4C0A31152C374A5B0081EF1F /* KeysExcludedFromMigrate.plist in Copy Preference Resources */ = {isa = PBXBuildFile; fileRef = 4C0A31122C37419D0081EF1F /* KeysExcludedFromMigrate.plist */; };
 		4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */; };
@@ -454,7 +453,6 @@
 		4C31574B20EB6D0500448776 /* TVCAppearancePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151D520EB673E00448776 /* TVCAppearancePrivate.h */; };
 		4C31574C20EB6D0500448776 /* TVCChannelSelectionOutlineViewCellPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151F820EB673E00448776 /* TVCChannelSelectionOutlineViewCellPrivate.h */; };
 		4C31574D20EB6D0500448776 /* TVCChannelSelectionViewControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520520EB673E00448776 /* TVCChannelSelectionViewControllerPrivate.h */; };
-		4C31574E20EB6D0500448776 /* TVCContentNavigationOutlineViewPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31521F20EB673E00448776 /* TVCContentNavigationOutlineViewPrivate.h */; };
 		4C31574F20EB6D0500448776 /* TVCDockIconPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522720EB673E00448776 /* TVCDockIconPrivate.h */; };
 		4C31575020EB6D0500448776 /* HLSHistoricLogManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522420EB673E00448776 /* HLSHistoricLogManagerPrivate.h */; };
 		4C31575120EB6D0500448776 /* TVCLogControllerInlineMediaServicePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151C220EB673E00448776 /* TVCLogControllerInlineMediaServicePrivate.h */; };
@@ -573,7 +571,6 @@
 		4C0F3D08A76F1B319FC1BA04 /* ICMDailymotion.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE67423BB267BA07605E197 /* ICMDailymotion.m */; };
 		4C393DC4CC49ADA712A27C1A /* ICMGyazo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C6702992F6B99C3F06B9D /* ICMGyazo.m */; };
 		4CA06DF7B436103B77377CFD /* ICMImgurGifv.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C12019EE303B756900ABB5D /* ICMImgurGifv.m */; };
-		4CE1A54953EAFB8BCA43FAF4 /* ICMInlineHTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFF01EE542F4AD537AE0715 /* ICMInlineHTML.m */; };
 		4CC3AD4A0D7CB9FF5C3361F8 /* ICMPreviewCard.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C5A93C5C79F48BAEC8D946C /* ICMPreviewCard.m */; };
 		4CE4FA966B02F0469946B6C6 /* ICMInlineImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C04D45C7182C9433368C14B /* ICMInlineImage.m */; };
 		4C45B3D666CB1892FDBD5318 /* ICMInlineVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CBCE092DEC024410CA7AB3D /* ICMInlineVideo.m */; };
@@ -1173,7 +1170,6 @@
 		4C31521920EB673E00448776 /* THOPluginItemPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = THOPluginItemPrivate.h; sourceTree = "<group>"; };
 		4C31521A20EB673E00448776 /* TVCMemberListAppearancePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMemberListAppearancePrivate.h; sourceTree = "<group>"; };
 		4C31521B20EB673E00448776 /* TDCChannelSpotlightAppearancePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCChannelSpotlightAppearancePrivate.h; sourceTree = "<group>"; };
-		4C31521F20EB673E00448776 /* TVCContentNavigationOutlineViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCContentNavigationOutlineViewPrivate.h; sourceTree = "<group>"; };
 		4C31522020EB673E00448776 /* IRCConnectionPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCConnectionPrivate.h; sourceTree = "<group>"; };
 		4C31522120EB673E00448776 /* IRCChannelConfigPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCChannelConfigPrivate.h; sourceTree = "<group>"; };
 		4C31522220EB673E00448776 /* TLOLicenseManagerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOLicenseManagerPrivate.h; sourceTree = "<group>"; };
@@ -1311,7 +1307,6 @@
 		4C3152B320EB673E00448776 /* TVCMemberList.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCMemberList.m; sourceTree = "<group>"; };
 		4C3152B420EB673E00448776 /* TVCMemberListUserInfoPopover.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCMemberListUserInfoPopover.m; sourceTree = "<group>"; };
 		E5554E128D5404764DD44D7B /* TVCMemberListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCMemberListController.m; sourceTree = "<group>"; };
-		4C3152B520EB673E00448776 /* TVCContentNavigationOutlineView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCContentNavigationOutlineView.m; sourceTree = "<group>"; };
 		4C3152B720EB673E00448776 /* TVCLogScriptEventSink.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogScriptEventSink.m; sourceTree = "<group>"; };
 		4C3152B820EB673E00448776 /* TVCLogPolicy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogPolicy.m; sourceTree = "<group>"; };
 		4C3152B920EB673E00448776 /* TVCLogViewInternalWK2.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCLogViewInternalWK2.m; sourceTree = "<group>"; };
@@ -1448,8 +1443,6 @@
 		4C6C6702992F6B99C3F06B9D /* ICMGyazo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMGyazo.m; sourceTree = "<group>"; };
 		4C5330E282610D940E98866A /* ICMImgurGifv.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMImgurGifv.h; sourceTree = "<group>"; };
 		4C12019EE303B756900ABB5D /* ICMImgurGifv.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMImgurGifv.m; sourceTree = "<group>"; };
-		4C55AA11FB04B6C6C33CEEB3 /* ICMInlineHTML.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMInlineHTML.h; sourceTree = "<group>"; };
-		4CFF01EE542F4AD537AE0715 /* ICMInlineHTML.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMInlineHTML.m; sourceTree = "<group>"; };
 		4C61CB8A366E18B4F519C192 /* ICMPreviewCard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMPreviewCard.h; sourceTree = "<group>"; };
 		4C5A93C5C79F48BAEC8D946C /* ICMPreviewCard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ICMPreviewCard.m; sourceTree = "<group>"; };
 		4CD880CED5FB3E78B5557596 /* ICMInlineImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ICMInlineImage.h; sourceTree = "<group>"; };
@@ -1977,8 +1970,6 @@
 		4C7BBB3DA4D6F18C1554247F /* Root Classes */ = {
 			isa = PBXGroup;
 			children = (
-				4C55AA11FB04B6C6C33CEEB3 /* ICMInlineHTML.h */,
-				4CFF01EE542F4AD537AE0715 /* ICMInlineHTML.m */,
 				4C61CB8A366E18B4F519C192 /* ICMPreviewCard.h */,
 				4C5A93C5C79F48BAEC8D946C /* ICMPreviewCard.m */,
 				4CD880CED5FB3E78B5557596 /* ICMInlineImage.h */,
@@ -2487,8 +2478,6 @@
 				4C383977B265CD83423CFB93 /* Member List */,
 				4C408DC3EB240C42F25C2072 /* Server List */,
 				4C3152A320EB673E00448776 /* TVCBasicTableView.m */,
-				4C3152B520EB673E00448776 /* TVCContentNavigationOutlineView.m */,
-				4C31521F20EB673E00448776 /* TVCContentNavigationOutlineViewPrivate.h */,
 				4CB0048C04883193A17DEABB /* TVCMainWindow+ChannelView.m */,
 				4CC47131B1DC97629ECE4F9E /* TVCMainWindow+Input.m */,
 				4C1C0F11E0A0000000000A04 /* TVCMainWindow+Replies.m */,
@@ -3296,7 +3285,6 @@
 				4C31573620EB6D0500448776 /* TLOFileLoggerPrivate.h in Headers */,
 				4C1AB8B887697DF3790BB6DA /* TLOMessageArchivePrivate.h in Headers */,
 				4C3155A820EB6CB400448776 /* IRCChannelMode.h in Headers */,
-				4C31574E20EB6D0500448776 /* TVCContentNavigationOutlineViewPrivate.h in Headers */,
 				4C3155B920EB6CB400448776 /* IRCTreeItem.h in Headers */,
 				4C06E26920EC4C560055D09A /* TPCPreferencesUserDefaultsPrivate.h in Headers */,
 				4C3155E920EB6CB400448776 /* TVCMainWindowLoadingScreen.h in Headers */,
@@ -3919,7 +3907,6 @@
 				66DFD10C7E3C644C01D898A6 /* TVCMemberListController.m in Sources */,
 				4C06E6ED20EC55B90055D09A /* TVCAppearance.m in Sources */,
 				4C06E6EE20EC55B90055D09A /* TVCBasicTableView.m in Sources */,
-				4C06E6EF20EC55B90055D09A /* TVCContentNavigationOutlineView.m in Sources */,
 				4CB873DE22B4A56B005AB046 /* TDCPreferencesUserStyleSheet.m in Sources */,
 				4C06E6F020EC55B90055D09A /* TVCDockIcon.m in Sources */,
 				4C089149ACB2ECE6EAD0FC4F /* ICLHelpers.m */,
@@ -3939,7 +3926,6 @@
 				4C0F3D08A76F1B319FC1BA04 /* ICMDailymotion.m */,
 				4C393DC4CC49ADA712A27C1A /* ICMGyazo.m */,
 				4CA06DF7B436103B77377CFD /* ICMImgurGifv.m */,
-				4CE1A54953EAFB8BCA43FAF4 /* ICMInlineHTML.m */,
 				4CC3AD4A0D7CB9FF5C3361F8 /* ICMPreviewCard.m */,
 				4CE4FA966B02F0469946B6C6 /* ICMInlineImage.m */,
 				4C45B3D666CB1892FDBD5318 /* ICMInlineVideo.m */,

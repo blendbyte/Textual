@@ -362,11 +362,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.formattingMenu toggleEffect:IRCTextFormatterEffectItalic];
 }
 
-- (void)textFormattingStrikethrough:(NSEvent *)e
-{
-	[self.formattingMenu toggleEffect:IRCTextFormatterEffectStrikethrough];
-}
-
 - (void)textFormattingUnderline:(NSEvent *)e
 {
 	[self.formattingMenu toggleEffect:IRCTextFormatterEffectUnderline];

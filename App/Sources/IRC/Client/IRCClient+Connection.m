@@ -190,11 +190,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.knownUsers removeAllUsers];
 }
 
-- (void)changeStateOff
-{
-	[self changeStateOffWithError:nil];
-}
-
 - (void)changeStateOffWithError:(nullable NSError *)disconnectError
 {
 	if (self.isConnecting == NO && self.isConnected == NO) {

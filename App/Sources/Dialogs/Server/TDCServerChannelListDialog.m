@@ -241,10 +241,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.window saveWindowStateForClass:self.class];
 
-	if ([self.delegate respondsToSelector:@selector(serverChannelDialogWillClose:)]) {
-		[self.delegate serverChannelDialogWillClose:self];
-	}
-
 	[super windowWillClose:note];
 }
 

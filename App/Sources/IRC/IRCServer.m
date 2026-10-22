@@ -51,27 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return [super initWithDictionary:@{}];
 }
 
-- (void)initializedClassHealthCheck
-{
-	if (self.initializedAsCopy) {
-		return;
-	}
-
-	/* Health checks are disabled because Server Properties might
-	write an empty server address to the class then perform a
-	copy on the object which would throw an exception. */
-	/* TODO: Modify Server Properties to be more friendly. */
-
-#if 0
-	if (self.mutable) {
-		return;
-	}
-
-	NSParameterAssert(self->_serverAddress.length > 0);
-	NSParameterAssert(self->_serverPort > 0 && self->_serverPort <= TXMaximumTCPPort);
-#endif
-}
-
 - (void)populateDefaultsPreflight
 {
 	if (self.initializedAsCopy) {

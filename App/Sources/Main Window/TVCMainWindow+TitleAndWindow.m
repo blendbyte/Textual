@@ -164,8 +164,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.titlebarAccessoryViewLockButton.action = @selector(presentCertificateTrustInformation:);
 
-	[self.titlebarAccessoryViewLockButton disableDrawingCustomBackgroundColor];
-
 	[self.titlebarAccessoryViewLockButton positionImageOverContent];
 
 	self.titlebarAccessoryViewLockButton.title = @"";

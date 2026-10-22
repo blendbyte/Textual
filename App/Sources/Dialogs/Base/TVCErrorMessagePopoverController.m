@@ -98,11 +98,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)closeMessage
-{
-	[self _closePopoverForView:nil];
-}
-
 - (void)closeMessageForView:(NSView *)view
 {
 	[self _closePopoverForView:view];

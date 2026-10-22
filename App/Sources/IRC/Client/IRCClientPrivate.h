@@ -70,7 +70,6 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 @property (nonatomic, weak, readwrite) IRCChannel *lastSelectedChannel;
 
 - (instancetype)initWithConfig:(IRCClientConfig *)config NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithConfigDictionary:(NSDictionary<NSString *, id> *)dic;
 
 - (void)updateConfig:(IRCClientConfig *)config;
 - (void)updateConfig:(IRCClientConfig *)config updateSelection:(BOOL)updateSelection;
@@ -90,7 +89,6 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 - (void)channelNameChanged; // A query was renamed; drops the name lookup map
 
-- (NSUInteger)indexOfChannel:(IRCChannel *)channel;
 
 - (void)selectFirstChannelInChannelList;
 

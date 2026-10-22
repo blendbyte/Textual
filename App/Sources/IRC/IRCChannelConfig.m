@@ -82,13 +82,6 @@ NS_ASSUME_NONNULL_BEGIN
 	SetVariableIfNil(self->_notificationsMutable, [NSMutableDictionary dictionary])
 }
 
-- (void)populateDefaultsByAppendingDictionary:(NSDictionary<NSString *, id> *)defaultsToAppend
-{
-	NSParameterAssert(defaultsToAppend != nil);
-
-	self->_defaults = [self->_defaults dictionaryByAddingEntries:defaultsToAppend];
-}
-
 #pragma mark -
 #pragma mark Channel Configuration
 

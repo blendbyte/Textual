@@ -90,11 +90,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Selected User(s)
 
-- (BOOL)checkSelectedMembers:(nullable id)sender
-{
-	return ([self selectedMembers:sender].count > 0);
-}
-
 - (NSArray<IRCChannelUser *> *)selectedMembers:(nullable id)sender
 {
 	return [self selectedMembers:sender returnStrings:NO];

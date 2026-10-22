@@ -229,14 +229,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[[ICLInlineContentLoader sharedLoader] _cancelModule:self];
 }
 
-+ (BOOL)isTypeDeferrable:(ICLMediaType)type
-{
-	return (type == ICLMediaTypeImage ||
-			type == ICLMediaTypeVideo ||
-			type == ICLMediaTypeVideoGif ||
-			type == ICLMediaTypeAudio);
-}
-
 - (void)deferAsType:(ICLMediaType)type
 {
 	[self deferAsType:type performCheck:YES];

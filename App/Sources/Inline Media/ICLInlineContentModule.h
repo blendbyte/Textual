@@ -265,7 +265,6 @@ typedef void (^ICLInlineContentModuleActionBlock)(ICLInlineContentModule *module
 /**
  Returns YES if a type is supported by -deferAsType:
  */
-+ (BOOL)isTypeDeferrable:(ICLMediaType)type;
 @end
 
 NS_ASSUME_NONNULL_END

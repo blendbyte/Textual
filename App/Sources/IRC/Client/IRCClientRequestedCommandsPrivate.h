@@ -57,50 +57,10 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark ISON Command (Default: hidden)
 
 @property (readonly, getter=inVisibleIsonRequest) BOOL visibleIsonRequest;
-- (void)recordIsonRequestOpened;
 - (void)recordIsonRequestOpenedWithCount:(NSUInteger)count; // hidden, one reply per line sent
 - (void)recordIsonRequestOpenedAsVisible;
 - (void)recordIsonRequestClosed;
 - (BOOL)recordIsonReplyReceived; // YES once every line of a hidden request was answered
-
-#pragma mark -
-#pragma mark MONITOR Command (Default: hidden)
-
-#if 0
-/* The MONITOR command can perform multiple actions which means its results
- do not always have a predetermined number of results or an end numeric. */
-/* To work around this, we feed IRCClientRequestedCommands an estimate
- of the number of responses to expect. We then decrement that by calling
- the *ClosedOne for each response received. When the count reaches zero,
- the request is automatically closed without calling *Closed. */
-/* If we encounter an error, we instead call *Closed which ends the request there. */
-@property (readonly, getter=inVisibleMonitorRequest) BOOL visibleMonitorRequest;
-- (void)recordMonitorRequestOpened; // No limit on count
-- (void)recordMonitorRequestOpenedWithCount:(NSUInteger)count;
-- (void)recordMonitorRequestOpenedAsVisible; // No limit on count
-- (void)recordMonitorRequestOpenedAsVisibleWithCount:(NSUInteger)count;
-- (void)recordMonitorRequestClosedOne; // Does nothing if no count is specified
-- (void)recordMonitorRequestClosed;
-
-#pragma mark -
-#pragma mark NAMES Command (Default: hidden)
-
-@property (readonly, getter=inVisibleNamesRequest) BOOL visibleNamesRequest;
-- (void)recordNamesRequestOpened;
-- (void)recordNamesRequestOpenedAsVisible;
-- (void)recordNamesRequestClosed;
-
-#pragma mark -
-#pragma mark WATCH Command (Default: hidden)
-
-@property (readonly, getter=inVisibleWatchRequest) BOOL visibleWatchRequest;
-- (void)recordWatchRequestOpened; // No limit on count
-- (void)recordWatchRequestOpenedWithCount:(NSUInteger)count;
-- (void)recordWatchRequestOpenedAsVisible; // No limit on count
-- (void)recordWatchRequestOpenedAsVisibleWithCount:(NSUInteger)count;
-- (void)recordWatchRequestClosedOne; // Does nothing if no count is specified
-- (void)recordWatchRequestClosed;
-#endif
 
 #pragma mark -
 #pragma mark WHO Command (Default: hidden)

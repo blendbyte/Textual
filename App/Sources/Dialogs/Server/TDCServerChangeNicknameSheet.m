@@ -127,18 +127,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self okOrErrorForTextField:self.tnewNicknameTextField];
 }
 
-#pragma mark -
-#pragma mark NSWindow Delegate
-
-- (void)windowWillClose:(NSNotification *)note
-{
-	if ([self.delegate respondsToSelector:@selector(serverChangeNicknameSheetWillClose:)]) {
-		[self.delegate serverChangeNicknameSheetWillClose:self];
-	}
-
-	[super windowWillClose:note];
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

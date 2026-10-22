@@ -53,10 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
 @required
 
 - (void)channelModifyModesSheet:(TDCChannelModifyModesSheet *)sender onOk:(IRCChannelModeContainer *)modes;
-
-@optional
-
-- (void)channelModifyModesSheetWillClose:(TDCChannelModifyModesSheet *)sender;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -648,10 +648,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[RZNotificationCenter() removeObserver:self];
 
-	if ([self.delegate respondsToSelector:@selector(channelSpotlightControllerWillClose:)]) {
-		[self.delegate channelSpotlightControllerWillClose:self];
-	}
-
 	[super windowWillClose:notification];
 }
 

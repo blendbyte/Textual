@@ -74,11 +74,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return [self initWithConfig:nil onClient:client];
 }
 
-- (instancetype)initWithClientId:(NSString *)clientId
-{
-	return [self initWithConfig:nil onClientWithId:clientId];
-}
-
 - (instancetype)initWithChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(channel != nil);

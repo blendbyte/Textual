@@ -121,19 +121,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self.addressBookMatchCache findIgnoresForHostmask:hostmask];
 }
 
-- (nullable IRCAddressBookEntry *)findUserTrackingAddressBookEntryForHostmask:(NSString *)hostmask
-{
-	/* We chop off the nickname from the host and only use that in the
-	 matching to keep everything a little more consistent internally. */
-	NSString *nickname = hostmask.nicknameFromHostmask;
-	
-	if (nickname == nil) {
-		return nil;
-	}
-	
-	return [self findUserTrackingAddressBookEntryForNickname:nickname];
-}
-
 - (nullable IRCAddressBookEntry *)findUserTrackingAddressBookEntryForNickname:(NSString *)nickname
 {
 	NSParameterAssert(nickname != nil);
@@ -356,20 +343,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self modifyUser:user withBlock:^(IRCUserMutable *userMutable) {
 		userMutable.nickname = toNickname;
 	}];
-}
-
-- (void)renameUserWithNickname:(NSString *)fromNickname to:(NSString *)toNickname
-{
-	NSParameterAssert(fromNickname != nil);
-	NSParameterAssert(toNickname != nil);
-
-	IRCUser *user = [self findUser:fromNickname];
-
-	if (user == nil) {
-		return;
-	}
-
-	[self renameUser:user to:toNickname];
 }
 
 - (void)modifyUser:(IRCUser *)user withBlock:(void(NS_NOESCAPE ^)(IRCUserMutable *userMutable))block

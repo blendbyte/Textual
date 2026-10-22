@@ -142,10 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self releaseColorPanel];
 
-	if ([self.delegate respondsToSelector:@selector(nicknameColorSheetWillClose:)]) {
-		[self.delegate nicknameColorSheetWillClose:self];
-	}
-
 	[super windowWillClose:note];
 }
 

@@ -43,7 +43,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMainWindowTitlebarAccessoryViewLockButton ()
-@property (nonatomic, assign) BOOL drawsCustomBackgroundColor;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *lockButtonLeftMarginConstraint;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *lockButtonRightMarginConstraint;
 
@@ -87,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[super awakeFromNib];
 
-	[self disableDrawingCustomBackgroundColor];
+	self.cell.backgroundStyle = NSBackgroundStyleRaised;
 }
 
 - (void)positionImageOverContent
@@ -95,84 +94,11 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.cell setImagePosition:NSImageOverlaps];
 }
 
-- (void)positionImageOnLeftSide
-{
-	[self.cell setImagePosition:NSImageLeft];
-}
-
 - (void)setIconAsLocked
 {
 	NSImage *iconImage = [NSImage imageNamed:@"NSLockLockedTemplate"];
 
 	self.image = iconImage;
-}
-
-- (void)setIconAsUnlocked
-{
-	NSImage *iconImage = [NSImage imageNamed:@"NSLockUnlockedTemplate"];
-
-	self.image = iconImage;
-}
-
-- (void)disableDrawingCustomBackgroundColor
-{
-	self.cell.backgroundStyle = NSBackgroundStyleRaised;
-
-	self.drawsCustomBackgroundColor = NO;
-}
-
-- (void)enableDrawingCustomBackgroundColor
-{
-	self.cell.backgroundStyle = NSBackgroundStyleLowered;
-
-	self.drawsCustomBackgroundColor = YES;
-}
-
-- (void)drawRect:(NSRect)dirtyRect
-{
-	if ([self needsToDrawRect:dirtyRect] == NO) {
-		return;
-	}
-
-	if (self.drawsCustomBackgroundColor) {
-		[self drawInterior];
-	}
-
-	[super drawRect:dirtyRect];
-}
-
-- (void)drawInterior
-{
-	if (self.mainWindowRef.isActiveForDrawing == NO) {
-		return;
-	}
-
-	TVCMainWindowAppearance *appearance = self.mainWindowRef.userInterfaceObjects;
-
-	if (appearance == nil) {
-		return;
-	}
-
-	[self drawInteriorForActiveWindowWithAppearance:appearance];
-}
-
-- (void)drawInteriorForActiveWindowWithAppearance:(TVCMainWindowAppearance *)appearance
-{
-	NSParameterAssert(appearance != nil);
-
-	/* We get the bounds of the object and tweak it just slightly to match what it
-	 actually is. After that, we draw our color in behind it to fake the background. */
-	NSRect controllerFrame = self.bounds;
-
-	controllerFrame.size.height -= 1.0;
-
-	NSColor *controllerBackgroundColor = appearance.titlebarAccessoryViewBackgroundColorActiveWindow;
-
-	NSBezierPath *drawingPath = [NSBezierPath bezierPathWithRoundedRect:controllerFrame xRadius:4.0 yRadius:4.0];
-
-	[controllerBackgroundColor set];
-
-	[drawingPath fill];
 }
 
 - (void)applicationAppearanceChanged

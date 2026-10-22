@@ -382,12 +382,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self.sheet makeFirstResponder:nil];
 
-	id delegate = self.delegate;
-
-	if ([delegate respondsToSelector:@selector(serverPropertiesSheetWillClose:)]) {
-		[delegate serverPropertiesSheetWillClose:self];
-	}
-
 	[super windowWillClose:note];
 }
 

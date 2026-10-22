@@ -135,11 +135,6 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 	});
 }
 
-- (void)systemColorsDidChange:(NSNotification *)aNote
-{
-	[self updateAppearanceBySystemChange];
-}
-
 - (void)accessibilityDisplayOptionsDidChange:(NSNotification *)aNote
 {
 	[self updateAppearanceBySystemChange];

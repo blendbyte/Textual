@@ -45,11 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)changeUserToUser:(IRCUser *)user;
 
 - (void)conversation;
-- (void)incomingConversation;
 - (void)outgoingConversation;
 
 + (NSComparator)channelRankComparator;
-+ (NSComparator)nicknameLengthComparator;
 @end
 
 NS_ASSUME_NONNULL_END

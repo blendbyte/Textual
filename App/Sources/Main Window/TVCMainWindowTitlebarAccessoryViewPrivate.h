@@ -55,14 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TVCMainWindowTitlebarAccessoryViewLockButton : NSButton
-- (void)disableDrawingCustomBackgroundColor;
-- (void)enableDrawingCustomBackgroundColor;
-
 - (void)positionImageOverContent;
-- (void)positionImageOnLeftSide;
 
 - (void)setIconAsLocked;
-- (void)setIconAsUnlocked;
 @end
 
 NS_ASSUME_NONNULL_END

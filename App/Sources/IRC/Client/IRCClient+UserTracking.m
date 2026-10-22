@@ -120,11 +120,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.trackedUsers clearTrackedUsers];
 }
 
-- (void)statusOfTrackedNickname:(NSString *)nickname changedTo:(IRCAddressBookUserTrackingStatus)newStatus
-{
-	[self statusOfTrackedNickname:nickname changedTo:newStatus notify:NO];
-}
-
 - (void)statusOfTrackedNickname:(NSString *)nickname changedTo:(IRCAddressBookUserTrackingStatus)newStatus notify:(BOOL)notify
 {
 	NSParameterAssert(nickname != nil);

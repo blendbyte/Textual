@@ -136,25 +136,6 @@ typedef NS_ENUM(NSUInteger, IRCClientRequestedCommandVisibility)
 	}
 }
 
-- (void)decrementCommandCount:(IRCRemoteCommand)command
-{
-	IRCClientRequestedCommand *commandObject = [self findCommand:command];
-
-	if (commandObject == nil) {
-		return;
-	}
-
-	if (commandObject.enforceCount == NO) {
-		return;
-	}
-
-	commandObject.count -= 1;
-
-	if (commandObject.count == 0) {
-		[self removeCommandObject:commandObject];
-	}
-}
-
 - (IRCClientRequestedCommandVisibility)commandHiddenState:(IRCRemoteCommand)command
 {
 	IRCClientRequestedCommand *commandObject = [self findCommand:command];
@@ -179,11 +160,6 @@ typedef NS_ENUM(NSUInteger, IRCClientRequestedCommandVisibility)
 - (BOOL)inVisibleIsonRequest
 {
 	return ([self commandHiddenState:IRCRemoteCommandIson] == IRCClientRequestedCommandVisibilityVisible);
-}
-
-- (void)recordIsonRequestOpened
-{
-	[self addCommand:IRCRemoteCommandIson hiddenResponse:YES];
 }
 
 - (void)recordIsonRequestOpenedWithCount:(NSUInteger)count
@@ -221,106 +197,6 @@ typedef NS_ENUM(NSUInteger, IRCClientRequestedCommandVisibility)
 
 	return NO;
 }
-
-#if 0
-- (BOOL)inVisibleMonitorRequest
-{
-	return ([self commandHiddenState:IRCRemoteCommandMonitor] == IRCClientRequestedCommandVisibilityVisible);
-}
-
-- (void)recordMonitorRequestOpened
-{
-	[self addCommand:IRCRemoteCommandMonitor hiddenResponse:YES];
-}
-
-- (void)recordMonitorRequestOpenedWithCount:(NSUInteger)count
-{
-	NSParameterAssert(count > 0);
-
-	[self addCommand:IRCRemoteCommandMonitor withCount:count hiddenResponse:YES];
-}
-
-- (void)recordMonitorRequestOpenedAsVisibleWithCount:(NSUInteger)count
-{
-	NSParameterAssert(count > 0);
-
-	[self addCommand:IRCRemoteCommandMonitor withCount:count hiddenResponse:NO];
-}
-
-- (void)recordMonitorRequestOpenedAsVisible
-{
-	[self addCommand:IRCRemoteCommandMonitor hiddenResponse:NO];
-}
-
-- (void)recordMonitorRequestClosedOne
-{
-	[self decrementCommandCount:IRCRemoteCommandMonitor];
-}
-
-- (void)recordMonitorRequestClosed
-{
-	[self removeCommand:IRCRemoteCommandMonitor];
-}
-
-- (BOOL)inVisibleNamesRequest
-{
-	return ([self commandHiddenState:IRCRemoteCommandNames] == IRCClientRequestedCommandVisibilityVisible);
-}
-
-- (void)recordNamesRequestOpened
-{
-	[self addCommand:IRCRemoteCommandNames hiddenResponse:YES];
-}
-
-- (void)recordNamesRequestOpenedAsVisible
-{
-	[self addCommand:IRCRemoteCommandNames hiddenResponse:NO];
-}
-
-- (void)recordNamesRequestClosed
-{
-	[self removeCommand:IRCRemoteCommandNames];
-}
-
-- (BOOL)inVisibleWatchRequest
-{
-	return ([self commandHiddenState:IRCRemoteCommandWatch] == IRCClientRequestedCommandVisibilityVisible);
-}
-
-- (void)recordWatchRequestOpened
-{
-	[self addCommand:IRCRemoteCommandWatch hiddenResponse:YES];
-}
-
-- (void)recordWatchRequestOpenedWithCount:(NSUInteger)count
-{
-	NSParameterAssert(count > 0);
-
-	[self addCommand:IRCRemoteCommandWatch withCount:count hiddenResponse:YES];
-}
-
-- (void)recordWatchRequestOpenedAsVisibleWithCount:(NSUInteger)count
-{
-	NSParameterAssert(count > 0);
-
-	[self addCommand:IRCRemoteCommandWatch withCount:count hiddenResponse:NO];
-}
-
-- (void)recordWatchRequestOpenedAsVisible
-{
-	[self addCommand:IRCRemoteCommandWatch hiddenResponse:NO];
-}
-
-- (void)recordWatchRequestClosedOne
-{
-	[self decrementCommandCount:IRCRemoteCommandWatch];
-}
-
-- (void)recordWatchRequestClosed
-{
-	[self removeCommand:IRCRemoteCommandWatch];
-}
-#endif
 
 - (BOOL)inVisibleWhoRequest
 {

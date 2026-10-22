@@ -37,11 +37,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol TVCErrorMessagePopoverDelegate;
-
 @interface TVCErrorMessagePopover : NSObject
-@property (nonatomic, weak) id <TVCErrorMessagePopoverDelegate> delegate;
-
 @property (readonly, copy) NSString *message;
 @property (readonly, weak) NSView *view;
 
@@ -52,15 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showRelativeToRect:(NSRect)rect preferredEdge:(NSRectEdge)preferredEdge;
 
 - (void)close;
-@end
-
-@protocol TVCErrorMessagePopoverDelegate <NSObject>
-@optional
-
-- (void)errorMessagePopoverWillShow:(TVCErrorMessagePopover *)popover;
-- (void)errorMessagePopoverDidShow:(TVCErrorMessagePopover *)popover;
-- (void)errorMessagePopoverWillClose:(TVCErrorMessagePopover *)popover;
-- (void)errorMessagePopoverDidClose:(TVCErrorMessagePopover *)popover;
 @end
 
 NS_ASSUME_NONNULL_END

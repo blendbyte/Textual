@@ -243,20 +243,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[operations makeObjectsPerformSelector:@selector(cancel)];
 }
 
-- (void)cancelOperationsForClient:(IRCClient *)client
-{
-	NSParameterAssert(client != nil);
-
-	[self cancelOperationsForViewController:client.viewController];
-}
-
-- (void)cancelOperationsForChannel:(IRCChannel *)channel
-{
-	NSParameterAssert(channel != nil);
-
-	[self cancelOperationsForViewController:channel.viewController];
-}
-
 #pragma mark -
 #pragma mark State Changes
 

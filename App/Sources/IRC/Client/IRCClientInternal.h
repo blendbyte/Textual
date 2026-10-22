@@ -254,7 +254,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)clearEventsToSpeak;
 - (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType;
 - (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(null_unspecified IRCChannel *)target nickname:(null_unspecified NSString *)nickname text:(null_unspecified NSString *)text userInfo:(nullable NSDictionary<NSString *, id> *)userInfo;
-- (BOOL)notifyText:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(IRCChannel *)target nickname:(NSString *)nickname text:(NSString *)text;
 @end
 
 @interface IRCClient (BouncerInternal)

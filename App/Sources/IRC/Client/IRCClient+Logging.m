@@ -821,30 +821,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self print:message by:nil inChannel:channel asType:TVCLogLineTypeDebug command:command escapeMessage:escapeMessage];
 }
 
-- (void)printDebugInformationInAllViews:(NSString *)message
-{
-	[self printDebugInformationInAllViews:message asCommand:TVCLogLineDefaultCommandValue escapeMessage:YES];
-}
-
-- (void)printDebugInformationInAllViews:(NSString *)message asCommand:(NSString *)command
-{
-	[self printDebugInformationInAllViews:message asCommand:command escapeMessage:YES];
-}
-
-- (void)printDebugInformationInAllViews:(NSString *)message escapeMessage:(BOOL)escapeMessage
-{
-	[self printDebugInformationInAllViews:message asCommand:TVCLogLineDefaultCommandValue escapeMessage:escapeMessage];
-}
-
-- (void)printDebugInformationInAllViews:(NSString *)message asCommand:(NSString *)command escapeMessage:(BOOL)escapeMessage
-{
-	for (IRCChannel *channel in self.channelList) {
-		[self printDebugInformation:message inChannel:channel asCommand:command escapeMessage:escapeMessage];
-	}
-
-	[self printDebugInformationToConsole:message asCommand:command escapeMessage:escapeMessage];
-}
-
 #pragma mark -
 #pragma mark Raw Data Logging
 

@@ -55,10 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 @required
 
 - (void)channelInviteSheet:(TDCChannelInviteSheet *)sender onSelectChannel:(NSString *)channelName;
-
-@optional
-
-- (void)channelInviteSheetWillClose:(TDCChannelInviteSheet *)sender;
 @end
 
 NS_ASSUME_NONNULL_END

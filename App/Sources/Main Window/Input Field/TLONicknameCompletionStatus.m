@@ -525,13 +525,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Utilities
 
-- (NSUInteger)textViewMaximumRange
-{
-	TVCMainWindowTextView *textView = self.window.inputTextField;
-
-	return textView.stringLength;
-}
-
 - (nullable NSString *)trimNickname:(NSString *)nickname usingCharacterSet:(NSCharacterSet *)charset
 {
 	for (NSUInteger i = 0; i < nickname.length; i++) {

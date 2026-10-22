@@ -112,18 +112,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[super ok:nil];
 }
 
-#pragma mark -
-#pragma mark NSWindow Delegate
-
-- (void)windowWillClose:(NSNotification *)note
-{
-	if ([self.delegate respondsToSelector:@selector(channelInviteSheetWillClose:)]) {
-		[self.delegate channelInviteSheetWillClose:self];
-	}
-
-	[super windowWillClose:note];
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

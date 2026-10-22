@@ -566,17 +566,6 @@ NS_ASSUME_NONNULL_BEGIN
 	});
 }
 
-- (void)sendPrivmsgToSelectedChannel:(NSString *)message
-{
-	IRCChannel *channel = [TVCMainWindow.currentWindow selectedChannelOn:self];
-
-	if (channel == nil) {
-		return;
-	}
-
-	[self sendPrivmsg:message toChannel:channel];
-}
-
 - (void)sendCTCPQuery:(NSString *)nickname command:(NSString *)command text:(nullable NSString *)text
 {
 	[self _sendCTCP:command text:text to:nickname as:@"PRIVMSG"];

@@ -107,11 +107,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.user.client;
 }
 
-- (BOOL)userModesContainsMode:(NSString *)mode
-{
-	return [self.modes contains:mode];
-}
-
 - (NSString *)highestRankedUserMode
 {
 	NSString *modes = self.modes;
@@ -300,13 +295,6 @@ NS_ASSUME_NONNULL_BEGIN
 	self->_outgoingWeight += change;
 }
 
-- (void)incomingConversation
-{
-	double change = ((lrint(self->_incomingWeight) == 0) ? 100 : 20);
-
-	self->_incomingWeight += change;
-}
-
 - (void)conversation
 {
 	double change = ((lrint(self->_incomingWeight) == 0) ? 4 : 1);
@@ -390,14 +378,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	return [^(IRCChannelUser *object1, IRCChannelUser *object2) {
 		return [object1 compareUsingRank:object2 favorIRCop:favorIRCop];
-	} copy];
-}
-
-+ (NSComparator)nicknameLengthComparator
-{
-	return [^(IRCChannelUser *object1, IRCChannelUser *object2) {
-		return (object1.user.nickname.length <=
-				object2.user.nickname.length);
 	} copy];
 }
 

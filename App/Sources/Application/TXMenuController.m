@@ -288,15 +288,6 @@ NS_ASSUME_NONNULL_BEGIN
 	[self _forceMenuItemValidation:queryMenu];
 }
 
-- (void)_forceMenuValidation:(NSMenu *)menu
-{
-	NSParameterAssert(menu != nil);
-
-	for (NSMenuItem *menuItem in menu.itemArray) {
-		[self _forceMenuItemValidation:menuItem];
-	}
-}
-
 - (void)_forceMenuItemValidation:(NSMenuItem *)menuItem
 {
 	NSParameterAssert(menuItem != nil);
