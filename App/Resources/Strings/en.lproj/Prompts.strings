@@ -101,10 +101,10 @@ Do you want to add these channels to that connection or would you rather create 
 
 
 
-"u5x-b1" = "Textual 8 can't use these extensions: %@";
-"u5x-b2" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so these extensions won't be loaded. You can move them to the Trash or keep them.";
-"u5x-b6" = "Textual 8 can't use the extension “%@”";
-"u5x-b5" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so this extension can't be installed.";
+"u5x-b1" = "Textual 8 can’t use these extensions: %@";
+"u5x-b2" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so these extensions won’t be loaded. You can move them to the Trash or keep them.";
+"u5x-b6" = "Textual 8 can’t use the extension “%@”";
+"u5x-b5" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so this extension can’t be installed.";
 "u5x-b3" = "Move to Trash";
 "u5x-b4" = "Keep";
 "af6-45" = "The version of Textual that you are using is no longer compatible with these addons: %@";
@@ -118,7 +118,7 @@ If you are the developer of one of these addons: In the Info.plist file of your 
 "2ul-cl" = "You have clicked on a link that will open the application “%@”";
 "5oq-vv" = "Are you sure you want to open “%@” with this application?";
 
-"hcb-3i" = "Preferences may become corrupted if you have more than one copy of Textual open";
+"hcb-3i" = "Settings may be damaged if more than one copy of Textual is open";
 "kx4-q8" = "Are you sure you want to continue?";
 
 "py0-cr" = "The style named “%@” is not designed to work with this version of Textual";
@@ -126,7 +126,7 @@ If you are the developer of one of these addons: In the Info.plist file of your 
 "2a3-5s" = "Choose Different Style";
 
 "ezn-rm" = "The style named “%@” wants to enable dark mode but styles are no longer allowed to change that preference";
-"193-6o" = "Do you want to keep Textual's light appearance or switch to dark mode?";
+"193-6o" = "Do you want to keep Textual’s light appearance or switch to dark mode?";
 "hf0-w3" = "Keep It Light";
 "hv0-79" = "Paint It Black";
 
@@ -163,8 +163,8 @@ Create this folder if it does not exist.";
 "k55-19" = "No logs were found";
 "f05-hu" = "";
 
-"b7o-v4" = "Textual is unable to access the folder that's configured for your log location because the resource is 'stale'";
-"atn-1c" = "Navigate to Preferences \U279C Advanced \U279C Log Location to repair this preference";
+"b7o-v4" = "Textual can’t open the folder for your text files: it was moved, renamed or deleted.";
+"atn-1c" = "Choose the folder again in Settings › History › Text files.";
 
 "nlz-um" = "Last known error message: %@";
 
@@ -197,7 +197,7 @@ Information encrypted using: %2$@";
 "r7d-m2" = "Import Your Settings";
 "x5p-v9" = "Textual can bring over everything from %@ in a minute.";
 "f5o-br" = "Servers, channels and nicknames";
-"704-yh" = "Preferences, highlights and ignore lists";
+"704-yh" = "Settings, highlights and ignore lists";
 "qge-yy" = "Scrollback history";
 "gdv-pf" = "Styles and extensions";
 "57n-je" = "Your licence";
@@ -232,7 +232,7 @@ Information encrypted using: %2$@";
 "x3o-dm" = "Styles";
 "d2h-gn" = "Extensions";
 "abx-17" = "Scrollback history";
-"f6m-6o" = "Preferences";
+"f6m-6o" = "Settings";
 "u7y-7m" = "%lu found";
 "ass-fu" = "None";
 "zos-f9" = "%lu added";
@@ -282,11 +282,11 @@ Information encrypted using: %2$@";
 "d7f-s3" = "Textual sends files directly to the other person (DCC). %@ has to accept them, and some networks and routers block direct transfers.";
 "d7f-s4" = "Folders are left out.";
 "d7f-s5" = "Send";
-"d7f-n1" = "Files can't be sent to a channel";
-"d7f-n2" = "Files can't be sent to the server console";
+"d7f-n1" = "Files can’t be sent to a channel";
+"d7f-n2" = "Files can’t be sent to the server console";
 "d7f-n3" = "Textual sends files to one person at a time (DCC). Drop them on a name in the member list or in a private message.";
 "d7f-n4" = "Or upload them, with an upload address of your own.";
-"d7f-f1" = "Folders can't be sent";
+"d7f-f1" = "Folders can’t be sent";
 "d7f-f2" = "Textual sends single files (DCC). Compress a folder into a .zip file first.";
 "d7f-o1" = "Not connected to %@";
 "d7f-o2" = "Connect to the server to send files to %@.";
@@ -297,16 +297,16 @@ Information encrypted using: %2$@";
 "d7f-u5" = "Send by DCC";
 "d7f-i3" = "Pasted Picture %@.png";
 "d7f-i4" = "Upload the pasted picture?";
-"upd-x1" = "This isn't a ShareX custom uploader (.sxcu) Textual can read.";
-"upd-x2" = "This uploader doesn't upload files (it may shorten links instead).";
-"upd-x3" = "This uploader sends files as “%@”, which Textual doesn't support (only forms and the file itself).";
+"upd-x1" = "This isn’t a ShareX custom uploader (.sxcu) Textual can read.";
+"upd-x2" = "This uploader doesn’t upload files (it may shorten links instead).";
+"upd-x3" = "This uploader sends files as “%@”, which Textual doesn’t support (only forms and the file itself).";
 "upd-p1" = "Enter the address files are uploaded to.";
 "upd-p2" = "Uploads go over HTTPS only (plain HTTP only to this Mac).";
 "upd-p3" = "Uploads are sent with POST or PUT, not %@.";
-"upd-s1" = "On networks that don't offer uploads, files you drop, paste or attach go here, and their links are put in the input field. Anyone with a link can open the file. Use a service you trust; it keeps the files as long as it does. Tokens are kept in your Keychain. A ShareX custom uploader (.sxcu) can be imported.";
+"upd-s1" = "On networks that don’t offer uploads, files you drop, paste or attach go here, and their links are put in the input field. Anyone with a link can open the file. Use a service you trust; it keeps the files as long as it does. Tokens are kept in your Keychain. A ShareX custom uploader (.sxcu) can be imported.";
 "upd-f1" = "My file host";
 "upd-f2" = "https://example.com/upload";
-"upd-f3" = "Empty: the Location header or the answer's text";
+"upd-f3" = "Empty: the Location header or the answer’s text";
 "upd-f4" = "file";
 "upd-b1" = "As a form field";
 "upd-b2" = "As the whole body";
@@ -320,16 +320,16 @@ Information encrypted using: %2$@";
 "upd-l8" = "Address parameters:";
 "upd-l9" = "Link in the answer:";
 "upd-n1" = "One per line, “Name: value”, e.g. Authorization: Bearer your-token";
-"upd-n2" = "One per line, “name=value”. $filename$ is the file's name.";
+"upd-n2" = "One per line, “name=value”. $filename$ is the file’s name.";
 "upd-n3" = "ShareX syntax: $json:files[0].url$, $response$, $header:Location$, $regex:1|1$";
 "upd-h1" = "Hide the paperclip where no upload address applies";
 "upd-i1" = "Import .sxcu…";
 "upd-v1" = "Save";
 "upd-r1" = "Remove";
-"upd-e1" = "“%@” couldn't be imported";
-"upd-e2" = "The upload address can't be saved";
+"upd-e1" = "“%@” couldn’t be imported";
+"upd-e2" = "The upload address can’t be saved";
 "a8k-t1" = "Acknowledgements";
 "a8k-t2" = "Textual is built on the work of the people and projects below. Their licences ask for these notices to come with the app.";
 
 /* The import's summary: the message archive */
-"arc-i1" = "Your conversations are now kept in a searchable message archive for a year, starting with the imported scrollback: Search (⌘F) and Mentions (⌘⇧M) find them. Preferences → History changes how long, or turns it off.";
+"arc-i1" = "Your conversations are now kept in a searchable message archive for a year, starting with the imported scrollback: Search (⌘F) and Mentions (⌃5) find them. Settings › History changes how long, or turns it off.";

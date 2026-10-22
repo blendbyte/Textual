@@ -129,8 +129,8 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 "ret-20" = "Added ignore that matches \002%1$@\002 with pattern: %2$@";
 "jzg-g8" = "Removed ignore that matches \002%1$@\002 with pattern: %2$@";
 "wu0-jp" = "No ignores could be found that matches \002%@\002";
-"5ix-zn" = "An ignore already exists that matches \002%@\002. To modify this ignore, open the \002Address Book\002 using the keyboard shortcut \002Control 3\002.";
-"vrx-1f" = "Cannot remove ignore for \002%@\002 because Textual isn't sure which to remove. More than one ignore exists that matches this user. To remove a specific ignore, open the \002Address Book\002 using the keyboard shortcut \002Control 3\002.";
+"5ix-zn" = "An ignore already exists that matches \002%@\002. To change it, open the \002Ignore List\002 (\002Control 3\002).";
+"vrx-1f" = "Cannot remove the ignore for \002%@\002: more than one ignore matches this user, and Textual isn’t sure which one to remove. To remove a specific one, open the \002Ignore List\002 (\002Control 3\002).";
 
 /* /kick/ command */
 "59a-ir" = "You have exceeded the maximum kick message length for %1$@ which is %2$ld characters. The end of your kick message may have been cut off.";
@@ -152,7 +152,7 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 "dwi-d1" = "The mode \002+%@\002 is not supported on this server";
 
 /* /monitor/ command errors */
-"khw-4y" = "Please use the \002Address Book\002 to add or remove tracked users. Open the \002Address Book\002 using the keyboard shortcut \002Control 3\002.";
+"khw-4y" = "Use the \002Address Book\002 (\002Control 2\002) to add or remove people you track.";
 
 /* /msg/ command errors */
 "54l-h7" = "Cannot send operator message because the mode \002+o\002 is not supported by this server.";
@@ -176,10 +176,10 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 "eud-kc" = "Timer repeat count must be a whole number that is grater than or equal to zero (0). Type “/timer help” for more information.";
 "p6l-o4" = "Timer identifier is not properly formatted. Type “/timer list“ for a list of timers.";
 "vzu-xh" = "Timer with identifier “%@“ does not exist. Type “/timer list“ for a list of timers.";
-"uiz-32" = "Timer with identifier “%@“ can't be stopped";
+"uiz-32" = "Timer with identifier “%@“ can’t be stopped";
 "ax6-n9" = "Timer with identifier “%@“ is already stopped";
 "hs0-up" = "Timer with identifier “%@“ stopped";
-"dgp-d4" = "Timer with identifier “%@“ can't be restarted. Add a new timer.";
+"dgp-d4" = "Timer with identifier “%@“ can’t be restarted. Add a new timer.";
 "qb7-mi" = "Timer with identifier “%@“ restarted";
 "p7s-is" = "Timer with identifier “%@“ removed";
 "808-bs" = "All timers removed";
@@ -250,7 +250,7 @@ The identifier for a timer can be found using “/timer list”";
 "aox-zz" = "---------------------------------------";
 
 /* /setcolor/ command */
-"026-qv" = "This command cannot be used unless the checkbox labeled “Disable nickname colors” is unchecked in the \002Style\002 section of \002Preferences\002.";
+"026-qv" = "This command needs colored nicknames: turn on \002Colored nicknames\002 in \002Settings › Messages\002.";
 "8dy-6f" = "Cannot set color for “%@“ because that does not appear to be a valid nickname.";
 
 /* /tage/ command */
@@ -297,23 +297,23 @@ The identifier for a timer can be found using “/timer list”";
 "drg-b7" = "Disconnected for Sleep Mode";
 "wcl-po" = "Disconnected for server redirect";
 "r3d-t1" = "The server redirected this connection to %1$@ port %2$@. Reconnecting with TLS, as before.";
-"n5v-h3" = "Trusting %1$@ as this server’s NickServ: %2$@ was saved as its NickServ Host (Server Properties → Identity), and your password is only sent to NickServ from that host from now on.";
-"n5v-h2" = "%1$@ asked you to identify, but this server's NickServ host is %2$@, so your password was not sent. If the network's NickServ has moved, update Server Properties → Identity → NickServ Host.";
+"n5v-h3" = "Trusting %1$@ as this server’s NickServ: %2$@ was saved as its NickServ Host (Server Properties › Account), and your password is only sent to NickServ from that host from now on.";
+"n5v-h2" = "%1$@ asked you to identify, but this server’s NickServ host is %2$@, so your password was not sent. If the network’s NickServ has moved, update NickServ host in Server Properties › Account.";
 "zro-bg" = "Disconnected from server because of an untrusted certificate";
 "isx-fi" = "Disconnected from server because the Internet is not reachable";
 "9b4-10" = "Disconnected";
 "bps-la" = "%.0f minutes have elapsed since last response from this connection. Disconnecting due to timeout.";
-"gzo-54" = "%.0f minutes have elapsed since last response from this connection. It's possible the connection is timing out.";
+"gzo-54" = "%.0f minutes have elapsed since last response from this connection. It’s possible the connection is timing out.";
 "o77-ls" = "Connecting to [%1$@] on port %2$hu";
 "wsk-c1" = "Connecting to %@ (WebSocket)";
-"rpl-n1" = "This network doesn't pass on replies or reactions, so Textual doesn't offer them here.";
-"rpl-n2" = "This network doesn't pass on reactions, so Textual doesn't offer them here.";
-"rpl-n3" = "This network doesn't pass on replies, so Textual doesn't offer them here.";
+"rpl-n1" = "This network doesn’t pass on replies or reactions, so Textual doesn’t offer them here.";
+"rpl-n2" = "This network doesn’t pass on reactions, so Textual doesn’t offer them here.";
+"rpl-n3" = "This network doesn’t pass on replies, so Textual doesn’t offer them here.";
 "ni5-cy" = "Connecting using SOCKS5 proxy [%1$@] on port %2$hu";
 "oby-av" = "Connecting using HTTP proxy [%1$@] on port %2$hu";
 "xxb-y2" = "Reconnecting…";
 "ky3-36" = "Retrying…";
-"c3r-c1" = "Your client certificate is no longer in the Keychain, so it isn’t sent. Choose it again in Server Properties → Client Certificate.";
+"c3r-c1" = "Your client certificate is no longer in the Keychain, so it isn’t sent. Choose it again in Server Properties › Account › Client certificate.";
 "c3r-c2" = "Your bouncer’s client certificate is no longer in the Keychain, so it isn’t sent. Choose it again in Server › Edit Bouncer….";
 "c3r-c2" = "The client certificate for “%@” is missing";
 "c3r-c3" = "Textual can’t find it, or its private key, in the Keychain, so it connects without it. Choose the certificate again, or remove it from the server’s settings.";
@@ -325,7 +325,7 @@ The identifier for a timer can be found using “/timer list”";
 "tok-st" = "%1$@ (%2$@)";
 "8hg-7k" = "%@ IRC Network";
 "fxw-5s" = "%1$@ is now known as \002%2$@\002";
-"rr6-yo" = "You're now known as \002%@\002";
+"rr6-yo" = "You’re now known as \002%@\002";
 "53b-dm" = "\002%1$@\002 (%2$@@%3$@) left IRC";
 "8bk-mx" = "\002%1$@\002 left the query by disconnecting from IRC";
 "q0q-ch" = "\002%1$@\002 joined the query by connecting to IRC";
@@ -361,7 +361,7 @@ The identifier for a timer can be found using “/timer list”";
 "3yj-in" = "%1$@ (%2$@) tried to send you a private message, but it was ignored due to \002umode +g\002. Perform “/accept %1$@” to allow this user to communicate with you.";
 "5i4-qq" = "Reconnecting to proxy to rebuild internal state…"; // irssi proxy
 "5h5-sl" = "Server closed read stream";
-"r5h-fj" = "Joining channels has been delayed because you haven't identified. Perform “/autojoin” to join channels without identifying.";
+"r5h-fj" = "Joining channels has been delayed because you haven’t identified. Perform “/autojoin” to join channels without identifying.";
 "3oa-mv" = "%1$@ is connected from %2$@ (%3$@)";
 "x69-rz" = "%1$@ was connected from %2$@ (%3$@)";
 "js3-9v" = "Cannot use nickname “%@“ — Trying another…";
@@ -515,13 +515,13 @@ The identifier for a timer can be found using “/timer list”";
 "acr-c1" = "This server only registers your current nickname (%@): /register <email or *> <password>";
 "acr-v1" = "To finish, type /verify followed by the code you were sent.";
 "acr-k1" = "Account %@ saved in this server’s settings: Textual logs in with it from now on.";
-"upl-e1" = "The server didn't accept the upload: you aren't signed in, or aren't allowed to upload.";
+"upl-e1" = "The server didn’t accept the upload: you aren’t signed in, or aren’t allowed to upload.";
 "upl-e2" = "The file is too large for this server.";
-"upl-e3" = "The server doesn't take this kind of file.";
+"upl-e3" = "The server doesn’t take this kind of file.";
 "upl-e4" = "The server answered %1$ld (%2$@).";
-"upl-e5" = "The server didn't say where the file is.";
-"upl-e6" = "Its location and camera details couldn't be removed, so it wasn't uploaded.";
-"upl-e7" = "The upload address couldn't be used. Check it in Preferences or Server Properties.";
+"upl-e5" = "The server didn’t say where the file is.";
+"upl-e6" = "Its location and camera details couldn’t be removed, so it wasn’t uploaded.";
+"upl-e7" = "The upload address couldn’t be used. Check it in Settings › Files or Server Properties › Uploads.";
 "pst-b1" = "Send as Link";
 "pst-n1" = "“Send as Link” puts the text on %@ instead and sends its link. Anyone with the link can read it.";
 "upl-d1" = "%@ (offered by the network)";

@@ -36,10 +36,10 @@
  *********************************************************************** */
 
 
-"1nd-7x" = "Please enter a properly formatted channel name.";
+"1nd-7x" = "This isn’t a channel name.";
 
-"mvl-r5" = "This channel's configuration has changed. Do you want to reload the Channel Properties dialog?";
-"qby-hi" = "You will loose unsaved changes if you click “Yes”";
+"mvl-r5" = "This channel’s settings changed elsewhere. Reload them?";
+"qby-hi" = "Changes you haven’t saved here are lost.";
 
 "fmt-p2" = "Remove";
 "fmt-p3" = "Show";
@@ -56,7 +56,7 @@
 "cp-nameh" = "Starts with # on most networks.";
 "cp-key" = "Key";
 "cp-keyh" = "Only if the channel needs a password to join.";
-"cp-key-e1" = "A key can't contain spaces.";
+"cp-key-e1" = "A key can’t contain spaces.";
 "cp-key-n1" = "%1$@ allows keys of up to %2$lu characters: a longer one may be cut off.";
 "cp-label" = "Label";
 "cp-labelh" = "Shown in the channel list instead of the name.";
@@ -81,7 +81,7 @@
 "cp-pre" = "Previews";
 "cp-preh" = "Pictures, videos and link previews under messages.";
 "cp-pre-on" = "Show";
-"cp-pre-off" = "Don't show";
+"cp-pre-off" = "Don’t show";
 "cp-fmt" = "Colors and formatting";
 "cp-fmth" = "Colors, bold and other styles people use in their messages.";
 "cp-hil" = "Treat mentions as highlights";

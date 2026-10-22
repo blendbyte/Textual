@@ -36,14 +36,14 @@
  *********************************************************************** */
 
 /* Error localizations */
-"8iw-q8" = "Please enter a properly formatted username.";
-"agy-bp" = "Please enter a properly formatted real name.";
-"tlo-b6" = "Please enter a properly formatted proxy address.";
+"8iw-q8" = "This isn’t a valid username.";
+"agy-bp" = "This isn’t a valid real name.";
+"tlo-b6" = "This isn’t a valid proxy address.";
 
 /* Custom client-side certificate selection */
 "c3r-m1" = "Certificate Not Found in the Keychain";
 
-"6wq-i4" = "Choose An Identity";
+"6wq-i4" = "Choose an Identity";
 "mi4-fd" = "Select a certificate to send when you connect securely.";
 
 "pmk-os" = "No Certificates Available";
@@ -64,38 +64,38 @@ Certificates must meet the following criteria:
 "ek1-x0" = "Remove the login key?";
 "ek1-x2" = "Remove";
 "ek1-i0" = "Choose a P-256 private key in PEM format (not encrypted)";
-"ek1-i1" = "“%@” can't be used as a login key";
+"ek1-i1" = "“%@” can’t be used as a login key";
 "ek1-i2" = "The file must hold a P-256 (prime256v1) private key in PEM format without a password, such as one made with “openssl ecparam -genkey -name prime256v1”.";
 
 /* Cloud changes */
-"bzh-il" = "This connection's configuration has changed. Do you want to reload the Server Properties dialog?";
-"oz4-kb" = "You will loose unsaved changes if you click “Yes”";
+"bzh-il" = "This server’s settings changed elsewhere. Reload them?";
+"oz4-kb" = "Changes you haven’t saved here are lost.";
 "sts-l1" = "The server asked for secure connections only (port %1$hu) until %2$@.";
 "sts-b1" = "Forget";
 "icn-a1" = "Icon";
 "icn-b1" = "Choose…";
 "icn-b2" = "Remove";
 "icn-n1" = "Your own icon";
-"icn-n2" = "The network's icon";
+"icn-n2" = "The network’s icon";
 "icn-n3" = "No icon";
-"icn-m1" = "Choose a picture to show in front of the server's name.";
-"icn-t1" = "Shown in front of the server's name in the server list. Choose a picture, or drop one here. Without one, the network's own icon is shown, if it names one.";
-"icn-e1" = "“%@” can't be used as an icon";
+"icn-m1" = "Choose a picture to show in front of the server’s name.";
+"icn-t1" = "Shown in front of the server’s name in the server list. Choose a picture, or drop one here. Without one, the network’s own icon is shown, if it names one.";
+"icn-e1" = "“%@” can’t be used as an icon";
 "icn-e2" = "Choose a picture file, such as PNG, JPEG, HEIC or SVG.";
 "upl-m1" = "Same as in Settings › Files";
 "upl-m2" = "None";
-"upl-m3" = "This server's own";
+"upl-m3" = "This server’s own";
 "upl-b1" = "Edit…";
 "upl-b2" = "Set Up…";
-"upl-n1" = "Where files go if the network doesn't offer uploads itself. If it does, its own is used. With None, long text isn't sent as a link either.";
+"upl-n1" = "Where files go if the network doesn’t offer uploads itself. If it does, its own is used. With None, long text isn’t sent as a link either.";
 "upl-p1" = "Uploads";
 "upl-o1" = "Not set up";
 
 /* The message archive */
-"arc-c1" = "Keep this server's messages in the message archive";
+"arc-c1" = "Keep this server’s messages in the message archive";
 "arc-b1" = "Delete Archived Messages…";
 "arc-d1" = "Delete the archived messages of %@?";
-"arc-d2" = "The %@ messages of this server's channels and queries are deleted from the message archive. The saved scrollback stays.";
+"arc-d2" = "The %@ messages of this server’s channels and queries are deleted from the message archive. The saved scrollback stays.";
 "arc-d3" = "Delete";
 
 /* The sheet in the look of Settings */
@@ -114,9 +114,9 @@ Certificates must meet the following criteria:
 "spp-t-channels" = "Channels";
 "spp-l-channels" = "Channels to join when you connect.";
 "spp-t-people" = "People";
-"spp-l-people" = "Ignore someone, or get told when they're around.";
+"spp-l-people" = "Ignore someone, or get told when they’re around.";
 "spp-t-messages" = "Messages";
-"spp-l-messages" = "What others see when you leave, and what's kept.";
+"spp-l-messages" = "What others see when you leave, and what’s kept.";
 "spp-t-commands" = "When Connected";
 "spp-l-commands" = "Commands to send after connecting.";
 "spp-t-connection" = "Connection";
@@ -126,7 +126,7 @@ Certificates must meet the following criteria:
 "spp-t-security" = "Security";
 "spp-l-security" = "How Textual checks the server it connects to.";
 "spp-t-fallback" = "Fallback Servers";
-"spp-l-fallback" = "Tried in order when a server can't be reached.";
+"spp-l-fallback" = "Tried in order when a server can’t be reached.";
 "spp-t-uploads" = "Uploads";
 "spp-l-uploads" = "Where files go when you share them here.";
 "spp-t-znc" = "Bouncer";
@@ -142,7 +142,7 @@ Certificates must meet the following criteria:
 "spp-srv-tls" = "Connect securely";
 "spp-srv-tlsh" = "Encrypts the connection (TLS). Nearly every network offers it.";
 "spp-srv-pass" = "Server password";
-"spp-srv-passh" = "Only if the server asks for one. Your account's password goes on the Account page.";
+"spp-srv-passh" = "Only if the server asks for one. Your account’s password goes on the Account page.";
 "spp-srv-h2" = "Connecting";
 "spp-srv-c1" = "Connect when Textual opens";
 "spp-srv-c2" = "Reconnect if the connection drops";
@@ -151,7 +151,7 @@ Certificates must meet the following criteria:
 "spp-fb-first" = "Main server, on the Server page";
 "spp-fb-secure" = "Connects securely";
 "spp-fb-none" = "No fallback servers yet.";
-"spp-fb-note" = "When Textual can't reach a server, it tries the next one, in this order; drag to change it. After connecting, it starts with the main server again.";
+"spp-fb-note" = "When Textual can’t reach a server, it tries the next one, in this order; drag to change it. After connecting, it starts with the main server again.";
 "spp-fb-edit" = "Shows or hides its settings.";
 "spp-fb-nomain" = "No server yet";
 "spp-fb-new" = "New server";
@@ -162,13 +162,13 @@ Certificates must meet the following criteria:
 "spp-more" = "More";
 "spp-you-nick" = "Nickname";
 "spp-you-nickh" = "What others see you as.";
-"spp-you-alt" = "If it's taken, try";
+"spp-you-alt" = "If it’s taken, try";
 "spp-you-alth" = "Other nicknames, separated by spaces.";
-"spp-you-e1" = "“%@” isn't a nickname.";
+"spp-you-e1" = "“%@” isn’t a nickname.";
 "spp-you-away" = "Away nickname";
-"spp-you-awayh" = "Used while you're away.";
+"spp-you-awayh" = "Used while you’re away.";
 "spp-you-real" = "Real name";
-"spp-you-realh" = "Shown when someone looks you up. It doesn't have to be your real name.";
+"spp-you-realh" = "Shown when someone looks you up. It doesn’t have to be your real name.";
 "spp-you-user" = "Username";
 "spp-you-userh" = "Part of your address (the ident). It rarely needs changing.";
 "spp-acc-pass" = "Password";
@@ -177,7 +177,7 @@ Certificates must meet the following criteria:
 "spp-acc-waith" = "For channels that only let in people who are logged in.";
 "spp-acc-warn" = "Remind me while joining waits";
 "spp-acc-warnh" = "Says so in the console, and how to join anyway.";
-"spp-acc-nothing" = "There's nothing to log in with yet: enter your password, or add a login key or certificate under More.";
+"spp-acc-nothing" = "There’s nothing to log in with yet: enter your password, or add a login key or certificate under More.";
 "spp-acc-key" = "Login key";
 "spp-acc-keyh" = "Logs in with a key instead of the password (SASL ECDSA), tried first. Give the network its public key first.";
 "spp-acc-key-menu" = "Manage";
@@ -193,7 +193,7 @@ Certificates must meet the following criteria:
 "spp-acc-cert-copy" = "Copy Command";
 "spp-acc-cert-copyh" = "Copies the NickServ command that adds this fingerprint to your account.";
 "spp-acc-host" = "NickServ host";
-"spp-acc-hosth" = "Your password is only sent to NickServ at this host. Leave it empty for the network's usual one.";
+"spp-acc-hosth" = "Your password is only sent to NickServ at this host. Leave it empty for the network’s usual one.";
 "spp-move-up" = "Move Up";
 "spp-move-down" = "Move Down";
 "spp-chn-join" = "Join when you connect";
@@ -201,7 +201,7 @@ Certificates must meet the following criteria:
 "spp-chn-edit" = "Edit Channel…";
 "spp-chn-remove" = "Remove";
 "spp-chn-add" = "Add Channel…";
-"spp-chn-note" = "Joined in this order when you connect; drag to change it. Without a check, a channel keeps its settings but isn't joined.";
+"spp-chn-note" = "Joined in this order when you connect; drag to change it. Without a check, a channel keeps its settings but isn’t joined.";
 "spp-ppl-h1" = "Ignored";
 "spp-ppl-n1" = "What they send is hidden. Each one can hide only some kinds, such as notices or highlights.";
 "spp-ppl-addi" = "Ignore Someone…";
@@ -229,9 +229,9 @@ Certificates must meet the following criteria:
 "spp-msg-archoff" = "The message archive is off in Settings › History.";
 "spp-msg-count" = "Messages in the archive: %@";
 "spp-cmd-list" = "Commands";
-"spp-cmd-listh" = "One per line, sent in order once connected, as you'd type them (such as /mode or /msg).";
+"spp-cmd-listh" = "One per line, sent in order once connected, as you’d type them (such as /mode or /msg).";
 "spp-cmd-invis" = "Hide me from people outside my channels";
-"spp-cmd-invish" = "Turns on invisible mode (+i), so you don't show up when someone lists who is on the network.";
+"spp-cmd-invish" = "Turns on invisible mode (+i), so you don’t show up when someone lists who is on the network.";
 "spp-con-ip" = "Connect over";
 "spp-con-iph" = "Automatic uses IPv6 or IPv4, whichever works.";
 "spp-con-ip0" = "Automatic";
@@ -241,30 +241,30 @@ Certificates must meet the following criteria:
 "spp-con-enc" = "Encoding";
 "spp-con-ench" = "How text is sent and read. Nearly every server uses UTF-8.";
 "spp-con-fb" = "Fallback encoding";
-"spp-con-fbh" = "Reads text that isn't valid in the encoding above.";
+"spp-con-fbh" = "Reads text that isn’t valid in the encoding above.";
 "spp-con-h3" = "Staying connected";
 "spp-con-ping" = "Check the connection when the server goes quiet";
 "spp-con-pingh" = "Asks the server for an answer (PING) after 4½ minutes without hearing from it.";
 "spp-con-timeout" = "Disconnect after 6 minutes without hearing from the server";
-"spp-con-timeouth" = "Otherwise Textual only says so in the server's console.";
+"spp-con-timeouth" = "Otherwise Textual only says so in the server’s console.";
 "spp-con-reach" = "Disconnect when the Mac loses its network";
 "spp-con-reachh" = "Instead of waiting for the connection to time out. Textual reconnects when the network is back.";
 "spp-con-h4" = "Flood control";
 "spp-con-fl1" = "Send at most";
-"spp-con-fl1h" = "Commands in a row before Textual waits, so the server doesn't disconnect you for flooding.";
+"spp-con-fl1h" = "Commands in a row before Textual waits, so the server doesn’t disconnect you for flooding.";
 "spp-con-fl1-1" = "1 command";
 "spp-con-fl1-n" = "%lu commands";
 "spp-con-fl2" = "Every";
 "spp-con-fl2-1" = "1 second";
 "spp-con-fl2-n" = "%lu seconds";
 "spp-con-fln" = "Takes effect the next time you connect.";
-"spp-sec-valid" = "Check the server's certificate";
-"spp-sec-validh" = "Asks before connecting to a server whose certificate isn't valid, such as a self-signed one. Without the check, any certificate is accepted.";
+"spp-sec-valid" = "Check the server’s certificate";
+"spp-sec-validh" = "Asks before connecting to a server whose certificate isn’t valid, such as a self-signed one. Without the check, any certificate is accepted.";
 "spp-sec-ciph" = "Cipher suites";
 "spp-sec-ciphh" = "The kinds of encryption Textual prefers. Change it only if a server needs it.";
 "spp-sec-c0" = "Default";
-"spp-sec-c2" = "Textual 7's list";
-"spp-sec-c1" = "Textual 5's list";
+"spp-sec-c2" = "Textual 7’s list";
+"spp-sec-c1" = "Textual 5’s list";
 "spp-sec-c100" = "No preference";
 "spp-sec-show" = "Show List…";
 "spp-sec-lt" = "The cipher suites of “%@”";
@@ -285,11 +285,11 @@ Certificates must meet the following criteria:
 "spp-prx-note" = "Takes effect the next time you connect.";
 "spp-upl-mode" = "Where files go";
 "spp-znc-join" = "Leave joining channels to ZNC";
-"spp-znc-joinh" = "Textual doesn't join the channels on the Channels page when it connects; ZNC keeps you in yours.";
+"spp-znc-joinh" = "Textual doesn’t join the channels on the Channels page when it connects; ZNC keeps you in yours.";
 "spp-znc-quiet" = "No notifications for played-back messages";
 "spp-znc-quieth" = "Messages ZNC plays back when you connect show no notifications and play no sounds.";
 "spp-znc-missed" = "Only play back messages you missed";
-"spp-znc-missedh" = "Needs ZNC's “playback” module.";
+"spp-znc-missedh" = "Needs ZNC’s “playback” module.";
 "spp-znc-note" = "For ZNC 1.2 and later.";
 
 /* A network going through a bouncer (the Server page) */

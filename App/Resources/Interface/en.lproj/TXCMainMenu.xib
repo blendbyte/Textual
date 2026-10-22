@@ -155,7 +155,7 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" tag="101" id="1001"/>
-                            <menuItem title="Preferences…" tag="102" keyEquivalent="," id="129">
+                            <menuItem title="Settings…" tag="102" keyEquivalent="," id="129">
                                 <connections>
                                     <action selector="showPreferencesWindow:" target="267" id="nJn-8N-O42"/>
                                 </connections>

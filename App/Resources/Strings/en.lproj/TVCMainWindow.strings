@@ -137,7 +137,7 @@
 "del-n3" = "Message deleted: %@";
 "del-n4" = "Message deleted by %1$@: %2$@";
 "del-q1" = "Delete this message for everyone?";
-"del-q2" = "It is removed for everyone in the conversation, and can't be brought back.";
+"del-q2" = "It is removed for everyone in the conversation, and can’t be brought back.";
 "del-q3" = "Delete";
 "fsd-n1" = "Not sent: %@";
 "fsd-n2" = "Not sent";
@@ -179,12 +179,12 @@
 "upl-l2" = "(%1$lu of %2$lu)";
 "upl-p1" = "Upload";
 "upl-p2" = "The files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
-"upl-e1" = "Couldn't upload “%@”";
-"upl-e2" = "Couldn't send the text as a link. It's back in the input field.";
-"upl-s1" = "Uploads aren't set up";
-"upl-s2" = "%@ doesn't offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
+"upl-e1" = "Couldn’t upload “%@”";
+"upl-e2" = "Couldn’t send the text as a link. It’s back in the input field.";
+"upl-s1" = "Uploads aren’t set up";
+"upl-s2" = "%@ doesn’t offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
 "upl-s3" = "Set Up Upload Address…";
-"upl-s4" = "%@ doesn't offer uploads, and your own upload address is turned off for this server in Server Properties.";
+"upl-s4" = "%@ doesn’t offer uploads, and your own upload address is turned off for this server in Server Properties.";
 /* The search panel */
 "src-p1" = "Search Messages";
 "src-a1" = "Search messages";
@@ -220,5 +220,5 @@
 "src-k2" = "Messages of the last %ld days";
 "src-k3" = "All kept messages";
 "src-k5" = "Messages of the last 2 years";
-"src-k4" = "The message archive is off, so there is nothing to search. It can be turned on in Preferences → History.";
-"src-r5" = "The message archive is off (Preferences → History)";
+"src-k4" = "The message archive is off, so there is nothing to search. It can be turned on in Settings › History.";
+"src-r5" = "The message archive is off (Settings › History)";
