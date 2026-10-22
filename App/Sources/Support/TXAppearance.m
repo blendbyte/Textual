@@ -167,6 +167,12 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 
 	TXPreferredAppearance preferredAppearance = [TPCPreferences appearance];
 
+	/* Like the Mac: the app's own appearance goes first, as the Mac's is read
+	 through it (it was set to Light or Dark below) */
+	if (preferredAppearance == TXPreferredAppearanceInherited && NSApp.appearance != nil) {
+		NSApp.appearance = nil;
+	}
+
 	/* Determine user's preference */
 	switch (preferredAppearance) {
 		case TXPreferredAppearanceInherited:
@@ -242,12 +248,29 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 
 	self.properties = newProperties;
 
+	/* Light or Dark for every window (Mentions, File Transfers, the channel
+	 list, About, menus and alerts), not only the main windows. Set only when
+	 it changes: setting it reports a change of the app's appearance, which
+	 comes back here. */
+	[self.class applyAppearanceToApplication:newProperties.appKitAppearance];
+
 	/* Notify observers */
 	if (systemChanged == NO) {
 		[self notifyApplicationAppearanceChanged];
 	} else {
 		[self notifySystemAppearanceChanged];
 	}
+}
+
++ (void)applyAppearanceToApplication:(nullable NSAppearance *)appearance
+{
+	NSAppearance *current = NSApp.appearance;
+
+	if (current == appearance || [current.name isEqualToString:appearance.name]) {
+		return;
+	}
+
+	NSApp.appearance = appearance;
 }
 
 - (void)notifyApplicationAppearanceChanged
