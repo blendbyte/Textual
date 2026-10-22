@@ -95,3 +95,9 @@
 
 /* A server going through a bouncer, on hover in the server list */
 "bnc-t1" = "Through %@";
+
+/* The application and Help menus, with the app's name ("Textual", "Textual Dev") */
+"app-n1" = "About %@";
+"app-n2" = "Hide %@";
+"app-n3" = "Quit %@";
+"app-n4" = "%@ Help";

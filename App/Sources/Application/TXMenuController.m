@@ -70,6 +70,7 @@
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCWelcomeSheetPrivate.h"
+#import "TPCApplicationInfo.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesImportExport.h"
 #import "TPCPreferencesLocalPrivate.h"
@@ -96,12 +97,42 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.channelViewGeneralMenu itemWithTag:MTWKGeneralChannelMenu].submenu = [self.mainMenuChannelMenu copy];
 
+	[self nameMenuItemsAfterApplication];
+
 	[self setupOtherServices];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(menuItemWillPerformedAction:) name:NSMenuWillSendActionNotification object:nil];
 	[RZNotificationCenter() addObserver:self selector:@selector(menuItemPerformedAction:) name:NSMenuDidSendActionNotification object:nil];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(mainWindowSelectionChanged:) name:TVCMainWindowSelectionChangedNotification object:nil];
+}
+
+/* The interface file says "Textual": Textual Dev says its own name (the
+ bundle's; the product name is "Textual" in both) */
+- (void)nameMenuItemsAfterApplication
+{
+	NSString *applicationName = [RZMainBundle() objectForInfoDictionaryKey:@"CFBundleName"];
+
+	if (applicationName.length == 0) {
+		applicationName = [TPCApplicationInfo applicationName];
+	}
+
+	NSDictionary<NSNumber *, NSString *> *titles = @{
+		@(MTMMAppAboutApp) : TXTLS(@"BasicLanguage[app-n1]", applicationName),
+		@(MTMMAppHideApp) : TXTLS(@"BasicLanguage[app-n2]", applicationName),
+		@(MTMMAppQuitApp) : TXTLS(@"BasicLanguage[app-n3]", applicationName),
+		@(MTMMHelpTextualHelp) : TXTLS(@"BasicLanguage[app-n4]", applicationName)
+	};
+
+	for (NSMenuItem *menuItem in NSApp.mainMenu.itemArray) {
+		for (NSMenuItem *submenuItem in menuItem.submenu.itemArray) {
+			NSString *title = titles[@(submenuItem.tag)];
+
+			if (title) {
+				submenuItem.title = title;
+			}
+		}
+	}
 }
 
 - (void)setupOtherServices
