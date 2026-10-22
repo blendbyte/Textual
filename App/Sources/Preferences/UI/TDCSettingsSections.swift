@@ -557,8 +557,13 @@ struct ExtensionsSettings: View
 					Text(SettingsText("set-ext-n"))
 						.foregroundStyle(.secondary)
 				} else {
-					Text(commands.map { "/" + $0 }.joined(separator: "  "))
-						.textSelection(.enabled)
+					/* One piece each: as one text, a line could break after a "/" */
+					SettingsFlowLayout(spacing: 8) {
+						ForEach(commands, id: \.self) { command in
+							Text("/" + command)
+								.textSelection(.enabled)
+						}
+					}
 				}
 
 				LabeledContent {

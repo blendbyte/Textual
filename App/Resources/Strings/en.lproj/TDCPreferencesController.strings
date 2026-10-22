@@ -480,7 +480,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-not-x2" = "alice: hey, are you around?";
 "set-not-x3" = "now";
 "set-hil-w" = "Highlight words";
-"set-hil-wh" = "Messages with them stand out, notify you and appear in Mentions (⌘⇧M). Click a word to choose where it counts, from whom and its sound.";
+"set-hil-wh" = "Messages with them stand out, notify you and appear in Mentions (⌃5). Click a word to choose where it counts, from whom and its sound.";
 "set-hil-x" = "Never highlight";
 "set-hil-xh" = "Messages with these don’t count, even with a highlight word.";
 "set-hil-a" = "Add";
@@ -545,7 +545,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 
 /* Settings › History */
 "set-his-a" = "Keep a message archive";
-"set-his-ah" = "Search (⌘F), Mentions (⌘⇧M) and scrolling back past the saved lines find everything in it. Servers and channels can be left out in their properties.";
+"set-his-ah" = "Search (⌘F), Mentions (⌃5) and scrolling back past the saved lines find everything in it. Servers and channels can be left out in their properties.";
 "set-his-k" = "Keep messages for";
 "set-his-kh" = "Older ones are deleted.";
 "set-his-p-1" = "Off";
