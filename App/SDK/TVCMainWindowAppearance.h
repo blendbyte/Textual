@@ -55,8 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, copy, nullable) NSColor *splitViewDividerColor;
 
-@property (readonly, copy, nullable) NSColor *titlebarAccessoryViewBackgroundColorActiveWindow;
-@property (readonly, copy, nullable) NSColor *titlebarAccessoryViewBackgroundColorInactiveWindow;
+@property (readonly, copy, nullable) NSColor *titlebarAccessoryViewBackgroundColorActiveWindow TEXTUAL_DEPRECATED("No longer drawn; always nil");
+@property (readonly, copy, nullable) NSColor *titlebarAccessoryViewBackgroundColorInactiveWindow TEXTUAL_DEPRECATED("No longer drawn; always nil");
 
 @property (readonly) CGFloat titlebarAccessoryViewLeftMargin;
 @property (readonly) CGFloat titlebarAccessoryViewRightMargin;

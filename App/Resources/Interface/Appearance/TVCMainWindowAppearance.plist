@@ -44,16 +44,6 @@
 	<dict>
 		<key>inheritFrom</key>
 		<string>Common</string>
-		<key>titlebarAccessoryViewBackgroundColor</key>
-		<dict>
-			<key>activeWindow</key>
-			<dict>
-				<key>type</key>
-				<integer>2</integer>
-				<key>value</key>
-				<string>0.462 0.462 0.462</string>
-			</dict>
-		</dict>
 	</dict>
 	<key>CommonModernDark</key>
 	<dict>

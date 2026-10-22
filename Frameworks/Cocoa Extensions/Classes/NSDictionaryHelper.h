@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (unsigned long long)unsignedLongLongForKey:(id)key;
 - (double)doubleForKey:(id)key;
 - (float)floatForKey:(id)key;
-- (nullable void *)pointerForKey:(id)key NS_RETURNS_INNER_POINTER;
+- (nullable void *)pointerForKey:(id)key NS_RETURNS_INNER_POINTER COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (nullable id)objectForKey:(id)key orUseDefault:(nullable id)defaultValue;
 - (BOOL)boolForKey:(id)key orUseDefault:(BOOL)defaultValue;
@@ -75,18 +75,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)assignObjectTo:(__strong _Nonnull id * _Nonnull)pointer forKey:(id)key performCopy:(BOOL)copyValue;
 - (void)assignBoolTo:(BOOL *)pointer forKey:(id)key;
 - (void)assignArrayTo:(__strong NSArray * _Nonnull * _Nonnull)pointer forKey:(id)key;
-- (void)assignDictionaryTo:(__strong NSDictionary * _Nonnull * _Nonnull)pointer forKey:(id)key;
+- (void)assignDictionaryTo:(__strong NSDictionary * _Nonnull * _Nonnull)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)assignStringTo:(__strong NSString * _Nonnull * _Nonnull)pointer forKey:(id)key;
-- (void)assignIntegerTo:(NSInteger *)pointer forKey:(id)key;
+- (void)assignIntegerTo:(NSInteger *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)assignUnsignedIntegerTo:(NSUInteger *)pointer forKey:(id)key;
-- (void)assignShortTo:(short *)pointer forKey:(id)key;
+- (void)assignShortTo:(short *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)assignUnsignedShortTo:(unsigned short *)pointer forKey:(id)key;
-- (void)assignLongTo:(long *)pointer forKey:(id)key;
-- (void)assignUnsignedLongTo:(unsigned long *)pointer forKey:(id)key;
-- (void)assignLongLongTo:(long long *)pointer forKey:(id)key;
-- (void)assignUnsignedLongLongTo:(unsigned long long *)pointer forKey:(id)key;
+- (void)assignLongTo:(long *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)assignUnsignedLongTo:(unsigned long *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)assignLongLongTo:(long long *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)assignUnsignedLongLongTo:(unsigned long long *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)assignDoubleTo:(double *)pointer forKey:(id)key;
-- (void)assignFloatTo:(float *)pointer forKey:(id)key;
+- (void)assignFloatTo:(float *)pointer forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (nullable id)firstKeyForObject:(id)anObject;
 
@@ -123,15 +123,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setBool:(BOOL)value forKey:(id)key;
 - (void)setInteger:(NSInteger)value forKey:(id)key;
 - (void)setUnsignedInteger:(NSUInteger)value forKey:(id)key;
-- (void)setShort:(short)value forKey:(id)key;
+- (void)setShort:(short)value forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)setUnsignedShort:(unsigned short)value forKey:(id)key;
 - (void)setLong:(long)value forKey:(id)key;
-- (void)setUnsignedLong:(unsigned long)value forKey:(id)key;
+- (void)setUnsignedLong:(unsigned long)value forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)setLongLong:(long long)value forKey:(id)key;
-- (void)setUnsignedLongLong:(unsigned long long)value forKey:(id)key;
+- (void)setUnsignedLongLong:(unsigned long long)value forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)setDouble:(double)value forKey:(id)key;
 - (void)setFloat:(float)value forKey:(id)key;
-- (void)setPointer:(void *)value forKey:(id)key;
+- (void)setPointer:(void *)value forKey:(id)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (void)performSelectorOnObjectValueAndReplace:(SEL)performSelector;
 @end

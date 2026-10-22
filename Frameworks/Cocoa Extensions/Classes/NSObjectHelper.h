@@ -45,8 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // ---
 
-- (void)performBlockOnMainThread:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay;
-- (void)performBlockOnGlobalQueue:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay;
+- (void)performBlockOnMainThread:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)performBlockOnGlobalQueue:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (void)performSelectorInCommonModes:(SEL)aSelector afterDelay:(NSTimeInterval)delay;
 - (void)performSelectorInCommonModes:(SEL)aSelector withObject:(nullable id)anArgument afterDelay:(NSTimeInterval)delay;
@@ -58,8 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // ---
 
-+ (void)performBlockOnMainThread:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay;
-+ (void)performBlockOnGlobalQueue:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay;
++ (void)performBlockOnMainThread:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (void)performBlockOnGlobalQueue:(dispatch_block_t)block afterDelay:(NSTimeInterval)delay COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 // ---
 

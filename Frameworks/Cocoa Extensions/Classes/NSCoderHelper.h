@@ -37,25 +37,25 @@ NS_ASSUME_NONNULL_BEGIN
  on NSCoder, and a category replaced them for the whole process. Use
  decodeObjectOfClass:forKey: and encodeObject:forKey:. */
 @interface NSCoder (CSCoderHelper)
-- (nullable NSArray *)decodeArrayForKey:(NSString *)key;
-- (nullable NSDictionary *)decodeDictionaryForKey:(NSString *)key;
+- (nullable NSArray *)decodeArrayForKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (nullable NSDictionary *)decodeDictionaryForKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (nullable NSData *)decodeDataForKey:(NSString *)key;
 - (NSUInteger)decodeUnsignedIntegerForKey:(NSString *)key;
-- (short)decodeShortForKey:(NSString *)key;
+- (short)decodeShortForKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (unsigned short)decodeUnsignedShortForKey:(NSString *)key;
-- (unsigned long)decodeUnsignedLongForKey:(NSString *)key;
-- (long long)decodeLongLongForKey:(NSString *)key;
-- (unsigned long long)decodeUnsignedLongLongForKey:(NSString *)key;
+- (unsigned long)decodeUnsignedLongForKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (long long)decodeLongLongForKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (unsigned long long)decodeUnsignedLongLongForKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
-- (void)encodeArray:(NSArray *)value forKey:(NSString *)key;
+- (void)encodeArray:(NSArray *)value forKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)encodeData:(NSData *)value forKey:(NSString *)key;
 - (void)encodeString:(NSString *)value forKey:(NSString *)key;
 - (void)encodeUnsignedInteger:(NSUInteger)value forKey:(NSString *)key;
-- (void)encodeShort:(short)value forKey:(NSString *)key;
+- (void)encodeShort:(short)value forKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)encodeUnsignedShort:(unsigned short)value forKey:(NSString *)key;
-- (void)encodeUnsignedLong:(unsigned long)value forKey:(NSString *)key;
-- (void)encodeLongLong:(long long)value forKey:(NSString *)key;
-- (void)encodeUnsignedLongLong:(unsigned long long)value forKey:(NSString *)key;
+- (void)encodeUnsignedLong:(unsigned long)value forKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)encodeLongLong:(long long)value forKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)encodeUnsignedLongLong:(unsigned long long)value forKey:(NSString *)key COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (void)maybeEncodeObject:(nullable id)value forKey:(NSString *)key;
 @end

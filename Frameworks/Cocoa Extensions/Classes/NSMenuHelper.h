@@ -44,10 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSEventModifierFlags archivedKeyEquivalentModifierMask;
 
 - (void)archiveKeyboardShortcut; // archive keyboard shortcut
-- (void)archiveKeyboardShortcutAndUnset; // archive keyboard shortcut and unset current
-- (void)restoreKeyboardShortcut; // restore archived keyboard shortcut (if it's archived)
+- (void)archiveKeyboardShortcutAndUnset COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version"); // archive keyboard shortcut and unset current
+- (void)restoreKeyboardShortcut COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version"); // restore archived keyboard shortcut (if it's archived)
 - (void)unsetKeyboardShortcut; // unset current keyboard shortcut
-- (void)unsetArchivedKeyboardShortcut; // unset archived keyboard shortcut
+- (void)unsetArchivedKeyboardShortcut COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version"); // unset archived keyboard shortcut
 
 @property (readonly, getter=isKeyboardShortcutArchived) BOOL keyboardShortcutArchived;
 

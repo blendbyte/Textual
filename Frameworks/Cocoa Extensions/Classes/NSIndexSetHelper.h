@@ -33,7 +33,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSIndexSet (CSIndexSetHelper)
-- (NSArray<NSNumber *> *)arrayFromIndexSet;
+- (NSArray<NSNumber *> *)arrayFromIndexSet COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (NSIndexSet *)subsetWithMaximumIndexes:(NSUInteger)maximumNumberOfIndexes;
 @end

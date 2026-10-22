@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSDictionary<NSURLResourceKey, id> *)resourceValuesForKeyWithLoggedError:(NSArray<NSURLResourceKey> *)keys;
 
 - (BOOL)isEqualByFileRepresentation:(NSURL *)url;
-- (BOOL)isEqualByResourceIdentifier:(NSURL *)url;
+- (BOOL)isEqualByResourceIdentifier:(NSURL *)url COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 // Age of resource based on creation date or modification date.
 // Interval will be positive as long as the date is in the past.

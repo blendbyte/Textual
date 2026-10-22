@@ -35,20 +35,20 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSArray (CSArrayHelper)
 @property (readonly) NSRange range;
 
-- (BOOL)boolAtIndex:(NSUInteger)n;
-- (nullable NSArray *)arrayAtIndex:(NSUInteger)n;
+- (BOOL)boolAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (nullable NSArray *)arrayAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (nullable NSString *)stringAtIndex:(NSUInteger)n;
-- (nullable NSDictionary *)dictionaryAtIndex:(NSUInteger)n;
-- (NSInteger)integerAtIndex:(NSUInteger)n;
+- (nullable NSDictionary *)dictionaryAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (NSInteger)integerAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (NSUInteger)unsignedIntegerAtIndex:(NSUInteger)n;
 - (short)shortAtIndex:(NSUInteger)n;
 - (unsigned short)unsignedShortAtIndex:(NSUInteger)n;
-- (long)longAtIndex:(NSUInteger)n;
-- (unsigned long)unsignedLongAtIndex:(NSUInteger)n;
-- (long long)longLongAtIndex:(NSUInteger)n;
-- (unsigned long long)unsignedLongLongAtIndex:(NSUInteger)n;
+- (long)longAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (unsigned long)unsignedLongAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (long long)longLongAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (unsigned long long)unsignedLongLongAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (double)doubleAtIndex:(NSUInteger)n;
-- (float)floatAtIndex:(NSUInteger)n;
+- (float)floatAtIndex:(NSUInteger)n COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (nullable void *)pointerAtIndex:(NSUInteger)n NS_RETURNS_INNER_POINTER;
 
 - (BOOL)containsObjectIgnoringCase:(id)anObject; // Performs comparison using -isEqualIgnoringCase: - ignores objects that don't respond to this.
@@ -83,30 +83,30 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSMutableArray (CSMutableArrayHelper)
 - (void)addObjectWithoutDuplication:(id)anObject;
 
-- (void)addBool:(BOOL)value;
-- (void)addInteger:(NSInteger)value;
-- (void)addUnsignedInteger:(NSUInteger)value;
-- (void)addShort:(short)value;
-- (void)addUnsignedShort:(unsigned short)value;
-- (void)addLong:(long)value;
-- (void)addUnsignedLong:(unsigned long)value;
-- (void)addLongLong:(long long)value;
-- (void)addUnsignedLongLong:(unsigned long long)value;
-- (void)addDouble:(double)value;
-- (void)addFloat:(float)value;
+- (void)addBool:(BOOL)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addInteger:(NSInteger)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addUnsignedInteger:(NSUInteger)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addShort:(short)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addUnsignedShort:(unsigned short)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addLong:(long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addUnsignedLong:(unsigned long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addLongLong:(long long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addUnsignedLongLong:(unsigned long long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addDouble:(double)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)addFloat:(float)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)addPointer:(void *)value;
 
-- (void)insertBool:(BOOL)value atIndex:(NSUInteger)index;
-- (void)insertInteger:(NSInteger)value atIndex:(NSUInteger)index;
-- (void)insertUnsignedInteger:(NSUInteger)value atIndex:(NSUInteger)index;
-- (void)insertShort:(short)value atIndex:(NSUInteger)index;
-- (void)insertUnsignedShort:(unsigned short)value atIndex:(NSUInteger)index;
-- (void)insertLong:(long)value atIndex:(NSUInteger)index;
-- (void)insertUnsignedLong:(unsigned long)value atIndex:(NSUInteger)index;
-- (void)insertLongLong:(long long)value atIndex:(NSUInteger)index;
-- (void)insertUnsignedLongLong:(unsigned long long)value atIndex:(NSUInteger)index;
-- (void)insertDouble:(double)value atIndex:(NSUInteger)index;
-- (void)insertFloat:(float)value atIndex:(NSUInteger)index;
+- (void)insertBool:(BOOL)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertInteger:(NSInteger)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertUnsignedInteger:(NSUInteger)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertShort:(short)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertUnsignedShort:(unsigned short)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertLong:(long)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertUnsignedLong:(unsigned long)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertLongLong:(long long)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertUnsignedLongLong:(unsigned long long)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertDouble:(double)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+- (void)insertFloat:(float)value atIndex:(NSUInteger)index COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)insertPointer:(void *)value atIndex:(NSUInteger)index;
 
 - (void)performSelectorOnObjectValueAndReplace:(SEL)performSelector;

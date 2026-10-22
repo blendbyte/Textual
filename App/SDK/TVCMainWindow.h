@@ -69,7 +69,7 @@ TEXTUAL_EXTERN NSNotificationName const TVCMainWindowSelectionChangedNotificatio
 TEXTUAL_EXTERN NSString * const TVCServerListDragType;
 
 @interface TVCMainWindow : NSWindow
-@property (readonly, getter=isDisabled) BOOL disabled;
+@property (readonly, getter=isDisabled) BOOL disabled TEXTUAL_DEPRECATED("Always NO");
 
 @property (readonly) TVCMainWindowAppearance *userInterfaceObjects;
 

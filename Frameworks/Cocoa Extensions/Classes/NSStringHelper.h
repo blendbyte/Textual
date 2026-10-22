@@ -224,19 +224,19 @@ typedef NS_OPTIONS(NSUInteger, CSStringType)
 #pragma mark String Number Formatter Helper
 
 @interface NSString (CSStringNumberHelper)
-+ (NSString *)stringWithChar:(char)value;
++ (NSString *)stringWithChar:(char)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 + (NSString *)stringWithUniChar:(UniChar)value;
-+ (NSString *)stringWithUnsignedChar:(unsigned char)value;
-+ (NSString *)stringWithShort:(short)value;
-+ (NSString *)stringWithUnsignedShort:(unsigned short)value;
-+ (NSString *)stringWithInt:(int)value;
-+ (NSString *)stringWithUnsignedInt:(unsigned int)value;
-+ (NSString *)stringWithLong:(long)value;
-+ (NSString *)stringWithUnsignedLong:(unsigned long)value;
-+ (NSString *)stringWithLongLong:(long long)value;
-+ (NSString *)stringWithUnsignedLongLong:(unsigned long long)value;
-+ (NSString *)stringWithFloat:(float)value;
-+ (NSString *)stringWithDouble:(double)value;
++ (NSString *)stringWithUnsignedChar:(unsigned char)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithShort:(short)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithUnsignedShort:(unsigned short)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithInt:(int)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithUnsignedInt:(unsigned int)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithLong:(long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithUnsignedLong:(unsigned long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithLongLong:(long long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithUnsignedLongLong:(unsigned long long)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithFloat:(float)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSString *)stringWithDouble:(double)value COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 + (NSString *)stringWithInteger:(NSInteger)value;
 + (NSString *)stringWithUnsignedInteger:(NSUInteger)value;
 @end

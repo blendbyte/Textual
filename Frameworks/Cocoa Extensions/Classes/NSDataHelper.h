@@ -42,11 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSString *sha512;
 @property (readonly, copy) NSString *md5;
 
-+ (NSData *)lineFeed;
-+ (NSData *)carriageReturn;
-+ (NSData *)carriageReturnPlusLineFeed;
++ (NSData *)lineFeed COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSData *)carriageReturn COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
++ (NSData *)carriageReturnPlusLineFeed COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
-+ (NSData *)emptyObject;
++ (NSData *)emptyObject COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (void)enumerateMatchesOfData:(NSData *)data withBlock:(void (NS_NOESCAPE ^)(NSRange range, BOOL *stop))enumerationBlock;
 - (void)enumerateMatchesOfData:(NSData *)data withBlock:(void (NS_NOESCAPE ^)(NSRange range, BOOL *stop))enumerationBlock options:(NSDataSearchOptions)options;

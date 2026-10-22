@@ -38,11 +38,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSUserDefaults (CSUserDefaultsHelper)
 - (void)setColor:(nullable NSColor *)value forKey:(NSString *)defaultName;
 - (void)setUnsignedInteger:(NSUInteger)value forKey:(NSString *)defaultName;
-- (void)setShort:(short)value forKey:(NSString *)defaultName;
+- (void)setShort:(short)value forKey:(NSString *)defaultName COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)setUnsignedShort:(unsigned short)value forKey:(NSString *)defaultName;
-- (void)setUnsignedLong:(unsigned long)value forKey:(NSString *)defaultName;
+- (void)setUnsignedLong:(unsigned long)value forKey:(NSString *)defaultName COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 - (void)setLongLong:(long long)value forKey:(NSString *)defaultName;
-- (void)setUnsignedLongLong:(unsigned long long)value forKey:(NSString *)defaultName;
+- (void)setUnsignedLongLong:(unsigned long long)value forKey:(NSString *)defaultName COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 - (nullable NSColor *)colorForKey:(NSString *)defaultName;
 - (NSUInteger)unsignedIntegerForKey:(NSString *)defaultName;

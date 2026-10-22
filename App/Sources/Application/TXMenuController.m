@@ -1108,12 +1108,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 		case MTMMWindowMainWindow: // "Main Window"
 		{
-			BOOL isMainWindowMain = mainWindow().mainWindow;
-			BOOL isMainWindowDisabled = mainWindow().disabled; // "Main Window" brings the main window back
+			/* "Main Window" brings the main window back */
+			menuItem.hidden = mainWindow().mainWindow;
 
-			menuItem.hidden = isMainWindowMain;
-
-			return (isMainWindowDisabled == NO);
+			return YES;
 		}
 
 		case MTMMWindowToggleVisibilityOfMemberList: // "Show Member List" / "Hide Member List" (View menu)

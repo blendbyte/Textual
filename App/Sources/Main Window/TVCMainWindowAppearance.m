@@ -53,8 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable, readwrite) NSColor *channelViewOverlayDefaultBackgroundColorInactiveWindow;
 @property (nonatomic, copy, nullable, readwrite) NSColor *loadingScreenBackgroundColor;
 @property (nonatomic, copy, nullable, readwrite) NSColor *splitViewDividerColor;
-@property (nonatomic, copy, nullable, readwrite) NSColor *titlebarAccessoryViewBackgroundColorActiveWindow;
-@property (nonatomic, copy, nullable, readwrite) NSColor *titlebarAccessoryViewBackgroundColorInactiveWindow;
 @property (nonatomic, assign, readwrite) CGFloat titlebarAccessoryViewLeftMargin;
 @property (nonatomic, assign, readwrite) CGFloat titlebarAccessoryViewRightMargin;
 @end
@@ -98,9 +96,6 @@ NS_ASSUME_NONNULL_BEGIN
 	self.loadingScreenBackgroundColor = [self colorForKey:@"loadingScreenBackgroundColor"];
 
 	self.splitViewDividerColor = [self colorForKey:@"splitViewDividerColor"];
-
-	self.titlebarAccessoryViewBackgroundColorActiveWindow = [self colorForKey:@"titlebarAccessoryViewBackgroundColor" forActiveWindow:YES];
-	self.titlebarAccessoryViewBackgroundColorInactiveWindow = [self colorForKey:@"titlebarAccessoryViewBackgroundColor" forActiveWindow:NO];
 
 	self.titlebarAccessoryViewLeftMargin = [self measurementForKey:@"titlebarAccessoryViewLeftMargin"];
 	self.titlebarAccessoryViewRightMargin = [self measurementForKey:@"titlebarAccessoryViewRightMargin"];

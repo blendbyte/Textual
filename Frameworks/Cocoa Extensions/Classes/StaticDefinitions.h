@@ -30,25 +30,29 @@
  *
  *********************************************************************** */
 
+/* Macros can't carry the deprecated attribute: these warn where they're used */
+#define COCOA_EXTENSIONS_PRAGMA_STRING(x)			_Pragma(#x)
+#define COCOA_EXTENSIONS_DEPRECATED_MACRO(message)		COCOA_EXTENSIONS_PRAGMA_STRING(GCC warning message)
+
 #define NSAssertReturn(c)								if ((c) == NO) { return; }
 #define NSAssertReturnR(c, r)							if ((c) == NO) { return (r); }
-#define NSAssertReturnLoopContinue(c)					if ((c) == NO) { continue; }
-#define NSAssertReturnLoopBreak(c)						if ((c) == NO) { break; }
+#define NSAssertReturnLoopContinue(c)					COCOA_EXTENSIONS_DEPRECATED_MACRO("NSAssertReturnLoopContinue is unused and will be removed in a future version") if ((c) == NO) { continue; }
+#define NSAssertReturnLoopBreak(c)						COCOA_EXTENSIONS_DEPRECATED_MACRO("NSAssertReturnLoopBreak is unused and will be removed in a future version") if ((c) == NO) { break; }
 
-#define NSObjectIsEmptyAssert(o)						if (NSObjectIsEmpty(o)) { return; }
-#define NSObjectIsEmptyAssertReturn(o, r)				if (NSObjectIsEmpty(o)) { return (r); }
-#define NSObjectIsEmptyAssertLoopContinue(o)			if (NSObjectIsEmpty(o)) { continue; }
-#define NSObjectIsEmptyAssertLoopBreak(o)				if (NSObjectIsEmpty(o)) { break; }
+#define NSObjectIsEmptyAssert(o)						COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsEmptyAssert is unused and will be removed in a future version") if (NSObjectIsEmpty(o)) { return; }
+#define NSObjectIsEmptyAssertReturn(o, r)				COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsEmptyAssertReturn is unused and will be removed in a future version") if (NSObjectIsEmpty(o)) { return (r); }
+#define NSObjectIsEmptyAssertLoopContinue(o)			COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsEmptyAssertLoopContinue is unused and will be removed in a future version") if (NSObjectIsEmpty(o)) { continue; }
+#define NSObjectIsEmptyAssertLoopBreak(o)				COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsEmptyAssertLoopBreak is unused and will be removed in a future version") if (NSObjectIsEmpty(o)) { break; }
 
-#define NSObjectIsNotEmptyAssert(o)						if (NSObjectIsNotEmpty(o)) { return; }
-#define NSObjectIsNotEmptyAssertReturn(o, r)			if (NSObjectIsNotEmpty(o)) { return (r); }
-#define NSObjectIsNotEmptyAssertLoopContinue(o)			if (NSObjectIsNotEmpty(o)) { continue; }
-#define NSObjectIsNotEmptyAssertLoopBreak(o)			if (NSObjectIsNotEmpty(o)) { break; }
+#define NSObjectIsNotEmptyAssert(o)						COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsNotEmptyAssert is unused and will be removed in a future version") if (NSObjectIsNotEmpty(o)) { return; }
+#define NSObjectIsNotEmptyAssertReturn(o, r)			COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsNotEmptyAssertReturn is unused and will be removed in a future version") if (NSObjectIsNotEmpty(o)) { return (r); }
+#define NSObjectIsNotEmptyAssertLoopContinue(o)			COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsNotEmptyAssertLoopContinue is unused and will be removed in a future version") if (NSObjectIsNotEmpty(o)) { continue; }
+#define NSObjectIsNotEmptyAssertLoopBreak(o)			COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsNotEmptyAssertLoopBreak is unused and will be removed in a future version") if (NSObjectIsNotEmpty(o)) { break; }
 
-#define NSObjectIsKindOfClassAssert(o,c)				if ([(o) isKindOfClass:[c class]] == NO) { return; }
-#define NSObjectIsKindOfClassAssertReturn(o, c, r)		if ([(o) isKindOfClass:[c class]] == NO) { return (r); }
-#define NSObjectIsKindOfClassAssertContinue(o, c)		if ([(o) isKindOfClass:[c class]] == NO) { continue; }
-#define NSObjectIsKindOfClassAssertBreak(o,c)			if ([(o) isKindOfClass:[c class]] == NO) { break; }
+#define NSObjectIsKindOfClassAssert(o,c)				COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsKindOfClassAssert is unused and will be removed in a future version") if ([(o) isKindOfClass:[c class]] == NO) { return; }
+#define NSObjectIsKindOfClassAssertReturn(o, c, r)		COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsKindOfClassAssertReturn is unused and will be removed in a future version") if ([(o) isKindOfClass:[c class]] == NO) { return (r); }
+#define NSObjectIsKindOfClassAssertContinue(o, c)		COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsKindOfClassAssertContinue is unused and will be removed in a future version") if ([(o) isKindOfClass:[c class]] == NO) { continue; }
+#define NSObjectIsKindOfClassAssertBreak(o,c)			COCOA_EXTENSIONS_DEPRECATED_MACRO("NSObjectIsKindOfClassAssertBreak is unused and will be removed in a future version") if ([(o) isKindOfClass:[c class]] == NO) { break; }
 
 #define COCOA_EXTENSIONS_EXTERN							extern
 
