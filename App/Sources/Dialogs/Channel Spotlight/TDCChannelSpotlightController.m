@@ -59,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSVisualEffectView *visualEffectView;
 @property (nonatomic, weak) IBOutlet NSTextField *noResultsLabel;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *noResultsLabelLeadingConstraint;
-@property (nonatomic, weak) IBOutlet NSView *searchResultsView;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *searchResultsViewHeightConstraint;
 @property (nonatomic, weak) IBOutlet NSTextField *searchField;
 @property (nonatomic, weak) IBOutlet NSTableView *searchResultsTable;

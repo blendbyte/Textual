@@ -54,13 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define IRCClientConfigDictionaryVersionLatest		710
 
-@interface IRCClientConfig ()
-@property (readonly) BOOL prefersSecuredConnection_;
-@property (readonly) uint16_t serverPort_;
-@property (readonly, copy, nullable) NSString *serverAddress_;
-@property (readonly) BOOL connectionPrefersModernCiphers_;
-@end
-
 @implementation IRCClientConfig
 
 #pragma mark -

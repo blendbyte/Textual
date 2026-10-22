@@ -44,7 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Search Field
 
 @property (readonly, copy, nullable) NSColor *searchFieldTextColor;
-@property (readonly, copy, nullable) NSColor *searchFieldCompletionTextColor;
 @property (readonly, copy, nullable) NSColor *searchFieldNoResultsTextColor;
 
 #pragma mark -

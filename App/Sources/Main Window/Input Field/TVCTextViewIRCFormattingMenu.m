@@ -54,8 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *formatterMenu;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenu *foregroundColorMenu;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenu *backgroundColorMenu;
-@property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *foregroundColorSetMenuItem;
-@property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *backgroundColorSetMenuItem;
 
 - (IBAction)emptyAction:(nullable id)sender;
 @end

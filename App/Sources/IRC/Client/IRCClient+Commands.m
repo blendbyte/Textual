@@ -419,8 +419,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)autoConnectWithDelay:(NSUInteger)delay afterWakeUp:(BOOL)afterWakeUp
 {
-	self.connectDelay = delay;
-
 	/* After waking up, the connection counts as a reconnect */
 	if (delay == 0) {
 		if (afterWakeUp) {

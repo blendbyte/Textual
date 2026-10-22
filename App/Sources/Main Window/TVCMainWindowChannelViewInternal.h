@@ -63,7 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TVCMainWindowChannelView ()
-@property (nonatomic, assign) BOOL isMovingDividers;
 @property (nonatomic, assign) NSUInteger itemIndexSelected;
 
 - (void)selectionChangeTo:(NSUInteger)itemIndex;

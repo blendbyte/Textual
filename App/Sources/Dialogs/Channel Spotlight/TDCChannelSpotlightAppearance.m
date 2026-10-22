@@ -47,7 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Search Field
 
 @property (nonatomic, copy, nullable, readwrite) NSColor *searchFieldTextColor;
-@property (nonatomic, copy, nullable, readwrite) NSColor *searchFieldCompletionTextColor;
 @property (nonatomic, copy, nullable, readwrite) NSColor *searchFieldNoResultsTextColor;
 
 #pragma mark -
@@ -98,7 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 	NSDictionary *searchField = properties[@"Search Field"];
 
 	self.searchFieldTextColor = [self colorInGroup:searchField withKey:@"controlTextColor"];
-	self.searchFieldCompletionTextColor = [self colorInGroup:searchField withKey:@"completionTextColor"];
 	self.searchFieldNoResultsTextColor = [self colorInGroup:searchField withKey:@"noResultsTextColor"];
 
 	NSDictionary *searchResult = properties[@"Search Result"];

@@ -63,7 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TVCServerListCellGroupItem ()
-@property (nonatomic, weak, nullable) NSButton *disclosureTriangle;
 @property (nonatomic, weak, nullable) NSImageView *networkIconView;
 @end
 

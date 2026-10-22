@@ -12,7 +12,6 @@
                 <outlet property="searchField" destination="1E4-kg-4iF" id="bZT-CB-oym"/>
                 <outlet property="searchResultsController" destination="fxa-x1-fZ7" id="xfS-1h-r9R"/>
                 <outlet property="searchResultsTable" destination="tt4-3F-bvy" id="x3U-fE-QVn"/>
-                <outlet property="searchResultsView" destination="bUM-jd-4A3" id="MHg-3d-1uU"/>
                 <outlet property="searchResultsViewHeightConstraint" destination="Cw6-e1-FPi" id="FxS-bL-7wh"/>
                 <outlet property="visualEffectView" destination="OYV-WK-xFr" id="0g0-4g-GG9"/>
                 <outlet property="window" destination="BfF-sG-KJr" id="OOD-cl-eiC"/>

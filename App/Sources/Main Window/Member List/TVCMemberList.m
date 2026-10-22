@@ -60,7 +60,6 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 @property (nonatomic, strong) id userPopoverTrackingArea;
 @property (nonatomic, assign) BOOL userPopoverMouseIsInView;
 @property (nonatomic, assign) BOOL userPopoverTimerIsActive;
-@property (nonatomic, assign) NSPoint userPopoverLastKnownLocalPoint;
 @property (nonatomic, assign) NSInteger lastRowShownUserInfoPopover;
 @property (nonatomic, strong, readwrite) TVCMemberListAppearance *userInterfaceObjects;
 @property (nonatomic, weak, readwrite) IBOutlet NSVisualEffectView *visualEffectView;
@@ -245,8 +244,6 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 	self.userPopoverMouseIsInView = NO;
 	self.userPopoverTimerIsActive = NO;
 
-	self.userPopoverLastKnownLocalPoint = NSZeroPoint;
-
 	if (self.memberListUserInfoPopover.shown) {
 		[self.memberListUserInfoPopover close];
 	}
@@ -277,8 +274,6 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 
 - (void)popUserInfoExpansionFrameAtPoint:(NSPoint)localPoint ignoreTimerCheck:(BOOL)ignoreTimer
 {
-	self.userPopoverLastKnownLocalPoint = localPoint;
-
 	if ([XRAccessibility isVoiceOverEnabled]) {
 		return;
 	}

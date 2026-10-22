@@ -65,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TPCThemeSettings ()
-@property (nonatomic, assign, readwrite) BOOL supportsMultipleAppearances;
 @property (nonatomic, assign, readwrite) BOOL invertSidebarColors;
 @property (nonatomic, assign, readwrite) BOOL js_postHandleEventNotifications;
 @property (nonatomic, assign, readwrite) BOOL js_postAppearanceChangesNotification;

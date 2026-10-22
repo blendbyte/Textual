@@ -342,7 +342,6 @@
                             <outlet property="progressViewIndicator" destination="WS7-Zg-h6u" id="XYt-hu-zhy"/>
                             <outlet property="trialExpiredView" destination="dlj-jp-O6P" id="hIg-fZ-s9L"/>
                             <outlet property="welcomeAddServerView" destination="c10-eB-wRJ" id="YGC-SF-VWn"/>
-                            <outlet property="welcomeAddServerViewContinueButton" destination="ba0-0Q-9bh" id="t0n-Ip-wMq"/>
                         </connections>
                     </visualEffectView>
                 </subviews>

@@ -71,7 +71,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isCompletingCommand;
 @property (nonatomic, assign) BOOL isCompletingNickname;
 @property (nonatomic, assign) BOOL searchPatternIsAtStart;
-@property (nonatomic, assign) BOOL searchPatternIsAtEnd;
 @property (nonatomic, assign) BOOL completionCacheIsConstructed;
 @end
 
@@ -722,8 +721,6 @@ complete_operation:
 		self.cachedCompletionSuffix = [self.currentTextViewStringValue substringWithRange:self.rangeOfCompletionSuffix];
 	}
 
-	self.searchPatternIsAtEnd = (NSMaxRange(self.rangeOfCompletionSuffix) == totalTextLength);
-
 	return YES;
 }
 
@@ -751,7 +748,6 @@ complete_operation:
 	self.isCompletingCommand = NO;
 	self.isCompletingNickname = NO;
 
-	self.searchPatternIsAtEnd = NO;
 	self.searchPatternIsAtStart = NO;
 }
 

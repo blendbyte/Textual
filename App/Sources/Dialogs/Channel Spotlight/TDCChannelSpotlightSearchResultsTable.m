@@ -60,7 +60,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet NSTextField *keyboardShortcutField;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *keyboardShortcutFieldOffsetConstraint;
 @property (nonatomic, weak) IBOutlet NSTextField *unreadCountDescriptionField;
-@property (nonatomic, assign) BOOL staticLabelsPopulated;
 @property (readonly) TDCChannelSpotlightAppearance *userInterfaceObjects;
 @property (readonly) TDCChannelSpotlightController *controller;
 @property (readonly) TDCChannelSpotlightSearchResultRowView *rowCell;

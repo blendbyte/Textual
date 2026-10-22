@@ -52,7 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, weak) NSMenu *foregroundColorMenu;
 @property (readonly, weak) NSMenu *backgroundColorMenu;
 
-@property (readonly) BOOL firstResponderSupportsFormatting;
 
 @property (readonly) BOOL textIsBold;
 @property (readonly) BOOL textIsItalicized;

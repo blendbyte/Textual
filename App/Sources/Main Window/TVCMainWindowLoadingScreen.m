@@ -47,7 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) NSView *visibleView;
 @property (nonatomic, assign) NSUInteger displayGeneration; // raised by each display; a fade from before it doesn't hide
 @property (nonatomic, strong) IBOutlet NSView *welcomeAddServerView;
-@property (nonatomic, weak) IBOutlet NSButton *welcomeAddServerViewContinueButton;
 @property (nonatomic, strong) IBOutlet NSView *progressView;
 @property (nonatomic, weak) IBOutlet NSTextField *progressViewDescriptionTextField;
 @property (nonatomic, weak) IBOutlet NSProgressIndicator *progressViewIndicator;

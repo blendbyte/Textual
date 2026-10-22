@@ -2242,9 +2242,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		/* Set vendor specific flags based on BATCH command values */
-		if ([batchType isEqualToString:@"znc.in/playback"]) {
-			self.zncBouncerIsPlayingBackHistory = self.isConnectedToZNC;
-		} else if ([batchType isEqualToString:@"znc.in/tlsinfo"]) {
+		if ([batchType isEqualToString:@"znc.in/tlsinfo"]) {
 			self.zncBouncerIsSendingCertificateInfo = self.isConnectedToZNC;
 
 			/* If this is parent batch (there is no @batch=), then we
@@ -2777,9 +2775,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[self labeledBatchFinished:batchMessage];
 
 	/* Set vendor specific flags based on BATCH command values */
-	if ([batchType isEqualToString:@"znc.in/playback"]) {
-		self.zncBouncerIsPlayingBackHistory = NO;
-	} else if ([batchType isEqualToString:@"znc.in/tlsinfo"]) {
+	if ([batchType isEqualToString:@"znc.in/tlsinfo"]) {
 		self.zncBouncerIsSendingCertificateInfo = NO;
 	}
 }

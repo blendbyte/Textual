@@ -127,8 +127,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self removeOutgoingMessages];
 
-	self.connectDelay = 0;
-
 	self.invokingISONCommandForFirstTime = NO;
 
 	self.isAutojoining = NO;
@@ -165,7 +163,6 @@ NS_ASSUME_NONNULL_BEGIN
 	self.isConnectedToZNC = NO;
 	self.zncBouncerIsSendingCertificateInfo = NO;
 	self.zncBouncerCertificateChainDataMutable = nil;
-	self.zncBouncerIsPlayingBackHistory = NO;
 
 	self.reconnectEnabled = NO;
 

@@ -76,7 +76,6 @@ NSString * const TLOFileLoggerIdleTimerNotification		= @"TLOFileLoggerIdleTimerN
 @property (nonatomic, weak) IRCChannel *channel;
 @property (nonatomic, strong, nullable) NSFileHandle *fileHandle;
 @property (nonatomic, copy, readwrite, nullable) NSString *filePath;
-@property (readonly, copy, readonly, nullable) NSString *filePathComputed;
 @property (nonatomic, copy, nullable) NSDate *dateOpened;
 @property (nonatomic, assign) NSTimeInterval lastWriteTime;
 @property (nonatomic, strong, nullable) NSMutableData *pendingData;

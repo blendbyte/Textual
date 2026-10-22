@@ -48,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, readwrite, nullable) NSString *selection;
 
-@property (nonatomic, assign) BOOL viewingBottom;
 
 - (instancetype)initWithViewController:(TVCLogController *)viewController NS_DESIGNATED_INITIALIZER;
 
