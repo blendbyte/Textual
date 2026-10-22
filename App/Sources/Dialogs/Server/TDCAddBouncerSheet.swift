@@ -339,7 +339,7 @@ final class AddBouncerSheet: NSObject
 	{
 		model = AddBouncerModel(existingClient: existingClient, add: add, addAsServer: addAsServer)
 
-		window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: AddBouncerView.width, height: AddBouncerView.height(showingOffer: false)),
+		window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: AddBouncerView.width, height: AddBouncerView.startingHeight),
 						  styleMask: [.titled],
 						  backing: .buffered,
 						  defer: true)
@@ -348,7 +348,14 @@ final class AddBouncerSheet: NSObject
 
 		window.title = AddBouncerText("ab-title")
 
-		window.contentViewController = NSHostingController(rootView: AddBouncerView(model: model))
+		let hostingController = NSHostingController(rootView: AddBouncerView(model: model))
+
+		/* Each page sizes the sheet to its form (AddBouncerFitsSheet) */
+		hostingController.sizingOptions = []
+
+		window.contentViewController = hostingController
+
+		window.setContentSize(NSSize(width: AddBouncerView.width, height: AddBouncerView.startingHeight))
 
 		model.window = window
 
@@ -381,11 +388,7 @@ final class AddBouncerSheet: NSObject
 	@objc var hostingOfferURL: URL?
 	{
 		get { model.hostingOfferURL }
-		set {
-			model.hostingOfferURL = newValue
-
-			window.setContentSize(NSSize(width: AddBouncerView.width, height: AddBouncerView.height(showingOffer: (newValue != nil))))
-		}
+		set { model.hostingOfferURL = newValue }
 	}
 
 	@objc(beginInWindow:)
@@ -411,12 +414,7 @@ final class AddBouncerSheet: NSObject
 struct AddBouncerView: View
 {
 	static let width: CGFloat = 540
-
-	/* Taller with the hosting offer, so it shows under the login without scrolling */
-	static func height(showingOffer: Bool) -> CGFloat
-	{
-		return ((showingOffer) ? 650 : 580)
-	}
+	static let startingHeight: CGFloat = 580 // until a page fits it
 
 	@ObservedObject var model: AddBouncerModel
 
@@ -432,7 +430,8 @@ struct AddBouncerView: View
 					AddBouncerNetworksPage(model: model)
 			}
 		}
-		.frame(width: Self.width, height: Self.height(showingOffer: (model.hostingOfferURL != nil)))
+		.frame(width: Self.width)
+		.frame(maxHeight: .infinity)
 	}
 }
 
@@ -466,6 +465,109 @@ struct AddBouncerHeader: View
 	}
 }
 
+/// Makes the sheet as tall as the page's form, up to a limit past which the form
+/// scrolls. Inside the form: SwiftUI doesn't say how tall a form's rows are, but
+/// the scroll view it puts them in has a document view just as tall
+struct AddBouncerFitsSheet: NSViewRepresentable
+{
+	func makeNSView(context: Context) -> NSView
+	{
+		return AddBouncerFitsSheetView()
+	}
+
+	func updateNSView(_ nsView: NSView, context: Context)
+	{
+	}
+}
+
+final class AddBouncerFitsSheetView: NSView
+{
+	static let minimumHeight: CGFloat = 300
+	static let maximumHeight: CGFloat = 720
+
+	private var observedView: NSView?
+
+	override func viewDidMoveToWindow()
+	{
+		super.viewDidMoveToWindow()
+
+		stopObserving()
+
+		guard window != nil,
+			  let documentView = enclosingScrollView?.documentView else {
+			return
+		}
+
+		observedView = documentView
+
+		documentView.postsFrameChangedNotifications = true
+
+		NotificationCenter.default.addObserver(self, selector: #selector(documentFrameChanged(_:)), name: NSView.frameDidChangeNotification, object: documentView)
+
+		fitSheet()
+	}
+
+	private func stopObserving()
+	{
+		guard let observedView = observedView else {
+			return
+		}
+
+		NotificationCenter.default.removeObserver(self, name: NSView.frameDidChangeNotification, object: observedView)
+
+		self.observedView = nil
+	}
+
+	@objc private func documentFrameChanged(_ notification: Notification)
+	{
+		/* After the layout pass that changed it; a page being replaced is out of the window by then */
+		DispatchQueue.main.async { [weak self] in
+			self?.fitSheet()
+		}
+	}
+
+	private func fitSheet()
+	{
+		guard let window = window,
+			  let contentView = window.contentView,
+			  let scrollView = enclosingScrollView,
+			  let documentView = scrollView.documentView,
+			  scrollView.frame.height > 0 else { // laid out
+			return
+		}
+
+		/* The buttons under the form */
+		let belowForm = (contentView.frame.height - scrollView.frame.height)
+
+		var maximumHeight = Self.maximumHeight
+
+		if let screen = (window.sheetParent?.screen ?? window.screen) {
+			maximumHeight = min(maximumHeight, (screen.visibleFrame.height - 80))
+		}
+
+		let height = min(max((documentView.frame.height + belowForm), Self.minimumHeight), maximumHeight).rounded()
+
+		let change = (height - contentView.frame.height)
+
+		guard abs(change) >= 1 else {
+			return
+		}
+
+		/* Grows downwards, where a sheet hangs from the title bar (macOS centres the newer ones itself) */
+		var frame = window.frame
+
+		frame.origin.y -= change
+		frame.size.height += change
+
+		window.setFrame(frame, display: true, animate: window.isVisible)
+	}
+
+	deinit
+	{
+		NotificationCenter.default.removeObserver(self)
+	}
+}
+
 /// The buttons under a page
 struct AddBouncerButtons<Content: View>: View
 {
@@ -496,6 +598,7 @@ struct AddBouncerLoginPage: View
 		Form {
 			Section {
 				AddBouncerHeader(title: AddBouncerText("ab-1-t"), subtitle: AddBouncerText("ab-1-s"))
+					.background(AddBouncerFitsSheet())
 			}
 
 			Section {
@@ -641,6 +744,7 @@ struct AddBouncerCheckPage: View
 		Form {
 			Section {
 				AddBouncerHeader(title: AddBouncerText("ab-2-t", model.trimmedAddress), subtitle: AddBouncerText("ab-2-s"))
+					.background(AddBouncerFitsSheet())
 			}
 
 			Section {
@@ -825,6 +929,7 @@ struct AddBouncerNetworksPage: View
 		Form {
 			Section {
 				AddBouncerHeader(title: title, subtitle: subtitle)
+					.background(AddBouncerFitsSheet())
 			}
 
 			Section {
