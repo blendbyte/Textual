@@ -70,8 +70,6 @@
 	<integer>0</integer>
 	<key>DestinationOfNonserverNotices</key>
 	<integer>0</integer>
-	<key>DisableMainWindowSegmentedController</key>
-	<integer>0</integer>
 	<key>DisableRemoteNicknameColorHashing</key>
 	<integer>0</integer>
 	<key>DisableSidebarTranslucency</key>
@@ -108,13 +106,9 @@
 	<integer>0</integer>
 	<key>DisplayServerMessageOfTheDayOnConnect</key>
 	<integer>0</integer>
-	<key>DisplayUserListNoModeSymbol</key>
-	<integer>0</integer>
 	<key>File Transfers -&gt; File Transfer Download Folder Bookmark</key>
 	<integer>0</integer>
 	<key>File Transfers -&gt; File Transfer IP Address Detection Method</key>
-	<integer>0</integer>
-	<key>File Transfers -&gt; File Transfer IP Address Detection Prefers 3rd-party Sources</key>
 	<integer>0</integer>
 	<key>File Transfers -&gt; File Transfer Port Range End</key>
 	<integer>0</integer>
@@ -194,27 +188,19 @@
 	<integer>0</integer>
 	<key>Keyboard -&gt; Tab Key Completion Suffix</key>
 	<integer>0</integer>
-	<key>LogHighlights</key>
-	<integer>0</integer>
 	<key>LogTranscript</key>
 	<integer>0</integer>
 	<key>LogTranscriptDestinationSecurityBookmark_5</key>
 	<integer>0</integer>
 	<key>MemberListSortFavorsServerStaff</key>
 	<integer>0</integer>
-	<key>MemberListUpdatesUserInfoPopoverOnScroll</key>
-	<integer>0</integer>
 	<key>Main Input Text Field -&gt; Font Size</key>
 	<integer>0</integer>
 	<key>Main Input Text Field -&gt; Focus When Changing Views</key>
 	<integer>0</integer>
-	<key>MainWindowTransparencyLevel</key>
-	<integer>0</integer>
 	<key>NicknameHighlightMatchingType</key>
 	<integer>0</integer>
 	<key>Nickname Color Style Overrides (v2)</key>
-	<integer>0</integer>
-	<key>New item</key>
 	<integer>0</integer>
 	<key>NotificationType -&gt; </key>
 	<integer>1</integer>
@@ -231,8 +217,6 @@
 	<key>OnlySpeakNotificationsForSelection</key>
 	<integer>0</integer>
 	<key>OpenClickedLinksInBackgroundBrowser</key>
-	<integer>0</integer>
-	<key>Optimizations -&gt; Load History Lazily</key>
 	<integer>0</integer>
 	<key>ReceiveBetaUpdates</key>
 	<integer>0</integer>
@@ -259,8 +243,6 @@
 	<key>ServerListRetainsQueriesBetweenRestarts</key>
 	<integer>0</integer>
 	<key>Server List Unread Message Count Badge Colors -&gt; Highlight</key>
-	<integer>0</integer>
-	<key>Server Properties Window Sheet -&gt; Include Advanced Encodings</key>
 	<integer>0</integer>
 	<key>SetAwayOnScreenSleep</key>
 	<integer>0</integer>
@@ -376,18 +358,6 @@
 	<integer>0</integer>
 	<key>TPCPreferences -&gt; Migration -&gt; World Controller Migrated (600)</key>
 	<integer>0</integer>
-	<key>Sandbox Migration -&gt; Migrated Resources</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; Installation Migrated</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; User Acknowledged</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; User Prefers Pruning Files</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; All Extensions Pruned</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; Imported Keys</key>
-	<integer>0</integer>
 	<key>TLOLicenseManagerAuthorizationCode</key>
 	<integer>0</integer>
 	<key>TVCLogControllerHistoricLogFileSavePath_v3</key>
@@ -412,10 +382,6 @@
 	<integer>0</integer>
 	<key>UserListDoubleClickAction</key>
 	<integer>0</integer>
-	<key>WebViewDoNotUsesCustomScrollers</key>
-	<integer>0</integer>
-	<key>WebViewPreviewLinks</key>
-	<integer>0</integer>
 	<key>Window -&gt; Main Window Is Fullscreen&apos;d</key>
 	<integer>0</integer>
 	<key>Window -&gt; Main Window -&gt; Member List is Visible</key>
@@ -430,5 +396,17 @@
 	<integer>0</integer>
 	<key>World Controller Client Configurations</key>
 	<integer>0</integer>
+	<key>File Transfers -&gt; File Transfer IP Address Interface Name</key>
+	<integer>0</integer>
+	<key>File Transfers -&gt; File Transfer Manually Entered IP Address</key>
+	<integer>0</integer>
+	<key>Uploads -&gt; Destination</key>
+	<integer>0</integer>
+	<key>Uploads -&gt; Hide Upload Button Without Destination</key>
+	<integer>0</integer>
+	<key>Uploads -&gt; Send Long Pastes To dpaste.com</key>
+	<integer>0</integer>
+	<key>TLOpenLink -&gt; Open Links With Scheme -&gt; </key>
+	<integer>1</integer>
 </dict>
 </plist>

@@ -1838,18 +1838,6 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 
 	[self registerWebKit2DynamicDefaults];
 
-	NSMutableDictionary *dynamicDefaults = [NSMutableDictionary dictionary];
-
-	[dynamicDefaults setBool:[TPCApplicationInfo sandboxEnabled]						forKey:@"Security -> Sandbox Enabled"];
-
-#if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
-	[dynamicDefaults setBool:YES forKey:@"System -> 3rd-party Services -> Built with Sparkle Framework"];
-#else
-	[dynamicDefaults setBool:NO forKey:@"System -> 3rd-party Services -> Built with Sparkle Framework"];
-#endif
-
-	[RZUserDefaults() registerDefaults:dynamicDefaults];
-
 	[self registerPreferencesDictionaryVersion];
 }
 

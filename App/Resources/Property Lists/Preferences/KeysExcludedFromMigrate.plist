@@ -4,13 +4,7 @@
 <dict>
 	<key>File Transfers -&gt; File Transfer Download Folder Bookmark</key>
 	<integer>0</integer>
-	<key>File Transfers -&gt; Partial Downloads</key>
-	<integer>0</integer>
-	<key>Legacy Settings Import -&gt; </key>
-	<integer>1</integer>
 	<key>LogTranscriptDestinationSecurityBookmark_5</key>
-	<integer>0</integer>
-	<key>NSWindowAutosaveFrameMovesToActiveDisplay</key>
 	<integer>0</integer>
 	<key>SUEnableAutomaticChecks</key>
 	<integer>0</integer>
@@ -24,12 +18,8 @@
 	<integer>0</integer>
 	<key>SUUpdateGroupIdentifier</key>
 	<integer>0</integer>
-	<key>Sandbox Migration -&gt; </key>
-	<integer>1</integer>
 	<key>TLOLicenseManagerAuthorizationCode</key>
 	<integer>0</integer>
-	<key>TPCResourceManagerMigrate -&gt; </key>
-	<integer>1</integer>
 	<key>TVCLogControllerHistoricLogFileSavePath_v3</key>
 	<integer>0</integer>
 	<key>TXRunCount</key>
@@ -41,12 +31,6 @@
 	<key>Theme -&gt; Font Name -&gt; Did Not Exist During Last Sync</key>
 	<integer>0</integer>
 	<key>Theme -&gt; Name -&gt; Did Not Exist During Last Sync</key>
-	<integer>0</integer>
-	<key>WebKitDeveloperExtras</key>
-	<integer>0</integer>
-	<key>__uniquePageGroupID-1.WebKit2ScrollAnimatorEnabled</key>
-	<integer>0</integer>
-	<key>__uniquePageGroupID-1.WebKit2ShouldRespectImageOrientation</key>
 	<integer>0</integer>
 </dict>
 </plist>

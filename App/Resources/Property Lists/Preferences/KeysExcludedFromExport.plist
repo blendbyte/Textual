@@ -4,8 +4,6 @@
 <dict>
 	<key>TXRunCount</key>
 	<integer>0</integer>
-	<key>File Transfers -&gt; Partial Downloads</key>
-	<integer>0</integer>
 	<key>TXRunTime</key>
 	<integer>0</integer>
 	<key>TextField</key>
@@ -51,18 +49,6 @@
 	<key>TLOLicenseManagerAuthorizationCode</key>
 	<integer>0</integer>
 	<key>TVCLogControllerHistoricLogFileSavePath_v3</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; Migrated Resources</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; Installation Migrated</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; User Acknowledged</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; User Prefers Pruning Files</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; All Extensions Pruned</key>
-	<integer>0</integer>
-	<key>Sandbox Migration -&gt; Imported Keys</key>
 	<integer>0</integer>
 </dict>
 </plist>

@@ -94,8 +94,6 @@
 	<true/>
 	<key>File Transfers -&gt; File Transfer IP Address Detection Method</key>
 	<integer>1</integer>
-	<key>File Transfers -&gt; File Transfer IP Address Detection Prefers 3rd-party Sources</key>
-	<false/>
 	<key>File Transfers -&gt; File Transfer Port Range End</key>
 	<integer>1130</integer>
 	<key>File Transfers -&gt; File Transfer Port Range Start</key>
