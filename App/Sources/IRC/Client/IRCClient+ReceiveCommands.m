@@ -1001,12 +1001,6 @@ NS_ASSUME_NONNULL_BEGIN
 		[self sendCTCPReply:sender command:command text:TXTLS(@"IRC[jer-ju]")];
 	}
 
-	/* FINGER command */
-	else if ([command isEqualToString:@"FINGER"])
-	{
-		[self sendCTCPReply:sender command:command text:TXTLS(@"IRC[en6-mw]")];
-	}
-
 	/* PING command */
 	else if ([command isEqualToString:@"PING"])
 	{

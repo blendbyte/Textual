@@ -281,8 +281,7 @@ The identifier for a timer can be found using “/timer list”";
 "u51-nn" = "%1$@%2$@"; // RPL_ISUPPORT configuration data
 "xog-in" = "Be back later";
 "bg3-h2" = "\002-CTCP-\002 %1$@ from %2$@ was ignored";
-"jer-ju" = "CLIENTINFO DCC FINGER PING TIME USERINFO VERSION";
-"en6-mw" = "Stop fingering me pervert!";
+"jer-ju" = "CLIENTINFO DCC PING TIME USERINFO VERSION";
 "5wa-lb" = "There are no capabilities that are enabled";
 "7p9-rs" = "The following capabilities are currently enabled: %@";
 "obp-ww" = "Mode is \002%@\002";
