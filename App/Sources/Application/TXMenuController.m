@@ -101,6 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self addHiddenShortcuts];
 
+	[self findSharedShortcuts];
+
 	[self setupOtherServices];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(menuItemWillPerformedAction:) name:NSMenuWillSendActionNotification object:nil];
@@ -198,6 +200,57 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* Delete Channel and Close Query share ⇧⌘⌫, the two Show Logs in Finder ⇧⌘L.
+ Both menus are always in the menu bar, and the first item with a shortcut
+ takes it, dimmed or not: only the menu that applies keeps them. */
+- (void)findSharedShortcuts
+{
+	NSMutableArray<NSArray<NSMenuItem *> *> *pairs = [NSMutableArray array];
+
+	for (NSMenuItem *channelItem in self.mainMenuChannelMenu.itemArray) {
+		if (channelItem.keyEquivalent.length == 0) {
+			continue;
+		}
+
+		for (NSMenuItem *queryItem in self.mainMenuQueryMenu.itemArray) {
+			if ([queryItem.keyEquivalent isEqualToString:channelItem.keyEquivalent] &&
+				queryItem.keyEquivalentModifierMask == channelItem.keyEquivalentModifierMask)
+			{
+				/* The shortcut, then the two items */
+				NSMenuItem *shortcut = [NSMenuItem new];
+
+				shortcut.keyEquivalent = channelItem.keyEquivalent;
+				shortcut.keyEquivalentModifierMask = channelItem.keyEquivalentModifierMask;
+
+				[pairs addObject:@[shortcut, channelItem, queryItem]];
+			}
+		}
+	}
+
+	self.sharedShortcutItems = pairs;
+
+	[self updateSharedShortcuts];
+}
+
+- (void)updateSharedShortcuts
+{
+	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
+
+	BOOL queryApplies = (c.isPrivateMessage || c.isUtility);
+
+	for (NSArray<NSMenuItem *> *pair in self.sharedShortcutItems) {
+		NSMenuItem *shortcut = pair[0];
+
+		NSMenuItem *keeps = ((queryApplies) ? pair[2] : pair[1]);
+		NSMenuItem *gives = ((queryApplies) ? pair[1] : pair[2]);
+
+		gives.keyEquivalent = @"";
+
+		keeps.keyEquivalent = shortcut.keyEquivalent;
+		keeps.keyEquivalentModifierMask = shortcut.keyEquivalentModifierMask;
+	}
+}
+
 - (void)setupOtherServices
 {
 	[self.fileTransferController startUsingDownloadDestinationURL];
@@ -220,6 +273,8 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.menuIsOpen == NO) {
 		[self resetSelectedItems];
 	}
+
+	[self updateSharedShortcuts];
 
 	/* When the selection changes, menus that may be dynamic are force
 	 revalidated so that Command I (or other shortcuts) work with channel
@@ -406,6 +461,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSInteger tag = menuItem.tag;
 
+	/* Channel and Query stay in the menu bar: their items are dimmed unless
+	 a channel, or a private message, is selected */
+	NSMenu *itemMenu = menuItem.menu;
+
+	while (itemMenu.supermenu && itemMenu != self.mainMenuChannelMenu && itemMenu != self.mainMenuQueryMenu) {
+		itemMenu = itemMenu.supermenu;
+	}
+
+	if (itemMenu == self.mainMenuChannelMenu || itemMenu == self.mainMenuQueryMenu) {
+		IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
+
+		BOOL applies = ((itemMenu == self.mainMenuChannelMenu) ? c.isChannel : (c.isPrivateMessage || c.isUtility));
+
+		if (applies == NO) {
+			menuItem.state = NSControlStateValueOff;
+
+			return NO;
+		}
+	}
+
 	/* Mute: checked while muted */
 	if (menuItem.action == @selector(toggleMute:)) {
 		IRCTreeItem *item = [self _treeItemToMuteForMenuItem:menuItem];
@@ -500,19 +575,17 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSUInteger tag = menuItem.tag;
 
-	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
-
 	switch (tag) {
 		case MTMainMenuChannel: // "Channel"
 		{
-			[self showMainMenuItem:menuItem withSubmenu:((c.isChannel) ? self.mainMenuChannelMenu : nil)];
+			[self showMainMenuItem:menuItem withSubmenu:self.mainMenuChannelMenu];
 
 			return YES;
 		}
 
 		case MTMainMenuQuery: // "Query"
 		{
-			[self showMainMenuItem:menuItem withSubmenu:((c.isPrivateMessage || c.isUtility) ? self.mainMenuQueryMenu : nil)];
+			[self showMainMenuItem:menuItem withSubmenu:self.mainMenuQueryMenu];
 
 			return YES;
 		}
@@ -533,36 +606,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(menuItem != nil);
 
-	/* Hidden, it keeps its submenu: the menu bar takes the title from the
-	 submenu and drew an empty slot when it came back with a new one
-	 outside menu tracking (a pop-out window becoming key). A hidden
-	 item's shortcuts don't fire (allowsKeyEquivalentWhenHidden is NO). */
-	if (submenu) {
-		if (menuItem.submenu != submenu) {
-			menuItem.submenu = submenu;
-		}
-
-		BOOL wasHidden = menuItem.hidden;
-
-		menuItem.hidden = NO;
-
-		/* Shown again outside menu tracking (a channel selected, a pop-out
-		 window becoming key): the menu bar kept an empty slot for it until
-		 the next menu was opened. Taken out and put back in its place, it
-		 is drawn. */
-		NSMenu *menuBar = menuItem.menu;
-
-		if (wasHidden && menuBar == NSApp.mainMenu) {
-			NSInteger index = [menuBar indexOfItem:menuItem];
-
-			if (index >= 0) {
-				[menuBar removeItemAtIndex:index];
-				[menuBar insertItem:menuItem atIndex:index];
-			}
-		}
-	} else {
-		menuItem.hidden = YES;
+	/* Channel and Query are always in the menu bar (their items dimmed when
+	 they don't apply): shown and hidden with the selection, the menu bar
+	 now and then drew an empty slot for them until a menu was opened. */
+	if (submenu && menuItem.submenu != submenu) {
+		menuItem.submenu = submenu;
 	}
+
+	menuItem.hidden = (submenu == nil);
 }
 
 /* App */

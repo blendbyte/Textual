@@ -58,6 +58,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TVCLogPolicy
 
+- (void)validateMenuItemCopy:(NSMenuItem *)menuItem
+{
+	id target = menuItem.target;
+
+	if ([target respondsToSelector:@selector(validateMenuItem:)]) {
+		menuItem.enabled = [target validateMenuItem:menuItem];
+	}
+
+	for (NSMenuItem *submenuItem in menuItem.submenu.itemArray) {
+		[self validateMenuItemCopy:submenuItem];
+	}
+}
+
 - (NSArray<NSMenuItem *> *)constructContextMenuItemsForWebView:(TVCLogView *)webView defaultMenuItems:(NSArray<NSMenuItem *> *)defaultMenuItems
 {
 	TVCLogController *viewController = webView.viewController;
@@ -92,13 +105,28 @@ NS_ASSUME_NONNULL_BEGIN
 		} else {
 			NSMenu *memberMenu = menuController().userControlMenu;
 
+			/* Titles and hidden items for this nickname: the copies had them
+			 for the member last chosen in the member list. Checked in a menu
+			 of their own, as items hide the others in theirs. */
+			NSMenu *checkMenu = [NSMenu new];
+
 			for (NSMenuItem *item in memberMenu.itemArray) {
 				NSMenuItem *newItem = [item copy];
 
 				[newItem setUserInfo:self.nickname recursively:YES];
 
-				[menuItems addObject:newItem];
+				[checkMenu addItem:newItem];
 			}
+
+			for (NSMenuItem *newItem in checkMenu.itemArray) {
+				[self validateMenuItemCopy:newItem];
+			}
+
+			NSArray<NSMenuItem *> *checkedItems = checkMenu.itemArray;
+
+			[checkMenu removeAllItems];
+
+			[menuItems addObjectsFromArray:checkedItems];
 		}
 
 		self.nickname = nil;

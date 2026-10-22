@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TXMenuController () <NSMenuItemValidation>
 @property (nonatomic, assign) BOOL menuIsOpen;
+@property (nonatomic, copy, nullable) NSArray<NSArray<NSMenuItem *> *> *sharedShortcutItems; // Channel and Query items with the same shortcut
 @property (nonatomic, assign) BOOL menuPerformedActionLastOpen;
 @property (nonatomic, weak) IRCClient *pointedClient;
 @property (nonatomic, weak) IRCChannel *pointedChannel;
