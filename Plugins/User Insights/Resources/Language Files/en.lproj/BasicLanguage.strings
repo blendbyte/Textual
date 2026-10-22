@@ -39,8 +39,6 @@
 "gxq-47" = "No clones found";
 "iaa-5v" = "%1$lu clone(s) found in %2$@";
 
-"r6x-ih" = "Bad input";
-
 "nn7-6s" = "%1$lu user(s) found in %2$@ with a cached hostmask.";
 "oq7-mg" = "%1$lu user(s) found in %2$@ with a cached hostmask containing the search string “%3$@”";
 "1ab-27" = "No users found in %@ with a cached hostmask.";

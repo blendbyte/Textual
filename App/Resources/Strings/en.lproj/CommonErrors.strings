@@ -38,10 +38,8 @@
 "yyx-l3" = "Please enter a properly formatted server address or pick from the list of preconfigured networks.";
 "l0c-nb" = "Please enter a whole number between 1 and 65,535.";
 "och-j5" = "Please enter a properly formatted nickname.";
-"pgl-zg" = "Please enter a properly formatted e-mail address.";
 "gas-v8" = "Cannot contain more than one line.";
 "2cb-af" = "Maximum length is %ld characters.";
-"qi9-i8" = "Minimum length is %ld characters.";
 
 /* IRC connection errors (IRCConnectionSocketNWF.swift, IRCConnectionTransport.swift) */
 "DNS Error: %@ (%ld)" = "DNS Error: %1$@ (%2$ld)";

@@ -60,13 +60,8 @@
 "p4f-i1" = "This file can’t be imported";
 "p4f-i2" = "It isn’t a settings file exported by Textual, or it is damaged. Nothing was changed.";
 "xne-79" = "Select";
-"ce6-o1" = "Choose";
 "aqw-q1" = "Close";
 "qpv-go" = "Accept";
-"0sy-uc" = "Deny";
-"u09-hg" = "Trust";
-"tlp-8e" = "Delete";
-"71s-kb" = "Open";
 
 "68u-z9" = "Do not show this message again";
 
@@ -76,7 +71,6 @@
 
 "7gr-e4" = "Set User vHost";
 "2mx-jf" = "Please enter desired vHost (e.g. “apple.vhost”)";
-
 
 "i8o-7z" = "Do you want to delete the selection?";
 "516-ms" = "There is no undo and all data related to this channel, except for logs, will be erased.";
@@ -98,9 +92,6 @@ Do you want to add these channels to that connection or would you rather create 
 "0hh-sl" = "Use Existing Connection";
 "sv9-8s" = "Create New Connection";
 
-
-
-
 "u5x-b1" = "Textual 8 can’t use these extensions: %@";
 "u5x-b2" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so these extensions won’t be loaded. You can move them to the Trash or keep them.";
 "u5x-b6" = "Textual 8 can’t use the extension “%@”";
@@ -113,7 +104,6 @@ Do you want to add these channels to that connection or would you rather create 
 If you are the developer of one of these addons: In the Info.plist file of your project, set the value of the property “MinimumTextualVersion” to “%@“, then rebuild to check for any errors.";
 "324-5d" = "Remind Me Next Launch";
 "0ik-o9" = "View Files";
-
 
 "2ul-cl" = "You have clicked on a link that will open the application “%@”";
 "5oq-vv" = "Are you sure you want to open “%@” with this application?";
@@ -166,8 +156,6 @@ Create this folder if it does not exist.";
 "b7o-v4" = "Textual can’t open the folder for your text files: it was moved, renamed or deleted.";
 "atn-1c" = "Choose the folder again in Settings › History › Text files.";
 
-"nlz-um" = "Last known error message: %@";
-
 "d22-76" = "A query named “%@“ already exists. Do you want to delete this query?";
 "61s-jc" = "There is no undo and all data related to this query, except for logs, will be erased.";
 
@@ -185,7 +173,6 @@ Information encrypted using: %2$@";
 
 "2jq-t5" = "%1$@ with the cipher suite: %2$@";
 "8ou-pu" = "%1$@ with the cipher suite: %2$@ (deprecated)";
-
 
 "1nk-dm" = "Textual didn’t find settings from Textual 7 or an earlier version on this Mac.";
 "2e4-mp" = "No settings from an earlier Textual found";

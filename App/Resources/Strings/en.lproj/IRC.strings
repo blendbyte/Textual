@@ -46,12 +46,6 @@
 
 "6rj-2r" = "Failed to send data to server. Not connected.";
 
-/* Default G:Line reason */
-"56r-wn" = "35d Your behavior is not conducive to the desired environment";
-"2aw-rf" = "Your behavior is not conducive to the desired environment";
-"yy6-fx" = "Your behavior is not conducive to the desired environment";
-"80c-i8" = "1d Shunned";
-
 /* Network not available messages */
 "3s6-e6" = "Delaying auto connect for %lu seconds";
 
@@ -96,9 +90,6 @@
 /* Cipher suite information */
 "uyz-4r" = "\002%1$@\002 with the cipher suite: \002%2$@\002";
 "xwj-xy" = "\002%1$@\002 with the cipher suite: \002%2$@\002 \0034\002(deprecated)\002\003";
-
-/* XPC errors */
-"vdy-jk" = "Connection service closed unexpectedly";
 
 /* Large messages warning */
 "u4c-7i" = "The message that you are sending is very large which means it will be split up into multiple messages. Sending too many messages at once is often considered disruptive and may result in a ban.";
@@ -176,14 +167,12 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 "eud-kc" = "Timer repeat count must be a whole number that is grater than or equal to zero (0). Type “/timer help” for more information.";
 "p6l-o4" = "Timer identifier is not properly formatted. Type “/timer list“ for a list of timers.";
 "vzu-xh" = "Timer with identifier “%@“ does not exist. Type “/timer list“ for a list of timers.";
-"uiz-32" = "Timer with identifier “%@“ can’t be stopped";
 "ax6-n9" = "Timer with identifier “%@“ is already stopped";
 "hs0-up" = "Timer with identifier “%@“ stopped";
 "dgp-d4" = "Timer with identifier “%@“ can’t be restarted. Add a new timer.";
 "qb7-mi" = "Timer with identifier “%@“ restarted";
 "p7s-is" = "Timer with identifier “%@“ removed";
 "808-bs" = "All timers removed";
-"jef-tp" = "Timer with identifier “%@“ added"; // unused
 "pqk-5k" = "There are no timers";
 "q1m-1e" = "There are %ld timers:";
 "6ts-oi" = "There is %ld timer:";
@@ -270,7 +259,6 @@ The identifier for a timer can be found using “/timer list”";
 /* Common command errors */
 "atq-93" = "Invalid syntax: “%@“";
 "pxa-ox" = "Cannot find channel named “%@“";
-"1fc-vl" = "Cannot find query named “%@“";
 "zef-q9" = "One or more arguments are not properly formatted for this command.";
 "g01-qn" = "This command can only be used with a channel.";
 "m6o-z1" = "This command can only be used with a query.";

@@ -65,9 +65,7 @@
 "mak-bj" = "File transfer from %@ failed";
 "at0-vi" = "Received file transfer request from %@";
 "bwu-ps" = "%1$@ joined %2$@";
-"vhl-5u" = "%1$@ joined"; // join without channel name (unused)
 "4aq-hz" = "%1$@ parted %2$@";
-"nsn-du" = "%1$@ parted"; // part without channel name (unused)
 "sqf-4y" = "%1$@ disconnected"; // disconnect
 
 /* Notification bubble titles */
