@@ -229,7 +229,10 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	NSParameterAssert(self->_connectionName.length > 0);
+	/* An empty name in stored or imported data must not crash every launch */
+	if (self->_connectionName.length == 0) {
+		self->_connectionName = TXTLS(@"BasicLanguage[vfu-c0]");
+	}
 }
 
 + (instancetype)newConfigByMerging:(IRCClientConfig *)config1 with:(IRCClientConfig *)config2
@@ -360,6 +363,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<NSDictionary *> *channelListIn = [defaultsMutable arrayForKey:@"channelList"];
 
 	for (NSDictionary<NSString *, id> *e in channelListIn) {
+		/* Entries from a damaged or hand-edited file are skipped, not loaded into a crash */
+		if ([e isKindOfClass:[NSDictionary class]] == NO || [e[@"channelName"] isKindOfClass:[NSString class]] == NO || [e[@"channelName"] length] == 0) {
+			continue;
+		}
+
 		IRCChannelConfig *c = [[IRCChannelConfig alloc] initWithDictionary:e];
 
 		if (c.type == IRCChannelTypePrivateMessage) {
@@ -379,6 +387,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<NSDictionary *> *ignoreListIn = [defaultsMutable arrayForKey:@"ignoreList"];
 
 	for (NSDictionary<NSString *, id> *e in ignoreListIn) {
+		if ([e isKindOfClass:[NSDictionary class]] == NO) {
+			continue;
+		}
+
 		IRCAddressBookEntry *c = [[IRCAddressBookEntry alloc] initWithDictionary:e];
 
 		[ignoreListOut addObject:c];
@@ -392,6 +404,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<NSDictionary *> *highlightListIn = [defaultsMutable arrayForKey:@"highlightList"];
 
 	for (NSDictionary<NSString *, id> *e in highlightListIn) {
+		if ([e isKindOfClass:[NSDictionary class]] == NO || [e[@"matchKeyword"] isKindOfClass:[NSString class]] == NO || [e[@"matchKeyword"] length] == 0) {
+			continue;
+		}
+
 		IRCHighlightMatchCondition *c = [[IRCHighlightMatchCondition alloc] initWithDictionary:e];
 
 		[highlightListOut addObject:c];
@@ -405,6 +421,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<NSDictionary *> *serverListIn = [defaultsMutable arrayForKey:@"serverList"];
 
 	for (NSDictionary<NSString *, id> *e in serverListIn) {
+		if ([e isKindOfClass:[NSDictionary class]] == NO) {
+			continue;
+		}
+
 		IRCServer *c = [[IRCServer alloc] initWithDictionary:e];
 
 		[serverListOut addObject:c];

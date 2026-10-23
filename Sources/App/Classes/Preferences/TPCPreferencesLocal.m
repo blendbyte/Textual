@@ -1061,7 +1061,8 @@ NSUInteger const TPCPreferencesDictionaryVersion = 602;
 
 + (nullable NSArray<NSDictionary *> *)clientList
 {
-	return [RZUserDefaults() objectForKey:IRCWorldClientListDefaultsKey];
+	/* Only a list: anything else (a damaged file) is treated as no servers */
+	return [RZUserDefaults() arrayForKey:IRCWorldClientListDefaultsKey];
 }
 
 + (void)setClientList:(nullable NSArray<NSDictionary *> *)clientList

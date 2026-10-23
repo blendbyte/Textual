@@ -119,6 +119,13 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	NSArray *clientList = [TPCPreferences clientList];
 
 	for (NSDictionary *client in clientList) {
+		/* A damaged entry is skipped instead of crashing every launch */
+		if ([client isKindOfClass:[NSDictionary class]] == NO) {
+			LogToConsoleError("Skipped a server list entry that isn't a dictionary");
+
+			continue;
+		}
+
 		IRCClientConfig *e = [[IRCClientConfig alloc] initWithDictionary:client];
 
 		[self createClientWithConfig:e reload:YES];
