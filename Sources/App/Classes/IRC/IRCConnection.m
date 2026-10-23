@@ -407,9 +407,35 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Send Data
 
+/* CR, LF and NUL */
++ (NSCharacterSet *)lineBreakCharacters
+{
+	static NSCharacterSet *characters = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		NSMutableCharacterSet *charactersMutable = [NSMutableCharacterSet characterSetWithCharactersInString:@"\r\n"];
+
+		[charactersMutable addCharactersInRange:NSMakeRange(0, 1)];
+
+		characters = [charactersMutable copy];
+	});
+
+	return characters;
+}
+
 - (void)sendLine:(NSString *)line
 {
 	NSParameterAssert(line != nil);
+
+	/* One command per line: a CR or LF inside (from a link, a paste or a
+	 server's tag value) would send the rest as a command of its own */
+	if ([line rangeOfCharacterFromSet:[self.class lineBreakCharacters]].location != NSNotFound) {
+		LogToConsoleError("Line breaks removed from an outgoing line");
+
+		line = [[line componentsSeparatedByCharactersInSet:[self.class lineBreakCharacters]] componentsJoinedByString:@" "];
+	}
 
 	line = [line stringByAppendingString:@"\x0d\x0a"];
 

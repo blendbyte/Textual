@@ -142,6 +142,23 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
++ (NSCharacterSet *)invalidChannelCharacters
+{
+	static NSCharacterSet *characters = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		NSMutableCharacterSet *charactersMutable = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
+
+		[charactersMutable formUnionWithCharacterSet:[NSCharacterSet controlCharacterSet]];
+
+		characters = [charactersMutable copy];
+	});
+
+	return characters;
+}
+
 + (void)parseIRCProtocolURI:(NSString *)location
 {
 	[self parseIRCProtocolURI:location withDescriptor:nil];
@@ -244,6 +261,12 @@ NS_ASSUME_NONNULL_BEGIN
 			if (isLastObject && [section isEqualToStringIgnoringCase:@"needssl"]) {
 				connectSecurely = YES;
 
+				return;
+			}
+
+			/* No channel name has spaces or control characters; a decoded
+			 %0D%0A would have sent the rest as its own command */
+			if ([section rangeOfCharacterFromSet:[self invalidChannelCharacters]].location != NSNotFound) {
 				return;
 			}
 
