@@ -3424,7 +3424,18 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 		NSString *time = TXFormattedTimestamp([NSDate date], timeFormat);
 
-		NSSize textSize = [time sizeWithAttributes:@{NSFontAttributeName : channelFont}];
+		/* With digits of one width, as the chat view shows times (baseLayout.css) */
+		NSFontDescriptor *timeDescriptor =
+		[channelFont.fontDescriptor fontDescriptorByAddingAttributes:@{
+			NSFontFeatureSettingsAttribute : @[@{
+				NSFontFeatureTypeIdentifierKey : @(kNumberSpacingType),
+				NSFontFeatureSelectorIdentifierKey : @(kMonospacedNumbersSelector)
+			}]
+		}];
+
+		NSFont *timeFont = [NSFont fontWithDescriptor:timeDescriptor size:channelFont.pointSize];
+
+		NSSize textSize = [time sizeWithAttributes:@{NSFontAttributeName : (timeFont ?: channelFont)}];
 
 		templateTokens[@"predefinedTimestampWidth"] = @(textSize.width + indentOffset);
 	}

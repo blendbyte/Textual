@@ -600,6 +600,13 @@ div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note);
 	background-color: rgba(0, 0, 0, 0.8);
 }
 
+/* Times with digits of one width: in a font whose digits differ in width
+ (the system font), names after the time would wobble from line to line.
+ Zero specificity (:where), so a style's own choice wins */
+:where(div.line .time) {
+	font-variant-numeric: tabular-nums;
+}
+
 /* The Chat display (newMessagePostedWithSender.mustache): the sender and time
  above their messages; a message grouped under the one before it shows its
  time when pointed at. Zero specificity (:where), so any style's own rules win */
