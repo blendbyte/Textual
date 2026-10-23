@@ -7939,7 +7939,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	[self notifyEvent:TXNotificationTypeInvite lineType:TVCLogLineTypeInvite target:nil nickname:sender text:channelName];
 
-	if ([TPCPreferences autoJoinOnInvite]) {
+	/* Only one real channel: "0" or "#a,0" would make us leave every channel */
+	if ([TPCPreferences autoJoinOnInvite] &&
+		[self stringIsChannelName:channelName] &&
+		[channelName containsCharacters:@", "] == NO)
+	{
 		[self joinUnlistedChannel:channelName];
 	}
 }
