@@ -4,7 +4,8 @@
 TEXTUAL_WORKSPACE_DIR = ${PROJECT_DIR}/../..
 
 HEADER_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_TEMP_DIR}/Build Headers/" "${TEXTUAL_WORKSPACE_DIR}/Sources/Shared/Headers/**"
-FRAMEWORK_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
+// Sparkle first: older copies of it remain in the submodules under Frameworks
+FRAMEWORK_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_DIR}/Frameworks/Vendor/Sparkle" "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
 LIBRARY_SEARCH_PATHS = "${TEXTUAL_WORKSPACE_TEMP_DIR}/SharedBuildProducts-Frameworks/**" "${TEXTUAL_WORKSPACE_DIR}/Frameworks/**"
 
 PRODUCT_BUNDLE_IDENTIFIER = ${TEXTUAL_BUNDLE_IDENTIFIER}
