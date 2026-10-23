@@ -105,6 +105,10 @@ typedef NS_ENUM(NSUInteger, ICLMediaAssessorErrorCode)
 
 	/* Image validation: Maximum height exceeded */
 	ICLMediaAssessorErrorCodeMaximumHeightExceeded = 1008,
+
+	/* Address is on the local network, unresolvable or not HTTP(S),
+	 or a redirect went there (or there were too many redirects) */
+	ICLMediaAssessorErrorCodeAddressNotAllowed = 1009,
 };
 
 NS_ASSUME_NONNULL_END

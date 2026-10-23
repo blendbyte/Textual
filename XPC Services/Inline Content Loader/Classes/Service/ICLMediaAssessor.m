@@ -35,6 +35,8 @@
  *
  *********************************************************************** */
 
+#import <netdb.h>
+
 #import "NSObjectHelperPrivate.h"
 #import "TPCPreferences.h"
 #import "ICLMediaAssessment.h"
@@ -44,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Hardcoded maximum width for images (and maybe other media) */
 #define _assessorMaximumImageWidth				7200
+
+/* Redirects followed for one assessment */
+#define _assessorMaximumRedirects				5
 
 NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 
@@ -64,6 +69,7 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 @property (nonatomic, strong, nullable) NSURLSessionTask *task;
 @property (nonatomic, copy, nullable) NSError *alternateError;
 @property (nonatomic, assign) BOOL doNotFinalize;
+@property (nonatomic, assign) NSUInteger redirectCount;
 @end
 
 @interface ICLMediaAssessorState : NSObject
@@ -77,6 +83,175 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 @property (nonatomic, strong, nullable) ICLMediaAssessorRequest *request;
 @property (nonatomic, strong, nullable) ICLMediaAssessorState *state;
 @end
+
+#pragma mark -
+#pragma mark Local Addresses
+
+/* Previews never reach the local network: loopback, private, link-local,
+ unique local, multicast, .local and single-label names, and names that
+ resolve to them, also after redirects. Clicking such a link still opens it. */
+
+/* address is in host byte order */
+static BOOL ICLIPv4AddressIsLocal(uint32_t address)
+{
+	uint8_t a = (address >> 24);
+	uint8_t b = ((address >> 16) & 0xff);
+	uint8_t c = ((address >> 8) & 0xff);
+
+	return (a == 0 ||								// "this network"
+			a == 10 ||								// private
+			a == 127 ||								// loopback
+			(a == 100 && (b & 0xc0) == 64) ||		// shared address space (CGNAT)
+			(a == 169 && b == 254) ||				// link-local
+			(a == 172 && (b & 0xf0) == 16) ||		// private
+			(a == 192 && b == 0 && c == 0) ||		// IETF protocol assignments
+			(a == 192 && b == 168) ||				// private
+			(a == 198 && (b & 0xfe) == 18) ||		// benchmarking
+			a >= 224);								// multicast, reserved, broadcast
+}
+
+static BOOL ICLSocketAddressIsLocal(const struct sockaddr *address)
+{
+	if (address->sa_family == AF_INET) {
+		return ICLIPv4AddressIsLocal(ntohl(((const struct sockaddr_in *)address)->sin_addr.s_addr));
+	}
+
+	if (address->sa_family != AF_INET6) {
+		return YES;
+	}
+
+	const struct in6_addr *address6 = &((const struct sockaddr_in6 *)address)->sin6_addr;
+
+	const uint8_t *bytes = address6->s6_addr;
+
+	/* IPv4-mapped (::ffff:0:0/96) and NAT64 (64:ff9b::/96) addresses carry an IPv4 address */
+	static const uint8_t nat64Prefix[12] = {0x00, 0x64, 0xff, 0x9b, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	if (IN6_IS_ADDR_V4MAPPED(address6) || memcmp(bytes, nat64Prefix, sizeof(nat64Prefix)) == 0) {
+		uint32_t address4 = (((uint32_t)bytes[12] << 24) | ((uint32_t)bytes[13] << 16) | ((uint32_t)bytes[14] << 8) | bytes[15]);
+
+		return ICLIPv4AddressIsLocal(address4);
+	}
+
+	return (IN6_IS_ADDR_UNSPECIFIED(address6) ||
+			IN6_IS_ADDR_LOOPBACK(address6) ||
+			IN6_IS_ADDR_V4COMPAT(address6) ||		// deprecated ::a.b.c.d
+			IN6_IS_ADDR_LINKLOCAL(address6) ||		// fe80::/10
+			IN6_IS_ADDR_SITELOCAL(address6) ||		// fec0::/10
+			IN6_IS_ADDR_MULTICAST(address6) ||		// ff00::/8
+			(bytes[0] & 0xfe) == 0xfc);				// unique local, fc00::/7
+}
+
+/* Returns NO if any address of the host is local or none is found.
+ found is set to YES when the lookup returns addresses. */
+static BOOL ICLAddressesOfHostAreAllowed(NSString *host, int flags, BOOL *found)
+{
+	struct addrinfo hints;
+
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = flags;
+
+	struct addrinfo *result = NULL;
+
+	if (getaddrinfo(host.UTF8String, NULL, &hints, &result) != 0 || result == NULL) {
+		return NO;
+	}
+
+	*found = YES;
+
+	BOOL allowed = YES;
+
+	for (struct addrinfo *entry = result; entry != NULL; entry = entry->ai_next) {
+		if (entry->ai_addr == NULL || ICLSocketAddressIsLocal(entry->ai_addr)) {
+			allowed = NO;
+
+			break;
+		}
+	}
+
+	freeaddrinfo(result);
+
+	return allowed;
+}
+
+/* Lowercased host without brackets or trailing dots,
+ or nil if the URL is not HTTP(S) or has no host. */
+static NSString * _Nullable ICLHostForURL(NSURL *url)
+{
+	NSString *scheme = url.scheme.lowercaseString;
+
+	if ([scheme isEqualToString:@"http"] == NO && [scheme isEqualToString:@"https"] == NO) {
+		return nil;
+	}
+
+	NSString *host = url.host.lowercaseString;
+
+	if ([host hasPrefix:@"["] && [host hasSuffix:@"]"] && host.length > 2) {
+		host = [host substringWithRange:NSMakeRange(1, (host.length - 2))];
+	}
+
+	while ([host hasSuffix:@"."]) {
+		host = [host substringToIndex:(host.length - 1)];
+	}
+
+	if (host.length == 0) {
+		return nil;
+	}
+
+	return host;
+}
+
+static BOOL ICLHostNameIsLocal(NSString *host)
+{
+	/* Single-label names ("router", "localhost") resolve through the
+	 search domains of the local network. */
+	return ([host containsString:@"."] == NO ||
+			[host hasSuffix:@".localhost"] ||
+			[host hasSuffix:@".local"] ||
+			[host hasSuffix:@".home.arpa"] ||
+			[host hasSuffix:@".internal"]);
+}
+
+/* Calls completionBlock on a background queue. A public name can point at a
+ local address: the request makes its own lookup, so this narrows the
+ window rather than closing it. */
+static void ICLCheckURLIsAllowed(NSURL *url, void (^completionBlock)(BOOL allowed))
+{
+	dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+		NSString *host = ICLHostForURL(url);
+
+		if (host == nil) {
+			completionBlock(NO);
+
+			return;
+		}
+
+		BOOL numeric = NO;
+
+		BOOL allowed = ICLAddressesOfHostAreAllowed(host, AI_NUMERICHOST, &numeric);
+
+		if (numeric) {
+			completionBlock(allowed);
+
+			return;
+		}
+
+		if (ICLHostNameIsLocal(host)) {
+			completionBlock(NO);
+
+			return;
+		}
+
+		BOOL found = NO;
+
+		allowed = ICLAddressesOfHostAreAllowed(host, 0, &found);
+
+		completionBlock(found && allowed);
+	});
+}
 
 @implementation ICLMediaAssessor
 
@@ -180,20 +355,9 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 
 	NSAssert((config != nil), @"-assess called after an assessment finalized");
 
-	/* Prepare request */
+	/* The request exists while the address is checked, so that
+	 -suspend can stop the assessment before it starts */
 	ICLMediaAssessorRequest *request = [ICLMediaAssessorRequest new];
-
-	NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:[self.class _sharedSessionConfiguration] delegate:(id)self delegateQueue:nil];
-
-	request.session = urlSession;
-
-	/* We use a data task which is always GET.
-	 Many services block HEAD requests, so we use GET.
-	 When we are only interested in the headers, we close the
-	 connection after receiving them, so we don't waste resources. */
-	NSURLSessionDataTask *urlSessionTask = [urlSession dataTaskWithURL:config.url];
-
-	request.task = urlSessionTask;
 
 	self.request = request;
 
@@ -212,8 +376,34 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 		self.limits = limits;
 	}
 
-	/* Perform request */
-	[urlSessionTask resume];
+	/* Perform request, unless the address is on the local network */
+	ICLCheckURLIsAllowed(config.url, ^(BOOL allowed) {
+		if (request.doNotFinalize) {
+			[self _flushRequestState]; // Suspended while checking
+
+			return;
+		}
+
+		if (allowed == NO) {
+			[self _finalizeAssessmentWithError:[self _errorWithDescription:@"Address is on the local network, unresolvable or not HTTP(S)" code:ICLMediaAssessorErrorCodeAddressNotAllowed]];
+
+			return;
+		}
+
+		NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:[self.class _sharedSessionConfiguration] delegate:(id)self delegateQueue:nil];
+
+		request.session = urlSession;
+
+		/* We use a data task which is always GET.
+		 Many services block HEAD requests, so we use GET.
+		 When we are only interested in the headers, we close the
+		 connection after receiving them, so we don't waste resources. */
+		NSURLSessionDataTask *urlSessionTask = [urlSession dataTaskWithURL:config.url];
+
+		request.task = urlSessionTask;
+
+		[urlSessionTask resume];
+	});
 }
 
 - (void)_cancel
@@ -437,7 +627,11 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 	ICLMediaAssessorState *state = [self _readHeadersInWithError:&readHeadersInError];
 
 	if (state == nil) {
-		self.request.alternateError = readHeadersInError;
+		/* A refused redirect arrives here as the redirect response:
+		 keep the reason it was refused */
+		if (self.request.alternateError.code != ICLMediaAssessorErrorCodeAddressNotAllowed) {
+			self.request.alternateError = readHeadersInError;
+		}
 
 		completionHandler(NSURLSessionResponseCancel);
 
@@ -471,9 +665,30 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPerformHTTPRedirection:(NSHTTPURLResponse *)response newRequest:(NSURLRequest *)request completionHandler:(void (^)(NSURLRequest * _Nullable))completionHandler
 {
-	/* Follow redirects */
+	/* Follow redirects, but not to the local network and not too many.
+	 Refusing one completes the task with the redirect response, which
+	 fails the assessment (not 200); the error says why. */
+	ICLMediaAssessorRequest *assessorRequest = self.request;
 
-	completionHandler(request);
+	assessorRequest.redirectCount += 1;
+
+	NSURL *url = request.URL;
+
+	if (assessorRequest.redirectCount > _assessorMaximumRedirects || url == nil) {
+		assessorRequest.alternateError = [self _errorWithDescription:@"Too many redirects" code:ICLMediaAssessorErrorCodeAddressNotAllowed];
+
+		completionHandler(nil);
+
+		return;
+	}
+
+	ICLCheckURLIsAllowed(url, ^(BOOL allowed) {
+		if (allowed == NO) {
+			assessorRequest.alternateError = [self _errorWithDescription:@"Redirect to an address on the local network, unresolvable or not HTTP(S)" code:ICLMediaAssessorErrorCodeAddressNotAllowed];
+		}
+
+		completionHandler((allowed) ? request : nil);
+	});
 }
 
 - (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler
@@ -703,6 +918,7 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 			LogToConsoleDebug("Assessor fatal error: %{public}@",
 				error.localizedDescription);
 		}
+		case ICLMediaAssessorErrorCodeAddressNotAllowed:
 		case ICLMediaAssessorErrorCodeUnexpectedType:
 		case ICLMediaAssessorErrorCodeContentLengthExceeded:
 		case ICLMediaAssessorErrorCodeMaximumWidthExceeded:
