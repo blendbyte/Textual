@@ -46,11 +46,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle; // caseless = NO
 + (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle withoutCase:(BOOL)caseless;
++ (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle withoutCase:(BOOL)caseless timedOut:(nullable BOOL *)timedOut; // timedOut: YES when the search was abandoned (NO is returned)
 
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle; // caseless = NO
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle withoutCase:(BOOL)caseless;
 
 + (NSString *)string:(NSString *)haystack replacedByRegex:(NSString *)needle withString:(NSString *)puppy;
+
+/* An invalid pattern never matches (-rangeOfRegex: returns NSNotFound). Only the
+ first 8192 characters are searched, and a search taking longer than 50 ms
+ counts as no match. Use this to check a pattern a user enters. */
++ (BOOL)isValidRegex:(NSString *)pattern;
 @end
 
 NS_ASSUME_NONNULL_END

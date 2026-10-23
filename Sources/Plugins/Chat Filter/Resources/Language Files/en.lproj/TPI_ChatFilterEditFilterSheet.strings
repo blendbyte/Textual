@@ -58,6 +58,8 @@
 "0x4-ib" = "Parameter #9";
 
 "m0u-tw" = "Please enter a shorter destination";
+"r7x-q1" = "This is not a valid regular expression";
+"r7x-q2" = "“%@” can’t be used: it would never match anything. Correct it or clear the field.";
 "5kd-jt" = "Please enter a properly formatted destination.
 
 Accepted characters: a-z, A-Z, 0-9, dashes (-), underscores (_), and spaces.";

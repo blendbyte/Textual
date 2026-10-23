@@ -40,6 +40,8 @@
 #import "IRCChannelConfig.h"
 #import "IRCHighlightMatchCondition.h"
 #import "TVCValidatedTextField.h"
+#import "TLOLocalization.h"
+#import "TPCPreferencesLocal.h"
 #import "TDCHighlightEntrySheetPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -82,6 +84,20 @@ NS_ASSUME_NONNULL_BEGIN
 	self.matchKeywordTextField.stringValueIsTrimmed = YES;
 
 	self.matchKeywordTextField.textDidChangeCallback = self;
+
+	/* With regular expression matching, a keyword that doesn't compile would never match */
+	__weak TDCHighlightEntrySheet *weakSelf = self;
+
+	self.matchKeywordTextField.validationBlock = ^NSString *(NSString *currentValue) {
+		if ([TPCPreferences highlightMatchingMethod] != TXNicknameHighlightMatchTypeRegularExpression ||
+			weakSelf.matchTypePopupButton.selectedTag != 1 ||
+			[XRRegularExpression isValidRegex:currentValue])
+		{
+			return nil;
+		}
+
+		return TXTLS(@"TDCPreferencesController[r7x-q1]");
+	};
 }
 
 - (void)loadConfig

@@ -46,6 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithParentObject:(TPI_ChatFilterExtension *)parentObject;
 
 - (void)reloadFilterActionPerforms;
+
+/* The commands (without "/") a filter action runs, with placeholders such as
+ %_senderNickname_% replaced by the values given */
++ (NSArray<NSString *> *)commandsForFilterAction:(NSString *)filterAction withValues:(NSDictionary<NSString *, NSString *> *)values;
 @end
 
 NS_ASSUME_NONNULL_END
