@@ -17,9 +17,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleVersion</key>
-	<string>7.2.7</string>
+	<string>7.2.8</string>
 	<key>CFBundleShortVersionString</key>
-	<string>7.2.7</string>
+	<string>7.2.8</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2010–2026 Codeux Software, LLC and Blendbyte GmbH</string>
 	<key>CFBundleExecutable</key>
