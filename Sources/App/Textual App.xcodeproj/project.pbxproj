@@ -450,6 +450,7 @@
 		4C06E5E820EC553A0055D09A /* TLOFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515B20EB673E00448776 /* TLOFileLogger.m */; };
 		4C06E5E920EC553A0055D09A /* TLONotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514920EB673E00448776 /* TLONotificationController.m */; };
 		4C06E5EA20EC553A0055D09A /* TLOInputHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E00448776 /* TLOInputHistory.m */; };
+		4C06E5EA20EC553A0055D0A1 /* TLOKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E004487A1 /* TLOKeychain.m */; };
 		4C06E5EB20EC553A0055D09A /* TLOInternetAddressLookup.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */; };
 		4C06E5EC20EC553A0055D09A /* TLOKeyEventHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514B20EB673E00448776 /* TLOKeyEventHandler.m */; };
 		4C06E5ED20EC553A0055D09A /* TLOLocalization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E29220EC4F570055D09A /* TLOLocalization.m */; };
@@ -617,6 +618,7 @@
 		4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515B20EB673E00448776 /* TLOFileLogger.m */; };
 		4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514920EB673E00448776 /* TLONotificationController.m */; };
 		4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E00448776 /* TLOInputHistory.m */; };
+		4C06E6A320EC55B90055D0A1 /* TLOKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515420EB673E004487A1 /* TLOKeychain.m */; };
 		4C06E6A420EC55B90055D09A /* TLOInternetAddressLookup.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */; };
 		4C06E6A520EC55B90055D09A /* TLOKeyEventHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514B20EB673E00448776 /* TLOKeyEventHandler.m */; };
 		4C06E6A620EC55B90055D09A /* TLOLocalization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E29220EC4F570055D09A /* TLOLocalization.m */; };
@@ -944,6 +946,7 @@
 		4C31573620EB6D0500448776 /* TLOFileLoggerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */; };
 		4C31573720EB6D0500448776 /* TLONotificationControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151AF20EB673E00448776 /* TLONotificationControllerPrivate.h */; };
 		4C31573820EB6D0500448776 /* TLOInputHistoryPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */; };
+		4C31573820EB6D05004487A2 /* TLOKeychainPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E004487A2 /* TLOKeychainPrivate.h */; };
 		4C31573920EB6D0500448776 /* TLOLicenseManagerDownloaderPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520920EB673E00448776 /* TLOLicenseManagerDownloaderPrivate.h */; };
 		4C31573A20EB6D0500448776 /* TLOLicenseManagerLastGenPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */; };
 		4C31573B20EB6D0500448776 /* TLOLicenseManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522220EB673E00448776 /* TLOLicenseManagerPrivate.h */; };
@@ -1074,6 +1077,7 @@
 		4C3157C920EB6D0600448776 /* TLOFileLoggerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */; };
 		4C3157CA20EB6D0600448776 /* TLONotificationControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151AF20EB673E00448776 /* TLONotificationControllerPrivate.h */; };
 		4C3157CB20EB6D0600448776 /* TLOInputHistoryPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */; };
+		4C3157CB20EB6D06004487A2 /* TLOKeychainPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E004487A2 /* TLOKeychainPrivate.h */; };
 		4C3157CC20EB6D0600448776 /* TLOLicenseManagerDownloaderPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520920EB673E00448776 /* TLOLicenseManagerDownloaderPrivate.h */; };
 		4C3157CD20EB6D0600448776 /* TLOLicenseManagerLastGenPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */; };
 		4C3157CE20EB6D0600448776 /* TLOLicenseManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522220EB673E00448776 /* TLOLicenseManagerPrivate.h */; };
@@ -1546,6 +1550,7 @@
 		4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManagerDownloader.m; sourceTree = "<group>"; };
 		4C31515320EB673E00448776 /* TLOEncryptionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOEncryptionManager.m; sourceTree = "<group>"; };
 		4C31515420EB673E00448776 /* TLOInputHistory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOInputHistory.m; sourceTree = "<group>"; };
+		4C31515420EB673E004487A1 /* TLOKeychain.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOKeychain.m; sourceTree = "<group>"; };
 		4C31515520EB673E00448776 /* TLOLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLOLinkParser.swift; sourceTree = "<group>"; };
 		4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOInternetAddressLookup.m; sourceTree = "<group>"; };
 		4C31515720EB673E00448776 /* TLOSpeechSynthesizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOSpeechSynthesizer.m; sourceTree = "<group>"; };
@@ -1666,6 +1671,7 @@
 		4C3151D820EB673E00448776 /* TextualPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextualPrivate.h; sourceTree = "<group>"; };
 		4C3151D920EB673E00448776 /* TDCChannelSpotlightSearchResultPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCChannelSpotlightSearchResultPrivate.h; sourceTree = "<group>"; };
 		4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOInputHistoryPrivate.h; sourceTree = "<group>"; };
+		4C3151DA20EB673E004487A2 /* TLOKeychainPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOKeychainPrivate.h; sourceTree = "<group>"; };
 		4C3151DB20EB673E00448776 /* IRCWorldPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCWorldPrivate.h; sourceTree = "<group>"; };
 		4C3151DC20EB673E00448776 /* TDCProgressIndicatorSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCProgressIndicatorSheetPrivate.h; sourceTree = "<group>"; };
 		4C3151DD20EB673E00448776 /* TVCLogPolicyPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogPolicyPrivate.h; sourceTree = "<group>"; };
@@ -2435,6 +2441,7 @@
 				4C31515320EB673E00448776 /* TLOEncryptionManager.m */,
 				4C31515B20EB673E00448776 /* TLOFileLogger.m */,
 				4C31515420EB673E00448776 /* TLOInputHistory.m */,
+				4C31515420EB673E004487A1 /* TLOKeychain.m */,
 				4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */,
 				4C31514B20EB673E00448776 /* TLOKeyEventHandler.m */,
 				4C31515520EB673E00448776 /* TLOLinkParser.swift */,
@@ -2707,6 +2714,7 @@
 				4C31520120EB673E00448776 /* TLOEncryptionManagerPrivate.h */,
 				4C3151F220EB673E00448776 /* TLOFileLoggerPrivate.h */,
 				4C3151DA20EB673E00448776 /* TLOInputHistoryPrivate.h */,
+				4C3151DA20EB673E004487A2 /* TLOKeychainPrivate.h */,
 				4C31520920EB673E00448776 /* TLOLicenseManagerDownloaderPrivate.h */,
 				4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */,
 				4C31522220EB673E00448776 /* TLOLicenseManagerPrivate.h */,
@@ -3635,6 +3643,7 @@
 				4C31580720EB6D0600448776 /* TXSharedApplicationPrivate.h in Headers */,
 				4C31578B20EB6D0600448776 /* IRCTimerCommandPrivate.h in Headers */,
 				4C3157CB20EB6D0600448776 /* TLOInputHistoryPrivate.h in Headers */,
+				4C3157CB20EB6D06004487A2 /* TLOKeychainPrivate.h in Headers */,
 				4C3157D220EB6D0600448776 /* TLOSpokenNotificationPrivate.h in Headers */,
 				4C31558820EB6CB300448776 /* TVCBasicTableView.h in Headers */,
 				4C31558220EB6CB300448776 /* TPCThemeController.h in Headers */,
@@ -3902,6 +3911,7 @@
 				4C31577420EB6D0500448776 /* TXSharedApplicationPrivate.h in Headers */,
 				4C3156F820EB6D0500448776 /* IRCTimerCommandPrivate.h in Headers */,
 				4C31573820EB6D0500448776 /* TLOInputHistoryPrivate.h in Headers */,
+				4C31573820EB6D05004487A2 /* TLOKeychainPrivate.h in Headers */,
 				4C31573F20EB6D0500448776 /* TLOSpokenNotificationPrivate.h in Headers */,
 				4C3155DF20EB6CB400448776 /* TVCBasicTableView.h in Headers */,
 				4C3155D920EB6CB400448776 /* TPCThemeController.h in Headers */,
@@ -4708,6 +4718,7 @@
 				4C06E5E820EC553A0055D09A /* TLOFileLogger.m in Sources */,
 				4C06E5E920EC553A0055D09A /* TLONotificationController.m in Sources */,
 				4C06E5EA20EC553A0055D09A /* TLOInputHistory.m in Sources */,
+				4C06E5EA20EC553A0055D0A1 /* TLOKeychain.m in Sources */,
 				4C06E5EB20EC553A0055D09A /* TLOInternetAddressLookup.m in Sources */,
 				4C06E5EC20EC553A0055D09A /* TLOKeyEventHandler.m in Sources */,
 				4C06E5ED20EC553A0055D09A /* TLOLocalization.m in Sources */,
@@ -4891,6 +4902,7 @@
 				4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */,
 				4C06E6A220EC55B90055D09A /* TLONotificationController.m in Sources */,
 				4C06E6A320EC55B90055D09A /* TLOInputHistory.m in Sources */,
+				4C06E6A320EC55B90055D0A1 /* TLOKeychain.m in Sources */,
 				4C06E6A420EC55B90055D09A /* TLOInternetAddressLookup.m in Sources */,
 				4C06E6A520EC55B90055D09A /* TLOKeyEventHandler.m in Sources */,
 				4C06E6A620EC55B90055D09A /* TLOLocalization.m in Sources */,

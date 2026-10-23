@@ -40,6 +40,12 @@
 "zjw-bd" = "Continue";
 "qso-2g" = "Cancel";
 "c7s-dq" = "OK";
+"k3y-t1" = "Textual couldn’t save the %@ in the Keychain";
+"k3y-m1" = "%1$@ (error %2$d)\n\nIt is used until Textual quits, but won’t be remembered after that. Check the Textual items in Keychain Access, then enter it again.";
+"k3y-n1" = "server password";
+"k3y-n2" = "NickServ password";
+"k3y-n3" = "proxy password";
+"k3y-n4" = "channel key";
 "xne-79" = "Select";
 "ce6-o1" = "Choose";
 "aqw-q1" = "Close";

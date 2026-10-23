@@ -57,6 +57,17 @@ NS_ASSUME_NONNULL_BEGIN
 					serviceName:(NSString *)service
 					   forCloud:(BOOL)modifyForCloud;
 
+/* Items are found by service, username (account) and kind (description), the
+ Keychain's own key, not by name (label): an item saved under another name,
+ for example by an older version, is updated and renamed. Returns the
+ Keychain's status (errSecSuccess when saved). */
++ (OSStatus)modifyOrAddKeychainItemReturningStatus:(NSString *)keychainItemName
+									  withItemKind:(NSString *)keychainItemKind
+									   forUsername:(nullable NSString *)username
+								   withNewPassword:(nullable NSString *)newPassword
+									   serviceName:(NSString *)service
+										  forCloud:(BOOL)modifyForCloud;
+
 + (BOOL)addKeychainItem:(NSString *)keychainItemName 
 		   withItemKind:(NSString *)keychainItemKind 
 			forUsername:(nullable NSString *)username 
