@@ -39,7 +39,7 @@
 			<key>fontSelected</key>
 			<dict>
 				<key>name</key>
-				<string>System</string>
+				<string>SystemBold</string>
 				<key>size</key>
 				<integer>14</integer>
 			</dict>
