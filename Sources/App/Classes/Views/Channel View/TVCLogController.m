@@ -1701,7 +1701,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)logViewWebViewClosedUnexpectedly
 {
-	[self clearBackingView];
+	/* Reload and replay the scrollback: the saved history is kept */
+	[self clearWithReset:NO];
 }
 
 - (void)logViewWebViewKeyDown:(NSEvent *)e
