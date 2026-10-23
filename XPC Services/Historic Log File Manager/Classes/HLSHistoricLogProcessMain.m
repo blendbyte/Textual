@@ -202,20 +202,21 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 		limitToDate = [NSDate distantFuture];
 	}
 
-	NSDictionary *substitutionVariables = @{
-		@"view_id" : viewId,
-		@"entry_id_lowest" : @(lowestEntryIdentifier),
-		@"entry_id_highest" : @(highestEntryIdentifier),
-		@"creation_date" : @([limitToDate timeIntervalSince1970])
-	};
+	/* Built here, not from the model's GenericConditional template: on macOS 27
+	 a request made from a template ignores its sort descriptors for lines not
+	 yet saved to disk, so reloaded lines came back shuffled and a limited
+	 fetch picked arbitrary ones */
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"LogLine2"];
 
-	NSFetchRequest *fetchRequest =
-	[self.managedObjectModel fetchRequestFromTemplateWithName:@"GenericConditional"
-										substitutionVariables:substitutionVariables];
+	fetchRequest.predicate =
+	[NSPredicate predicateWithFormat:@"logLineViewIdentifier == %@ AND entryIdentifier >= %@ AND entryIdentifier <= %@ AND entryCreationDate < %@",
+		viewId, @(lowestEntryIdentifier), @(highestEntryIdentifier), @(limitToDate.timeIntervalSince1970)];
 
 	if (fetchLimit > 0) {
 		fetchRequest.fetchLimit = fetchLimit;
 	}
+
+	fetchRequest.fetchBatchSize = 100;
 
 	fetchRequest.includesPendingChanges = YES;
 	fetchRequest.includesPropertyValues = YES;
@@ -223,7 +224,9 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 
 	fetchRequest.resultType = resultType;
 
-	fetchRequest.sortDescriptors = @[[[NSSortDescriptor alloc] initWithKey:@"entryCreationDate" ascending:ascending]];
+	/* Entry identifiers: the order lines were written in. Creation dates can
+	 repeat and run backwards when the clock changes. */
+	fetchRequest.sortDescriptors = @[[[NSSortDescriptor alloc] initWithKey:@"entryIdentifier" ascending:ascending]];
 
 	return fetchRequest;
 }
