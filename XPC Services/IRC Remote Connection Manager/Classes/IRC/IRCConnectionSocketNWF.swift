@@ -292,7 +292,7 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 				case .ipv6(let address):
 					return address.rawValue.IPv6Address
 				@unknown default:
-					fatalError("Unexpected switch case")
+					return nil
 			}
 		}
 
@@ -532,7 +532,12 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 			case .tls(let errorCode):
 				return ConnectionError(nwTLSError: errorCode)
 			@unknown default:
-				fatalError("Unexpected switch case")
+				/* Network.framework gains new error cases with new macOS releases
+				 (macOS 26 added .wifiAware); report them instead of crashing.
+				 They are not named here: naming .wifiAware links a symbol that
+				 macOS 25 and earlier don't have, and the service then fails to
+				 launch there on Intel Macs. */
+				return ConnectionError(otherError: "Unknown NWError: \(error)")
 		}
 	}
 }
