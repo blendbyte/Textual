@@ -1,0 +1,111 @@
+/* *********************************************************************
+ *
+ *            Copyright (c) 2024 Codeux Software, LLC
+ *     Please see ACKNOWLEDGEMENT for additional information.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  * Neither the name of "Codeux Software, LLC", nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *********************************************************************** */
+
+"heading" = "Secure Transport Error: %1$@ (%2$ld)";
+
+"-9800" = "Generic protocol error"; // errSSLProtocol
+"-9801" = "Cipher suite negotiation failure"; // errSSLNegotiation
+"-9802" = "Fatal alert"; // errSSLFatalAlert
+"-9803" = "I/O would block"; // errSSLWouldBlock
+"-9804" = "Attempt to restore an unknown session"; // errSSLSessionNotFound
+"-9805" = "Connection was closed gracefully"; // errSSLClosedGraceful
+"-9806" = "Connection was closed as a result of an error"; // errSSLClosedAbort
+"-9807" = "Invalid certificate chain"; // errSSLXCertChainInvalid
+"-9808" = "Invalid certificate format"; // errSSLBadCert
+"-9809" = "Underlying cryptographic error"; // errSSLCrypto
+"-9810" = "Internal error"; // errSSLInternal
+"-9811" = "Module attach failure"; // errSSLModuleAttach
+"-9812" = "Valid certificate chain with an untrusted root"; // errSSLUnknownRootCert
+"-9813" = "No root certificate for the certificate chain"; // errSSLNoRootCert
+"-9814" = "Certificate chain has an expired certificate"; // errSSLCertExpired
+"-9815" = "Certificate chain has a certificate that is not yet valid"; // errSSLCertNotYetValid
+"-9816" = "Server closed session with no notification"; // errSSLClosedNoNotify
+"-9817" = "Insufficient buffer provided"; // errSSLBufferOverflow
+"-9818" = "Improperly configured cipher suite"; // errSSLBadCipherSuite
+"-9819" = "Unexpected message received"; // errSSLPeerUnexpectedMsg
+"-9820" = "Bad MAC"; // errSSLPeerBadRecordMac
+"-9821" = "Decryption failed"; // errSSLPeerDecryptionFail
+"-9822" = "Record overflow"; // errSSLPeerRecordOverflow
+"-9823" = "Decompression failure"; // errSSLPeerDecompressFail
+"-9824" = "Handshake failure"; // errSSLPeerHandshakeFail
+"-9825" = "Bad certificate"; // errSSLPeerBadCert
+"-9826" = "Invalid or unsupported certificate format"; // errSSLPeerUnsupportedCert
+"-9827" = "Certificate revoked"; // errSSLPeerCertRevoked
+"-9828" = "Certificate expired"; // errSSLPeerCertExpired
+"-9829" = "Unknown certificate"; // errSSLPeerCertUnknown
+"-9830" = "Illegal parameter"; // errSSLIllegalParam
+"-9831" = "Unknown certificate authority"; // errSSLPeerUnknownCA
+"-9832" = "Access denied"; // errSSLPeerAccessDenied
+"-9833" = "Decoding error"; // errSSLPeerDecodeError
+"-9834" = "Decryption error"; // errSSLPeerDecryptError
+"-9835" = "Export restriction"; // errSSLPeerExportRestriction
+"-9836" = "Invalid protocol version"; // errSSLPeerProtocolVersion
+"-9837" = "Insufficient security"; // errSSLPeerInsufficientSecurity
+"-9838" = "Internal error"; // errSSLPeerInternalError
+"-9839" = "User canceled"; // errSSLPeerUserCancelled
+"-9840" = "Renegotiation is not allowed"; // errSSLPeerNoRenegotiation
+"-9841" = "Peer certificate is valid or was ignored if verification is disabled"; // errSSLPeerAuthCompleted
+"-9842" = "Server has requested a client-side certificate"; // errSSLClientCertRequested
+"-9843" = "Host mismatch"; // errSSLHostNameMismatch
+"-9844" = "Peer dropped connection before responding"; // errSSLConnectionRefused
+"-9845" = "Decryption failure"; // errSSLDecryptionFail
+"-9846" = "Bad MAC"; // errSSLBadRecordMac
+"-9847" = "Record overflow"; // errSSLRecordOverflow
+"-9848" = "Configuration error"; // errSSLBadConfiguration
+"-9849" = "Unexpected (skipped) record in DTLS"; // errSSLUnexpectedRecord
+"-9850" = "Server has a weak ephemeral Diffie-Hellman public key"; // errSSLWeakPeerEphemeralDHKey
+"-9851" = "Hello received"; // errSSLClientHelloReceived
+"-9852" = "Socket shutdown (e.g. TCP RST or FIN)"; // errSSLTransportReset
+"-9853" = "Network timeout"; // errSSLNetworkTimeout
+"-9854" = "Configuration failed"; // errSSLConfigurationFailed
+"-9855" = "Unsupported extension"; // errSSLUnsupportedExtension
+"-9856" = "Peer rejected unexpected message"; // errSSLUnexpectedMessage
+"-9857" = "Decompression failed"; // errSSLDecompressFail
+"-9858" = "Handshake failed"; // errSSLHandshakeFail
+"-9859" = "Decode failed"; // errSSLDecodeError
+"-9860" = "Inappropriate fallback"; // errSSLInappropriateFallback
+"-9861" = "Missing extension"; // errSSLMissingExtension
+"-9862" = "Bad OCSP response"; // errSSLBadCertificateStatusResponse
+"-9863" = "Certificate required"; // errSSLCertificateRequired
+"-9864" = "Unknown PSK identity"; // errSSLUnknownPSKIdentity
+"-9865" = "Unknown or unrecognized name"; // errSSLUnrecognizedName
+"-9880" = "ATS violation"; // errSSLATSViolation
+"-9881" = "ATS violation: minimum protocol version is not ATS compliant"; // errSSLATSMinimumVersionViolation
+"-9882" = "ATS violation: selected ciphersuite is not ATS compliant"; // errSSLATSCiphersuiteViolation
+"-9883" = "ATS violation: peer key size is not ATS compliant"; // errSSLATSMinimumKeySizeViolation
+"-9884" = "ATS violation: peer leaf certificate hash algorithm is not ATS compliant"; // errSSLATSLeafCertificateHashAlgorithmViolation
+"-9885" = "ATS violation: peer certificate hash algorithm is not ATS compliant"; // errSSLATSCertificateHashAlgorithmViolation
+"-9886" = "ATS violation: peer certificate is not issued by trusted peer"; // errSSLATSCertificateTrustViolation
+"-9890" = "Early application data rejected by peer"; // errSSLEarlyDataRejected
+
+/* errSSLUnknownError is defined by our own library. Not Secure Transport. */
+"-9999" = "Unknown"; // errSSLUnknownError

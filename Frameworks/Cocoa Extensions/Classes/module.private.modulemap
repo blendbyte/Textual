@@ -1,0 +1,6 @@
+framework module CocoaExtensions_Private {
+	umbrella header "CocoaExtensionsPrivate.h"
+	export *
+
+	module * { export * }
+}

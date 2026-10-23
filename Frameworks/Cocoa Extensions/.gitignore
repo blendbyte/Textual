@@ -1,0 +1,14 @@
+*~
+*~.*
+.DS_Store
+.LSOverride
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.perspectivev3
+*.pyc
+.tmp
+build
+Build Results
+xcuserdata
+*.xcworkspace
