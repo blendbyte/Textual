@@ -143,6 +143,7 @@ TEXTUAL_EXTERN NSNotificationName const TPCThemeWasModifiedNotification;
 @property (readonly) BOOL js_postAppearanceChangesNotification;
 @property (readonly) BOOL js_postPreferencesDidChangesNotifications;
 @property (readonly) BOOL usesIncompatibleTemplateEngineVersion;
+@property (readonly) BOOL supportsMessageSpacing; // "Supports Message Spacing": the style follows <body data-spacing>
 @property (readonly, copy, nullable) NSFont *themeChannelViewFont;
 @property (readonly, copy, nullable) NSString *themeNicknameFormat;
 @property (readonly, copy, nullable) NSString *themeTimestampFormat;

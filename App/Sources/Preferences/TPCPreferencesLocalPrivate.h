@@ -159,6 +159,16 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setMessageGroupingStyle:(TVCLogLineGroupingStyle)messageGroupingStyle;
 
+/* How close together the lines sit (Settings › Appearance), for styles that
+ support it: Standard is each style's own look */
+typedef NS_ENUM(NSUInteger, TPCMessageSpacing) {
+	TPCMessageSpacingCompact = 0,
+	TPCMessageSpacingStandard,
+	TPCMessageSpacingRoomy
+};
+
+@property (class, readonly) TPCMessageSpacing messageSpacing;
+
 /* Event messages, per kind (Preferences → Style → Events): shown, dimmed or
  hidden in the chat view (hidden ones are still printed and stored, so showing
  them again brings the earlier ones back), and runs of joins, parts, quits,

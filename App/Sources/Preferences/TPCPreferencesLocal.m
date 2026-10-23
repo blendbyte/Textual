@@ -407,6 +407,17 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	[RZUserDefaults() setUnsignedInteger:messageGroupingStyle forKey:@"DisplayEventInLogView -> Message Grouping Style"];
 }
 
++ (TPCMessageSpacing)messageSpacing
+{
+	NSUInteger messageSpacing = [RZUserDefaults() unsignedIntegerForKey:@"Theme -> Message Spacing"];
+
+	if (messageSpacing > TPCMessageSpacingRoomy) {
+		return TPCMessageSpacingStandard;
+	}
+
+	return messageSpacing;
+}
+
 + (void)setShowInlineMedia:(BOOL)showInlineMedia
 {
 	[RZUserDefaults() setBool:showInlineMedia forKey:TPCPreferencesShowInlineMediaDefaultsKey];

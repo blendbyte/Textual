@@ -93,6 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[keys containsObject:@"Event Display -> Mode Changes"] ||
 		[keys containsObject:@"Event Display -> Topic Changes"] ||
 		[keys containsObject:@"Event Display -> Collapse"] ||
+		[keys containsObject:@"Theme -> Message Spacing"] ||
 		[keys containsObject:@"Theme -> Nickname Format"] ||
 		[keys containsObject:@"Theme -> Timestamp Format"] ||
 		[keys containsObject:@"Theme -> Channel Font Preference Enabled"] ||

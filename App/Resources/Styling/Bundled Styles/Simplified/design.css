@@ -389,3 +389,30 @@ body[dir="rtl"] div.line[data-line-type="nick"] .message:before {
 div.line[data-line-type="privmsg"] .sender[data-member-type="myself"] {
 	color: var(--own-nickname-color);
 }
+
+/* Message spacing (Settings › Appearance): <body data-spacing> is compact,
+ standard or roomy. Standard is the look above; Compact and Roomy only move
+ the lines closer together or further apart. */
+
+body[data-spacing="compact"] div.line[data-line-type] {
+	padding-top: 1px;
+	padding-bottom: 1px;
+	line-height: 1.15;
+}
+
+body[data-spacing="roomy"] div.line[data-line-type] {
+	padding-top: 3px;
+	padding-bottom: 3px;
+	line-height: 1.4;
+}
+
+/* Event lines have a pixel more padding than messages */
+body[data-spacing="compact"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"]) {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+body[data-spacing="roomy"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"]) {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}

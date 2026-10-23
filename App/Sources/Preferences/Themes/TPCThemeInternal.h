@@ -70,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL js_postAppearanceChangesNotification;
 @property (nonatomic, assign, readwrite) BOOL js_postPreferencesDidChangesNotifications;
 @property (nonatomic, assign, readwrite) BOOL usesIncompatibleTemplateEngineVersion;
+@property (nonatomic, assign, readwrite) BOOL supportsMessageSpacing;
 @property (nonatomic, copy, readwrite, nullable) NSFont *themeChannelViewFont;
 @property (nonatomic, copy, readwrite, nullable) NSString *themeNicknameFormat;
 @property (nonatomic, copy, readwrite, nullable) NSString *themeTimestampFormat;

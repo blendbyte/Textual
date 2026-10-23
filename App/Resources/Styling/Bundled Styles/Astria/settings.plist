@@ -10,6 +10,8 @@
 	<integer>6</integer>
 	<key>Nickname Color Style</key>
 	<string>HSL-dark</string>
+	<key>Supports Message Spacing</key>
+	<true/>
 	<key>Template Engine Versions</key>
 	<dict>
 		<key>default</key>

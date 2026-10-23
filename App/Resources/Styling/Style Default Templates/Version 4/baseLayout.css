@@ -610,6 +610,16 @@ div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note);
 	margin-top: 0.4em;
 }
 
+/* The gap above the name follows Settings › Appearance › Spacing, for styles
+ that support it (<body data-spacing>) */
+:where(body[data-spacing="compact"] div.line p.header) {
+	margin-top: 0.2em;
+}
+
+:where(body[data-spacing="roomy"] div.line p.header) {
+	margin-top: 0.7em;
+}
+
 :where(div.line p.header .sender) {
 	font-weight: bold;
 }

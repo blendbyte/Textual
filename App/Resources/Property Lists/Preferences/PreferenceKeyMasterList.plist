@@ -326,6 +326,8 @@
 	<integer>0</integer>
 	<key>Theme -&gt; Font Size</key>
 	<integer>0</integer>
+	<key>Theme -&gt; Message Spacing</key>
+	<integer>0</integer>
 	<key>Theme -&gt; Name</key>
 	<integer>0</integer>
 	<key>Theme -&gt; Name -&gt; Did Not Exist During Last Sync</key>

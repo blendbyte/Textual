@@ -198,6 +198,16 @@ struct AppearanceSettings: View
 								 help: SettingsText(TDCSettingsBridge.fontChosenByStyle ? "set-app-fhs" : "set-app-fh"))
 				}
 
+				Picker(selection: store.integer("Theme -> Message Spacing")) {
+					ForEach([0, 1, 2], id: \.self) { value in
+						Text(SettingsText("set-app-sp\(value)")).tag(value)
+					}
+				} label: {
+					SettingLabel(title: SettingsText("set-app-sp"),
+								 help: SettingsText(TDCSettingsBridge.styleSupportsMessageSpacing ? "set-app-sph" : "set-app-sphs"))
+				}
+				.disabled(TDCSettingsBridge.styleSupportsMessageSpacing == false)
+
 				SettingToggle(title: SettingsText("set-app-r"), help: SettingsText("set-app-rh"),
 							  isOn: store.bool("RightToLeftTextFormatting"))
 			}

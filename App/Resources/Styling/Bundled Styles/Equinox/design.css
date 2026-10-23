@@ -25,6 +25,24 @@ body {
   overflow-y: auto;
 }
 
+/* Message spacing (Settings › Appearance): <body data-spacing> is compact,
+ standard or roomy. Lines have fixed heights: messages, and the smaller
+ event lines (joins, parts and the like). */
+body {
+  --spacing-line: 22px;
+  --spacing-event-line: 19px;
+}
+
+body[data-spacing="compact"] {
+  --spacing-line: 18px;
+  --spacing-event-line: 16px;
+}
+
+body[data-spacing="roomy"] {
+  --spacing-line: 26px;
+  --spacing-event-line: 22px;
+}
+
 p {
   overflow: visible !important;
 }
@@ -116,7 +134,7 @@ body[dir=ltr] .time {
   /*  font-weight: bold; */
   margin-right: 10px;
   padding-left: 25px;
-  line-height: 22px;
+  line-height: var(--spacing-line);
   font-style: normal;
   text-align: right;
 }
@@ -200,7 +218,7 @@ body div[data-line-type=ctcp] .senderContainer,
 body div[data-line-type=notice] .senderContainer {
   color: #f00;
   font-weight: 700;
-  min-height:23px;
+  min-height:calc(var(--spacing-line) + 1px);
   width: 134px;
   padding-right:7px;
   text-align:right;
@@ -222,12 +240,12 @@ body div[data-line-type=notice] .message {
 body div.line[data-line-type=privmsg][data-highlight=false] {
   padding: 0;
   position: relative;
-  min-height: 23px;
+  min-height: calc(var(--spacing-line) + 1px);
 }
 
 body div[data-line-type=privmsg] .senderContainer {
   /*  font-weight: 700; */
-  min-height:23px;
+  min-height:calc(var(--spacing-line) + 1px);
   width: 134px;
   border-right: 1px solid rgb(64, 64, 64);
   padding-right:7px;
@@ -266,7 +284,7 @@ body div[data-line-type=action] .senderContainer {
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
   background-color: #1d1d1d;
-  height:22px;
+  height:var(--spacing-line);
   padding-right: 7px;
   text-align:right;
   display:inline-block;
@@ -341,20 +359,20 @@ body span.message {
   padding-left: 150px;
   /* padding-right: 25px; */
   display: table-cell;
-  min-height: 22px;
-  line-height: 22px;
+  min-height: var(--spacing-line);
+  line-height: var(--spacing-line);
   overflow: visible !important;
 }
 
 body div.event span.time {
   color: #999;
-  line-height: 19px;
+  line-height: var(--spacing-event-line);
   display: table-cell;
 }
 
 body div.event span.message {
-  min-height: 19px;
-  line-height: 19px;
+  min-height: var(--spacing-event-line);
+  line-height: var(--spacing-event-line);
   text-indent: -20px;
   padding-left: 0;
 }
@@ -369,7 +387,7 @@ body div.line[data-line-type=kill],
 body div.line[data-line-type=kick],
 body div.line[data-line-type=website] {
   font-size: 85%;
-  min-height: 19px;
+  min-height: var(--spacing-event-line);
   padding-left: 145px;
   color: #a5b6ce;
   background: #1d1d1d;

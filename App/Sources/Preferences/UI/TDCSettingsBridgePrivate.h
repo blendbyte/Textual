@@ -112,6 +112,7 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 /* The active style chose some settings itself: which ("time format, font"), or nil */
 @property (class, readonly, copy, nullable) NSString *settingsChosenByStyle;
 @property (class, readonly) BOOL styleSupportsChatDisplay;
+@property (class, readonly) BOOL styleSupportsMessageSpacing;
 + (void)openStyleFilesInWindow:(NSWindow *)window;
 
 /* Pictures of styles of one's own: taken after a style loads (from now on) */

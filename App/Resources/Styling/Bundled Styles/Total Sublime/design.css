@@ -389,3 +389,39 @@ body[dir="rtl"] div.line[data-line-type="nick"] .message:before {
 div.line[data-line-type="privmsg"] .sender[data-member-type="myself"] {
 	color: #ff6f6f;
 }
+
+/* Message spacing (Settings › Appearance): <body data-spacing> is compact,
+ standard or roomy. Standard is the look above; Compact and Roomy only move
+ the lines closer together or further apart. The line height is set on
+ every element, as above. */
+
+body[data-spacing="compact"] div.line[data-line-type] {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+body[data-spacing="compact"] div.line[data-line-type],
+body[data-spacing="compact"] div.line[data-line-type] * {
+	line-height: 1.5em;
+}
+
+body[data-spacing="roomy"] div.line[data-line-type] {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+body[data-spacing="roomy"] div.line[data-line-type],
+body[data-spacing="roomy"] div.line[data-line-type] * {
+	line-height: 1.9em;
+}
+
+/* Notices have a pixel less padding than messages */
+body[data-spacing="compact"] div.line[data-line-type="notice"] {
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
+body[data-spacing="roomy"] div.line[data-line-type="notice"] {
+	padding-top: 3px;
+	padding-bottom: 3px;
+}

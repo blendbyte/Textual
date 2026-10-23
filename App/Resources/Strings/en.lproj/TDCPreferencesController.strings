@@ -331,6 +331,12 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-app-fhs" = "This style chooses its own font.";
 "set-app-fc" = "Change…";
 "set-app-fs" = "Use System Font";
+"set-app-sp" = "Spacing";
+"set-app-sph" = "How close together the lines in the chat sit.";
+"set-app-sphs" = "This style has its own spacing.";
+"set-app-sp0" = "Compact";
+"set-app-sp1" = "Standard";
+"set-app-sp2" = "Roomy";
 "set-app-r" = "Right-to-left text";
 "set-app-rh" = "For Arabic, Hebrew and other languages written from right to left.";
 "set-app-h4" = "Window";

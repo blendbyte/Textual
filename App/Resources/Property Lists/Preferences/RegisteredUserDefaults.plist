@@ -280,6 +280,8 @@
 	<string>-apple-system</string>
 	<key>Theme -&gt; Font Size</key>
 	<real>13</real>
+	<key>Theme -&gt; Message Spacing</key>
+	<integer>1</integer>
 	<key>Theme -&gt; Name</key>
 	<string>resource:Lumen</string>
 	<key>Theme -&gt; Nickname Format</key>

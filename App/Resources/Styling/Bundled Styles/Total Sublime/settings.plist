@@ -14,6 +14,8 @@
 	<string>HSL-dark</string>
 	<key>Nickname Format</key>
 	<string>%@%n:</string>
+	<key>Supports Message Spacing</key>
+	<true/>
 	<key>Template Engine Versions</key>
 	<dict>
 		<key>default</key>

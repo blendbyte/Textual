@@ -3355,6 +3355,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		templateTokens[@"appearanceToken"] = @"light";
 	}
 
+	/* Only for styles that support it: one that doesn't keeps its own spacing */
+	if (themeSettings().supportsMessageSpacing) {
+		templateTokens[@"messageSpacingToken"] = @[@"compact", @"standard", @"roomy"][[TPCPreferences messageSpacing]];
+	}
+
 	return [TVCLogRenderer renderTemplateNamed:@"baseLayout" attributes:templateTokens];
 }
 

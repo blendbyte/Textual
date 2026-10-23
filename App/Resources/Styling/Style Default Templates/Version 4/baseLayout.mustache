@@ -46,6 +46,12 @@
 		data-display="chat"
 {{/groupedDisplayEnabled}}
 
+{{! Settings › Appearance › Spacing: compact, standard or roomy. Only for
+ styles whose settings.plist has "Supports Message Spacing". }}
+{{#messageSpacingToken}}
+		data-spacing="{{messageSpacingToken}}"
+{{/messageSpacingToken}}
+
 {{#usesCustomScrollers}}
 		data-custom-scroller="true"
 {{/usesCustomScrollers}}

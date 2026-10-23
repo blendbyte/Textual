@@ -746,6 +746,11 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	return theme().supportsGroupedDisplay;
 }
 
++ (BOOL)styleSupportsMessageSpacing
+{
+	return themeSettings().supportsMessageSpacing;
+}
+
 + (void)openStyleFilesInWindow:(NSWindow *)window
 {
 	NSParameterAssert(window != nil);

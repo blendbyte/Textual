@@ -101,6 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.invertSidebarColors = [settings boolForKey:@"Force Invert Sidebars"];
 
+	self.supportsMessageSpacing = [settings boolForKey:@"Supports Message Spacing"];
+
 	self.channelViewOverlayColor = [self.class _colorForKey:@"Channel View Overlay Color" fromDictionary:settings];
 	self.underlyingWindowColor = [self.class _colorForKey:@"Underlying Window Color" fromDictionary:settings];
 

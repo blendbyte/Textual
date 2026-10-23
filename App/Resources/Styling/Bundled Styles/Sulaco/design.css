@@ -307,3 +307,34 @@ div.line.text .sender[data-member-type="myself"]:not([data-override-color="true"
 div.line.coalesced .sender {
 	color: transparent !important;
 }
+
+/* Message spacing (Settings › Appearance): <body data-spacing> is compact,
+ standard or roomy. Standard is the look above; Compact and Roomy only move
+ the lines closer together or further apart. The time's line height keeps
+ it level with the text at its smaller size. */
+
+body[data-spacing="compact"] {
+	line-height: 1.3;
+}
+
+body[data-spacing="compact"] :is(.message, .sender, .time) {
+	padding-top: 3px;
+	padding-bottom: 2px;
+}
+
+body[data-spacing="compact"] .time {
+	line-height: 1.65;
+}
+
+body[data-spacing="roomy"] {
+	line-height: 1.6;
+}
+
+body[data-spacing="roomy"] :is(.message, .sender, .time) {
+	padding-top: 5px;
+	padding-bottom: 4px;
+}
+
+body[data-spacing="roomy"] .time {
+	line-height: 2.05;
+}
