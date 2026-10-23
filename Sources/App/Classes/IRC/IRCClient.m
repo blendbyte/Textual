@@ -3406,7 +3406,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			/* Present list of features */
 			else if ([action isEqualToString:@"features"])
 			{
-				[TLOpenLink openWithString:@"https://help.codeux.com/textual/Command-Reference.kb#cr=defaults" inBackground:NO];
+				[TLOpenLink openWithString:@"https://www.textualapp.com/docs/legacy/reference/commands#cr=defaults" inBackground:NO];
 
 				break;
 			}

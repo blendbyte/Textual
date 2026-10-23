@@ -2441,21 +2441,21 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(sender != nil);
 
 	NSDictionary *_helpMenuLinks = @{
-	   @(MTMMHelpLicenseAgreement) 					: @"https://help.codeux.com/textual/End-User-License-Agreement.kb",
-	   @(MTMMHelpPrivacyPolicy) 					: @"https://help.codeux.com/textual/Privacy-Policy.kb",
-	   @(MTMMHelpFrequentlyAskedQuestions) 			: @"https://help.codeux.com/textual/Frequently-Asked-Questions.kb",
-	   @(MTMMHelpKBMenuKnowledgeBaseHome) 			: @"https://help.codeux.com/textual/home.kb",
-	   @(MTMMHelpKBMenuChatEncryption) 				: @"https://help.codeux.com/textual/Off-the-Record-Messaging.kb",
-	   @(MTMMHelpKBMenuCommandReference) 			: @"https://help.codeux.com/textual/Command-Reference.kb",
-	   @(MTMMHelpKBMenuFeatureRequests) 			: @"https://help.codeux.com/textual/Support.kb",
-	   @(MTMMHelpKBMenuKeyboardShortcuts) 			: @"https://help.codeux.com/textual/Keyboard-Shortcuts.kb",
-	   @(MTMMHelpKBMenuMemoryManagement) 			: @"https://help.codeux.com/textual/Memory-Management.kb",
-	   @(MTMMHelpKBMenuNetworkTimeouts)				: @"https://help.codeux.com/textual/Network-Timeouts.kb",
-	   @(MTMMHelpKBMenuTextFormatting) 				: @"https://help.codeux.com/textual/Text-Formatting.kb",
-	   @(MTMMHelpKBMenuStylingInformation) 			: @"https://help.codeux.com/textual/Styles.kb",
-	   @(MTMMHelpKBMenuConnectingWithCertificate) 	: @"https://help.codeux.com/textual/Using-CertFP.kb",
-	   @(MTMMHelpKBMenuConnectingToBouncer)			: @"https://help.codeux.com/textual/Connecting-to-ZNC-Bouncer.kb",
-	   @(MTMMHelpKBMenuDCCFileTransferInformation) 	: @"https://help.codeux.com/textual/DCC-File-Transfer-Information.kb"
+	   @(MTMMHelpLicenseAgreement) 					: @"https://www.textualapp.com/docs/legacy/legal/license-agreement-textual-7",
+	   @(MTMMHelpPrivacyPolicy) 					: @"https://www.textualapp.com/privacy",
+	   @(MTMMHelpFrequentlyAskedQuestions) 			: @"https://www.textualapp.com/docs/legacy/reference/faq",
+	   @(MTMMHelpKBMenuKnowledgeBaseHome) 			: @"https://www.textualapp.com/docs/legacy",
+	   @(MTMMHelpKBMenuChatEncryption) 				: @"https://www.textualapp.com/docs/legacy/guides/off-the-record-messaging",
+	   @(MTMMHelpKBMenuCommandReference) 			: @"https://www.textualapp.com/docs/legacy/reference/commands",
+	   @(MTMMHelpKBMenuFeatureRequests) 			: @"https://www.textualapp.com/contact",
+	   @(MTMMHelpKBMenuKeyboardShortcuts) 			: @"https://www.textualapp.com/docs/legacy/guides/keyboard-shortcuts",
+	   @(MTMMHelpKBMenuMemoryManagement) 			: @"https://www.textualapp.com/docs/legacy/guides/memory-management",
+	   @(MTMMHelpKBMenuNetworkTimeouts)				: @"https://www.textualapp.com/docs/legacy/guides/network-timeouts",
+	   @(MTMMHelpKBMenuTextFormatting) 				: @"https://www.textualapp.com/docs/legacy/guides/text-formatting",
+	   @(MTMMHelpKBMenuStylingInformation) 			: @"https://www.textualapp.com/docs/legacy/guides/styles",
+	   @(MTMMHelpKBMenuConnectingWithCertificate) 	: @"https://www.textualapp.com/docs/legacy/guides/using-certfp",
+	   @(MTMMHelpKBMenuConnectingToBouncer)			: @"https://www.textualapp.com/docs/legacy/guides/connecting-to-znc-bouncer",
+	   @(MTMMHelpKBMenuDCCFileTransferInformation) 	: @"https://www.textualapp.com/docs/legacy/guides/dcc-file-transfer-information"
 	};
 
 	NSString *link = _helpMenuLinks[@([sender tag])];
@@ -2793,7 +2793,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)encryptionWhatIsThisInformation:(id)sender
 {
-	[TLOpenLink openWithString:@"https://help.codeux.com/textual/Off-the-Record-Messaging.kb" inBackground:NO];
+	[TLOpenLink openWithString:@"https://www.textualapp.com/docs/legacy/guides/off-the-record-messaging" inBackground:NO];
 }
 
 #undef _encryptionNotEnabled

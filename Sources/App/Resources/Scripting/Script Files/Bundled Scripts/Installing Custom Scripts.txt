@@ -15,4 +15,4 @@ cannot circumvent.
 
 For more information, read the knowledge base:
 
-https://help.codeux.com/textual/Writing-Scripts.kb
+https://www.textualapp.com/docs/legacy/guides/writing-scripts
