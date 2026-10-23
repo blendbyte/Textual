@@ -564,6 +564,16 @@ app.styleSettingsSetValue = function(key, value, callbackFunction)
 	}
 };
 
+/* Reads one of these preferences (any other name is an error):
+   appearance, autoAddScrollbackMark, channelViewArrangement,
+   conversationTrackingIncludesUserModeSymbol, copyOnSelect, developerModeEnabled,
+   disableNicknameColorHashing, displayServerMOTD, highlightCurrentNickname,
+   mainWindowTransparency, memberListDisplayNoModeSymbol, removeAllFormatting,
+   rightToLeftFormatting, scrollbackVisibleLimit, showDateChanges, showInlineMedia,
+   showJoinLeave, themeChannelViewFontName, themeChannelViewFontPreferenceUserConfigurable,
+   themeChannelViewFontSize, themeChannelViewUsesCustomScrollers, themeName,
+   themeNicknameFormat, themeNicknameFormatPreferenceUserConfigurable,
+   themeTimestampFormat, themeTimestampFormatPreferenceUserConfigurable */
 app.retrievePreferencesWithMethodName = function(name, callbackFunction)
 {
 	var promiseIndex = appInternal.makePromise(callbackFunction);

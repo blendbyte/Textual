@@ -45,6 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView, ...;
 + (void)logToJavaScriptConsole:(NSString *)message inWebView:(TVCLogView *)webView withArguments:(va_list)arguments;
+
+/* The value of a preference that styles may read, or nil if they may not */
++ (nullable id)valueOfPreferenceReadableByStyles:(NSString *)name;
 @end
 
 NS_ASSUME_NONNULL_END

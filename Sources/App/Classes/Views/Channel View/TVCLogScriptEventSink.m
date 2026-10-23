@@ -215,6 +215,16 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message
 {
+	/* Only the style's own page may use the bridge: not inline media and
+	 other subframes, and nothing loaded from elsewhere. */
+	WKFrameInfo *frameInfo = message.frameInfo;
+
+	if (frameInfo.isMainFrame == NO || [frameInfo.securityOrigin.protocol isEqualToString:@"file"] == NO) {
+		LogToConsoleDebug("Ignored '%{public}@' from a subframe or a page that isn't the style's", message.name);
+
+		return;
+	}
+
 	NSString *handlerName = message.name;
 
 	SEL handlerSelector = NSSelectorFromString([handlerName stringByAppendingString:@":inWebView:"]);
@@ -388,7 +398,8 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 
 	context.arguments = values;
 
-	void (^completionBlock)(id) = nil;
+	/* Handlers call the completion block unconditionally */
+	void (^completionBlock)(id) = ^(id _Nullable returnValue) {};
 
 	if (promiseIndex >= 0) {
 		__weak typeof(intWebView) intWebViewWeak = intWebView;
@@ -1396,48 +1407,81 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 	context.completionBlock( renderedTemplate );
 }
 
+/* The preferences styles may read with app.retrievePreferencesWithMethodName().
+ Keep in sync with the list in scriptSink.js. Anything else is refused: the
+ method used to call any class method of TPCPreferences. */
++ (NSArray<NSString *> *)preferencesReadableByStyles
+{
+	static NSArray<NSString *> *names = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		names = @[
+			@"appearance",
+			@"autoAddScrollbackMark",
+			@"channelViewArrangement",
+			@"conversationTrackingIncludesUserModeSymbol",
+			@"copyOnSelect",
+			@"developerModeEnabled",
+			@"disableNicknameColorHashing",
+			@"displayServerMOTD",
+			@"highlightCurrentNickname",
+			@"mainWindowTransparency",
+			@"memberListDisplayNoModeSymbol",
+			@"removeAllFormatting",
+			@"rightToLeftFormatting",
+			@"scrollbackVisibleLimit",
+			@"showDateChanges",
+			@"showInlineMedia",
+			@"showJoinLeave",
+			@"themeChannelViewFontName",
+			@"themeChannelViewFontPreferenceUserConfigurable",
+			@"themeChannelViewFontSize",
+			@"themeChannelViewUsesCustomScrollers",
+			@"themeName",
+			@"themeNicknameFormat",
+			@"themeNicknameFormatPreferenceUserConfigurable",
+			@"themeTimestampFormat",
+			@"themeTimestampFormatPreferenceUserConfigurable"
+		];
+	});
+
+	return names;
+}
+
++ (nullable id)valueOfPreferenceReadableByStyles:(NSString *)name
+{
+	NSParameterAssert(name != nil);
+
+	if ([[self preferencesReadableByStyles] containsObject:name] == NO) {
+		return nil;
+	}
+
+	/* Each name is an argument-less getter returning an object or a scalar,
+	 which key-value coding boxes */
+	return [[TPCPreferences class] valueForKey:name];
+}
+
 - (void)_retrievePreferencesWithMethodName:(TVCLogScriptEventSinkContext *)context
 {
 	NSArray *arguments = context.arguments;
 
 	NSString *methodName = [self.class objectValueToCommon:arguments[0]];
 
-	SEL methodSelector = NSSelectorFromString(methodName);
-
-	NSMethodSignature *methodSignature =
-	[TPCPreferences methodSignatureForSelector:methodSelector];
-
-	if (methodSignature == nil) {
-		[self.class throwJavaScriptException:@"Unknown method named: '%@'"
+	if ([methodName isKindOfClass:[NSString class]] == NO ||
+		[[self.class preferencesReadableByStyles] containsObject:methodName] == NO)
+	{
+		[self.class throwJavaScriptException:@"Preference '%@' cannot be read by styles"
 								   forCaller:context.caller
-								   inWebView:context.webView];
-
-		context.completionBlock(nil);
-
-		return;
-	} else if (strcmp(methodSignature.methodReturnType, @encode(void)) == 0) {
-		[self.class throwJavaScriptException:@"Method named '%@' does not return a value"
-								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:context.webView, [methodName description]];
 
 		context.completionBlock(nil);
 
 		return;
 	}
 
-	NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSignature];
-
-	invocation.target = [TPCPreferences class];
-
-	invocation.selector = methodSelector;
-
-	[invocation invoke];
-
-	void *returnValue;
-
-	[invocation getReturnValue:&returnValue];
-
-	context.completionBlock( [NSValue valueWithPrimitive:returnValue withType:methodSignature.methodReturnType] );
+	context.completionBlock([self.class valueOfPreferenceReadableByStyles:methodName]);
 }
 
 - (void)_sendPluginPayload:(TVCLogScriptEventSinkContext *)context

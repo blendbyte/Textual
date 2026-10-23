@@ -101,6 +101,34 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 @implementation TVCLogRenderer
 
++ (BOOL)isClickableLinkLocation:(NSString *)linkLocation
+{
+	NSParameterAssert(linkLocation != nil);
+
+	/* The link scanner only finds schemes it permits (http, https and the
+	 app's and user's list); opening them goes through TLOpenLink's policy.
+	 These are never made clickable, even if the user permits any scheme:
+	 they run script or reach local content. */
+	static NSSet<NSString *> *forbiddenSchemes = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		forbiddenSchemes = [NSSet setWithArray:@[@"javascript", @"vbscript", @"data", @"file", @"blob", @"about"]];
+	});
+
+	/* Read textually: NSURL rejects many links that are fine to click */
+	NSRange schemeEnd = [linkLocation rangeOfString:@":"];
+
+	if (schemeEnd.location == NSNotFound || schemeEnd.location == 0) {
+		return NO;
+	}
+
+	NSString *scheme = [linkLocation substringToIndex:schemeEnd.location].trim.lowercaseString;
+
+	return ([forbiddenSchemes containsObject:scheme] == NO);
+}
+
 - (instancetype)init
 {
 	if ((self = [super init])) {
@@ -661,10 +689,11 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 
 	NSMutableDictionary<NSString *, id> *templateTokens = [NSMutableDictionary dictionary];
 
-	if ([stringAttributes containsKey:TVCLogRendererFormattingURLAttribute])
-	{
-		AHHyperlinkScannerResult *link = stringAttributes[TVCLogRendererFormattingURLAttribute];
+	AHHyperlinkScannerResult *link = stringAttributes[TVCLogRendererFormattingURLAttribute];
 
+	/* Links with a script or local scheme (javascript:, data:, …) are shown as text */
+	if (link && [self.class isClickableLinkLocation:link.stringValue])
+	{
 		NSString *linkLocation = link.stringValue;
 
 		if (self->_viewController.inlineMediaEnabledForView) {
