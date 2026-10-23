@@ -66,7 +66,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateSegmentedControllerOrigin
 {
-	if ([TPCPreferences hideMainWindowSegmentedController]) {
+	BOOL hideController = [TPCPreferences hideMainWindowSegmentedController];
+
+	/* This also runs on every appearance change: zeroing out twice
+	 would archive zero and the buttons could never come back */
+	if (self.hidden == hideController) {
+		return;
+	}
+
+	/* A segmented control still draws its segments at zero width
+	 on newer versions of macOS, so it is hidden as well */
+	self.hidden = hideController;
+
+	if (hideController) {
 		[self.segmentedControllerLeadingConstraint archiveConstantAndZeroOut];
 		[self.segmentedControllerWidthConstraint archiveConstantAndZeroOut];
 	} else {
