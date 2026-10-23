@@ -111,6 +111,11 @@ If you are the developer of one of these addons: In the Info.plist file of your 
 "hcb-3i" = "Settings may be damaged if more than one copy of Textual is open";
 "kx4-q8" = "Are you sure you want to continue?";
 
+/* At launch, when Textual runs from a disk image or where it was downloaded */
+"mva-t" = "Move Textual to your Applications folder";
+"mva-m" = "Textual can only update itself from your Applications folder. Drag Textual into Applications, then open it from there.";
+"mva-s" = "Show Applications Folder";
+
 "py0-cr" = "The style named “%@” is not designed to work with this version of Textual";
 "76t-pn" = "Some features will not work correctly with this style selected.";
 "2a3-5s" = "Choose Different Style";

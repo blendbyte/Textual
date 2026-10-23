@@ -39,6 +39,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TXApplication : NSApplication
 + (BOOL)checkForOtherCopiesOfTextualRunning;
+
+/* NO when Textual runs from a disk image or a quarantined download (App
+ Translocation), where it can't update itself */
++ (BOOL)applicationCanUpdateInPlace;
++ (void)askToMoveToApplicationsFolderAndQuit;
 @end
 
 NS_ASSUME_NONNULL_END

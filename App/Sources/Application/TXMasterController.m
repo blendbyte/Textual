@@ -46,6 +46,7 @@
 #import "TLOSpeechSynthesizerPrivate.h"
 #import "THOPluginManagerPrivate.h"
 #import "TDCLegacyImportAssistantPrivate.h"
+#import "TXApplicationPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
@@ -156,6 +157,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 		return;
 	}
+
+#if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1 || defined(DEBUG)
+	/* Updates come through Sparkle, which can't replace a copy on a disk image
+	 or a translocated one (Debug builds check too, so it can be tried). Asked
+	 once launching has finished, as the import assistant does: before that,
+	 the alert opens behind other apps' windows. */
+	if ([TXApplication applicationCanUpdateInPlace] == NO) {
+		[[NSRunLoop mainRunLoop] performInModes:@[NSDefaultRunLoopMode] block:^{
+			[TXApplication askToMoveToApplicationsFolderAndQuit];
+		}];
+
+		return;
+	}
+#endif
 
 	/* Offer to import Textual 7's settings before preferences load, so that
 	 a first-launch import needs no restart. Development builds ("Textual

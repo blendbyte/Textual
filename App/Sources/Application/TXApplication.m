@@ -70,6 +70,46 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
++ (BOOL)applicationIsTranslocated
+{
+	/* A quarantined app opened where it was downloaded runs from a random
+	 read-only copy; the original's location isn't public */
+	return [RZMainBundle().bundlePath containsString:@"/AppTranslocation/"];
+}
+
++ (BOOL)applicationCanUpdateInPlace
+{
+	if ([self applicationIsTranslocated]) {
+		return NO;
+	}
+
+	NSNumber *readOnly = nil;
+
+	(void)[RZMainBundle().bundleURL getResourceValue:&readOnly forKey:NSURLVolumeIsReadOnlyKey error:NULL];
+
+	return (readOnly.boolValue == NO);
+}
+
++ (void)askToMoveToApplicationsFolderAndQuit
+{
+	BOOL showApplications = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[mva-m]")
+													  title:TXTLS(@"Prompts[mva-t]")
+											  defaultButton:TXTLS(@"Prompts[mva-s]")
+											alternateButton:TXTLS(@"Prompts[1bf-k0]")];
+
+	if (showApplications) {
+		/* On a disk image: Textual in its window, to drag from */
+		if ([self applicationIsTranslocated] == NO) {
+			[RZWorkspace() activateFileViewerSelectingURLs:@[RZMainBundle().bundleURL]];
+		}
+
+		[RZWorkspace() openURL:[NSURL fileURLWithPath:@"/Applications" isDirectory:YES]];
+	}
+
+	/* Nothing has been loaded or connected yet */
+	exit(0);
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
 	BOOL performedCustomEvent = [self performedCustomKeyboardEvent:event];
