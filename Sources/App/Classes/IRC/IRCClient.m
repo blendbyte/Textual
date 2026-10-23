@@ -6784,6 +6784,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 				continue;
 			}
 
+			/* Already logged in (SASL): never send the password to NickServ */
+			if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL]) {
+				break;
+			}
+
 			// Send password
 			if ([self.serverAddress hasSuffix:@".dal.net"])
 			{
