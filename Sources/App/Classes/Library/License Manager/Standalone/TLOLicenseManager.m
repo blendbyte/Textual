@@ -394,7 +394,7 @@ TLOLicenseManagerActionResult TLOLicenseManagerVerifyLicenseSignatureWithDiction
 	/* Retrieve license signature information */
 	NSData *licenseSignature = licenseDictionary[TLOLicenseManagerLicenseDictionaryKeySignature];
 
-	if (licenseSignature == nil) {
+	if ([licenseSignature isKindOfClass:[NSData class]] == NO) {
 		LogToConsoleError("Missing license signature in license dictionary");
 
 		return TLOLicenseManagerActionResultMalformedData;
@@ -458,7 +458,8 @@ TLOLicenseManagerActionResult TLOLicenseManagerVerifyLicenseSignatureWithDiction
 
 	BOOL verifyResult = NO;
 
-	if (CFGetTypeID(cfVerifyResult) == CFBooleanGetTypeID()) {
+	/* NULL when verification fails with an error */
+	if (cfVerifyResult != NULL && CFGetTypeID(cfVerifyResult) == CFBooleanGetTypeID()) {
 		verifyResult = (cfVerifyResult == kCFBooleanTrue);
 	} else {
 		LogToConsoleError("SecTransformExecute() returned a result that is not of type: CFBooleanRef");

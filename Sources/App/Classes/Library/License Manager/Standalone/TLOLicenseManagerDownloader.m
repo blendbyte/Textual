@@ -293,6 +293,9 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 				LogToConsoleError("Failed to convert contents of request into dictionary. Error: %{public}@",
 					  propertyListReadError.localizedDescription);
 			}
+
+			/* A plain string or array (a proxy's error page) crashed below */
+			propertyList = nil;
 		}
 	}
 
