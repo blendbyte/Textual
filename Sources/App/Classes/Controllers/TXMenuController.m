@@ -58,7 +58,6 @@
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLOpenLink.h"
-#import "TDCAboutDialogPrivate.h"
 #import "TDCAlert.h"
 #import "TDCChannelInviteSheetPrivate.h"
 #import "TDCChannelModifyModesSheetPrivate.h"
@@ -3411,22 +3410,40 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark About Window
 
+/* The standard About panel: icon, name, version and build,
+ copyright from the Info.plist, and the links */
 - (void)showAboutWindow:(id)sender
 {
-	_popWindowViewIfExists(@"TDCAboutDialog");
+	NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
 
-	TDCAboutDialog *dialog = [TDCAboutDialog new];
+	paragraphStyle.alignment = NSTextAlignmentCenter;
 
-	dialog.delegate = (id)self;
+	NSDictionary *attributes = @{
+		NSFontAttributeName : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]],
+		NSForegroundColorAttributeName : [NSColor secondaryLabelColor],
+		NSParagraphStyleAttributeName : paragraphStyle
+	};
 
-	[dialog show];
+	NSMutableAttributedString *credits = [[NSMutableAttributedString alloc] initWithString:@"" attributes:attributes];
 
-	[windowController() addWindowToWindowList:dialog];
-}
+	void (^appendLink)(NSString *, NSString *) = ^(NSString *title, NSString *link) {
+		NSMutableDictionary *linkAttributes = [attributes mutableCopy];
 
-- (void)aboutDialogWillClose:(TDCAboutDialog *)sender
-{
-	[windowController() removeWindowFromWindowList:sender];
+		linkAttributes[NSLinkAttributeName] = [NSURL URLWithString:link];
+
+		[credits appendAttributedString:[[NSAttributedString alloc] initWithString:title attributes:linkAttributes]];
+	};
+
+	appendLink(@"textualapp.com", @"https://www.textualapp.com");
+
+	[credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"   ·   " attributes:attributes]];
+
+	appendLink(@"GitHub", @"https://github.com/blendbyte/Textual");
+
+	[NSApp orderFrontStandardAboutPanelWithOptions:@{
+		NSAboutPanelOptionApplicationIcon : [NSApp applicationIconImage],
+		NSAboutPanelOptionCredits : credits
+	}];
 }
 
 #pragma mark -
