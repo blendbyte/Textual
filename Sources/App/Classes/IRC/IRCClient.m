@@ -297,6 +297,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		[self writePasswordsToKeychain];
 
+		/* Server passwords of a new configuration (e.g. Duplicate Server) */
+		[self writeServerPasswordsToKeychain];
+
 		[self prepareInitialState];
 
 		return self;
