@@ -14,6 +14,8 @@
 	<integer>1</integer>
 	<key>Textual 7 Upgrade -&gt; </key>
 	<integer>1</integer>
+	<key>License Manager -&gt; </key>
+	<integer>1</integer>
 	<key>TPCPreferences -&gt; Migration -&gt; </key>
 	<integer>1</integer>
 	<key>NSWindow Frame -&gt; Internal (v3) -&gt; </key>

@@ -66,6 +66,10 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 #define _upgradeDialogRemindMeInterval 		345600 // 4 days
 
+#define _trialReminderWindow 				604800 // 7 days
+
+#define _trialReminderLastShownDefaultsKey 	@"License Manager -> Trial Reminder -> Last Shown"
+
 @interface TDCLicenseManagerDialog () <NSControlTextEditingDelegate>
 @property (nonatomic, strong) IBOutlet NSView *contentViewUnregisteredTextualView;
 @property (nonatomic, strong) IBOutlet NSView *contentViewRegisteredTextualView;
@@ -142,6 +146,10 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 - (void)applicationDidFinishLaunching
 {
 	[self scheduleTimeRemainingInTrialNotification];
+
+	/* The reminder is once a day, so a Textual left open for days
+	 checks again each time the calendar day changes. */
+	[RZNotificationCenter() addObserver:self selector:@selector(calendarDayChanged:) name:NSCalendarDayChangedNotification object:nil];
 
 	[self toggleTrialTimer];
 
@@ -850,11 +858,34 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		return; // Do not schedule notification...
 	}
 
+	/* Only in the trial's last week, and at most once a calendar day */
+	NSTimeInterval timeLeft = (TLOLicenseManagerTimeRemainingTrial() * (-1.0));
+
+	if (timeLeft > _trialReminderWindow) {
+		return;
+	}
+
+	NSDate *lastShown = [RZUserDefaults() objectForKey:_trialReminderLastShownDefaultsKey];
+
+	if ([lastShown isKindOfClass:[NSDate class]] && [[NSCalendar currentCalendar] isDateInToday:lastShown]) {
+		return;
+	}
+
+	[RZUserDefaults() setObject:[NSDate date] forKey:_trialReminderLastShownDefaultsKey];
+
 	NSString *title = [self timeRemainingInTrialFormattedMessage];
 
 	NSString *message = TXTLS(@"TLOLicenseManager[ccj-ag]");
 
 	[sharedNotificationController() scheduleLicenseManagerNotificationWithTitle:title message:message];
+}
+
+- (void)calendarDayChanged:(NSNotification *)notification
+{
+	/* Not posted on the main thread */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self scheduleTimeRemainingInTrialNotification];
+	});
 }
 
 #pragma mark -

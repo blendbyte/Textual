@@ -188,6 +188,8 @@
 	<integer>0</integer>
 	<key>Keyboard -&gt; Tab Key Completion Suffix</key>
 	<integer>0</integer>
+	<key>License Manager -&gt; Trial Reminder -&gt; Last Shown</key>
+	<integer>0</integer>
 	<key>LogTranscript</key>
 	<integer>0</integer>
 	<key>LogTranscriptDestinationSecurityBookmark_5</key>
