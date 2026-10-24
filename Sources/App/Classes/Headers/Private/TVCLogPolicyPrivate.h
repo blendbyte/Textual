@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)nicknameDoubleClicked;
 - (void)topicBarDoubleClicked;
 
+/* The style's own page: the only page that may use the bridge */
+- (BOOL)isStylePageURL:(nullable NSURL *)url;
+
 TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
 - (NSArray<NSMenuItem *> *)webView1:(WebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenuItems:(NSArray *)defaultMenuItems;
 - (void)webView1:(WebView *)webView logView:(TVCLogView *)logView resource:(id)identifier didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge fromDataSource:(WebDataSource *)dataSource;

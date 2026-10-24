@@ -354,6 +354,20 @@ static TVCLogPolicy *_sharedWebPolicy = nil;
 {
 	NSParameterAssert(webView == self);
 
+	/* Only the style's own page gets the bridge: not inline media and other
+	 subframes, and nothing loaded from elsewhere. */
+	if (frame != self.mainFrame) {
+		return;
+	}
+
+	NSURL *frameURL = frame.dataSource.request.URL;
+
+	if ([_sharedWebPolicy isStylePageURL:frameURL] == NO) {
+		LogToConsoleDebug("Not giving the bridge to a page that isn't the style's: %{private}@", frameURL.absoluteString);
+
+		return;
+	}
+
 	self.t_viewHasScriptObject = YES;
 
 	[windowObject setValue:self.webViewScriptSink forKey:@"TextualScriptSink"];

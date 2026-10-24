@@ -269,16 +269,37 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_BEGIN
 
 - (void)webView1:(WebView *)webView logView:(TVCLogView *)logView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
+	/* The same rules as WebKit2 below */
 	NSInteger action = [actionInformation integerForKey:WebActionNavigationTypeKey];
 
-	if (action == WebNavigationTypeLinkClicked) {
+	if (action != WebNavigationTypeLinkClicked) {
+		/* Subframes (inline media) load what they need; they don't get the bridge */
+		if (frame != webView.mainFrame) {
+			[listener use];
+
+			return;
+		}
+
+		/* The main frame only ever shows the style's own page */
+		if ([self isStylePageURL:request.URL]) {
+			[listener use];
+
+			return;
+		}
+
 		[listener ignore];
 
-		NSURL *actionURL = actionInformation[WebActionOriginalURLKey];
+		LogToConsoleDebug("Blocked navigation of the chat view to %{private}@", request.URL.absoluteString);
 
+		return;
+	}
+
+	[listener ignore];
+
+	NSURL *actionURL = actionInformation[WebActionOriginalURLKey];
+
+	if (actionURL && [actionURL.scheme isEqualToString:@"about"] == NO && [actionURL.scheme isEqualToString:@"file"] == NO) {
 		[self openWebpage:actionURL];
-	} else {
-		[listener use];
 	}
 }
 
@@ -356,7 +377,14 @@ TEXTUAL_IGNORE_WEBKIT_DEPRECATIONS_END
 		return NO;
 	}
 
-	return [url.URLByStandardizingPath.path hasPrefix:[stylePath stringByAppendingString:@"/"]];
+	NSString *path = url.URLByStandardizingPath.path;
+
+	/* WebKit1 loads the page as a string with the style's folder as its URL */
+	if ([path isEqualToString:stylePath]) {
+		return YES;
+	}
+
+	return [path hasPrefix:[stylePath stringByAppendingString:@"/"]];
 }
 
 - (NSMenu *)webView2:(WKWebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenu:(NSMenu *)defaultMenu
