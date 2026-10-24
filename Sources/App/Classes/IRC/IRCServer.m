@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config = [config initWithDictionary:self.dictionaryValueForCopy];
 
-	/* After initialization (see IRCChannelConfig, R2.2): the password comes
+	/* After initialization (see IRCChannelConfig): the password comes
 	 along to be saved under the new identifier */
 	if (uniquing) {
 		config->_serverPassword = self.serverPassword;

@@ -276,7 +276,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* After initialization, which reads the identifier from the dictionary:
 	 set before, the copy kept the original's identifier and shared its
-	 Keychain items (R2.2). The key comes along to be saved under the new
+	 Keychain items. The key comes along to be saved under the new
 	 identifier. */
 	if (uniquing) {
 		config->_secretKey = self.secretKey;

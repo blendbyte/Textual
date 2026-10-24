@@ -693,7 +693,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	config = [config initWithDictionary:self.dictionaryValueForCopy ignorePrivateMessages:NO];
 
-	/* After initialization (see IRCChannelConfig, R2.2): the NickServ and
+	/* After initialization (see IRCChannelConfig): the NickServ and
 	 proxy passwords come along to be saved under the new identifier */
 	if (uniquing) {
 		config->_nicknamePassword = self.nicknamePassword;

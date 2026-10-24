@@ -286,7 +286,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config = [config initWithDictionary:self.dictionaryValueForCopy];
 
-	/* After initialization (see IRCChannelConfig, R2.2) */
+	/* After initialization (see IRCChannelConfig) */
 	if (uniquing) {
 		config->_uniqueIdentifier = [NSString stringWithUUID];
 	}
