@@ -202,6 +202,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, assign, readwrite) BOOL userIsIRCop;
 @property (nonatomic, assign, readwrite) BOOL userIsIdentifiedWithNickServ;
 @property (nonatomic, assign, readwrite) BOOL isWaitingForNickServ;
+@property (nonatomic, assign) BOOL isAuthenticatedWithSASL;
 @property (nonatomic, assign, readwrite) BOOL serverHasNickServ;
 @property (nonatomic, assign) NSUInteger CTCPReplyCount;
 @property (nonatomic, assign) NSTimeInterval CTCPReplyCountStarted;
@@ -5618,6 +5619,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	self.isWaitingForNickServ = NO;
 	self.serverHasNickServ = NO;
 	self.userIsIdentifiedWithNickServ = NO;
+	self.isAuthenticatedWithSASL = NO;
 
 	self.CTCPReplyCount = 0;
 	self.CTCPReplyCountStarted = 0;
@@ -6787,8 +6789,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 				continue;
 			}
 
-			/* Already logged in (SASL): never send the password to NickServ */
-			if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityIsIdentifiedWithSASL]) {
+			/* Already logged in with SASL: never send the password to NickServ.
+			 Not RPL_LOGGEDIN: networks also send it after a NickServ login. */
+			if (self.isAuthenticatedWithSASL) {
 				break;
 			}
 
@@ -10400,6 +10403,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 			[self resetSASLNegotiation];
 
+			/* NickServ may ask to identify again */
+			self.isAuthenticatedWithSASL = NO;
+
 			if (printMessage) {
 				[self print:[m sequence:2]
 						 by:nil
@@ -10428,6 +10434,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			}
 
 			if ([self isPendingCapabilityEnabled:ClientIRCv3SupportedCapabilityIsInSASLNegotiation]) {
+				/* Only while logging in: a success outside SASL means nothing */
+				if (numeric == RPL_SASLSUCCESS) {
+					self.isAuthenticatedWithSASL = YES;
+				}
+
 				[self disablePendingCapability:ClientIRCv3SupportedCapabilityIsInSASLNegotiation];
 
 				[self resumeCapabilityNegotiation];
