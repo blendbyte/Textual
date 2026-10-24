@@ -118,6 +118,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *serverListBouncerHeadings; // account identifier → its heading (the same object across reloads)
 - (void)inputTextAsCommand:(IRCRemoteCommand)command;
 - (void)inputTextAsCommand:(IRCRemoteCommand)command applyingMarkdown:(BOOL)applyMarkdown;
+
+- (void)addFormattingMenuToTextField:(TVCTextViewWithIRCFormatter *)textField;
 @end
 
 @interface TVCMainWindow (ServerListInternal)

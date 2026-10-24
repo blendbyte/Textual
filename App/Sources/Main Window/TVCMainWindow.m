@@ -803,7 +803,16 @@ static BOOL _popOutsOpened = NO;
 {
 	self.formattingMenu.ownerWindow = self;
 
-	NSMenu *editorMenu = self.inputTextField.menu;
+	[self addFormattingMenuToTextField:self.inputTextField];
+}
+
+/* The input field's, or a sheet's (Change Topic), which gets a copy: a menu
+ item is in one menu at a time. The context menu is a copy too: text views
+ share AppKit's default one, so every text view in the app got the Format
+ menu, and one more for each pop-out window. */
+- (void)addFormattingMenuToTextField:(TVCTextViewWithIRCFormatter *)textField
+{
+	NSMenu *editorMenu = textField.menu;
 
 	NSMenuItem *formatterMenu = self.formattingMenu.formatterMenu;
 
@@ -815,11 +824,17 @@ static BOOL _popOutsOpened = NO;
 		return;
 	}
 
+	editorMenu = [editorMenu copy];
+
 	[editorMenu addItem:[NSMenuItem separatorItem]];
 
-	[editorMenu addItem:formatterMenu];
+	if (textField == self.inputTextField) {
+		[editorMenu addItem:formatterMenu];
+	} else {
+		[editorMenu addItem:[formatterMenu copy]];
+	}
 
-	self.inputTextField.menu = editorMenu;
+	textField.menu = editorMenu;
 }
 
 #pragma mark -

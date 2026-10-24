@@ -41,12 +41,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define TVCTextViewIRCFormattingMenuFormatterMenuTag			53037
 
-@class TVCMainWindow;
+@class TVCMainWindow, TVCTextViewWithIRCFormatter;
 
 @interface TVCTextViewIRCFormattingMenu : NSObject
 /* The window whose input field's context menu holds it: used when that
  window isn't key, e.g. a right-click while Textual is in the background */
 @property (nonatomic, weak, nullable) TVCMainWindow *ownerWindow;
+
+/* The field the formatting goes to: the input field, or a sheet's (Change Topic) */
+@property (readonly, nullable) TVCTextViewWithIRCFormatter *textField;
 
 @property (readonly, weak) NSMenuItem *formatterMenu;
 @property (readonly, weak) NSMenu *foregroundColorMenu;

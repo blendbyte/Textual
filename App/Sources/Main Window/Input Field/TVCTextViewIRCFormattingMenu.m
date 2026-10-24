@@ -50,7 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define _formattingMenuHexColorMenuItemTag				300
 
 @interface TVCTextViewIRCFormattingMenu () <NSMenuItemValidation>
-@property (readonly, nullable) TVCTextViewWithIRCFormatter *textField;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenuItem *formatterMenu;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenu *foregroundColorMenu;
 @property (nonatomic, weak, readwrite) IBOutlet NSMenu *backgroundColorMenu;
@@ -72,8 +71,10 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Typing a hex value makes the colour panel the key window; the text
-	 field is then in the main window */
-	firstResponder = [[NSApp mainWindow] firstResponder];
+	 field is then in the main window, or in a sheet on it (Change Topic) */
+	NSWindow *mainWindow = [NSApp mainWindow];
+
+	firstResponder = (mainWindow.attachedSheet ?: mainWindow).firstResponder;
 
 	if ([firstResponder isKindOfClass:[TVCTextViewWithIRCFormatter class]]) {
 		return firstResponder;
@@ -81,11 +82,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* A right-click in a window that isn't key (Textual in the background,
 	 or Preferences in front): neither has the field, so every item was
-	 greyed out. The menu belongs to its own window's input field. */
+	 greyed out. The menu belongs to its own window's input field, or to
+	 the field of the sheet on that window. */
 	TVCMainWindow *ownerWindow = self.ownerWindow;
 
 	if (ownerWindow && ownerWindow.keyWindow == NO) {
-		return ownerWindow.inputTextField;
+		NSWindow *sheet = ownerWindow.attachedSheet;
+
+		if (sheet == nil) {
+			return ownerWindow.inputTextField;
+		}
+
+		firstResponder = sheet.firstResponder;
+
+		if ([firstResponder isKindOfClass:[TVCTextViewWithIRCFormatter class]]) {
+			return firstResponder;
+		}
 	}
 
 	return nil;

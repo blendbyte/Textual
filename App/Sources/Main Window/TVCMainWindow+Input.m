@@ -203,11 +203,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self registerSelector:@selector(selectPreviousSelection:) key:TXKeyTabCode modifiers:NSEventModifierFlagOption];
 
-	[self registerSelector:@selector(textFormattingBold:) character:'b' modifiers:NSEventModifierFlagCommand];
-	[self registerSelector:@selector(textFormattingUnderline:) character:'u' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
-	[self registerSelector:@selector(textFormattingItalic:)	character:'i' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
-	[self registerSelector:@selector(textFormattingForegroundColor:) character:'c' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
-	[self registerSelector:@selector(textFormattingBackgroundColor:) character:'h' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
+	[self registerFormattingShortcutsIn:self];
 
 	[self registerSelector:@selector(speakPendingNotifications:) character:'.' modifiers:NSEventModifierFlagCommand];
 
@@ -231,6 +227,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self registerInputSelector:@selector(inputHistoryDownWithScrollCheck:) key:TXKeyDownArrowCode modifiers:0];
 	[self registerInputSelector:@selector(inputHistoryDownWithScrollCheck:) key:TXKeyDownArrowCode modifiers:NSEventModifierFlagOption];
+}
+
+/* This window, or a text field of a sheet on it */
+- (void)registerFormattingShortcutsIn:(id)handler
+{
+	[handler registerSelector:@selector(textFormattingBold:) character:'b' modifiers:NSEventModifierFlagCommand];
+	[handler registerSelector:@selector(textFormattingUnderline:) character:'u' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
+	[handler registerSelector:@selector(textFormattingItalic:)	character:'i' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
+	[handler registerSelector:@selector(textFormattingForegroundColor:) character:'c' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
+	[handler registerSelector:@selector(textFormattingBackgroundColor:) character:'h' modifiers:(NSEventModifierFlagControl | NSEventModifierFlagShift)];
+}
+
+- (void)addTextFormattingToTextField:(TVCTextViewWithIRCFormatter *)textField
+{
+	NSParameterAssert(textField != nil);
+
+	/* The sheet takes the keys, so this window's shortcuts never see them */
+	[textField setKeyHandlerTarget:self];
+
+	[self registerFormattingShortcutsIn:textField];
+
+	[self addFormattingMenuToTextField:textField];
 }
 
 #pragma mark -
@@ -405,12 +423,18 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(menu != nil);
 
-	NSRect textFieldFrame = self.inputTextField.frame;
+	TVCTextViewWithIRCFormatter *textField = self.formattingMenu.textField;
+
+	if (textField == nil) {
+		return;
+	}
+
+	NSRect textFieldFrame = textField.frame;
 
 	textFieldFrame.origin.y -= 200;
 	textFieldFrame.origin.x += 100;
 
-	[menu popUpMenuPositioningItem:nil atLocation:textFieldFrame.origin inView:self.inputTextField];
+	[menu popUpMenuPositioningItem:nil atLocation:textFieldFrame.origin inView:textField];
 }
 
 - (void)exitFullscreenMode:(NSEvent *)e // escape key

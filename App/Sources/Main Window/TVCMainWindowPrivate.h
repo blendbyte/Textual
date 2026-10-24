@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class TVCMainWindowChannelView;
 @class TVCMainWindowTitlebarAccessoryView, TVCMainWindowTitlebarAccessoryViewController;
 @class TVCMainWindowTitlebarAccessoryViewLockButton, TVCMainWindowTitlebarTitleField;
-@class TVCTextViewIRCFormattingMenu;
+@class TVCTextViewIRCFormattingMenu, TVCTextViewWithIRCFormatter;
 @class TXMenuControllerMainWindowProxy;
 
 typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
@@ -178,6 +178,9 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 
 @interface TVCMainWindow (InputPrivate)
 - (void)redirectKeyDown:(NSEvent *)e;
+
+/* The input field's Format menu and shortcuts, for a text field in a sheet on this window (Change Topic) */
+- (void)addTextFormattingToTextField:(TVCTextViewWithIRCFormatter *)textField;
 @end
 
 /* File uploads: one after another, each link put in its channel's input field */

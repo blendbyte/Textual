@@ -41,6 +41,7 @@
 #import "IRCClient.h"
 #import "IRCChannel.h"
 #import "IRCISupportInfo.h"
+#import "TVCMainWindowPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TDCAlert.h"
 #import "TDCChannelModifyTopicSheetPrivate.h"
@@ -98,6 +99,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)start
 {
+	NSWindow *window = self.window;
+
+	if ([window isKindOfClass:[TVCMainWindow class]]) {
+		[(TVCMainWindow *)window addTextFormattingToTextField:self.topicValueTextField];
+	}
+
 	[self startSheet];
 }
 
