@@ -145,6 +145,27 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNotNil(refused.failedReason);
 }
 
+/* The echo of a line Textual sent itself (the NickServ password) shows nowhere, taken once */
+- (void)testEchoOfOwnAutomaticLineIsTaken
+{
+	BOOL (^takes)(NSString *) = ^BOOL(NSString *line) {
+		return [self.client takeSilentEcho:[[IRCMessage alloc] initWithLine:line onClient:self.client]];
+	};
+
+	[self.client noteSilentPrivmsg:@"IDENTIFY secret" to:@"NickServ"];
+
+	XCTAssertFalse(takes(@":me!u@client.test PRIVMSG NickServ :IDENTIFY secret"), @"No echo without echo-message");
+
+	[self.client enableCapability:ClientIRCv3SupportedCapabilityEchoMessage];
+
+	[self.client noteSilentPrivmsg:@"IDENTIFY secret" to:@"NickServ"];
+
+	XCTAssertFalse(takes(@":NickServ!s@services.test PRIVMSG me :IDENTIFY secret"));
+	XCTAssertFalse(takes(@":me!u@client.test PRIVMSG NickServ :IDENTIFY other"));
+	XCTAssertTrue(takes(@":me!u@client.test PRIVMSG nickserv :IDENTIFY secret"));
+	XCTAssertFalse(takes(@":me!u@client.test PRIVMSG NickServ :IDENTIFY secret"), @"A second one is the user's");
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

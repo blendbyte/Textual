@@ -155,6 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.CTCPReplyCountBySender = nil;
 
 	self.secretMessageTargets = nil;
+	self.silentEchoes = nil;
 
 	self.userIsAway = NO;
 	self.awayRestoredBeforeRegistration = NO;

@@ -217,6 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger saslStep; // of a mechanism with several exchanges
 @property (nonatomic, strong, nullable) NSMutableString *saslIncomingData; // an AUTHENTICATE message arriving in 400-byte parts
 @property (nonatomic, strong, nullable) NSMutableSet<NSString *> *secretMessageTargets; // folded names sent /SMSG or /SME without a query; their echoes open none
+@property (nonatomic, strong, nullable) NSMutableArray<NSString *> *silentEchoes; // folded target + text of lines Textual sent itself, oldest first; their echoes show nowhere
 @property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
 @property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last connection ended
 @property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
@@ -297,6 +298,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface IRCClient (SendingInternal)
+- (void)sendSilentPrivmsg:(NSString *)text to:(NSString *)target;
+- (void)noteSilentPrivmsg:(NSString *)text to:(NSString *)target;
+- (BOOL)takeSilentEcho:(IRCMessage *)m;
 - (void)sendTextLine:(NSAttributedString *)line asCommand:(NSString *)command lineType:(TVCLogLineType)lineType toDestination:(NSString *)destinationName printIn:(nullable IRCChannel *)channel printAsCommand:(NSString *)printCommand;
 @end
 

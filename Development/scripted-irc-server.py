@@ -235,6 +235,52 @@ async def scenario_nickserv_spoof(client):
 	result(len(client.sent(identify)) == 2, f"password sent again to NickServ from {SERVICES_HOST}")
 
 
+async def scenario_silent_echo(client):
+	"""echo-message and znc.in/playback without SASL: the server echoes every
+	PRIVMSG and NOTICE. Within 8 seconds of connecting, run
+	"Development/dev config nicknamePassword=test". NickServ then asks to
+	identify. Checked here: the password and a playback request were sent. To
+	look at: no NickServ or *playback query opened, and the password shows
+	nowhere (console included)."""
+	if not await client.register_with_capabilities("echo-message znc.in/playback server-time message-tags"):
+		return
+
+	nick = client.nickname
+
+	async def echo_for(seconds):
+		end = time.monotonic() + seconds
+		while (remaining := end - time.monotonic()) > 0:
+			try:
+				line = await asyncio.wait_for(client.read_line(), remaining)
+			except asyncio.TimeoutError:
+				break
+			if line is None:
+				return False
+			client.received.append(line)
+			command, _, rest = line.partition(" ")
+			if command.upper() == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+			elif command.upper() in ("PRIVMSG", "NOTICE"):
+				await client.send(f":{nick}!user@client.textual.test {line}")
+		return True
+
+	if not await echo_for(8):
+		return
+
+	await client.send(f":NickServ!NickServ@{SERVICES_HOST} NOTICE {nick} :This nickname is registered. Please choose a different nickname, or identify via /msg NickServ identify <password>.")
+
+	if not await echo_for(3):
+		return
+
+	result(len(client.sent(lambda line: line.upper().startswith("PRIVMSG NICKSERV ") and "IDENTIFY" in line.upper())) == 1, "password sent to NickServ (and echoed)")
+	result(len(client.sent(lambda line: line.upper().startswith("PRIVMSG *PLAYBACK "))) >= 1, "playback requested from *playback (and echoed)")
+
+	await client.send(f":NickServ!NickServ@{SERVICES_HOST} NOTICE {nick} :You are now identified for {nick}.")
+
+	print("WAITING: look at the window list and the console", flush=True)
+	await echo_for(600)
+
+
 async def scenario_long_line(client):
 	"""The server sends 70 KiB without a line break; the client must disconnect."""
 	await client.collect(2)
@@ -2913,6 +2959,7 @@ SCENARIOS = {
 	"idle": scenario_idle,
 	"review-crashes": scenario_review_crashes,
 	"review-irc": scenario_review_irc,
+	"silent-echo": scenario_silent_echo,
 	"review-view": scenario_review_view,
 	"links": scenario_links,
 	"nickserv-spoof": scenario_nickserv_spoof,
@@ -2955,7 +3002,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

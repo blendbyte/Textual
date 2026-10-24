@@ -150,6 +150,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSAssertReturn([m paramsCount] > 1);
 
+	/* The echo of a line Textual sent itself (NickServ password, bouncer playback) */
+	if ([self takeSilentEcho:m]) {
+		return;
+	}
+
 	/* Ours, taken by the server (failed sends) */
 	[self outgoingMessageEchoed:m];
 
@@ -807,19 +812,19 @@ NS_ASSUME_NONNULL_BEGIN
 			{
 				NSString *message = [NSString stringWithFormat:@"IDENTIFY %@", nicknamePassword];
 
-				[self send:@"PRIVMSG", @"NickServ@services.dal.net", message, nil];
+				[self sendSilentPrivmsg:message to:@"NickServ@services.dal.net"];
 			}
 			else if (self.config.sendAuthenticationRequestsToUserServ)
 			{
 				NSString *message = [NSString stringWithFormat:@"login %@ %@", self.config.nickname, nicknamePassword];
 
-				[self send:@"PRIVMSG", @"userserv", message, nil];
+				[self sendSilentPrivmsg:message to:@"userserv"];
 			}
 			else
 			{
 				NSString *message = [NSString stringWithFormat:@"IDENTIFY %@", nicknamePassword];
 
-				[self send:@"PRIVMSG", @"NickServ", message, nil];
+				[self sendSilentPrivmsg:message to:@"NickServ"];
 			}
 
 			// Reset properties

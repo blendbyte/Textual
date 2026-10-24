@@ -164,6 +164,70 @@ NS_ASSUME_NONNULL_BEGIN
 	[self send:string arguments:argumentsOut];
 }
 
+/* A line Textual sends itself, not the user (the NickServ password, bouncer
+ playback commands): with echo-message the server sends it back, and that echo
+ must show nowhere, not as a query, nor in the console or the logs */
+- (void)sendSilentPrivmsg:(NSString *)text to:(NSString *)target
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(target != nil);
+
+	[self noteSilentPrivmsg:text to:target];
+
+	[self send:@"PRIVMSG", target, text, nil];
+}
+
+- (NSString *)silentEchoKeyForTarget:(NSString *)target text:(NSString *)text
+{
+	return [NSString stringWithFormat:@"%@ %@", [self.supportInfo foldedString:target], text];
+}
+
+- (void)noteSilentPrivmsg:(NSString *)text to:(NSString *)target
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(target != nil);
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
+		return;
+	}
+
+	if (self.silentEchoes == nil) {
+		self.silentEchoes = [NSMutableArray array];
+	}
+
+	/* Bounded, for a server that doesn't echo them after all */
+	if (self.silentEchoes.count >= 16) {
+		[self.silentEchoes removeObjectAtIndex:0];
+	}
+
+	[self.silentEchoes addObject:[self silentEchoKeyForTarget:target text:text]];
+}
+
+/* YES for the echo of a line sent with sendSilentPrivmsg:to:, taken once:
+ the same line again is one the user sent */
+- (BOOL)takeSilentEcho:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if (self.silentEchoes.count == 0 ||
+		[m.command isEqualToString:@"PRIVMSG"] == NO ||
+		[m paramsCount] < 2 ||
+		[self nicknameIsMyself:m.senderNickname] == NO)
+	{
+		return NO;
+	}
+
+	NSUInteger index = [self.silentEchoes indexOfObject:[self silentEchoKeyForTarget:[m paramAt:0] text:[m paramAt:1]]];
+
+	if (index == NSNotFound) {
+		return NO;
+	}
+
+	[self.silentEchoes removeObjectAtIndex:index];
+
+	return YES;
+}
+
 #pragma mark -
 #pragma mark Sending Text
 

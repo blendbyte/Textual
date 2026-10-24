@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[self send:@"PRIVMSG", @"*playback", command, nil];
+	[self sendSilentPrivmsg:command to:@"*playback"];
 }
 
 - (void)requestPlayback
@@ -160,7 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[self send:@"PRIVMSG", @"*playback", command, nil];
+	[self sendSilentPrivmsg:command to:@"*playback"];
 }
 
 #pragma mark -
