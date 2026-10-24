@@ -370,70 +370,29 @@ NS_ASSUME_NONNULL_BEGIN
 	if (stringToDraw.length > 0) {
 		NSAttributedString *badgeText = [self markBadgeTextForModeSymbol:stringToDraw isSelected:isSelected withAppearance:appearance inContext:drawingContext];
 
-		NSSize badgeTextSize = badgeText.size;
+		/* Centered on the symbol's drawn outline, not its line box: the line box
+		 has room for accents and descenders, so symbols sat too high or too low */
+		CTLineRef badgeTextLine = CTLineCreateWithAttributedString((__bridge CFAttributedStringRef)badgeText);
 
-		NSPoint badgeTextPoint = NSMakePoint((NSMidX(badgeFrame) - (badgeTextSize.width / 2.0)),
-											 (NSMidY(badgeFrame) - (badgeTextSize.height / 2.0)));
+		CGRect badgeTextBounds = CTLineGetBoundsWithOptions(badgeTextLine, kCTLineBoundsUseGlyphPathBounds);
 
-		if (appearance.isHighResolutionAppearance)
-		{
-			if ([stringToDraw isEqualToString:@"+"] ||
-				[stringToDraw isEqualToString:@"~"] ||
-				[stringToDraw isEqualToString:@"×"])
-			{
-				badgeTextPoint.y += 1.0;
-			}
-			else if ([stringToDraw isEqualToString:@"^"])
-			{
-				badgeTextPoint.y -= 2.0;
-			}
-			else if ([stringToDraw isEqualToString:@"*"])
-			{
-				badgeTextPoint.y -= 2.5;
-			}
-/*			else if ([stringToDraw isEqualToString:@"@"] ||
-					 [stringToDraw isEqualToString:@"!"] ||
-					 [stringToDraw isEqualToString:@"%"] ||
-					 [stringToDraw isEqualToString:@"&"] ||
-					 [stringToDraw isEqualToString:@"#"] ||
-					 [stringToDraw isEqualToString:@"?"] ||
-					 [stringToDraw isEqualToString:@"$"])
-			{
-				badgeTextPoint.y -= 0.0;
-			} */
-		}
-		else // isDrawingForRetina
-		{
-			if ([stringToDraw isEqualToString:@"+"] ||
-				[stringToDraw isEqualToString:@"~"] ||
-				[stringToDraw isEqualToString:@"×"])
-			{
-				badgeTextPoint.y += 2.0;
-			}
-			else if ([stringToDraw isEqualToString:@"@"] ||
-					 [stringToDraw isEqualToString:@"!"] ||
-					 [stringToDraw isEqualToString:@"%"] ||
-					 [stringToDraw isEqualToString:@"&"] ||
-					 [stringToDraw isEqualToString:@"#"] ||
-					 [stringToDraw isEqualToString:@"?"])
-			{
-				badgeTextPoint.y += 1.0;
-			}
-/*			else if ([stringToDraw isEqualToString:@"^"])
-			{
-				badgeTextPoint.y -= 0.0;
-			} */
-			else if ([stringToDraw isEqualToString:@"*"])
-			{
-				badgeTextPoint.y -= 1.0;
-			}
-			else if ([stringToDraw isEqualToString:@"$"])
-			{
-				badgeTextPoint.y += 1.0;
-			}
-		}
+		CFRelease(badgeTextLine);
 
-		[badgeText drawAtPoint:badgeTextPoint];
+		CGPoint badgeTextBaseline = CGPointMake((NSMidX(badgeFrame) - CGRectGetMidX(badgeTextBounds)),
+												(NSMidY(badgeFrame) - CGRectGetMidY(badgeTextBounds)));
+
+		/* On whole device pixels, so the symbol stays sharp */
+		CGContextRef context = [NSGraphicsContext currentContext].CGContext;
+
+		CGPoint badgeTextBaselineInPixels = CGContextConvertPointToDeviceSpace(context, badgeTextBaseline);
+
+		badgeTextBaselineInPixels.x = round(badgeTextBaselineInPixels.x);
+		badgeTextBaselineInPixels.y = round(badgeTextBaselineInPixels.y);
+
+		badgeTextBaseline = CGContextConvertPointToUserSpace(context, badgeTextBaselineInPixels);
+
+		/* Without NSStringDrawingUsesLineFragmentOrigin, the origin is the baseline */
+		[badgeText drawWithRect:NSMakeRect(badgeTextBaseline.x, badgeTextBaseline.y, 0.0, 0.0) options:0];
 	}
 
 	[badgeImage unlockFocus];

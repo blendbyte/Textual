@@ -279,14 +279,15 @@
                                                                     <rect key="frame" x="0.0" y="0.0" width="150" height="20"/>
                                                                     <subviews>
                                                                         <imageView wantsLayer="YES" horizontalHuggingPriority="750" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Lq2-t9-aDp">
-                                                                            <rect key="frame" x="0.0" y="2" width="16" height="16"/>
+                                                                            <rect key="frame" x="0.0" y="2" width="17" height="17"/>
                                                                             <constraints>
+                                                                                <constraint firstAttribute="width" constant="17" id="w17-bd-gE1"/>
                                                                                 <constraint firstAttribute="width" secondItem="Lq2-t9-aDp" secondAttribute="height" multiplier="1:1" id="zNU-oK-R37"/>
                                                                             </constraints>
                                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="FormattingColor_2" id="G8T-wi-HCu"/>
                                                                         </imageView>
                                                                         <textField focusRingType="none" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="jld-0X-vn0">
-                                                                            <rect key="frame" x="20" y="2" width="132" height="16"/>
+                                                                            <rect key="frame" x="23" y="2" width="127" height="16"/>
                                                                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Label" id="Mby-SL-PEz">
                                                                                 <font key="font" metaFont="cellTitle"/>
                                                                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -297,10 +298,10 @@
                                                                     <constraints>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="P2i-Rd-QtT"/>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="leading" secondItem="Lq2-t9-aDp" secondAttribute="trailing" constant="6" id="cd6-99-HOk"/>
-                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="fAn-nx-R4H"/>
+                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="1" id="fAn-nx-R4H"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="Lq2-t9-aDp" secondAttribute="bottom" constant="2" id="b17-bd-gE2"/>
                                                                         <constraint firstItem="Lq2-t9-aDp" firstAttribute="leading" secondItem="nyR-GE-ZXL" secondAttribute="leading" id="fBT-mI-gYa"/>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="centerY" secondItem="nyR-GE-ZXL" secondAttribute="centerY" id="pEP-xB-8EX"/>
-                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="centerY" secondItem="nyR-GE-ZXL" secondAttribute="centerY" id="qS9-DP-CLq"/>
                                                                         <constraint firstAttribute="trailing" secondItem="jld-0X-vn0" secondAttribute="trailing" id="xer-US-fgj"/>
                                                                     </constraints>
                                                                     <connections>
