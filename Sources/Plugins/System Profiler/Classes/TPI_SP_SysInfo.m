@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TPI_SP_SysInfo : NSObject
 + (nullable NSString *)modelIdentifier;
++ (nullable NSString *)productName;
 
 + (nullable NSString *)processor;
 + (NSUInteger)processorPhysicalCoreCount;
@@ -328,6 +329,9 @@ NS_ASSUME_NONNULL_BEGIN
 			modelTitle = modelsDictionary[@"VMware"];
 		} else if ([modelIdentifier hasPrefix:@"Parallels"]) {
 			modelTitle = modelsDictionary[@"Parallels"];
+		} else if ((modelTitle = [TPI_SP_SysInfo productName])) {
+			/* Apple silicon names itself ("MacBook Air (M2, 2022)"): the
+			 model list stays for Intel Macs and virtual machines */
 		} else {
 			modelTitle = modelsDictionary[modelIdentifier];
 		}
@@ -734,6 +738,34 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	buffer[(bufferSize - 1)] = 0;
 
 	return @(buffer);
+}
+
+/* The marketing name Apple silicon Macs keep in the device tree */
++ (nullable NSString *)productName
+{
+	io_registry_entry_t productEntry = IORegistryEntryFromPath(kIOMainPortDefault, "IODeviceTree:/product");
+
+	if (productEntry == IO_OBJECT_NULL) {
+		return nil;
+	}
+
+	CFTypeRef property = IORegistryEntryCreateCFProperty(productEntry, CFSTR("product-name"), kCFAllocatorDefault, kNilOptions);
+
+	IOObjectRelease(productEntry);
+
+	id value = CFBridgingRelease(property);
+
+	NSString *name = nil;
+
+	if ([value isKindOfClass:[NSData class]]) {
+		name = [[NSString alloc] initWithData:value encoding:NSUTF8StringEncoding];
+	} else if ([value isKindOfClass:[NSString class]]) {
+		name = value;
+	}
+
+	name = [name stringByReplacingOccurrencesOfString:@"\0" withString:@""].trim;
+
+	return ((name.length > 0) ? name : nil);
 }
 
 + (nullable NSString *)modelIdentifier
