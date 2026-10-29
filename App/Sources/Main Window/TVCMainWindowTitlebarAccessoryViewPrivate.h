@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateTextColor;
 @end
 
+/* The band behind the transparent title bar, across the whole window */
+@interface TVCMainWindowTitlebarBandView : NSVisualEffectView
+@end
+
 @interface TVCMainWindowTitlebarAccessoryViewLockButton : NSButton
 - (void)positionImageOverContent;
 

@@ -228,7 +228,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[NSLayoutConstraint deactivateConstraints:oldConstraints];
 
-		NSVisualEffectView *backgroundView = [NSVisualEffectView new];
+		NSVisualEffectView *backgroundView = [TVCMainWindowTitlebarBandView new];
 
 		backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
 		backgroundView.blendingMode = NSVisualEffectBlendingModeBehindWindow;

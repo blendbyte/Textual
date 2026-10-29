@@ -129,10 +129,50 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* Clicks go to the title bar: dragging the window, double-click to zoom */
+/* Clicks go through to the band: dragging the window, double-click to zoom */
 - (nullable NSView *)hitTest:(NSPoint)point
 {
 	return nil;
+}
+
+@end
+
+@implementation TVCMainWindowTitlebarBandView
+
+/* With the content under a transparent title bar, clicks there go to the band,
+ never to the title bar: dragging still moves the window, but a double-click
+ did nothing. It does what Desktop & Dock says instead. */
+- (void)mouseDown:(NSEvent *)event
+{
+	if (event.clickCount != 2) {
+		[super mouseDown:event];
+
+		return;
+	}
+
+	NSWindow *window = self.window;
+
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+
+	NSString *action = [userDefaults stringForKey:@"AppleActionOnDoubleClick"];
+
+	/* Not set: the older setting, else the Mac's default (zoom) */
+	if (action == nil) {
+		action = ([userDefaults boolForKey:@"AppleMiniaturizeOnDoubleClick"] ? @"Minimize" : @"Maximize");
+	}
+
+	if ([action isEqualToString:@"Maximize"]) {
+		[window performZoom:nil];
+	} else if ([action isEqualToString:@"Minimize"]) {
+		[window performMiniaturize:nil];
+	} else if ([action isEqualToString:@"Fill"]) {
+		/* AppKit has no call for Window › Fill */
+		NSScreen *screen = window.screen;
+
+		if (screen != nil) {
+			[window setFrame:screen.visibleFrame display:YES animate:YES];
+		}
+	}
 }
 
 @end
