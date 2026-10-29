@@ -5934,17 +5934,19 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(sender == self.socket);
 
-	if (self.isTerminating) {
-		return;
-	}
-
 	if (self.isDisconnecting) {
 		return;
 	}
 
+	/* The server closed the connection after our QUIT: no need to wait
+	 out the rest of the two seconds, also not while quitting the app */
 	if (self.isQuitting) {
 		[self disconnect];
 
+		return;
+	}
+
+	if (self.isTerminating) {
 		return;
 	}
 
