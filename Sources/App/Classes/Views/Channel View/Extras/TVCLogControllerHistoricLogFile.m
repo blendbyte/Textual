@@ -425,7 +425,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self warmProcessIfNeeded];
 
-	[[self remoteObjectProxy] saveDataWithCompletionBlock:^{
+	/* Quitting waits until isSaving is NO, so a failed call clears it too */
+	[[self remoteObjectProxyWithErrorHandler:^(NSError *error) {
+		self.isSaving = NO;
+	}] saveDataWithCompletionBlock:^{
 		self.isSaving = NO;
 
 		if (self.isTerminating) {

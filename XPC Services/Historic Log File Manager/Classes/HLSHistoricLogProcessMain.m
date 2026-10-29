@@ -47,7 +47,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 
 @interface HLSHistoricLogProcessMain ()
 @property (nonatomic, strong) NSXPCConnection *serviceConnection;
-@property (nonatomic, assign) BOOL isPerformingSave;
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
@@ -710,15 +709,20 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 	[context reset];
 }
 
+/* Every request is answered: the app waits for the answer when it quits.
+ The context's queue runs saves one after another, so a save that comes
+ in while the timed one runs simply follows it. */
 - (void)saveDataWithCompletionBlock:(void (NS_NOESCAPE ^ _Nullable)(void))completionBlock
 {
-	if (self.isPerformingSave == NO) {
-		self.isPerformingSave = YES;
-	} else {
+	NSManagedObjectContext *context = self.managedObjectContext;
+
+	if (context == nil) {
+		if (completionBlock) {
+			completionBlock();
+		}
+
 		return;
 	}
-
-	NSManagedObjectContext *context = self.managedObjectContext;
 
 	[context performBlock:^{
 		LogToConsoleDebug("Performing save");
@@ -732,8 +736,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 		}];
 
 		[self _quickSaveContext:context];
-
-		self.isPerformingSave = NO;
 
 		if (completionBlock) {
 			completionBlock();
