@@ -692,6 +692,13 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 	}
 }
 
+- (void)prepareForApplicationTerminationWithoutWaiting
+{
+	for (IRCClient *u in self.clientList) {
+		[u prepareForApplicationTerminationWithoutWaiting];
+	}
+}
+
 - (void)userDefaultsDidChange:(NSNotification *)notification
 {
 	if (themeSettings().js_postPreferencesDidChangesNotifications == NO) {

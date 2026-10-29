@@ -589,6 +589,21 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[self prepareForApplicationTerminationPostflight];
 }
 
+- (void)prepareForApplicationTerminationWithoutWaiting
+{
+	dispatch_block_t terminationCallback = self.terminationCallback;
+
+	if (terminationCallback == nil) {
+		return;
+	}
+
+	LogToConsoleTerminationProgress("[%{public}@] No longer waiting for disconnect", self.uniqueIdentifier);
+
+	self.terminationCallback = nil;
+
+	terminationCallback();
+}
+
 - (void)prepareForApplicationTerminationPostflight
 {
 	LogToConsoleTerminationProgress("[%{public}@] Closing log file", self.uniqueIdentifier);

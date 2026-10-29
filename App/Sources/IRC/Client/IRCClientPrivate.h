@@ -105,6 +105,9 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 - (void)noteReachabilityChanged:(BOOL)reachable;
 
+/* Quitting stops waiting for the server to confirm the disconnect */
+- (void)prepareForApplicationTerminationWithoutWaiting;
+
 - (IRCAddressBookUserTrackingContainer *)trackedUsers;
 @end
 

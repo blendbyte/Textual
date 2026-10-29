@@ -73,6 +73,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Longest wait while quitting for the servers to disconnect,
+ then again for the history to save */
+#define _terminationWaitLimit			10.0
+
 @interface TXMasterController ()
 @property (nonatomic, strong, readwrite) IRCWorld *world;
 @property (nonatomic, assign, readwrite) BOOL debugModeIsOn;
@@ -83,6 +87,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL applicationIsChangingActiveState;
 @property (readonly) BOOL isSafeToPerformApplicationTermination;
 @property (nonatomic, assign, readwrite) BOOL terminateHistoricLogSaveFinished;
+@property (nonatomic, assign) CFAbsoluteTime terminateGiveUpOnClientsTime;
+@property (nonatomic, assign) CFAbsoluteTime terminateGiveUpOnHistoricLogTime;
 @property (nonatomic, strong, readwrite) IBOutlet TVCMainWindow *mainWindow;
 @property (nonatomic, weak, readwrite) IBOutlet TXMenuController *menuController;
 @property (nonatomic, assign) NSUInteger applicationLaunchRemainder;
@@ -528,7 +534,11 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* Leaving IRC gracefully and saving the history have to finish first */
+	/* Leaving IRC gracefully and saving the history have to finish first,
+	 but a server or a save that never finishes must not keep Textual
+	 from quitting */
+	self.terminateGiveUpOnClientsTime = (CFAbsoluteTimeGetCurrent() + _terminationWaitLimit);
+
 	[self performApplicationTerminationStepTwoWhenSafe];
 }
 
@@ -536,6 +546,14 @@ NS_ASSUME_NONNULL_BEGIN
  these values unsynchronized and started a new history save on every pass */
 - (void)performApplicationTerminationStepTwoWhenSafe
 {
+	CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
+
+	if (self.terminatingClientCount > 0 && now >= self.terminateGiveUpOnClientsTime) {
+		LogToConsoleTerminationProgress("Clients are still disconnecting, no longer waiting");
+
+		[self.world prepareForApplicationTerminationWithoutWaiting];
+	}
+
 	/* The view controllers have had their chance to change the history */
 	if (self.terminatingClientCount == 0 && self.terminateHistoricLogSaveFinished == NO) {
 		[sharedHistoricLog() prepareForApplicationTermination];
@@ -543,9 +561,19 @@ NS_ASSUME_NONNULL_BEGIN
 		[sharedMessageArchive() prepareForApplicationTermination];
 
 		self.terminateHistoricLogSaveFinished = YES;
+
+		self.terminateGiveUpOnHistoricLogTime = (now + _terminationWaitLimit);
 	}
 
 	if (self.isSafeToPerformApplicationTermination) {
+		[self performApplicationTerminationStepThree];
+
+		return;
+	}
+
+	if (self.terminateHistoricLogSaveFinished && now >= self.terminateGiveUpOnHistoricLogTime) {
+		LogToConsoleTerminationProgress("History is still saving, no longer waiting");
+
 		[self performApplicationTerminationStepThree];
 
 		return;
