@@ -62,6 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)noteReachabilityChanged:(BOOL)reachable;
 
+/* Quitting stops waiting for clients that are still disconnecting */
+- (void)prepareForApplicationTerminationWithoutWaiting;
+
 - (IRCClient *)createClientWithConfig:(IRCClientConfig *)config reload:(BOOL)reload;
 - (IRCChannel *)createChannelWithConfig:(IRCChannelConfig *)config onClient:(IRCClient *)client add:(BOOL)add adjust:(BOOL)adjust reload:(BOOL)reload;
 

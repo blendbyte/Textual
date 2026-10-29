@@ -233,6 +233,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, assign) BOOL capabilityNegotiationIsPaused;
 @property (nonatomic, assign) BOOL invokingISONCommandForFirstTime;
 @property (nonatomic, assign) BOOL isTerminating; // Is being destroyed
+@property (nonatomic, copy, nullable) dispatch_block_t terminationCallback; // Run on disconnect instead of disconnectCallback; only termination sets it
 @property (nonatomic, assign) BOOL inWhoisResponse;
 @property (nonatomic, assign) BOOL inWhowasResponse;
 @property (nonatomic, assign) BOOL reconnectEnabled;
@@ -671,7 +672,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		__weak IRCClient *weakSelf = self;
 
-		self.disconnectCallback = ^{
+		self.terminationCallback = ^{
 			[weakSelf prepareForApplicationTerminationPostflight];
 		};
 
@@ -681,6 +682,21 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 
 	[self prepareForApplicationTerminationPostflight];
+}
+
+- (void)prepareForApplicationTerminationWithoutWaiting
+{
+	dispatch_block_t terminationCallback = self.terminationCallback;
+
+	if (terminationCallback == nil) {
+		return;
+	}
+
+	LogToConsoleTerminationProgress("[%{public}@] No longer waiting for disconnect", self.uniqueIdentifier);
+
+	self.terminationCallback = nil;
+
+	terminationCallback();
 }
 
 - (void)prepareForApplicationTerminationPostflight
@@ -5899,9 +5915,16 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	[self changeStateOffWithError:disconnectError];
 
-	if (self.disconnectCallback) {
-		self.disconnectCallback();
-		self.disconnectCallback = nil;
+	/* Termination has its own slot: reconnect paths (retry, /server,
+	 redirects, flood errors, irssi proxy) set disconnectCallback and must
+	 not replace what quitting the app waits for */
+	dispatch_block_t callback = (self.terminationCallback ?: self.disconnectCallback);
+
+	self.terminationCallback = nil;
+	self.disconnectCallback = nil;
+
+	if (callback) {
+		callback();
 	}
 
 	[RZNotificationCenter() postNotificationName:IRCClientDidDisconnectNotification object:self];

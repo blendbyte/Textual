@@ -94,6 +94,9 @@ enum {
 
 - (void)noteReachabilityChanged:(BOOL)reachable;
 
+/* Quitting stops waiting for the server to confirm the disconnect */
+- (void)prepareForApplicationTerminationWithoutWaiting;
+
 - (void)autoConnectWithDelay:(NSUInteger)delay afterWakeUp:(BOOL)afterWakeUp;
 
 - (void)postEventToViewController:(NSString *)eventToken;

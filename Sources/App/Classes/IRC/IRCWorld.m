@@ -193,6 +193,13 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	}
 }
 
+- (void)prepareForApplicationTerminationWithoutWaiting
+{
+	for (IRCClient *u in self.clientList) {
+		[u prepareForApplicationTerminationWithoutWaiting];
+	}
+}
+
 - (void)userDefaultsDidChange:(NSNotification *)notification
 {
 	if (themeSettings().js_postPreferencesDidChangesNotifications == NO) {

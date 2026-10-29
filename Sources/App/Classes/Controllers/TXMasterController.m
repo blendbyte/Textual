@@ -73,6 +73,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* Longest wait while quitting for the servers to disconnect,
+ then again for the historic log to save */
+#define _terminationWaitLimit			10.0
+
 @interface TXMasterController ()
 @property (nonatomic, strong, readwrite) IRCWorld *world;
 @property (nonatomic, assign, readwrite) BOOL debugModeIsOn;
@@ -83,6 +87,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL applicationIsChangingActiveState;
 @property (readonly) BOOL isSafeToPerformApplicationTermination;
 @property (nonatomic, assign, readwrite) BOOL terminateHistoricLogSaveFinished;
+@property (nonatomic, assign) NSTimeInterval terminateGiveUpOnClientsTime;
+@property (nonatomic, assign) NSTimeInterval terminateGiveUpOnHistoricLogTime;
 @property (nonatomic, strong, readwrite) IBOutlet TVCMainWindow *mainWindow;
 @property (nonatomic, weak, readwrite) IBOutlet TXMenuController *menuController;
 @property (nonatomic, assign) NSUInteger applicationLaunchRemainder;
@@ -492,28 +498,56 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* We want certain things to 100% happen before the app completely closes.
-	 This block that is performed below loops until all these actions are completed.
-	 Notable actions: gracefully leaving IRC, saving historic logs, etc. */
-	XRPerformBlockAsynchronouslyOnGlobalQueueWithPriority(^{
-		do {
-			/* We wait until this value reaches zero so that
-			 view controllers had the chance to perform any
-			 changes they want to historic log. */
-			if (self.terminatingClientCount == 0) {
-				[TVCLogControllerHistoricLogSharedInstance() prepareForApplicationTermination];
+	/* Leaving IRC gracefully and saving historic logs come first, but
+	 a server or the historic log service that never answers must not
+	 keep Textual from quitting */
+	self.terminateGiveUpOnClientsTime = ([NSDate timeIntervalSince1970] + _terminationWaitLimit);
 
-				self.terminateHistoricLogSaveFinished = YES;
-			}
+	[self performApplicationTerminationStepTwoWhenSafe];
+}
 
-			/* Sleep a little bit so we aren't looping a lot. */
-			[NSThread sleepForTimeInterval:0.5];
-		} while (self.isSafeToPerformApplicationTermination == NO);
+/* Checked on the main thread every half second: a background loop read
+ these values unsynchronized and asked for a historic log save on every pass */
+- (void)performApplicationTerminationStepTwoWhenSafe
+{
+	if (self.applicationIsTerminating == NO) {
+		return;
+	}
 
-		XRPerformBlockAsynchronouslyOnMainQueue(^{
-			[self performApplicationTerminationStepThree];
-		});
-	}, DISPATCH_QUEUE_PRIORITY_HIGH);
+	NSTimeInterval now = [NSDate timeIntervalSince1970];
+
+	if (self.terminatingClientCount > 0 && now >= self.terminateGiveUpOnClientsTime) {
+		LogToConsoleTerminationProgress("Clients are still disconnecting, no longer waiting");
+
+		[self.world prepareForApplicationTerminationWithoutWaiting];
+	}
+
+	/* We wait until this value reaches zero so that
+	 view controllers had the chance to perform any
+	 changes they want to historic log. */
+	if (self.terminatingClientCount == 0 && self.terminateHistoricLogSaveFinished == NO) {
+		[TVCLogControllerHistoricLogSharedInstance() prepareForApplicationTermination];
+
+		self.terminateHistoricLogSaveFinished = YES;
+
+		self.terminateGiveUpOnHistoricLogTime = (now + _terminationWaitLimit);
+	}
+
+	if (self.isSafeToPerformApplicationTermination) {
+		[self performApplicationTerminationStepThree];
+
+		return;
+	}
+
+	if (self.terminateHistoricLogSaveFinished && now >= self.terminateGiveUpOnHistoricLogTime) {
+		LogToConsoleTerminationProgress("Historic log is still saving, no longer waiting");
+
+		[self performApplicationTerminationStepThree];
+
+		return;
+	}
+
+	[self performSelectorInCommonModes:@selector(performApplicationTerminationStepTwoWhenSafe) withObject:nil afterDelay:0.5];
 }
 
 - (void)performApplicationTerminationStepThree
