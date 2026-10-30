@@ -6,6 +6,20 @@
 	objectVersion = 54;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		4C0BD41BA126FC4A3A8CBD9E /* Build Headers */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 4CA61827B8B6D624B37B9888 /* Build configuration list for PBXAggregateTarget "Build Headers" */;
+			buildPhases = (
+				4C125F6A31D0B70824CEED24 /* Generate Build Headers */,
+			);
+			dependencies = (
+			);
+			name = "Build Headers";
+			productName = "Build Headers";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		69D4705D6D19E20C463A132C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DD116667156B6E9123159A9 /* Assets.xcassets */; };
 		4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */; };
@@ -719,6 +733,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		4CF3A7B06F460FFE53B8B1EC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4C1DC5491580420500A47BC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4C0BD41BA126FC4A3A8CBD9E;
+			remoteInfo = "Build Headers";
+		};
 		4CFC800881F1BF194DA21EA2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4C5EBDCC9CB80046DD4D4542 /* Hyperlink Processor.xcodeproj */;
@@ -3363,13 +3384,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4C1DC5701580420500A47BC9 /* Build configuration list for PBXNativeTarget "Textual" */;
 			buildPhases = (
-				4C125F6A31D0B70824CEED24 /* Generate Build Headers */,
+				4CCF2F9E15804C18006FFE21 /* Headers */,
 				4C1DC5501580420500A47BC9 /* Resources */,
 				4CEA6AA42C36F8E700A36551 /* Copy Preference Resources */,
 				4C9E534415B4C171000E84A9 /* Generate Acknowledgements */,
 				4C1DC54F1580420500A47BC9 /* Frameworks */,
 				4C1DC54E1580420500A47BC9 /* Sources */,
-				4CCF2F9E15804C18006FFE21 /* Headers */,
 				4C06E48020EC541C0055D09A /* Embed Frameworks */,
 				4C2BEB612C384E16008F8F0D /* Postprocess Sparkle */,
 				4C01BA101581104D007E2DAF /* Build Extensions */,
@@ -3378,6 +3398,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4CF2B5A93C8CE13A4B67B269 /* PBXTargetDependency */,
 				4CAA9942E87CD9EE86E50BAF /* PBXTargetDependency */,
 				4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */,
 				4C485D8CDEB765B5D34DDB5D /* PBXTargetDependency */,
@@ -3456,6 +3477,7 @@
 			projectRoot = "";
 			targets = (
 				4C1DC5511580420500A47BC9 /* Textual */,
+				4C0BD41BA126FC4A3A8CBD9E /* Build Headers */,
 				4C0AB86D285F2B3A545A784A /* TextualTests */,
 			);
 		};
@@ -4012,6 +4034,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		4CF2B5A93C8CE13A4B67B269 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4C0BD41BA126FC4A3A8CBD9E /* Build Headers */;
+			targetProxy = 4CF3A7B06F460FFE53B8B1EC /* PBXContainerItemProxy */;
+		};
 		4CFEBDADBCD64329A38EF201 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = AutoHyperlinks.framework;
@@ -4390,6 +4417,27 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		4C28296D70C7EC4DD43BA18B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B8782983A41A0FA73B21552 /* App.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		4C5F459A402302E95CE09535 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B8782983A41A0FA73B21552 /* App.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		4C670F9D4315EFFEFF52256B /* App Store */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B8782983A41A0FA73B21552 /* App.xcconfig */;
+			buildSettings = {
+			};
+			name = "App Store";
+		};
 		4C1DC56E1580420500A47BC9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E1D55E9292CCA30E5A47F0C8 /* Debug.xcconfig */;
@@ -4515,6 +4563,16 @@
 /* End XCVersionGroup section */
 
 /* Begin XCConfigurationList section */
+		4CA61827B8B6D624B37B9888 /* Build configuration list for PBXAggregateTarget "Build Headers" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C28296D70C7EC4DD43BA18B /* Debug */,
+				4C5F459A402302E95CE09535 /* Release */,
+				4C670F9D4315EFFEFF52256B /* App Store */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4C1DC54C1580420500A47BC9 /* Build configuration list for PBXProject "Textual App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
