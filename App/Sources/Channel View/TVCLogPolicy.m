@@ -93,8 +93,9 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else if (self.nickname)
 	{
-		if (viewController.associatedChannel == nil ||
-			viewController.associatedChannel.isUtility)
+		IRCChannel *channel = viewController.associatedChannel;
+
+		if (channel == nil || channel.isUtility)
 		{
 			NSMenuItem *noActionMenuItem =
 			[[NSMenuItem alloc] initWithTitle:TXTLS(@"BasicLanguage[7kc-mo]")

@@ -170,6 +170,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)performCompletion_step1
 {
+	TVCMainWindow *window = self.window;
+
 	/* Only blindly complete nicknames */
 	BOOL searchPatternIsEmpty = (self.cachedSearchPattern.length == 0);
 
@@ -199,8 +201,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else if (self.isCompletingChannelName)
 	{
-		IRCClient *client = self.window.selectedClient;
-		IRCChannel *channel = self.window.selectedChannel;
+		IRCClient *client = window.selectedClient;
+		IRCChannel *channel = window.selectedChannel;
 
 		if (channel) {
 			[choicesUppercase addObject:channel.name];
@@ -217,8 +219,8 @@ NS_ASSUME_NONNULL_BEGIN
 	else if (self.isCompletingNickname)
 	{
 		/* Complete the entire user list. */
-		IRCClient *client = self.window.selectedClient;
-		IRCChannel *channel = self.window.selectedChannel;
+		IRCClient *client = window.selectedClient;
+		IRCChannel *channel = window.selectedChannel;
 
 		if (channel == nil) {
 			return NO; // Umm, where to get channels?...

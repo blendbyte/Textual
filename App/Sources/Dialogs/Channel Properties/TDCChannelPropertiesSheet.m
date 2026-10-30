@@ -79,8 +79,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	NSParameterAssert(channel != nil);
 
 	if ((self = [super initWithWindow:nil])) {
-		self.client = channel.associatedClient;
-		self.clientId = channel.associatedClient.uniqueIdentifier;
+		IRCClient *client = channel.associatedClient;
+
+		self.client = client;
+		self.clientId = client.uniqueIdentifier;
 
 		self.channel = channel;
 		self.channelId = channel.uniqueIdentifier;
@@ -221,8 +223,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	[self removeConfigurationDidChangeObserver];
 
-	if ([self.delegate respondsToSelector:@selector(channelPropertiesSheet:onOk:)]) {
-		[self.delegate channelPropertiesSheet:self onOk:[self.config copy]];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelPropertiesSheet:onOk:)]) {
+		[delegate channelPropertiesSheet:self onOk:[self.config copy]];
 	}
 
 	[super ok:nil];
@@ -235,8 +239,10 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	[self.sheet makeFirstResponder:nil];
 
-	if ([self.delegate respondsToSelector:@selector(channelPropertiesSheetWillClose:)]) {
-		[self.delegate channelPropertiesSheetWillClose:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelPropertiesSheetWillClose:)]) {
+		[delegate channelPropertiesSheetWillClose:self];
 	}
 
 	[super windowWillClose:note];

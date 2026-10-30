@@ -629,7 +629,9 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 
 - (void)keyDown:(NSEvent *)e
 {
-	if (self.keyDelegate == nil) {
+	id keyDelegate = self.keyDelegate;
+
+	if (keyDelegate == nil) {
 		return;
 	}
 
@@ -663,7 +665,7 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 		}
 		default:
 		{
-			[self.keyDelegate memberListKeyDown:e];
+			[keyDelegate memberListKeyDown:e];
 
 			break;
 		}

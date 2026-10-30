@@ -484,15 +484,17 @@ NS_ASSUME_NONNULL_BEGIN
 		hostmaskAddress = TXTLS(@"TVCMainWindow[d85-9n]");
 	}
 
+	NSTextField *addressField = userInfoPopover.addressField;
+
 	if (stripIRCFormatting) {
-		userInfoPopover.addressField.stringValue = hostmaskAddress;
+		addressField.stringValue = hostmaskAddress;
 	} else {
 		NSAttributedString *hostmaskAddressFormatted =
 		[hostmaskAddress attributedStringWithIRCFormatting:[NSFont systemFontOfSize:12.0]
 										preferredFontColor:nil
 								 honorFormattingPreference:NO];
 
-		userInfoPopover.addressField.attributedStringValue = hostmaskAddressFormatted;
+		addressField.attributedStringValue = hostmaskAddressFormatted;
 	}
 
 	/* =============================================== */
@@ -503,15 +505,17 @@ NS_ASSUME_NONNULL_BEGIN
 		realName = TXTLS(@"TVCMainWindow[d85-9n]");
 	}
 
+	NSTextField *realNameField = userInfoPopover.realNameField;
+
 	if (stripIRCFormatting) {
-		userInfoPopover.realNameField.stringValue = realName;
+		realNameField.stringValue = realName;
 	} else {
 		NSAttributedString *realNameFormatted =
 		[realName attributedStringWithIRCFormatting:[NSFont systemFontOfSize:12.0]
 								 preferredFontColor:nil
 						  honorFormattingPreference:NO];
 
-		userInfoPopover.realNameField.attributedStringValue = realNameFormatted;
+		realNameField.attributedStringValue = realNameFormatted;
 	}
 
 	/* =============================================== */
@@ -530,10 +534,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* =============================================== */
 
+	NSTextField *awayStatusField = userInfoPopover.awayStatusField;
+
 	if (cellItem.user.isAway) {
-		userInfoPopover.awayStatusField.stringValue = TXTLS(@"TVCMainWindow[jkr-ed]");
+		awayStatusField.stringValue = TXTLS(@"TVCMainWindow[jkr-ed]");
 	} else {
-		userInfoPopover.awayStatusField.stringValue = TXTLS(@"TVCMainWindow[gi6-wf]");
+		awayStatusField.stringValue = TXTLS(@"TVCMainWindow[gi6-wf]");
 	}
 
 	/* =============================================== */

@@ -65,8 +65,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(channel != nil);
 
 	if ((self = [super initWithWindow:nil])) {
-		self.client = channel.associatedClient;
-		self.clientId = channel.associatedClient.uniqueIdentifier;
+		IRCClient *client = channel.associatedClient;
+
+		self.client = client;
+		self.clientId = client.uniqueIdentifier;
 
 		self.channel = channel;
 		self.channelId = channel.uniqueIdentifier;
@@ -163,13 +165,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ok:(nullable id)sender
 {
-	if ([self.delegate respondsToSelector:@selector(channelModifyTopicSheet:onOk:)]) {
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelModifyTopicSheet:onOk:)]) {
 		NSString *formattedTopic = self.topicValueTextField.stringValueWithIRCFormatting;
 
 		NSString *topicWithoutNewlines = [formattedTopic stringByReplacingOccurrencesOfString:@"\n"
 																				   withString:@" "];
 
-		[self.delegate channelModifyTopicSheet:self onOk:topicWithoutNewlines];
+		[delegate channelModifyTopicSheet:self onOk:topicWithoutNewlines];
 	}
 
 	[super ok:nil];

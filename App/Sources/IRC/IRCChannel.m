@@ -403,11 +403,11 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	}
 
 	if (self.isPrivateMessage) {
-		IRCUser *user1 = [self.associatedClient findUserOrCreate:self.name];
+		IRCUser *user1 = [client findUserOrCreate:self.name];
 
 		[self addUser:user1];
 
-		IRCUser *user2 = [self.associatedClient findUserOrCreate:client.userNickname];
+		IRCUser *user2 = [client findUserOrCreate:client.userNickname];
 
 		[self addUser:user2];
 	}

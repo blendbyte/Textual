@@ -110,9 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(view != nil);
 
-	if (self.visibleView != nil) {
-		[self.visibleView removeFromSuperview];
-	}
+	[self.visibleView removeFromSuperview];
 
 	self.visibleView = view;
 

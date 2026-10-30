@@ -385,7 +385,9 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 
 - (void)keyDown:(NSEvent *)e
 {
-	if (self.keyDelegate == nil) {
+	id keyDelegate = self.keyDelegate;
+
+	if (keyDelegate == nil) {
 		return;
 	}
 
@@ -418,7 +420,7 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 		}
 		default:
 		{
-			[self.keyDelegate serverListKeyDown:e];
+			[keyDelegate serverListKeyDown:e];
 
 			break;
 		}

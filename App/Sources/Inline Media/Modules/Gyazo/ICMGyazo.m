@@ -168,7 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return [^(ICLInlineContentModule *module) {
-		__weak ICMGyazo *moduleTyped = (id)module;
+		ICMGyazo *moduleTyped = (id)module;
 
 		moduleTyped.contentIdentifier = contentIdentifier;
 

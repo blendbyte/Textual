@@ -388,8 +388,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(channel != nil);
 
-	if ([self.delegate respondsToSelector:@selector(channelSpotlightController:selectChannel:)]) {
-		[self.delegate channelSpotlightController:self selectChannel:channel];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelSpotlightController:selectChannel:)]) {
+		[delegate channelSpotlightController:self selectChannel:channel];
 	}
 
 	[self close];

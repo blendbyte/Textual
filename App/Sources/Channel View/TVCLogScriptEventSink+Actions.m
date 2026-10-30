@@ -94,6 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_loadInlineMedia:(TVCLogScriptEventSinkContext *)context
 {
+	TVCLogView *webView = context.webView;
+
 	NSArray *arguments = context.arguments;
 
 	NSString *address = [self.class objectValueToCommon:arguments[0]];
@@ -101,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (address.length == 0) {
 		[self.class throwJavaScriptException:@"Length of address is 0"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		return;
 	}
@@ -111,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (uniqueIdentifier.length == 0) {
 		[self.class throwJavaScriptException:@"Length of unique identifier is 0"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		return;
 	}
@@ -123,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (lineNumber.length == 0) {
 		[self.class throwJavaScriptException:@"Length of line number is 0"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		return;
 	}
@@ -195,10 +197,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_sendPluginPayload:(TVCLogScriptEventSinkContext *)context
 {
+	TVCLogView *webView = context.webView;
+
 	if ([sharedPluginManager() supportsFeature:THOPluginItemSupportedFeatureWebViewJavaScriptPayloads] == NO) {
 		[self.class throwJavaScriptException:@"There are no plugins loaded that support JavaScript payloads"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		return;
 	}
@@ -210,7 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (payloadLabel.length == 0) {
 		[self.class throwJavaScriptException:@"Length of payload label is 0"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		return;
 	}

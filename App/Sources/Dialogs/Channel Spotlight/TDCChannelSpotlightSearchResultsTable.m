@@ -141,7 +141,9 @@ NS_ASSUME_NONNULL_BEGIN
 		paragraphStyle.lineBreakMode = NSLineBreakByTruncatingTail;
 	}
 
-	NSString *channelName = ((searchResult.isMenuAction) ? searchResult.menuItem.title : searchResult.channel.name);
+	IRCChannel *channel = searchResult.channel;
+
+	NSString *channelName = ((searchResult.isMenuAction) ? searchResult.menuItem.title : channel.name);
 
 	if (channelName == nil) {
 		return [NSAttributedString attributedString];
@@ -174,7 +176,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return resultString;
 	}
 
-	NSString *networkName = searchResult.channel.associatedClient.networkNameAlt;
+	NSString *networkName = channel.associatedClient.networkNameAlt;
 
 	[resultString appendString:TXTLS(@"TDCChannelSpotlightController[z68-5q]", networkName)];
 
@@ -245,7 +247,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return TXTLS(@"TDCChannelSpotlightController[mnu-p2]", menuDescription, keyEquivalent);
 	}
 
-	NSUInteger nicknameHighlightCount = searchResult.channel.nicknameHighlightCount;
+	IRCChannel *channel = searchResult.channel;
+
+	NSUInteger nicknameHighlightCount = channel.nicknameHighlightCount;
 
 	NSString *nicknameHighlightCountDescription = nil;
 
@@ -255,7 +259,7 @@ NS_ASSUME_NONNULL_BEGIN
 		nicknameHighlightCountDescription = TXTLS(@"TDCChannelSpotlightController[c4u-21]", TXFormattedNumber(nicknameHighlightCount));
 	}
 
-	NSUInteger unreadCount = searchResult.channel.treeUnreadCount;
+	NSUInteger unreadCount = channel.treeUnreadCount;
 
 	NSString *unreadCountDescription = nil;
 

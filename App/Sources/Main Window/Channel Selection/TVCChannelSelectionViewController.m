@@ -168,8 +168,10 @@ NS_ASSUME_NONNULL_BEGIN
 	[self updateSelectedStateForItem:item];
 
 	/* Call out to delegate */
-	if ([self.delegate respondsToSelector:@selector(channelSelectionControllerSelectionChanged:)]) {
-		[self.delegate channelSelectionControllerSelectionChanged:self];
+	id <TVCChannelSelectionViewControllerDelegate> delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelSelectionControllerSelectionChanged:)]) {
+		[delegate channelSelectionControllerSelectionChanged:self];
 	}
 }
 
@@ -304,13 +306,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	dispatch_source_t expandOutlineViewTimer =
 	XRScheduleBlockOnMainQueue(^{
-		if (weakSelf == nil) {
+		TVCChannelSelectionViewController *strongSelf = weakSelf;
+
+		if (strongSelf == nil) {
 			return;
 		}
 
-		[weakSelf.outlineView expandItem:nil expandChildren:YES];
+		[strongSelf.outlineView expandItem:nil expandChildren:YES];
 
-		weakSelf.expandOutlineViewTimer = nil;
+		strongSelf.expandOutlineViewTimer = nil;
 	}, 0.5);
 
 	XRResumeScheduledBlock(expandOutlineViewTimer);

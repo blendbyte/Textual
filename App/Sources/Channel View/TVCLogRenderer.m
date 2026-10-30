@@ -889,6 +889,8 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 
 	NSMutableDictionary<NSString *, id> *templateTokens = [NSMutableDictionary dictionary];
 
+	TVCLogController *viewController = self->_viewController;
+
 	AHHyperlinkScannerResult *link = stringAttributes[TVCLogRendererFormattingURLAttribute];
 
 	/* Links with a script or local scheme (javascript:, data:, …) are shown as text */
@@ -896,7 +898,7 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 	{
 		NSString *linkLocation = link.stringValue;
 
-		if (self->_viewController.inlineMediaEnabledForView) {
+		if (viewController.inlineMediaEnabledForView) {
 			NSDictionary *linksMapped = self->_outputDictionary[TVCLogRendererResultsListOfLinksMappedInBodyAttribute];
 
 			NSString *uniqueIdentifier = linksMapped[linkLocation];
@@ -924,7 +926,7 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 		if ([TPCPreferences disableNicknameColorHashing]) {
 			templateTokens[@"inlineNicknameMatchFound"] = @(NO);
 		} else {
-			IRCChannel *channel = self->_viewController.associatedChannel;
+			IRCChannel *channel = viewController.associatedChannel;
 
 			IRCChannelUser *member = [channel findMember:fragment];
 

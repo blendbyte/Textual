@@ -113,10 +113,12 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	if ([self.delegate respondsToSelector:@selector(serverChangeNicknameSheet:didInputNickname:)]) {
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(serverChangeNicknameSheet:didInputNickname:)]) {
 		NSString *newNickname = self.tnewNicknameTextField.value;
 
-		[self.delegate serverChangeNicknameSheet:self didInputNickname:newNickname];
+		[delegate serverChangeNicknameSheet:self didInputNickname:newNickname];
 	}
 
 	[super ok:sender];

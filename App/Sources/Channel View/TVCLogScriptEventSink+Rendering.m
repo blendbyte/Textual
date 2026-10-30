@@ -147,6 +147,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_renderMessagesAfter:(BOOL)after context:(TVCLogScriptEventSinkContext *)context
 {
+	TVCLogView *webView = context.webView;
+
 	void (^contextCompletionBlock)(id _Nullable) = context.completionBlock;
 
 	NSArray *arguments = context.arguments;
@@ -158,7 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (lineNumber.length == 0) {
 		[self.class throwJavaScriptException:@"Length of line number is 0"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		contextCompletionBlock(nil);
 
@@ -170,7 +172,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (maximumNumberOfLines <= 0) {
 		[self.class throwJavaScriptException:@"Maximum number of lines must be equal to 1 or greater"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		contextCompletionBlock(nil);
 
@@ -194,6 +196,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_renderMessageWithSiblings:(TVCLogScriptEventSinkContext *)context
 {
+	TVCLogView *webView = context.webView;
+
 	void (^contextCompletionBlock)(id _Nullable) = context.completionBlock;
 
 	NSArray *arguments = context.arguments;
@@ -205,7 +209,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (lineNumber.length == 0) {
 		[self.class throwJavaScriptException:@"Length of line number is 0"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		contextCompletionBlock(nil);
 
@@ -220,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
 	{
 		[self.class throwJavaScriptException:@"Number of lines must be equal to 0 or greater"
 								   forCaller:context.caller
-								   inWebView:context.webView];
+								   inWebView:webView];
 
 		contextCompletionBlock(nil);
 

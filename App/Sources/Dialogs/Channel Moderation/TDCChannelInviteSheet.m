@@ -103,10 +103,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ok:(nullable id)sender
 {
-	if ([self.delegate respondsToSelector:@selector(channelInviteSheet:onSelectChannel:)]) {
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelInviteSheet:onSelectChannel:)]) {
 		NSString *channelName = self.channelListPopup.titleOfSelectedItem;
 
-		[self.delegate channelInviteSheet:self onSelectChannel:channelName];
+		[delegate channelInviteSheet:self onSelectChannel:channelName];
 	}
 
 	[super ok:nil];

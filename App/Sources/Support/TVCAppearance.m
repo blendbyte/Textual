@@ -153,12 +153,14 @@ typedef NS_ENUM(NSUInteger, TVCListAppearanceImageType)
 
 	 inheritLogicType inheritLogic = ^(id inheritedName)
 	 {
+		 inheritLogicType inheritLogicStrong = inheritLogicWeak;
+
 		 NSDictionary *lastInheritance = nil;
 
 		 /* Allow for multiple inheritance */
 		 if ([inheritedName isKindOfClass:[NSArray class]]) {
 			 for (id name in ((NSArray *)inheritedName).reverseObjectEnumerator) {
-				 inheritLogicWeak(name);
+				 inheritLogicStrong(name);
 			 }
 
 			 return;
@@ -182,7 +184,7 @@ typedef NS_ENUM(NSUInteger, TVCListAppearanceImageType)
 			 return;
 		 }
 
-		 inheritLogicWeak(nextInheritance);
+		 inheritLogicStrong(nextInheritance);
 	 };
 
 	 /* Inherit from the first appearance. */

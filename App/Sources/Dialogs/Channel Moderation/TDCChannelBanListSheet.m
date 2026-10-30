@@ -82,8 +82,10 @@ NS_ASSUME_NONNULL_BEGIN
 	if ((self = [super initWithWindow:nil])) {
 		self.entryType = entryType;
 
-		self.client = channel.associatedClient;
-		self.clientId = channel.associatedClient.uniqueIdentifier;
+		IRCClient *client = channel.associatedClient;
+
+		self.client = client;
+		self.clientId = client.uniqueIdentifier;
 
 		self.channel = channel;
 		self.channelId = channel.uniqueIdentifier;
@@ -187,8 +189,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self clear];
 
-	if ([self.delegate respondsToSelector:@selector(channelBanListSheetOnUpdate:)]) {
-		[self.delegate channelBanListSheetOnUpdate:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelBanListSheetOnUpdate:)]) {
+		[delegate channelBanListSheetOnUpdate:self];
 	}
 }
 
@@ -232,8 +236,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)windowWillClose:(NSNotification *)note
 {
-	if ([self.delegate respondsToSelector:@selector(channelBanListSheetWillClose:)]) {
-		[self.delegate channelBanListSheetWillClose:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelBanListSheetWillClose:)]) {
+		[delegate channelBanListSheetWillClose:self];
 	}
 
 	[super windowWillClose:note];

@@ -220,8 +220,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config.channelList = channelList;
 
-	if ([self.delegate respondsToSelector:@selector(welcomeSheet:onOk:)]) {
-		[self.delegate welcomeSheet:self onOk:[config copy]];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(welcomeSheet:onOk:)]) {
+		[delegate welcomeSheet:self onOk:[config copy]];
 	}
 
 	[super ok:nil];
@@ -323,8 +325,10 @@ NS_ASSUME_NONNULL_BEGIN
 	self.channelTable.dataSource = nil;
 	self.channelTable.delegate = nil;
 
-	if ([self.delegate respondsToSelector:@selector(welcomeSheetWillClose:)]) {
-		[self.delegate welcomeSheetWillClose:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(welcomeSheetWillClose:)]) {
+		[delegate welcomeSheetWillClose:self];
 	}
 
 	[super windowWillClose:note];

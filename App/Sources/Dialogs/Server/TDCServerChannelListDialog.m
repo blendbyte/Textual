@@ -204,8 +204,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)refresh
 {
-	if ([self.delegate respondsToSelector:@selector(serverChannelListDialogOnUpdate:)]) {
-		[self.delegate serverChannelListDialogOnUpdate:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(serverChannelListDialogOnUpdate:)]) {
+		[delegate serverChannelListDialogOnUpdate:self];
 	}
 }
 
@@ -213,8 +215,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(channels != nil);
 
-	if ([self.delegate respondsToSelector:@selector(serverChannelListDialog:joinChannels:)]) {
-		[self.delegate serverChannelListDialog:self joinChannels:channels];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(serverChannelListDialog:joinChannels:)]) {
+		[delegate serverChannelListDialog:self joinChannels:channels];
 	}
 }
 

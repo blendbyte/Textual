@@ -187,15 +187,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)informDelegateLookupReturnedAddress:(NSString *)address
 {
-	if ([self.requestDelegate respondsToSelector:@selector(internetAddressLookupReturnedAddress:)]) {
-		[self.requestDelegate internetAddressLookupReturnedAddress:address];
+	id requestDelegate = self.requestDelegate;
+
+	if ([requestDelegate respondsToSelector:@selector(internetAddressLookupReturnedAddress:)]) {
+		[requestDelegate internetAddressLookupReturnedAddress:address];
 	}
 }
 
 - (void)informDelegateLookupFailed
 {
-	if ([self.requestDelegate respondsToSelector:@selector(internetAddressLookupFailed)]) {
-		[self.requestDelegate internetAddressLookupFailed];
+	id requestDelegate = self.requestDelegate;
+
+	if ([requestDelegate respondsToSelector:@selector(internetAddressLookupFailed)]) {
+		[requestDelegate internetAddressLookupFailed];
 	}
 }
 

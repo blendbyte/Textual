@@ -110,8 +110,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[TPCPreferences setThemeUserStyleSheetRules:rules];
 
-	if ([self.delegate respondsToSelector:@selector(userStyleSheetRulesChanged:)]) {
-		[self.delegate userStyleSheetRulesChanged:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(userStyleSheetRulesChanged:)]) {
+		[delegate userStyleSheetRulesChanged:self];
 	}
 }
 
@@ -134,8 +136,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)windowWillClose:(NSNotification *)note
 {
-	if ([self.delegate respondsToSelector:@selector(userStyleSheetWillClose:)]) {
-		[self.delegate userStyleSheetWillClose:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(userStyleSheetWillClose:)]) {
+		[delegate userStyleSheetWillClose:self];
 	}
 
 	[super windowWillClose:note];

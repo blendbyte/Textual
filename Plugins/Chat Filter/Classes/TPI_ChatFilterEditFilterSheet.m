@@ -399,8 +399,10 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 
 	[self saveFilter];
 
-	if ([self.delegate respondsToSelector:@selector(chatFilterEditFilterSheet:onOk:)]) {
-		[self.delegate chatFilterEditFilterSheet:self onOk:[self.filter copy]];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(chatFilterEditFilterSheet:onOk:)]) {
+		[delegate chatFilterEditFilterSheet:self onOk:[self.filter copy]];
 	}
 
 	[super ok:nil];
@@ -479,8 +481,10 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 {
 	[RZNotificationCenter() removeObserver:self];
 
-	if ([self.delegate respondsToSelector:@selector(chatFilterEditFilterSheetWillClose:)]) {
-		[self.delegate chatFilterEditFilterSheetWillClose:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(chatFilterEditFilterSheetWillClose:)]) {
+		[delegate chatFilterEditFilterSheetWillClose:self];
 	}
 }
 

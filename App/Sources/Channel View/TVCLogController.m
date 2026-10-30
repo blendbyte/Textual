@@ -457,8 +457,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (nullable IRCTreeItem *)associatedItem
 {
-	if (self.associatedChannel) {
-		return self.associatedChannel;
+	IRCChannel *channel = self.associatedChannel;
+
+	if (channel) {
+		return channel;
 	} else {
 		return self.associatedClient;
 	}
@@ -502,10 +504,12 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 {
 	IRCChannel *channel = self.associatedChannel;
 
+	TVCMainWindow *window = self.attachedWindow;
+
 	if (channel) {
-		return [self.attachedWindow isItemVisible:channel];
+		return [window isItemVisible:channel];
 	} else {
-		return [self.attachedWindow isItemVisible:self.associatedClient];
+		return [window isItemVisible:self.associatedClient];
 	}
 }
 
@@ -1605,16 +1609,18 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			[self _renderLogLinesAfterLineNumberPostFlight:entries completionBlock:completionBlock];
 		};
 
+		IRCTreeItem *associatedItem = self.associatedItem;
+
 		if (after == NO) {
 			[sharedHistoricLog()
-			 fetchEntriesForItem:self.associatedItem
+			 fetchEntriesForItem:associatedItem
 		  beforeUniqueIdentifier:lineNumber
 					  fetchLimit:maximumNumberOfLines
 					 limitToDate:nil
 			 withCompletionBlock:historicLogCompletionBlock];
 		} else {
 			[sharedHistoricLog()
-			 fetchEntriesForItem:self.associatedItem
+			 fetchEntriesForItem:associatedItem
 		   afterUniqueIdentifier:lineNumber
 					  fetchLimit:maximumNumberOfLines
 					 limitToDate:nil
@@ -3309,7 +3315,9 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	templateTokens[@"cacheToken"] = themeController().cacheToken;
 
-	templateTokens[@"configuredServerName"] = self.associatedClient.networkNameAlt;
+	IRCClient *client = self.associatedClient;
+
+	templateTokens[@"configuredServerName"] = client.networkNameAlt;
 
 	templateTokens[@"isReloadingStyle"] = @(self.reloadingTheme);
 
@@ -3320,7 +3328,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	templateTokens[@"appearanceDescription"] = appearance.shortAppearanceDescription;
 	templateTokens[@"sidebarInversionIsEnabled"] = @(appearance.isDarkAppearance);
 
-	templateTokens[@"userConfiguredTextEncoding"] = [NSString charsetRepFromStringEncoding:self.associatedClient.config.primaryEncoding];
+	templateTokens[@"userConfiguredTextEncoding"] = [NSString charsetRepFromStringEncoding:client.config.primaryEncoding];
 
 	templateTokens[@"userStyleSheetRules"] = [TPCPreferences themeUserStyleSheetRules];
 

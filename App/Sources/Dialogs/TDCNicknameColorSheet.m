@@ -111,8 +111,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[TPCNicknameColorStyleGenerator setNicknameColorStyleOverride:nicknameColor forKey:self.nickname];
 
-	if ([self.delegate respondsToSelector:@selector(nicknameColorSheetOnOk:)]) {
-		[self.delegate nicknameColorSheetOnOk:self];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(nicknameColorSheetOnOk:)]) {
+		[delegate nicknameColorSheetOnOk:self];
 	}
 
 	[super ok:nil];

@@ -77,8 +77,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(channel != nil);
 
 	if ((self = [super initWithWindow:nil])) {
-		self.client = channel.associatedClient;
-		self.clientId = channel.associatedClient.uniqueIdentifier;
+		IRCClient *client = channel.associatedClient;
+
+		self.client = client;
+		self.clientId = client.uniqueIdentifier;
 
 		self.channel = channel;
 		self.channelId = channel.uniqueIdentifier;
@@ -275,8 +277,10 @@ NS_ASSUME_NONNULL_BEGIN
 				 modeIsSet:(self.lCheck.state == NSControlStateValueOn)
 			 modeParameter:self.lText.stringValue];
 
-	if ([self.delegate respondsToSelector:@selector(channelModifyModesSheet:onOk:)]) {
-		[self.delegate channelModifyModesSheet:self onOk:self.modes];
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelModifyModesSheet:onOk:)]) {
+		[delegate channelModifyModesSheet:self onOk:self.modes];
 	}
 
 	[super ok:nil];

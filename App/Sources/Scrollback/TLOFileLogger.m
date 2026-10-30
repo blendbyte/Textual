@@ -135,8 +135,10 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 
 	NSString *stringToWrite = nil;
 
-	if (self.channel) {
-		stringToWrite = [logLine renderedBodyForTranscriptLogInChannel:self.channel];
+	IRCChannel *channel = self.channel;
+
+	if (channel) {
+		stringToWrite = [logLine renderedBodyForTranscriptLogInChannel:channel];
 	} else {
 		stringToWrite = [logLine renderedBodyForTranscriptLog];
 	}

@@ -489,9 +489,11 @@ NS_ASSUME_NONNULL_BEGIN
 	self.view = view;
 
 	/* The title bar is transparent: the panel starts below it */
-	if (self.mainWindow) {
+	TVCMainWindow *mainWindow = self.mainWindow;
+
+	if (mainWindow) {
 		for (NSNotificationName name in @[NSWindowDidResizeNotification, NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification]) {
-			[RZNotificationCenter() addObserver:self selector:@selector(windowFrameChanged:) name:name object:self.mainWindow];
+			[RZNotificationCenter() addObserver:self selector:@selector(windowFrameChanged:) name:name object:mainWindow];
 		}
 	}
 
