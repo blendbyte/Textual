@@ -48,7 +48,7 @@ void freeCurrentExpressionInvocation(void *object) {
 #define setupCurrentExpressionInvocation() pthread_key_create(&GRCurrentExpressionInvocationKey, freeCurrentExpressionInvocation)
 #define getCurrentThreadCurrentExpressionInvocation() (GRMustacheExpressionInvocation *)pthread_getspecific(GRCurrentExpressionInvocationKey)
 #define setCurrentThreadCurrentExpressionInvocation(object) pthread_setspecific(GRCurrentExpressionInvocationKey, object)
-static inline GRMustacheExpressionInvocation *currentThreadCurrentExpressionInvocation() {
+static inline GRMustacheExpressionInvocation *currentThreadCurrentExpressionInvocation(void) {
     GRMustacheExpressionInvocation *expressionInvocation = getCurrentThreadCurrentExpressionInvocation();
     if (!expressionInvocation) {
         expressionInvocation = [[GRMustacheExpressionInvocation alloc] init];

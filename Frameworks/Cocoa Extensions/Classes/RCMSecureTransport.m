@@ -355,8 +355,8 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 		default: { return @"Unknown"; }
 	}
 }
-COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
+/* Servers can still negotiate TLS 1.0 and 1.1, which deserve a name */
 + (nullable NSString *)descriptionForProtocolType:(tls_protocol_version_t)protocolType
 {
 	switch (protocolType) {
@@ -369,6 +369,7 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 		default: { return @"Unknown"; }
 	}
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 + (NSArray<NSString *> *)descriptionsForCipherListCollection:(RCMCipherSuiteCollection)collection
 {
@@ -734,12 +735,14 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 {
 	NSParameterAssert(trustRef != NULL);
 
-	CFIndex trustCertificateCount = SecTrustGetCertificateCount(trustRef);
+	NSArray *trustCertificates = (__bridge_transfer NSArray *)SecTrustCopyCertificateChain(trustRef);
+
+	NSUInteger trustCertificateCount = trustCertificates.count;
 
 	NSMutableArray<NSData *> *results = [NSMutableArray arrayWithCapacity:trustCertificateCount];
 
-	for (CFIndex trustCertificateIndex = 0; trustCertificateIndex < trustCertificateCount; trustCertificateIndex++) {
-		SecCertificateRef certificateRef = SecTrustGetCertificateAtIndex(trustRef, trustCertificateIndex);
+	for (NSUInteger trustCertificateIndex = 0; trustCertificateIndex < trustCertificateCount; trustCertificateIndex++) {
+		SecCertificateRef certificateRef = (__bridge SecCertificateRef)trustCertificates[trustCertificateIndex];
 
 		NSData *certificateData = (__bridge_transfer NSData *)SecCertificateCopyData(certificateRef);
 

@@ -47,6 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)conversation;
 - (void)outgoingConversation;
 
+/* Tab completion's order: who spoke last first */
+- (NSComparisonResult)compareUsingWeights:(IRCChannelUser *)other;
+
 + (NSComparator)channelRankComparator;
 @end
 

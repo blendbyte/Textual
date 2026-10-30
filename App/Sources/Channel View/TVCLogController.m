@@ -44,7 +44,7 @@
 #import "ICLPayloadPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
-#import "IRCChannelUser.h"
+#import "IRCChannelUserPrivate.h"
 #import "IRCChannel.h"
 #import "IRCChannelPrivate.h"
 #import "THOPluginDispatcherPrivate.h"

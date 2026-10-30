@@ -40,7 +40,7 @@
 #import "NSObjectHelperPrivate.h"
 #import "IRCClient.h"
 #import "IRCChannel.h"
-#import "IRCChannelUser.h"
+#import "IRCChannelUserPrivate.h"
 #import "IRCCommandIndex.h"
 #import "IRCISupportInfo.h"
 #import "IRCUser.h"

@@ -10,3 +10,4 @@ Local changes to the upstream sources:
 
 - The 15 public headers import each other as `<GRMustache/…>`.
 - `GRMustache.h` does not import `NSValueTransformer+GRMustache.h` and `NSFormatter+GRMustache.h`, so the public headers are the same 15 that Textual's plugin API exposed before.
+- `currentThreadCurrentExpressionInvocation(void)` has a prototype, and the `URL.escape` filter escapes with `-stringByAddingPercentEncodingWithAllowedCharacters:` (the URL query characters) instead of the deprecated `-stringByAddingPercentEscapesUsingEncoding:`, so the framework builds without warnings.

@@ -52,13 +52,11 @@ NSString * _Nullable TXFormattedTimestamp(NSDate *date, NSString *format)
 
 	time_t global = (time_t)date.timeIntervalSince1970;
 
-	const size_t outputBufferSize = 256;
-
-	char outputBuffer[(outputBufferSize + 1)];
+	char outputBuffer[257];
 
 	struct tm *localTime = localtime(&global);
 
-	if (strftime(outputBuffer, outputBufferSize, format.UTF8String, localTime) == 0) {
+	if (strftime(outputBuffer, (sizeof(outputBuffer) - 1), format.UTF8String, localTime) == 0) {
 		return nil;
 	}
 

@@ -41,6 +41,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* What textDidChangeCallback is sent when the text changes (see the header) */
+@interface NSObject (TVCValidatedTextFieldTextDidChangeCallback)
+- (void)validatedTextFieldTextDidChange:(nullable id)sender;
+@end
+
 @interface TVCValidatedComboBox ()
 /* Maintain cached value so that the drawing does not call
  the validation block every time that it is called. */
@@ -255,12 +260,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)informCallbackTextDidChange
 {
-	if (self.textDidChangeCallback == nil) {
-		return;
-	}
+	id textDidChangeCallback = self.textDidChangeCallback;
 
-	if ([self.textDidChangeCallback respondsToSelector:@selector(validatedTextFieldTextDidChange:)]) {
-		[self.textDidChangeCallback performSelector:@selector(validatedTextFieldTextDidChange:) withObject:self];
+	if ([textDidChangeCallback respondsToSelector:@selector(validatedTextFieldTextDidChange:)]) {
+		[textDidChangeCallback validatedTextFieldTextDidChange:self];
 	}
 }
 

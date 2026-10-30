@@ -37,6 +37,7 @@
 
 #import "THOPluginProtocol.h"
 #import "THOPluginItemPrivate.h"
+#import "THOPluginProtocolPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

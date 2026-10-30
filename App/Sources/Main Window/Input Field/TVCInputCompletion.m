@@ -41,7 +41,7 @@
 #import "IRCClient.h"
 #import "IRCChannel.h"
 #import "IRCChannelMemberList.h"
-#import "IRCChannelUser.h"
+#import "IRCChannelUserPrivate.h"
 #import "IRCAliasPrivate.h"
 #import "IRCCommandIndex.h"
 #import "IRCUser.h"
@@ -51,11 +51,6 @@
 #import "TVCInputCompletionPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-/* Tab completion's order (IRCChannelUser.m): who spoke last first */
-@interface IRCChannelUser (TVCInputCompletionWeights)
-- (NSComparisonResult)compareUsingWeights:(IRCChannelUser *)other;
-@end
 
 /* At most this many suggestions, this many shown at once */
 #define _maximumItems			50

@@ -40,6 +40,7 @@
 #import "TPCPreferencesLocal.h"
 #import "IRCClient.h"
 #import "IRCUserPersistentStorePrivate.h"
+#import "IRCChannelUserPrivate.h"
 #import "IRCUserRelationsPrivate.h"
 #import "IRCUserInternal.h"
 
