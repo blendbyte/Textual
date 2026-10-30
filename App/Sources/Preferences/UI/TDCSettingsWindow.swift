@@ -528,7 +528,6 @@ enum SettingsSubpage: Hashable
 			case let .pluginPane(index, title):
 				ScrollView {
 					PluginPaneView(index: index)
-						.frame(minHeight: 400)
 						.padding()
 				}
 				.navigationTitle(title)

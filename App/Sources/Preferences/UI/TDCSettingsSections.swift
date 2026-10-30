@@ -501,18 +501,26 @@ struct FilesSettings: View
 
 // MARK: - Extensions
 
+/* Holds an extension's pane at the pane's size */
+final class PluginPaneContainer: NSView
+{
+	var paneSize = CGSize.zero
+}
+
 struct PluginPaneView: NSViewRepresentable
 {
 	let index: Int
 
-	func makeNSView(context: Context) -> NSView
+	func makeNSView(context: Context) -> PluginPaneContainer
 	{
-		let container = NSView()
+		let container = PluginPaneContainer()
 
 		if let pane = TDCSettingsBridge.pluginPaneView(at: UInt(index)) {
 			pane.removeFromSuperview()
 
 			pane.translatesAutoresizingMaskIntoConstraints = false
+
+			container.paneSize = pane.frame.size
 
 			container.addSubview(pane)
 
@@ -527,8 +535,17 @@ struct PluginPaneView: NSViewRepresentable
 		return container
 	}
 
-	func updateNSView(_ nsView: NSView, context: Context)
+	func updateNSView(_ nsView: PluginPaneContainer, context: Context)
 	{
+	}
+
+	/* The container has no size of its own: in the scroll view it stayed
+	 empty, and clicks on the pane drawn outside it went nowhere */
+	func sizeThatFits(_ proposal: ProposedViewSize, nsView: PluginPaneContainer, context: Context) -> CGSize?
+	{
+		let paneSize = nsView.paneSize
+
+		return CGSize(width: max(proposal.width ?? paneSize.width, paneSize.width), height: paneSize.height)
 	}
 }
 
