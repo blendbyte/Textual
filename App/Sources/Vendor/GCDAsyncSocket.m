@@ -10,9 +10,6 @@
 
 #import "GCDAsyncSocket.h"
 
-#if TARGET_OS_IPHONE
-#import <CFNetwork/CFNetwork.h>
-#endif
 
 #import <TargetConditionals.h>
 #import <arpa/inet.h>
@@ -116,19 +113,6 @@ NSString *const GCDAsyncSocketErrorDomain = @"GCDAsyncSocketErrorDomain";
 NSString *const GCDAsyncSocketQueueName = @"GCDAsyncSocket";
 NSString *const GCDAsyncSocketThreadName = @"GCDAsyncSocket-CFStream";
 
-NSString *const GCDAsyncSocketManuallyEvaluateTrust = @"GCDAsyncSocketManuallyEvaluateTrust";
-#if TARGET_OS_IPHONE
-NSString *const GCDAsyncSocketUseCFStreamForTLS = @"GCDAsyncSocketUseCFStreamForTLS";
-#endif
-NSString *const GCDAsyncSocketSSLPeerID = @"GCDAsyncSocketSSLPeerID";
-NSString *const GCDAsyncSocketSSLProtocolVersionMin = @"GCDAsyncSocketSSLProtocolVersionMin";
-NSString *const GCDAsyncSocketSSLProtocolVersionMax = @"GCDAsyncSocketSSLProtocolVersionMax";
-NSString *const GCDAsyncSocketSSLSessionOptionFalseStart = @"GCDAsyncSocketSSLSessionOptionFalseStart";
-NSString *const GCDAsyncSocketSSLSessionOptionSendOneByteRecord = @"GCDAsyncSocketSSLSessionOptionSendOneByteRecord";
-NSString *const GCDAsyncSocketSSLCipherSuites = @"GCDAsyncSocketSSLCipherSuites";
-#if !TARGET_OS_IPHONE
-NSString *const GCDAsyncSocketSSLDiffieHellmanParameters = @"GCDAsyncSocketSSLDiffieHellmanParameters";
-#endif
 
 enum GCDAsyncSocketFlags
 {
@@ -142,18 +126,9 @@ enum GCDAsyncSocketFlags
 	kSocketCanAcceptBytes          = 1 <<  7,  // If set, we know socket can accept bytes. If unset, it's unknown.
 	kReadSourceSuspended           = 1 <<  8,  // If set, the read source is suspended
 	kWriteSourceSuspended          = 1 <<  9,  // If set, the write source is suspended
-	kQueuedTLS                     = 1 << 10,  // If set, we've queued an upgrade to TLS
-	kStartingReadTLS               = 1 << 11,  // If set, we're waiting for TLS negotiation to complete
-	kStartingWriteTLS              = 1 << 12,  // If set, we're waiting for TLS negotiation to complete
-	kSocketSecure                  = 1 << 13,  // If set, socket is using secure communication via SSL/TLS
 	kSocketHasReadEOF              = 1 << 14,  // If set, we have read EOF from socket
 	kReadStreamClosed              = 1 << 15,  // If set, we've read EOF plus prebuffer has been drained
 	kDealloc                       = 1 << 16,  // If set, the socket is being deallocated
-#if TARGET_OS_IPHONE
-	kAddedStreamsToRunLoop         = 1 << 17,  // If set, CFStreams have been added to listener thread
-	kUsingCFStreamForTLS           = 1 << 18,  // If set, we're forced to use CFStream instead of SecureTransport
-	kSecureSocketHasBytesAvailable = 1 << 19,  // If set, CFReadStream has notified us of bytes available
-#endif
 };
 
 enum GCDAsyncSocketConfig
@@ -165,13 +140,6 @@ enum GCDAsyncSocketConfig
 	kUseStrictTimers		   = 1 << 4,
 };
 
-#if TARGET_OS_IPHONE
-  static NSThread *cfstreamThread;  // Used for CFStreams
-
-
-  static uint64_t cfstreamThreadRetainCount;   // setup & teardown
-  static dispatch_queue_t cfstreamThreadSetupQueue; // setup & teardown
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark -
@@ -834,36 +802,6 @@ enum GCDAsyncSocketConfig
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * The GCDAsyncSpecialPacket encompasses special instructions for interruptions in the read/write queues.
- * This class my be altered to support more than just TLS in the future.
-**/
-@interface GCDAsyncSpecialPacket : NSObject
-{
-  @public
-	NSDictionary *tlsSettings;
-}
-- (id)initWithTLSSettings:(NSDictionary *)settings;
-@end
-
-@implementation GCDAsyncSpecialPacket
-
-- (id)initWithTLSSettings:(NSDictionary *)settings
-{
-	if((self = [super init]))
-	{
-		tlsSettings = [settings copy];
-	}
-	return self;
-}
-
-
-@end
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 @implementation GCDAsyncSocket
 {
 	uint32_t flags;
@@ -902,16 +840,6 @@ enum GCDAsyncSocketConfig
 	
 	GCDAsyncSocketPreBuffer *preBuffer;
 		
-#if TARGET_OS_IPHONE
-	CFStreamClientContext streamContext;
-	CFReadStreamRef readStream;
-	CFWriteStreamRef writeStream;
-#endif
-	SSLContextRef sslContext;
-	GCDAsyncSocketPreBuffer *sslPreBuffer;
-	size_t sslWriteCachedLength;
-	OSStatus sslErrCode;
-    OSStatus lastSSLHandshakeError;
 	
 	void *IsOnSocketQueueOrTargetQueueKey;
 	
@@ -2934,60 +2862,6 @@ enum GCDAsyncSocketConfig
 	
 	[self endConnectTimeout];
 	
-	#if TARGET_OS_IPHONE
-	// The endConnectTimeout method executed above incremented the stateIndex.
-	aStateIndex = stateIndex;
-	#endif
-	
-	// Setup read/write streams (as workaround for specific shortcomings in the iOS platform)
-	// 
-	// Note:
-	// There may be configuration options that must be set by the delegate before opening the streams.
-	// The primary example is the kCFStreamNetworkServiceTypeVoIP flag, which only works on an unopened stream.
-	// 
-	// Thus we wait until after the socket:didConnectToHost:port: delegate method has completed.
-	// This gives the delegate time to properly configure the streams if needed.
-	
-	dispatch_block_t SetupStreamsPart1 = ^{
-		#if TARGET_OS_IPHONE
-		
-		if (![self createReadAndWriteStream])
-		{
-			[self closeWithError:[self otherError:@"Error creating CFStreams"]];
-			return;
-		}
-		
-		if (![self registerForStreamCallbacksIncludingReadWrite:NO])
-		{
-			[self closeWithError:[self otherError:@"Error in CFStreamSetClient"]];
-			return;
-		}
-		
-		#endif
-	};
-	dispatch_block_t SetupStreamsPart2 = ^{
-		#if TARGET_OS_IPHONE
-		
-		if (aStateIndex != stateIndex)
-		{
-			// The socket has been disconnected.
-			return;
-		}
-		
-		if (![self addStreamsToRunLoop])
-		{
-			[self closeWithError:[self otherError:@"Error in CFStreamScheduleWithRunLoop"]];
-			return;
-		}
-		
-		if (![self openStreams])
-		{
-			[self closeWithError:[self otherError:@"Error creating CFStreams"]];
-			return;
-		}
-		
-		#endif
-	};
 	
 	// Notify delegate
 	
@@ -2999,36 +2873,17 @@ enum GCDAsyncSocketConfig
 
 	if (delegateQueue && host != nil && [theDelegate respondsToSelector:@selector(socket:didConnectToHost:port:)])
 	{
-		SetupStreamsPart1();
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate socket:self didConnectToHost:host port:port];
-			
-			dispatch_async(socketQueue, ^{ @autoreleasepool {
-				
-				SetupStreamsPart2();
-			}});
 		}});
 	}
 	else if (delegateQueue && url != nil && [theDelegate respondsToSelector:@selector(socket:didConnectToUrl:)])
 	{
-		SetupStreamsPart1();
-		
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
 			
 			[theDelegate socket:self didConnectToUrl:url];
-			
-			dispatch_async(socketQueue, ^{ @autoreleasepool {
-				
-				SetupStreamsPart2();
-			}});
 		}});
-	}
-	else
-	{
-		SetupStreamsPart1();
-		SetupStreamsPart2();
 	}
 		
 	// Get the connected socket
@@ -3176,48 +3031,6 @@ enum GCDAsyncSocketConfig
 	
 	[preBuffer reset];
 	
-	#if TARGET_OS_IPHONE
-	{
-		if (readStream || writeStream)
-		{
-			[self removeStreamsFromRunLoop];
-			
-			if (readStream)
-			{
-				CFReadStreamSetClient(readStream, kCFStreamEventNone, NULL, NULL);
-				CFReadStreamClose(readStream);
-				CFRelease(readStream);
-				readStream = NULL;
-			}
-			if (writeStream)
-			{
-				CFWriteStreamSetClient(writeStream, kCFStreamEventNone, NULL, NULL);
-				CFWriteStreamClose(writeStream);
-				CFRelease(writeStream);
-				writeStream = NULL;
-			}
-		}
-	}
-	#endif
-	
-	[sslPreBuffer reset];
-	sslErrCode = lastSSLHandshakeError = noErr;
-	
-	if (sslContext)
-	{
-		// Getting a linker error here about the SSLx() functions?
-		// You need to add the Security Framework to your application.
-		
-		SSLClose(sslContext);
-		
-		#if TARGET_OS_IPHONE || (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080)
-		CFRelease(sslContext);
-		#else
-		SSLDisposeContext(sslContext);
-		#endif
-		
-		sslContext = NULL;
-	}
 	
 	// For some crazy reason (in my opinion), cancelling a dispatch source doesn't
 	// invoke the cancel handler if the dispatch source is paused.
@@ -3318,7 +3131,6 @@ enum GCDAsyncSocketConfig
 	// Clear stored socket info and all flags (config remains as is)
 	socketFDBytesAvailable = 0;
 	flags = 0;
-	sslWriteCachedLength = 0;
 	
 	if (shouldCallDelegate)
 	{
@@ -3472,14 +3284,6 @@ enum GCDAsyncSocketConfig
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
 	
 	return [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:userInfo];
-}
-
-- (NSError *)sslError:(OSStatus)ssl_error
-{
-	NSString *msg = @"Error code definition can be found in Apple's SecureTransport.h";
-	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:msg forKey:NSLocalizedRecoverySuggestionErrorKey];
-	
-	return [NSError errorWithDomain:@"kCFStreamErrorDomainSSL" code:ssl_error userInfo:userInfo];
 }
 
 - (NSError *)connectTimeoutError
@@ -4002,24 +3806,6 @@ enum GCDAsyncSocketConfig
 	}
 }
 
-- (BOOL)isSecure
-{
-	if (dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
-	{
-		return (flags & kSocketSecure) ? YES : NO;
-	}
-	else
-	{
-		__block BOOL result;
-		
-		dispatch_sync(socketQueue, ^{
-			result = (flags & kSocketSecure) ? YES : NO;
-		});
-		
-		return result;
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Utilities
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4316,40 +4102,6 @@ enum GCDAsyncSocketConfig
 	flags |= kWriteSourceSuspended;
 }
 
-- (BOOL)usingCFStreamForTLS
-{
-	#if TARGET_OS_IPHONE
-	
-	if ((flags & kSocketSecure) && (flags & kUsingCFStreamForTLS))
-	{
-		// The startTLS method was given the GCDAsyncSocketUseCFStreamForTLS flag.
-		
-		return YES;
-	}
-	
-	#endif
-	
-	return NO;
-}
-
-- (BOOL)usingSecureTransportForTLS
-{
-	// Invoking this method is equivalent to ![self usingCFStreamForTLS] (just more readable)
-	
-	#if TARGET_OS_IPHONE
-	
-	if ((flags & kSocketSecure) && (flags & kUsingCFStreamForTLS))
-	{
-		// The startTLS method was given the GCDAsyncSocketUseCFStreamForTLS flag.
-		
-		return NO;
-	}
-	
-	#endif
-	
-	return YES;
-}
-
 - (void)suspendReadSource
 {
 	if (!(flags & kReadSourceSuspended))
@@ -4619,26 +4371,13 @@ enum GCDAsyncSocketConfig
 			[readQueue removeObjectAtIndex:0];
 			
 			
-			if ([currentRead isKindOfClass:[GCDAsyncSpecialPacket class]])
-			{
-				LogVerbose(@"Dequeued GCDAsyncSpecialPacket");
-				
-				// Attempt to start TLS
-				flags |= kStartingReadTLS;
-				
-				// This method won't do anything unless both kStartingReadTLS and kStartingWriteTLS are set
-				[self maybeStartTLS];
-			}
-			else
-			{
-				LogVerbose(@"Dequeued GCDAsyncReadPacket");
-				
-				// Setup read timer (if needed)
-				[self setupReadTimerWithTimeout:currentRead->timeout];
-				
-				// Immediately read, if possible
-				[self doReadData];
-			}
+			LogVerbose(@"Dequeued GCDAsyncReadPacket");
+			
+			// Setup read timer (if needed)
+			[self setupReadTimerWithTimeout:currentRead->timeout];
+			
+			// Immediately read, if possible
+			[self doReadData];
 		}
 		else if (flags & kDisconnectAfterReads)
 		{
@@ -4654,139 +4393,6 @@ enum GCDAsyncSocketConfig
 				[self closeWithError:nil];
 			}
 		}
-		else if (flags & kSocketSecure)
-		{
-			[self flushSSLBuffers];
-			
-			// Edge case:
-			// 
-			// We just drained all data from the ssl buffers,
-			// and all known data from the socket (socketFDBytesAvailable).
-			// 
-			// If we didn't get any data from this process,
-			// then we may have reached the end of the TCP stream.
-			// 
-			// Be sure callbacks are enabled so we're notified about a disconnection.
-			
-			if ([preBuffer availableBytes] == 0)
-			{
-				if ([self usingCFStreamForTLS]) {
-					// Callbacks never disabled
-				}
-				else {
-					[self resumeReadSource];
-				}
-			}
-		}
-	}
-}
-
-- (void)flushSSLBuffers
-{
-	LogTrace();
-	
-	NSAssert((flags & kSocketSecure), @"Cannot flush ssl buffers on non-secure socket");
-	
-	if ([preBuffer availableBytes] > 0)
-	{
-		// Only flush the ssl buffers if the prebuffer is empty.
-		// This is to avoid growing the prebuffer inifinitely large.
-		
-		return;
-	}
-	
-	#if TARGET_OS_IPHONE
-	
-	if ([self usingCFStreamForTLS])
-	{
-		if ((flags & kSecureSocketHasBytesAvailable) && CFReadStreamHasBytesAvailable(readStream))
-		{
-			LogVerbose(@"%@ - Flushing ssl buffers into prebuffer...", THIS_METHOD);
-			
-			CFIndex defaultBytesToRead = (1024 * 4);
-			
-			[preBuffer ensureCapacityForWrite:defaultBytesToRead];
-			
-			uint8_t *buffer = [preBuffer writeBuffer];
-			
-			CFIndex result = CFReadStreamRead(readStream, buffer, defaultBytesToRead);
-			LogVerbose(@"%@ - CFReadStreamRead(): result = %i", THIS_METHOD, (int)result);
-			
-			if (result > 0)
-			{
-				[preBuffer didWrite:result];
-			}
-			
-			flags &= ~kSecureSocketHasBytesAvailable;
-		}
-		
-		return;
-	}
-	
-	#endif
-	
-	__block NSUInteger estimatedBytesAvailable = 0;
-	
-	dispatch_block_t updateEstimatedBytesAvailable = ^{
-		
-		// Figure out if there is any data available to be read
-		// 
-		// socketFDBytesAvailable        <- Number of encrypted bytes we haven't read from the bsd socket
-		// [sslPreBuffer availableBytes] <- Number of encrypted bytes we've buffered from bsd socket
-		// sslInternalBufSize            <- Number of decrypted bytes SecureTransport has buffered
-		// 
-		// We call the variable "estimated" because we don't know how many decrypted bytes we'll get
-		// from the encrypted bytes in the sslPreBuffer.
-		// However, we do know this is an upper bound on the estimation.
-		
-		estimatedBytesAvailable = socketFDBytesAvailable + [sslPreBuffer availableBytes];
-		
-		size_t sslInternalBufSize = 0;
-		SSLGetBufferedReadSize(sslContext, &sslInternalBufSize);
-		
-		estimatedBytesAvailable += sslInternalBufSize;
-	};
-	
-	updateEstimatedBytesAvailable();
-	
-	if (estimatedBytesAvailable > 0)
-	{
-		LogVerbose(@"%@ - Flushing ssl buffers into prebuffer...", THIS_METHOD);
-		
-		BOOL done = NO;
-		do
-		{
-			LogVerbose(@"%@ - estimatedBytesAvailable = %lu", THIS_METHOD, (unsigned long)estimatedBytesAvailable);
-			
-			// Make sure there's enough room in the prebuffer
-			
-			[preBuffer ensureCapacityForWrite:estimatedBytesAvailable];
-			
-			// Read data into prebuffer
-			
-			uint8_t *buffer = [preBuffer writeBuffer];
-			size_t bytesRead = 0;
-			
-			OSStatus result = SSLRead(sslContext, buffer, (size_t)estimatedBytesAvailable, &bytesRead);
-			LogVerbose(@"%@ - read from secure socket = %u", THIS_METHOD, (unsigned)bytesRead);
-			
-			if (bytesRead > 0)
-			{
-				[preBuffer didWrite:bytesRead];
-			}
-			
-			LogVerbose(@"%@ - prebuffer.length = %zu", THIS_METHOD, [preBuffer availableBytes]);
-			
-			if (result != noErr)
-			{
-				done = YES;
-			}
-			else
-			{
-				updateEstimatedBytesAvailable();
-			}
-			
-		} while (!done && estimatedBytesAvailable > 0);
 	}
 }
 
@@ -4803,42 +4409,15 @@ enum GCDAsyncSocketConfig
 		
 		// Unable to read at this time
 		
-		if (flags & kSocketSecure)
-		{
-			// Here's the situation:
-			// 
-			// We have an established secure connection.
-			// There may not be a currentRead, but there might be encrypted data sitting around for us.
-			// When the user does get around to issuing a read, that encrypted data will need to be decrypted.
-			// 
-			// So why make the user wait?
-			// We might as well get a head start on decrypting some data now.
-			// 
-			// The other reason we do this has to do with detecting a socket disconnection.
-			// The SSL/TLS protocol has it's own disconnection handshake.
-			// So when a secure socket is closed, a "goodbye" packet comes across the wire.
-			// We want to make sure we read the "goodbye" packet so we can properly detect the TCP disconnection.
-			
-			[self flushSSLBuffers];
-		}
+		// If the readSource is firing, we need to pause it
+		// or else it will continue to fire over and over again.
+		// 
+		// If the readSource is not firing,
+		// we want it to continue monitoring the socket.
 		
-		if ([self usingCFStreamForTLS])
+		if (socketFDBytesAvailable > 0)
 		{
-			// CFReadStream only fires once when there is available data.
-			// It won't fire again until we've invoked CFReadStreamRead.
-		}
-		else
-		{
-			// If the readSource is firing, we need to pause it
-			// or else it will continue to fire over and over again.
-			// 
-			// If the readSource is not firing,
-			// we want it to continue monitoring the socket.
-			
-			if (socketFDBytesAvailable > 0)
-			{
-				[self suspendReadSource];
-			}
+			[self suspendReadSource];
 		}
 		return;
 	}
@@ -4846,62 +4425,9 @@ enum GCDAsyncSocketConfig
 	BOOL hasBytesAvailable = NO;
 	unsigned long estimatedBytesAvailable = 0;
 	
-	if ([self usingCFStreamForTLS])
-	{
-		#if TARGET_OS_IPHONE
-		
-		// Requested CFStream, rather than SecureTransport, for TLS (via GCDAsyncSocketUseCFStreamForTLS)
-		
-		estimatedBytesAvailable = 0;
-		if ((flags & kSecureSocketHasBytesAvailable) && CFReadStreamHasBytesAvailable(readStream))
-			hasBytesAvailable = YES;
-		else
-			hasBytesAvailable = NO;
-		
-		#endif
-	}
-	else
-	{
-		estimatedBytesAvailable = socketFDBytesAvailable;
-		
-		if (flags & kSocketSecure)
-		{
-			// There are 2 buffers to be aware of here.
-			// 
-			// We are using SecureTransport, a TLS/SSL security layer which sits atop TCP.
-			// We issue a read to the SecureTranport API, which in turn issues a read to our SSLReadFunction.
-			// Our SSLReadFunction then reads from the BSD socket and returns the encrypted data to SecureTransport.
-			// SecureTransport then decrypts the data, and finally returns the decrypted data back to us.
-			// 
-			// The first buffer is one we create.
-			// SecureTransport often requests small amounts of data.
-			// This has to do with the encypted packets that are coming across the TCP stream.
-			// But it's non-optimal to do a bunch of small reads from the BSD socket.
-			// So our SSLReadFunction reads all available data from the socket (optimizing the sys call)
-			// and may store excess in the sslPreBuffer.
-			
-			estimatedBytesAvailable += [sslPreBuffer availableBytes];
-			
-			// The second buffer is within SecureTransport.
-			// As mentioned earlier, there are encrypted packets coming across the TCP stream.
-			// SecureTransport needs the entire packet to decrypt it.
-			// But if the entire packet produces X bytes of decrypted data,
-			// and we only asked SecureTransport for X/2 bytes of data,
-			// it must store the extra X/2 bytes of decrypted data for the next read.
-			// 
-			// The SSLGetBufferedReadSize function will tell us the size of this internal buffer.
-			// From the documentation:
-			// 
-			// "This function does not block or cause any low-level read operations to occur."
-			
-			size_t sslInternalBufSize = 0;
-			SSLGetBufferedReadSize(sslContext, &sslInternalBufSize);
-			
-			estimatedBytesAvailable += sslInternalBufSize;
-		}
-		
-		hasBytesAvailable = (estimatedBytesAvailable > 0);
-	}
+	estimatedBytesAvailable = socketFDBytesAvailable;
+	
+	hasBytesAvailable = (estimatedBytesAvailable > 0);
 	
 	if ((hasBytesAvailable == NO) && ([preBuffer availableBytes] == 0))
 	{
@@ -4909,45 +4435,10 @@ enum GCDAsyncSocketConfig
 		
 		// No data available to read.
 		
-		if (![self usingCFStreamForTLS])
-		{
-			// Need to wait for readSource to fire and notify us of
-			// available data in the socket's internal read buffer.
-			
-			[self resumeReadSource];
-		}
-		return;
-	}
-	
-	if (flags & kStartingReadTLS)
-	{
-		LogVerbose(@"Waiting for SSL/TLS handshake to complete");
+		// Need to wait for readSource to fire and notify us of
+		// available data in the socket's internal read buffer.
 		
-		// The readQueue is waiting for SSL/TLS handshake to complete.
-		
-		if (flags & kStartingWriteTLS)
-		{
-			if ([self usingSecureTransportForTLS] && lastSSLHandshakeError == errSSLWouldBlock)
-			{
-				// We are in the process of a SSL Handshake.
-				// We were waiting for incoming data which has just arrived.
-				
-				[self ssl_continueSSLHandshake];
-			}
-		}
-		else
-		{
-			// We are still waiting for the writeQueue to drain and start the SSL/TLS process.
-			// We now know data is available to read.
-			
-			if (![self usingCFStreamForTLS])
-			{
-				// Suspend the read source or else it will continue to fire nonstop.
-				
-				[self suspendReadSource];
-			}
-		}
-		
+		[self resumeReadSource];
 		return;
 	}
 	
@@ -5057,261 +4548,97 @@ enum GCDAsyncSocketConfig
 		uint8_t *buffer = NULL;
 		size_t bytesRead = 0;
 		
-		if (flags & kSocketSecure)
+		// Normal socket operation
+		
+		NSUInteger bytesToRead;
+		
+		// There are 3 types of read packets:
+		//
+		// 1) Read all available data.
+		// 2) Read a specific length of data.
+		// 3) Read up to a particular terminator.
+		
+		if (currentRead->term != nil)
 		{
-			if ([self usingCFStreamForTLS])
-			{
-				#if TARGET_OS_IPHONE
-				
-				// Using CFStream, rather than SecureTransport, for TLS
-				
-				NSUInteger defaultReadLength = (1024 * 32);
-				
-				NSUInteger bytesToRead = [currentRead optimalReadLengthWithDefault:defaultReadLength
-				                                                   shouldPreBuffer:&readIntoPreBuffer];
-				
-				// Make sure we have enough room in the buffer for our read.
-				//
-				// We are either reading directly into the currentRead->buffer,
-				// or we're reading into the temporary preBuffer.
-				
-				if (readIntoPreBuffer)
-				{
-					[preBuffer ensureCapacityForWrite:bytesToRead];
-					
-					buffer = [preBuffer writeBuffer];
-				}
-				else
-				{
-					[currentRead ensureCapacityForAdditionalDataOfLength:bytesToRead];
-					
-					buffer = (uint8_t *)[currentRead->buffer mutableBytes]
-					       + currentRead->startOffset
-					       + currentRead->bytesDone;
-				}
-				
-				// Read data into buffer
-				
-				CFIndex result = CFReadStreamRead(readStream, buffer, (CFIndex)bytesToRead);
-				LogVerbose(@"CFReadStreamRead(): result = %i", (int)result);
-				
-				if (result < 0)
-				{
-					error = (__bridge_transfer NSError *)CFReadStreamCopyError(readStream);
-				}
-				else if (result == 0)
-				{
-					socketEOF = YES;
-				}
-				else
-				{
-					waiting = YES;
-					bytesRead = (size_t)result;
-				}
-				
-				// We only know how many decrypted bytes were read.
-				// The actual number of bytes read was likely more due to the overhead of the encryption.
-				// So we reset our flag, and rely on the next callback to alert us of more data.
-				flags &= ~kSecureSocketHasBytesAvailable;
-				
-				#endif
-			}
-			else
-			{
-				// Using SecureTransport for TLS
-				//
-				// We know:
-				// - how many bytes are available on the socket
-				// - how many encrypted bytes are sitting in the sslPreBuffer
-				// - how many decypted bytes are sitting in the sslContext
-				//
-				// But we do NOT know:
-				// - how many encypted bytes are sitting in the sslContext
-				//
-				// So we play the regular game of using an upper bound instead.
-				
-				NSUInteger defaultReadLength = (1024 * 32);
-				
-				if (defaultReadLength < estimatedBytesAvailable) {
-					defaultReadLength = estimatedBytesAvailable + (1024 * 16);
-				}
-				
-				NSUInteger bytesToRead = [currentRead optimalReadLengthWithDefault:defaultReadLength
-				                                                   shouldPreBuffer:&readIntoPreBuffer];
-				
-				if (bytesToRead > SIZE_MAX) { // NSUInteger may be bigger than size_t
-					bytesToRead = SIZE_MAX;
-				}
-				
-				// Make sure we have enough room in the buffer for our read.
-				//
-				// We are either reading directly into the currentRead->buffer,
-				// or we're reading into the temporary preBuffer.
-				
-				if (readIntoPreBuffer)
-				{
-					[preBuffer ensureCapacityForWrite:bytesToRead];
-					
-					buffer = [preBuffer writeBuffer];
-				}
-				else
-				{
-					[currentRead ensureCapacityForAdditionalDataOfLength:bytesToRead];
-					
-					buffer = (uint8_t *)[currentRead->buffer mutableBytes]
-					       + currentRead->startOffset
-					       + currentRead->bytesDone;
-				}
-				
-				// The documentation from Apple states:
-				// 
-				//     "a read operation might return errSSLWouldBlock,
-				//      indicating that less data than requested was actually transferred"
-				// 
-				// However, starting around 10.7, the function will sometimes return noErr,
-				// even if it didn't read as much data as requested. So we need to watch out for that.
-				
-				OSStatus result;
-				do
-				{
-					void *loop_buffer = buffer + bytesRead;
-					size_t loop_bytesToRead = (size_t)bytesToRead - bytesRead;
-					size_t loop_bytesRead = 0;
-					
-					result = SSLRead(sslContext, loop_buffer, loop_bytesToRead, &loop_bytesRead);
-					LogVerbose(@"read from secure socket = %u", (unsigned)loop_bytesRead);
-					
-					bytesRead += loop_bytesRead;
-					
-				} while ((result == noErr) && (bytesRead < bytesToRead));
-				
-				
-				if (result != noErr)
-				{
-					if (result == errSSLWouldBlock)
-						waiting = YES;
-					else
-					{
-						if (result == errSSLClosedGraceful || result == errSSLClosedAbort)
-						{
-							// We've reached the end of the stream.
-							// Handle this the same way we would an EOF from the socket.
-							socketEOF = YES;
-							sslErrCode = result;
-						}
-						else
-						{
-							error = [self sslError:result];
-						}
-					}
-					// It's possible that bytesRead > 0, even if the result was errSSLWouldBlock.
-					// This happens when the SSLRead function is able to read some data,
-					// but not the entire amount we requested.
-					
-					if (bytesRead <= 0)
-					{
-						bytesRead = 0;
-					}
-				}
-				
-				// Do not modify socketFDBytesAvailable.
-				// It will be updated via the SSLReadFunction().
-			}
+			// Read type #3 - read up to a terminator
+			
+			bytesToRead = [currentRead readLengthForTermWithHint:estimatedBytesAvailable
+			                                     shouldPreBuffer:&readIntoPreBuffer];
 		}
 		else
 		{
-			// Normal socket operation
+			// Read type #1 or #2
 			
-			NSUInteger bytesToRead;
+			bytesToRead = [currentRead readLengthForNonTermWithHint:estimatedBytesAvailable];
+		}
+		
+		if (bytesToRead > SIZE_MAX) { // NSUInteger may be bigger than size_t (read param 3)
+			bytesToRead = SIZE_MAX;
+		}
+		
+		// Make sure we have enough room in the buffer for our read.
+		//
+		// We are either reading directly into the currentRead->buffer,
+		// or we're reading into the temporary preBuffer.
+		
+		if (readIntoPreBuffer)
+		{
+			[preBuffer ensureCapacityForWrite:bytesToRead];
 			
-			// There are 3 types of read packets:
-			//
-			// 1) Read all available data.
-			// 2) Read a specific length of data.
-			// 3) Read up to a particular terminator.
+			buffer = [preBuffer writeBuffer];
+		}
+		else
+		{
+			[currentRead ensureCapacityForAdditionalDataOfLength:bytesToRead];
 			
-			if (currentRead->term != nil)
-			{
-				// Read type #3 - read up to a terminator
-				
-				bytesToRead = [currentRead readLengthForTermWithHint:estimatedBytesAvailable
-				                                     shouldPreBuffer:&readIntoPreBuffer];
-			}
+			buffer = (uint8_t *)[currentRead->buffer mutableBytes]
+			       + currentRead->startOffset
+			       + currentRead->bytesDone;
+		}
+		
+		// Read data into buffer
+		
+		int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
+		
+		ssize_t result = read(socketFD, buffer, (size_t)bytesToRead);
+		LogVerbose(@"read from socket = %i", (int)result);
+		
+		if (result < 0)
+		{
+			if (errno == EWOULDBLOCK)
+				waiting = YES;
 			else
+				error = [self errnoErrorWithReason:@"Error in read() function"];
+			
+			socketFDBytesAvailable = 0;
+		}
+		else if (result == 0)
+		{
+			socketEOF = YES;
+			socketFDBytesAvailable = 0;
+		}
+		else
+		{
+			bytesRead = result;
+			
+			if (bytesRead < bytesToRead)
 			{
-				// Read type #1 or #2
-				
-				bytesToRead = [currentRead readLengthForNonTermWithHint:estimatedBytesAvailable];
-			}
-			
-			if (bytesToRead > SIZE_MAX) { // NSUInteger may be bigger than size_t (read param 3)
-				bytesToRead = SIZE_MAX;
-			}
-			
-			// Make sure we have enough room in the buffer for our read.
-			//
-			// We are either reading directly into the currentRead->buffer,
-			// or we're reading into the temporary preBuffer.
-			
-			if (readIntoPreBuffer)
-			{
-				[preBuffer ensureCapacityForWrite:bytesToRead];
-				
-				buffer = [preBuffer writeBuffer];
-			}
-			else
-			{
-				[currentRead ensureCapacityForAdditionalDataOfLength:bytesToRead];
-				
-				buffer = (uint8_t *)[currentRead->buffer mutableBytes]
-				       + currentRead->startOffset
-				       + currentRead->bytesDone;
-			}
-			
-			// Read data into buffer
-			
-			int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
-			
-			ssize_t result = read(socketFD, buffer, (size_t)bytesToRead);
-			LogVerbose(@"read from socket = %i", (int)result);
-			
-			if (result < 0)
-			{
-				if (errno == EWOULDBLOCK)
-					waiting = YES;
-				else
-					error = [self errnoErrorWithReason:@"Error in read() function"];
-				
-				socketFDBytesAvailable = 0;
-			}
-			else if (result == 0)
-			{
-				socketEOF = YES;
+				// The read returned less data than requested.
+				// This means socketFDBytesAvailable was a bit off due to timing,
+				// because we read from the socket right when the readSource event was firing.
 				socketFDBytesAvailable = 0;
 			}
 			else
 			{
-				bytesRead = result;
-				
-				if (bytesRead < bytesToRead)
-				{
-					// The read returned less data than requested.
-					// This means socketFDBytesAvailable was a bit off due to timing,
-					// because we read from the socket right when the readSource event was firing.
+				if (socketFDBytesAvailable <= bytesRead)
 					socketFDBytesAvailable = 0;
-				}
 				else
-				{
-					if (socketFDBytesAvailable <= bytesRead)
-						socketFDBytesAvailable = 0;
-					else
-						socketFDBytesAvailable -= bytesRead;
-				}
-				
-				if (socketFDBytesAvailable == 0)
-				{
-					waiting = YES;
-				}
+					socketFDBytesAvailable -= bytesRead;
+			}
+			
+			if (socketFDBytesAvailable == 0)
+			{
+				waiting = YES;
 			}
 		}
 		
@@ -5528,11 +4855,8 @@ enum GCDAsyncSocketConfig
 	}
 	else if (waiting)
 	{
-		if (![self usingCFStreamForTLS])
-		{
-			// Monitor the socket for readability (if we're not already doing so)
-			[self resumeReadSource];
-		}
+		// Monitor the socket for readability (if we're not already doing so)
+		[self resumeReadSource];
 	}
 	
 	// Do not add any code here without first adding return statements in the error cases above.
@@ -5548,29 +4872,10 @@ enum GCDAsyncSocketConfig
 	
 	flags |= kSocketHasReadEOF;
 	
-	if (flags & kSocketSecure)
-	{
-		// If the SSL layer has any buffered data, flush it into the preBuffer now.
-		
-		[self flushSSLBuffers];
-	}
-	
 	BOOL shouldDisconnect = NO;
 	NSError *error = nil;
 	
-	if ((flags & kStartingReadTLS) || (flags & kStartingWriteTLS))
-	{
-		// We received an EOF during or prior to startTLS.
-		// The SSL/TLS handshake is now impossible, so this is an unrecoverable situation.
-		
-		shouldDisconnect = YES;
-		
-		if ([self usingSecureTransportForTLS])
-		{
-			error = [self sslError:errSSLClosedAbort];
-		}
-	}
-	else if (flags & kReadStreamClosed)
+	if (flags & kReadStreamClosed)
 	{
 		// The preBuffer has already been drained.
 		// The config allows half-duplex connections.
@@ -5648,32 +4953,15 @@ enum GCDAsyncSocketConfig
 	{
 		if (error == nil)
 		{
-			if ([self usingSecureTransportForTLS])
-			{
-				if (sslErrCode != noErr && sslErrCode != errSSLClosedGraceful)
-				{
-					error = [self sslError:sslErrCode];
-				}
-				else
-				{
-					error = [self connectionClosedError];
-				}
-			}
-			else
-			{
-				error = [self connectionClosedError];
-			}
+			error = [self connectionClosedError];
 		}
 		[self closeWithError:error];
 	}
 	else
 	{
-		if (![self usingCFStreamForTLS])
-		{
-			// Suspend the read source (if needed)
-			
-			[self suspendReadSource];
-		}
+		// Suspend the read source (if needed)
+		
+		[self suspendReadSource];
 	}
 }
 
@@ -5935,26 +5223,13 @@ enum GCDAsyncSocketConfig
 			[writeQueue removeObjectAtIndex:0];
 			
 			
-			if ([currentWrite isKindOfClass:[GCDAsyncSpecialPacket class]])
-			{
-				LogVerbose(@"Dequeued GCDAsyncSpecialPacket");
-				
-				// Attempt to start TLS
-				flags |= kStartingWriteTLS;
-				
-				// This method won't do anything unless both kStartingReadTLS and kStartingWriteTLS are set
-				[self maybeStartTLS];
-			}
-			else
-			{
-				LogVerbose(@"Dequeued GCDAsyncWritePacket");
-				
-				// Setup write timer (if needed)
-				[self setupWriteTimerWithTimeout:currentWrite->timeout];
-				
-				// Immediately write, if possible
-				[self doWriteData];
-			}
+			LogVerbose(@"Dequeued GCDAsyncWritePacket");
+			
+			// Setup write timer (if needed)
+			[self setupWriteTimerWithTimeout:currentWrite->timeout];
+			
+			// Immediately write, if possible
+			[self doWriteData];
 		}
 		else if (flags & kDisconnectAfterWrites)
 		{
@@ -5985,20 +5260,12 @@ enum GCDAsyncSocketConfig
 		
 		// Unable to write at this time
 		
-		if ([self usingCFStreamForTLS])
+		// If the writeSource is firing, we need to pause it
+		// or else it will continue to fire over and over again.
+		
+		if (flags & kSocketCanAcceptBytes)
 		{
-			// CFWriteStream only fires once when there is available data.
-			// It won't fire again until we've invoked CFWriteStreamWrite.
-		}
-		else
-		{
-			// If the writeSource is firing, we need to pause it
-			// or else it will continue to fire over and over again.
-			
-			if (flags & kSocketCanAcceptBytes)
-			{
-				[self suspendWriteSource];
-			}
+			[self suspendWriteSource];
 		}
 		return;
 	}
@@ -6009,262 +5276,50 @@ enum GCDAsyncSocketConfig
 		
 		// No space available to write.
 		
-		if (![self usingCFStreamForTLS])
-		{
-			// Need to wait for writeSource to fire and notify us of
-			// available space in the socket's internal write buffer.
-			
-			[self resumeWriteSource];
-		}
+		// Need to wait for writeSource to fire and notify us of
+		// available space in the socket's internal write buffer.
+		
+		[self resumeWriteSource];
 		return;
 	}
-	
-	if (flags & kStartingWriteTLS)
-	{
-		LogVerbose(@"Waiting for SSL/TLS handshake to complete");
-		
-		// The writeQueue is waiting for SSL/TLS handshake to complete.
-		
-		if (flags & kStartingReadTLS)
-		{
-			if ([self usingSecureTransportForTLS] && lastSSLHandshakeError == errSSLWouldBlock)
-			{
-				// We are in the process of a SSL Handshake.
-				// We were waiting for available space in the socket's internal OS buffer to continue writing.
-			
-				[self ssl_continueSSLHandshake];
-			}
-		}
-		else
-		{
-			// We are still waiting for the readQueue to drain and start the SSL/TLS process.
-			// We now know we can write to the socket.
-			
-			if (![self usingCFStreamForTLS])
-			{
-				// Suspend the write source or else it will continue to fire nonstop.
-				
-				[self suspendWriteSource];
-			}
-		}
-		
-		return;
-	}
-	
-	// Note: This method is not called if currentWrite is a GCDAsyncSpecialPacket (startTLS packet)
 	
 	BOOL waiting = NO;
 	NSError *error = nil;
 	size_t bytesWritten = 0;
 	
-	if (flags & kSocketSecure)
+	// 
+	// Writing data directly over raw socket
+	// 
+	
+	int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
+	
+	const uint8_t *buffer = (const uint8_t *)[currentWrite->buffer bytes] + currentWrite->bytesDone;
+	
+	NSUInteger bytesToWrite = [currentWrite->buffer length] - currentWrite->bytesDone;
+	
+	if (bytesToWrite > SIZE_MAX) // NSUInteger may be bigger than size_t (write param 3)
 	{
-		if ([self usingCFStreamForTLS])
+		bytesToWrite = SIZE_MAX;
+	}
+	
+	ssize_t result = write(socketFD, buffer, (size_t)bytesToWrite);
+	LogVerbose(@"wrote to socket = %zd", result);
+	
+	// Check results
+	if (result < 0)
+	{
+		if (errno == EWOULDBLOCK)
 		{
-			#if TARGET_OS_IPHONE
-			
-			// 
-			// Writing data using CFStream (over internal TLS)
-			// 
-			
-			const uint8_t *buffer = (const uint8_t *)[currentWrite->buffer bytes] + currentWrite->bytesDone;
-			
-			NSUInteger bytesToWrite = [currentWrite->buffer length] - currentWrite->bytesDone;
-			
-			if (bytesToWrite > SIZE_MAX) // NSUInteger may be bigger than size_t (write param 3)
-			{
-				bytesToWrite = SIZE_MAX;
-			}
-		
-			CFIndex result = CFWriteStreamWrite(writeStream, buffer, (CFIndex)bytesToWrite);
-			LogVerbose(@"CFWriteStreamWrite(%lu) = %li", (unsigned long)bytesToWrite, result);
-		
-			if (result < 0)
-			{
-				error = (__bridge_transfer NSError *)CFWriteStreamCopyError(writeStream);
-			}
-			else
-			{
-				bytesWritten = (size_t)result;
-				
-				// We always set waiting to true in this scenario.
-				// CFStream may have altered our underlying socket to non-blocking.
-				// Thus if we attempt to write without a callback, we may end up blocking our queue.
-				waiting = YES;
-			}
-			
-			#endif
+			waiting = YES;
 		}
 		else
 		{
-			// We're going to use the SSLWrite function.
-			// 
-			// OSStatus SSLWrite(SSLContextRef context, const void *data, size_t dataLength, size_t *processed)
-			// 
-			// Parameters:
-			// context     - An SSL session context reference.
-			// data        - A pointer to the buffer of data to write.
-			// dataLength  - The amount, in bytes, of data to write.
-			// processed   - On return, the length, in bytes, of the data actually written.
-			// 
-			// It sounds pretty straight-forward,
-			// but there are a few caveats you should be aware of.
-			// 
-			// The SSLWrite method operates in a non-obvious (and rather annoying) manner.
-			// According to the documentation:
-			// 
-			//   Because you may configure the underlying connection to operate in a non-blocking manner,
-			//   a write operation might return errSSLWouldBlock, indicating that less data than requested
-			//   was actually transferred. In this case, you should repeat the call to SSLWrite until some
-			//   other result is returned.
-			// 
-			// This sounds perfect, but when our SSLWriteFunction returns errSSLWouldBlock,
-			// then the SSLWrite method returns (with the proper errSSLWouldBlock return value),
-			// but it sets processed to dataLength !!
-			// 
-			// In other words, if the SSLWrite function doesn't completely write all the data we tell it to,
-			// then it doesn't tell us how many bytes were actually written. So, for example, if we tell it to
-			// write 256 bytes then it might actually write 128 bytes, but then report 0 bytes written.
-			// 
-			// You might be wondering:
-			// If the SSLWrite function doesn't tell us how many bytes were written,
-			// then how in the world are we supposed to update our parameters (buffer & bytesToWrite)
-			// for the next time we invoke SSLWrite?
-			// 
-			// The answer is that SSLWrite cached all the data we told it to write,
-			// and it will push out that data next time we call SSLWrite.
-			// If we call SSLWrite with new data, it will push out the cached data first, and then the new data.
-			// If we call SSLWrite with empty data, then it will simply push out the cached data.
-			// 
-			// For this purpose we're going to break large writes into a series of smaller writes.
-			// This allows us to report progress back to the delegate.
-			
-			OSStatus result;
-			
-			BOOL hasCachedDataToWrite = (sslWriteCachedLength > 0);
-			BOOL hasNewDataToWrite = YES;
-			
-			if (hasCachedDataToWrite)
-			{
-				size_t processed = 0;
-				
-				result = SSLWrite(sslContext, NULL, 0, &processed);
-				
-				if (result == noErr)
-				{
-					bytesWritten = sslWriteCachedLength;
-					sslWriteCachedLength = 0;
-					
-					if ([currentWrite->buffer length] == (currentWrite->bytesDone + bytesWritten))
-					{
-						// We've written all data for the current write.
-						hasNewDataToWrite = NO;
-					}
-				}
-				else
-				{
-					if (result == errSSLWouldBlock)
-					{
-						waiting = YES;
-					}
-					else
-					{
-						error = [self sslError:result];
-					}
-					
-					// Can't write any new data since we were unable to write the cached data.
-					hasNewDataToWrite = NO;
-				}
-			}
-			
-			if (hasNewDataToWrite)
-			{
-				const uint8_t *buffer = (const uint8_t *)[currentWrite->buffer bytes]
-				                                        + currentWrite->bytesDone
-				                                        + bytesWritten;
-				
-				NSUInteger bytesToWrite = [currentWrite->buffer length] - currentWrite->bytesDone - bytesWritten;
-				
-				if (bytesToWrite > SIZE_MAX) // NSUInteger may be bigger than size_t (write param 3)
-				{
-					bytesToWrite = SIZE_MAX;
-				}
-				
-				size_t bytesRemaining = bytesToWrite;
-				
-				BOOL keepLooping = YES;
-				while (keepLooping)
-				{
-					const size_t sslMaxBytesToWrite = 32768;
-					size_t sslBytesToWrite = MIN(bytesRemaining, sslMaxBytesToWrite);
-					size_t sslBytesWritten = 0;
-					
-					result = SSLWrite(sslContext, buffer, sslBytesToWrite, &sslBytesWritten);
-					
-					if (result == noErr)
-					{
-						buffer += sslBytesWritten;
-						bytesWritten += sslBytesWritten;
-						bytesRemaining -= sslBytesWritten;
-						
-						keepLooping = (bytesRemaining > 0);
-					}
-					else
-					{
-						if (result == errSSLWouldBlock)
-						{
-							waiting = YES;
-							sslWriteCachedLength = sslBytesToWrite;
-						}
-						else
-						{
-							error = [self sslError:result];
-						}
-						
-						keepLooping = NO;
-					}
-					
-				} // while (keepLooping)
-				
-			} // if (hasNewDataToWrite)
+			error = [self errnoErrorWithReason:@"Error in write() function"];
 		}
 	}
 	else
 	{
-		// 
-		// Writing data directly over raw socket
-		// 
-		
-		int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
-		
-		const uint8_t *buffer = (const uint8_t *)[currentWrite->buffer bytes] + currentWrite->bytesDone;
-		
-		NSUInteger bytesToWrite = [currentWrite->buffer length] - currentWrite->bytesDone;
-		
-		if (bytesToWrite > SIZE_MAX) // NSUInteger may be bigger than size_t (write param 3)
-		{
-			bytesToWrite = SIZE_MAX;
-		}
-		
-		ssize_t result = write(socketFD, buffer, (size_t)bytesToWrite);
-		LogVerbose(@"wrote to socket = %zd", result);
-		
-		// Check results
-		if (result < 0)
-		{
-			if (errno == EWOULDBLOCK)
-			{
-				waiting = YES;
-			}
-			else
-			{
-				error = [self errnoErrorWithReason:@"Error in write() function"];
-			}
-		}
-		else
-		{
-			bytesWritten = result;
-		}
+		bytesWritten = result;
 	}
 	
 	// We're done with our writing.
@@ -6280,10 +5335,7 @@ enum GCDAsyncSocketConfig
 	{
 		flags &= ~kSocketCanAcceptBytes;
 		
-		if (![self usingCFStreamForTLS])
-		{
-			[self resumeWriteSource];
-		}
+		[self resumeWriteSource];
 	}
 	
 	// Check our results
@@ -6323,10 +5375,7 @@ enum GCDAsyncSocketConfig
 			
 			flags &= ~kSocketCanAcceptBytes;
 			
-			if (![self usingCFStreamForTLS])
-			{
-				[self resumeWriteSource];
-			}
+			[self resumeWriteSource];
 		}
 		
 		if (bytesWritten > 0)
@@ -6497,1473 +5546,6 @@ enum GCDAsyncSocketConfig
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark Security
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-- (void)startTLS:(NSDictionary *)tlsSettings
-{
-	LogTrace();
-	
-	if (tlsSettings == nil)
-    {
-        // Passing nil/NULL to CFReadStreamSetProperty will appear to work the same as passing an empty dictionary,
-        // but causes problems if we later try to fetch the remote host's certificate.
-        // 
-        // To be exact, it causes the following to return NULL instead of the normal result:
-        // CFReadStreamCopyProperty(readStream, kCFStreamPropertySSLPeerCertificates)
-        // 
-        // So we use an empty dictionary instead, which works perfectly.
-        
-        tlsSettings = [NSDictionary dictionary];
-    }
-	
-	GCDAsyncSpecialPacket *packet = [[GCDAsyncSpecialPacket alloc] initWithTLSSettings:tlsSettings];
-	
-	dispatch_async(socketQueue, ^{ @autoreleasepool {
-		
-		if ((flags & kSocketStarted) && !(flags & kQueuedTLS) && !(flags & kForbidReadsWrites))
-		{
-			[readQueue addObject:packet];
-			[writeQueue addObject:packet];
-			
-			flags |= kQueuedTLS;
-			
-			[self maybeDequeueRead];
-			[self maybeDequeueWrite];
-		}
-	}});
-	
-}
-
-- (void)maybeStartTLS
-{
-	// We can't start TLS until:
-	// - All queued reads prior to the user calling startTLS are complete
-	// - All queued writes prior to the user calling startTLS are complete
-	// 
-	// We'll know these conditions are met when both kStartingReadTLS and kStartingWriteTLS are set
-	
-	if ((flags & kStartingReadTLS) && (flags & kStartingWriteTLS))
-	{
-		BOOL useSecureTransport = YES;
-		
-		#if TARGET_OS_IPHONE
-		{
-			GCDAsyncSpecialPacket *tlsPacket = (GCDAsyncSpecialPacket *)currentRead;
-            NSDictionary *tlsSettings = @{};
-            if (tlsPacket) {
-                tlsSettings = tlsPacket->tlsSettings;
-            }
-			NSNumber *value = [tlsSettings objectForKey:GCDAsyncSocketUseCFStreamForTLS];
-			if (value && [value boolValue])
-				useSecureTransport = NO;
-		}
-		#endif
-		
-		if (useSecureTransport)
-		{
-			[self ssl_startTLS];
-		}
-		else
-		{
-		#if TARGET_OS_IPHONE
-			[self cf_startTLS];
-		#endif
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark Security via SecureTransport
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-- (OSStatus)sslReadWithBuffer:(void *)buffer length:(size_t *)bufferLength
-{
-	LogVerbose(@"sslReadWithBuffer:%p length:%lu", buffer, (unsigned long)*bufferLength);
-	
-	if ((socketFDBytesAvailable == 0) && ([sslPreBuffer availableBytes] == 0))
-	{
-		LogVerbose(@"%@ - No data available to read...", THIS_METHOD);
-		
-		// No data available to read.
-		// 
-		// Need to wait for readSource to fire and notify us of
-		// available data in the socket's internal read buffer.
-		
-		[self resumeReadSource];
-		
-		*bufferLength = 0;
-		return errSSLWouldBlock;
-	}
-	
-	size_t totalBytesRead = 0;
-	size_t totalBytesLeftToBeRead = *bufferLength;
-	
-	BOOL done = NO;
-	BOOL socketError = NO;
-	
-	// 
-	// STEP 1 : READ FROM SSL PRE BUFFER
-	// 
-	
-	size_t sslPreBufferLength = [sslPreBuffer availableBytes];
-	
-	if (sslPreBufferLength > 0)
-	{
-		LogVerbose(@"%@: Reading from SSL pre buffer...", THIS_METHOD);
-		
-		size_t bytesToCopy;
-		if (sslPreBufferLength > totalBytesLeftToBeRead)
-			bytesToCopy = totalBytesLeftToBeRead;
-		else
-			bytesToCopy = sslPreBufferLength;
-		
-		LogVerbose(@"%@: Copying %zu bytes from sslPreBuffer", THIS_METHOD, bytesToCopy);
-		
-		memcpy(buffer, [sslPreBuffer readBuffer], bytesToCopy);
-		[sslPreBuffer didRead:bytesToCopy];
-		
-		LogVerbose(@"%@: sslPreBuffer.length = %zu", THIS_METHOD, [sslPreBuffer availableBytes]);
-		
-		totalBytesRead += bytesToCopy;
-		totalBytesLeftToBeRead -= bytesToCopy;
-		
-		done = (totalBytesLeftToBeRead == 0);
-		
-		if (done) LogVerbose(@"%@: Complete", THIS_METHOD);
-	}
-	
-	// 
-	// STEP 2 : READ FROM SOCKET
-	// 
-	
-	if (!done && (socketFDBytesAvailable > 0))
-	{
-		LogVerbose(@"%@: Reading from socket...", THIS_METHOD);
-		
-		int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
-		
-		BOOL readIntoPreBuffer;
-		size_t bytesToRead;
-		uint8_t *buf;
-		
-		if (socketFDBytesAvailable > totalBytesLeftToBeRead)
-		{
-			// Read all available data from socket into sslPreBuffer.
-			// Then copy requested amount into dataBuffer.
-			
-			LogVerbose(@"%@: Reading into sslPreBuffer...", THIS_METHOD);
-			
-			[sslPreBuffer ensureCapacityForWrite:socketFDBytesAvailable];
-			
-			readIntoPreBuffer = YES;
-			bytesToRead = (size_t)socketFDBytesAvailable;
-			buf = [sslPreBuffer writeBuffer];
-		}
-		else
-		{
-			// Read available data from socket directly into dataBuffer.
-			
-			LogVerbose(@"%@: Reading directly into dataBuffer...", THIS_METHOD);
-			
-			readIntoPreBuffer = NO;
-			bytesToRead = totalBytesLeftToBeRead;
-			buf = (uint8_t *)buffer + totalBytesRead;
-		}
-		
-		ssize_t result = read(socketFD, buf, bytesToRead);
-		LogVerbose(@"%@: read from socket = %zd", THIS_METHOD, result);
-		
-		if (result < 0)
-		{
-			LogVerbose(@"%@: read errno = %i", THIS_METHOD, errno);
-			
-			if (errno != EWOULDBLOCK)
-			{
-				socketError = YES;
-			}
-			
-			socketFDBytesAvailable = 0;
-		}
-		else if (result == 0)
-		{
-			LogVerbose(@"%@: read EOF", THIS_METHOD);
-			
-			socketError = YES;
-			socketFDBytesAvailable = 0;
-		}
-		else
-		{
-			size_t bytesReadFromSocket = result;
-			
-			if (socketFDBytesAvailable > bytesReadFromSocket)
-				socketFDBytesAvailable -= bytesReadFromSocket;
-			else
-				socketFDBytesAvailable = 0;
-			
-			if (readIntoPreBuffer)
-			{
-				[sslPreBuffer didWrite:bytesReadFromSocket];
-				
-				size_t bytesToCopy = MIN(totalBytesLeftToBeRead, bytesReadFromSocket);
-				
-				LogVerbose(@"%@: Copying %zu bytes out of sslPreBuffer", THIS_METHOD, bytesToCopy);
-				
-				memcpy((uint8_t *)buffer + totalBytesRead, [sslPreBuffer readBuffer], bytesToCopy);
-				[sslPreBuffer didRead:bytesToCopy];
-				
-				totalBytesRead += bytesToCopy;
-				totalBytesLeftToBeRead -= bytesToCopy;
-				
-				LogVerbose(@"%@: sslPreBuffer.length = %zu", THIS_METHOD, [sslPreBuffer availableBytes]);
-			}
-			else
-			{
-				totalBytesRead += bytesReadFromSocket;
-				totalBytesLeftToBeRead -= bytesReadFromSocket;
-			}
-			
-			done = (totalBytesLeftToBeRead == 0);
-			
-			if (done) LogVerbose(@"%@: Complete", THIS_METHOD);
-		}
-	}
-	
-	*bufferLength = totalBytesRead;
-	
-	if (done)
-		return noErr;
-	
-	if (socketError)
-		return errSSLClosedAbort;
-	
-	return errSSLWouldBlock;
-}
-
-- (OSStatus)sslWriteWithBuffer:(const void *)buffer length:(size_t *)bufferLength
-{
-	if (!(flags & kSocketCanAcceptBytes))
-	{
-		// Unable to write.
-		// 
-		// Need to wait for writeSource to fire and notify us of
-		// available space in the socket's internal write buffer.
-		
-		[self resumeWriteSource];
-		
-		*bufferLength = 0;
-		return errSSLWouldBlock;
-	}
-	
-	size_t bytesToWrite = *bufferLength;
-	size_t bytesWritten = 0;
-	
-	BOOL done = NO;
-	BOOL socketError = NO;
-	
-	int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
-	
-	ssize_t result = write(socketFD, buffer, bytesToWrite);
-	
-	if (result < 0)
-	{
-		if (errno != EWOULDBLOCK)
-		{
-			socketError = YES;
-		}
-		
-		flags &= ~kSocketCanAcceptBytes;
-	}
-	else if (result == 0)
-	{
-		flags &= ~kSocketCanAcceptBytes;
-	}
-	else
-	{
-		bytesWritten = result;
-		
-		done = (bytesWritten == bytesToWrite);
-	}
-	
-	*bufferLength = bytesWritten;
-	
-	if (done)
-		return noErr;
-	
-	if (socketError)
-		return errSSLClosedAbort;
-	
-	return errSSLWouldBlock;
-}
-
-static OSStatus SSLReadFunction(SSLConnectionRef connection, void *data, size_t *dataLength)
-{
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)connection;
-	
-	NSCAssert(dispatch_get_specific(asyncSocket->IsOnSocketQueueOrTargetQueueKey), @"What the deuce?");
-	
-	return [asyncSocket sslReadWithBuffer:data length:dataLength];
-}
-
-static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, size_t *dataLength)
-{
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)connection;
-	
-	NSCAssert(dispatch_get_specific(asyncSocket->IsOnSocketQueueOrTargetQueueKey), @"What the deuce?");
-	
-	return [asyncSocket sslWriteWithBuffer:data length:dataLength];
-}
-
-- (void)ssl_startTLS
-{
-	LogTrace();
-	
-	LogVerbose(@"Starting TLS (via SecureTransport)...");
-	
-	OSStatus status;
-	
-	GCDAsyncSpecialPacket *tlsPacket = (GCDAsyncSpecialPacket *)currentRead;
-	if (tlsPacket == nil) // Code to quiet the analyzer
-	{
-		NSAssert(NO, @"Logic error");
-		
-		[self closeWithError:[self otherError:@"Logic error"]];
-		return;
-	}
-	NSDictionary *tlsSettings = tlsPacket->tlsSettings;
-	
-	// Create SSLContext, and setup IO callbacks and connection ref
-	
-	BOOL isServer = [[tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLIsServer] boolValue];
-	
-	#if TARGET_OS_IPHONE || (__MAC_OS_X_VERSION_MIN_REQUIRED >= 1080)
-	{
-		if (isServer)
-			sslContext = SSLCreateContext(kCFAllocatorDefault, kSSLServerSide, kSSLStreamType);
-		else
-			sslContext = SSLCreateContext(kCFAllocatorDefault, kSSLClientSide, kSSLStreamType);
-		
-		if (sslContext == NULL)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLCreateContext"]];
-			return;
-		}
-	}
-	#else // (__MAC_OS_X_VERSION_MIN_REQUIRED < 1080)
-	{
-		status = SSLNewContext(isServer, &sslContext);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLNewContext"]];
-			return;
-		}
-	}
-	#endif
-	
-	status = SSLSetIOFuncs(sslContext, &SSLReadFunction, &SSLWriteFunction);
-	if (status != noErr)
-	{
-		[self closeWithError:[self otherError:@"Error in SSLSetIOFuncs"]];
-		return;
-	}
-	
-	status = SSLSetConnection(sslContext, (__bridge SSLConnectionRef)self);
-	if (status != noErr)
-	{
-		[self closeWithError:[self otherError:@"Error in SSLSetConnection"]];
-		return;
-	}
-
-
-	BOOL shouldManuallyEvaluateTrust = [[tlsSettings objectForKey:GCDAsyncSocketManuallyEvaluateTrust] boolValue];
-	if (shouldManuallyEvaluateTrust)
-	{
-		if (isServer)
-		{
-			[self closeWithError:[self otherError:@"Manual trust validation is not supported for server sockets"]];
-			return;
-		}
-		
-		status = SSLSetSessionOption(sslContext, kSSLSessionOptionBreakOnServerAuth, true);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetSessionOption"]];
-			return;
-		}
-		
-		#if !TARGET_OS_IPHONE && (__MAC_OS_X_VERSION_MIN_REQUIRED < 1080)
-		
-		// Note from Apple's documentation:
-		//
-		// It is only necessary to call SSLSetEnableCertVerify on the Mac prior to OS X 10.8.
-		// On OS X 10.8 and later setting kSSLSessionOptionBreakOnServerAuth always disables the
-		// built-in trust evaluation. All versions of iOS behave like OS X 10.8 and thus
-		// SSLSetEnableCertVerify is not available on that platform at all.
-		
-		status = SSLSetEnableCertVerify(sslContext, NO);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetEnableCertVerify"]];
-			return;
-		}
-		
-		#endif
-	}
-
-	// Configure SSLContext from given settings
-	// 
-	// Checklist:
-	//  1. kCFStreamSSLPeerName
-	//  2. kCFStreamSSLCertificates
-	//  3. GCDAsyncSocketSSLPeerID
-	//  4. GCDAsyncSocketSSLProtocolVersionMin
-	//  5. GCDAsyncSocketSSLProtocolVersionMax
-	//  6. GCDAsyncSocketSSLSessionOptionFalseStart
-	//  7. GCDAsyncSocketSSLSessionOptionSendOneByteRecord
-	//  8. GCDAsyncSocketSSLCipherSuites
-	//  9. GCDAsyncSocketSSLDiffieHellmanParameters (Mac)
-	//
-	// Deprecated (throw error):
-	// 10. kCFStreamSSLAllowsAnyRoot
-	// 11. kCFStreamSSLAllowsExpiredRoots
-	// 12. kCFStreamSSLAllowsExpiredCertificates
-	// 13. kCFStreamSSLValidatesCertificateChain
-	// 14. kCFStreamSSLLevel
-	
-	id value;
-	
-	// 1. kCFStreamSSLPeerName
-	
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLPeerName];
-	if ([value isKindOfClass:[NSString class]])
-	{
-		NSString *peerName = (NSString *)value;
-		
-		const char *peer = [peerName UTF8String];
-		size_t peerLen = strlen(peer);
-		
-		status = SSLSetPeerDomainName(sslContext, peer, peerLen);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetPeerDomainName"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for kCFStreamSSLPeerName. Value must be of type NSString.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for kCFStreamSSLPeerName."]];
-		return;
-	}
-	
-	// 2. kCFStreamSSLCertificates
-	
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLCertificates];
-	if ([value isKindOfClass:[NSArray class]])
-	{
-		CFArrayRef certs = (__bridge CFArrayRef)value;
-		
-		status = SSLSetCertificate(sslContext, certs);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetCertificate"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for kCFStreamSSLCertificates. Value must be of type NSArray.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for kCFStreamSSLCertificates."]];
-		return;
-	}
-	
-	// 3. GCDAsyncSocketSSLPeerID
-	
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLPeerID];
-	if ([value isKindOfClass:[NSData class]])
-	{
-		NSData *peerIdData = (NSData *)value;
-		
-		status = SSLSetPeerID(sslContext, [peerIdData bytes], [peerIdData length]);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetPeerID"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLPeerID. Value must be of type NSData."
-		             @" (You can convert strings to data using a method like"
-		             @" [string dataUsingEncoding:NSUTF8StringEncoding])");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLPeerID."]];
-		return;
-	}
-	
-	// 4. GCDAsyncSocketSSLProtocolVersionMin
-	
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLProtocolVersionMin];
-	if ([value isKindOfClass:[NSNumber class]])
-	{
-		SSLProtocol minProtocol = (SSLProtocol)[(NSNumber *)value intValue];
-		if (minProtocol != kSSLProtocolUnknown)
-		{
-			status = SSLSetProtocolVersionMin(sslContext, minProtocol);
-			if (status != noErr)
-			{
-				[self closeWithError:[self otherError:@"Error in SSLSetProtocolVersionMin"]];
-				return;
-			}
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLProtocolVersionMin. Value must be of type NSNumber.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLProtocolVersionMin."]];
-		return;
-	}
-	
-	// 5. GCDAsyncSocketSSLProtocolVersionMax
-	
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLProtocolVersionMax];
-	if ([value isKindOfClass:[NSNumber class]])
-	{
-		SSLProtocol maxProtocol = (SSLProtocol)[(NSNumber *)value intValue];
-		if (maxProtocol != kSSLProtocolUnknown)
-		{
-			status = SSLSetProtocolVersionMax(sslContext, maxProtocol);
-			if (status != noErr)
-			{
-				[self closeWithError:[self otherError:@"Error in SSLSetProtocolVersionMax"]];
-				return;
-			}
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLProtocolVersionMax. Value must be of type NSNumber.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLProtocolVersionMax."]];
-		return;
-	}
-	
-	// 6. GCDAsyncSocketSSLSessionOptionFalseStart
-	
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLSessionOptionFalseStart];
-	if ([value isKindOfClass:[NSNumber class]])
-	{
-		status = SSLSetSessionOption(sslContext, kSSLSessionOptionFalseStart, [value boolValue]);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetSessionOption (kSSLSessionOptionFalseStart)"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLSessionOptionFalseStart. Value must be of type NSNumber.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLSessionOptionFalseStart."]];
-		return;
-	}
-	
-	// 7. GCDAsyncSocketSSLSessionOptionSendOneByteRecord
-	
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLSessionOptionSendOneByteRecord];
-	if ([value isKindOfClass:[NSNumber class]])
-	{
-		status = SSLSetSessionOption(sslContext, kSSLSessionOptionSendOneByteRecord, [value boolValue]);
-		if (status != noErr)
-		{
-			[self closeWithError:
-			  [self otherError:@"Error in SSLSetSessionOption (kSSLSessionOptionSendOneByteRecord)"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLSessionOptionSendOneByteRecord."
-		             @" Value must be of type NSNumber.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLSessionOptionSendOneByteRecord."]];
-		return;
-	}
-	
-	// 8. GCDAsyncSocketSSLCipherSuites
-	
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLCipherSuites];
-	if ([value isKindOfClass:[NSArray class]])
-	{
-		NSArray *cipherSuites = (NSArray *)value;
-		NSUInteger numberCiphers = [cipherSuites count];
-		SSLCipherSuite ciphers[numberCiphers];
-		
-		NSUInteger cipherIndex;
-		for (cipherIndex = 0; cipherIndex < numberCiphers; cipherIndex++)
-		{
-			NSNumber *cipherObject = [cipherSuites objectAtIndex:cipherIndex];
-			ciphers[cipherIndex] = [cipherObject intValue];
-		}
-		
-		status = SSLSetEnabledCiphers(sslContext, ciphers, numberCiphers);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetEnabledCiphers"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLCipherSuites. Value must be of type NSArray.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLCipherSuites."]];
-		return;
-	}
-	
-	// 9. GCDAsyncSocketSSLDiffieHellmanParameters
-	
-	#if !TARGET_OS_IPHONE
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLDiffieHellmanParameters];
-	if ([value isKindOfClass:[NSData class]])
-	{
-		NSData *diffieHellmanData = (NSData *)value;
-		
-		status = SSLSetDiffieHellmanParams(sslContext, [diffieHellmanData bytes], [diffieHellmanData length]);
-		if (status != noErr)
-		{
-			[self closeWithError:[self otherError:@"Error in SSLSetDiffieHellmanParams"]];
-			return;
-		}
-	}
-	else if (value)
-	{
-		NSAssert(NO, @"Invalid value for GCDAsyncSocketSSLDiffieHellmanParameters. Value must be of type NSData.");
-		
-		[self closeWithError:[self otherError:@"Invalid value for GCDAsyncSocketSSLDiffieHellmanParameters."]];
-		return;
-	}
-	#endif
-	
-	// DEPRECATED checks
-	
-	// 10. kCFStreamSSLAllowsAnyRoot
-	
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLAllowsAnyRoot];
-	#pragma clang diagnostic pop
-	if (value)
-	{
-		NSAssert(NO, @"Security option unavailable - kCFStreamSSLAllowsAnyRoot"
-		             @" - You must use manual trust evaluation");
-		
-		[self closeWithError:[self otherError:@"Security option unavailable - kCFStreamSSLAllowsAnyRoot"]];
-		return;
-	}
-	
-	// 11. kCFStreamSSLAllowsExpiredRoots
-	
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLAllowsExpiredRoots];
-	#pragma clang diagnostic pop
-	if (value)
-	{
-		NSAssert(NO, @"Security option unavailable - kCFStreamSSLAllowsExpiredRoots"
-		             @" - You must use manual trust evaluation");
-		
-		[self closeWithError:[self otherError:@"Security option unavailable - kCFStreamSSLAllowsExpiredRoots"]];
-		return;
-	}
-	
-	// 12. kCFStreamSSLValidatesCertificateChain
-	
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLValidatesCertificateChain];
-	#pragma clang diagnostic pop
-	if (value)
-	{
-		NSAssert(NO, @"Security option unavailable - kCFStreamSSLValidatesCertificateChain"
-		             @" - You must use manual trust evaluation");
-		
-		[self closeWithError:[self otherError:@"Security option unavailable - kCFStreamSSLValidatesCertificateChain"]];
-		return;
-	}
-	
-	// 13. kCFStreamSSLAllowsExpiredCertificates
-	
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLAllowsExpiredCertificates];
-	#pragma clang diagnostic pop
-	if (value)
-	{
-		NSAssert(NO, @"Security option unavailable - kCFStreamSSLAllowsExpiredCertificates"
-		             @" - You must use manual trust evaluation");
-		
-		[self closeWithError:[self otherError:@"Security option unavailable - kCFStreamSSLAllowsExpiredCertificates"]];
-		return;
-	}
-	
-	// 14. kCFStreamSSLLevel
-	
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	value = [tlsSettings objectForKey:(__bridge NSString *)kCFStreamSSLLevel];
-	#pragma clang diagnostic pop
-	if (value)
-	{
-		NSAssert(NO, @"Security option unavailable - kCFStreamSSLLevel"
-		             @" - You must use GCDAsyncSocketSSLProtocolVersionMin & GCDAsyncSocketSSLProtocolVersionMax");
-		
-		[self closeWithError:[self otherError:@"Security option unavailable - kCFStreamSSLLevel"]];
-		return;
-	}
-	
-	// Setup the sslPreBuffer
-	// 
-	// Any data in the preBuffer needs to be moved into the sslPreBuffer,
-	// as this data is now part of the secure read stream.
-	
-	sslPreBuffer = [[GCDAsyncSocketPreBuffer alloc] initWithCapacity:(1024 * 4)];
-	
-	size_t preBufferLength  = [preBuffer availableBytes];
-	
-	if (preBufferLength > 0)
-	{
-		[sslPreBuffer ensureCapacityForWrite:preBufferLength];
-		
-		memcpy([sslPreBuffer writeBuffer], [preBuffer readBuffer], preBufferLength);
-		[preBuffer didRead:preBufferLength];
-		[sslPreBuffer didWrite:preBufferLength];
-	}
-	
-	sslErrCode = lastSSLHandshakeError = noErr;
-	
-	// Start the SSL Handshake process
-	
-	[self ssl_continueSSLHandshake];
-}
-
-- (void)ssl_continueSSLHandshake
-{
-	LogTrace();
-	
-	// If the return value is noErr, the session is ready for normal secure communication.
-	// If the return value is errSSLWouldBlock, the SSLHandshake function must be called again.
-	// If the return value is errSSLServerAuthCompleted, we ask delegate if we should trust the
-	// server and then call SSLHandshake again to resume the handshake or close the connection
-	// errSSLPeerBadCert SSL error.
-	// Otherwise, the return value indicates an error code.
-	
-	OSStatus status = SSLHandshake(sslContext);
-	lastSSLHandshakeError = status;
-	
-	if (status == noErr)
-	{
-		LogVerbose(@"SSLHandshake complete");
-		
-		flags &= ~kStartingReadTLS;
-		flags &= ~kStartingWriteTLS;
-		
-		flags |=  kSocketSecure;
-		
-		__strong id theDelegate = delegate;
-
-		if (delegateQueue && [theDelegate respondsToSelector:@selector(socketDidSecure:)])
-		{
-			dispatch_async(delegateQueue, ^{ @autoreleasepool {
-				
-				[theDelegate socketDidSecure:self];
-			}});
-		}
-		
-		[self endCurrentRead];
-		[self endCurrentWrite];
-		
-		[self maybeDequeueRead];
-		[self maybeDequeueWrite];
-	}
-	else if (status == errSSLPeerAuthCompleted)
-	{
-		LogVerbose(@"SSLHandshake peerAuthCompleted - awaiting delegate approval");
-		
-		__block SecTrustRef trust = NULL;
-		status = SSLCopyPeerTrust(sslContext, &trust);
-		if (status != noErr)
-		{
-			[self closeWithError:[self sslError:status]];
-			return;
-		}
-		
-		int aStateIndex = stateIndex;
-		dispatch_queue_t theSocketQueue = socketQueue;
-		
-		__weak GCDAsyncSocket *weakSelf = self;
-		
-		void (^comletionHandler)(BOOL) = ^(BOOL shouldTrust){ @autoreleasepool {
-		#pragma clang diagnostic push
-		#pragma clang diagnostic warning "-Wimplicit-retain-self"
-			
-			dispatch_async(theSocketQueue, ^{ @autoreleasepool {
-				
-				if (trust) {
-					CFRelease(trust);
-					trust = NULL;
-				}
-				
-				__strong GCDAsyncSocket *strongSelf = weakSelf;
-				if (strongSelf)
-				{
-					[strongSelf ssl_shouldTrustPeer:shouldTrust stateIndex:aStateIndex];
-				}
-			}});
-			
-		#pragma clang diagnostic pop
-		}};
-		
-		__strong id theDelegate = delegate;
-		
-		if (delegateQueue && [theDelegate respondsToSelector:@selector(socket:didReceiveTrust:completionHandler:)])
-		{
-			dispatch_async(delegateQueue, ^{ @autoreleasepool {
-			
-				[theDelegate socket:self didReceiveTrust:trust completionHandler:comletionHandler];
-			}});
-		}
-		else
-		{
-			if (trust) {
-				CFRelease(trust);
-				trust = NULL;
-			}
-			
-			NSString *msg = @"GCDAsyncSocketManuallyEvaluateTrust specified in tlsSettings,"
-			                @" but delegate doesn't implement socket:shouldTrustPeer:";
-			
-			[self closeWithError:[self otherError:msg]];
-			return;
-		}
-	}
-	else if (status == errSSLWouldBlock)
-	{
-		LogVerbose(@"SSLHandshake continues...");
-		
-		// Handshake continues...
-		// 
-		// This method will be called again from doReadData or doWriteData.
-	}
-	else
-	{
-		[self closeWithError:[self sslError:status]];
-	}
-}
-
-- (void)ssl_shouldTrustPeer:(BOOL)shouldTrust stateIndex:(int)aStateIndex
-{
-	LogTrace();
-	
-	if (aStateIndex != stateIndex)
-	{
-		LogInfo(@"Ignoring ssl_shouldTrustPeer - invalid state (maybe disconnected)");
-		
-		// One of the following is true
-		// - the socket was disconnected
-		// - the startTLS operation timed out
-		// - the completionHandler was already invoked once
-		
-		return;
-	}
-	
-	// Increment stateIndex to ensure completionHandler can only be called once.
-	stateIndex++;
-	
-	if (shouldTrust)
-	{
-        NSAssert(lastSSLHandshakeError == errSSLPeerAuthCompleted, @"ssl_shouldTrustPeer called when last error is %d and not errSSLPeerAuthCompleted", (int)lastSSLHandshakeError);
-		[self ssl_continueSSLHandshake];
-	}
-	else
-	{
-		[self closeWithError:[self sslError:errSSLPeerBadCert]];
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark Security via CFStream
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if TARGET_OS_IPHONE
-
-- (void)cf_finishSSLHandshake
-{
-	LogTrace();
-	
-	if ((flags & kStartingReadTLS) && (flags & kStartingWriteTLS))
-	{
-		flags &= ~kStartingReadTLS;
-		flags &= ~kStartingWriteTLS;
-		
-		flags |= kSocketSecure;
-		
-		__strong id theDelegate = delegate;
-
-		if (delegateQueue && [theDelegate respondsToSelector:@selector(socketDidSecure:)])
-		{
-			dispatch_async(delegateQueue, ^{ @autoreleasepool {
-				
-				[theDelegate socketDidSecure:self];
-			}});
-		}
-		
-		[self endCurrentRead];
-		[self endCurrentWrite];
-		
-		[self maybeDequeueRead];
-		[self maybeDequeueWrite];
-	}
-}
-
-- (void)cf_abortSSLHandshake:(NSError *)error
-{
-	LogTrace();
-	
-	if ((flags & kStartingReadTLS) && (flags & kStartingWriteTLS))
-	{
-		flags &= ~kStartingReadTLS;
-		flags &= ~kStartingWriteTLS;
-		
-		[self closeWithError:error];
-	}
-}
-
-- (void)cf_startTLS
-{
-	LogTrace();
-	
-	LogVerbose(@"Starting TLS (via CFStream)...");
-	
-	if ([preBuffer availableBytes] > 0)
-	{
-		NSString *msg = @"Invalid TLS transition. Handshake has already been read from socket.";
-		
-		[self closeWithError:[self otherError:msg]];
-		return;
-	}
-	
-	[self suspendReadSource];
-	[self suspendWriteSource];
-	
-	socketFDBytesAvailable = 0;
-	flags &= ~kSocketCanAcceptBytes;
-	flags &= ~kSecureSocketHasBytesAvailable;
-	
-	flags |=  kUsingCFStreamForTLS;
-	
-	if (![self createReadAndWriteStream])
-	{
-		[self closeWithError:[self otherError:@"Error in CFStreamCreatePairWithSocket"]];
-		return;
-	}
-	
-	if (![self registerForStreamCallbacksIncludingReadWrite:YES])
-	{
-		[self closeWithError:[self otherError:@"Error in CFStreamSetClient"]];
-		return;
-	}
-	
-	if (![self addStreamsToRunLoop])
-	{
-		[self closeWithError:[self otherError:@"Error in CFStreamScheduleWithRunLoop"]];
-		return;
-	}
-	
-	NSAssert([currentRead isKindOfClass:[GCDAsyncSpecialPacket class]], @"Invalid read packet for startTLS");
-	NSAssert([currentWrite isKindOfClass:[GCDAsyncSpecialPacket class]], @"Invalid write packet for startTLS");
-	
-	GCDAsyncSpecialPacket *tlsPacket = (GCDAsyncSpecialPacket *)currentRead;
-	CFDictionaryRef tlsSettings = (__bridge CFDictionaryRef)tlsPacket->tlsSettings;
-	
-	// Getting an error concerning kCFStreamPropertySSLSettings ?
-	// You need to add the CFNetwork framework to your iOS application.
-	
-	BOOL r1 = CFReadStreamSetProperty(readStream, kCFStreamPropertySSLSettings, tlsSettings);
-	BOOL r2 = CFWriteStreamSetProperty(writeStream, kCFStreamPropertySSLSettings, tlsSettings);
-	
-	// For some reason, starting around the time of iOS 4.3,
-	// the first call to set the kCFStreamPropertySSLSettings will return true,
-	// but the second will return false.
-	// 
-	// Order doesn't seem to matter.
-	// So you could call CFReadStreamSetProperty and then CFWriteStreamSetProperty, or you could reverse the order.
-	// Either way, the first call will return true, and the second returns false.
-	// 
-	// Interestingly, this doesn't seem to affect anything.
-	// Which is not altogether unusual, as the documentation seems to suggest that (for many settings)
-	// setting it on one side of the stream automatically sets it for the other side of the stream.
-	// 
-	// Although there isn't anything in the documentation to suggest that the second attempt would fail.
-	// 
-	// Furthermore, this only seems to affect streams that are negotiating a security upgrade.
-	// In other words, the socket gets connected, there is some back-and-forth communication over the unsecure
-	// connection, and then a startTLS is issued.
-	// So this mostly affects newer protocols (XMPP, IMAP) as opposed to older protocols (HTTPS).
-	
-	if (!r1 && !r2) // Yes, the && is correct - workaround for apple bug.
-	{
-		[self closeWithError:[self otherError:@"Error in CFStreamSetProperty"]];
-		return;
-	}
-	
-	if (![self openStreams])
-	{
-		[self closeWithError:[self otherError:@"Error in CFStreamOpen"]];
-		return;
-	}
-	
-	LogVerbose(@"Waiting for SSL Handshake to complete...");
-}
-
-#endif
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark CFStream
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if TARGET_OS_IPHONE
-
-+ (void)ignore:(id)_
-{}
-
-+ (void)startCFStreamThreadIfNeeded
-{
-	LogTrace();
-	
-	static dispatch_once_t predicate;
-	dispatch_once(&predicate, ^{
-		
-		cfstreamThreadRetainCount = 0;
-		cfstreamThreadSetupQueue = dispatch_queue_create("GCDAsyncSocket-CFStreamThreadSetup", DISPATCH_QUEUE_SERIAL);
-	});
-	
-	dispatch_sync(cfstreamThreadSetupQueue, ^{ @autoreleasepool {
-		
-		if (++cfstreamThreadRetainCount == 1)
-		{
-			cfstreamThread = [[NSThread alloc] initWithTarget:self
-			                                         selector:@selector(cfstreamThread)
-			                                           object:nil];
-			[cfstreamThread start];
-		}
-	}});
-}
-
-+ (void)stopCFStreamThreadIfNeeded
-{
-	LogTrace();
-	
-	// The creation of the cfstreamThread is relatively expensive.
-	// So we'd like to keep it available for recycling.
-	// However, there's a tradeoff here, because it shouldn't remain alive forever.
-	// So what we're going to do is use a little delay before taking it down.
-	// This way it can be reused properly in situations where multiple sockets are continually in flux.
-	
-	int delayInSeconds = 30;
-	dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-	dispatch_after(when, cfstreamThreadSetupQueue, ^{ @autoreleasepool {
-	#pragma clang diagnostic push
-	#pragma clang diagnostic warning "-Wimplicit-retain-self"
-		
-		if (cfstreamThreadRetainCount == 0)
-		{
-			LogWarn(@"Logic error concerning cfstreamThread start / stop");
-			return_from_block;
-		}
-		
-		if (--cfstreamThreadRetainCount == 0)
-		{
-			[cfstreamThread cancel]; // set isCancelled flag
-			
-			// wake up the thread
-            [[self class] performSelector:@selector(ignore:)
-                                 onThread:cfstreamThread
-                               withObject:[NSNull null]
-                            waitUntilDone:NO];
-            
-			cfstreamThread = nil;
-		}
-		
-	#pragma clang diagnostic pop
-	}});
-}
-
-+ (void)cfstreamThread { @autoreleasepool
-{
-	[[NSThread currentThread] setName:GCDAsyncSocketThreadName];
-	
-	LogInfo(@"CFStreamThread: Started");
-	
-	// We can't run the run loop unless it has an associated input source or a timer.
-	// So we'll just create a timer that will never fire - unless the server runs for decades.
-	[NSTimer scheduledTimerWithTimeInterval:[[NSDate distantFuture] timeIntervalSinceNow]
-	                                 target:self
-	                               selector:@selector(ignore:)
-	                               userInfo:nil
-	                                repeats:YES];
-	
-	NSThread *currentThread = [NSThread currentThread];
-	NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-	
-	BOOL isCancelled = [currentThread isCancelled];
-	
-	while (!isCancelled && [currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]])
-	{
-		isCancelled = [currentThread isCancelled];
-	}
-	
-	LogInfo(@"CFStreamThread: Stopped");
-}}
-
-+ (void)scheduleCFStreams:(GCDAsyncSocket *)asyncSocket
-{
-	LogTrace();
-	NSAssert([NSThread currentThread] == cfstreamThread, @"Invoked on wrong thread");
-	
-	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
-	
-	if (asyncSocket->readStream)
-		CFReadStreamScheduleWithRunLoop(asyncSocket->readStream, runLoop, kCFRunLoopDefaultMode);
-	
-	if (asyncSocket->writeStream)
-		CFWriteStreamScheduleWithRunLoop(asyncSocket->writeStream, runLoop, kCFRunLoopDefaultMode);
-}
-
-+ (void)unscheduleCFStreams:(GCDAsyncSocket *)asyncSocket
-{
-	LogTrace();
-	NSAssert([NSThread currentThread] == cfstreamThread, @"Invoked on wrong thread");
-	
-	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
-	
-	if (asyncSocket->readStream)
-		CFReadStreamUnscheduleFromRunLoop(asyncSocket->readStream, runLoop, kCFRunLoopDefaultMode);
-	
-	if (asyncSocket->writeStream)
-		CFWriteStreamUnscheduleFromRunLoop(asyncSocket->writeStream, runLoop, kCFRunLoopDefaultMode);
-}
-
-static void CFReadStreamCallback (CFReadStreamRef stream, CFStreamEventType type, void *pInfo)
-{
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)pInfo;
-	
-	switch(type)
-	{
-		case kCFStreamEventHasBytesAvailable:
-		{
-			dispatch_async(asyncSocket->socketQueue, ^{ @autoreleasepool {
-				
-				LogCVerbose(@"CFReadStreamCallback - HasBytesAvailable");
-				
-				if (asyncSocket->readStream != stream)
-					return_from_block;
-				
-				if ((asyncSocket->flags & kStartingReadTLS) && (asyncSocket->flags & kStartingWriteTLS))
-				{
-					// If we set kCFStreamPropertySSLSettings before we opened the streams, this might be a lie.
-					// (A callback related to the tcp stream, but not to the SSL layer).
-					
-					if (CFReadStreamHasBytesAvailable(asyncSocket->readStream))
-					{
-						asyncSocket->flags |= kSecureSocketHasBytesAvailable;
-						[asyncSocket cf_finishSSLHandshake];
-					}
-				}
-				else
-				{
-					asyncSocket->flags |= kSecureSocketHasBytesAvailable;
-					[asyncSocket doReadData];
-				}
-			}});
-			
-			break;
-		}
-		default:
-		{
-			NSError *error = (__bridge_transfer  NSError *)CFReadStreamCopyError(stream);
-			
-			if (error == nil && type == kCFStreamEventEndEncountered)
-			{
-				error = [asyncSocket connectionClosedError];
-			}
-			
-			dispatch_async(asyncSocket->socketQueue, ^{ @autoreleasepool {
-				
-				LogCVerbose(@"CFReadStreamCallback - Other");
-				
-				if (asyncSocket->readStream != stream)
-					return_from_block;
-				
-				if ((asyncSocket->flags & kStartingReadTLS) && (asyncSocket->flags & kStartingWriteTLS))
-				{
-					[asyncSocket cf_abortSSLHandshake:error];
-				}
-				else
-				{
-					[asyncSocket closeWithError:error];
-				}
-			}});
-			
-			break;
-		}
-	}
-	
-}
-
-static void CFWriteStreamCallback (CFWriteStreamRef stream, CFStreamEventType type, void *pInfo)
-{
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)pInfo;
-	
-	switch(type)
-	{
-		case kCFStreamEventCanAcceptBytes:
-		{
-			dispatch_async(asyncSocket->socketQueue, ^{ @autoreleasepool {
-				
-				LogCVerbose(@"CFWriteStreamCallback - CanAcceptBytes");
-				
-				if (asyncSocket->writeStream != stream)
-					return_from_block;
-				
-				if ((asyncSocket->flags & kStartingReadTLS) && (asyncSocket->flags & kStartingWriteTLS))
-				{
-					// If we set kCFStreamPropertySSLSettings before we opened the streams, this might be a lie.
-					// (A callback related to the tcp stream, but not to the SSL layer).
-					
-					if (CFWriteStreamCanAcceptBytes(asyncSocket->writeStream))
-					{
-						asyncSocket->flags |= kSocketCanAcceptBytes;
-						[asyncSocket cf_finishSSLHandshake];
-					}
-				}
-				else
-				{
-					asyncSocket->flags |= kSocketCanAcceptBytes;
-					[asyncSocket doWriteData];
-				}
-			}});
-			
-			break;
-		}
-		default:
-		{
-			NSError *error = (__bridge_transfer NSError *)CFWriteStreamCopyError(stream);
-			
-			if (error == nil && type == kCFStreamEventEndEncountered)
-			{
-				error = [asyncSocket connectionClosedError];
-			}
-			
-			dispatch_async(asyncSocket->socketQueue, ^{ @autoreleasepool {
-				
-				LogCVerbose(@"CFWriteStreamCallback - Other");
-				
-				if (asyncSocket->writeStream != stream)
-					return_from_block;
-				
-				if ((asyncSocket->flags & kStartingReadTLS) && (asyncSocket->flags & kStartingWriteTLS))
-				{
-					[asyncSocket cf_abortSSLHandshake:error];
-				}
-				else
-				{
-					[asyncSocket closeWithError:error];
-				}
-			}});
-			
-			break;
-		}
-	}
-	
-}
-
-- (BOOL)createReadAndWriteStream
-{
-	LogTrace();
-	
-	NSAssert(dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey), @"Must be dispatched on socketQueue");
-	
-	
-	if (readStream || writeStream)
-	{
-		// Streams already created
-		return YES;
-	}
-	
-	int socketFD = (socket4FD != SOCKET_NULL) ? socket4FD : (socket6FD != SOCKET_NULL) ? socket6FD : socketUN;
-	
-	if (socketFD == SOCKET_NULL)
-	{
-		// Cannot create streams without a file descriptor
-		return NO;
-	}
-	
-	if (![self isConnected])
-	{
-		// Cannot create streams until file descriptor is connected
-		return NO;
-	}
-	
-	LogVerbose(@"Creating read and write stream...");
-	
-	CFStreamCreatePairWithSocket(NULL, (CFSocketNativeHandle)socketFD, &readStream, &writeStream);
-	
-	// The kCFStreamPropertyShouldCloseNativeSocket property should be false by default (for our case).
-	// But let's not take any chances.
-	
-	if (readStream)
-		CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanFalse);
-	if (writeStream)
-		CFWriteStreamSetProperty(writeStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanFalse);
-	
-	if ((readStream == NULL) || (writeStream == NULL))
-	{
-		LogWarn(@"Unable to create read and write stream...");
-		
-		if (readStream)
-		{
-			CFReadStreamClose(readStream);
-			CFRelease(readStream);
-			readStream = NULL;
-		}
-		if (writeStream)
-		{
-			CFWriteStreamClose(writeStream);
-			CFRelease(writeStream);
-			writeStream = NULL;
-		}
-		
-		return NO;
-	}
-	
-	return YES;
-}
-
-- (BOOL)registerForStreamCallbacksIncludingReadWrite:(BOOL)includeReadWrite
-{
-	LogVerbose(@"%@ %@", THIS_METHOD, (includeReadWrite ? @"YES" : @"NO"));
-	
-	NSAssert(dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey), @"Must be dispatched on socketQueue");
-	NSAssert((readStream != NULL && writeStream != NULL), @"Read/Write stream is null");
-	
-	streamContext.version = 0;
-	streamContext.info = (__bridge void *)(self);
-	streamContext.retain = nil;
-	streamContext.release = nil;
-	streamContext.copyDescription = nil;
-	
-	CFOptionFlags readStreamEvents = kCFStreamEventErrorOccurred | kCFStreamEventEndEncountered;
-	if (includeReadWrite)
-		readStreamEvents |= kCFStreamEventHasBytesAvailable;
-	
-	if (!CFReadStreamSetClient(readStream, readStreamEvents, &CFReadStreamCallback, &streamContext))
-	{
-		return NO;
-	}
-	
-	CFOptionFlags writeStreamEvents = kCFStreamEventErrorOccurred | kCFStreamEventEndEncountered;
-	if (includeReadWrite)
-		writeStreamEvents |= kCFStreamEventCanAcceptBytes;
-	
-	if (!CFWriteStreamSetClient(writeStream, writeStreamEvents, &CFWriteStreamCallback, &streamContext))
-	{
-		return NO;
-	}
-	
-	return YES;
-}
-
-- (BOOL)addStreamsToRunLoop
-{
-	LogTrace();
-	
-	NSAssert(dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey), @"Must be dispatched on socketQueue");
-	NSAssert((readStream != NULL && writeStream != NULL), @"Read/Write stream is null");
-	
-	if (!(flags & kAddedStreamsToRunLoop))
-	{
-		LogVerbose(@"Adding streams to runloop...");
-		
-		[[self class] startCFStreamThreadIfNeeded];
-        dispatch_sync(cfstreamThreadSetupQueue, ^{
-            [[self class] performSelector:@selector(scheduleCFStreams:)
-                                 onThread:cfstreamThread
-                               withObject:self
-                            waitUntilDone:YES];
-        });
-		flags |= kAddedStreamsToRunLoop;
-	}
-	
-	return YES;
-}
-
-- (void)removeStreamsFromRunLoop
-{
-	LogTrace();
-	
-	NSAssert(dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey), @"Must be dispatched on socketQueue");
-	NSAssert((readStream != NULL && writeStream != NULL), @"Read/Write stream is null");
-	
-	if (flags & kAddedStreamsToRunLoop)
-	{
-		LogVerbose(@"Removing streams from runloop...");
-        
-        dispatch_sync(cfstreamThreadSetupQueue, ^{
-            [[self class] performSelector:@selector(unscheduleCFStreams:)
-                                 onThread:cfstreamThread
-                               withObject:self
-                            waitUntilDone:YES];
-        });
-		[[self class] stopCFStreamThreadIfNeeded];
-		
-		flags &= ~kAddedStreamsToRunLoop;
-	}
-}
-
-- (BOOL)openStreams
-{
-	LogTrace();
-	
-	NSAssert(dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey), @"Must be dispatched on socketQueue");
-	NSAssert((readStream != NULL && writeStream != NULL), @"Read/Write stream is null");
-	
-	CFStreamStatus readStatus = CFReadStreamGetStatus(readStream);
-	CFStreamStatus writeStatus = CFWriteStreamGetStatus(writeStream);
-	
-	if ((readStatus == kCFStreamStatusNotOpen) || (writeStatus == kCFStreamStatusNotOpen))
-	{
-		LogVerbose(@"Opening read and write stream...");
-		
-		BOOL r1 = CFReadStreamOpen(readStream);
-		BOOL r2 = CFWriteStreamOpen(writeStream);
-		
-		if (!r1 || !r2)
-		{
-			LogError(@"Error in CFStreamOpen");
-			return NO;
-		}
-	}
-	
-	return YES;
-}
-
-#endif
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Advanced
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -8085,118 +5667,6 @@ static void CFWriteStreamCallback (CFWriteStreamRef stream, CFStreamEventType ty
 	return socket6FD;
 }
 
-#if TARGET_OS_IPHONE
-
-/**
- * Questions? Have you read the header file?
-**/
-- (CFReadStreamRef)readStream
-{
-	if (!dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
-	{
-		LogWarn(@"%@ - Method only available from within the context of a performBlock: invocation", THIS_METHOD);
-		return NULL;
-	}
-	
-	if (readStream == NULL)
-		[self createReadAndWriteStream];
-	
-	return readStream;
-}
-
-/**
- * Questions? Have you read the header file?
-**/
-- (CFWriteStreamRef)writeStream
-{
-	if (!dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
-	{
-		LogWarn(@"%@ - Method only available from within the context of a performBlock: invocation", THIS_METHOD);
-		return NULL;
-	}
-	
-	if (writeStream == NULL)
-		[self createReadAndWriteStream];
-	
-	return writeStream;
-}
-
-- (BOOL)enableBackgroundingOnSocketWithCaveat:(BOOL)caveat
-{
-	if (![self createReadAndWriteStream])
-	{
-		// Error occurred creating streams (perhaps socket isn't open)
-		return NO;
-	}
-	
-	BOOL r1, r2;
-	
-	LogVerbose(@"Enabling backgrouding on socket");
-	
-	r1 = CFReadStreamSetProperty(readStream, kCFStreamNetworkServiceType, kCFStreamNetworkServiceTypeVoIP);
-	r2 = CFWriteStreamSetProperty(writeStream, kCFStreamNetworkServiceType, kCFStreamNetworkServiceTypeVoIP);
-	
-	if (!r1 || !r2)
-	{
-		return NO;
-	}
-	
-	if (!caveat)
-	{
-		if (![self openStreams])
-		{
-			return NO;
-		}
-	}
-	
-	return YES;
-}
-
-/**
- * Questions? Have you read the header file?
-**/
-- (BOOL)enableBackgroundingOnSocket
-{
-	LogTrace();
-	
-	if (!dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
-	{
-		LogWarn(@"%@ - Method only available from within the context of a performBlock: invocation", THIS_METHOD);
-		return NO;
-	}
-	
-	return [self enableBackgroundingOnSocketWithCaveat:NO];
-}
-
-- (BOOL)enableBackgroundingOnSocketWithCaveat // Deprecated in iOS 4.???
-{
-	// This method was created as a workaround for a bug in iOS.
-	// Apple has since fixed this bug.
-	// I'm not entirely sure which version of iOS they fixed it in...
-	
-	LogTrace();
-	
-	if (!dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
-	{
-		LogWarn(@"%@ - Method only available from within the context of a performBlock: invocation", THIS_METHOD);
-		return NO;
-	}
-	
-	return [self enableBackgroundingOnSocketWithCaveat:YES];
-}
-
-#endif
-
-- (SSLContextRef)sslContext
-{
-	if (!dispatch_get_specific(IsOnSocketQueueOrTargetQueueKey))
-	{
-		LogWarn(@"%@ - Method only available from within the context of a performBlock: invocation", THIS_METHOD);
-		return NULL;
-	}
-	
-	return sslContext;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark Class Utilities

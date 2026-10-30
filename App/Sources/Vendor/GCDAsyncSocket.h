@@ -7,10 +7,12 @@
 //  
 //  https://github.com/robbiehanson/CocoaAsyncSocket
 //
+//  Textual's copy has no TLS support (startTLS and SecureTransport) and no
+//  iOS-only code: it carries DCC file transfers, which are plain TCP.
+//
 
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
-#import <Security/SecureTransport.h>
 #import <dispatch/dispatch.h>
 #import <Availability.h>
 
@@ -28,23 +30,6 @@ extern NSString *const GCDAsyncSocketErrorDomain;
 
 extern NSString *const GCDAsyncSocketQueueName;
 extern NSString *const GCDAsyncSocketThreadName;
-
-extern NSString *const GCDAsyncSocketManuallyEvaluateTrust;
-#if TARGET_OS_IPHONE
-extern NSString *const GCDAsyncSocketUseCFStreamForTLS;
-#endif
-#define GCDAsyncSocketSSLPeerName     (NSString *)kCFStreamSSLPeerName
-#define GCDAsyncSocketSSLCertificates (NSString *)kCFStreamSSLCertificates
-#define GCDAsyncSocketSSLIsServer     (NSString *)kCFStreamSSLIsServer
-extern NSString *const GCDAsyncSocketSSLPeerID;
-extern NSString *const GCDAsyncSocketSSLProtocolVersionMin;
-extern NSString *const GCDAsyncSocketSSLProtocolVersionMax;
-extern NSString *const GCDAsyncSocketSSLSessionOptionFalseStart;
-extern NSString *const GCDAsyncSocketSSLSessionOptionSendOneByteRecord;
-extern NSString *const GCDAsyncSocketSSLCipherSuites;
-#if !TARGET_OS_IPHONE
-extern NSString *const GCDAsyncSocketSSLDiffieHellmanParameters;
-#endif
 
 #define GCDAsyncSocketLoggingContext 65535
 
@@ -400,13 +385,6 @@ typedef NS_ENUM(NSInteger, GCDAsyncSocketError) {
 @property (atomic, readonly) BOOL isIPv4;
 @property (atomic, readonly) BOOL isIPv6;
 
-/**
- * Returns whether or not the socket has been secured via SSL/TLS.
- * 
- * See also the startTLS method.
-**/
-@property (atomic, readonly) BOOL isSecure;
-
 #pragma mark Reading
 
 // The readData and writeData methods won't block (they are asynchronous).
@@ -670,141 +648,6 @@ typedef NS_ENUM(NSInteger, GCDAsyncSocketError) {
 **/
 - (float)progressOfWriteReturningTag:(nullable long *)tagPtr bytesDone:(nullable NSUInteger *)donePtr total:(nullable NSUInteger *)totalPtr;
 
-#pragma mark Security
-
-/**
- * Secures the connection using SSL/TLS.
- * 
- * This method may be called at any time, and the TLS handshake will occur after all pending reads and writes
- * are finished. This allows one the option of sending a protocol dependent StartTLS message, and queuing
- * the upgrade to TLS at the same time, without having to wait for the write to finish.
- * Any reads or writes scheduled after this method is called will occur over the secured connection.
- *
- * ==== The available TOP-LEVEL KEYS are:
- * 
- * - GCDAsyncSocketManuallyEvaluateTrust
- *     The value must be of type NSNumber, encapsulating a BOOL value.
- *     If you set this to YES, then the underlying SecureTransport system will not evaluate the SecTrustRef of the peer.
- *     Instead it will pause at the moment evaulation would typically occur,
- *     and allow us to handle the security evaluation however we see fit.
- *     So GCDAsyncSocket will invoke the delegate method socket:shouldTrustPeer: passing the SecTrustRef.
- *
- *     Note that if you set this option, then all other configuration keys are ignored.
- *     Evaluation will be completely up to you during the socket:didReceiveTrust:completionHandler: delegate method.
- *
- *     For more information on trust evaluation see:
- *     Apple's Technical Note TN2232 - HTTPS Server Trust Evaluation
- *     https://developer.apple.com/library/ios/technotes/tn2232/_index.html
- *     
- *     If unspecified, the default value is NO.
- *
- * - GCDAsyncSocketUseCFStreamForTLS (iOS only)
- *     The value must be of type NSNumber, encapsulating a BOOL value.
- *     By default GCDAsyncSocket will use the SecureTransport layer to perform encryption.
- *     This gives us more control over the security protocol (many more configuration options),
- *     plus it allows us to optimize things like sys calls and buffer allocation.
- *     
- *     However, if you absolutely must, you can instruct GCDAsyncSocket to use the old-fashioned encryption
- *     technique by going through the CFStream instead. So instead of using SecureTransport, GCDAsyncSocket
- *     will instead setup a CFRead/CFWriteStream. And then set the kCFStreamPropertySSLSettings property
- *     (via CFReadStreamSetProperty / CFWriteStreamSetProperty) and will pass the given options to this method.
- *     
- *     Thus all the other keys in the given dictionary will be ignored by GCDAsyncSocket,
- *     and will passed directly CFReadStreamSetProperty / CFWriteStreamSetProperty.
- *     For more infomation on these keys, please see the documentation for kCFStreamPropertySSLSettings.
- *
- *     If unspecified, the default value is NO.
- *
- * ==== The available CONFIGURATION KEYS are:
- *
- * - kCFStreamSSLPeerName
- *     The value must be of type NSString.
- *     It should match the name in the X.509 certificate given by the remote party.
- *     See Apple's documentation for SSLSetPeerDomainName.
- *
- * - kCFStreamSSLCertificates
- *     The value must be of type NSArray.
- *     See Apple's documentation for SSLSetCertificate.
- *
- * - kCFStreamSSLIsServer
- *     The value must be of type NSNumber, encapsulationg a BOOL value.
- *     See Apple's documentation for SSLCreateContext for iOS.
- *     This is optional for iOS. If not supplied, a NO value is the default.
- *     This is not needed for Mac OS X, and the value is ignored.
- *
- * - GCDAsyncSocketSSLPeerID
- *     The value must be of type NSData.
- *     You must set this value if you want to use TLS session resumption.
- *     See Apple's documentation for SSLSetPeerID.
- *
- * - GCDAsyncSocketSSLProtocolVersionMin
- * - GCDAsyncSocketSSLProtocolVersionMax
- *     The value(s) must be of type NSNumber, encapsulting a SSLProtocol value.
- *     See Apple's documentation for SSLSetProtocolVersionMin & SSLSetProtocolVersionMax.
- *     See also the SSLProtocol typedef.
- * 
- * - GCDAsyncSocketSSLSessionOptionFalseStart
- *     The value must be of type NSNumber, encapsulating a BOOL value.
- *     See Apple's documentation for kSSLSessionOptionFalseStart.
- * 
- * - GCDAsyncSocketSSLSessionOptionSendOneByteRecord
- *     The value must be of type NSNumber, encapsulating a BOOL value.
- *     See Apple's documentation for kSSLSessionOptionSendOneByteRecord.
- * 
- * - GCDAsyncSocketSSLCipherSuites
- *     The values must be of type NSArray.
- *     Each item within the array must be a NSNumber, encapsulating
- *     See Apple's documentation for SSLSetEnabledCiphers.
- *     See also the SSLCipherSuite typedef.
- *
- * - GCDAsyncSocketSSLDiffieHellmanParameters (Mac OS X only)
- *     The value must be of type NSData.
- *     See Apple's documentation for SSLSetDiffieHellmanParams.
- * 
- * ==== The following UNAVAILABLE KEYS are: (with throw an exception)
- * 
- * - kCFStreamSSLAllowsAnyRoot (UNAVAILABLE)
- *     You MUST use manual trust evaluation instead (see GCDAsyncSocketManuallyEvaluateTrust).
- *     Corresponding deprecated method: SSLSetAllowsAnyRoot
- * 
- * - kCFStreamSSLAllowsExpiredRoots (UNAVAILABLE)
- *     You MUST use manual trust evaluation instead (see GCDAsyncSocketManuallyEvaluateTrust).
- *     Corresponding deprecated method: SSLSetAllowsExpiredRoots
- *
- * - kCFStreamSSLAllowsExpiredCertificates (UNAVAILABLE)
- *     You MUST use manual trust evaluation instead (see GCDAsyncSocketManuallyEvaluateTrust).
- *     Corresponding deprecated method: SSLSetAllowsExpiredCerts
- *
- * - kCFStreamSSLValidatesCertificateChain (UNAVAILABLE)
- *     You MUST use manual trust evaluation instead (see GCDAsyncSocketManuallyEvaluateTrust).
- *     Corresponding deprecated method: SSLSetEnableCertVerify
- *
- * - kCFStreamSSLLevel (UNAVAILABLE)
- *     You MUST use GCDAsyncSocketSSLProtocolVersionMin & GCDAsyncSocketSSLProtocolVersionMin instead.
- *     Corresponding deprecated method: SSLSetProtocolVersionEnabled
- *
- * 
- * Please refer to Apple's documentation for corresponding SSLFunctions.
- *
- * If you pass in nil or an empty dictionary, the default settings will be used.
- * 
- * IMPORTANT SECURITY NOTE:
- * The default settings will check to make sure the remote party's certificate is signed by a
- * trusted 3rd party certificate agency (e.g. verisign) and that the certificate is not expired.
- * However it will not verify the name on the certificate unless you
- * give it a name to verify against via the kCFStreamSSLPeerName key.
- * The security implications of this are important to understand.
- * Imagine you are attempting to create a secure connection to MySecureServer.com,
- * but your socket gets directed to MaliciousServer.com because of a hacked DNS server.
- * If you simply use the default settings, and MaliciousServer.com has a valid certificate,
- * the default settings will not detect any problems since the certificate is valid.
- * To properly secure your connection in this particular scenario you
- * should set the kCFStreamSSLPeerName property to "MySecureServer.com".
- * 
- * You can also perform additional validation in socketDidSecure.
-**/
-- (void)startTLS:(nullable NSDictionary <NSString*,NSObject*>*)tlsSettings;
-
 #pragma mark Advanced
 
 /**
@@ -930,7 +773,6 @@ typedef NS_ENUM(NSInteger, GCDAsyncSocketError) {
  * 
  * In addition to this, other variables are not actually objects,
  * and thus cannot be retained/released or even autoreleased.
- * An example is the sslContext, of type SSLContextRef, which is actually a malloc'd struct.
  * 
  * Although there are internal variables that make it difficult to maintain thread-safety,
  * it is important to provide access to these variables
@@ -956,66 +798,6 @@ typedef NS_ENUM(NSInteger, GCDAsyncSocketError) {
 - (int)socket4FD;
 - (int)socket6FD;
 
-#if TARGET_OS_IPHONE
-
-/**
- * These methods are only available from within the context of a performBlock: invocation.
- * See the documentation for the performBlock: method above.
- * 
- * Provides access to the socket's internal CFReadStream/CFWriteStream.
- * 
- * These streams are only used as workarounds for specific iOS shortcomings:
- * 
- * - Apple has decided to keep the SecureTransport framework private is iOS.
- *   This means the only supplied way to do SSL/TLS is via CFStream or some other API layered on top of it.
- *   Thus, in order to provide SSL/TLS support on iOS we are forced to rely on CFStream,
- *   instead of the preferred and faster and more powerful SecureTransport.
- * 
- * - If a socket doesn't have backgrounding enabled, and that socket is closed while the app is backgrounded,
- *   Apple only bothers to notify us via the CFStream API.
- *   The faster and more powerful GCD API isn't notified properly in this case.
- * 
- * See also: (BOOL)enableBackgroundingOnSocket
-**/
-- (nullable CFReadStreamRef)readStream;
-- (nullable CFWriteStreamRef)writeStream;
-
-/**
- * This method is only available from within the context of a performBlock: invocation.
- * See the documentation for the performBlock: method above.
- * 
- * Configures the socket to allow it to operate when the iOS application has been backgrounded.
- * In other words, this method creates a read & write stream, and invokes:
- * 
- * CFReadStreamSetProperty(readStream, kCFStreamNetworkServiceType, kCFStreamNetworkServiceTypeVoIP);
- * CFWriteStreamSetProperty(writeStream, kCFStreamNetworkServiceType, kCFStreamNetworkServiceTypeVoIP);
- * 
- * Returns YES if successful, NO otherwise.
- * 
- * Note: Apple does not officially support backgrounding server sockets.
- * That is, if your socket is accepting incoming connections, Apple does not officially support
- * allowing iOS applications to accept incoming connections while an app is backgrounded.
- * 
- * Example usage:
- * 
- * - (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
- * {
- *     [asyncSocket performBlock:^{
- *         [asyncSocket enableBackgroundingOnSocket];
- *     }];
- * }
-**/
-- (BOOL)enableBackgroundingOnSocket;
-
-#endif
-
-/**
- * This method is only available from within the context of a performBlock: invocation.
- * See the documentation for the performBlock: method above.
- * 
- * Provides access to the socket's SSLContext, if SSL/TLS has been started on the socket.
-**/
-- (nullable SSLContextRef)sslContext;
 
 #pragma mark Utilities
 
@@ -1191,35 +973,6 @@ typedef NS_ENUM(NSInteger, GCDAsyncSocketError) {
  * Of course, this depends on how your state machine is configured.
 **/
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(nullable NSError *)err;
-
-/**
- * Called after the socket has successfully completed SSL/TLS negotiation.
- * This method is not called unless you use the provided startTLS method.
- * 
- * If a SSL/TLS negotiation fails (invalid certificate, etc) then the socket will immediately close,
- * and the socketDidDisconnect:withError: delegate method will be called with the specific SSL error code.
-**/
-- (void)socketDidSecure:(GCDAsyncSocket *)sock;
-
-/**
- * Allows a socket delegate to hook into the TLS handshake and manually validate the peer it's connecting to.
- *
- * This is only called if startTLS is invoked with options that include:
- * - GCDAsyncSocketManuallyEvaluateTrust == YES
- *
- * Typically the delegate will use SecTrustEvaluate (and related functions) to properly validate the peer.
- * 
- * Note from Apple's documentation:
- *   Because [SecTrustEvaluate] might look on the network for certificates in the certificate chain,
- *   [it] might block while attempting network access. You should never call it from your main thread;
- *   call it only from within a function running on a dispatch queue or on a separate thread.
- * 
- * Thus this method uses a completionHandler block rather than a normal return value.
- * The completionHandler block is thread-safe, and may be invoked from a background queue/thread.
- * It is safe to invoke the completionHandler block even if the socket has been closed.
-**/
-- (void)socket:(GCDAsyncSocket *)sock didReceiveTrust:(SecTrustRef)trust
-                                    completionHandler:(void (^)(BOOL shouldTrustPeer))completionHandler;
 
 @end
 NS_ASSUME_NONNULL_END
