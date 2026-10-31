@@ -11,7 +11,7 @@
                 <outlet property="contentViewUnregisteredTextualView" destination="bea-Wk-5YZ" id="eQ1-yJ-C44"/>
                 <outlet property="registeredViewDeactivateTextualButton" destination="o0O-rL-T0z" id="Tdv-fR-Qgf"/>
                 <outlet property="registeredViewLicenseKeyTextField" destination="Aic-wa-hxg" id="8Q8-w8-hZ6"/>
-                <outlet property="registeredViewLicensePurchaseDateTextField" destination="g5a-3T-fft" id="oiK-Ta-kGv"/>
+                <outlet property="registeredViewLicenseDateTextField" destination="g5a-3T-fft" id="oiK-Ta-kGv"/>
                 <outlet property="unregisteredViewActivateTextualButton" destination="c0t-Vn-Ofk" id="1lB-yf-GaZ"/>
                 <outlet property="unregisteredViewCancelButton" destination="yZF-Hy-PrY" id="L9r-Xa-FVj"/>
                 <outlet property="unregisteredViewLicenseKeyTextField" destination="kAU-WO-mIJ" id="gPM-eo-qVs"/>
@@ -76,7 +76,7 @@
                     <constraints>
                         <constraint firstAttribute="height" constant="22" id="vbh-eP-CmJ"/>
                     </constraints>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="" drawsBackground="YES" id="gYL-gB-e0X">
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="" usesSingleLineMode="YES" drawsBackground="YES" id="gYL-gB-e0X">
                         <font key="font" size="13" name="Courier"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -91,6 +91,9 @@
                     <buttonCell key="cell" type="push" title="Activate Textual" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="THe-1N-yO3">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
+                        <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
                     </buttonCell>
                     <accessibility description="Activate Textual"/>
                     <connections>
@@ -272,7 +275,7 @@ Gw
                         <gridCell row="vAa-8C-0kw" column="Wnb-a3-qTo" id="Pnr-0o-kf9">
                             <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KTA-04-hF9">
                                 <rect key="frame" x="-2" y="0.0" width="103" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="right" title="Purchase Date:" id="ZkA-LE-wVS">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="right" title="Licensed Since:" id="ZkA-LE-wVS">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

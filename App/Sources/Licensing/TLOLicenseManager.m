@@ -361,7 +361,7 @@ NSDictionary<NSString *, id> * _Nullable TLOLicenseManagerActivationPayload(void
 		[payload[@"activationID"] isKindOfClass:[NSString class]] == NO ||
 		[payload[@"licenseKey"] isKindOfClass:[NSString class]] == NO)
 	{
-		LogToConsoleError("The activation is incomplete or for another licence generation");
+		LogToConsoleError("The activation is incomplete or for another license generation");
 
 		return nil;
 	}
@@ -461,6 +461,34 @@ NSString * _Nullable TLOLicenseManagerLicenseDateFormatted(void)
 	}
 
 	return [NSDateFormatter localizedStringFromDate:licenseDate dateStyle:NSDateFormatterLongStyle timeStyle:NSDateFormatterNoStyle];
+}
+
+NSString *TLOLicenseManagerCleanedLicenseKey(NSString *licenseKey)
+{
+	NSCParameterAssert(licenseKey != nil);
+
+	/* Keys are lowercase letters, digits and hyphens. A pasted key often brings
+	 spaces, line breaks or quotes along, and email apps turn hyphens into dashes. */
+	NSMutableString *cleanedLicenseKey = [NSMutableString stringWithCapacity:licenseKey.length];
+
+	for (NSUInteger i = 0; i < licenseKey.length; i++) {
+		unichar character = [licenseKey characterAtIndex:i];
+
+		if ((character >= 0x2010 && character <= 0x2015) || character == 0x2212) { // Dashes, minus sign
+			character = '-';
+		} else if (character >= 'A' && character <= 'Z') {
+			character = (character - 'A' + 'a');
+		}
+
+		if ((character >= 'a' && character <= 'z') ||
+			(character >= '0' && character <= '9') ||
+			 character == '-')
+		{
+			[cleanedLicenseKey appendFormat:@"%C", character];
+		}
+	}
+
+	return [cleanedLicenseKey copy];
 }
 
 BOOL TLOLicenseManagerLicenseKeyIsValid(NSString *licenseKey)
@@ -622,7 +650,7 @@ BOOL TLOLicenseManagerImportTextual7LicenseFile(NSData *licenseContents)
 		[licenseDictionary[@"licenseKey"] isKindOfClass:[NSString class]] == NO ||
 		TLOLicenseManagerLicenseKeyIsValid(licenseDictionary[@"licenseKey"]) == NO)
 	{
-		LogToConsoleError("The Textual 7 licence file has no licence key");
+		LogToConsoleError("The Textual 7 license file has no license key");
 
 		return NO;
 	}
@@ -636,7 +664,7 @@ BOOL TLOLicenseManagerImportTextual7LicenseFile(NSData *licenseContents)
 	NSError *writeError = nil;
 
 	if ([licenseContents writeToURL:licenseFilePath options:NSDataWritingAtomic error:&writeError] == NO) {
-		LogToConsoleError("Unable to write the Textual 7 licence file: %{public}@", writeError.localizedDescription);
+		LogToConsoleError("Unable to write the Textual 7 license file: %{public}@", writeError.localizedDescription);
 
 		return NO;
 	}

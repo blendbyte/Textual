@@ -61,8 +61,14 @@ typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful
 
 - (void)activateLicense:(NSString *)licenseKey;
 
+/* With both seats taken, frees the given seat for this Mac */
+- (void)activateLicense:(NSString *)licenseKey replacingActivation:(nullable NSString *)activationID;
+
 /* Frees this Mac's seat */
 - (void)deactivateLicense;
+
+/* Frees a seat this Mac used before, such as the one of a key it no longer uses */
+- (void)deactivateActivation:(nullable NSString *)activationID;
 
 /* Starts or returns this Mac's trial */
 - (void)requestTrial;

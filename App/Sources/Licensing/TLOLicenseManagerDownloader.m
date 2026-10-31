@@ -98,9 +98,17 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 - (void)activateLicense:(NSString *)licenseKey
 {
+	[self activateLicense:licenseKey replacingActivation:nil];
+}
+
+- (void)activateLicense:(NSString *)licenseKey replacingActivation:(nullable NSString *)activationID
+{
 	NSParameterAssert(licenseKey != nil);
 
-	NSDictionary *contextInfo = @{@"licenseKey" : licenseKey};
+	NSMutableDictionary *contextInfo = [NSMutableDictionary dictionary];
+
+	contextInfo[@"licenseKey"] = licenseKey;
+	contextInfo[@"replaceActivationID"] = activationID;
 
 	[self performRequestType:TLOLicenseManagerDownloaderRequestTypeActivation
 					 context:contextInfo];
@@ -108,8 +116,11 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 - (void)deactivateLicense
 {
-	NSString *activationID = TLOLicenseManagerActivationID();
+	[self deactivateActivation:TLOLicenseManagerActivationID()];
+}
 
+- (void)deactivateActivation:(nullable NSString *)activationID
+{
 	if (activationID == nil) {
 		/* Nothing on the server to free */
 		BOOL operationResult = (self.actionBlock == nil || self.actionBlock(TLOLicenseManagerDownloaderRequestStatusCodeSuccess, nil));
@@ -421,17 +432,6 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 							  defaultButton:TXTLS(@"Prompts[c7s-dq]")
 							alternateButton:nil];
 		}
-		else if (requestType == TLOLicenseManagerDownloaderRequestTypeActivation && apiStatusCode == 7100003)
-		{
-			BOOL userResponse = [TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[s2m-f1]")
-														  title:TXTLS(@"TLOLicenseManager[s2m-f0]")
-												  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-												alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")];
-
-			if (userResponse == NO) { // NO = alternate button
-				[self contactSupport];
-			}
-		}
 		else if (requestType == TLOLicenseManagerDownloaderRequestTypeActivation && apiStatusCode == 7100007)
 		{
 			BOOL userResponse = [TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[p3v-r1]")
@@ -560,6 +560,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 			formValues[@"licenseKey"] = self.requestContextInfo[@"licenseKey"];
 			formValues[@"machineHash"] = TLOLicenseManagerMachineHash();
 			formValues[@"macModel"] = TLOLicenseManagerMacModel();
+			formValues[@"replaceActivationID"] = self.requestContextInfo[@"replaceActivationID"];
 
 			break;
 		}

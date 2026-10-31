@@ -113,6 +113,18 @@ static NSString * const TLOLicenseManagerTestsKeyID = @"t8-tests";
 	XCTAssertEqual([machineHash rangeOfCharacterFromSet:notLowercaseHex].location, NSNotFound);
 }
 
+- (void)testCleansPastedLicenseKey
+{
+	/* Line breaks, spaces, quotes, an email's dashes and capitals around a real key */
+	NSString *pastedLicenseKey = @" “Textual–Eight-normal-0000000000000000\n00000001”.\t";
+
+	NSString *cleanedLicenseKey = TLOLicenseManagerCleanedLicenseKey(pastedLicenseKey);
+
+	XCTAssertEqualObjects(cleanedLicenseKey, @"textual-eight-normal-000000000000000000000001");
+
+	XCTAssertTrue(TLOLicenseManagerLicenseKeyIsValid(cleanedLicenseKey));
+}
+
 - (void)testAcceptsAnswerSignedForThisMac
 {
 	NSDictionary *signedAnswer = [self signedAnswerWithPayload:[self activationPayloadForMachineHash:TLOLicenseManagerMachineHash()] signingKey:self.privateKey];

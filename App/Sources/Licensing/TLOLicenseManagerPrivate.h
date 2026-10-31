@@ -74,6 +74,10 @@ TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerActivationID(void);
 TEXTUAL_EXTERN NSDate * _Nullable TLOLicenseManagerLicenseDate(void);
 TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseDateFormatted(void);
 
+/* Only the characters a key can have: spaces, line breaks and quotes removed,
+ dashes made hyphens, letters lowercase */
+TEXTUAL_EXTERN NSString *TLOLicenseManagerCleanedLicenseKey(NSString *licenseKey);
+
 TEXTUAL_EXTERN BOOL TLOLicenseManagerLicenseKeyIsValid(NSString *licenseKey);
 
 TEXTUAL_EXTERN BOOL TLOLicenseManagerSaveTrial(id signedAnswer);

@@ -74,7 +74,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, weak) IBOutlet NSTextField *unregisteredViewLicenseKeyTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *unregisteredViewTrialInformationTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *registeredViewLicenseKeyTextField;
-@property (nonatomic, weak) IBOutlet NSTextField *registeredViewLicensePurchaseDateTextField;
+@property (nonatomic, weak) IBOutlet NSTextField *registeredViewLicenseDateTextField;
 @property (nonatomic, weak) IBOutlet NSButton *registeredViewDeactivateTextualButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewActivateTextualButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewCancelButton;
@@ -82,6 +82,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, strong, nullable) TDCProgressIndicatorSheet *progressIndicator;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *licenseManagerDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *trialDownloader;
+@property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *previousActivationDownloader;
 @property (nonatomic, strong, nullable) TDCLicenseUpgradeDialog *upgradeDialog;
 @property (nonatomic, strong, nullable) TDCLicenseUpgradeActivateSheet *upgradeActivateSheet;
 @property (nonatomic, assign) BOOL textualIsRegistered;
@@ -164,7 +165,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		NSString *licenseDate = TLOLicenseManagerLicenseDateFormatted();
 
 		self.registeredViewLicenseKeyTextField.stringValue = (licenseKey ?: @"");
-		self.registeredViewLicensePurchaseDateTextField.stringValue = (licenseDate ?: @"");
+		self.registeredViewLicenseDateTextField.stringValue = (licenseDate ?: @"");
 
 		contentView = self.contentViewRegisteredTextualView;
 	}
@@ -317,7 +318,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		return; // Cancel operation...
 	}
 
-	NSString *licenseKeyValue = self.unregisteredViewLicenseKeyTextField.stringValue.trim;
+	NSString *licenseKeyValue = self.unregisteredViewLicenseKeyTextField.stringValue;
 
 	if (TLOLicenseManagerLicenseKeyIsValid(licenseKeyValue)) {
 		self.unregisteredViewActivateTextualButton.enabled = YES;
@@ -363,6 +364,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	/* This method is allowed to be invoked by another class in order
 	 to activate a license. It is not invoked by this class on its own. */
+	licenseKey = TLOLicenseManagerCleanedLicenseKey(licenseKey);
+
 	if (TLOLicenseManagerLicenseKeyIsValid(licenseKey)) {
 		[self attemptToActivateLicenseKey:licenseKey silently:silently];
 	}
@@ -376,6 +379,11 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 }
 
 - (void)attemptToActivateLicenseKey:(NSString *)licenseKey silently:(BOOL)silently
+{
+	[self attemptToActivateLicenseKey:licenseKey silently:silently replacingActivation:nil];
+}
+
+- (void)attemptToActivateLicenseKey:(NSString *)licenseKey silently:(BOOL)silently replacingActivation:(nullable NSString *)replaceActivationID
 {
 	NSParameterAssert(licenseKey != nil);
 
@@ -394,8 +402,10 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		return;
 	}
 
+	NSString *cleanedLicenseKey = TLOLicenseManagerCleanedLicenseKey(licenseKey);
+
 	/* Do not activate license we are already using. */
-	if ([licenseKey.trim isEqualToString:TLOLicenseManagerLicenseKey()]) {
+	if ([cleanedLicenseKey isEqualToString:TLOLicenseManagerLicenseKey()]) {
 		[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[fxu-su]")
 								  title:TXTLS(@"TLOLicenseManager[bw3-sc]", licenseKey.prettyLicenseKey)
 						  defaultButton:TXTLS(@"Prompts[c7s-dq]")
@@ -418,24 +428,52 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	TLOLicenseManagerDownloader *licenseManagerDownloader = [TLOLicenseManagerDownloader new];
 
-	NSString *trimmedLicenseKey = licenseKey.trim;
+	/* A Mac moving to another key frees its seat on the old one afterwards */
+	NSString *previousActivationID = TLOLicenseManagerActivationID();
 
 	licenseManagerDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
-		return (TLOLicenseManagerSaveActivation(statusContext, trimmedLicenseKey) == TLOLicenseManagerActionResultSuccess);
+		return (TLOLicenseManagerSaveActivation(statusContext, cleanedLicenseKey) == TLOLicenseManagerActionResultSuccess);
 	};
 
 	licenseManagerDownloader.errorBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
+		/* Both seats taken: shown once the progress sheet is gone */
+		if (statusCode == 7100003) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[weakSelf presentSeatsFullForLicenseKey:cleanedLicenseKey statusContext:statusContext silently:silently];
+			});
+
+			return YES;
+		}
+
+		/* No seat-freeings left */
+		if (statusCode == 7100005) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[weakSelf presentNoMovesLeftWithStatusContext:statusContext];
+			});
+
+			return YES;
+		}
+
+		/* The chosen seat was freed meanwhile: try again without it */
+		if (statusCode == 7100006) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[weakSelf attemptToActivateLicenseKey:cleanedLicenseKey silently:silently];
+			});
+
+			return YES;
+		}
+
 		/* A Textual 7 key: it can be upgraded */
 		if (statusCode != 7100004) {
 			return NO;
 		}
 
 		[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[5bu-ov]")
-								  title:TXTLS(@"TLOLicenseManager[pmv-qp]", trimmedLicenseKey.prettyLicenseKey)
+								  title:TXTLS(@"TLOLicenseManager[pmv-qp]", cleanedLicenseKey.prettyLicenseKey)
 						  defaultButton:TXTLS(@"TLOLicenseManager[53u-lt]")
 						alternateButton:nil];
 
-		[weakSelf showUpgradeDialogForLicenseKey:trimmedLicenseKey];
+		[weakSelf showUpgradeDialogForLicenseKey:cleanedLicenseKey];
 
 		return YES;
 	};
@@ -449,6 +487,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 			strongSelf.unregisteredViewLicenseKeyTextField.stringValue = @"";
 
 			[strongSelf toggleTrialTimer];
+
+			[strongSelf freePreviousActivation:previousActivationID];
 
 			[RZNotificationCenter() postNotificationName:TDCLicenseManagerActivatedLicenseNotification object:strongSelf];
 
@@ -467,9 +507,214 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	licenseManagerDownloader.isSilentOnSuccess = self.isSilentOnSuccess;
 
-	[licenseManagerDownloader activateLicense:trimmedLicenseKey];
+	[licenseManagerDownloader activateLicense:cleanedLicenseKey replacingActivation:replaceActivationID];
 
 	self.licenseManagerDownloader = licenseManagerDownloader;
+}
+
+- (void)freePreviousActivation:(nullable NSString *)activationID
+{
+	/* Nothing, or the same seat again */
+	if (activationID == nil || [activationID isEqualToString:TLOLicenseManagerActivationID()]) {
+		return;
+	}
+
+	/* Silent: if it fails, the old key's owner frees that seat the next
+	 time both are taken, from the sheet below */
+	TLOLicenseManagerDownloader *previousActivationDownloader = [TLOLicenseManagerDownloader new];
+
+	previousActivationDownloader.isSilentOnFailure = YES;
+	previousActivationDownloader.isSilentOnSuccess = YES;
+
+	__weak TDCLicenseManagerDialog *weakSelf = self;
+
+	previousActivationDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
+		weakSelf.previousActivationDownloader = nil;
+	};
+
+	[previousActivationDownloader deactivateActivation:activationID];
+
+	self.previousActivationDownloader = previousActivationDownloader;
+}
+
+#pragma mark -
+#pragma mark Both Seats Taken
+
+- (void)presentSeatsFullForLicenseKey:(NSString *)licenseKey statusContext:(nullable id)statusContext silently:(BOOL)silently
+{
+	NSParameterAssert(licenseKey != nil);
+
+	NSArray *seatList = nil;
+
+	NSInteger movesLeft = 0;
+
+	if ([statusContext isKindOfClass:[NSDictionary class]]) {
+		seatList = [statusContext arrayForKey:@"seats"];
+
+		movesLeft = [statusContext integerForKey:@"remoteFreesLeft" orUseDefault:0];
+	}
+
+	/* Only seats Textual can name */
+	NSMutableArray<NSDictionary *> *seats = [NSMutableArray array];
+
+	for (id seat in seatList) {
+		if ([seat isKindOfClass:[NSDictionary class]] &&
+			[seat[@"activationID"] isKindOfClass:[NSString class]] &&
+			[seat[@"macModel"] isKindOfClass:[NSString class]])
+		{
+			[seats addObject:seat];
+		}
+	}
+
+	if (seats.count == 0) {
+		[TDCAlert alertSheetWithWindow:self.window
+								  body:TXTLS(@"TLOLicenseManager[s2m-f1]")
+								 title:TXTLS(@"TLOLicenseManager[s2m-f0]")
+						 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+					   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+						   otherButton:nil
+					   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+			if (buttonClicked == TDCAlertResponseAlternate) {
+				[menuController() contactSupport:nil];
+			}
+		}];
+
+		return;
+	}
+
+	if (movesLeft <= 0) {
+		[self presentNoMovesLeftWithStatusContext:statusContext];
+
+		return;
+	}
+
+	/* One choice per Mac; the one used longest ago is chosen to begin with */
+	NSMutableArray<NSButton *> *seatButtons = [NSMutableArray arrayWithCapacity:seats.count];
+
+	NSButton *leastRecentlyUsedButton = nil;
+
+	NSDate *leastRecentlyUsedDate = nil;
+
+	for (NSDictionary *seat in seats) {
+		NSString *title = seat[@"macModel"];
+
+		NSDate *lastSeenAt = seat[@"lastSeenAt"];
+
+		if ([lastSeenAt isKindOfClass:[NSDate class]]) {
+			NSString *lastSeenAtText = [NSDateFormatter localizedStringFromDate:lastSeenAt dateStyle:NSDateFormatterLongStyle timeStyle:NSDateFormatterNoStyle];
+
+			title = TXTLS(@"TLOLicenseManager[s2m-f3]", title, lastSeenAtText);
+		} else {
+			lastSeenAt = nil;
+		}
+
+		NSButton *seatButton = [NSButton radioButtonWithTitle:title target:self action:@selector(seatsFullSeatChosen:)];
+
+		[seatButtons addObject:seatButton];
+
+		if (leastRecentlyUsedButton == nil ||
+			(lastSeenAt != nil && (leastRecentlyUsedDate == nil || [lastSeenAt compare:leastRecentlyUsedDate] == NSOrderedAscending)))
+		{
+			leastRecentlyUsedButton = seatButton;
+
+			leastRecentlyUsedDate = lastSeenAt;
+		}
+	}
+
+	leastRecentlyUsedButton.state = NSControlStateValueOn;
+
+	NSString *movesLeftText = nil;
+
+	if (movesLeft == 1) {
+		movesLeftText = TXTLS(@"TLOLicenseManager[s2m-f5]");
+	} else {
+		movesLeftText = TXTLS(@"TLOLicenseManager[s2m-f4]", movesLeft);
+	}
+
+	NSTextField *movesLeftField = [NSTextField wrappingLabelWithString:movesLeftText];
+
+	movesLeftField.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	movesLeftField.textColor = [NSColor secondaryLabelColor];
+	movesLeftField.preferredMaxLayoutWidth = 280.0;
+
+	NSStackView *accessoryView = [NSStackView stackViewWithViews:seatButtons];
+
+	accessoryView.orientation = NSUserInterfaceLayoutOrientationVertical;
+	accessoryView.alignment = NSLayoutAttributeLeading;
+	accessoryView.spacing = 6.0;
+
+	[accessoryView addView:movesLeftField inGravity:NSStackViewGravityTop];
+
+	[accessoryView setCustomSpacing:12.0 afterView:seatButtons.lastObject];
+
+	accessoryView.frame = NSMakeRect(0.0, 0.0, 280.0, accessoryView.fittingSize.height);
+
+	__weak TDCLicenseManagerDialog *weakSelf = self;
+
+	[TDCAlert alertSheetWithWindow:self.window
+							  body:TXTLS(@"TLOLicenseManager[s2m-f2]")
+							 title:TXTLS(@"TLOLicenseManager[s2m-f0]")
+					 defaultButton:TXTLS(@"TLOLicenseManager[s2m-f6]")
+				   alternateButton:TXTLS(@"Prompts[qso-2g]")
+					   otherButton:nil
+					 accessoryView:accessoryView
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+		if (buttonClicked != TDCAlertResponseDefault) {
+			return;
+		}
+
+		NSUInteger chosenIndex = [seatButtons indexOfObjectPassingTest:^BOOL(NSButton *seatButton, NSUInteger index, BOOL *stop) {
+			return (seatButton.state == NSControlStateValueOn);
+		}];
+
+		if (chosenIndex == NSNotFound) {
+			return;
+		}
+
+		NSString *activationID = seats[chosenIndex][@"activationID"];
+
+		[weakSelf attemptToActivateLicenseKey:licenseKey silently:silently replacingActivation:activationID];
+	}];
+}
+
+- (void)seatsFullSeatChosen:(id)sender
+{
+	/* Radio buttons with the same action in one view choose one of them */
+}
+
+- (void)presentNoMovesLeftWithStatusContext:(nullable id)statusContext
+{
+	NSDate *movesResetAt = nil;
+
+	if ([statusContext isKindOfClass:[NSDictionary class]]) {
+		movesResetAt = statusContext[@"remoteFreesResetAt"];
+	}
+
+	NSString *movesResetAtText = nil;
+
+	if ([movesResetAt isKindOfClass:[NSDate class]]) {
+		movesResetAtText = [NSDateFormatter localizedStringFromDate:movesResetAt dateStyle:NSDateFormatterLongStyle timeStyle:NSDateFormatterNoStyle];
+	}
+
+	NSString *body = nil;
+
+	if (movesResetAtText) {
+		body = TXTLS(@"TLOLicenseManager[s2m-f8]", movesResetAtText);
+	} else {
+		body = TXTLS(@"TLOLicenseManager[s2m-f9]");
+	}
+
+	[TDCAlert alertSheetWithWindow:self.window
+							  body:body
+							 title:TXTLS(@"TLOLicenseManager[s2m-f7]")
+					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+				   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+		if (buttonClicked == TDCAlertResponseAlternate) {
+			[menuController() contactSupport:nil];
+		}
+	}];
 }
 
 #pragma mark -
@@ -753,8 +998,38 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 - (void)controlTextDidChange:(NSNotification *)obj
 {
 	if (obj.object == self.unregisteredViewLicenseKeyTextField) {
+		[self cleanUpUnregisteredViewLicenseKey];
+
 		[self updateUnregisteredViewActivationButton];
 	}
+}
+
+- (void)cleanUpUnregisteredViewLicenseKey
+{
+	/* As it's typed or pasted, keeping the insertion point where it was */
+	NSTextField *textField = self.unregisteredViewLicenseKeyTextField;
+
+	NSString *licenseKey = textField.stringValue;
+
+	NSString *cleanedLicenseKey = TLOLicenseManagerCleanedLicenseKey(licenseKey);
+
+	if ([cleanedLicenseKey isEqualToString:licenseKey]) {
+		return;
+	}
+
+	NSText *fieldEditor = textField.currentEditor;
+
+	NSUInteger insertionPoint = NSMaxRange(fieldEditor.selectedRange);
+
+	if (insertionPoint > licenseKey.length) {
+		insertionPoint = licenseKey.length;
+	}
+
+	NSUInteger cleanedInsertionPoint = TLOLicenseManagerCleanedLicenseKey([licenseKey substringToIndex:insertionPoint]).length;
+
+	textField.stringValue = cleanedLicenseKey;
+
+	fieldEditor.selectedRange = NSMakeRange(cleanedInsertionPoint, 0);
 }
 
 #pragma mark -
@@ -803,7 +1078,11 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		return TXTLS(@"TLOLicenseManager[kn7-ju]");
 	}
 
-	NSString *formattedTimeRemainingString = TXHumanReadableTimeInterval(timeLeft, YES, NSCalendarUnitDay);
+	/* Whole days, rounded up: 30 days right after the trial starts, 1 on its last day.
+	 Half a day more, so a daylight saving change doesn't take one away. */
+	NSTimeInterval daysLeft = ceil((timeLeft * (-1.0)) / 86400.0);
+
+	NSString *formattedTimeRemainingString = TXHumanReadableTimeInterval(((daysLeft * 86400.0) + 43200.0) * (-1.0), YES, NSCalendarUnitDay);
 
 	return TXTLS(@"TLOLicenseManager[wdl-3f]", formattedTimeRemainingString);
 }
