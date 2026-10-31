@@ -133,10 +133,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSURL *)licenseFolderURL
 {
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
-	/* Never over a valid licence this copy already has (checked on the file: at first
-	 launch the licence manager isn't set up yet, so "registered" was always NO).
-	 A damaged or wrongly signed one doesn't stop the import. */
-	if (self.licenseContainerIdentifier == nil || TLOLicenseManagerLicenseFileIsValid()) {
+	/* Textual 7's licence file only proves the upgrade: not needed once this
+	 copy is activated or already has one */
+	if (self.licenseContainerIdentifier == nil || TLOLicenseManagerTextualIsRegistered() || TLOLicenseManagerTextual7LicenseFileExists()) {
 		return nil;
 	}
 
@@ -641,11 +640,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.result.triedLicense = YES;
 
-	/* Verified before it is written, with the public key that setting up the
-	 licence manager loads (at launch, the import runs before that) */
-	TLOLicenseManagerSetup();
-
-	self.result.importedLicense = (TLOLicenseManagerWriteLicenseFileContents(licenseContents) == TLOLicenseManagerActionResultSuccess);
+	/* The licensing server checks it when the upgrade is asked for */
+	self.result.importedLicense = TLOLicenseManagerImportTextual7LicenseFile(licenseContents);
 #endif
 }
 

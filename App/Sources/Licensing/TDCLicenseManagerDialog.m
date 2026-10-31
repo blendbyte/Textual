@@ -74,7 +74,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, weak) IBOutlet NSTextField *unregisteredViewLicenseKeyTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *unregisteredViewTrialInformationTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *registeredViewLicenseKeyTextField;
-@property (nonatomic, weak) IBOutlet NSTextField *registeredViewLicenseOwnerTextField;
 @property (nonatomic, weak) IBOutlet NSTextField *registeredViewLicensePurchaseDateTextField;
 @property (nonatomic, weak) IBOutlet NSButton *registeredViewDeactivateTextualButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewActivateTextualButton;
@@ -82,6 +81,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewRecoveryLostLicenseButton;
 @property (nonatomic, strong, nullable) TDCProgressIndicatorSheet *progressIndicator;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *licenseManagerDownloader;
+@property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *trialDownloader;
 @property (nonatomic, strong, nullable) TDCLicenseUpgradeDialog *upgradeDialog;
 @property (nonatomic, strong, nullable) TDCLicenseUpgradeActivateSheet *upgradeActivateSheet;
 @property (nonatomic, assign) BOOL textualIsRegistered;
@@ -145,6 +145,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	[self toggleTrialTimer];
 
+	[self requestTrialFromServer];
+
 	[self activateLicenseKeyUsingArgumentDictionary];
 
 	[self upgradeDialogAppFinishedLaunchingRoutine];
@@ -159,12 +161,10 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	if (self.textualIsRegistered)
 	{
 		NSString *licenseKey = TLOLicenseManagerLicenseKey();
-		NSString *licenseKeyOwner = TLOLicenseManagerLicenseOwnerName();
-		NSString *licenseKeyCreationDate = TLOLicenseManagerLicenseCreationDateFormatted();
+		NSString *licenseDate = TLOLicenseManagerLicenseDateFormatted();
 
 		self.registeredViewLicenseKeyTextField.stringValue = (licenseKey ?: @"");
-		self.registeredViewLicenseOwnerTextField.stringValue = (licenseKeyOwner ?: @"");
-		self.registeredViewLicensePurchaseDateTextField.stringValue = (licenseKeyCreationDate ?: @"");
+		self.registeredViewLicensePurchaseDateTextField.stringValue = (licenseDate ?: @"");
 
 		contentView = self.contentViewRegisteredTextualView;
 	}
@@ -228,6 +228,58 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	[self stopTrialTimer];
 
 	[RZNotificationCenter() postNotificationName:TDCLicenseManagerTrialExpiredNotification object:self];
+}
+
+#pragma mark -
+#pragma mark Trial
+
+- (void)requestTrialFromServer
+{
+	/* The server keeps one trial per Mac; until it answers, the trial counts
+	 from this Mac's first launch. Failures change nothing and say nothing. */
+	if (TLOLicenseManagerTextualIsRegistered()) {
+		return;
+	}
+
+	TLOLicenseManagerDownloader *trialDownloader = [TLOLicenseManagerDownloader new];
+
+	trialDownloader.isSilentOnFailure = YES;
+	trialDownloader.isSilentOnSuccess = YES;
+
+	trialDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
+		return TLOLicenseManagerSaveTrial(statusContext);
+	};
+
+	__weak TDCLicenseManagerDialog *weakSelf = self;
+
+	trialDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
+		TDCLicenseManagerDialog *strongSelf = weakSelf;
+
+		strongSelf.trialDownloader = nil;
+
+		if (operationSuccessful == NO) {
+			return;
+		}
+
+		[strongSelf trialChanged];
+	};
+
+	[trialDownloader requestTrial];
+
+	self.trialDownloader = trialDownloader;
+}
+
+- (void)trialChanged
+{
+	[self stopTrialTimer];
+
+	[self toggleTrialTimer];
+
+	[self updateSelectedPane];
+
+	if (TLOLicenseManagerTextualIsRegistered() == NO && TLOLicenseManagerIsTrialExpired()) {
+		[RZNotificationCenter() postNotificationName:TDCLicenseManagerTrialExpiredNotification object:self];
+	}
 }
 
 #pragma mark -
@@ -343,7 +395,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	}
 
 	/* Do not activate license we are already using. */
-	if (licenseKey == TLOLicenseManagerLicenseKey()) {
+	if ([licenseKey.trim isEqualToString:TLOLicenseManagerLicenseKey()]) {
 		[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[fxu-su]")
 								  title:TXTLS(@"TLOLicenseManager[bw3-sc]", licenseKey.prettyLicenseKey)
 						  defaultButton:TXTLS(@"Prompts[c7s-dq]")
@@ -366,61 +418,56 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	TLOLicenseManagerDownloader *licenseManagerDownloader = [TLOLicenseManagerDownloader new];
 
+	NSString *trimmedLicenseKey = licenseKey.trim;
+
 	licenseManagerDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
-		return (TLOLicenseManagerWriteLicenseFileContents(statusContext) == TLOLicenseManagerActionResultSuccess);
+		return (TLOLicenseManagerSaveActivation(statusContext, trimmedLicenseKey) == TLOLicenseManagerActionResultSuccess);
 	};
 
 	licenseManagerDownloader.errorBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
-		if (statusCode != 0 || statusContext == nil) {
+		/* A Textual 7 key: it can be upgraded */
+		if (statusCode != 7100004) {
 			return NO;
 		}
 
-		/* lastGenLicenseKey will only be non-nil if the contents of licenseContents
-		 are for a license that have not been upgraded to Textual 7 yet. */
-		NSString *lastGenLicenseKey = [TLOLicenseManagerLastGen licenseKeyForLicenseContents:statusContext];
+		[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[5bu-ov]")
+								  title:TXTLS(@"TLOLicenseManager[pmv-qp]", trimmedLicenseKey.prettyLicenseKey)
+						  defaultButton:TXTLS(@"TLOLicenseManager[53u-lt]")
+						alternateButton:nil];
 
-		if (lastGenLicenseKey != nil) {
-			[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[5bu-ov]")
-									  title:TXTLS(@"TLOLicenseManager[pmv-qp]", lastGenLicenseKey.prettyLicenseKey)
-							  defaultButton:TXTLS(@"TLOLicenseManager[53u-lt]")
-							alternateButton:nil];
+		[weakSelf showUpgradeDialogForLicenseKey:trimmedLicenseKey];
 
-			[weakSelf showUpgradeDialogForLicenseKey:lastGenLicenseKey];
-
-			/* We return YES so no error is displayed except the one above. */
-			return YES;
-		}
-
-		/* We did not handle the error. */
-		return NO;
+		return YES;
 	};
 
 	licenseManagerDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
-		[weakSelf licenseManagerDownloaderCompletionBlock];
+		TDCLicenseManagerDialog *strongSelf = weakSelf;
+
+		[strongSelf licenseManagerDownloaderCompletionBlock];
 
 		if (operationSuccessful) {
-			weakSelf.unregisteredViewLicenseKeyTextField.stringValue = @"";
+			strongSelf.unregisteredViewLicenseKeyTextField.stringValue = @"";
 
-			[weakSelf toggleTrialTimer];
+			[strongSelf toggleTrialTimer];
 
-			[RZNotificationCenter() postNotificationName:TDCLicenseManagerActivatedLicenseNotification object:weakSelf];
+			[RZNotificationCenter() postNotificationName:TDCLicenseManagerActivatedLicenseNotification object:strongSelf];
 
 			/* We close the upgrade dialog if a key is activated because
 			 why would we keep it around under that condition? */
-			[weakSelf closeUpgradeDialog];
+			[strongSelf closeUpgradeDialog];
 
 			/* Reset context for activate sheet. */
-			[weakSelf resetUpgradeActivateSheetContext];
+			[strongSelf resetUpgradeActivateSheetContext];
 		}
 
-		weakSelf.operationInProgress = NO;
+		strongSelf.operationInProgress = NO;
 	};
 
 	self.operationInProgress = YES;
 
 	licenseManagerDownloader.isSilentOnSuccess = self.isSilentOnSuccess;
 
-	[licenseManagerDownloader activateLicense:licenseKey.trim];
+	[licenseManagerDownloader activateLicense:trimmedLicenseKey];
 
 	self.licenseManagerDownloader = licenseManagerDownloader;
 }
@@ -666,30 +713,38 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		return; // Cancel operation...
 	}
 
-	/* License deactivation does not use a progress indicator because
-	 it does not have to touch the network. It will only delete a file
-	 on the hard drive which is typically instant. */
+	/* The server frees this Mac's seat first; the licence stays when it can't be reached */
+	[self beginProgressIndicator];
+
 	__weak TDCLicenseManagerDialog *weakSelf = self;
 
 	TLOLicenseManagerDownloader *licenseManagerDownloader = [TLOLicenseManagerDownloader new];
 
 	licenseManagerDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
-		return (TLOLicenseManagerDeleteLicenseFile() == TLOLicenseManagerActionResultSuccess);
+		return (TLOLicenseManagerDeleteActivation() == TLOLicenseManagerActionResultSuccess);
 	};
 
 	licenseManagerDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
-		[weakSelf licenseManagerDownloaderCompletionBlock];
+		TDCLicenseManagerDialog *strongSelf = weakSelf;
 
-		[weakSelf toggleTrialTimer];
+		[strongSelf licenseManagerDownloaderCompletionBlock];
 
-		[RZNotificationCenter() postNotificationName:TDCLicenseManagerDeactivatedLicenseNotification object:weakSelf];
+		if (operationSuccessful == NO) {
+			return;
+		}
+
+		[strongSelf toggleTrialTimer];
+
+		[strongSelf requestTrialFromServer];
+
+		[RZNotificationCenter() postNotificationName:TDCLicenseManagerDeactivatedLicenseNotification object:strongSelf];
 	};
 
 	licenseManagerDownloader.isSilentOnSuccess = self.isSilentOnSuccess;
 
 	[licenseManagerDownloader deactivateLicense];
 
-//	self.licenseManagerDownloader = licenseManagerDownloader;
+	self.licenseManagerDownloader = licenseManagerDownloader;
 }
 
 #pragma mark -

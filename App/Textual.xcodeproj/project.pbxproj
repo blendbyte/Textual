@@ -28,7 +28,6 @@
 		4CC2E2E089734BA6F6753ED0 /* EmojiShortcodes.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C82A2BFE6C1DE4253A10996 /* EmojiShortcodes.json */; };
 		4C06DF3820EC49A60055D09A /* StaticStore.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A420EB676400448776 /* StaticStore.plist */; };
 		4C06DF3920EC49A60055D09A /* TemplateLineTypes.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A120EB676400448776 /* TemplateLineTypes.plist */; };
-		4C06DF4420EC49B90055D09A /* RemoteLicenseSystemPublicKey.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4C3152EE20EB676400448776 /* RemoteLicenseSystemPublicKey.pub */; };
 		4C06E19C20EC4AC40055D09A /* TDCChannelModifyModesSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14120EC4AC40055D09A /* TDCChannelModifyModesSheet.xib */; };
 		4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14320EC4AC40055D09A /* TDCChannelSpotlightController.xib */; };
 		4C06E1AC20EC4AC40055D09A /* TDCChannelBanListSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14920EC4AC40055D09A /* TDCChannelBanListSheet.xib */; };
@@ -553,6 +552,7 @@
 		4CB88F3501E8522FE1EEFA7E /* TPCPreferencesImportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEEF3CE8E84E1B5AE9AC3E /* TPCPreferencesImportTests.m */; };
 		4CB88F3501E8522FE1EEFA7F /* THOPluginItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */; };
 		4CB88F3501E8522FE1EEFA80 /* TLOKeychainTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */; };
+		4C0EEA3941C4CDE2BBA1BCF7 /* TLOLicenseManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEECB1F0A6092DA1F530BEA /* TLOLicenseManagerTests.m */; };
 		4CC7246C1007EA34E0ED6804 /* IRCMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */; };
 		4C0316F31527C367C5E98F99 /* AHHyperlinkScannerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1560075456941B0D119C99 /* AHHyperlinkScannerTests.m */; };
 		4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1560075456941B0D119C32 /* TLOLinkParserTests.m */; };
@@ -1353,7 +1353,6 @@
 		4C3152E720EB673E00448776 /* NSStringHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSStringHelper.m; sourceTree = "<group>"; };
 		4C3152E820EB673E00448776 /* NSTableViewHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSTableViewHelper.m; sourceTree = "<group>"; };
 		4C3152E920EB673E00448776 /* TXAppearanceHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TXAppearanceHelper.m; sourceTree = "<group>"; };
-		4C3152EE20EB676400448776 /* RemoteLicenseSystemPublicKey.pub */ = {isa = PBXFileReference; lastKnownFileType = text; path = RemoteLicenseSystemPublicKey.pub; sourceTree = "<group>"; };
 		4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCCommandIndexRemoteData.plist; sourceTree = "<group>"; };
 		4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCCommandIndexLocalData.plist; sourceTree = "<group>"; };
 		4C3153A120EB676400448776 /* TemplateLineTypes.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = TemplateLineTypes.plist; sourceTree = "<group>"; };
@@ -1413,6 +1412,7 @@
 		4CCEEF3CE8E84E1B5AE9AC3E /* TPCPreferencesImportTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCPreferencesImportTests.m; sourceTree = "<group>"; };
 		4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = THOPluginItemTests.m; sourceTree = "<group>"; };
 		4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOKeychainTests.m; sourceTree = "<group>"; };
+		4CEECB1F0A6092DA1F530BEA /* TLOLicenseManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManagerTests.m; sourceTree = "<group>"; };
 		4CF935DC7A060BFFA95B624E /* IRCMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCMessageTests.m; sourceTree = "<group>"; };
 		4C1560075456941B0D119C99 /* AHHyperlinkScannerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AHHyperlinkScannerTests.m; sourceTree = "<group>"; };
 		4C1560075456941B0D119C32 /* TLOLinkParserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLinkParserTests.m; sourceTree = "<group>"; };
@@ -2852,14 +2852,6 @@
 			path = Interface;
 			sourceTree = "<group>";
 		};
-		4C48005785959C54D2DAE357 /* License Manager */ = {
-			isa = PBXGroup;
-			children = (
-				4C3152EE20EB676400448776 /* RemoteLicenseSystemPublicKey.pub */,
-			);
-			path = "License Manager";
-			sourceTree = "<group>";
-		};
 		4C3B3C24384141A43C9E9CA7 /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
@@ -2947,7 +2939,6 @@
 				0DD116667156B6E9123159A9 /* Assets.xcassets */,
 				4C43266A6A2383C83D1B1E1E /* Data Models */,
 				4C58704424A9DD77BE100808 /* Interface */,
-				4C48005785959C54D2DAE357 /* License Manager */,
 				4C7CE285799A812CABA13339 /* Property Lists */,
 				4C428473FB6B11BB7801CDF5 /* Scripts */,
 				4C04A16F6995E985BE1944C3 /* Strings */,
@@ -3002,6 +2993,7 @@
 				4C52AB33DBF4F5573ABBA750 /* TestHostTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3F /* THOPluginItemTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC40 /* TLOKeychainTests.m */,
+				4CEECB1F0A6092DA1F530BEA /* TLOLicenseManagerTests.m */,
 				4C1560075456941B0D119C99 /* AHHyperlinkScannerTests.m */,
 				4C1560075456941B0D119C32 /* TLOLinkParserTests.m */,
 				4CCEEF3CE8E84E1B5AE9AC3E /* TPCPreferencesImportTests.m */,
@@ -3508,7 +3500,6 @@
 				4C06E31220EC4FF00055D09A /* IRC.strings in Resources */,
 				4C06E1E420EC4AC40055D09A /* TDCProgressIndicatorSheet.xib in Resources */,
 				4C06E34220EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings in Resources */,
-				4C06DF4420EC49B90055D09A /* RemoteLicenseSystemPublicKey.pub in Resources */,
 				4C06E19C20EC4AC40055D09A /* TDCChannelModifyModesSheet.xib in Resources */,
 				4C17305622B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib in Resources */,
 				4C06E1D820EC4AC40055D09A /* TDCChannelInviteSheet.xib in Resources */,
@@ -4000,6 +3991,7 @@
 				4CB88F3501E8522FE1EEFA7E /* TPCPreferencesImportTests.m in Sources */,
 				4CB88F3501E8522FE1EEFA7F /* THOPluginItemTests.m in Sources */,
 				4CB88F3501E8522FE1EEFA80 /* TLOKeychainTests.m in Sources */,
+				4C0EEA3941C4CDE2BBA1BCF7 /* TLOLicenseManagerTests.m in Sources */,
 				4CC7246C1007EA34E0ED6804 /* IRCMessageTests.m in Sources */,
 				4C0316F31527C367C5E98F99 /* AHHyperlinkScannerTests.m in Sources */,
 				4C0316F31527C367C5E98F79 /* TLOLinkParserTests.m in Sources */,

@@ -363,12 +363,12 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* A link can come from anywhere, so activation is always confirmed */
-	NSString *currentLicenseOwner = TLOLicenseManagerLicenseOwnerName();
+	NSString *currentLicenseKey = TLOLicenseManagerLicenseKey();
 
 	NSString *message = nil;
 
-	if (currentLicenseOwner.length > 0) {
-		message = TXTLS(@"TLOLicenseManager[q7w-k2]", licenseKey, currentLicenseOwner);
+	if (currentLicenseKey.length > 0) {
+		message = TXTLS(@"TLOLicenseManager[q7w-k2]", licenseKey, currentLicenseKey);
 	} else {
 		message = TXTLS(@"TLOLicenseManager[q7w-k1]", licenseKey);
 	}

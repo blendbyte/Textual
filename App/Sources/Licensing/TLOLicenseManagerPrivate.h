@@ -39,51 +39,52 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, TLOLicenseManagerActionResult) {
 	TLOLicenseManagerActionResultSuccess, // Validated successfully and saved
-	TLOLicenseManagerActionResultGenerationPrevious, // License is for previous version. Discount available?
-	TLOLicenseManagerActionResultGenerationNext, // License is for next version. Maybe they should update.
-	TLOLicenseManagerActionResultInvalidSignature, // License signature is invalid
-	TLOLicenseManagerActionResultCannotRead, // License cannot be read from disk
-	TLOLicenseManagerActionResultCannotWrite, // License cannot be written to disk
-	TLOLicenseManagerActionResultMalformedData, // License data is not correct or complete
-	TLOLicenseManagerActionResultOther // Other failure reason
+	TLOLicenseManagerActionResultInvalidSignature, // Not signed by a key Textual knows, or for another Mac
+	TLOLicenseManagerActionResultCannotWrite, // Cannot be written to disk
+	TLOLicenseManagerActionResultMalformedData // Not the answer to the request
 };
 
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
-typedef NSString *TLOLicenseManagerLicenseDictionaryKey NS_EXTENSIBLE_STRING_ENUM;
-
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeyCreationDate;
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeyGeneration;
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeyLicenseKey;
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeyProductName;
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeyOwnerContactAddress;
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeyOwnerName;
-TEXTUAL_EXTERN TLOLicenseManagerLicenseDictionaryKey const TLOLicenseManagerLicenseDictionaryKeySignature;
-
 TEXTUAL_EXTERN NSUInteger const TLOLicenseManagerCurrentLicenseGeneration;
 
 TEXTUAL_EXTERN void TLOLicenseManagerSetup(void);
 
+/* Activated on this Mac, by an activation the server signed */
 TEXTUAL_EXTERN BOOL TLOLicenseManagerTextualIsRegistered(void);
 
-/* A licence file is installed and correctly signed; also before TLOLicenseManagerSetup() */
-TEXTUAL_EXTERN BOOL TLOLicenseManagerLicenseFileIsValid(void);
+/* What the licensing server is told about this Mac */
+TEXTUAL_EXTERN NSString *TLOLicenseManagerMachineHash(void);
+TEXTUAL_EXTERN NSString *TLOLicenseManagerMacModel(void);
 
-TEXTUAL_EXTERN BOOL TLOLicenseManagerIsTrialExpired(void);
-TEXTUAL_EXTERN NSTimeInterval TLOLicenseManagerTimeRemainingTrial(void);
+/* The payload of a signed answer (signingKeyID, payload, signature), once its
+ signature, payload type and machine hash check out; nil otherwise */
+TEXTUAL_EXTERN NSDictionary<NSString *, id> * _Nullable TLOLicenseManagerVerifiedPayload(id signedAnswer, NSString *payloadType);
 
-TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerDeleteLicenseFile(void);
-TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerWriteLicenseFileContents(NSData * _Nullable newContents);
+#ifdef DEBUG
+/* Tests sign answers with a key of their own; nil removes it */
+TEXTUAL_EXTERN void TLOLicenseManagerSetSigningKeyForTesting(NSString *signingKeyID, NSData * _Nullable publicKey);
+#endif
+
+TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerSaveActivation(id signedAnswer, NSString *licenseKey);
+TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerDeleteActivation(void);
+TEXTUAL_EXTERN BOOL TLOLicenseManagerActivationFileExists(void);
+
+TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseKey(void);
+TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerActivationID(void);
+TEXTUAL_EXTERN NSDate * _Nullable TLOLicenseManagerLicenseDate(void);
+TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseDateFormatted(void);
 
 TEXTUAL_EXTERN BOOL TLOLicenseManagerLicenseKeyIsValid(NSString *licenseKey);
 
-TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseCreationDate(void);
-TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseCreationDateFormatted(void);
-TEXTUAL_EXTERN NSUInteger TLOLicenseManagerLicenseGeneration(void);
-TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseKey(void);
-TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseOwnerContactAddress(void);
-TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseOwnerName(void);
+TEXTUAL_EXTERN BOOL TLOLicenseManagerSaveTrial(id signedAnswer);
+TEXTUAL_EXTERN BOOL TLOLicenseManagerTrialIsFromServer(void);
+TEXTUAL_EXTERN BOOL TLOLicenseManagerIsTrialExpired(void);
+TEXTUAL_EXTERN NSTimeInterval TLOLicenseManagerTimeRemainingTrial(void);
 
-TEXTUAL_EXTERN NSString * TLOLicenseManagerAuthorizationCode(void);
+/* The Textual 7 licence file, kept as proof for the upgrade */
+TEXTUAL_EXTERN BOOL TLOLicenseManagerImportTextual7LicenseFile(NSData *licenseContents);
+TEXTUAL_EXTERN NSURL * _Nullable TLOLicenseManagerTextual7LicenseFilePath(void);
+TEXTUAL_EXTERN BOOL TLOLicenseManagerTextual7LicenseFileExists(void);
 #endif
 
 NS_ASSUME_NONNULL_END
