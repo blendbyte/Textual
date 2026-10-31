@@ -192,6 +192,33 @@ static NSString * const TLOLicenseManagerTestsKeyID = @"t8-tests";
 	XCTAssertNil(TLOLicenseManagerVerifiedPayload(signedAnswer, @"activation"));
 }
 
+- (NSDictionary *)activationStatePayload:(NSString *)state activationID:(NSString *)activationID
+{
+	return @{
+		@"payloadType" : @"activationState",
+		@"activationID" : activationID,
+		@"machineHash" : TLOLicenseManagerMachineHash(),
+		@"state" : state,
+		@"issuedAt" : [NSDate date]
+	};
+}
+
+/* The background check: a signed "freed" for this activation unlicenses this Mac */
+- (void)testReadsFreedStateOfThisActivation
+{
+	NSDictionary *signedAnswer = [self signedAnswerWithPayload:[self activationStatePayload:@"freed" activationID:@"8a6e0c1e-6a0b-4c7e-9a43-1b2f3c4d5e6f"] signingKey:self.privateKey];
+
+	XCTAssertEqual(TLOLicenseManagerActivationStateInSignedAnswer(signedAnswer, @"8A6E0C1E-6A0B-4C7E-9A43-1B2F3C4D5E6F"), TLOLicenseManagerActivationStateFreed);
+}
+
+/* An answer about another activation (an older one of this Mac) changes nothing */
+- (void)testIgnoresStateOfAnotherActivation
+{
+	NSDictionary *signedAnswer = [self signedAnswerWithPayload:[self activationStatePayload:@"revoked" activationID:@"00000000-0000-4000-8000-000000000000"] signingKey:self.privateKey];
+
+	XCTAssertEqual(TLOLicenseManagerActivationStateInSignedAnswer(signedAnswer, @"8a6e0c1e-6a0b-4c7e-9a43-1b2f3c4d5e6f"), TLOLicenseManagerActivationStateUnknown);
+}
+
 @end
 #endif
 

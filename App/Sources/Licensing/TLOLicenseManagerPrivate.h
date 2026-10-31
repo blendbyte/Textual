@@ -37,6 +37,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* What the licensing server says about this Mac's activation */
+typedef NS_ENUM(NSUInteger, TLOLicenseManagerActivationState) {
+	TLOLicenseManagerActivationStateUnknown = 0, // Anything not correctly signed for this activation
+	TLOLicenseManagerActivationStateValid,
+	TLOLicenseManagerActivationStateFreed,
+	TLOLicenseManagerActivationStateRevoked
+};
+
 typedef NS_ENUM(NSUInteger, TLOLicenseManagerActionResult) {
 	TLOLicenseManagerActionResultSuccess, // Validated successfully and saved
 	TLOLicenseManagerActionResultInvalidSignature, // Not signed by a key Textual knows, or for another Mac
@@ -68,6 +76,16 @@ TEXTUAL_EXTERN void TLOLicenseManagerSetSigningKeyForTesting(NSString *signingKe
 TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerSaveActivation(id signedAnswer, NSString *licenseKey);
 TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerDeleteActivation(void);
 TEXTUAL_EXTERN BOOL TLOLicenseManagerActivationFileExists(void);
+
+/* The license key of an activation file made for another Mac (copied, or
+ brought over by Migration Assistant), to activate this one with */
+TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerActivationFileLicenseKey(void);
+
+/* When this Mac's activation was issued, and when the server last confirmed it */
+TEXTUAL_EXTERN NSDate * _Nullable TLOLicenseManagerActivationIssuedAt(void);
+
+/* Only a correctly signed answer for this activation on this Mac counts */
+TEXTUAL_EXTERN TLOLicenseManagerActivationState TLOLicenseManagerActivationStateInSignedAnswer(id signedAnswer, NSString *activationID);
 
 TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerLicenseKey(void);
 TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerActivationID(void);

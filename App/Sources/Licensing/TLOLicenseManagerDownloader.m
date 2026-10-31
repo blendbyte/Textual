@@ -56,6 +56,7 @@ NSString * const TLOLicenseManagerDownloaderLicenseServerURLDefaultsKey				= @"L
 
 NSString * const TLOLicenseManagerDownloaderLicenseAPIActivationPath					= @"/v2/activate";
 NSString * const TLOLicenseManagerDownloaderLicenseAPIDeactivationPath					= @"/v2/deactivate";
+NSString * const TLOLicenseManagerDownloaderLicenseAPICheckPath						= @"/v2/check";
 NSString * const TLOLicenseManagerDownloaderLicenseAPITrialPath						= @"/v2/trial";
 NSString * const TLOLicenseManagerDownloaderLicenseAPIUpgradeEligibilityPath			= @"/v2/upgrade/eligibility";
 NSString * const TLOLicenseManagerDownloaderLicenseAPIUpgradeRedeemPath				= @"/v2/upgrade/redeem";
@@ -137,6 +138,14 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 	[self performRequestType:TLOLicenseManagerDownloaderRequestTypeDeactivation
 					 context:contextInfo];
+}
+
+- (void)checkActivation:(NSString *)activationID
+{
+	NSParameterAssert(activationID != nil);
+
+	[self performRequestType:TLOLicenseManagerDownloaderRequestTypeCheck
+					 context:@{@"activationID" : activationID}];
 }
 
 - (void)requestTrial
@@ -340,6 +349,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 			return performCompletionBlock(YES);
 		}
 		else if ((requestType == TLOLicenseManagerDownloaderRequestTypeDeactivation ||
+				  requestType == TLOLicenseManagerDownloaderRequestTypeCheck ||
 				  requestType == TLOLicenseManagerDownloaderRequestTypeTrial) && apiStatusCode == TLOLicenseManagerDownloaderRequestStatusCodeSuccess)
 		{
 			if (apiStatusContext == nil || [apiStatusContext isKindOfClass:[NSDictionary class]] == NO) {
@@ -523,6 +533,12 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 			break;
 		}
+		case TLOLicenseManagerDownloaderRequestTypeCheck:
+		{
+			requestPath = TLOLicenseManagerDownloaderLicenseAPICheckPath;
+
+			break;
+		}
 		case TLOLicenseManagerDownloaderRequestTypeTrial:
 		{
 			requestPath = TLOLicenseManagerDownloaderLicenseAPITrialPath;
@@ -579,6 +595,7 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 			break;
 		}
 		case TLOLicenseManagerDownloaderRequestTypeDeactivation:
+		case TLOLicenseManagerDownloaderRequestTypeCheck:
 		{
 			formValues[@"activationID"] = self.requestContextInfo[@"activationID"];
 			formValues[@"machineHash"] = TLOLicenseManagerMachineHash();

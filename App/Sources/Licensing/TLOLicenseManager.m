@@ -431,6 +431,90 @@ BOOL TLOLicenseManagerActivationFileExists(void)
 	return (activationFilePath != nil && [RZFileManager() fileExistsAtURL:activationFilePath]);
 }
 
+NSString * _Nullable TLOLicenseManagerActivationFileLicenseKey(void)
+{
+	NSURL *activationFilePath = TLOLicenseManagerActivationFilePath();
+
+	if (activationFilePath == nil) {
+		return nil;
+	}
+
+	NSData *fileContents = [NSData dataWithContentsOfURL:activationFilePath];
+
+	if (fileContents == nil) {
+		return nil;
+	}
+
+	/* Not verified: it's only the key to ask the server with */
+	NSDictionary *signedAnswer = [NSPropertyListSerialization propertyListWithData:fileContents options:NSPropertyListImmutable format:NULL error:NULL];
+
+	if ([signedAnswer isKindOfClass:[NSDictionary class]] == NO ||
+		[signedAnswer[TLOLicenseManagerSignedAnswerKeyPayload] isKindOfClass:[NSData class]] == NO)
+	{
+		return nil;
+	}
+
+	NSDictionary *payload = [NSPropertyListSerialization propertyListWithData:signedAnswer[TLOLicenseManagerSignedAnswerKeyPayload] options:NSPropertyListImmutable format:NULL error:NULL];
+
+	if ([payload isKindOfClass:[NSDictionary class]] == NO) {
+		return nil;
+	}
+
+	NSString *licenseKey = payload[@"licenseKey"];
+
+	if ([licenseKey isKindOfClass:[NSString class]] == NO || TLOLicenseManagerLicenseKeyIsValid(licenseKey) == NO) {
+		return nil;
+	}
+
+	return licenseKey;
+}
+
+NSDate * _Nullable TLOLicenseManagerActivationIssuedAt(void)
+{
+	NSDate *issuedAt = TLOLicenseManagerActivationPayload()[@"issuedAt"];
+
+	if ([issuedAt isKindOfClass:[NSDate class]] == NO) {
+		return nil;
+	}
+
+	return issuedAt;
+}
+
+TLOLicenseManagerActivationState TLOLicenseManagerActivationStateInSignedAnswer(id signedAnswer, NSString *activationID)
+{
+	NSCParameterAssert(activationID != nil);
+
+	/* Signed by the server, for this Mac (the machine hash), and for this
+	 activation: a freed seat answers any Mac's hash, but signs only the one sent */
+	NSDictionary *payload = TLOLicenseManagerVerifiedPayload(signedAnswer, TLOLicenseManagerPayloadTypeActivationState);
+
+	if (payload == nil) {
+		return TLOLicenseManagerActivationStateUnknown;
+	}
+
+	NSString *payloadActivationID = payload[@"activationID"];
+
+	if ([payloadActivationID isKindOfClass:[NSString class]] == NO ||
+		[payloadActivationID caseInsensitiveCompare:activationID] != NSOrderedSame)
+	{
+		LogToConsoleError("The activation state is for another activation");
+
+		return TLOLicenseManagerActivationStateUnknown;
+	}
+
+	NSString *state = payload[@"state"];
+
+	if ([state isEqual:@"valid"]) {
+		return TLOLicenseManagerActivationStateValid;
+	} else if ([state isEqual:@"freed"]) {
+		return TLOLicenseManagerActivationStateFreed;
+	} else if ([state isEqual:@"revoked"]) {
+		return TLOLicenseManagerActivationStateRevoked;
+	}
+
+	return TLOLicenseManagerActivationStateUnknown;
+}
+
 NSString * _Nullable TLOLicenseManagerLicenseKey(void)
 {
 	return TLOLicenseManagerActivationPayload()[@"licenseKey"];

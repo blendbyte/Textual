@@ -108,3 +108,6 @@
 "u7g-x1" = "It was refunded or never paid. Contact us if you think this is a mistake.";
 "u7g-e0" = "Textual couldn’t check your Textual 7 license";
 "u7g-e1" = "Please try again later, or contact us if it keeps happening.";
+"c5k-f0" = "This license was moved to another Mac";
+"c5k-f1" = "Textual on this Mac went back to the trial. If you didn’t move it, contact us.";
+"c5k-r1" = "Textual on this Mac went back to the trial. Contact us if you think this is a mistake.";

@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, TLOLicenseManagerDownloaderRequestType) {
 	TLOLicenseManagerDownloaderRequestTypeActivation,
 	TLOLicenseManagerDownloaderRequestTypeDeactivation,
+	TLOLicenseManagerDownloaderRequestTypeCheck,
 	TLOLicenseManagerDownloaderRequestTypeTrial,
 	TLOLicenseManagerDownloaderRequestTypeUpgradeEligibility,
 	TLOLicenseManagerDownloaderRequestTypeUpgradeRedeem
@@ -70,6 +71,9 @@ typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful
 
 /* Frees a seat this Mac used before, such as the one of a key it no longer uses */
 - (void)deactivateActivation:(nullable NSString *)activationID;
+
+/* Asks whether an activation is still this Mac's */
+- (void)checkActivation:(NSString *)activationID;
 
 /* Starts or returns this Mac's trial */
 - (void)requestTrial;

@@ -67,6 +67,10 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 #define _trialReminderLastShownDefaultsKey 	@"License Manager -> Trial Reminder -> Last Shown"
 
+#define _activationCheckInterval 			2592000 // 30 days
+
+#define _activationLastCheckedDefaultsKey 	@"License Manager -> Activation -> Last Checked"
+
 @interface TDCLicenseManagerDialog () <NSControlTextEditingDelegate>
 @property (nonatomic, strong) IBOutlet NSView *contentViewUnregisteredTextualView;
 @property (nonatomic, strong) IBOutlet NSView *contentViewRegisteredTextualView;
@@ -84,6 +88,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *trialDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *previousActivationDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *upgradeDownloader;
+@property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *activationCheckDownloader;
 @property (nonatomic, assign) BOOL textualIsRegistered;
 @property (nonatomic, assign) BOOL isSilentOnSuccess;
 @property (nonatomic, assign) BOOL operationInProgress;
@@ -148,6 +153,10 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	[self requestTrialFromServer];
 
 	[self activateLicenseKeyUsingArgumentDictionary];
+
+	[self activateCopiedActivation];
+
+	[self checkActivationIfDue];
 
 #ifdef DEBUG
 	/* For testing the upgrade: a Textual 7 license file (base64) to import
@@ -429,7 +438,11 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	/* Perform activation */
 	self.isSilentOnSuccess = silently;
 
-	[self beginProgressIndicator];
+	/* Silently: without the window, and failures say nothing
+	 (both seats taken still asks which Mac to move it from) */
+	if (silently == NO) {
+		[self beginProgressIndicator];
+	}
 
 	__weak TDCLicenseManagerDialog *weakSelf = self;
 
@@ -503,6 +516,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	self.operationInProgress = YES;
 
 	licenseManagerDownloader.isSilentOnSuccess = self.isSilentOnSuccess;
+	licenseManagerDownloader.isSilentOnFailure = silently;
 
 	[licenseManagerDownloader activateLicense:cleanedLicenseKey replacingActivation:replaceActivationID];
 
@@ -535,11 +549,166 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 }
 
 #pragma mark -
+#pragma mark Activation Check
+
+- (void)activateCopiedActivation
+{
+	/* An activation file made for another Mac (copied, Migration Assistant):
+	 activate this Mac with its key, quietly */
+	if (TLOLicenseManagerTextualIsRegistered() || self.operationInProgress) {
+		return;
+	}
+
+	NSString *licenseKey = TLOLicenseManagerActivationFileLicenseKey();
+
+	if (licenseKey == nil) {
+		return;
+	}
+
+	LogToConsoleInfo("The activation is for another Mac; activating this one");
+
+	[self attemptToActivateLicenseKey:licenseKey silently:YES];
+}
+
+- (void)checkActivationIfDue
+{
+	/* At most every 30 days since the server last confirmed this Mac's
+	 activation, or since it was issued. Only a signed "freed" or "revoked"
+	 for this activation changes anything; anything else waits for the next time. */
+	NSString *activationID = TLOLicenseManagerActivationID();
+
+	if (activationID == nil || self.activationCheckDownloader != nil) {
+		return;
+	}
+
+	NSDate *lastConfirmed = TLOLicenseManagerActivationIssuedAt();
+
+	NSDate *lastChecked = [RZUserDefaults() objectForKey:_activationLastCheckedDefaultsKey];
+
+	if ([lastChecked isKindOfClass:[NSDate class]] && (lastConfirmed == nil || [lastChecked compare:lastConfirmed] == NSOrderedDescending)) {
+		lastConfirmed = lastChecked;
+	}
+
+	NSTimeInterval checkInterval = _activationCheckInterval;
+
+#ifdef DEBUG
+	/* For testing: seconds instead of 30 days */
+	NSTimeInterval testCheckInterval = [[NSUserDefaults standardUserDefaults] doubleForKey:@"Licensing Check Interval"];
+
+	if (testCheckInterval > 0) {
+		checkInterval = testCheckInterval;
+	}
+#endif
+
+	if (lastConfirmed != nil && [[NSDate date] timeIntervalSinceDate:lastConfirmed] < checkInterval) {
+		return;
+	}
+
+	__weak TDCLicenseManagerDialog *weakSelf = self;
+
+	__block TLOLicenseManagerActivationState activationState = TLOLicenseManagerActivationStateUnknown;
+
+	TLOLicenseManagerDownloader *activationCheckDownloader = [TLOLicenseManagerDownloader new];
+
+	activationCheckDownloader.isSilentOnFailure = YES;
+	activationCheckDownloader.isSilentOnSuccess = YES;
+
+	activationCheckDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
+		activationState = TLOLicenseManagerActivationStateInSignedAnswer(statusContext, activationID);
+
+		return YES;
+	};
+
+	activationCheckDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
+		TDCLicenseManagerDialog *strongSelf = weakSelf;
+
+		strongSelf.activationCheckDownloader = nil;
+
+		/* Activated again or deactivated meanwhile */
+		if ([activationID isEqualToString:TLOLicenseManagerActivationID()] == NO) {
+			return;
+		}
+
+		[strongSelf activationChecked:activationState];
+	};
+
+	[activationCheckDownloader checkActivation:activationID];
+
+	self.activationCheckDownloader = activationCheckDownloader;
+}
+
+- (void)activationChecked:(TLOLicenseManagerActivationState)activationState
+{
+	switch (activationState) {
+		case TLOLicenseManagerActivationStateValid:
+		{
+			[RZUserDefaults() setObject:[NSDate date] forKey:_activationLastCheckedDefaultsKey];
+
+			break;
+		}
+		case TLOLicenseManagerActivationStateFreed:
+		case TLOLicenseManagerActivationStateRevoked:
+		{
+			NSString *licenseKey = TLOLicenseManagerLicenseKey();
+
+			if (TLOLicenseManagerDeleteActivation() != TLOLicenseManagerActionResultSuccess) {
+				return;
+			}
+
+			[RZUserDefaults() removeObjectForKey:_activationLastCheckedDefaultsKey];
+
+			[self toggleTrialTimer];
+
+			[self updateSelectedPane];
+
+			[self requestTrialFromServer];
+
+			[RZNotificationCenter() postNotificationName:TDCLicenseManagerDeactivatedLicenseNotification object:self];
+
+			/* Said once, here */
+			NSString *title = nil;
+			NSString *body = nil;
+
+			if (activationState == TLOLicenseManagerActivationStateFreed) {
+				title = TXTLS(@"TLOLicenseManager[c5k-f0]");
+				body = TXTLS(@"TLOLicenseManager[c5k-f1]");
+			} else {
+				title = TXTLS(@"TLOLicenseManager[u8h-qv]", licenseKey.prettyLicenseKey);
+				body = TXTLS(@"TLOLicenseManager[c5k-r1]");
+			}
+
+			[self show];
+
+			[TDCAlert alertSheetWithWindow:self.window
+									  body:body
+									 title:title
+							 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+						   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+							   otherButton:nil
+						   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+				if (buttonClicked == TDCAlertResponseAlternate) {
+					[menuController() contactSupport:nil];
+				}
+			}];
+
+			break;
+		}
+		case TLOLicenseManagerActivationStateUnknown:
+		{
+			break;
+		}
+	}
+}
+
+#pragma mark -
 #pragma mark Both Seats Taken
 
 - (void)presentSeatsFullForLicenseKey:(NSString *)licenseKey statusContext:(nullable id)statusContext silently:(BOOL)silently
 {
 	NSParameterAssert(licenseKey != nil);
+
+	/* Also after a silent activation, which has no window yet */
+	[self show];
 
 	NSArray *seatList = nil;
 
@@ -681,6 +850,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 - (void)presentNoMovesLeftWithStatusContext:(nullable id)statusContext
 {
+	[self show];
+
 	NSDate *movesResetAt = nil;
 
 	if ([statusContext isKindOfClass:[NSDictionary class]]) {
@@ -1280,6 +1451,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	/* Not posted on the main thread */
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self scheduleTimeRemainingInTrialNotification];
+
+		[self checkActivationIfDue];
 	});
 }
 
