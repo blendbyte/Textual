@@ -58,8 +58,6 @@ typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful
 @property (nonatomic, copy, nullable) TLOLicenseManagerDownloaderActionBlock actionBlock;
 @property (nonatomic, copy, nullable) TLOLicenseManagerDownloaderActionBlock errorBlock;
 @property (nonatomic, copy, nullable) TLOLicenseManagerDownloaderCompletionBlock completionBlock;
-@property (nonatomic, assign) BOOL isSilentOnFailure;
-@property (nonatomic, assign) BOOL isSilentOnSuccess;
 
 - (void)activateLicense:(NSString *)licenseKey;
 

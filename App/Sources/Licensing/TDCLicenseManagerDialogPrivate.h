@@ -49,6 +49,9 @@ TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerTrialExpiredNotificatio
 - (void)activateLicenseKey:(NSString *)licenseKey silently:(BOOL)silently;
 
 - (NSString *)timeRemainingInTrialFormattedMessage;
+
+/* Shows the window and asks how the Textual 7 license that came over upgrades */
+- (void)showTextual7Upgrade;
 @end
 #endif
 

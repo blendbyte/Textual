@@ -340,7 +340,6 @@
                             <outlet property="progressView" destination="9NQ-ho-u6f" id="KI1-yZ-V2x"/>
                             <outlet property="progressViewDescriptionTextField" destination="krn-AQ-P4T" id="EH8-wP-FzB"/>
                             <outlet property="progressViewIndicator" destination="WS7-Zg-h6u" id="XYt-hu-zhy"/>
-                            <outlet property="trialExpiredView" destination="dlj-jp-O6P" id="hIg-fZ-s9L"/>
                             <outlet property="welcomeAddServerView" destination="c10-eB-wRJ" id="YGC-SF-VWn"/>
                         </connections>
                     </visualEffectView>
@@ -1964,93 +1963,6 @@
                 <constraint firstItem="hcL-fW-9VX" firstAttribute="centerX" secondItem="c10-eB-wRJ" secondAttribute="centerX" id="qnR-nb-G6A"/>
             </constraints>
             <point key="canvasLocation" x="32" y="581"/>
-        </customView>
-        <customView translatesAutoresizingMaskIntoConstraints="NO" id="dlj-jp-O6P" userLabel="Loading Screen: Trial Expired">
-            <rect key="frame" x="0.0" y="0.0" width="520" height="415"/>
-            <subviews>
-                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Sxb-jV-wmm">
-                    <rect key="frame" x="55" y="200" width="410" height="35"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Your trial of Textual has expired!" id="LNi-eT-r8e">
-                        <font key="font" metaFont="system" size="30"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="6kZ-YA-3P0">
-                    <rect key="frame" x="18" y="144" width="484" height="48"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" id="J9b-GU-Ie0">
-                        <font key="font" metaFont="system"/>
-                        <string key="title">Thank you for trying Textual for the past 30 days. 
-
-To continue using Textual, you will need to purchase it.</string>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="u65-PZ-rca">
-                    <rect key="frame" x="200" y="101" width="121" height="32"/>
-                    <buttonCell key="cell" type="push" title="Purchase Now" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="Oyn-9I-e5e">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <accessibility description="Purchase Textual"/>
-                    <connections>
-                        <action selector="openStandaloneStoreWebpage:" target="U6M-jc-NbT" id="KTW-vE-uqm"/>
-                    </connections>
-                </button>
-                <imageView translatesAutoresizingMaskIntoConstraints="NO" id="y8X-eU-D17">
-                    <rect key="frame" x="184" y="243" width="152" height="152"/>
-                    <constraints>
-                        <constraint firstAttribute="width" constant="152" id="JuG-GC-0q4"/>
-                        <constraint firstAttribute="width" secondItem="y8X-eU-D17" secondAttribute="height" multiplier="1:1" id="miR-e6-Ves"/>
-                    </constraints>
-                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="applicationIcon" id="dnb-Ek-TpJ"/>
-                </imageView>
-                <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="Rfe-Am-khK">
-                    <rect key="frame" x="50" y="87" width="420" height="5"/>
-                    <constraints>
-                        <constraint firstAttribute="width" constant="420" id="dfS-de-acv"/>
-                    </constraints>
-                </box>
-                <textField focusRingType="none" verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LK8-9t-3xT">
-                    <rect key="frame" x="164" y="55" width="192" height="16"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Already own a copy of Textual?" id="MJr-dN-Icn">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="XHv-hd-4V2">
-                    <rect key="frame" x="195" y="13" width="130" height="32"/>
-                    <buttonCell key="cell" type="push" title="Activate Textual" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="zy8-ma-OJS">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="manageLicense:" target="U6M-jc-NbT" id="7y5-0V-dcv"/>
-                    </connections>
-                </button>
-            </subviews>
-            <constraints>
-                <constraint firstItem="6kZ-YA-3P0" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="dlj-jp-O6P" secondAttribute="leading" constant="20" id="01t-8p-oqN"/>
-                <constraint firstItem="u65-PZ-rca" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="5kQ-QL-tso"/>
-                <constraint firstItem="XHv-hd-4V2" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="5rv-6N-3cb"/>
-                <constraint firstItem="y8X-eU-D17" firstAttribute="top" secondItem="dlj-jp-O6P" secondAttribute="top" constant="20" id="7ki-0j-b16"/>
-                <constraint firstItem="Sxb-jV-wmm" firstAttribute="top" secondItem="y8X-eU-D17" secondAttribute="bottom" constant="8" symbolic="YES" id="Am6-q9-qnX"/>
-                <constraint firstItem="6kZ-YA-3P0" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="DeM-5Z-7ND"/>
-                <constraint firstItem="LK8-9t-3xT" firstAttribute="top" secondItem="Rfe-Am-khK" secondAttribute="bottom" constant="18" id="GaF-8W-2pm"/>
-                <constraint firstItem="Rfe-Am-khK" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="QDc-jC-TGW"/>
-                <constraint firstItem="u65-PZ-rca" firstAttribute="top" secondItem="6kZ-YA-3P0" secondAttribute="bottom" constant="16" id="SZR-Ek-kFA"/>
-                <constraint firstItem="XHv-hd-4V2" firstAttribute="top" secondItem="LK8-9t-3xT" secondAttribute="bottom" constant="15" id="UCA-Bx-6zU"/>
-                <constraint firstItem="LK8-9t-3xT" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="apH-AL-6KX"/>
-                <constraint firstItem="Rfe-Am-khK" firstAttribute="top" secondItem="u65-PZ-rca" secondAttribute="bottom" constant="18" id="dRu-2D-kuI"/>
-                <constraint firstAttribute="bottom" secondItem="XHv-hd-4V2" secondAttribute="bottom" constant="20" id="i5w-hF-QvZ"/>
-                <constraint firstItem="Sxb-jV-wmm" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="m8N-CP-UOl"/>
-                <constraint firstItem="6kZ-YA-3P0" firstAttribute="top" secondItem="Sxb-jV-wmm" secondAttribute="bottom" constant="8" symbolic="YES" id="maP-LW-L2Z"/>
-                <constraint firstItem="y8X-eU-D17" firstAttribute="centerX" secondItem="dlj-jp-O6P" secondAttribute="centerX" id="nDV-id-QUN"/>
-                <constraint firstItem="Sxb-jV-wmm" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="dlj-jp-O6P" secondAttribute="leading" constant="45" id="yNX-EA-MDr"/>
-            </constraints>
-            <point key="canvasLocation" x="52" y="1002"/>
         </customView>
     </objects>
     <resources>

@@ -39,75 +39,97 @@
 "q7w-k1" = "A link asks Textual to activate the license key %@.\n\nOnly continue if the link came from Blendbyte, for example in your purchase email.";
 "q7w-k2" = "A link asks Textual to activate the license key %1$@ instead of the key it uses now (%2$@). The old key is then freed on this Mac.\n\nOnly continue if the link came from Blendbyte, for example in your purchase email.";
 "q7w-k3" = "Activate";
-"nhh-ts" = "A problem was encountered while communicating with Textual’s licensing server";
-"1cv-0v" = "Try again in a few minutes then contact support if the problem persists.";
-"bqw-cv" = "Contact Support";
 
-"13u-4p" = "Textual’s licensing server has denied your request because too many requests have been received in a short period of time";
-"fvx-90" = "Access to license information for Textual is rate limited to prevent misuse or abuse. Please try again in a few minutes.";
 
 "r5k-l0" = "Lost your license key?";
 "r5k-l1" = "No problem: it’s in the email we sent you after your purchase.\n\nAlready upgraded from Textual 7? Enter your Textual 7 key and Textual shows you your Textual 8 key again.\n\nCan’t find the email? Contact us and we’ll look it up for you.";
 
-"s2m-f0" = "This license key is in use on two Macs";
-"s2m-f1" = "A license key works on two Macs at a time. Deactivate Textual on one of them in Manage License, then try again.";
-"s2m-f2" = "A license key works on two Macs at a time. Choose the Mac to move it from: Textual on that Mac goes back to the trial the next time it checks the license.";
-"s2m-f3" = "%1$@, last used %2$@";
+"s2m-f0" = "This license key is already in use on two Macs. Choose the one to move it from:";
+"s2m-f1" = "This license key is already in use on two Macs. Deactivate Textual on one of them, then try again here.";
+"s2m-f2" = "Textual on that Mac switches back to the trial the next time it checks in.";
 "s2m-f4" = "You can move this license key %ld more times in the next 30 days.";
 "s2m-f5" = "You can move this license key one more time in the next 30 days.";
-"s2m-f6" = "Use on This Mac Instead";
-"s2m-f7" = "This license key was moved twice in the last 30 days";
-"s2m-f8" = "You can move it again on %@. Until then, deactivate Textual on one of the two Macs in Manage License, or contact us and we’ll free a Mac for you.";
-"s2m-f9" = "Deactivate Textual on one of the two Macs in Manage License, or contact us and we’ll free a Mac for you.";
+"s2m-f7" = "This license key has already moved twice in the last 30 days";
+"s2m-f8" = "It can move again on %@. Until then, deactivate Textual on one of your Macs, or contact us and we’ll free one for you.";
+"s2m-f9" = "Deactivate Textual on one of your Macs, or contact us and we’ll free one for you.";
 
-"p3v-r0" = "Your payment is still being checked";
-"p3v-r1" = "You can activate Textual as soon as it’s approved. Please try again a little later.";
 
 "u8h-qv" = "The license key “%@” is no longer valid";
-"w1n-n0" = "Contact support if you think this is a mistake.";
 "vgp-j6" = "Contact Support";
 
-"fg6-gf" = "This license key isn’t known";
-"wc7-mn" = "Check that you entered it as it appears in your purchase email.";
 
-"jbs-64" = "Thank you for your purchase of Textual!";
-"k39-7l" = "All limitations have been lifted.";
 
 "pg1-a9" = "Deactivate Textual on this Mac?";
-"z87-wb" = "This frees one of the two Macs your license key works on. Textual goes back to the trial on this Mac.";
+"z87-wb" = "This frees one of the two Macs your license key works on, so you can use it on another. Textual on this Mac goes back to the trial.";
 
-"o66-ox" = "The license key “%@“ has exceeded its daily activation limit";
-"6aa-ow" = "This license key cannot be activated more than %ld times within a twenty-four (24) hour period. Please try again at a later time.";
 
-"wdl-3f" = "Your trial of Textual will expire in %@";
-"kn7-ju" = "Your trial of Textual has expired.";
+"wdl-3f" = "Your Textual trial ends in %@";
+"kn7-ju" = "Your Textual trial has ended";
 
-"ccj-ag" = "Please purchase Textual to prevent disruption to your chat experience.";
+"ccj-ag" = "To keep using Textual, activate your license key or buy Textual 8 in Manage License.";
 "b8b-sg" = "More Info";
 
-"0uc-io" = "The license key “%@“ cannot be activated because another operation is already in progress";
-"vnu-5e" = "";
 
-"bw3-sc" = "The license key “%@“ cannot be activated because it is already in use";
-"fxu-su" = "";
-"u7g-b0" = "Upgrade";
-"u7g-b1" = "Purchase";
 "u7g-f0" = "Your Textual 7 license upgrades to Textual 8 for free";
-"u7g-f1" = "Thank you for using Textual 7. Your license (%@) comes with Textual 8: one click gets your Textual 8 license key and activates it on this Mac.";
+"u7g-f1" = "Thank you for using Textual 7! Your license (%@) includes Textual 8. One click gets your Textual 8 license key and activates it on this Mac.";
 "u7g-f2" = "Get My Textual 8 License";
 "u7g-n0" = "Not Now";
 "u7g-p0" = "Upgrade to Textual 8";
-"u7g-p1" = "Your Textual 7 license (%@) was bought more than a year before Textual 8 came out, so it upgrades at a reduced price.\n\nThe upgrade opens in your browser. After paying, you get your Textual 8 license key by email, with a link that activates it.";
+"u7g-p1" = "Thank you for using Textual 7! Your license (%@) was bought more than a year before Textual 8 came out, so you can upgrade at a reduced price.\n\nThe upgrade opens in your browser. After paying, we email you your Textual 8 license key with a link that activates it.";
 "u7g-p2" = "Upgrade…";
 "u7g-p3" = "Continue Trial";
 "u7g-u0" = "You already upgraded to Textual 8";
-"u7g-u1" = "Your Textual 8 license key is:\n%@\n\nKeep it somewhere safe: you need it to activate Textual on another Mac.";
+"u7g-u1" = "Keep your Textual 8 license key somewhere safe: you need it to activate Textual on another Mac.";
 "u7g-u2" = "Activate";
 "u7g-u3" = "Enter your Textual 7 license key in Manage License and Textual shows your Textual 8 key, or contact us and we’ll look it up for you.";
 "u7g-x0" = "The Textual 7 license %@ can’t be upgraded";
-"u7g-x1" = "It was refunded or never paid. Contact us if you think this is a mistake.";
-"u7g-e0" = "Textual couldn’t check your Textual 7 license";
-"u7g-e1" = "Please try again later, or contact us if it keeps happening.";
-"c5k-f0" = "This license was moved to another Mac";
-"c5k-f1" = "Textual on this Mac went back to the trial. If you didn’t move it, contact us.";
-"c5k-r1" = "Textual on this Mac went back to the trial. Contact us if you think this is a mistake.";
+"u7g-x1" = "Our records show it was refunded or never paid. If that’s not right, please contact us.";
+"u7g-e0" = "Textual couldn’t check your Textual 7 license right now. Please try again in a moment.";
+"c5k-f0" = "This license moved to another Mac";
+"c5k-f1" = "Textual on this Mac is back in the trial. If you didn’t move the license yourself, please contact us.";
+"c5k-r1" = "Textual on this Mac is back in the trial. If you think this is a mistake, please contact us.";
+"lw-title" = "License";
+"lw-h0" = "Textual 8";
+"lw-h1" = "Thank you for supporting Textual.";
+"lw-st0" = "Trial · %@ left";
+"lw-st1" = "Your trial has ended";
+"lw-st2" = "Licensed";
+"lw-copy" = "Copy";
+"lw-a0" = "Activate";
+"lw-a1" = "License key";
+"lw-a2" = "Lost your key?";
+"lw-a3" = "Activate";
+"lw-a4" = "Paste your license key";
+"lw-b0" = "Don’t have a key yet?";
+"lw-b1" = "Upgrade from Textual 7";
+"lw-b2" = "Your Textual 7 license (%@) came over: see how it upgrades.";
+"lw-b3" = "Upgrade";
+"lw-b4" = "Buy Textual 8";
+"lw-b5" = "Opens the store in your browser.";
+"lw-b6" = "Buy…";
+"lw-s0" = "Move the key from";
+"lw-s1" = "Cancel";
+"lw-s2" = "Use on This Mac";
+"lw-s3" = "Last used %@";
+"lw-u0" = "Upgrade from Textual 7";
+"lw-l0" = "Your license";
+"lw-l1" = "Licensed since";
+"lw-m0" = "This Mac";
+"lw-m1" = "Activated on this Mac (%@)";
+"lw-m2" = "A license key works on two Macs at a time. Deactivate this one to use the key on another.";
+"lw-m3" = "Deactivate This Mac…";
+"lw-m4" = "Deactivate";
+"lw-e0" = "This Mac already uses this license key.";
+"lw-e1" = "This license key isn’t known. Check that you entered it as it appears in your purchase email.";
+"lw-e2" = "This license key is no longer valid. If you think this is a mistake, please contact us.";
+"lw-e3" = "This license key was activated many times today. Please try again tomorrow, or contact us if you need it sooner.";
+"lw-e4" = "Your payment is still being checked. You can activate Textual as soon as it’s approved.";
+"lw-e5" = "The licensing server is busy. Please try again in a few minutes.";
+"lw-e6" = "Textual couldn’t reach the licensing server. Please check your internet connection and try again.";
+"lw-e7" = "Textual couldn’t reach the licensing server, so this Mac is still activated. Please try again in a moment.";
+"lw-x0" = "Your trial has ended";
+"lw-x1" = "Thank you for trying Textual 8! To keep using it, activate your license key or buy Textual 8.";
+"lw-x2" = "Activate License Key…";
+"lw-x3" = "Buy Textual 8…";
+"lw-x4" = "Upgrade from Textual 7…";
+"lw-x5" = "Thank you for trying Textual 8! Your Textual 7 license came over: see how it upgrades, or activate a license key you already have.";

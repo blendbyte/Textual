@@ -39,6 +39,7 @@
 #import <sys/sysctl.h>
 
 #import "TPCPathInfo.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TLOLicenseManagerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -94,6 +95,33 @@ void TLOLicenseManagerSetup(void)
 	}
 
 	_setupComplete = YES;
+
+#ifdef DEBUG
+	/* For testing: start as a fresh install would, before anything is read
+	 (the app's container is closed to others) */
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"Reset License State"]) {
+		NSURL * _Nullable fileURLs[] = {
+			TLOLicenseManagerActivationFilePath(),
+			TLOLicenseManagerTrialFilePath(),
+			TLOLicenseManagerLocalTrialFilePath(),
+			TLOLicenseManagerTextual7LicenseFilePath()
+		};
+
+		for (NSUInteger i = 0; i < (sizeof(fileURLs) / sizeof(fileURLs[0])); i++) {
+			if (fileURLs[i]) {
+				[RZFileManager() removeItemAtURL:fileURLs[i] error:NULL];
+			}
+		}
+
+		for (NSString *defaultsKey in [RZUserDefaults() dictionaryRepresentation].allKeys) {
+			if ([defaultsKey hasPrefix:@"License Manager -> "]) {
+				[RZUserDefaults() removeObjectForKey:defaultsKey];
+			}
+		}
+
+		LogToConsoleInfo("License state reset");
+	}
+#endif
 
 	(void)TLOLicenseManagerActivationPayload();
 }

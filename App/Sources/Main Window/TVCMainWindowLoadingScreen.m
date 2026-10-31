@@ -41,6 +41,15 @@
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowLoadingScreenPrivate.h"
 
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+#import "TXMasterController.h"
+#import "TXMenuController.h"
+#import "TXSharedApplicationPrivate.h"
+#import "TLOLicenseManagerPrivate.h"
+#import "TDCLicenseManagerDialogPrivate.h"
+#import "TDCLicenseWindowPrivate.h"
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMainWindowLoadingScreenView ()
@@ -50,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSView *progressView;
 @property (nonatomic, weak) IBOutlet NSTextField *progressViewDescriptionTextField;
 @property (nonatomic, weak) IBOutlet NSProgressIndicator *progressViewIndicator;
-@property (nonatomic, strong) IBOutlet NSView *trialExpiredView;
 @end
 
 @implementation TVCMainWindowLoadingScreenView
@@ -83,7 +91,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showTrialExpiredView
 {
-	[self displayView:self.trialExpiredView];
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	/* Made each time: a Textual 7 license may have come over meanwhile */
+	NSView *trialEndedView =
+	[TDCLicenseTrialEndedView viewWithTextual7License:(TLOLicenseManagerTextual7LicenseKey() != nil)
+											 activate:^{
+												 [menuController() manageLicense:nil];
+											 }
+												  buy:^{
+													  [menuController() openStandaloneStoreWebpage:nil];
+												  }
+											  upgrade:^{
+												  [[TXSharedApplication sharedLicenseManagerDialog] showTextual7Upgrade];
+											  }];
+
+	[self displayView:trialEndedView];
+#endif
 }
 
 #pragma mark -

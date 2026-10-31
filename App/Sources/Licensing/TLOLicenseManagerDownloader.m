@@ -36,11 +36,7 @@
  *********************************************************************** */
 
 #import "NSStringHelper.h"
-#import "TXMasterController.h"
-#import "TXMenuController.h"
-#import "TDCAlert.h"
 #import "TPCApplicationInfo.h"
-#import "TLOLocalization.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLicenseManagerDownloaderPrivate.h"
 
@@ -265,26 +261,12 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 		}
 	};
 
+	/* No interface here: the error and completion blocks say what went wrong */
 	void (^presentError)(void) = ^(void)
 	{
-		if (
-			/* Perform error block if it was not performed
-			 by some other condition presented below. */
-			(self.errorBlock == nil ||
-			 self.errorBlock(apiStatusCode, apiStatusContext) == NO) &&
-
-			/* Do we even present an error? */
-			self.isSilentOnFailure == NO)
-		{
-			[self presentTryAgainLaterErrorDialog];
+		if (self.errorBlock) {
+			(void)self.errorBlock(apiStatusCode, apiStatusContext);
 		}
-
-		performCompletionBlock(NO);
-	};
-
-	void (^presentErrorUnconditionally)(void) = ^(void)
-	{
-		[self presentTryAgainLaterErrorDialog];
 
 		performCompletionBlock(NO);
 	};
@@ -339,13 +321,6 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 				return presentError();
 			}
 
-			if (self.isSilentOnSuccess == NO) {
-				[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[k39-7l]")
-										  title:TXTLS(@"TLOLicenseManager[jbs-64]")
-								  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-								alternateButton:nil];
-			}
-
 			return performCompletionBlock(YES);
 		}
 		else if ((requestType == TLOLicenseManagerDownloaderRequestTypeDeactivation ||
@@ -394,119 +369,8 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 			return performCompletionBlock(YES);
 		}
 
-		if ((self.errorBlock != nil &&
-			 self.errorBlock(apiStatusCode, apiStatusContext)) ||
-			self.isSilentOnFailure)
-		{
-			if (self.completionBlock) {
-				self.completionBlock(NO, apiStatusCode, apiStatusContext);
-			}
-
-			return;
-		}
-
-		/* Errors related to license activation. */
-		BOOL presentError = NO;
-
-		if (apiStatusCode == TLOLicenseManagerDownloaderRequestStatusCodeServiceIsBusy)
-		{
-			[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[fvx-90]")
-									  title:TXTLS(@"TLOLicenseManager[13u-4p]")
-							  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-							alternateButton:nil];
-		}
-		else if (requestType == TLOLicenseManagerDownloaderRequestTypeActivation && apiStatusCode == 7100000)
-		{
-			[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[wc7-mn]")
-									  title:TXTLS(@"TLOLicenseManager[fg6-gf]")
-							  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-							alternateButton:nil];
-		}
-		else if (requestType == TLOLicenseManagerDownloaderRequestTypeActivation && apiStatusCode == 7100001)
-		{
-			NSString *licenseKey = [self licenseKeyInStatusContext:apiStatusContext];
-
-			BOOL userResponse = [TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[w1n-n0]")
-														  title:TXTLS(@"TLOLicenseManager[u8h-qv]", licenseKey.prettyLicenseKey)
-												  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-												alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")];
-
-			if (userResponse == NO) { // NO = alternate button
-				[self contactSupport];
-			}
-		}
-		else if (requestType == TLOLicenseManagerDownloaderRequestTypeActivation && apiStatusCode == 7100002)
-		{
-			NSString *licenseKey = [self licenseKeyInStatusContext:apiStatusContext];
-
-			NSInteger licenseKeyActivationLimit = 20;
-
-			if ([apiStatusContext isKindOfClass:[NSDictionary class]]) {
-				licenseKeyActivationLimit = [apiStatusContext integerForKey:@"licenseKeyActivationLimit" orUseDefault:20];
-			}
-
-			[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[6aa-ow]", licenseKeyActivationLimit)
-									  title:TXTLS(@"TLOLicenseManager[o66-ox]", licenseKey.prettyLicenseKey)
-							  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-							alternateButton:nil];
-		}
-		else if (requestType == TLOLicenseManagerDownloaderRequestTypeActivation && apiStatusCode == 7100007)
-		{
-			BOOL userResponse = [TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[p3v-r1]")
-														  title:TXTLS(@"TLOLicenseManager[p3v-r0]")
-												  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-												alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")];
-
-			if (userResponse == NO) { // NO = alternate button
-				[self contactSupport];
-			}
-		}
-		else
-		{
-			presentError = YES;
-		}
-
-		/* presentError defaults to NO because all conditions are caught above
-		 except those that may be added in future versions of the API not yet
-		 supported by this code. */
-		if (presentError) {
-			presentErrorUnconditionally();
-		} else {
-			performCompletionBlock(NO);
-		}
+		return presentError();
 	} // TLOLicenseManagerDownloaderRequestStatusCodeSuccess
-}
-
-- (nullable NSString *)licenseKeyInStatusContext:(nullable id)statusContext
-{
-	if ([statusContext isKindOfClass:[NSDictionary class]] == NO) {
-		return nil;
-	}
-
-	NSString *licenseKey = statusContext[@"licenseKey"];
-
-	if ([licenseKey isKindOfClass:[NSString class]] == NO) {
-		return nil;
-	}
-
-	return licenseKey;
-}
-
-- (void)presentTryAgainLaterErrorDialog
-{
-	BOOL userResponse = [TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[1cv-0v]")
-												  title:TXTLS(@"TLOLicenseManager[nhh-ts]")
-										  defaultButton:TXTLS(@"Prompts[c7s-dq]")
-										alternateButton:TXTLS(@"TLOLicenseManager[bqw-cv]")];
-
-	if (userResponse == NO) { // NO = alternate button
-		[self contactSupport];
-	}
-}
-
-- (void)contactSupport
-{
-	[menuController() contactSupport:nil];
 }
 
 @end
