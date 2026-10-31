@@ -15,6 +15,7 @@
                 <outlet property="unregisteredViewActivateTextualButton" destination="c0t-Vn-Ofk" id="1lB-yf-GaZ"/>
                 <outlet property="unregisteredViewCancelButton" destination="yZF-Hy-PrY" id="L9r-Xa-FVj"/>
                 <outlet property="unregisteredViewLicenseKeyTextField" destination="kAU-WO-mIJ" id="gPM-eo-qVs"/>
+                <outlet property="unregisteredViewPurchaseButton" destination="UK4-RN-UQO" id="u7G-Pb-n01"/>
                 <outlet property="unregisteredViewRecoveryLostLicenseButton" destination="V4s-Va-UFF" id="Pbt-eH-4EM"/>
                 <outlet property="unregisteredViewTrialInformationTextField" destination="Pho-XN-fdp" id="C9I-YH-Meg"/>
                 <outlet property="window" destination="tBl-Uw-jZv" id="VoY-RM-rJQ"/>

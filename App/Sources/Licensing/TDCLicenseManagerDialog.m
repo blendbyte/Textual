@@ -41,14 +41,10 @@
 #import "TXMasterController.h"
 #import "TXMenuController.h"
 #import "TPCPreferencesUserDefaults.h"
-#import "TDCLicenseUpgradeActivateSheetPrivate.h"
-#import "TDCLicenseUpgradeCommonActionsPrivate.h"
-#import "TDCLicenseUpgradeDialogPrivate.h"
-#import "TDCLicenseUpgradeEligibilitySheetPrivate.h"
 #import "TDCProgressIndicatorSheetPrivate.h"
+#import "TLOpenLink.h"
 #import "TLOTimer.h"
 #import "TLOLicenseManagerDownloaderPrivate.h"
-#import "TLOLicenseManagerLastGenPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOLocalization.h"
 #import "TLONotificationController.h"
@@ -62,7 +58,10 @@ NSString * const TDCLicenseManagerActivatedLicenseNotification = @"TDCLicenseMan
 NSString * const TDCLicenseManagerDeactivatedLicenseNotification = @"TDCLicenseManagerDeactivatedLicenseNotification";
 NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManagerTrialExpiredNotification";
 
-#define _upgradeDialogRemindMeInterval 		345600 // 4 days
+#define _upgradeRemindMeInterval 			345600 // 4 days
+
+#define _upgradeLastDismissedDefaultsKey 	@"License Manager -> Upgrade -> Last Dismissed"
+#define _upgradeNotEligibleDefaultsKey 		@"License Manager -> Upgrade -> Not Eligible License Key"
 
 #define _trialReminderWindow 				604800 // 7 days
 
@@ -79,12 +78,12 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewActivateTextualButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewCancelButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewRecoveryLostLicenseButton;
+@property (nonatomic, weak) IBOutlet NSButton *unregisteredViewPurchaseButton;
 @property (nonatomic, strong, nullable) TDCProgressIndicatorSheet *progressIndicator;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *licenseManagerDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *trialDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *previousActivationDownloader;
-@property (nonatomic, strong, nullable) TDCLicenseUpgradeDialog *upgradeDialog;
-@property (nonatomic, strong, nullable) TDCLicenseUpgradeActivateSheet *upgradeActivateSheet;
+@property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *upgradeDownloader;
 @property (nonatomic, assign) BOOL textualIsRegistered;
 @property (nonatomic, assign) BOOL isSilentOnSuccess;
 @property (nonatomic, assign) BOOL operationInProgress;
@@ -150,7 +149,21 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	[self activateLicenseKeyUsingArgumentDictionary];
 
-	[self upgradeDialogAppFinishedLaunchingRoutine];
+#ifdef DEBUG
+	/* For testing the upgrade: a Textual 7 license file (base64) to import
+	 as the legacy import would, since the app's container is closed to others */
+	NSString *textual7LicenseFile = [[NSUserDefaults standardUserDefaults] stringForKey:@"Import Textual 7 License File"];
+
+	if (textual7LicenseFile.length > 0) {
+		NSData *licenseContents = [[NSData alloc] initWithBase64EncodedString:textual7LicenseFile options:NSDataBase64DecodingIgnoreUnknownCharacters];
+
+		if (licenseContents && TLOLicenseManagerImportTextual7LicenseFile(licenseContents)) {
+			[self updateSelectedPane];
+		}
+	}
+#endif
+
+	[self checkUpgradeAtLaunch];
 }
 
 - (void)updateSelectedPane
@@ -176,6 +189,13 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		NSString *formattedTrialInformation = [self timeRemainingInTrialFormattedMessage];
 
 		self.unregisteredViewTrialInformationTextField.stringValue = formattedTrialInformation;
+
+		/* Someone with a Textual 7 license upgrades instead of buying */
+		if (TLOLicenseManagerTextual7LicenseKey() != nil) {
+			self.unregisteredViewPurchaseButton.title = TXTLS(@"TLOLicenseManager[u7g-b0]");
+		} else {
+			self.unregisteredViewPurchaseButton.title = TXTLS(@"TLOLicenseManager[u7g-b1]");
+		}
 	}
 
 	[self.window replaceContentView:contentView];
@@ -288,20 +308,12 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 - (void)unregisteredViewPurchaseTextual:(nullable id)sender
 {
-	NSString *lastGenLicenseKey = [TLOLicenseManagerLastGen licenseKey];
+	NSDictionary *upgradeProof = [self textual7LicenseFileProof];
 
-	if (lastGenLicenseKey != nil) {
-		BOOL upgradeLicense =
-		[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[dpo-ln]", lastGenLicenseKey.prettyLicenseKey)
-								  title:TXTLS(@"TLOLicenseManager[12h-3w]")
-						  defaultButton:TXTLS(@"TLOLicenseManager[qrx-aq]")
-						alternateButton:TXTLS(@"TLOLicenseManager[zp8-8q]")];
+	if (upgradeProof != nil) {
+		[self checkUpgradeWithProof:upgradeProof textual7LicenseKey:TLOLicenseManagerTextual7LicenseKey() quietly:NO];
 
-		if (upgradeLicense) {
-			[self showUpgradeDialogForLicenseKey:lastGenLicenseKey];
-
-			return;
-		}
+		return;
 	}
 
 	[menuController() openStandaloneStoreWebpage:nil];
@@ -414,11 +426,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		return;
 	}
 
-	/* The activate sheet will close itself when user clicks to make purchase,
-	 but if user activates a license by other means (such as clicking the link
-	 in their e-mail), then we dismiss it here, so that we can do activation. */
-	[self closeUpgradeActivateSheet];
-
 	/* Perform activation */
 	self.isSilentOnSuccess = silently;
 
@@ -463,19 +470,16 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 			return YES;
 		}
 
-		/* A Textual 7 key: it can be upgraded */
-		if (statusCode != 7100004) {
-			return NO;
+		/* A Textual 7 key: the answer says how it upgrades */
+		if (statusCode == 7100004 && [statusContext isKindOfClass:[NSDictionary class]]) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[weakSelf presentUpgradeEligibility:statusContext proof:@{@"t7LicenseKey" : cleanedLicenseKey} textual7LicenseKey:cleanedLicenseKey quietly:NO];
+			});
+
+			return YES;
 		}
 
-		[TDCAlert modalAlertWithMessage:TXTLS(@"TLOLicenseManager[5bu-ov]")
-								  title:TXTLS(@"TLOLicenseManager[pmv-qp]", cleanedLicenseKey.prettyLicenseKey)
-						  defaultButton:TXTLS(@"TLOLicenseManager[53u-lt]")
-						alternateButton:nil];
-
-		[weakSelf showUpgradeDialogForLicenseKey:cleanedLicenseKey];
-
-		return YES;
+		return NO;
 	};
 
 	licenseManagerDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
@@ -491,13 +495,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 			[strongSelf freePreviousActivation:previousActivationID];
 
 			[RZNotificationCenter() postNotificationName:TDCLicenseManagerActivatedLicenseNotification object:strongSelf];
-
-			/* We close the upgrade dialog if a key is activated because
-			 why would we keep it around under that condition? */
-			[strongSelf closeUpgradeDialog];
-
-			/* Reset context for activate sheet. */
-			[strongSelf resetUpgradeActivateSheetContext];
 		}
 
 		strongSelf.operationInProgress = NO;
@@ -718,209 +715,372 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 }
 
 #pragma mark -
-#pragma mark License Upgrade Launch Routine
+#pragma mark Upgrade from Textual 7
 
-- (void)upgradeDialogAppFinishedLaunchingRoutine
+- (nullable NSDictionary<NSString *, NSString *> *)textual7LicenseFileProof
 {
-	/* There is no reason to perform this check if this copy of Textual
-	 is already registered. */
+	NSData *licenseContents = TLOLicenseManagerTextual7LicenseFileContents();
+
+	if (licenseContents == nil || TLOLicenseManagerTextual7LicenseKey() == nil) {
+		return nil;
+	}
+
+	return @{@"t7LicenseFile" : [licenseContents base64EncodedStringWithOptions:0]};
+}
+
+- (void)checkUpgradeAtLaunch
+{
+	/* Quietly, while unregistered with an imported Textual 7 license: the
+	 answer is shown, failures aren't. Not Now waits four days. */
 	if (TLOLicenseManagerTextualIsRegistered()) {
-		/* If Textual is registered, then we reset these values because
-		 there is no reason to have them hanging around. */
-		[self resetUpgradeActivateSheetContext];
-
 		return;
 	}
 
-	/* Check if we have license key saved from Textual 6 upgrade dialog. */
-	if ([self showUpgradeActivateSheet]) {
+	NSString *textual7LicenseKey = TLOLicenseManagerTextual7LicenseKey();
+
+	NSDictionary *upgradeProof = [self textual7LicenseFileProof];
+
+	if (textual7LicenseKey == nil || upgradeProof == nil) {
 		return;
 	}
 
-	/* Show upgrade dialog */
-	[self showUpgradeDialogForLastGenLicense];
+	if ([textual7LicenseKey isEqualToString:[RZUserDefaults() stringForKey:_upgradeNotEligibleDefaultsKey]]) {
+		return;
+	}
+
+	NSDate *lastDismissed = [RZUserDefaults() objectForKey:_upgradeLastDismissedDefaultsKey];
+
+	if ([lastDismissed isKindOfClass:[NSDate class]] && [[NSDate date] timeIntervalSinceDate:lastDismissed] < _upgradeRemindMeInterval) {
+		return;
+	}
+
+	[self checkUpgradeWithProof:upgradeProof textual7LicenseKey:textual7LicenseKey quietly:YES];
 }
 
-- (void)showUpgradeDialogForLastGenLicense
+- (void)checkUpgradeWithProof:(NSDictionary<NSString *, NSString *> *)upgradeProof textual7LicenseKey:(nullable NSString *)textual7LicenseKey quietly:(BOOL)quietly
 {
-	/* Is there even a last generation key? */
-	NSString *lastGenLicenseKey = [TLOLicenseManagerLastGen licenseKey];
+	NSParameterAssert(upgradeProof != nil);
 
-	if (lastGenLicenseKey == nil) {
+	if (self.upgradeDownloader != nil) {
 		return;
 	}
 
-	/* When was the last time the user was nagged? */
-	/* Unless user hits "Remind Me Later", then the upgrade dialog is
-	 not hidden due to time limit. This change was made so that if the
-	 user is performing some type of action that causes them to miss the
-	 dialog, such as installing an update, it will show next launch. */
-	BOOL remindMeLater = [RZUserDefaults() boolForKey:@"Textual 7 Upgrade -> Tv7 -> Remind Me Later"];
+	if (quietly == NO) {
+		[self beginProgressIndicator];
+	}
 
-	NSTimeInterval lastCheckTime = [RZUserDefaults() doubleForKey:@"Textual 7 Upgrade -> Tv7 -> Last Dialog Presentation (LMD)"];
+	__weak TDCLicenseManagerDialog *weakSelf = self;
 
-	NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+	TLOLicenseManagerDownloader *upgradeDownloader = [TLOLicenseManagerDownloader new];
 
-	if (lastCheckTime > 0 && remindMeLater) {
-		if ((currentTime - lastCheckTime) < _upgradeDialogRemindMeInterval) {
-			LogToConsoleInfo("Not enough time has passed since last presentation");
+	upgradeDownloader.isSilentOnFailure = quietly;
+	upgradeDownloader.isSilentOnSuccess = YES;
 
+	upgradeDownloader.errorBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
+		if (statusCode != 7500000) {
+			return NO;
+		}
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[weakSelf presentUpgradeErrorWithStatusContext:statusContext];
+		});
+
+		return YES;
+	};
+
+	upgradeDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
+		TDCLicenseManagerDialog *strongSelf = weakSelf;
+
+		strongSelf.upgradeDownloader = nil;
+
+		[strongSelf endProgressIndicator];
+
+		if (operationSuccessful == NO) {
 			return;
 		}
-	}
 
-	[RZUserDefaults() setDouble:currentTime forKey:@"Textual 7 Upgrade -> Tv7 -> Last Dialog Presentation (LMD)"];
+		/* Shown once the progress sheet is gone */
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[weakSelf presentUpgradeEligibility:statusContext proof:upgradeProof textual7LicenseKey:textual7LicenseKey quietly:quietly];
+		});
+	};
 
-	[RZUserDefaults() removeObjectForKey:@"Textual 7 Upgrade -> Tv7 -> Remind Me Later"];
+	[upgradeDownloader checkUpgradeEligibilityWithProof:upgradeProof];
 
-	/* Nag user */
-	[self showUpgradeDialogForLicenseKey:lastGenLicenseKey];
+	self.upgradeDownloader = upgradeDownloader;
 }
 
-#pragma mark -
-#pragma mark License Upgrade Dialog
-
-- (void)showUpgradeDialogForLicenseKey:(NSString *)licenseKey
+- (void)presentUpgradeEligibility:(NSDictionary<NSString *, id> *)eligibility proof:(NSDictionary<NSString *, NSString *> *)upgradeProof textual7LicenseKey:(nullable NSString *)textual7LicenseKey quietly:(BOOL)quietly
 {
-	NSParameterAssert(licenseKey != nil);
+	NSParameterAssert(eligibility != nil);
+	NSParameterAssert(upgradeProof != nil);
 
-	if (self.upgradeDialog) {
-		if ([self.upgradeDialog.licenseKey isEqualToString:licenseKey]) {
-			[self.upgradeDialog show];
-
-			return;
-		} else {
-			[self.upgradeDialog close];
-		}
+	/* Activated meanwhile, for example through a link */
+	if (TLOLicenseManagerTextualIsRegistered()) {
+		return;
 	}
 
-	  TDCLicenseUpgradeDialog *upgradeDialog =
-	[[TDCLicenseUpgradeDialog alloc] initWithLicenseKey:licenseKey];
+	NSInteger eligibilityValue = [eligibility integerForKey:@"licenseUpgradeEligibility" orUseDefault:(-1)];
 
-	upgradeDialog.delegate = self;
+	NSString *textual7LicenseKeyText = (textual7LicenseKey.prettyLicenseKey ?: @"");
 
-	[upgradeDialog show];
-
-	self.upgradeDialog = upgradeDialog;
-}
-
-- (void)closeUpgradeDialog
-{
-	if (self.upgradeDialog) {
-		[self.upgradeDialog close];
-	}
-}
-
-- (void)licenseUpgradeDialogEligibilityChanged:(TDCLicenseUpgradeDialog *)sender
-{
-	/* Record eligibility status so that we might present an activate sheet
-	 next time the user opens the app. */
-	[self setUpgradeActivateSheetContextWithDialog:sender];
-}
-
-- (void)licenseUpgradeDialogWRemindMeLater:(TDCLicenseUpgradeDialog *)sender
-{
-	[RZUserDefaults() setBool:YES forKey:@"Textual 7 Upgrade -> Tv7 -> Remind Me Later"];
-}
-
-- (void)licenseUpgradeDialogWillClose:(TDCLicenseUpgradeDialog *)sender
-{
-	self.upgradeDialog = nil;
-}
-
-#pragma mark -
-#pragma mark Upgrade Activate Sheet
-
-- (BOOL)showUpgradeActivateSheet
-{
-	/* Do we have a properly formatted license key? */
-	NSString *licenseKey = [RZUserDefaults() objectForKey:@"Textual 7 Upgrade -> Tv7 -> Eligible License Key"];
-
-	if (licenseKey == nil) {
-		return NO;
-	}
-
-	if (TLOLicenseManagerLicenseKeyIsValid(licenseKey) == NO) {
-		return NO;
-	}
-
-	/* Do we have an eligibility that is acceptable? */
-	NSUInteger eligibility = [RZUserDefaults() unsignedIntegerForKey:@"Textual 7 Upgrade -> Tv7 -> Eligibility"];
-
-	if (eligibility != TLOLicenseUpgradeEligibilityDiscount &&
-		eligibility != TLOLicenseUpgradeEligibilityFree &&
-		eligibility != TLOLicenseUpgradeEligibilityAlreadyUpgraded)
-	{
-		return NO;
-	}
-
-	/* Show ourselves because we will place the sheet on self. */
 	[self show];
 
-	/* Create sheet and start it. */
-	  TDCLicenseUpgradeActivateSheet *activateSheet =
-	[[TDCLicenseUpgradeActivateSheet alloc] initWithLicenseKey:licenseKey eligibility:eligibility];
+	switch (eligibilityValue) {
+		case 3: // Free
+		{
+			[TDCAlert alertSheetWithWindow:self.window
+									  body:TXTLS(@"TLOLicenseManager[u7g-f1]", textual7LicenseKeyText)
+									 title:TXTLS(@"TLOLicenseManager[u7g-f0]")
+							 defaultButton:TXTLS(@"TLOLicenseManager[u7g-f2]")
+						   alternateButton:TXTLS(@"TLOLicenseManager[u7g-n0]")
+							   otherButton:nil
+						   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+				if (buttonClicked == TDCAlertResponseDefault) {
+					[self redeemUpgradeWithProof:upgradeProof textual7LicenseKey:textual7LicenseKey];
+				} else {
+					[self upgradeDismissed];
+				}
+			}];
 
-	activateSheet.delegate = self;
+			break;
+		}
+		case 1: // Paid
+		{
+			NSString *checkoutURL = [eligibility stringForKey:@"upgradeCheckoutURL"];
 
-	activateSheet.window = self.window;
+			if ([self isUpgradeCheckoutURL:checkoutURL] == NO) {
+				LogToConsoleError("The paid upgrade came without a checkout link");
 
-	[activateSheet start];
+				if (quietly == NO) {
+					[self presentUpgradeErrorWithStatusContext:nil];
+				}
 
-	self.upgradeActivateSheet = activateSheet;
+				return;
+			}
 
-	/* Inform launch routine to do nothing more. */
-	return YES;
-}
+			/* Not Now once the trial is over */
+			NSString *dismissButton = nil;
 
-- (void)closeUpgradeActivateSheet
-{
-	if (self.upgradeActivateSheet) {
-		[self.upgradeActivateSheet endSheet];
+			if (TLOLicenseManagerIsTrialExpired()) {
+				dismissButton = TXTLS(@"TLOLicenseManager[u7g-n0]");
+			} else {
+				dismissButton = TXTLS(@"TLOLicenseManager[u7g-p3]");
+			}
+
+			[TDCAlert alertSheetWithWindow:self.window
+									  body:TXTLS(@"TLOLicenseManager[u7g-p1]", textual7LicenseKeyText)
+									 title:TXTLS(@"TLOLicenseManager[u7g-p0]")
+							 defaultButton:TXTLS(@"TLOLicenseManager[u7g-p2]")
+						   alternateButton:dismissButton
+							   otherButton:nil
+						   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+				if (buttonClicked == TDCAlertResponseDefault) {
+					[TLOpenLink openWithString:checkoutURL inBackground:NO];
+				}
+
+				[self upgradeDismissed];
+			}];
+
+			break;
+		}
+		case 2: // Already upgraded
+		{
+			NSString *upgradedLicenseKey = [eligibility stringForKey:@"upgradedLicenseKey"];
+
+			if (upgradedLicenseKey != nil && TLOLicenseManagerLicenseKeyIsValid(upgradedLicenseKey)) {
+				[TDCAlert alertSheetWithWindow:self.window
+										  body:TXTLS(@"TLOLicenseManager[u7g-u1]", upgradedLicenseKey)
+										 title:TXTLS(@"TLOLicenseManager[u7g-u0]")
+								 defaultButton:TXTLS(@"TLOLicenseManager[u7g-u2]")
+							   alternateButton:TXTLS(@"TLOLicenseManager[u7g-n0]")
+								   otherButton:nil
+							   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					if (buttonClicked == TDCAlertResponseDefault) {
+						[self attemptToActivateLicenseKey:upgradedLicenseKey];
+					} else {
+						[self upgradeDismissed];
+					}
+				}];
+			} else {
+				/* A license file proof doesn't always bring the key back */
+				[TDCAlert alertSheetWithWindow:self.window
+										  body:TXTLS(@"TLOLicenseManager[u7g-u3]")
+										 title:TXTLS(@"TLOLicenseManager[u7g-u0]")
+								 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+							   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+								   otherButton:nil
+							   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					if (buttonClicked == TDCAlertResponseAlternate) {
+						[menuController() contactSupport:nil];
+					}
+
+					[self upgradeDismissed];
+				}];
+			}
+
+			break;
+		}
+		case 0: // Not eligible
+		{
+			/* Not again at launch for this license */
+			if (textual7LicenseKey != nil) {
+				[RZUserDefaults() setObject:textual7LicenseKey forKey:_upgradeNotEligibleDefaultsKey];
+			}
+
+			[TDCAlert alertSheetWithWindow:self.window
+									  body:TXTLS(@"TLOLicenseManager[u7g-x1]")
+									 title:TXTLS(@"TLOLicenseManager[u7g-x0]", textual7LicenseKeyText)
+							 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+						   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+							   otherButton:nil
+						   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+				if (buttonClicked == TDCAlertResponseAlternate) {
+					[menuController() contactSupport:nil];
+				}
+			}];
+
+			break;
+		}
+		default:
+		{
+			LogToConsoleError("Unknown upgrade eligibility: %{public}ld", eligibilityValue);
+
+			if (quietly == NO) {
+				[self presentUpgradeErrorWithStatusContext:nil];
+			}
+
+			break;
+		}
 	}
 }
 
-- (void)setUpgradeActivateSheetContextWithDialog:(TDCLicenseUpgradeDialog *)upgradeDialog
+- (BOOL)isUpgradeCheckoutURL:(nullable NSString *)checkoutURL
 {
-	NSParameterAssert(upgradeDialog != nil);
+	if (checkoutURL == nil) {
+		return NO;
+	}
 
-	[RZUserDefaults() setUnsignedInteger:upgradeDialog.eligibility forKey:@"Textual 7 Upgrade -> Tv7 -> Eligibility"];
+	NSURL *url = [NSURL URLWithString:checkoutURL];
 
-	[RZUserDefaults() setObject:upgradeDialog.licenseKey forKey:@"Textual 7 Upgrade -> Tv7 -> Eligible License Key"];
+	if ([url.scheme isEqualToString:@"https"]) {
+		return YES;
+	}
+
+#ifdef DEBUG
+	/* A development server's checkout link uses its own address */
+	if ([url.scheme isEqualToString:@"http"]) {
+		return YES;
+	}
+#endif
+
+	return NO;
 }
 
-- (void)resetUpgradeActivateSheetContext
+- (void)redeemUpgradeWithProof:(NSDictionary<NSString *, NSString *> *)upgradeProof textual7LicenseKey:(nullable NSString *)textual7LicenseKey
 {
-	/* We reset these values for any successful activation.
-	 It is probably more proper to compare the key activated to the context,
-	 but I don't think it will matter in the real world. */
-	[RZUserDefaults() removeObjectForKey:@"Textual 7 Upgrade -> Tv7 -> Eligibility"];
+	NSParameterAssert(upgradeProof != nil);
 
-	[RZUserDefaults() removeObjectForKey:@"Textual 7 Upgrade -> Tv7 -> Eligible License Key"];
+	if (self.upgradeDownloader != nil) {
+		return;
+	}
+
+	[self beginProgressIndicator];
+
+	__weak TDCLicenseManagerDialog *weakSelf = self;
+
+	__block NSString *redeemedLicenseKey = nil;
+
+	TLOLicenseManagerDownloader *upgradeDownloader = [TLOLicenseManagerDownloader new];
+
+	upgradeDownloader.isSilentOnSuccess = YES;
+
+	upgradeDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
+		NSString *licenseKey = [statusContext stringForKey:@"licenseKey"];
+
+		if (licenseKey == nil || TLOLicenseManagerLicenseKeyIsValid(licenseKey) == NO) {
+			LogToConsoleError("The redeemed license key is missing or malformed");
+
+			return NO;
+		}
+
+		redeemedLicenseKey = licenseKey;
+
+		return YES;
+	};
+
+	upgradeDownloader.errorBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
+		/* Not free (anymore): the answer says what it is now */
+		if (statusCode == 7500001 && [statusContext isKindOfClass:[NSDictionary class]]) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[weakSelf presentUpgradeEligibility:statusContext proof:upgradeProof textual7LicenseKey:textual7LicenseKey quietly:NO];
+			});
+
+			return YES;
+		}
+
+		if (statusCode == 7500000) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[weakSelf presentUpgradeErrorWithStatusContext:statusContext];
+			});
+
+			return YES;
+		}
+
+		return NO;
+	};
+
+	upgradeDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
+		TDCLicenseManagerDialog *strongSelf = weakSelf;
+
+		strongSelf.upgradeDownloader = nil;
+
+		[strongSelf endProgressIndicator];
+
+		if (operationSuccessful == NO || redeemedLicenseKey == nil) {
+			return;
+		}
+
+		/* The new key is licensed now; activating it shows it in the window */
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[weakSelf attemptToActivateLicenseKey:redeemedLicenseKey];
+		});
+	};
+
+	[upgradeDownloader redeemUpgradeWithProof:upgradeProof];
+
+	self.upgradeDownloader = upgradeDownloader;
 }
 
-- (void)upgradeActivateSheetActivateLicense:(TDCLicenseUpgradeActivateSheet *)sender
+- (void)presentUpgradeErrorWithStatusContext:(nullable id)statusContext
 {
-	NSString *licenseKey = sender.licenseKey;
+	/* The server says what's wrong with the proof */
+	NSString *message = nil;
 
-	[sender endSheet];
+	if ([statusContext isKindOfClass:[NSDictionary class]]) {
+		message = [statusContext stringForKey:@"message"];
+	}
 
-	[self attemptToActivateLicenseKey:licenseKey];
+	if (message.length == 0) {
+		message = TXTLS(@"TLOLicenseManager[u7g-e1]");
+	}
+
+	[TDCAlert alertSheetWithWindow:self.window
+							  body:message
+							 title:TXTLS(@"TLOLicenseManager[u7g-e0]")
+					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+				   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+		if (buttonClicked == TDCAlertResponseAlternate) {
+			[menuController() contactSupport:nil];
+		}
+	}];
 }
 
-- (void)upgradeActivateSheetPurchaseUpgrade:(TDCLicenseUpgradeActivateSheet *)sender
+- (void)upgradeDismissed
 {
-	[TDCLicenseUpgradeCommonActions purchaseUpgradeForLicense:sender.licenseKey];
-}
-
-- (void)upgradeActivateSheetSuppressed:(TDCLicenseUpgradeActivateSheet *)sender
-{
-	[self resetUpgradeActivateSheetContext];
-}
-
-- (void)upgradeActivateSheetWillClose:(TDCLicenseUpgradeActivateSheet *)sender
-{
-	self.upgradeActivateSheet = nil;
+	[RZUserDefaults() setObject:[NSDate date] forKey:_upgradeLastDismissedDefaultsKey];
 }
 
 #pragma mark -

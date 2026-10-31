@@ -41,7 +41,8 @@ typedef NS_ENUM(NSUInteger, TLOLicenseManagerDownloaderRequestType) {
 	TLOLicenseManagerDownloaderRequestTypeActivation,
 	TLOLicenseManagerDownloaderRequestTypeDeactivation,
 	TLOLicenseManagerDownloaderRequestTypeTrial,
-	TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility
+	TLOLicenseManagerDownloaderRequestTypeUpgradeEligibility,
+	TLOLicenseManagerDownloaderRequestTypeUpgradeRedeem
 };
 
 TEXTUAL_EXTERN NSUInteger const TLOLicenseManagerDownloaderRequestStatusCodeSuccess;
@@ -73,7 +74,9 @@ typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful
 /* Starts or returns this Mac's trial */
 - (void)requestTrial;
 
-- (void)checkUpgradeEligibilityOfLicense:(NSString *)licenseKey;
+/* A Textual 7 purchase, proven by {t7LicenseKey} or {t7LicenseFile} (base64) */
+- (void)checkUpgradeEligibilityWithProof:(NSDictionary<NSString *, NSString *> *)proof;
+- (void)redeemUpgradeWithProof:(NSDictionary<NSString *, NSString *> *)proof;
 
 - (void)cancelRequest;
 @end

@@ -57,7 +57,8 @@ NSString * const TLOLicenseManagerDownloaderLicenseServerURLDefaultsKey				= @"L
 NSString * const TLOLicenseManagerDownloaderLicenseAPIActivationPath					= @"/v2/activate";
 NSString * const TLOLicenseManagerDownloaderLicenseAPIDeactivationPath					= @"/v2/deactivate";
 NSString * const TLOLicenseManagerDownloaderLicenseAPITrialPath						= @"/v2/trial";
-NSString * const TLOLicenseManagerDownloaderLicenseAPILicenseUpgradeEligibilityPath		= @"/upgradeEligibility.cs";
+NSString * const TLOLicenseManagerDownloaderLicenseAPIUpgradeEligibilityPath			= @"/v2/upgrade/eligibility";
+NSString * const TLOLicenseManagerDownloaderLicenseAPIUpgradeRedeemPath				= @"/v2/upgrade/redeem";
 
 /* The license API throttles requests to prevent abuse. The following HTTP status 
  code will inform Textual if it the license API has been overwhelmed. */
@@ -144,14 +145,20 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 					 context:@{}];
 }
 
-- (void)checkUpgradeEligibilityOfLicense:(NSString *)licenseKey
+- (void)checkUpgradeEligibilityWithProof:(NSDictionary<NSString *, NSString *> *)proof
 {
-	NSParameterAssert(licenseKey != nil);
+	NSParameterAssert(proof != nil);
 
-	NSDictionary *contextInfo = @{@"licenseKey" : licenseKey};
+	[self performRequestType:TLOLicenseManagerDownloaderRequestTypeUpgradeEligibility
+					 context:proof];
+}
 
-	[self performRequestType:TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility
-					 context:contextInfo];
+- (void)redeemUpgradeWithProof:(NSDictionary<NSString *, NSString *> *)proof
+{
+	NSParameterAssert(proof != nil);
+
+	[self performRequestType:TLOLicenseManagerDownloaderRequestTypeUpgradeRedeem
+					 context:proof];
 }
 
 - (void)performRequestType:(TLOLicenseManagerDownloaderRequestType)requestType context:(NSDictionary<NSString *, id> *)requestContext
@@ -349,7 +356,8 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 			return performCompletionBlock(YES);
 		}
-		else if (requestType == TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility && apiStatusCode == TLOLicenseManagerDownloaderRequestStatusCodeSuccess)
+		else if ((requestType == TLOLicenseManagerDownloaderRequestTypeUpgradeEligibility ||
+				  requestType == TLOLicenseManagerDownloaderRequestTypeUpgradeRedeem) && apiStatusCode == TLOLicenseManagerDownloaderRequestStatusCodeSuccess)
 		{
 			if (apiStatusContext == nil || [apiStatusContext isKindOfClass:[NSDictionary class]] == NO) {
 				LogToConsoleError("'Status Context' is nil or not of kind 'NSDictionary'");
@@ -357,8 +365,8 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 				return presentError();
 			}
 
-			if (self.actionBlock != nil) {
-				(void)self.actionBlock(apiStatusCode, apiStatusContext);
+			if (self.actionBlock != nil && self.actionBlock(apiStatusCode, apiStatusContext) == NO) {
+				return presentError();
 			}
 
 			return performCompletionBlock(YES);
@@ -521,9 +529,15 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 			break;
 		}
-		case TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility:
+		case TLOLicenseManagerDownloaderRequestTypeUpgradeEligibility:
 		{
-			requestPath = TLOLicenseManagerDownloaderLicenseAPILicenseUpgradeEligibilityPath;
+			requestPath = TLOLicenseManagerDownloaderLicenseAPIUpgradeEligibilityPath;
+
+			break;
+		}
+		case TLOLicenseManagerDownloaderRequestTypeUpgradeRedeem:
+		{
+			requestPath = TLOLicenseManagerDownloaderLicenseAPIUpgradeRedeemPath;
 
 			break;
 		}
@@ -577,9 +591,11 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 			break;
 		}
-		case TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility:
+		case TLOLicenseManagerDownloaderRequestTypeUpgradeEligibility:
+		case TLOLicenseManagerDownloaderRequestTypeUpgradeRedeem:
 		{
-			formValues[@"licenseKey"] = self.requestContextInfo[@"licenseKey"];
+			/* One proof: t7LicenseKey or t7LicenseFile */
+			[formValues addEntriesFromDictionary:self.requestContextInfo];
 
 			break;
 		}

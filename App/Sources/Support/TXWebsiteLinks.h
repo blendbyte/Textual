@@ -43,7 +43,6 @@
 #define TXWebsiteCommands					@"https://www.textualapp.com/docs/reference/commands"
 #define TXWebsiteReleaseNotes				@"https://www.textualapp.com/docs/release-notes/textual-8"
 #define TXWebsiteClientCertificates			@"https://www.textualapp.com/docs/connections/certificates-and-security#section-identify-with-a-client-certificate"
-#define TXWebsiteExistingPurchases			@"https://www.textualapp.com/docs/getting-started/licenses-and-app-store#section-existing-purchases"
 #define TXWebsiteLinkPreviews				@"https://www.textualapp.com/docs/legacy/guides/inline-media-scanner-user-agent"
 #define TXWebsiteBuy						@"https://www.textualapp.com/buy"
 #define TXWebsiteContact					@"https://www.textualapp.com/contact"

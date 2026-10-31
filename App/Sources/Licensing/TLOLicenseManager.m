@@ -683,6 +683,40 @@ BOOL TLOLicenseManagerTextual7LicenseFileExists(void)
 
 	return (licenseFilePath != nil && [RZFileManager() fileExistsAtURL:licenseFilePath]);
 }
+
+NSData * _Nullable TLOLicenseManagerTextual7LicenseFileContents(void)
+{
+	NSURL *licenseFilePath = TLOLicenseManagerTextual7LicenseFilePath();
+
+	if (licenseFilePath == nil) {
+		return nil;
+	}
+
+	return [NSData dataWithContentsOfURL:licenseFilePath];
+}
+
+NSString * _Nullable TLOLicenseManagerTextual7LicenseKey(void)
+{
+	NSData *licenseContents = TLOLicenseManagerTextual7LicenseFileContents();
+
+	if (licenseContents == nil) {
+		return nil;
+	}
+
+	NSDictionary *licenseDictionary = [NSPropertyListSerialization propertyListWithData:licenseContents options:NSPropertyListImmutable format:NULL error:NULL];
+
+	if ([licenseDictionary isKindOfClass:[NSDictionary class]] == NO) {
+		return nil;
+	}
+
+	NSString *licenseKey = licenseDictionary[@"licenseKey"];
+
+	if ([licenseKey isKindOfClass:[NSString class]] == NO || TLOLicenseManagerLicenseKeyIsValid(licenseKey) == NO) {
+		return nil;
+	}
+
+	return licenseKey;
+}
 #endif
 
 NS_ASSUME_NONNULL_END

@@ -90,12 +90,21 @@
 
 "bw3-sc" = "The license key “%@“ cannot be activated because it is already in use";
 "fxu-su" = "";
-
-"pmv-qp" = "The license key “%@“ cannot be activated because it requires an upgrade";
-"5bu-ov" = "";
-"53u-lt" = "Learn More";
-
-"12h-3w" = "Are you sure you want to purchase a new license key?";
-"dpo-ln" = "You already own the license key “%@.”";
-"qrx-aq" = "Upgrade Existing License Key";
-"zp8-8q" = "Purchase New License Key";
+"u7g-b0" = "Upgrade";
+"u7g-b1" = "Purchase";
+"u7g-f0" = "Your Textual 7 license upgrades to Textual 8 for free";
+"u7g-f1" = "Thank you for using Textual 7. Your license (%@) comes with Textual 8: one click gets your Textual 8 license key and activates it on this Mac.";
+"u7g-f2" = "Get My Textual 8 License";
+"u7g-n0" = "Not Now";
+"u7g-p0" = "Upgrade to Textual 8";
+"u7g-p1" = "Your Textual 7 license (%@) was bought more than a year before Textual 8 came out, so it upgrades at a reduced price.\n\nThe upgrade opens in your browser. After paying, you get your Textual 8 license key by email, with a link that activates it.";
+"u7g-p2" = "Upgrade…";
+"u7g-p3" = "Continue Trial";
+"u7g-u0" = "You already upgraded to Textual 8";
+"u7g-u1" = "Your Textual 8 license key is:\n%@\n\nKeep it somewhere safe: you need it to activate Textual on another Mac.";
+"u7g-u2" = "Activate";
+"u7g-u3" = "Enter your Textual 7 license key in Manage License and Textual shows your Textual 8 key, or contact us and we’ll look it up for you.";
+"u7g-x0" = "The Textual 7 license %@ can’t be upgraded";
+"u7g-x1" = "It was refunded or never paid. Contact us if you think this is a mistake.";
+"u7g-e0" = "Textual couldn’t check your Textual 7 license";
+"u7g-e1" = "Please try again later, or contact us if it keeps happening.";

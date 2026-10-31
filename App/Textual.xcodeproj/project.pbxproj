@@ -31,10 +31,8 @@
 		4C06E19C20EC4AC40055D09A /* TDCChannelModifyModesSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14120EC4AC40055D09A /* TDCChannelModifyModesSheet.xib */; };
 		4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14320EC4AC40055D09A /* TDCChannelSpotlightController.xib */; };
 		4C06E1AC20EC4AC40055D09A /* TDCChannelBanListSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E14920EC4AC40055D09A /* TDCChannelBanListSheet.xib */; };
-		4C06E1BC20EC4AC40055D09A /* TDCLicenseUpgradeEligibilitySheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15120EC4AC40055D09A /* TDCLicenseUpgradeEligibilitySheet.xib */; };
 		4C06E1C420EC4AC40055D09A /* TVCChannelSelectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15520EC4AC40055D09A /* TVCChannelSelectionView.xib */; };
 		4C06E1C820EC4AC40055D09A /* TXCMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15720EC4AC40055D09A /* TXCMainMenu.xib */; };
-		4C06E1D020EC4AC40055D09A /* TDCLicenseUpgradeActivateSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15B20EC4AC40055D09A /* TDCLicenseUpgradeActivateSheet.xib */; };
 		4C06E1D820EC4AC40055D09A /* TDCChannelInviteSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15F20EC4AC40055D09A /* TDCChannelInviteSheet.xib */; };
 		4C06E1DC20EC4AC40055D09A /* TDCNicknameColorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16120EC4AC40055D09A /* TDCNicknameColorSheet.xib */; };
 		4C06E1E020EC4AC40055D09A /* TDCWelcomeSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16320EC4AC40055D09A /* TDCWelcomeSheet.xib */; };
@@ -42,7 +40,6 @@
 		4C06E1E820EC4AC50055D09A /* TDCAddressBookIgnoreSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16720EC4AC40055D09A /* TDCAddressBookIgnoreSheet.xib */; };
 		4CA69EE02C7B64540EAE26A3 /* TDCAddressBookUserTrackingSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C48CF0A57DBF68C07985190 /* TDCAddressBookUserTrackingSheet.xib */; };
 		4C06E1EC20EC4AC50055D09A /* TVCAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16920EC4AC40055D09A /* TVCAlert.xib */; };
-		4C06E1F020EC4AC50055D09A /* TDCLicenseUpgradeDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16B20EC4AC40055D09A /* TDCLicenseUpgradeDialog.xib */; };
 		4C06E1F420EC4AC50055D09A /* TDCServerChangeNicknameSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16D20EC4AC40055D09A /* TDCServerChangeNicknameSheet.xib */; };
 		4C06E1F820EC4AC50055D09A /* TDCChannelModifyTopicSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16F20EC4AC40055D09A /* TDCChannelModifyTopicSheet.xib */; };
 		4C06E20420EC4AC50055D09A /* TVCMainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E17520EC4AC40055D09A /* TVCMainWindow.xib */; };
@@ -81,7 +78,6 @@
 		4C06E33220EC4FF00055D09A /* TDCServerChannelListDialog.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D120EC4FF00055D09A /* TDCServerChannelListDialog.strings */; };
 		4C06E33620EC4FF00055D09A /* TDCChannelSpotlightController.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D320EC4FF00055D09A /* TDCChannelSpotlightController.strings */; };
 		4C06E33A20EC4FF00055D09A /* TDCAddressBookSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D520EC4FF00055D09A /* TDCAddressBookSheet.strings */; };
-		4C06E33E20EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D720EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings */; };
 		4C06E34220EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E2D920EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings */; };
 		4C06E3B620EC51380055D09A /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */; };
 		4C06E47320EC541C0055D09A /* AutoHyperlinks.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4CF76A371A91153A0088BF9A /* AutoHyperlinks.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -114,10 +110,6 @@
 		4C06E64720EC55B90055D09A /* TDCChannelSpotlightSearchResultsTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526F20EB673E00448776 /* TDCChannelSpotlightSearchResultsTable.m */; };
 		4C06E64820EC55B90055D09A /* TDCFileTransferDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31529120EB673E00448776 /* TDCFileTransferDialog.m */; };
 		4C06E64920EC55B90055D09A /* TDCFileTransferDialogTransferController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31529220EB673E00448776 /* TDCFileTransferDialogTransferController.m */; };
-		4C06E64B20EC55B90055D09A /* TDCLicenseUpgradeDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31527420EB673E00448776 /* TDCLicenseUpgradeDialog.m */; };
-		4C06E64C20EC55B90055D09A /* TDCLicenseUpgradeEligibilitySheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31527520EB673E00448776 /* TDCLicenseUpgradeEligibilitySheet.m */; };
-		4C06E64E20EC55B90055D09A /* TDCLicenseUpgradeCommonActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31527720EB673E00448776 /* TDCLicenseUpgradeCommonActions.m */; };
-		4C06E65020EC55B90055D09A /* TDCLicenseUpgradeActivateSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31527920EB673E00448776 /* TDCLicenseUpgradeActivateSheet.m */; };
 		4C06E65120EC55B90055D09A /* TDCLicenseManagerDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31527A20EB673E00448776 /* TDCLicenseManagerDialog.m */; };
 		4CFA3F87D82CF0A3A49ACBBE /* TDCHighlightKeywordSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C8B178AD6EFE4D659798959 /* TDCHighlightKeywordSheet.m */; };
 		4C174D7953F2A5E60B5B56F6 /* TDCSettingsWindowControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CC30D01F30B60BD00342E6F /* TDCSettingsWindowControllerPrivate.h */; };
@@ -214,7 +206,6 @@
 		4C06E69B20EC55B90055D09A /* OELReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514820EB673E00448776 /* OELReachability.m */; };
 		4C06E69C20EC55B90055D09A /* TLOLicenseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514E20EB673E00448776 /* TLOLicenseManager.m */; };
 		4C06E69D20EC55B90055D09A /* TLOLicenseManagerDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */; };
-		4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */; };
 		4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515B20EB673E00448776 /* TLOFileLogger.m */; };
 		4CF8C7EE64FA57C8AD0EA4EC /* TLOMessageArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CC7C94E8DEB8425BC9BA86A /* TLOMessageArchive.m */; };
 		4C64A9C2699802157A6ACAF5 /* TLOMessageArchiveSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDA53C97EFC5485C861B3CE /* TLOMessageArchiveSearch.m */; };
@@ -418,10 +409,6 @@
 		4C31571420EB6D0500448776 /* TDCFileTransferDialogPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31521220EB673E00448776 /* TDCFileTransferDialogPrivate.h */; };
 		4C31571620EB6D0500448776 /* TDCFileTransferDialogTransferControllerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520720EB673E00448776 /* TDCFileTransferDialogTransferControllerPrivate.h */; };
 		4C31571C20EB6D0500448776 /* TDCLicenseManagerDialogPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523720EB673E00448776 /* TDCLicenseManagerDialogPrivate.h */; };
-		4C31571F20EB6D0500448776 /* TDCLicenseUpgradeActivateSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520E20EB673E00448776 /* TDCLicenseUpgradeActivateSheetPrivate.h */; };
-		4C31572020EB6D0500448776 /* TDCLicenseUpgradeCommonActionsPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151D320EB673E00448776 /* TDCLicenseUpgradeCommonActionsPrivate.h */; };
-		4C31572120EB6D0500448776 /* TDCLicenseUpgradeDialogPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151CC20EB673E00448776 /* TDCLicenseUpgradeDialogPrivate.h */; };
-		4C31572220EB6D0500448776 /* TDCLicenseUpgradeEligibilitySheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151FC20EB673E00448776 /* TDCLicenseUpgradeEligibilitySheetPrivate.h */; };
 		4C31572320EB6D0500448776 /* TDCNicknameColorSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151E620EB673E00448776 /* TDCNicknameColorSheetPrivate.h */; };
 		4C31572620EB6D0500448776 /* TDCProgressIndicatorSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DC20EB673E00448776 /* TDCProgressIndicatorSheetPrivate.h */; };
 		4C31572720EB6D0500448776 /* TDCServerChangeNicknameSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151EF20EB673E00448776 /* TDCServerChangeNicknameSheetPrivate.h */; };
@@ -444,7 +431,6 @@
 		4C31573820EB6D05004487A2 /* TLOKeychainPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151DA20EB673E004487A2 /* TLOKeychainPrivate.h */; };
 		4C1C0F11E0A0000000000A15 /* TLOUploadDestinationPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C1C0F11E0A0000000000A16 /* TLOUploadDestinationPrivate.h */; };
 		4C31573920EB6D0500448776 /* TLOLicenseManagerDownloaderPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31520920EB673E00448776 /* TLOLicenseManagerDownloaderPrivate.h */; };
-		4C31573A20EB6D0500448776 /* TLOLicenseManagerLastGenPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */; };
 		4C31573B20EB6D0500448776 /* TLOLicenseManagerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31522220EB673E00448776 /* TLOLicenseManagerPrivate.h */; };
 		4C31573C20EB6D0500448776 /* TLONicknameCompletionStatusPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523520EB673E00448776 /* TLONicknameCompletionStatusPrivate.h */; };
 		4C31573E20EB6D0500448776 /* TLOSpeechSynthesizerPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31523620EB673E00448776 /* TLOSpeechSynthesizerPrivate.h */; };
@@ -869,10 +855,8 @@
 		4C06E14220EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelModifyModesSheet.xib; sourceTree = "<group>"; };
 		4C06E14420EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelSpotlightController.xib; sourceTree = "<group>"; };
 		4C06E14A20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelBanListSheet.xib; sourceTree = "<group>"; };
-		4C06E15220EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCLicenseUpgradeEligibilitySheet.xib; sourceTree = "<group>"; };
 		4C06E15620EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TVCChannelSelectionView.xib; sourceTree = "<group>"; };
 		4C06E15820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TXCMainMenu.xib; sourceTree = "<group>"; };
-		4C06E15C20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCLicenseUpgradeActivateSheet.xib; sourceTree = "<group>"; };
 		4C06E16020EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelInviteSheet.xib; sourceTree = "<group>"; };
 		4C06E16220EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCNicknameColorSheet.xib; sourceTree = "<group>"; };
 		4C06E16420EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCWelcomeSheet.xib; sourceTree = "<group>"; };
@@ -880,7 +864,6 @@
 		4C06E16820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookIgnoreSheet.xib; sourceTree = "<group>"; };
 		4CD0CEB5A1E3D5FE3046AEAB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookUserTrackingSheet.xib; sourceTree = "<group>"; };
 		4C06E16A20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TVCAlert.xib; sourceTree = "<group>"; };
-		4C06E16C20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCLicenseUpgradeDialog.xib; sourceTree = "<group>"; };
 		4C06E16E20EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCServerChangeNicknameSheet.xib; sourceTree = "<group>"; };
 		4C06E17020EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelModifyTopicSheet.xib; sourceTree = "<group>"; };
 		4C06E17620EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TVCMainWindow.xib; sourceTree = "<group>"; };
@@ -925,7 +908,6 @@
 		4C06E2D220EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCServerChannelListDialog.strings; sourceTree = "<group>"; };
 		4C06E2D420EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCChannelSpotlightController.strings; sourceTree = "<group>"; };
 		4C06E2D620EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCAddressBookSheet.strings; sourceTree = "<group>"; };
-		4C06E2D820EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCLicenseUpgradeEligibilitySheet.strings; sourceTree = "<group>"; };
 		4C06E2DA20EC4FF00055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/TDCChannelModifyTopicSheet.strings; sourceTree = "<group>"; };
 		4C06E36320EC51370055D09A /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
 		4C06E36C20EC51370055D09A /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
@@ -995,7 +977,6 @@
 		4C31514920EB673E00448776 /* TLONotificationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLONotificationController.m; sourceTree = "<group>"; };
 		4C31514B20EB673E00448776 /* TLOKeyEventHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOKeyEventHandler.m; sourceTree = "<group>"; };
 		4C31514E20EB673E00448776 /* TLOLicenseManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManager.m; sourceTree = "<group>"; };
-		4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManagerLastGen.m; sourceTree = "<group>"; };
 		4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOLicenseManagerDownloader.m; sourceTree = "<group>"; };
 		4C31515420EB673E00448776 /* TLOInputHistory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOInputHistory.m; sourceTree = "<group>"; };
 		4CC3E57AC7861D0E229F24C0 /* TVCInputCompletion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVCInputCompletion.m; sourceTree = "<group>"; };
@@ -1112,14 +1093,12 @@
 		4C3151C820EB673E00448776 /* TVCMainWindowChannelViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowChannelViewPrivate.h; sourceTree = "<group>"; };
 		4C3151C920EB673E00448776 /* TVCLogControllerOperationQueuePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogControllerOperationQueuePrivate.h; sourceTree = "<group>"; };
 		4C3151CA20EB673E00448776 /* TVCServerListPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCServerListPrivate.h; sourceTree = "<group>"; };
-		4C3151CC20EB673E00448776 /* TDCLicenseUpgradeDialogPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLicenseUpgradeDialogPrivate.h; sourceTree = "<group>"; };
 		4C3151CE20EB673E00448776 /* TVCMainWindowSplitViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowSplitViewPrivate.h; sourceTree = "<group>"; };
 		216E3AD51176D1771088FE56 /* TVCListViewsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCListViewsPrivate.h; sourceTree = "<group>"; };
 		4C3151CF20EB673E00448776 /* THOPluginManagerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = THOPluginManagerPrivate.h; sourceTree = "<group>"; };
 		4C3151D120EB673E00448776 /* TDCChannelSpotlightControlsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCChannelSpotlightControlsPrivate.h; sourceTree = "<group>"; };
 		4C3151D220EB673E00448776 /* TPCPathInfoPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCPathInfoPrivate.h; sourceTree = "<group>"; };
 		2FE17DD6FCA794A5162752BE /* TPCSecurityScopedFolderPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCSecurityScopedFolderPrivate.h; sourceTree = "<group>"; };
-		4C3151D320EB673E00448776 /* TDCLicenseUpgradeCommonActionsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLicenseUpgradeCommonActionsPrivate.h; sourceTree = "<group>"; };
 		4C3151D520EB673E00448776 /* TVCAppearancePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCAppearancePrivate.h; sourceTree = "<group>"; };
 		4C3151D620EB673E00448776 /* TPCThemePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCThemePrivate.h; sourceTree = "<group>"; };
 		4C3151D820EB673E00448776 /* TextualPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextualPrivate.h; sourceTree = "<group>"; };
@@ -1156,7 +1135,6 @@
 		4C3151F720EB673E00448776 /* TVCServerListCellPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCServerListCellPrivate.h; sourceTree = "<group>"; };
 		4C3151F820EB673E00448776 /* TVCChannelSelectionOutlineViewCellPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCChannelSelectionOutlineViewCellPrivate.h; sourceTree = "<group>"; };
 		4C3151FB20EB673E00448776 /* TDCSharedProtocolDefinitionsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCSharedProtocolDefinitionsPrivate.h; sourceTree = "<group>"; };
-		4C3151FC20EB673E00448776 /* TDCLicenseUpgradeEligibilitySheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLicenseUpgradeEligibilitySheetPrivate.h; sourceTree = "<group>"; };
 		4C3151FF20EB673E00448776 /* TPCNicknameColorStyleGeneratorPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCNicknameColorStyleGeneratorPrivate.h; sourceTree = "<group>"; };
 		4C31520020EB673E00448776 /* TVCMainWindowAppearancePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMainWindowAppearancePrivate.h; sourceTree = "<group>"; };
 		4C31520220EB673E00448776 /* IRCChannelPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCChannelPrivate.h; sourceTree = "<group>"; };
@@ -1170,7 +1148,6 @@
 		4C31520A20EB673E00448776 /* SwiftBridgingHeaderPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftBridgingHeaderPrivate.h; sourceTree = "<group>"; };
 		4C31520B20EB673E00448776 /* IRCClientPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCClientPrivate.h; sourceTree = "<group>"; };
 		4C31520D20EB673E00448776 /* TVCLogViewPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogViewPrivate.h; sourceTree = "<group>"; };
-		4C31520E20EB673E00448776 /* TDCLicenseUpgradeActivateSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLicenseUpgradeActivateSheetPrivate.h; sourceTree = "<group>"; };
 		4C31521020EB673E00448776 /* TPCThemeControllerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCThemeControllerPrivate.h; sourceTree = "<group>"; };
 		4C31521120EB673E00448776 /* IRCChannelUserPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCChannelUserPrivate.h; sourceTree = "<group>"; };
 		4C31521220EB673E00448776 /* TDCFileTransferDialogPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCFileTransferDialogPrivate.h; sourceTree = "<group>"; };
@@ -1196,7 +1173,6 @@
 		4C1C0F11E0A0000000000A1A /* TDCUploadDestinationSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCUploadDestinationSheetPrivate.h; sourceTree = "<group>"; };
 		4C31523020EB673E00448776 /* TVCLogLinePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogLinePrivate.h; sourceTree = "<group>"; };
 		4C31523220EB673E00448776 /* TXGlobalModelsPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXGlobalModelsPrivate.h; sourceTree = "<group>"; };
-		4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOLicenseManagerLastGenPrivate.h; sourceTree = "<group>"; };
 		4C31523520EB673E00448776 /* TLONicknameCompletionStatusPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLONicknameCompletionStatusPrivate.h; sourceTree = "<group>"; };
 		4C31523620EB673E00448776 /* TLOSpeechSynthesizerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TLOSpeechSynthesizerPrivate.h; sourceTree = "<group>"; };
 		4C31523720EB673E00448776 /* TDCLicenseManagerDialogPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCLicenseManagerDialogPrivate.h; sourceTree = "<group>"; };
@@ -1270,10 +1246,6 @@
 		4C31527020EB673E00448776 /* TDCAddressBookSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCAddressBookSheet.m; sourceTree = "<group>"; };
 		C5B729C718A0A7309B6F9C36 /* TDCAddressBookIgnoreSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCAddressBookIgnoreSheet.m; sourceTree = "<group>"; };
 		8CF7EBB3D5A10546C2FCEE6F /* TDCAddressBookUserTrackingSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCAddressBookUserTrackingSheet.m; sourceTree = "<group>"; };
-		4C31527420EB673E00448776 /* TDCLicenseUpgradeDialog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLicenseUpgradeDialog.m; sourceTree = "<group>"; };
-		4C31527520EB673E00448776 /* TDCLicenseUpgradeEligibilitySheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLicenseUpgradeEligibilitySheet.m; sourceTree = "<group>"; };
-		4C31527720EB673E00448776 /* TDCLicenseUpgradeCommonActions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLicenseUpgradeCommonActions.m; sourceTree = "<group>"; };
-		4C31527920EB673E00448776 /* TDCLicenseUpgradeActivateSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLicenseUpgradeActivateSheet.m; sourceTree = "<group>"; };
 		4C31527A20EB673E00448776 /* TDCLicenseManagerDialog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCLicenseManagerDialog.m; sourceTree = "<group>"; };
 		4C31528020EB673E00448776 /* TDCAlert.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCAlert.m; sourceTree = "<group>"; };
 		4C31528220EB673E00448776 /* TDCChannelBanListSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelBanListSheet.m; sourceTree = "<group>"; };
@@ -2381,19 +2353,9 @@
 			children = (
 				4C31527A20EB673E00448776 /* TDCLicenseManagerDialog.m */,
 				4C31523720EB673E00448776 /* TDCLicenseManagerDialogPrivate.h */,
-				4C31527920EB673E00448776 /* TDCLicenseUpgradeActivateSheet.m */,
-				4C31520E20EB673E00448776 /* TDCLicenseUpgradeActivateSheetPrivate.h */,
-				4C31527720EB673E00448776 /* TDCLicenseUpgradeCommonActions.m */,
-				4C3151D320EB673E00448776 /* TDCLicenseUpgradeCommonActionsPrivate.h */,
-				4C31527420EB673E00448776 /* TDCLicenseUpgradeDialog.m */,
-				4C3151CC20EB673E00448776 /* TDCLicenseUpgradeDialogPrivate.h */,
-				4C31527520EB673E00448776 /* TDCLicenseUpgradeEligibilitySheet.m */,
-				4C3151FC20EB673E00448776 /* TDCLicenseUpgradeEligibilitySheetPrivate.h */,
 				4C31514E20EB673E00448776 /* TLOLicenseManager.m */,
 				4C31515020EB673E00448776 /* TLOLicenseManagerDownloader.m */,
 				4C31520920EB673E00448776 /* TLOLicenseManagerDownloaderPrivate.h */,
-				4C31514F20EB673E00448776 /* TLOLicenseManagerLastGen.m */,
-				4C31523320EB673E00448776 /* TLOLicenseManagerLastGenPrivate.h */,
 				4C31522220EB673E00448776 /* TLOLicenseManagerPrivate.h */,
 			);
 			path = Licensing;
@@ -2836,9 +2798,6 @@
 				4C06E16F20EC4AC40055D09A /* TDCChannelModifyTopicSheet.xib */,
 				4C06E14320EC4AC40055D09A /* TDCChannelSpotlightController.xib */,
 				4C06E17720EC4AC40055D09A /* TDCLicenseManagerDialog.xib */,
-				4C06E15B20EC4AC40055D09A /* TDCLicenseUpgradeActivateSheet.xib */,
-				4C06E16B20EC4AC40055D09A /* TDCLicenseUpgradeDialog.xib */,
-				4C06E15120EC4AC40055D09A /* TDCLicenseUpgradeEligibilitySheet.xib */,
 				4C06E16120EC4AC40055D09A /* TDCNicknameColorSheet.xib */,
 				4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */,
 				4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */,
@@ -2911,7 +2870,6 @@
 				89DEB239A1D6C8B92A15647D /* TDCAddBouncerSheet.strings */,
 				4C06E2D320EC4FF00055D09A /* TDCChannelSpotlightController.strings */,
 				4C06E2B920EC4FF00055D09A /* TDCFileTransferDialog.strings */,
-				4C06E2D720EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings */,
 				4C06E2B720EC4FF00055D09A /* TDCPreferencesController.strings */,
 				4CEFEDAE22B4B6E8002CEE19 /* TDCPreferencesUserStyleSheet.strings */,
 				4C06E2D120EC4FF00055D09A /* TDCServerChannelListDialog.strings */,
@@ -3130,7 +3088,6 @@
 				4C31574420EB6D0500448776 /* TPCPreferencesImportExportPrivate.h in Headers */,
 				4C31571C20EB6D0500448776 /* TDCLicenseManagerDialogPrivate.h in Headers */,
 				4C3156F520EB6D0500448776 /* IRCMessageBatchPrivate.h in Headers */,
-				4C31573A20EB6D0500448776 /* TLOLicenseManagerLastGenPrivate.h in Headers */,
 				4C3155C520EB6CB400448776 /* TextualApplication.h in Headers */,
 				4C3155E720EB6CB400448776 /* TVCMainWindow.h in Headers */,
 				4C3155EB20EB6CB400448776 /* TVCMainWindowTextView.h in Headers */,
@@ -3160,7 +3117,6 @@
 				4C3158C220EB6D1000448776 /* TDCChannelPropertiesSheetInternal.h in Headers */,
 				4C3156FB20EB6D0500448776 /* IRCUserPersistentStorePrivate.h in Headers */,
 				4C3155EF20EB6CB400448776 /* TVCServerList.h in Headers */,
-				4C31572020EB6D0500448776 /* TDCLicenseUpgradeCommonActionsPrivate.h in Headers */,
 				4C3155E220EB6CB400448776 /* TVCErrorMessagePopoverPrivate.h in Headers */,
 				4C31576B20EB6D0500448776 /* TVCServerListPrivate.h in Headers */,
 				4C31573B20EB6D0500448776 /* TLOLicenseManagerPrivate.h in Headers */,
@@ -3176,7 +3132,6 @@
 				4C7B05011D12110500295E82 /* BuildConfig.h in Headers */,
 				4C3156EB20EB6D0500448776 /* IRCChannelUserPrivate.h in Headers */,
 				4C31570120EB6D0500448776 /* NSViewHelperPrivate.h in Headers */,
-				4C31571F20EB6D0500448776 /* TDCLicenseUpgradeActivateSheetPrivate.h in Headers */,
 				4C3158CF20EB6D1000448776 /* IRCHighlightMatchConditionInternal.h in Headers */,
 				4C3155E420EB6CB400448776 /* TVCLogLine.h in Headers */,
 				4C3158C320EB6D1000448776 /* TDCChannelSpotlightAppearanceInternal.h in Headers */,
@@ -3263,7 +3218,6 @@
 				4C3155E620EB6CB400448776 /* TVCLogView.h in Headers */,
 				4C3155A320EB6CB400448776 /* IRC.h in Headers */,
 				4C3155C120EB6CB400448776 /* TDCInputPrompt.h in Headers */,
-				4C31572220EB6D0500448776 /* TDCLicenseUpgradeEligibilitySheetPrivate.h in Headers */,
 				4C31575A20EB6D0500448776 /* TVCMainWindowAppearancePrivate.h in Headers */,
 				4C06E27E20EC4E870055D09A /* TPCPreferencesUserDefaults.h in Headers */,
 				4C3156F420EB6D0500448776 /* IRCISupportInfoPrivate.h in Headers */,
@@ -3322,7 +3276,6 @@
 				4C31572720EB6D0500448776 /* TDCServerChangeNicknameSheetPrivate.h in Headers */,
 				4C3155D520EB6CB400448776 /* TPCPreferencesLocal.h in Headers */,
 				4CAB27592537EE66009B1F07 /* IRCChannelMemberListPrivate.h in Headers */,
-				4C31572120EB6D0500448776 /* TDCLicenseUpgradeDialogPrivate.h in Headers */,
 				4C3155DC20EB6CB400448776 /* TVCAppearance.h in Headers */,
 				4C3155CD20EB6CB400448776 /* TLOpenLink.h in Headers */,
 				4C06E28620EC4E870055D09A /* TLOLocalization.h in Headers */,
@@ -3509,7 +3462,6 @@
 				4C06DF3420EC49A60055D09A /* IRCCommandIndexRemoteData.plist in Resources */,
 				4C33342320CC475300ACB9AD /* Bundled Styles in Resources */,
 				4C97585C8EB507C2E66A6D27 /* Style Previews in Resources */,
-				4C06E1D020EC4AC40055D09A /* TDCLicenseUpgradeActivateSheet.xib in Resources */,
 				4C06E1AC20EC4AC40055D09A /* TDCChannelBanListSheet.xib in Resources */,
 				4C06E2FE20EC4FF00055D09A /* TDCPreferencesController.strings in Resources */,
 				4C06E30620EC4FF00055D09A /* TDCChannelInviteSheet.strings in Resources */,
@@ -3531,17 +3483,14 @@
 				4CA69EE02C7B64540EAE26A3 /* TDCAddressBookUserTrackingSheet.xib in Resources */,
 				4C06E1A020EC4AC40055D09A /* TDCChannelSpotlightController.xib in Resources */,
 				4C06E31E20EC4FF00055D09A /* TVCMainWindow.strings in Resources */,
-				4C06E33E20EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings in Resources */,
 				4C52379415C18F6700414852 /* Style Default Templates in Resources */,
 				4C06E30220EC4FF00055D09A /* TDCFileTransferDialog.strings in Resources */,
 				4C06E31620EC4FF00055D09A /* TLOLicenseManager.strings in Resources */,
 				4C06E1E020EC4AC40055D09A /* TDCWelcomeSheet.xib in Resources */,
 				4C06E33220EC4FF00055D09A /* TDCServerChannelListDialog.strings in Resources */,
 				4C06E33620EC4FF00055D09A /* TDCChannelSpotlightController.strings in Resources */,
-				4C06E1F020EC4AC50055D09A /* TDCLicenseUpgradeDialog.xib in Resources */,
 				4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */,
 				4C06E22420EC4AC50055D09A /* TDCChannelSpotlightAppearance.plist in Resources */,
-				4C06E1BC20EC4AC40055D09A /* TDCLicenseUpgradeEligibilitySheet.xib in Resources */,
 				4C06E20420EC4AC50055D09A /* TVCMainWindow.xib in Resources */,
 				4C272AF654968393F0B03C9A /* Inline Media */,
 			);
@@ -3717,11 +3666,7 @@
 				4C06E64720EC55B90055D09A /* TDCChannelSpotlightSearchResultsTable.m in Sources */,
 				4C06E64820EC55B90055D09A /* TDCFileTransferDialog.m in Sources */,
 				4C06E64920EC55B90055D09A /* TDCFileTransferDialogTransferController.m in Sources */,
-				4C06E64B20EC55B90055D09A /* TDCLicenseUpgradeDialog.m in Sources */,
 				4CAB27532537EE44009B1F07 /* IRCChannelMemberList.m in Sources */,
-				4C06E64C20EC55B90055D09A /* TDCLicenseUpgradeEligibilitySheet.m in Sources */,
-				4C06E64E20EC55B90055D09A /* TDCLicenseUpgradeCommonActions.m in Sources */,
-				4C06E65020EC55B90055D09A /* TDCLicenseUpgradeActivateSheet.m in Sources */,
 				4C06E65120EC55B90055D09A /* TDCLicenseManagerDialog.m in Sources */,
 				4CFA3F87D82CF0A3A49ACBBE /* TDCHighlightKeywordSheet.m in Sources */,
 				4C4C481F03C9462FB90BEE71 /* TDCSettingsSections.swift in Sources */,
@@ -3817,7 +3762,6 @@
 				4C06E69B20EC55B90055D09A /* OELReachability.m in Sources */,
 				4C06E69C20EC55B90055D09A /* TLOLicenseManager.m in Sources */,
 				4C06E69D20EC55B90055D09A /* TLOLicenseManagerDownloader.m in Sources */,
-				4C06E69E20EC55B90055D09A /* TLOLicenseManagerLastGen.m in Sources */,
 				4C06E6A120EC55B90055D09A /* TLOFileLogger.m in Sources */,
 				4CF8C7EE64FA57C8AD0EA4EC /* TLOMessageArchive.m in Sources */,
 				4C64A9C2699802157A6ACAF5 /* TLOMessageArchiveSearch.m in Sources */,
@@ -4054,14 +3998,6 @@
 			name = TDCChannelBanListSheet.xib;
 			sourceTree = "<group>";
 		};
-		4C06E15120EC4AC40055D09A /* TDCLicenseUpgradeEligibilitySheet.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E15220EC4AC40055D09A /* en */,
-			);
-			name = TDCLicenseUpgradeEligibilitySheet.xib;
-			sourceTree = "<group>";
-		};
 		4C06E15520EC4AC40055D09A /* TVCChannelSelectionView.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -4076,14 +4012,6 @@
 				4C06E15820EC4AC40055D09A /* en */,
 			);
 			name = TXCMainMenu.xib;
-			sourceTree = "<group>";
-		};
-		4C06E15B20EC4AC40055D09A /* TDCLicenseUpgradeActivateSheet.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E15C20EC4AC40055D09A /* en */,
-			);
-			name = TDCLicenseUpgradeActivateSheet.xib;
 			sourceTree = "<group>";
 		};
 		4C06E15F20EC4AC40055D09A /* TDCChannelInviteSheet.xib */ = {
@@ -4140,14 +4068,6 @@
 				4C06E16A20EC4AC40055D09A /* en */,
 			);
 			name = TVCAlert.xib;
-			sourceTree = "<group>";
-		};
-		4C06E16B20EC4AC40055D09A /* TDCLicenseUpgradeDialog.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E16C20EC4AC40055D09A /* en */,
-			);
-			name = TDCLicenseUpgradeDialog.xib;
 			sourceTree = "<group>";
 		};
 		4C06E16D20EC4AC40055D09A /* TDCServerChangeNicknameSheet.xib */ = {
@@ -4332,14 +4252,6 @@
 				4C06E2D620EC4FF00055D09A /* en */,
 			);
 			name = TDCAddressBookSheet.strings;
-			sourceTree = "<group>";
-		};
-		4C06E2D720EC4FF00055D09A /* TDCLicenseUpgradeEligibilitySheet.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E2D820EC4FF00055D09A /* en */,
-			);
-			name = TDCLicenseUpgradeEligibilitySheet.strings;
 			sourceTree = "<group>";
 		};
 		4C06E2D920EC4FF00055D09A /* TDCChannelModifyTopicSheet.strings */ = {

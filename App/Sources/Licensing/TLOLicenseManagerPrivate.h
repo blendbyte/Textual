@@ -89,6 +89,10 @@ TEXTUAL_EXTERN NSTimeInterval TLOLicenseManagerTimeRemainingTrial(void);
 TEXTUAL_EXTERN BOOL TLOLicenseManagerImportTextual7LicenseFile(NSData *licenseContents);
 TEXTUAL_EXTERN NSURL * _Nullable TLOLicenseManagerTextual7LicenseFilePath(void);
 TEXTUAL_EXTERN BOOL TLOLicenseManagerTextual7LicenseFileExists(void);
+
+/* The imported Textual 7 license file, as sent to prove the upgrade, and its key */
+TEXTUAL_EXTERN NSData * _Nullable TLOLicenseManagerTextual7LicenseFileContents(void);
+TEXTUAL_EXTERN NSString * _Nullable TLOLicenseManagerTextual7LicenseKey(void);
 #endif
 
 NS_ASSUME_NONNULL_END
