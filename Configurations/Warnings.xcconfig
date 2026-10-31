@@ -1,5 +1,8 @@
 // Warnings for all projects built from this repository.
-// There is no global -Werror: CI fails when the warning count rises.
+// Every warning is an error (the samples, built by plugin developers
+// against their own Xcode, don't use these settings).
+GCC_TREAT_WARNINGS_AS_ERRORS = YES
+SWIFT_TREAT_WARNINGS_AS_ERRORS = YES
 
 CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES
 CLANG_WARN_BOOL_CONVERSION = YES
