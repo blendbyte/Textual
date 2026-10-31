@@ -46,41 +46,21 @@
 "13u-4p" = "Textual’s licensing server has denied your request because too many requests have been received in a short period of time";
 "fvx-90" = "Access to license information for Textual is rate limited to prevent misuse or abuse. Please try again in a few minutes.";
 
+"r5k-l0" = "Lost your licence key?";
+"r5k-l1" = "No problem: it’s in the email we sent you after your purchase.\n\nAlready upgraded from Textual 7? Enter your Textual 7 key and Textual shows you your Textual 8 key again.\n\nCan’t find the email? Contact us and we’ll look it up for you.";
+
 "u8h-qv" = "The license key “%@“ cannot be activated because it is blacklisted";
 "w1n-n0" = "Contact support for more information.";
 "vgp-j6" = "Contact Support";
 
-"ocm-03" = "The following error was returned while processing request:";
-"dio-y9" = "Improperly formatted e-mail address or missing";
-
 "fg6-gf" = "The following error was returned while processing request:";
 "wc7-mn" = "Unknown or improperly formatted license key";
-
-"m4q-ul" = "Successfully queued e-mail for %@";
-"fxj-s6" = "An e-mail which contains your license key will be delivered to %@ within the next few minutes.";
 
 "jbs-64" = "Thank you for your purchase of Textual!";
 "k39-7l" = "All limitations have been lifted.";
 
 "pg1-a9" = "Are you sure you want to deactivate this copy of Textual?";
 "z87-wb" = "All limitations that apply to the trial version of Textual will immediately take effect once deactivated.";
-
-"vft-qo" = "Select a copy of Textual downloaded from the Mac App Store to receive a license key. You can download a new copy at any time in the Purchases section of your Mac App Store account.";
-
-"b6l-ka" = "The application “%@“ cannot be used to request a license key";
-"sdj-xd" = "This application is not Textual 5 or a newer version, or was not downloaded from the Mac App Store.";
-
-"vxq-oa" = "Successfully migrated Mac App Store purchase";
-"yxk-ej" = "An e-mail which contains your license key will be delivered to %@ within the next few minutes.";
-
-"enb-hw" = "Cannot migrate Mac App Store purchase because it has already been migrated";
-"36y-49" = "Click the “Recover Lost License” button if you have lost your license key.";
-
-"ztd-5y" = "The following error was returned while processing request:";
-"bu4-zk" = "Improperly formatted e-mail address or is missing";
-
-"r87-jw" = "The following error was returned while processing request:";
-"6zh-jr" = "Unable to locate an order that is linked to the e-mail address “%@“";
 
 "o66-ox" = "The license key “%@“ has exceeded its daily activation limit";
 "6aa-ow" = "This license key cannot be activated more than %ld times within a twenty-four (24) hour period. Please try again at a later time.";
@@ -91,12 +71,6 @@
 "ccj-ag" = "Please purchase Textual to prevent disruption to your chat experience.";
 "b8b-sg" = "More Info";
 
-"f49-rk" = "The following error was returned while processing request:";
-"do9-8x" = "Improperly formatted name or is missing";
-
-"p9s-ak" = "The following error was returned while processing request:";
-"ujo-cd" = "Receipt did not pass validation because of the following error:\n\n“%@“";
-
 "0uc-io" = "The license key “%@“ cannot be activated because another operation is already in progress";
 "vnu-5e" = "";
 
@@ -106,9 +80,6 @@
 "pmv-qp" = "The license key “%@“ cannot be activated because it requires an upgrade";
 "5bu-ov" = "";
 "53u-lt" = "Learn More";
-
-"t28-j9" = "Cannot migrate Mac App Store purchase because the appropriate in-app purchase is missing";
-"4n2-ps" = "The Standard Edition in-app purchase is required to perform migration.";
 
 "12h-3w" = "Are you sure you want to purchase a new license key?";
 "dpo-ln" = "You already own the license key “%@.”";

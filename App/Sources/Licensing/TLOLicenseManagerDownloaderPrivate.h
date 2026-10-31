@@ -39,10 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, TLOLicenseManagerDownloaderRequestType) {
 	TLOLicenseManagerDownloaderRequestTypeActivation,
-	TLOLicenseManagerDownloaderRequestTypeMigrateAppStore,
-	TLOLicenseManagerDownloaderRequestTypeSendLostLicense,
-	TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility,
-	TLOLicenseManagerDownloaderRequestTypeReceiptUpgradeEligibility
+	TLOLicenseManagerDownloaderRequestTypeLicenseUpgradeEligibility
 };
 
 TEXTUAL_EXTERN NSUInteger const TLOLicenseManagerDownloaderRequestStatusCodeSuccess;
@@ -65,13 +62,6 @@ typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful
 - (void)deactivateLicense;
 
 - (void)checkUpgradeEligibilityOfLicense:(NSString *)licenseKey;
-- (void)checkUpgradeEligibilityOfReceipt:(NSString *)receiptData;
-
-- (void)requestLostLicenseKeyForContactAddress:(NSString *)contactAddress;
-
-- (void)migrateMacAppStorePurchase:(NSString *)receiptData
-				  licenseOwnerName:(NSString *)licenseOwnerName
-		licenseOwnerContactAddress:(NSString *)licenseOwnerContactAddress;
 
 - (void)cancelRequest;
 @end

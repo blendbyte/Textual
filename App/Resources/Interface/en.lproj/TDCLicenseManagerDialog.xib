@@ -16,7 +16,6 @@
                 <outlet property="unregisteredViewActivateTextualButton" destination="c0t-Vn-Ofk" id="1lB-yf-GaZ"/>
                 <outlet property="unregisteredViewCancelButton" destination="yZF-Hy-PrY" id="L9r-Xa-FVj"/>
                 <outlet property="unregisteredViewLicenseKeyTextField" destination="kAU-WO-mIJ" id="gPM-eo-qVs"/>
-                <outlet property="unregisteredViewMacAppStoreIconImageView" destination="jg7-PN-SWb" id="aAC-aI-s3O"/>
                 <outlet property="unregisteredViewRecoveryLostLicenseButton" destination="V4s-Va-UFF" id="Pbt-eH-4EM"/>
                 <outlet property="unregisteredViewTrialInformationTextField" destination="Pho-XN-fdp" id="C9I-YH-Meg"/>
                 <outlet property="window" destination="tBl-Uw-jZv" id="VoY-RM-rJQ"/>
@@ -38,10 +37,10 @@
             <point key="canvasLocation" x="1284" y="-88"/>
         </window>
         <view translatesAutoresizingMaskIntoConstraints="NO" id="bea-Wk-5YZ" userLabel="Content View Unregistered Textual View">
-            <rect key="frame" x="0.0" y="0.0" width="590" height="357"/>
+            <rect key="frame" x="0.0" y="0.0" width="590" height="211"/>
             <subviews>
                 <imageView translatesAutoresizingMaskIntoConstraints="NO" id="xaT-du-Hgo">
-                    <rect key="frame" x="20" y="221" width="75" height="75"/>
+                    <rect key="frame" x="20" y="75" width="75" height="75"/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="xaT-du-Hgo" secondAttribute="height" multiplier="1:1" id="DWq-cB-ykc"/>
                         <constraint firstAttribute="width" constant="75" id="qg9-Zg-6ln"/>
@@ -50,7 +49,7 @@
                     <accessibility description="Textual Logo"/>
                 </imageView>
                 <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Uu0-L6-ebd">
-                    <rect key="frame" x="109" y="280" width="316" height="16"/>
+                    <rect key="frame" x="109" y="134" width="316" height="16"/>
                     <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="To activate Textual, enter your license key below" id="6U9-rS-tAa">
                         <font key="font" metaFont="systemBold"/>
                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
@@ -58,7 +57,7 @@
                     </textFieldCell>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SKZ-Sh-8aW">
-                    <rect key="frame" x="109" y="209" width="81" height="16"/>
+                    <rect key="frame" x="109" y="63" width="81" height="16"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="License Key:" id="iji-CW-RF2">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -66,7 +65,7 @@
                     </textFieldCell>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="nxy-E2-Vas">
-                    <rect key="frame" x="109" y="240" width="463" height="32"/>
+                    <rect key="frame" x="109" y="94" width="463" height="32"/>
                     <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="Your license key can be found in the e-mail that was sent to you after completing your purchase." id="9WE-Gi-yuN">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -74,7 +73,7 @@
                     </textFieldCell>
                 </textField>
                 <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kAU-WO-mIJ">
-                    <rect key="frame" x="196" y="206" width="374" height="22"/>
+                    <rect key="frame" x="196" y="60" width="374" height="22"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="22" id="vbh-eP-CmJ"/>
                     </constraints>
@@ -89,7 +88,7 @@
                     </connections>
                 </textField>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c0t-Vn-Ofk">
-                    <rect key="frame" x="447" y="159" width="130" height="32"/>
+                    <rect key="frame" x="447" y="13" width="130" height="32"/>
                     <buttonCell key="cell" type="push" title="Activate Textual" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="THe-1N-yO3">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
@@ -99,14 +98,11 @@
                         <action selector="unregisteredViewActivateTextual:" target="-2" id="kRg-rx-FHU"/>
                     </connections>
                 </button>
-                <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="20p-td-tPI">
-                    <rect key="frame" x="0.0" y="143" width="590" height="5"/>
-                </box>
                 <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="WHr-3v-nQP">
-                    <rect key="frame" x="0.0" y="314" width="590" height="5"/>
+                    <rect key="frame" x="0.0" y="168" width="590" height="5"/>
                 </box>
                 <box boxType="custom" borderType="none" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="NPe-61-R0Z">
-                    <rect key="frame" x="0.0" y="316" width="590" height="41"/>
+                    <rect key="frame" x="0.0" y="170" width="590" height="41"/>
                     <view key="contentView" id="Y04-Ui-XYn">
                         <rect key="frame" x="0.0" y="0.0" width="590" height="41"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -144,71 +140,8 @@
                     <color key="borderColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <color key="fillColor" white="0.0" alpha="0.040000000000000001" colorSpace="calibratedWhite"/>
                 </box>
-                <box boxType="custom" borderType="none" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="gvB-hL-TZu">
-                    <rect key="frame" x="0.0" y="0.0" width="590" height="145"/>
-                    <view key="contentView" id="kNO-08-Kd4">
-                        <rect key="frame" x="0.0" y="0.0" width="590" height="145"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <imageView translatesAutoresizingMaskIntoConstraints="NO" id="jg7-PN-SWb">
-                                <rect key="frame" x="16" y="53" width="75" height="75"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="75" id="AlM-ow-021"/>
-                                    <constraint firstAttribute="width" secondItem="jg7-PN-SWb" secondAttribute="height" multiplier="1:1" id="JfS-YS-1rG"/>
-                                </constraints>
-                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="applicationIcon" id="Nw3-hE-vWZ"/>
-                                <accessibility description="Mac App Store Logo"/>
-                            </imageView>
-                            <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="x6V-ip-XZY">
-                                <rect key="frame" x="105" y="112" width="210" height="16"/>
-                                <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="Migrate from the Mac App Store" id="UVC-M1-5Bi">
-                                    <font key="font" metaFont="systemBold"/>
-                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="LBa-p3-Krv">
-                                <rect key="frame" x="105" y="56" width="467" height="48"/>
-                                <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" id="QVB-9e-QPb">
-                                    <font key="font" metaFont="system"/>
-                                    <string key="title">You can request a license key if you already own Textual 5 or a newer version in the Mac App Store. To download a new copy of Textual from the Mac App Store, click on your name in the store to access your purchases.</string>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Fil-u7-1Jf">
-                                <rect key="frame" x="228" y="13" width="134" height="32"/>
-                                <buttonCell key="cell" type="push" title="Request License" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Ciz-0p-zdv">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <accessibility description="Request Free License"/>
-                                <connections>
-                                    <action selector="unregisteredViewMigrateMacAppStorePurchase:" target="-2" id="WB2-rx-giw"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <constraints>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="x6V-ip-XZY" secondAttribute="trailing" constant="20" id="Nwo-Or-cQj"/>
-                            <constraint firstAttribute="trailing" secondItem="LBa-p3-Krv" secondAttribute="trailing" constant="20" id="fj8-J6-ha6"/>
-                            <constraint firstItem="jg7-PN-SWb" firstAttribute="top" secondItem="kNO-08-Kd4" secondAttribute="top" constant="17" id="x1L-a1-usE"/>
-                        </constraints>
-                    </view>
-                    <constraints>
-                        <constraint firstAttribute="bottom" secondItem="Fil-u7-1Jf" secondAttribute="bottom" constant="20" id="5c5-ki-HMU"/>
-                        <constraint firstItem="x6V-ip-XZY" firstAttribute="leading" secondItem="LBa-p3-Krv" secondAttribute="leading" id="62f-c0-Fc8"/>
-                        <constraint firstItem="x6V-ip-XZY" firstAttribute="leading" secondItem="jg7-PN-SWb" secondAttribute="trailing" constant="16" id="NvY-3q-sG6"/>
-                        <constraint firstItem="Fil-u7-1Jf" firstAttribute="top" secondItem="LBa-p3-Krv" secondAttribute="bottom" constant="16" id="OvJ-sO-527"/>
-                        <constraint firstItem="Fil-u7-1Jf" firstAttribute="centerX" secondItem="gvB-hL-TZu" secondAttribute="centerX" id="XkE-Wd-GJe"/>
-                        <constraint firstItem="jg7-PN-SWb" firstAttribute="top" secondItem="x6V-ip-XZY" secondAttribute="top" id="qBW-QX-lr9"/>
-                        <constraint firstItem="LBa-p3-Krv" firstAttribute="top" secondItem="x6V-ip-XZY" secondAttribute="bottom" constant="8" symbolic="YES" id="uOi-oU-frx"/>
-                        <constraint firstItem="jg7-PN-SWb" firstAttribute="leading" secondItem="gvB-hL-TZu" secondAttribute="leading" constant="16" id="wlr-5r-uAu"/>
-                    </constraints>
-                    <color key="borderColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                </box>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="yZF-Hy-PrY">
-                    <rect key="frame" x="373" y="159" width="76" height="32"/>
+                    <rect key="frame" x="373" y="13" width="76" height="32"/>
                     <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XhH-Zr-ZZE">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
@@ -221,7 +154,7 @@ Gw
                     </connections>
                 </button>
                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="V4s-Va-UFF">
-                    <rect key="frame" x="13" y="159" width="163" height="32"/>
+                    <rect key="frame" x="13" y="13" width="163" height="32"/>
                     <buttonCell key="cell" type="push" title="Recover Lost License" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YAm-hP-iFo">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
@@ -233,7 +166,7 @@ Gw
             </subviews>
             <constraints>
                 <constraint firstItem="c0t-Vn-Ofk" firstAttribute="top" secondItem="kAU-WO-mIJ" secondAttribute="bottom" constant="20" id="2LX-FV-NHO"/>
-                <constraint firstAttribute="trailing" secondItem="gvB-hL-TZu" secondAttribute="trailing" id="3eB-Ai-ZDH"/>
+                <constraint firstAttribute="bottom" secondItem="c0t-Vn-Ofk" secondAttribute="bottom" constant="20" id="Lm8-Bt-q2w"/>
                 <constraint firstItem="Uu0-L6-ebd" firstAttribute="leading" secondItem="xaT-du-Hgo" secondAttribute="trailing" constant="16" id="4dT-Sh-CmE"/>
                 <constraint firstAttribute="trailing" secondItem="NPe-61-R0Z" secondAttribute="trailing" id="AvQ-oD-rSH"/>
                 <constraint firstItem="WHr-3v-nQP" firstAttribute="leading" secondItem="bea-Wk-5YZ" secondAttribute="leading" id="Bf0-iQ-DO6"/>
@@ -241,9 +174,7 @@ Gw
                 <constraint firstAttribute="trailing" secondItem="nxy-E2-Vas" secondAttribute="trailing" constant="20" id="CTG-f6-lZj"/>
                 <constraint firstItem="c0t-Vn-Ofk" firstAttribute="leading" secondItem="yZF-Hy-PrY" secondAttribute="trailing" constant="12" symbolic="YES" id="DGm-Ny-ZD2"/>
                 <constraint firstItem="SKZ-Sh-8aW" firstAttribute="leading" secondItem="nxy-E2-Vas" secondAttribute="leading" id="ISl-Xl-OM7"/>
-                <constraint firstAttribute="bottom" secondItem="gvB-hL-TZu" secondAttribute="bottom" id="Krt-Ch-a1I"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Uu0-L6-ebd" secondAttribute="trailing" constant="20" id="M26-tj-ycC"/>
-                <constraint firstItem="gvB-hL-TZu" firstAttribute="top" secondItem="20p-td-tPI" secondAttribute="bottom" id="M3m-m4-fBd"/>
                 <constraint firstItem="yZF-Hy-PrY" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="V4s-Va-UFF" secondAttribute="trailing" constant="20" id="N9B-1Z-M8k"/>
                 <constraint firstItem="NPe-61-R0Z" firstAttribute="bottom" secondItem="WHr-3v-nQP" secondAttribute="bottom" id="NS4-DK-Ivp"/>
                 <constraint firstItem="WHr-3v-nQP" firstAttribute="top" secondItem="bea-Wk-5YZ" secondAttribute="top" constant="40" id="Nb7-pd-Xoy"/>
@@ -256,17 +187,13 @@ Gw
                 <constraint firstItem="NPe-61-R0Z" firstAttribute="leading" secondItem="bea-Wk-5YZ" secondAttribute="leading" id="iQ3-op-Sdu"/>
                 <constraint firstItem="kAU-WO-mIJ" firstAttribute="top" secondItem="nxy-E2-Vas" secondAttribute="bottom" constant="12" id="mwz-Lh-Rjn"/>
                 <constraint firstItem="kAU-WO-mIJ" firstAttribute="leading" secondItem="SKZ-Sh-8aW" secondAttribute="trailing" constant="8" symbolic="YES" id="n9A-hR-ML4"/>
-                <constraint firstAttribute="trailing" secondItem="20p-td-tPI" secondAttribute="trailing" id="pBu-8J-TUu"/>
                 <constraint firstAttribute="trailing" secondItem="kAU-WO-mIJ" secondAttribute="trailing" constant="20" id="pEs-Q0-88O"/>
                 <constraint firstItem="Uu0-L6-ebd" firstAttribute="leading" secondItem="nxy-E2-Vas" secondAttribute="leading" id="pdl-jy-0fG"/>
                 <constraint firstItem="NPe-61-R0Z" firstAttribute="top" secondItem="bea-Wk-5YZ" secondAttribute="top" id="rV5-ZZ-B14"/>
                 <constraint firstItem="V4s-Va-UFF" firstAttribute="leading" secondItem="bea-Wk-5YZ" secondAttribute="leading" constant="20" symbolic="YES" id="rjh-UP-5mT"/>
-                <constraint firstItem="20p-td-tPI" firstAttribute="top" secondItem="c0t-Vn-Ofk" secondAttribute="bottom" constant="20" id="tD0-Zj-qYk"/>
                 <constraint firstAttribute="trailing" secondItem="WHr-3v-nQP" secondAttribute="trailing" id="v2B-ou-eRA"/>
                 <constraint firstItem="xaT-du-Hgo" firstAttribute="top" secondItem="Uu0-L6-ebd" secondAttribute="top" id="wCz-TR-OL4"/>
-                <constraint firstItem="gvB-hL-TZu" firstAttribute="leading" secondItem="bea-Wk-5YZ" secondAttribute="leading" id="x4P-Tu-UJv"/>
                 <constraint firstItem="yZF-Hy-PrY" firstAttribute="firstBaseline" secondItem="c0t-Vn-Ofk" secondAttribute="firstBaseline" id="xYO-QU-LGS"/>
-                <constraint firstItem="20p-td-tPI" firstAttribute="leading" secondItem="bea-Wk-5YZ" secondAttribute="leading" id="xwh-az-hal"/>
             </constraints>
             <point key="canvasLocation" x="629" y="-87"/>
         </view>

@@ -41,8 +41,6 @@
 #import "TXMasterController.h"
 #import "TXMenuController.h"
 #import "TPCPreferencesUserDefaults.h"
-#import "TDCLicenseManagerMigrateAppStoreSheetPrivate.h"
-#import "TDCLicenseManagerRecoverLostLicenseSheetPrivate.h"
 #import "TDCLicenseUpgradeActivateSheetPrivate.h"
 #import "TDCLicenseUpgradeCommonActionsPrivate.h"
 #import "TDCLicenseUpgradeDialogPrivate.h"
@@ -82,11 +80,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewActivateTextualButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewCancelButton;
 @property (nonatomic, weak) IBOutlet NSButton *unregisteredViewRecoveryLostLicenseButton;
-@property (nonatomic, weak) IBOutlet NSImageView *unregisteredViewMacAppStoreIconImageView;
 @property (nonatomic, strong, nullable) TDCProgressIndicatorSheet *progressIndicator;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *licenseManagerDownloader;
-@property (nonatomic, strong, nullable) TDCLicenseManagerMigrateAppStoreSheet *migrateAppStoreSheet;
-@property (nonatomic, strong, nullable) TDCLicenseManagerRecoverLostLicenseSheet *recoverLostLicenseSheet;
 @property (nonatomic, strong, nullable) TDCLicenseUpgradeDialog *upgradeDialog;
 @property (nonatomic, strong, nullable) TDCLicenseUpgradeActivateSheet *upgradeActivateSheet;
 @property (nonatomic, assign) BOOL textualIsRegistered;
@@ -96,7 +91,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 - (IBAction)unregisteredViewActivateTextual:(nullable id)sender;
 - (IBAction)unregisteredViewCancel:(nullable id)sender;
-- (IBAction)unregisteredViewMigrateMacAppStorePurchase:(nullable id)sender;
 - (IBAction)unregisteredViewPurchaseTextual:(nullable id)sender;
 - (IBAction)unregisteredViewRecoveryLostLicense:(nullable id)sender;
 
@@ -127,8 +121,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 {
 	[self loadNib];
 
-	[self populateMacAppStoreIconImageView];
-
 	[self updateSelectedPane];
 }
 
@@ -156,31 +148,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	[self activateLicenseKeyUsingArgumentDictionary];
 
 	[self upgradeDialogAppFinishedLaunchingRoutine];
-}
-
-- (void)populateMacAppStoreIconImageView
-{
-	/* Read the app store icon image from the actual App Store app so 
-	 that we do not have to update it if Apple does. */
-	NSBundle *appStoreApplication = [NSBundle bundleWithPath:@"/Applications/App Store.app"];
-
-	if (appStoreApplication == nil) {
-		appStoreApplication = [NSBundle bundleWithPath:@"/System/Applications/App Store.app"];
-	}
-
-	if (appStoreApplication == nil) {
-		return;
-	}
-
-	NSString *appStoreIconPath = [appStoreApplication pathForResource:@"AppIcon" ofType:@"icns"];
-
-	if (appStoreIconPath == nil) {
-		return;
-	}
-
-	NSImage *appStoreIconImage = [[NSImage alloc] initWithContentsOfFile:appStoreIconPath];
-
-	self.unregisteredViewMacAppStoreIconImageView.image = appStoreIconImage;
 }
 
 - (void)updateSelectedPane
@@ -669,40 +636,20 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 - (void)unregisteredViewRecoveryLostLicense:(nullable id)sender
 {
-	  TDCLicenseManagerRecoverLostLicenseSheet *recoverLostLicenseSheet =
-	[[TDCLicenseManagerRecoverLostLicenseSheet alloc] initWithWindow:self.window];
-
-	recoverLostLicenseSheet.delegate = self;
-
-	[recoverLostLicenseSheet start];
-
-	self.recoverLostLicenseSheet = recoverLostLicenseSheet;
-}
-
-- (void)licenseManagerRecoverLostLicenseSheet:(TDCLicenseManagerRecoverLostLicenseSheet *)sender onOk:(NSString *)contactAddress
-{
-	__weak TDCLicenseManagerDialog *weakSelf = self;
-
-	TLOLicenseManagerDownloader *licenseManagerDownloader = [TLOLicenseManagerDownloader new];
-
-	licenseManagerDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
-		[weakSelf licenseManagerDownloaderCompletionBlock];
-	};
-
-	licenseManagerDownloader.isSilentOnSuccess = self.isSilentOnSuccess;
-
-	[licenseManagerDownloader requestLostLicenseKeyForContactAddress:contactAddress];
-
-	self.licenseManagerDownloader = licenseManagerDownloader;
-}
-
-- (void)licenseManagerRecoverLostLicenseSheetWillClose:(TDCLicenseManagerRecoverLostLicenseSheet *)sender
-{
-	self.recoverLostLicenseSheet = nil;
-
-	if (self.licenseManagerDownloader) {
-		[self beginProgressIndicator];
-	}
+	/* The licensing server doesn't send lost keys by email: they're in the
+	 purchase email, Textual 7 keys show the Textual 8 key they became, and
+	 support finds the rest */
+	[TDCAlert alertSheetWithWindow:self.window
+							  body:TXTLS(@"TLOLicenseManager[r5k-l1]")
+							 title:TXTLS(@"TLOLicenseManager[r5k-l0]")
+					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+				   alternateButton:TXTLS(@"TLOLicenseManager[vgp-j6]")
+					   otherButton:nil
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+		if (buttonClicked == TDCAlertResponseAlternate) {
+			[menuController() contactSupport:nil];
+		}
+	}];
 }
 
 #pragma mark -
@@ -743,52 +690,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	[licenseManagerDownloader deactivateLicense];
 
 //	self.licenseManagerDownloader = licenseManagerDownloader;
-}
-
-#pragma mark -
-#pragma mark Mac App Store Receipt Processing
-
-- (void)unregisteredViewMigrateMacAppStorePurchase:(nullable id)sender
-{
-	  TDCLicenseManagerMigrateAppStoreSheet *migrateAppStoreSheet =
-	[[TDCLicenseManagerMigrateAppStoreSheet alloc] initWithWindow:self.window];
-
-	migrateAppStoreSheet.delegate = self;
-
-	[migrateAppStoreSheet start];
-
-	self.migrateAppStoreSheet = migrateAppStoreSheet;
-}
-
-- (void)licenseManagerMigrateAppStoreSheet:(TDCLicenseManagerMigrateAppStoreSheet *)sender
-							convertReceipt:(NSString *)receiptData
-						  licenseOwnerName:(NSString *)licenseOwnerName
-				licenseOwnerContactAddress:(NSString *)licenseOwnerContactAddress
-{
-	__weak TDCLicenseManagerDialog *weakSelf = self;
-
-	TLOLicenseManagerDownloader *licenseManagerDownloader = [TLOLicenseManagerDownloader new];
-
-	licenseManagerDownloader.completionBlock = ^(BOOL operationSuccessful, NSUInteger statusCode, id _Nullable statusContext) {
-		[weakSelf licenseManagerDownloaderCompletionBlock];
-	};
-
-	licenseManagerDownloader.isSilentOnSuccess = self.isSilentOnSuccess;
-
-	[licenseManagerDownloader migrateMacAppStorePurchase:receiptData
-											 licenseOwnerName:licenseOwnerName
-								   licenseOwnerContactAddress:licenseOwnerContactAddress];
-
-	self.licenseManagerDownloader = licenseManagerDownloader;
-}
-
-- (void)licenseManagerMigrateAppStoreSheetWillClose:(TDCLicenseManagerMigrateAppStoreSheet *)sender
-{
-	self.migrateAppStoreSheet = nil;
-
-	if (self.licenseManagerDownloader) {
-		[self beginProgressIndicator];
-	}
 }
 
 #pragma mark -
