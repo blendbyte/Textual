@@ -129,6 +129,8 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @property (nonatomic, assign) BOOL documentLoadHoldsSlot;
 @property (nonatomic, assign) NSTimeInterval documentLoadStartedAt; // 0 before the first load
 @property (nonatomic, assign) NSUInteger stuckDocumentReloadCount; // since the last document that loaded
+@property (nonatomic, assign) NSUInteger quickWebViewCloseCount; // in a row, each soon after the view loaded
+@property (atomic, assign) BOOL skipNextHistoryReplay;
 @end
 
 /* Loading every view's document at once (one web view per server and
@@ -137,6 +139,8 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
  A slot is given back when the view finishes loading or after a timeout. */
 #define _maximumConcurrentDeferredDocumentLoads		8
 #define _deferredDocumentLoadSlotTimeout			8.0
+
+#define _quickWebViewCloseInterval					30.0
 
 static NSMutableArray<TVCLogController *> *_deferredDocumentLoads = nil;
 static NSUInteger _deferredDocumentLoadsInFlight = 0;
@@ -937,6 +941,16 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	} else if (self.visible == NO) {
 		/* Loaded when the view is first shown */
+		return;
+	} else if (self.skipNextHistoryReplay) {
+		self.skipNextHistoryReplay = NO;
+
+		self.historyLoaded = YES;
+
+		[self notifyViewFinishedLoadingHistory];
+
+		[self.associatedClient printDebugInformation:TXTLS(@"TVCMainWindow[rpl-c1]") inChannel:channel];
+
 		return;
 	}
 
@@ -3564,6 +3578,21 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 - (void)logViewWebViewClosedUnexpectedly
 {
+	/* A view that dies soon after loading, twice in a row, may be brought down by
+	 a line it replays. It comes back without its saved lines, which stay saved,
+	 so it doesn't reload forever. */
+	if (([NSDate timeIntervalSince1970] - self.viewLoadedTimestamp) < _quickWebViewCloseInterval) {
+		self.quickWebViewCloseCount += 1;
+	} else {
+		self.quickWebViewCloseCount = 0;
+	}
+
+	if (self.quickWebViewCloseCount >= 2) {
+		self.quickWebViewCloseCount = 0;
+
+		self.skipNextHistoryReplay = YES;
+	}
+
 	/* Reload and replay the scrollback: the saved history is kept */
 	[self clearWithReset:NO];
 }

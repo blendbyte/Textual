@@ -222,3 +222,4 @@
 "src-k5" = "Messages of the last 2 years";
 "src-k4" = "The message archive is off, so there is nothing to search. It can be turned on in Settings › History.";
 "src-r5" = "The message archive is off (Settings › History)";
+"rpl-c1" = "The chat view stopped working twice while showing this view's saved lines, so they aren't shown now. They are still saved.";
