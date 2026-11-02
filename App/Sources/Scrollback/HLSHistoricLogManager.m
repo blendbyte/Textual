@@ -618,8 +618,11 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	if (context.hasChanges) {
 		NSError *saveError = nil;
 
+		/* Unsaved lines stay in the context for the next save to retry */
 		if ([context save:&saveError] == NO) {
 			LogToConsoleError("Failed to save the historic log: %{public}@", saveError.localizedDescription);
+
+			return;
 		}
 	}
 
