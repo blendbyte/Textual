@@ -258,6 +258,12 @@ NS_ASSUME_NONNULL_BEGIN
 	if (error) {
 		LogToConsoleError("Sparkle failed to start updater: %{public}@", error.description);
 	}
+
+	/* "Automatically download and install updates" used to save checks as off,
+	 which stopped updates altogether. That choice is the only way to get here. */
+	if (updater.automaticallyChecksForUpdates == NO && updater.automaticallyDownloadsUpdates) {
+		updater.automaticallyChecksForUpdates = YES;
+	}
 #endif
 }
 

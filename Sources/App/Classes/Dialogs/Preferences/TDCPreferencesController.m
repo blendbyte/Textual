@@ -1235,10 +1235,12 @@ NS_ASSUME_NONNULL_BEGIN
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	SPUUpdater *updater = masterController().updateController.updater;
 
-	self.checkForUpdatesAutomaticallyDownload.state = updater.automaticallyDownloadsUpdates;
-	self.checkForUpdatesAutomaticallyCheck.state = updater.automaticallyChecksForUpdates;
-	self.checkForUpdatesDontCheck.state = (updater.automaticallyDownloadsUpdates == NO &&
-										   updater.automaticallyChecksForUpdates == NO);
+	BOOL checks = updater.automaticallyChecksForUpdates;
+	BOOL downloads = (checks && updater.automaticallyDownloadsUpdates);
+
+	self.checkForUpdatesAutomaticallyDownload.state = downloads;
+	self.checkForUpdatesAutomaticallyCheck.state = (checks && downloads == NO);
+	self.checkForUpdatesDontCheck.state = (checks == NO);
 #endif
 }
 
@@ -1247,8 +1249,12 @@ NS_ASSUME_NONNULL_BEGIN
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 	SPUUpdater *updater = masterController().updateController.updater;
 
-	updater.automaticallyChecksForUpdates = (self.checkForUpdatesAutomaticallyCheck.state == NSControlStateValueOn);
-	updater.automaticallyDownloadsUpdates = (self.checkForUpdatesAutomaticallyDownload.state == NSControlStateValueOn);
+	/* Downloading updates needs checks for them too */
+	BOOL downloads = (self.checkForUpdatesAutomaticallyDownload.state == NSControlStateValueOn);
+	BOOL checks = (downloads || self.checkForUpdatesAutomaticallyCheck.state == NSControlStateValueOn);
+
+	updater.automaticallyChecksForUpdates = checks;
+	updater.automaticallyDownloadsUpdates = downloads;
 #endif
 }
 
