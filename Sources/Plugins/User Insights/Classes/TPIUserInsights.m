@@ -63,6 +63,11 @@ NS_ASSUME_NONNULL_BEGIN
 	
 	/* We can brag in private messages so add above if statement */
 	if ([commandString isEqualToString:@"BRAG"]) {
+		/* The server console has no channel to brag in */
+		if (channel == nil) {
+			return;
+		}
+
 		[self bragInChannel:channel onClient:client];
 
 		return;
