@@ -125,6 +125,10 @@ NS_ASSUME_NONNULL_BEGIN
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 
 /* The view's lines with entry identifiers in the range, oldest or newest first */
+/* Whether opening the store failed because it is damaged or can't be
+ migrated, not for a passing reason such as a full disk */
++ (BOOL)storeErrorMeansDamage:(nullable NSError *)error;
+
 + (NSFetchRequest *)fetchRequestForView:(NSString *)viewId
 							  ascending:(BOOL)ascending
 							 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap

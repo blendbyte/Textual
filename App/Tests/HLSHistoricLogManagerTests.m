@@ -130,6 +130,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Lines loaded back while scrolling, and the newest lines a view reloads,
  come in the order they were written, saved to disk or not */
+/* The store is erased only when it is damaged: a passing failure keeps the scrollback */
+- (void)testOnlyDamageReplacesTheStore
+{
+	NSError *(^sqliteError)(NSInteger) = ^NSError *(NSInteger code) {
+		return [NSError errorWithDomain:NSCocoaErrorDomain code:NSPersistentStoreOpenError userInfo:@{NSSQLiteErrorDomain : @(code)}];
+	};
+
+	XCTAssertTrue([HLSHistoricLogManager storeErrorMeansDamage:sqliteError(11)]);
+	XCTAssertTrue([HLSHistoricLogManager storeErrorMeansDamage:sqliteError(26)]);
+
+	/* Full disk, read-only folder, locked by another process */
+	XCTAssertFalse([HLSHistoricLogManager storeErrorMeansDamage:sqliteError(13)]);
+	XCTAssertFalse([HLSHistoricLogManager storeErrorMeansDamage:sqliteError(14)]);
+	XCTAssertFalse([HLSHistoricLogManager storeErrorMeansDamage:sqliteError(5)]);
+
+	/* Damage reported further down */
+	XCTAssertTrue([HLSHistoricLogManager storeErrorMeansDamage:
+				   [NSError errorWithDomain:NSCocoaErrorDomain code:NSPersistentStoreOpenError userInfo:@{NSUnderlyingErrorKey : sqliteError(11)}]]);
+}
+
 - (void)testLinesComeBackInWrittenOrder
 {
 	[self writeLinesToView:@"other" from:1 to:500 inContext:self.parentContext];

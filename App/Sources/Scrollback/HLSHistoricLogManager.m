@@ -196,6 +196,41 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	}
 }
 
++ (BOOL)storeErrorMeansDamage:(nullable NSError *)error
+{
+	if (error == nil) {
+		return NO;
+	}
+
+	NSInteger sqliteError = 0;
+
+	if ([error.domain isEqualToString:NSSQLiteErrorDomain]) {
+		sqliteError = error.code;
+	} else {
+		sqliteError = [error.userInfo[NSSQLiteErrorDomain] integerValue];
+	}
+
+	/* SQLITE_CORRUPT, SQLITE_NOTADB */
+	if (sqliteError == 11 || sqliteError == 26) {
+		return YES;
+	}
+
+	if ([error.domain isEqualToString:NSCocoaErrorDomain]) {
+		switch (error.code) {
+			case NSFileReadCorruptFileError:
+			case NSPersistentStoreIncompatibleVersionHashError:
+			case NSMigrationMissingSourceModelError:
+			case NSMigrationMissingMappingModelError:
+			case NSInferredMappingModelError:
+			{
+				return YES;
+			}
+		}
+	}
+
+	return [self storeErrorMeansDamage:error.userInfo[NSUnderlyingErrorKey]];
+}
+
 - (void)_openDatabase
 {
 	NSURL *storeURL = [self _storeURL];
@@ -258,11 +293,15 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 
 		LogToConsoleError("Failed to open the historic log: %{public}@", addPersistentStoreError.localizedDescription);
 
-		/* A store that can't be opened or migrated (damaged, or from a very
-		 old version) is replaced by an empty one: it only holds scrollback */
-		if (attempt == 0) {
-			[self _destroyStoreAtURL:storeURL];
+		/* A store that is damaged or can't be migrated (from a very old version)
+		 is replaced by an empty one: it only holds scrollback. After anything else
+		 (a full disk, say) this session goes without saved scrollback and the next
+		 launch opens the same file again. */
+		if (attempt > 0 || [self.class storeErrorMeansDamage:addPersistentStoreError] == NO) {
+			return;
 		}
+
+		[self _destroyStoreAtURL:storeURL];
 	}
 }
 
