@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 		 @"https://0.0.0.0/a.png",
 		 @"https://10.1.2.3/a.png",
 		 @"https://100.64.0.1/a.png",
+		 @"https://198.18.0.1/a.png",
 		 @"https://169.254.169.254/latest/meta-data",
 		 @"https://172.16.0.1/a.png",
 		 @"https://172.31.255.255/a.png",

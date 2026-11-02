@@ -118,7 +118,21 @@ static BOOL ICLSocketAddressIsLocal(const struct sockaddr *address)
 			(bytes[0] & 0xfe) == 0xfc);				// unique local, fc00::/7
 }
 
+/* Fake-IP tools (Clash, Surge) answer every name with a made-up address from
+ the benchmarking range and route the connection by that name */
+static BOOL ICLSocketAddressIsFakeIP(const struct sockaddr *address)
+{
+	if (address->sa_family != AF_INET) {
+		return NO;
+	}
+
+	uint32_t address4 = ntohl(((const struct sockaddr_in *)address)->sin_addr.s_addr);
+
+	return ((address4 >> 24) == 198 && ((address4 >> 16) & 0xfe) == 18);
+}
+
 /* Returns NO if any address of the host is local or none is found.
+ A name may point at a fake-IP address, a typed address may not.
  found is set to YES when the lookup returns addresses. */
 static BOOL ICLAddressesOfHostAreAllowed(NSString *host, int flags, BOOL *found)
 {
@@ -141,7 +155,15 @@ static BOOL ICLAddressesOfHostAreAllowed(NSString *host, int flags, BOOL *found)
 	BOOL allowed = YES;
 
 	for (struct addrinfo *entry = result; entry != NULL; entry = entry->ai_next) {
-		if (entry->ai_addr == NULL || ICLSocketAddressIsLocal(entry->ai_addr)) {
+		if (entry->ai_addr == NULL) {
+			allowed = NO;
+
+			break;
+		}
+
+		if (ICLSocketAddressIsLocal(entry->ai_addr) &&
+			((flags & AI_NUMERICHOST) != 0 || ICLSocketAddressIsFakeIP(entry->ai_addr) == NO))
+		{
 			allowed = NO;
 
 			break;
@@ -194,6 +216,24 @@ static BOOL ICLHostNameIsLocal(NSString *host)
 static BOOL ICLHostNameIsOnion(NSString *host)
 {
 	return [host hasSuffix:@".onion"];
+}
+
+/* Whether a request for the URL goes through a proxy set in System Settings */
+static BOOL ICLSystemProxyAppliesToURL(NSURL *url)
+{
+	CFDictionaryRef settings = CFNetworkCopySystemProxySettings();
+
+	if (settings == NULL) {
+		return NO;
+	}
+
+	NSArray<NSDictionary *> *proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((__bridge CFURLRef)url, settings));
+
+	CFRelease(settings);
+
+	NSString *proxyType = proxies.firstObject[(__bridge NSString *)kCFProxyTypeKey];
+
+	return (proxyType != nil && [proxyType isEqualToString:(__bridge NSString *)kCFProxyTypeNone] == NO);
 }
 
 #pragma mark -
@@ -445,8 +485,14 @@ static NSMapTable<NSURLSession *, NSURLSession *> *_mediaSessions = nil;
 
 		BOOL result = ICLAddressesOfHostAreAllowed(host, 0, &found);
 
+		/* Behind a system proxy, the proxy resolves the name. It not resolving
+		 here says nothing. An onion name stays with Tor. */
+		if (found == NO) {
+			result = (ICLHostNameIsOnion(host) == NO && ICLSystemProxyAppliesToURL(url));
+		}
+
 		dispatch_async(dispatch_get_main_queue(), ^{
-			completionBlock(found && result);
+			completionBlock(result);
 		});
 	});
 }
