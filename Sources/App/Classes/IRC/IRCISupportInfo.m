@@ -400,6 +400,13 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray *modeSymbolsArray = modeSymbols.characterStringBuffer;
 	NSArray *charactersArray = characters.characterStringBuffer;
 
+	/* An emoji is one entry but two units of length: the lists would differ */
+	if (modeSymbolsArray.count != modeSymbols.length ||
+		charactersArray.count != characters.length)
+	{
+		return;
+	}
+
 	self.userModeSymbols = @{
 		 @"modeSymbols" : modeSymbolsArray,
 		 @"characters" : charactersArray
