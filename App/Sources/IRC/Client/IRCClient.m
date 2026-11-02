@@ -1635,6 +1635,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 {
 	NSParameterAssert(withName != nil);
 
+	/* A server can send an empty name */
+	if (withName.length == 0) {
+		return nil;
+	}
+
 	IRCChannel *channel = [self findChannel:withName];
 
 	if (channel) {

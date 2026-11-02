@@ -75,6 +75,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Channels are found under the server's CASEMAPPING, also after it changes */
+/* A server can send JOIN with an empty name */
+- (void)testEmptyNameCreatesNoChannel
+{
+	XCTAssertNil([self.client findChannelOrCreate:@""]);
+}
+
 - (void)testLookupFollowsCaseMapping
 {
 	IRCChannel *channel = [self addChannelNamed:@"#Chan[1]" type:IRCChannelTypeChannel];
