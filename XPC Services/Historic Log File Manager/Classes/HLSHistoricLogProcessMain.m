@@ -102,6 +102,41 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 	return filename;
 }
 
+- (BOOL)_storeErrorMeansDamage:(nullable NSError *)error
+{
+	if (error == nil) {
+		return NO;
+	}
+
+	NSInteger sqliteError = 0;
+
+	if ([error.domain isEqualToString:NSSQLiteErrorDomain]) {
+		sqliteError = error.code;
+	} else {
+		sqliteError = [error.userInfo[NSSQLiteErrorDomain] integerValue];
+	}
+
+	/* SQLITE_CORRUPT, SQLITE_NOTADB */
+	if (sqliteError == 11 || sqliteError == 26) {
+		return YES;
+	}
+
+	if ([error.domain isEqualToString:NSCocoaErrorDomain]) {
+		switch (error.code) {
+			case NSFileReadCorruptFileError:
+			case NSPersistentStoreIncompatibleVersionHashError:
+			case NSMigrationMissingSourceModelError:
+			case NSMigrationMissingMappingModelError:
+			case NSInferredMappingModelError:
+			{
+				return YES;
+			}
+		}
+	}
+
+	return [self _storeErrorMeansDamage:error.userInfo[NSUnderlyingErrorKey]];
+}
+
 - (void)_setDatabasePathInDirectory:(NSString *)databaseDirectory
 {
 	NSParameterAssert(databaseDirectory != nil);
@@ -642,12 +677,13 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 		LogToConsoleError("Error Creating Persistent Store: %{public}@",
 						  addPersistentStoreError.localizedDescription);
 
-		if (recursionDepth == 0) {
+		/* A new file only when this one is damaged or can't be migrated. After anything
+		 else (a full disk, say) this session goes without saved scrollback and the
+		 next launch opens the same file again. */
+		if (recursionDepth == 0 && [self _storeErrorMeansDamage:addPersistentStoreError]) {
 			LogToConsoleInfo("Attempting to create a new persistent store");
 
-			/* If we failed to load our store, we create a brand new one at a new path
-			 incase the old one is corrupted. */
-			[self _resetDatabasePath]; // Destroy any data that may exist
+			[self _resetDatabasePath];
 
 			return [self _createBaseModelWithRecursion:1];
 		}
