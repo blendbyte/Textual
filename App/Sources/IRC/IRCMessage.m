@@ -407,7 +407,11 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 				dateObject = [TXSharedISOStandardDateFormatter() dateFromString:dateString];
 			}
 
-			if (dateObject) {
+			/* A date before 1970 or over a day ahead isn't believed:
+			 the line keeps the time it arrived */
+			NSTimeInterval seconds = dateObject.timeIntervalSince1970;
+
+			if (dateObject && seconds >= 0 && seconds <= ([NSDate timeIntervalSince1970] + 86400)) {
 				self->_receivedAt = [dateObject copy];
 
 				self->_isHistoric = YES;

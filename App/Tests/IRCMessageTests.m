@@ -42,6 +42,7 @@
 #import "IRCMessage.h"
 #import "IRCMessageBatchPrivate.h"
 #import "IRCMessagePrivate.h"
+#import "TXGlobalModels.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -178,6 +179,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue(message.isHistoric);
 	XCTAssertEqualWithAccuracy(message.receivedAt.timeIntervalSince1970, 1767323045.0, 0.001);
+
+	/* A date no calendar can show keeps the time the line arrived */
+	IRCMessage *farFuture = [self parse:@"@time=99999999999999999 :nick!user@host PRIVMSG #channel :x" onClient:client];
+
+	XCTAssertFalse(farFuture.isHistoric);
+	XCTAssertEqualWithAccuracy(farFuture.receivedAt.timeIntervalSinceNow, 0.0, 60.0);
+
+	XCTAssertNil(TXFormattedTimestamp([NSDate dateWithTimeIntervalSince1970:1.0e17], @"%H:%M"));
 }
 
 /* Messages from a playback batch must keep it when copied, or they are

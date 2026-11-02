@@ -56,6 +56,11 @@ NSString * _Nullable TXFormattedTimestamp(NSDate *date, NSString *format)
 
 	struct tm *localTime = localtime(&global);
 
+	/* The year doesn't fit */
+	if (localTime == NULL) {
+		return nil;
+	}
+
 	if (strftime(outputBuffer, (sizeof(outputBuffer) - 1), format.UTF8String, localTime) == 0) {
 		return nil;
 	}
