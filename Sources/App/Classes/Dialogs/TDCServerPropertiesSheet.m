@@ -1596,7 +1596,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	if (self.prefersSecuredConnectionCheck.state == NSControlStateValueOff) {
 		self.prefersSecuredConnectionCheck.state = NSControlStateValueOn;
 
-		[self useSSLCheckChanged:nil];
+		[self useSSLCheckChanged:self.prefersSecuredConnectionCheck];
 	}
 
 	/* ====================================== */
