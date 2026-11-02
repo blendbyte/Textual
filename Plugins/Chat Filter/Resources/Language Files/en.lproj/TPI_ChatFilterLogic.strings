@@ -36,3 +36,4 @@
  *********************************************************************** */
 
 "dct-7h" = "Message(%1$@): %2$@";
+"slw-t0" = "Chat Filter: searching a line with the filter “%1$@” took too long. If the filter hides lines, that line was hidden, and none of the filter's actions ran. Its pattern may be too slow.";

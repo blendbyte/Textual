@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TPI_ChatFilterLogic ()
 @property (nonatomic, weak) TPI_ChatFilterExtension *parentObject;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *filterActionLastPerforms;
+@property (nonatomic, strong) NSMutableSet<NSString *> *timedOutFiltersReported; // on the main queue
 @end
 
 @implementation TPI_ChatFilterLogic
@@ -65,6 +66,27 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prepareInitialState
 {
 	self.filterActionLastPerforms = [NSMutableDictionary dictionary];
+
+	self.timedOutFiltersReported = [NSMutableSet set];
+}
+
+/* Once per pattern per session: a line that disappears otherwise leaves only a
+ log entry. Editing the filter's patterns allows a new notice. */
+- (void)reportTimedOutFilter:(TPI_ChatFilter *)filter onClient:(IRCClient *)client
+{
+	NSString *filterKey = [NSString stringWithFormat:@"%@ %@ %@", filter.uniqueIdentifier, filter.filterSenderMatch, filter.filterMatch];
+
+	NSString *filterTitle = filter.filterTitle;
+
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		if ([self.timedOutFiltersReported containsObject:filterKey]) {
+			return;
+		}
+
+		[self.timedOutFiltersReported addObject:filterKey];
+
+		[client printDebugInformationToConsole:TPILocalizedString(@"TPI_ChatFilterLogic[slw-t0]", filterTitle)];
+	});
 }
 
 - (BOOL)testFilterDestination:(TPI_ChatFilter *)filter authoredBy:(IRCPrefix *)textAuthor destinedFor:(nullable IRCChannel *)textDestination onClient:(IRCClient *)client
@@ -280,6 +302,8 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Matched only because a search took too long: hide the line (if the
 			 filter hides), but don't run its command or forward a copy */
 			if (matchTimedOut) {
+				[self reportTimedOutFilter:filter onClient:client];
+
 				return (filter.filterIgnoreContent == NO);
 			}
 
@@ -366,6 +390,8 @@ NS_ASSUME_NONNULL_BEGIN
 			/* Matched only because a search took too long: hide the line (if the
 			 filter hides), but don't run its command or forward a copy */
 			if (matchTimedOut) {
+				[self reportTimedOutFilter:filter onClient:client];
+
 				return (filter.filterIgnoreContent == NO);
 			}
 
