@@ -70,6 +70,64 @@ static NSUInteger _numberOfViews = 0;
 #pragma mark -
 #pragma mark Factory
 
+/* The Inline Content Loader service refuses addresses on the local network, but the
+ view then fetches a preview itself, and that fetch can redirect anywhere. Patterns
+ can't use "|" or counts, so each range is its own rule, and addresses are spelled
+ out in full so that a name like 0.example.com isn't caught. A name that only later
+ resolves to a local address isn't caught here. */
++ (void)blockLocalNetworkLoads
+{
+	NSString *octet = @"[0-9]+\\.";
+	NSString *end = @"[0-9]+[:/]";
+
+	NSString *oneOctet = [NSString stringWithFormat:@"\\.%@%@%@", octet, octet, end];
+	NSString *twoOctets = [NSString stringWithFormat:@"\\.%@%@", octet, end];
+	NSString *threeOctets = [NSString stringWithFormat:@"\\.%@", end];
+
+	NSMutableArray *hosts = [NSMutableArray array];
+
+	for (NSString *prefix in @[@"0", @"10", @"127", @"22[4-9]", @"2[3-5][0-9]"]) {
+		[hosts addObject:[prefix stringByAppendingString:oneOctet]];
+	}
+
+	for (NSString *prefix in @[@"169\\.254", @"172\\.1[6-9]", @"172\\.2[0-9]", @"172\\.3[01]", @"192\\.168", @"198\\.1[89]",
+							   @"100\\.6[4-9]", @"100\\.[7-9][0-9]", @"100\\.1[01][0-9]", @"100\\.12[0-7]"]) {
+		[hosts addObject:[prefix stringByAppendingString:twoOctets]];
+	}
+
+	[hosts addObject:[@"192\\.0\\.0" stringByAppendingString:threeOctets]];
+
+	[hosts addObject:@"\\["]; // IPv6 addresses are never expected in a preview
+	[hosts addObject:@"[^./:]+\\.?[:/]"]; // Single-label names
+	[hosts addObject:@"[^/]*\\.local\\.?[:/]"];
+	[hosts addObject:@"[^/]*\\.localhost\\.?[:/]"];
+
+	NSMutableArray *rules = [NSMutableArray arrayWithCapacity:hosts.count];
+
+	for (NSString *host in hosts) {
+		/* A backslash is doubled in JSON */
+		NSString *hostEscaped = [host stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+
+		NSString *rule = [NSString stringWithFormat:@"{\"trigger\":{\"url-filter\":\"^https?://([^/]*@)?%@\"},\"action\":{\"type\":\"block\"}}", hostEscaped];
+
+		[rules addObject:rule];
+	}
+
+	NSString *rulesString = [NSString stringWithFormat:@"[%@]", [rules componentsJoinedByString:@","]];
+
+	[[WKContentRuleListStore defaultStore] compileContentRuleListForIdentifier:@"TextualBlockLocalNetworkLoads"
+														encodedContentRuleList:rulesString
+															 completionHandler:^(WKContentRuleList *ruleList, NSError *error) {
+		if (ruleList == nil) {
+			LogToConsoleError("Failed to compile the local network rules: %{public}@", error.localizedDescription);
+
+			return;
+		}
+
+		[_sharedUserContentController addContentRuleList:ruleList];
+	}];
+}
+
 + (void)_t_initialize
 {
 	static dispatch_once_t onceToken;
@@ -91,6 +149,8 @@ static NSUInteger _numberOfViews = 0;
 		_sharedWebViewScriptSink = [[TVCLogScriptEventSink alloc] initWithWebView:nil];
 
 		_sharedUserContentController = [WKUserContentController new];
+
+		[self blockLocalNetworkLoads];
 
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"appearance"];
 		[_sharedUserContentController addScriptMessageHandler:(id)_sharedWebViewScriptSink name:@"channelIsActive"];
