@@ -8218,16 +8218,18 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	NSArray *queuedEntries = batchMessage.queuedEntries;
 
+	/* Removed first: a closing line held inside the batch would otherwise
+	 find it still there and replay it again, without end. */
+	if (recursionDepth == 0) {
+		[self.batchMessages dequeueEntry:batchMessage];
+	}
+
 	for (id queuedEntry in queuedEntries) {
 		if ([queuedEntry isKindOfClass:[IRCMessage class]]) {
 			[self processIncomingMessage:queuedEntry];
 		} else if ([queuedEntry isKindOfClass:[IRCMessageBatchMessage class]]) {
 			[self recursivelyProcessBatchMessage:queuedEntry depth:(recursionDepth + 1)];
 		}
-	}
-
-	if (recursionDepth == 0) {
-		[self.batchMessages dequeueEntry:batchMessage];
 	}
 }
 
