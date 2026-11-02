@@ -508,7 +508,7 @@ typedef NS_ENUM(NSUInteger, TPCMigrateSandboxInstallation)
 	 It will not return nil for an extension folder that does not exist, or is empty. */
 	NSArray *oldExtensions = [TPCResourceManager _listOfExtensionsForInstallation:installation];
 
-	if (gcLocation == nil) {
+	if (oldExtensions == nil) {
 		LogToConsoleError("Cannot remove group container contents because of nil extension list");
 
 		return NO;
