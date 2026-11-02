@@ -72,9 +72,47 @@ TextualScroller.scrollPositionPreviousValue = 0; /* PUBLIC */
 TextualScroller.scrollHeightCurrentValue = 0; /* PUBLIC */
 TextualScroller.scrollHeightPreviousValue = 0; /* PUBLIC */
 
-/* How often the user scrolled away from the bottom: an automatic scroll
-planned before one of these is dropped (automatic.js) */
-_TextualScroller._userScrolledAwayCount = 0; /* PRIVATE */
+/* The last line, its place on screen and the scroll position when the view was
+last at the bottom */
+_TextualScroller._bottomAnchor = undefined; /* PRIVATE */
+_TextualScroller._bottomAnchorTop = undefined; /* PRIVATE */
+_TextualScroller._bottomScrollTop = undefined; /* PRIVATE */
+
+/* Hidden views skip this: asking for a place on screen makes them lay out */
+_TextualScroller.noteAtBottom = function() /* PRIVATE */
+{
+	var buffer = MessageBuffer.bufferElement();
+
+	var anchor = undefined;
+
+	if (buffer && !document.hidden) {
+		anchor = MessageBuffer.lastLineInBuffer(buffer);
+	}
+
+	_TextualScroller._bottomAnchor = anchor;
+	_TextualScroller._bottomAnchorTop = (anchor ? anchor.getBoundingClientRect().top : undefined);
+	_TextualScroller._bottomScrollTop = _TextualScroller._scrolledElement.scrollTop;
+};
+
+/* Whether the view was scrolled up since it was last at the bottom. It can't wait
+for the scroll event, which comes after the position changed, and it can't go by
+the distance to the bottom alone. Removing the oldest line lowers the scroll
+position but keeps the text in place (WebKit), and a preview growing moves the text
+but doesn't lower the position. Only scrolling up does both by the same amount. */
+_TextualScroller.scrolledUpSinceAtBottom = function() /* PRIVATE */
+{
+	var anchor = _TextualScroller._bottomAnchor;
+
+	if (!anchor || !anchor.isConnected || document.hidden) {
+		return false;
+	}
+
+	var textMoved = (anchor.getBoundingClientRect().top - _TextualScroller._bottomAnchorTop);
+
+	var positionLowered = (_TextualScroller._bottomScrollTop - _TextualScroller._scrolledElement.scrollTop);
+
+	return (textMoved > _TextualScroller._userScrolledMinimum && positionLowered >= (textMoved - 1));
+};
 
 /* Height of the visible area when the last scroll event came */
 _TextualScroller._clientHeightPreviousValue = undefined; /* PRIVATE */
@@ -177,8 +215,8 @@ _TextualScroller._documentScrolledCallback = function() /* PRIVATE */
 
 	TextualScroller.userScrolled = userScrolled;
 
-	if (userScrolled && scrolledUpwards) {
-		_TextualScroller._userScrolledAwayCount += 1;
+	if (userScrolled === false) {
+		_TextualScroller.noteAtBottom();
 	}
 
 	/* Post custom scroll event */
@@ -363,6 +401,8 @@ TextualScroller.scrollToBottom = function() /* PUBLIC */
 	var scrolledElement = _TextualScroller._scrolledElement;
 
 	scrolledElement.scrollToBottom();
+
+	_TextualScroller.noteAtBottom();
 };
 
 /* ************************************************** */

@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 	JSContext *context = [JSContext new];
 
 	[context evaluateScript:@"var Element = function() {}; var Node = { ELEMENT_NODE: 1 }; var Event = function(type) { this.type = type; };"
+							"var MessageBuffer = { bufferElement: function() { return null; } };"
 							"var document = { hidden: false, body: null, dispatchEvent: function() {} };"
 							"var window = { addEventListener: function() {}, removeEventListener: function() {} };"];
 
@@ -98,7 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* scroller/state.js and scroller/automatic.js over a stand-in page: a view 500
  high, timers that run when runTimers() is called, user() for a scroll by the
- user and lineArrives() for a line added at the bottom */
+ user, lineArrives() for a line added at the bottom and oldestLineRemoved() for
+ a line taken from the top, which lowers the scroll position but not the text */
 - (JSContext *)automaticScrollerContext
 {
 	JSContext *context = [JSContext new];
@@ -109,7 +111,11 @@ NS_ASSUME_NONNULL_BEGIN
 							"var view = new Element(); view.clientHeight = 500; view.scrollHeight = 2000; view._top = 1500;"
 							"Object.defineProperty(view, 'scrollTop', { get: function() { return this._top; }, set: function(v) { this._top = Math.max(0, Math.min(v, this.scrollHeight - this.clientHeight)); } });"
 							"var document = new HTMLDocument(); document.hidden = false; document.addEventListener = function() {}; document.dispatchEvent = function() {};"
-							"var window = { addEventListener: function() {} };"];
+							"var window = { addEventListener: function() {} };"
+							"var removedAbove = 0;"
+							"var MessageBuffer = { bufferElement: function() { return view; }, lastLineInBuffer: function() {"
+							"var y = (view.scrollHeight + removedAbove - 100);"
+							"return { isConnected: true, getBoundingClientRect: function() { return { top: (y - removedAbove - view._top) }; } }; } };"];
 
 	for (NSString *name in @[@"state", @"automatic"]) {
 		NSString *path = [[TPCPathInfo applicationResources] stringByAppendingPathComponent:[NSString stringWithFormat:@"JavaScript/API/private/scroller/%@.js", name]];
@@ -129,6 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[context evaluateScript:@"function scrolled() { _TextualScroller._documentScrolledCallback(); }"
 							"function user(top) { view.scrollTop = top; scrolled(); }"
 							"function lineArrives() { document.prepareForMutation(); view.scrollHeight += 100; TextualScroller.performScroll(); }"
+							"function oldestLineRemoved(height) { removedAbove += height; view.scrollHeight -= height; view._top -= height; }"
 							"function atBottom() { return (view.scrollTop === view.scrollHeight - view.clientHeight); }"
 							"scrolled();"];
 
@@ -163,6 +170,29 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertTrue([self evaluate:@"lineArrives(); user(800); runTimers(); view.scrollTop === 800" inContext:context]);
 
 	XCTAssertTrue([self evaluate:@"lineArrives(); runTimers(); view.scrollTop === 800" inContext:context]);
+}
+
+/* In a busy channel a line goes for each one that arrives, and the scroll event
+ can come with the new line not followed yet. That looks like scrolling up, but
+ the text didn't move: the view keeps following */
+- (void)testRemovingTheOldestLineKeepsFollowing
+{
+	JSContext *context = [self automaticScrollerContext];
+
+	XCTAssertTrue([self evaluate:@"lineArrives(); oldestLineRemoved(60); scrolled(); TextualScroller.userScrolled" inContext:context]);
+
+	XCTAssertTrue([self evaluate:@"runTimers(); scrolled(); atBottom() && TextualScroller.userScrolled === false" inContext:context]);
+
+	XCTAssertTrue([self evaluate:@"lineArrives(); runTimers(); atBottom()" inContext:context]);
+}
+
+/* The position changes before its scroll event comes: a planned scroll that runs
+ in between leaves it alone */
+- (void)testScrollingUpBeforeItsEventKeepsThePosition
+{
+	JSContext *context = [self automaticScrollerContext];
+
+	XCTAssertTrue([self evaluate:@"lineArrives(); view.scrollTop = 800; runTimers(); scrolled(); view.scrollTop === 800 && TextualScroller.userScrolled" inContext:context]);
 }
 
 /* A plan whose change never came doesn't pull the view down later; back at the
