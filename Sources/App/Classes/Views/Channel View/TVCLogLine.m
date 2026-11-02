@@ -89,7 +89,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return nil;
 }
 
-+ (TVCLogLine *)logLineFromXPCObject:(TVCLogLineXPC *)xpcObject
++ (nullable TVCLogLine *)logLineFromXPCObject:(TVCLogLineXPC *)xpcObject
 {
 	NSParameterAssert(xpcObject != nil);
 
@@ -100,7 +100,18 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	 attaches the unique identifier to the XPC object. We can then write it out here. */
 	/* We check if the object's unique identifier is nil before setting the database's
 	 value because the value may have already been unarchived if it is present. */
-	TVCLogLine *object = [NSKeyedUnarchiver unarchiveObjectWithData:xpcObject.data];
+	TVCLogLine *object = nil;
+
+	/* Damaged data raises or gives something else: the caller skips the line */
+	@try {
+		object = [NSKeyedUnarchiver unarchiveObjectWithData:xpcObject.data];
+	} @catch (NSException *exception) {
+		LogToConsoleError("Failed to unarchive a log line: %{public}@", exception.reason);
+	}
+
+	if ([object isKindOfClass:[TVCLogLine class]] == NO) {
+		return nil;
+	}
 
 	if (object->_uniqueIdentifier == nil) {
 		object->_uniqueIdentifier = [xpcObject.uniqueIdentifier copy];
