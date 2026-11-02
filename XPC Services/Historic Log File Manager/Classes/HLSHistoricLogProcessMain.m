@@ -737,9 +737,12 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 
 	NSError *saveError = nil;
 
+	/* Unsaved lines stay in the context for the next save to retry */
 	if ([context save:&saveError] == NO) {
 		LogToConsoleError("Failed to perform save: %{public}@",
 						  saveError.localizedDescription);
+
+		return;
 	}
 
 	[context reset];
