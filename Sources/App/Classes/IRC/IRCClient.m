@@ -8694,6 +8694,14 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			for (NSString *cap in caps) {
 				[self processPendingCapability:cap];
 			}
+
+			/* An asterisk before the list means more lines follow. Requesting
+			 on each line would run several chains and end negotiation early. */
+			if ([m paramsCount] > 3 && [[m paramAt:2] isEqualToString:@"*"]) {
+				[self postReceivedMessage:m];
+
+				return;
+			}
 		} else if ([subcommand isEqualToStringIgnoringCase:@"ACK"]) {
 			NSArray *caps = [actions componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
