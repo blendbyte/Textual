@@ -73,7 +73,6 @@ _TextualScroller._documentResizedCallback = function()
 
 _TextualScroller._performScrollTimeout = null; /* PRIVATE */
 _TextualScroller._performScrollNextPass = undefined; /* PRIVATE */
-_TextualScroller._performScrollPlannedAt = undefined; /* PRIVATE */
 
 _TextualScroller.performScrollPreflight = function() /* PRIVATE */
 {
@@ -89,18 +88,16 @@ _TextualScroller.performScrollPreflight = function() /* PRIVATE */
 	/* Are we at the bottom? */
 	_TextualScroller._performScrollNextPass =
 	TextualScroller.isScrolledToBottom();
-
-	_TextualScroller._performScrollPlannedAt = _TextualScroller._userScrolledAwayCount;
 };
 
-/* The user scrolled away from the bottom since the scroll was planned and is
-still away: while lines and previews keep arriving, a scroll planned a moment
-earlier would pull the view back down (also when the change it was planned for
-never came) */
+/* The user scrolled up since the view was last at the bottom: while lines and
+previews keep arriving, a scroll planned a moment earlier would pull the view back
+down (also when the change it was planned for never came). Only asked right before
+scrolling: asking as soon as a line is added makes the view lay out before it
+scrolls, and it reports a scroll with the new line not followed yet. */
 _TextualScroller.performScrollOutdated = function() /* PRIVATE */
 {
-	return (TextualScroller.userScrolled &&
-			_TextualScroller._performScrollPlannedAt !== _TextualScroller._userScrolledAwayCount);
+	return _TextualScroller.scrolledUpSinceAtBottom();
 };
 
 _TextualScroller.performScrollCancel = function() /* PRIVATE */
@@ -112,7 +109,6 @@ _TextualScroller.performScrollCancel = function() /* PRIVATE */
 	}
 
 	_TextualScroller._performScrollNextPass = undefined;
-	_TextualScroller._performScrollPlannedAt = undefined;
 };
 
 TextualScroller.performScroll = function() /* PUBLIC */
@@ -127,18 +123,11 @@ TextualScroller.performScroll = function() /* PUBLIC */
 		return;
 	}
 
-	if (_TextualScroller.performScrollOutdated()) {
-		_TextualScroller.performScrollCancel();
-
-		return;
-	}
-
 	var performAutomaticScroll = (function() {
 		var outdated = _TextualScroller.performScrollOutdated();
 
 		_TextualScroller._performScrollTimeout = null;
 		_TextualScroller._performScrollNextPass = undefined;
-		_TextualScroller._performScrollPlannedAt = undefined;
 
 		if (outdated) {
 			return;
