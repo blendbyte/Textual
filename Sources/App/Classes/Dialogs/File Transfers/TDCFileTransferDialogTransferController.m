@@ -234,7 +234,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)failWithNoSpaceLeftOnDevice
 {
-	[self closeWithLocalizedError:TXTLS(@"TDCFileTransferDialog[79f-s0]")];
+	[self closeWithLocalizedError:@"TDCFileTransferDialog[79f-s0]"];
 }
 
 - (void)closeWithLocalizedError:(NSString *)errorLocalization
@@ -1038,7 +1038,7 @@ NS_ASSUME_NONNULL_BEGIN
 				return;
 			}
 
-			[self closeWithLocalizedError:TXTLS(@"TDCFileTransferDialog[05g-c8]")];
+			[self closeWithLocalizedError:@"TDCFileTransferDialog[05g-c8]"];
 
 			return;
 		} // @catch
