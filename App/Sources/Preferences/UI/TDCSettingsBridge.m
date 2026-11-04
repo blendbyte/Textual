@@ -579,6 +579,7 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 			@"location" : @(location),
 			@"displayName" : displayName,
 			@"bundled" : @(location == TPCThemeStorageLocationBundle),
+			@"filename" : ([TPCThemeController buildFilename:name forStorageLocation:location] ?: @""),
 			@"selected" : @([name isEqualToString:currentName] && location == currentLocation)
 		}];
 	}];
@@ -739,6 +740,23 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	}
 
 	return [chosen componentsJoinedByString:@", "];
+}
+
++ (BOOL)styleSupportsChatDisplayNamed:(NSString *)name location:(NSInteger)location
+{
+	NSParameterAssert(name != nil);
+
+	NSString *filename = [TPCThemeController buildFilename:name forStorageLocation:location];
+
+	NSString *path = ((filename == nil) ? nil : [TPCThemeController pathOfThemeWithName:filename]);
+
+	if (path == nil) {
+		return YES;
+	}
+
+	TPCTheme *style = [[TPCTheme alloc] initWithURL:[NSURL fileURLWithPath:path] inStorageLocation:location];
+
+	return style.supportsGroupedDisplay;
 }
 
 + (BOOL)styleSupportsChatDisplay

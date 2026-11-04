@@ -60,6 +60,8 @@ enum SetupStep
 	case welcome
 	case howIRCWorks
 	case importing
+	case style
+	case look
 	case done
 }
 
@@ -78,10 +80,15 @@ final class SetupModel: ObservableObject
 	/* From Welcome: new to IRC gets the introduction */
 	private var newToIRC = true
 
+	/* Made when its step first shows: preferences are loaded and imported by then */
+	private(set) var lookModel: SetupLookModel?
+
 	let importModel: ImportModel?
 
 	/* Before anything reads settings; an import replaces them first */
 	var loadPreferences: (() -> Void)?
+
+	weak var window: NSWindow?
 
 	var finish: (() -> Void)?
 	var finishWithoutImport: (() -> Void)?
@@ -102,9 +109,9 @@ final class SetupModel: ObservableObject
 	{
 		switch path {
 			case .newInstall:
-				return (newToIRC ? [.welcome, .howIRCWorks, .done] : [.welcome, .done])
+				return (newToIRC ? [.welcome, .howIRCWorks, .style, .look, .done] : [.welcome, .style, .look, .done])
 			case .upgrade:
-				return [.welcome, .importing, .done]
+				return [.welcome, .importing, .style, .look, .done]
 			case .importOnly:
 				return [.welcome, .importing]
 		}
@@ -153,7 +160,39 @@ final class SetupModel: ObservableObject
 			loadPreferences?()
 		}
 
-		step = steps[index + 1]
+		move(to: steps[index + 1])
+	}
+
+	private func move(to newStep: SetupStep)
+	{
+		if ((newStep == .style || newStep == .look) && lookModel == nil) {
+			lookModel = SetupLookModel(upgrade: (path == .upgrade), window: window)
+		}
+
+		step = newStep
+	}
+
+	/// Use Recommended or Keep Everything: past the settings' steps
+	func skipSettings()
+	{
+		lookModel?.applyRecommended()
+
+		guard let next = steps.first(where: { $0 == .done }) else {
+			return
+		}
+
+		move(to: next)
+	}
+
+	var isSettingsStep: Bool
+	{
+		(step == .style || step == .look)
+	}
+
+	var canGoBack: Bool
+	{
+		/* An import can't be gone back into */
+		(path != .upgrade || step != .style)
 	}
 
 	func goBack()
@@ -162,7 +201,7 @@ final class SetupModel: ObservableObject
 			return
 		}
 
-		step = steps[index - 1]
+		move(to: steps[index - 1])
 	}
 }
 
@@ -297,6 +336,7 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 		window.contentView = NSHostingView(rootView: SetupRootView(model: model))
 
 		importModel?.window = window
+		model.window = window
 
 		model.finish = { [weak self] in
 			self?.finish()
@@ -441,6 +481,14 @@ struct SetupStepView: View
 				if let importModel = model.importModel {
 					SetupImportStep(model: importModel)
 				}
+			case .style:
+				if let lookModel = model.lookModel {
+					SetupStyleStep(model: lookModel)
+				}
+			case .look:
+				if let lookModel = model.lookModel {
+					SetupLookStep(model: lookModel)
+				}
 			case .done:
 				SetupDoneStep(upgrade: (model.path == .upgrade))
 		}
@@ -455,7 +503,14 @@ struct SetupFooter: View
 	var body: some View
 	{
 		HStack(spacing: 10) {
-			SetupProgressDots(steps: model.steps, step: model.step)
+			if (model.isSettingsStep) {
+				Button(SetupText((model.path == .upgrade) ? "sa-b-keepall" : "sa-b-recommended")) {
+					model.skipSettings()
+				}
+				.buttonStyle(.link)
+			} else {
+				SetupProgressDots(steps: model.steps, step: model.step)
+			}
 
 			Spacer()
 
@@ -478,16 +533,16 @@ struct SetupFooter: View
 					SetupImportButtons(setup: model, model: importModel)
 				}
 			case .done:
-				if (model.path != .upgrade) {
-					backButton
-				}
+				backButton
 
 				Button((model.path == .upgrade) ? ImportText("weu-cf") : SetupText("sa-b-finish")) {
 					model.goForward()
 				}
 				.keyboardShortcut(.defaultAction)
 			default:
-				backButton
+				if (model.canGoBack) {
+					backButton
+				}
 
 				Button(SetupText("sa-b-continue")) {
 					model.goForward()

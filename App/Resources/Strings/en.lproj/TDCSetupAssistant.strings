@@ -44,6 +44,9 @@
 "sa-b-back" = "Back";
 "sa-b-finish" = "Open Textual";
 
+"sa-b-recommended" = "Use Recommended";
+"sa-b-keepall" = "Keep Everything";
+
 "sa-w-title" = "Welcome to Textual";
 "sa-w-lead" = "A chat app for IRC, one of the internet’s oldest and most open ways to talk. A few questions and you’re in a conversation.";
 "sa-w-new-t" = "New to IRC?";
@@ -61,6 +64,34 @@
 "sa-h-ppl-d" = "Everyone picks a nickname. You can write to the whole channel, or to one person privately.";
 "sa-h-know-t" = "Good to know";
 "sa-h-know-d" = "IRC only delivers messages while you’re connected, so you won’t see what was said while you were away. Most channels are public, and messages aren’t end-to-end encrypted. People are usually friendly: lurking first is normal, and a question may take a while to get an answer.";
+
+"sa-y-title" = "Choose a style";
+"sa-y-lead" = "A style sets the colors and layout of the chat. You can switch any time in Settings › Appearance.";
+"sa-y-lead-u" = "Textual 8 comes with Lumen, a new style we’d suggest trying. Yours stays unless you pick another, and you can switch any time in Settings › Appearance.";
+"sa-y-rec" = "Recommended";
+"sa-y-yours" = "Yours";
+
+"sa-l-title" = "How messages appear";
+"sa-l-lead" = "How the chat reads, and how this window and Textual look. Fonts are in Settings › Appearance.";
+"sa-l-chat" = "Chat";
+"sa-l-chat-d" = "Names sit above the messages, like most chat apps today.";
+"sa-l-classic" = "Classic";
+"sa-l-classic-d" = "A time and name on every line. Fits more on screen.";
+"sa-l-classic-only" = "This style only has the Classic display: a name on every line.";
+"sa-l-ap-t" = "Appearance";
+"sa-l-ap-d" = "Like the Mac follows your Mac, switching at night if it’s set to.";
+"sa-l-size-t" = "Text size";
+"sa-l-size-d" = "The size of messages in the chat.";
+"sa-l-s12" = "Small";
+"sa-l-s13" = "Standard";
+"sa-l-s15" = "Large";
+"sa-l-s17" = "Larger";
+"sa-l-sother" = "%ld points";
+"sa-l-sp-t" = "Message spacing";
+"sa-l-sp-d" = "How close the lines sit. Compact fits more, Roomy is easier to read.";
+"sa-l-sp0" = "Compact";
+"sa-l-sp1" = "Standard";
+"sa-l-sp2" = "Roomy";
 
 "sa-d-title" = "You’re all set";
 "sa-d-lead" = "Add a server whenever you’re ready. All of this can be changed in Settings.";

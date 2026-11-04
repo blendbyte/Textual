@@ -101,9 +101,12 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class, readonly, nullable) NSAppearance *mainWindowAppearance;
 
 /* Appearance: the styles, as dictionaries with "name", "location"
- (TPCThemeStorageLocation), "displayName", "bundled" and "selected" */
+ (TPCThemeStorageLocation), "displayName", "bundled", "filename" and "selected" */
 @property (class, readonly, copy) NSArray<NSDictionary<NSString *, id> *> *styles;
 + (void)selectStyleNamed:(NSString *)name location:(NSInteger)location;
+
+/* Before the main window: the current style's own property isn't loaded yet */
++ (BOOL)styleSupportsChatDisplayNamed:(NSString *)name location:(NSInteger)location;
 
 /* A picture of the style: the bundled ones' from the app, a style of one's own
  from the chat the last time it was used (nil before) */

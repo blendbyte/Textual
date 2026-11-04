@@ -145,6 +145,7 @@
 		1ABBCF3DF17D4D66F9492FE7 /* TDCAddBouncerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EA62D84ABAA047A6F65E32 /* TDCAddBouncerSheet.swift */; };
 		E8A3EF3127FB006EDD9868D9 /* TDCSetupAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4C8D4A0EDF5B81B225A11D /* TDCSetupAssistant.swift */; };
 		A2167628279F96B7C6E36AB4 /* TDCSetupImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6B231480555CFAA3949243 /* TDCSetupImport.swift */; };
+		C3013843133A009408E99F21 /* TDCSetupSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC7D96D04DD13CDBF8F5276 /* TDCSetupSettings.swift */; };
 		6A68928D099CAFE3F857B5A0 /* TDCEditBouncerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7FD94DEEBEE567D1A7B8A7 /* TDCEditBouncerSheet.swift */; };
 		4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */; };
 		92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */ = {isa = PBXBuildFile; fileRef = D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */; };
@@ -1259,6 +1260,7 @@
 		C8EA62D84ABAA047A6F65E32 /* TDCAddBouncerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCAddBouncerSheet.swift; sourceTree = "<group>"; };
 		1D4C8D4A0EDF5B81B225A11D /* TDCSetupAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSetupAssistant.swift; sourceTree = "<group>"; };
 		FF6B231480555CFAA3949243 /* TDCSetupImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSetupImport.swift; sourceTree = "<group>"; };
+		8CC7D96D04DD13CDBF8F5276 /* TDCSetupSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSetupSettings.swift; sourceTree = "<group>"; };
 		4C1D8D9B816DB0C9B206A0C8 /* TDCSetupAssistantPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCSetupAssistantPrivate.h; sourceTree = "<group>"; };
 		DC7FD94DEEBEE567D1A7B8A7 /* TDCEditBouncerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCEditBouncerSheet.swift; sourceTree = "<group>"; };
 		B086BE77030A91B52B053E7F /* TDCEditBouncerSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCEditBouncerSheetPrivate.h; sourceTree = "<group>"; };
@@ -1868,6 +1870,7 @@
 			children = (
 				1D4C8D4A0EDF5B81B225A11D /* TDCSetupAssistant.swift */,
 				FF6B231480555CFAA3949243 /* TDCSetupImport.swift */,
+				8CC7D96D04DD13CDBF8F5276 /* TDCSetupSettings.swift */,
 				4C1D8D9B816DB0C9B206A0C8 /* TDCSetupAssistantPrivate.h */,
 			);
 			path = "Setup Assistant";
@@ -3715,6 +3718,7 @@
 				1ABBCF3DF17D4D66F9492FE7 /* TDCAddBouncerSheet.swift in Sources */,
 				E8A3EF3127FB006EDD9868D9 /* TDCSetupAssistant.swift in Sources */,
 				A2167628279F96B7C6E36AB4 /* TDCSetupImport.swift in Sources */,
+				C3013843133A009408E99F21 /* TDCSetupSettings.swift in Sources */,
 				6A68928D099CAFE3F857B5A0 /* TDCEditBouncerSheet.swift in Sources */,
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
