@@ -36,6 +36,8 @@
 
 #import "TLOLocalization.h"
 
+@class IRCBouncerAccount, IRCBouncerNetwork, IRCClientConfig;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /* A picture of a style of one's own was taken */
@@ -48,6 +50,16 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class, readonly) BOOL updatesAvailable;
 @property (class) NSInteger updateMode;
 + (void)betaUpdatesChanged;
+
+/* Servers chosen in the setup window, created once the main window exists */
++ (void)addServerWithConfig:(IRCClientConfig *)config browsesChannels:(BOOL)browsesChannels selects:(BOOL)selects;
++ (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks connect:(BOOL)connect;
+
+/* The servers in the saved settings, before there is a world: name, channels (a count), nickname */
++ (NSArray<NSDictionary<NSString *, id> *> *)savedServerSummaries;
+
+/* "No bouncer yet?" (not in the App Store build) */
++ (nullable NSURL *)bouncerHostingOfferURL;
 
 /* Notifications: 0 macOS hasn't asked yet, 1 not allowed, 2 allowed */
 + (void)notificationPermissionWithCompletionHandler:(void (^)(NSInteger permission))completionHandler;

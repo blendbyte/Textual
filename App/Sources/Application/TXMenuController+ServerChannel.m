@@ -76,7 +76,6 @@
 #import "IRCBouncerAccountPrivate.h"
 #import "IRCClientConfigPrivate.h"
 #import "IRCServerPrivate.h"
-#import "TDCWelcomeSheetPrivate.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesImportExport.h"
 #import "TPCPreferencesLocalPrivate.h"

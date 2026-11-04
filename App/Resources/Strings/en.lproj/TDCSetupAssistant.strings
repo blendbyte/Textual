@@ -174,6 +174,106 @@
 "sa-n-b-allow" = "Allow Notifications…";
 "sa-n-b-later" = "Not Now";
 
+"sa-si-title" = "What are you into?";
+"sa-si-lead" = "IRC is made of many separate communities. Tell us what you’d like to talk about, and we’ll suggest a few good places to start.";
+"sa-si-more" = "More…";
+"sa-si-less" = "Show Fewer";
+"sa-si-count" = "%ld networks";
+"sa-si-count-1" = "%ld network";
+"sa-si-lang-t" = "Language";
+"sa-si-lang-d" = "Channels usually stick to one language. This starts on your Mac’s.";
+"sa-si-lang-any" = "Any language";
+
+"sa-sg-title" = "Good places to start";
+"sa-sg-lead" = "These are encrypted and fit what you picked. One is plenty: you can always add others later.";
+"sa-sg-other" = "Nothing for %@ in %@ yet, so here are the ones in other languages.";
+"sa-sg-none-t" = "Nothing fits yet";
+"sa-sg-none-d" = "Try another interest, or look through all networks.";
+
+"sa-sl-title" = "Choose your networks";
+"sa-sl-lead" = "Every network IRC Atlas lists. Search, filter, or paste an address you already have.";
+"sa-sl-title-a" = "Add another network";
+"sa-sl-lead-a" = "Every network IRC Atlas lists. Your imported servers are safe.";
+"sa-sl-search" = "Search, or paste an address or irc:// link";
+"sa-sl-anytag" = "Any topic";
+"sa-sl-largest" = "Largest first";
+"sa-sl-az" = "A to Z";
+"sa-sl-nothing" = "Nothing by that name. Paste a server address to use it directly.";
+"sa-sl-typed" = "Connect to %@";
+"sa-sl-typed-d" = "Textual tests the address and whether it’s encrypted.";
+"sa-sl-secure" = "Encrypted";
+"sa-sl-plain" = "Not encrypted";
+"sa-sl-cert" = "Certificate problem";
+
+"sa-sa-from" = "Network data from";
+"sa-sa-all" = "Show All Networks";
+"sa-sa-help" = "Help Me Choose";
+"sa-sa-bouncer" = "I Use a Bouncer…";
+
+"sa-sp-none-t" = "Pick a network";
+"sa-sp-none-d" = "Click one to read about it. You can pick more than one.";
+"sa-sp-size" = "Size:";
+"sa-sp-size-u" = "not known.";
+"sa-sp-size-1" = "about %@ people on average.";
+"sa-sp-size-2" = "about %@ people on average, in %@ channels.";
+"sa-sp-lang" = "Mostly in:";
+"sa-sp-conn" = "Connection:";
+"sa-sp-conn-s" = "encrypted, so others on your network can’t read along.";
+"sa-sp-conn-c" = "encrypted, but its certificate doesn’t check out, so Textual can’t be sure it’s really this network.";
+"sa-sp-conn-p" = "not encrypted. Passwords and messages travel readable.";
+"sa-sp-acct" = "Account login:";
+"sa-sp-acct-y" = "supported.";
+"sa-sp-acct-n" = "not offered this way.";
+"sa-sp-web" = "Visit Website";
+
+"sa-sw-plain-t" = "%@ isn’t encrypted";
+"sa-sw-plain-d" = "Your passwords and messages travel readable, so anyone between you and the network can see them. Avoid using a password you use elsewhere.";
+"sa-sw-cert-t" = "%@’s certificate doesn’t check out";
+"sa-sw-cert-d" = "The connection is encrypted, but Textual can’t confirm it’s really this network. Someone could be listening in.";
+"sa-sw-no" = "Don’t Use";
+"sa-sw-yes" = "Use Anyway";
+
+"sa-sy-title" = "What should people call you?";
+"sa-sy-lead" = "Your nickname is how you appear in every channel. You can change it any time.";
+"sa-sy-nick-t" = "Nickname";
+"sa-sy-nick-d" = "Letters, numbers and a few symbols, no spaces.";
+"sa-sy-real-t" = "Real name";
+"sa-sy-real-d" = "Optional, and public. Most people leave it empty.";
+"sa-sy-real-p" = "Optional";
+"sa-sy-acct-t" = "I have an account on %@";
+"sa-sy-acct-d" = "Only if you’ve registered your name there.";
+"sa-sy-acct-n" = "Account";
+"sa-sy-acct-p" = "Password";
+"sa-sy-need-t" = "Do I need an account?";
+"sa-sy-need-d1" = "No. You can chat right away. Nicknames aren’t reserved until someone registers them, so yours may be taken, and Textual will try another.";
+"sa-sy-need-d2" = "An account keeps your name yours, and some channels ask for one to keep out spam.";
+"sa-sy-create" = "Create an account on %@";
+"sa-sy-later" = "You can register later, once you’re connected.";
+"sa-sy-start" = "Starting in";
+"sa-sy-browse" = "you’ll get the channel list after connecting, to browse what’s there.";
+
+"sa-sc-title" = "Checking your connections";
+"sa-sc-lead" = "Textual makes sure each one answers before you finish, so you don’t land on a dead address.";
+"sa-sc-checking" = "Checking…";
+"sa-sc-ok" = "Answered, encrypted";
+"sa-sc-plain" = "Answered, not encrypted";
+"sa-sc-cert" = "Answered, but its certificate doesn’t check out";
+"sa-sc-none" = "No answer. It may be down, or the address may be wrong.";
+"sa-sc-anyway" = "Add Anyway";
+
+"sa-sv-title" = "Your servers";
+"sa-sv-lead" = "These came over with their channels and passwords. They connect the way they did in Textual 7.";
+"sa-sv-add" = "Add Another Network…";
+"sa-sv-now" = "Added now";
+"sa-sv-line-1" = "%@ · 1 channel";
+"sa-sv-line" = "%@ · %ld channels";
+
+"sa-b-skip" = "Skip for Now";
+"sa-b-doneadding" = "Done Adding";
+"sa-b-chat" = "Start Chatting";
+
+"sa-d-lead-c" = "Textual connects to %@. Say hello, or just watch for a while.";
+
 "sa-d-title" = "You’re all set";
 "sa-d-lead" = "Add a server whenever you’re ready. All of this can be changed in Settings.";
 "sa-d-lead-u" = "Everything’s where you left it. All of this can be changed in Settings.";

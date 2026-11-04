@@ -486,6 +486,7 @@ final class AddBouncerFitsSheetView: NSView
 	static let maximumHeight: CGFloat = 720
 
 	private var observedView: NSView?
+	private var observedScrollView: NSView?
 
 	override func viewDidMoveToWindow()
 	{
@@ -504,6 +505,13 @@ final class AddBouncerFitsSheetView: NSView
 
 		NotificationCenter.default.addObserver(self, selector: #selector(documentFrameChanged(_:)), name: NSView.frameDidChangeNotification, object: documentView)
 
+		/* The form lays out again at a new size, and the buttons' share can differ then */
+		enclosingScrollView?.postsFrameChangedNotifications = true
+
+		NotificationCenter.default.addObserver(self, selector: #selector(documentFrameChanged(_:)), name: NSView.frameDidChangeNotification, object: enclosingScrollView)
+
+		observedScrollView = enclosingScrollView
+
 		fitSheet()
 	}
 
@@ -516,6 +524,12 @@ final class AddBouncerFitsSheetView: NSView
 		NotificationCenter.default.removeObserver(self, name: NSView.frameDidChangeNotification, object: observedView)
 
 		self.observedView = nil
+
+		if let observedScrollView = observedScrollView {
+			NotificationCenter.default.removeObserver(self, name: NSView.frameDidChangeNotification, object: observedScrollView)
+
+			self.observedScrollView = nil
+		}
 	}
 
 	@objc private func documentFrameChanged(_ notification: Notification)
@@ -553,13 +567,14 @@ final class AddBouncerFitsSheetView: NSView
 			return
 		}
 
-		/* Grows downwards, where a sheet hangs from the title bar (macOS centres the newer ones itself) */
+		/* Grows downwards, where a sheet hangs from the title bar (macOS centres the newer ones itself).
+		 Not animated: while the sheet is on its way in, that takes the parent window along. */
 		var frame = window.frame
 
 		frame.origin.y -= change
 		frame.size.height += change
 
-		window.setFrame(frame, display: true, animate: window.isVisible)
+		window.setFrame(frame, display: true, animate: false)
 	}
 
 	deinit

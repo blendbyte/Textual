@@ -171,6 +171,12 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Registration is complete: capability negotiation no longer ends it */
 	[self.capabilityNegotiator registrationCompleted];
 
+	if (self.showsChannelListOnceConnected) {
+		self.showsChannelListOnceConnected = NO;
+
+		[self showChannelList];
+	}
+
 	self.supportInfo.serverAddress = m.senderHostmask;
 
 	self.invokingISONCommandForFirstTime = YES;

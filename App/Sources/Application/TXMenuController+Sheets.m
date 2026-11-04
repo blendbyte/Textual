@@ -74,7 +74,7 @@
 #import "TDCSettingsWindowControllerPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
-#import "TDCWelcomeSheetPrivate.h"
+#import "TDCSetupAssistantPrivate.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesImportExport.h"
 #import "TPCPreferencesLocalPrivate.h"
@@ -257,27 +257,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[windowController() popMainWindowSheetIfExists];
 
-	TDCWelcomeSheet *sheet =
-	[[TDCWelcomeSheet alloc] initWithWindow:TVCMainWindow.currentWindow];
-
-	sheet.delegate = (id)self;
-
-	[sheet start];
-
-	[windowController() addWindowToWindowList:sheet];
-}
-
-- (void)welcomeSheet:(TDCWelcomeSheet *)sender onOk:(IRCClientConfig *)config
-{
-	IRCClient *u = [worldController() createClientWithConfig:config reload:YES];
-
-	[mainWindow() expandClient:u];
-
-	[worldController() save];
-
-	[u connect];
-
-	[u selectFirstChannelInChannelList];
+	[TDCSetupAssistant addServersFromEmptyState];
 }
 
 #pragma mark -

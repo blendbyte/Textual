@@ -75,7 +75,6 @@
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
-#import "TDCWelcomeSheetPrivate.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesImportExport.h"
 #import "TPCPreferencesLocalPrivate.h"

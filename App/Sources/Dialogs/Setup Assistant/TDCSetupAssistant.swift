@@ -36,6 +36,7 @@
 
 
 import AppKit
+import Combine
 import SwiftUI
 
 /* The window that sets Textual up at first launch: one window before the main
@@ -65,6 +66,11 @@ enum SetupStep
 	case chat
 	case privacy
 	case notifications
+	case interests
+	case suggestions
+	case networks
+	case yourName
+	case importedServers
 	case done
 }
 
@@ -73,6 +79,7 @@ enum SetupPath
 	case newInstall
 	case upgrade // Textual 7 or an earlier version was found
 	case importOnly // File > Import Settings from Textual 7…
+	case serversOnly // no servers yet, from the main window
 }
 
 final class SetupModel: ObservableObject
@@ -84,6 +91,23 @@ final class SetupModel: ObservableObject
 	private var newToIRC = true
 
 	let notifications = NotificationPermission()
+
+	/* Made when the question of where to chat comes near; preferences are loaded by then */
+	private(set) var serversModel: SetupServersModel?
+	private var serversObserver: AnyCancellable?
+
+	/* Newcomers get an interest and suggestions, others the whole list */
+	@Published private var helpsChoose = true
+
+	/* After an import: the whole list, going back to Your servers */
+	@Published private(set) var isAddingToImported = false
+
+	@Published var connectionCheck: SetupConnectionCheck?
+
+	/* The window closed early creates nothing: nobody confirmed a name or a check */
+	private(set) var reachedEnd = false
+
+	private(set) var importedServers: [String] = []
 
 	/* Made when its step first shows: preferences are loaded and imported by then */
 	private(set) var lookModel: SetupLookModel?
@@ -109,17 +133,71 @@ final class SetupModel: ObservableObject
 	{
 		self.path = path
 		self.importModel = importModel
+
+		if (path == .serversOnly) {
+			helpsChoose = false
+
+			prepareServers()
+
+			serversModel?.isNewcomer = false
+
+			step = .networks
+
+			AtlasFeedStore.shared.refreshIfDue()
+		}
+	}
+
+	private func prepareServers()
+	{
+		guard serversModel == nil else {
+			return
+		}
+
+		let model = SetupServersModel()
+
+		serversModel = model
+
+		/* Which steps are left depends on what's picked */
+		serversObserver = model.objectWillChange.sink { [weak self] in
+			self?.objectWillChange.send()
+		}
+
+		if (path == .upgrade) {
+			let saved = TDCSettingsBridge.savedServerSummaries()
+
+			importedServers = saved.map { (server) in
+				let name = ((server["name"] as? String) ?? "")
+				let channels = ((server["channels"] as? Int) ?? 0)
+
+				return ((channels == 1) ? SetupText("sa-sv-line-1", name) : SetupText("sa-sv-line", name, channels))
+			}
+
+			if let nickname = saved.first?["nickname"] as? String, nickname.isEmpty == false {
+				model.nickname = nickname
+			}
+
+			model.isNewcomer = false
+		}
 	}
 
 	private static let settingsSteps: [SetupStep] = [.style, .look, .chat, .privacy]
+
+	private var choosingSteps: [SetupStep]
+	{
+		let hasPicked = (serversModel?.picked.isEmpty == false)
+
+		return ((helpsChoose ? [.interests, .suggestions] : [.networks]) + (hasPicked ? [.yourName] : []))
+	}
 
 	var steps: [SetupStep]
 	{
 		switch path {
 			case .newInstall:
-				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.notifications, .done])
+				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.notifications] + choosingSteps + [.done])
 			case .upgrade:
-				return ([.welcome, .importing] + Self.settingsSteps + [.notifications, .done])
+				return ([.welcome, .importing] + Self.settingsSteps + [.notifications, .importedServers] + (isAddingToImported ? [.networks] : []) + [.done])
+			case .serversOnly:
+				return choosingSteps
 			case .importOnly:
 				return [.welcome, .importing]
 		}
@@ -128,6 +206,8 @@ final class SetupModel: ObservableObject
 	func start(newToIRC: Bool)
 	{
 		self.newToIRC = newToIRC
+
+		helpsChoose = newToIRC
 
 		goForward()
 	}
@@ -158,7 +238,49 @@ final class SetupModel: ObservableObject
 
 	func goForward()
 	{
+		/* An address typed and not yet added is what Continue means */
+		if (step == .networks), let servers = serversModel, let typed = servers.typedServer {
+			servers.addTyped(typed)
+		}
+
+		/* Everything picked answers first, or says why not */
+		if (step == .yourName || (step == .networks && isAddingToImported)), let servers = serversModel, servers.picked.isEmpty == false {
+			connectionCheck = SetupConnectionCheck(servers: servers.picked)
+
+			return
+		}
+
+		goForwardWithoutChecking()
+	}
+
+	func finishCheck(goingOn: Bool)
+	{
+		if (goingOn), let check = connectionCheck {
+			for replacement in check.replacements {
+				serversModel?.replace(replacement.id, with: replacement.server)
+			}
+		}
+
+		connectionCheck = nil
+
+		if (goingOn) {
+			goForwardWithoutChecking()
+		}
+	}
+
+	private func goForwardWithoutChecking()
+	{
+		if (step == .networks && isAddingToImported) {
+			isAddingToImported = false
+
+			move(to: .importedServers)
+
+			return
+		}
+
 		guard let index = steps.firstIndex(of: step), index < (steps.count - 1) else {
+			reachedEnd = true
+
 			finish?()
 
 			return
@@ -178,7 +300,110 @@ final class SetupModel: ObservableObject
 			choicesModel = SetupChoicesModel(upgrade: (path == .upgrade))
 		}
 
+		if (newStep == .notifications || newStep == .interests || newStep == .networks) {
+			prepareServers()
+		}
+
+		if (newStep == .interests || newStep == .networks) {
+			AtlasFeedStore.shared.refreshIfDue()
+		}
+
+		if (newStep == .suggestions) {
+			serversModel?.enterSuggestions()
+		}
+
 		step = newStep
+	}
+
+	// MARK: Choosing where to chat
+
+	func showAllNetworks()
+	{
+		helpsChoose = false
+
+		serversModel?.isNewcomer = false
+
+		move(to: .networks)
+	}
+
+	func showInterests()
+	{
+		helpsChoose = true
+
+		serversModel?.isNewcomer = true
+
+		move(to: .interests)
+	}
+
+	func addToImported()
+	{
+		isAddingToImported = true
+
+		move(to: .networks)
+	}
+
+	func openBouncerSheet()
+	{
+		guard let window = window, let servers = serversModel else {
+			return
+		}
+
+		/* Nothing exists to link yet, and it's all created after setup */
+		let sheet = AddBouncerSheet(existingClient: { (_, _) in nil }, add: { [weak self] (account, networks, _, connect) in
+			servers.addBouncer(SetupPendingBouncer(account: account, networks: networks, connect: connect))
+
+			self?.bouncerAdded()
+		}, addAsServer: { (address, port, secured) in
+			servers.addTyped(SetupServer(host: address, port: port, tls: secured))
+		})
+
+		sheet.hostingOfferURL = TDCSettingsBridge.bouncerHostingOfferURL()
+
+		sheet.begin(in: window)
+	}
+
+	private func bouncerAdded()
+	{
+		if (path == .upgrade) {
+			isAddingToImported = false
+
+			move(to: .importedServers)
+		} else if (serversModel?.picked.isEmpty == false) {
+			move(to: .yourName)
+		} else if (path == .serversOnly) {
+			reachedEnd = true
+
+			finish?()
+		} else {
+			move(to: .done)
+		}
+	}
+
+	var primaryTitle: String
+	{
+		switch step {
+			case .networks where isAddingToImported:
+				return SetupText("sa-b-doneadding")
+			case .networks, .suggestions:
+				return ((serversModel?.picked.isEmpty == false || serversModel?.typedServer != nil) ? SetupText("sa-b-continue") : SetupText("sa-b-skip"))
+			default:
+				return SetupText("sa-b-continue")
+		}
+	}
+
+	var primaryIsEnabled: Bool
+	{
+		(step != .yourName || serversModel?.nicknameIsValid == true)
+	}
+
+	/// Who setup connects to, for Done
+	var connectingTo: [String]
+	{
+		guard let servers = serversModel else {
+			return []
+		}
+
+		return (servers.picked.map(\.name) + servers.bouncers.map(\.account.serverAddress))
 	}
 
 	/// Use Recommended or Keep Everything: past the settings' steps
@@ -197,8 +422,8 @@ final class SetupModel: ObservableObject
 
 	var canGoBack: Bool
 	{
-		/* An import can't be gone back into */
-		(path != .upgrade || step != .style)
+		/* An import can't be gone back into, nor can Your servers' list be left that way */
+		((path != .upgrade || step != .style) && (step != .networks || isAddingToImported == false) && steps.first != step)
 	}
 
 	func goBack()
@@ -265,6 +490,25 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 			loadPreferencesOnce()
 
 			completion()
+
+			assistant.createChosenServers()
+		}
+	}
+
+	/// No servers yet: the same choosing, from the main window
+	@objc static func addServersFromEmptyState()
+	{
+		let assistant = SetupAssistant(path: .serversOnly, importModel: nil)
+
+		assistant.runModal()
+
+		assistant.createChosenServers()
+	}
+
+	private func createChosenServers()
+	{
+		if (model.reachedEnd) {
+			model.serversModel?.createEverything()
 		}
 	}
 
@@ -368,9 +612,22 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 		quitItem?.target = self
 
+		/* Paste too: its target is the menu controller, which pastes into the chat.
+		 Without one it goes to whichever field has the keyboard. */
+		let pasteItems = (NSApp.mainMenu?.items ?? [])
+			.compactMap(\.submenu)
+			.flatMap(\.items)
+			.filter { $0.action == #selector(NSText.paste(_:)) }
+
+		let pasteItemTargets = pasteItems.map(\.target)
+
+		pasteItems.forEach { $0.target = nil }
+
 		NSApp.runModal(for: window)
 
 		quitItem?.target = quitItemTarget
+
+		zip(pasteItems, pasteItemTargets).forEach { $0.target = $1 }
 
 		window.orderOut(nil)
 	}
@@ -464,6 +721,13 @@ struct SetupRootView: View
 			SetupFooter(model: model)
 		}
 		.frame(width: Self.size.width, height: Self.size.height)
+		.sheet(item: $model.connectionCheck) { (check) in
+			SetupConnectionCheckSheet(check: check) {
+				model.finishCheck(goingOn: false)
+			} goOn: {
+				model.finishCheck(goingOn: true)
+			}
+		}
 		.animation((reduceMotion ? nil : .easeInOut(duration: 0.18)), value: model.stepIdentity)
 	}
 }
@@ -505,8 +769,28 @@ struct SetupStepView: View
 				}
 			case .notifications:
 				SetupNotificationsStep(permission: model.notifications, upgrade: (model.path == .upgrade))
+			case .interests:
+				if let servers = model.serversModel {
+					SetupInterestsStep(setup: model, model: servers)
+				}
+			case .suggestions:
+				if let servers = model.serversModel {
+					SetupSuggestionsStep(setup: model, model: servers)
+				}
+			case .networks:
+				if let servers = model.serversModel {
+					SetupNetworksStep(setup: model, model: servers)
+				}
+			case .yourName:
+				if let servers = model.serversModel {
+					SetupYourNameStep(model: servers)
+				}
+			case .importedServers:
+				if let servers = model.serversModel {
+					SetupImportedServersStep(setup: model, model: servers, imported: model.importedServers)
+				}
 			case .done:
-				SetupDoneStep(upgrade: (model.path == .upgrade))
+				SetupDoneStep(upgrade: (model.path == .upgrade), connectingTo: model.connectingTo)
 		}
 	}
 }
@@ -555,7 +839,7 @@ struct SetupFooter: View
 			case .done:
 				backButton
 
-				Button((model.path == .upgrade) ? ImportText("weu-cf") : SetupText("sa-b-finish")) {
+				Button(model.connectingTo.isEmpty ? ((model.path == .upgrade) ? ImportText("weu-cf") : SetupText("sa-b-finish")) : SetupText("sa-b-chat")) {
 					model.goForward()
 				}
 				.keyboardShortcut(.defaultAction)
@@ -564,10 +848,11 @@ struct SetupFooter: View
 					backButton
 				}
 
-				Button(SetupText("sa-b-continue")) {
+				Button(model.primaryTitle) {
 					model.goForward()
 				}
 				.keyboardShortcut(.defaultAction)
+				.disabled(model.primaryIsEnabled == false)
 		}
 	}
 
@@ -592,6 +877,8 @@ struct SetupFooter: View
 				if let importModel = model.importModel {
 					SetupImportStartButton(setup: model, model: importModel)
 				}
+			case .serversOnly:
+				EmptyView()
 			case .importOnly:
 				Button(ImportText("qso-2g")) {
 					model.finishWithoutImport?()
@@ -812,10 +1099,11 @@ struct SetupConceptCard: View
 struct SetupDoneStep: View
 {
 	let upgrade: Bool
+	let connectingTo: [String]
 
 	var body: some View
 	{
-		SetupHeader(title: SetupText("sa-d-title"), lead: (upgrade ? SetupText("sa-d-lead-u") : SetupText("sa-d-lead"))) {
+		SetupHeader(title: SetupText("sa-d-title"), lead: (connectingTo.isEmpty ? (upgrade ? SetupText("sa-d-lead-u") : SetupText("sa-d-lead")) : SetupText("sa-d-lead-c", ListFormatter.localizedString(byJoining: connectingTo)))) {
 			SetupSymbol(symbol: "checkmark", color: .green)
 		}
 	}

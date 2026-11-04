@@ -62,6 +62,8 @@ enum : unsigned long long {
 TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 @interface IRCClient ()
+/* Once, after the next registration: added with nowhere to go yet */
+@property (nonatomic, assign) BOOL showsChannelListOnceConnected;
 @property (nonatomic, copy, nullable) dispatch_block_t disconnectCallback;
 @property (nonatomic, assign, readwrite) IRCClientConnectMode connectType;
 @property (nonatomic, assign, readwrite) IRCClientDisconnectMode disconnectType;

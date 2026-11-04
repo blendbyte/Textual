@@ -922,17 +922,9 @@ struct ServerPage: View
 						HStack(spacing: 6) {
 							TextField(ServerPropertiesText("spp-srv-addr"), text: pane.addressBinding, prompt: Text(verbatim: "irc.example.com"))
 
-							Menu {
-								ForEach(pane.networkList.listOfNetworks, id: \.networkName) { (network) in
-									Button(network.networkName) {
-										pane.chooseNetwork(network)
-									}
-								}
-							} label: {
-								Text(ServerPropertiesText("spp-srv-networks"))
+							ServerNetworkPicker(networks: pane.networkList.listOfNetworks) { (network) in
+								pane.chooseNetwork(network)
 							}
-							.menuStyle(.borderlessButton)
-							.fixedSize()
 						}
 					}
 
@@ -1353,5 +1345,77 @@ struct FallbackServerFields: View
 			}
 		}
 		.padding(.leading, 20)
+	}
+}
+
+// MARK: - Choosing a network
+
+/// The networks IRC Atlas lists, too many for a menu: searched by name or address
+struct ServerNetworkPicker: View
+{
+	let networks: [IRCNetwork]
+	let choose: (IRCNetwork) -> Void
+
+	@State private var isShown = false
+	@State private var search = ""
+
+	private var matching: [IRCNetwork]
+	{
+		let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
+
+		guard query.isEmpty == false else {
+			return networks
+		}
+
+		return networks.filter { ($0.networkName.localizedCaseInsensitiveContains(query) || $0.serverAddress.localizedCaseInsensitiveContains(query)) }
+	}
+
+	var body: some View
+	{
+		Button {
+			search = ""
+
+			isShown = true
+		} label: {
+			HStack(spacing: 3) {
+				Text(ServerPropertiesText("spp-srv-networks"))
+
+				Image(systemName: "chevron.down")
+					.font(.caption2)
+					.accessibilityHidden(true)
+			}
+		}
+		.buttonStyle(.borderless)
+		.fixedSize()
+		.popover(isPresented: $isShown, arrowEdge: .bottom) {
+			VStack(spacing: 6) {
+				TextField(ServerPropertiesText("spp-srv-netsearch"), text: $search)
+					.textFieldStyle(.roundedBorder)
+					.multilineTextAlignment(.leading)
+
+				List(matching, id: \.networkName) { (network) in
+					Button {
+						isShown = false
+
+						choose(network)
+					} label: {
+						HStack {
+							Text(verbatim: network.networkName)
+
+							Spacer()
+
+							Text(verbatim: network.serverAddress)
+								.font(.caption)
+								.foregroundStyle(.secondary)
+						}
+						.contentShape(Rectangle())
+					}
+					.buttonStyle(.plain)
+				}
+				.listStyle(.plain)
+			}
+			.padding(8)
+			.frame(width: 340, height: 300)
+		}
 	}
 }

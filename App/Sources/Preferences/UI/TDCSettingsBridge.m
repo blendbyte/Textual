@@ -64,6 +64,10 @@
 #import "IRCClientPrivate.h"
 #import "IRCWorld.h"
 #import "TLONotificationControllerPrivate.h"
+#import "IRCClientConfig.h"
+#import "IRCWorldPrivate.h"
+#import "IRCBouncerAccountPrivate.h"
+#import "TXWebsiteLinks.h"
 #import "TLOSoundPlayer.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TPCPathInfoPrivate.h"
@@ -146,6 +150,75 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 
 	updater.automaticallyChecksForUpdates = (updateMode != 2);
 	updater.automaticallyDownloadsUpdates = (updateMode == 0);
+#endif
+}
+
++ (void)addServerWithConfig:(IRCClientConfig *)config browsesChannels:(BOOL)browsesChannels selects:(BOOL)selects
+{
+	NSParameterAssert(config != nil);
+
+	IRCClient *client = [worldController() createClientWithConfig:config reload:YES];
+
+	client.showsChannelListOnceConnected = browsesChannels;
+
+	[mainWindow() expandClient:client];
+
+	[worldController() save];
+
+	[client connect];
+
+	if (selects == NO) {
+		return;
+	}
+
+	if (config.channelList.count > 0) {
+		[client selectFirstChannelInChannelList];
+	} else {
+		[mainWindow() select:client];
+	}
+}
+
++ (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks connect:(BOOL)connect
+{
+	NSParameterAssert(account != nil);
+	NSParameterAssert(networks != nil);
+
+	NSArray<IRCClient *> *clients = [worldController() addBouncerAccount:account withNetworks:networks linkedClients:@{} connect:connect];
+
+	IRCClient *firstClient = clients.firstObject;
+
+	if (firstClient) {
+		[mainWindow() select:firstClient];
+	}
+}
+
++ (NSArray<NSDictionary<NSString *, id> *> *)savedServerSummaries
+{
+	NSMutableArray *summaries = [NSMutableArray array];
+
+	for (NSDictionary<NSString *, id> *dictionary in [RZUserDefaults() arrayForKey:IRCWorldClientListDefaultsKey]) {
+		if ([dictionary isKindOfClass:[NSDictionary class]] == NO) {
+			continue;
+		}
+
+		IRCClientConfig *config = [[IRCClientConfig alloc] initWithDictionary:dictionary ignorePrivateMessages:YES];
+
+		[summaries addObject:@{
+			@"name" : config.connectionName,
+			@"channels" : @(config.channelList.count),
+			@"nickname" : config.nickname
+		}];
+	}
+
+	return [summaries copy];
+}
+
++ (nullable NSURL *)bouncerHostingOfferURL
+{
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	return [NSURL URLWithString:TXWebsiteZNCHost];
+#else
+	return nil;
 #endif
 }
 

@@ -34,7 +34,6 @@
 		4C06E1C820EC4AC40055D09A /* TXCMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15720EC4AC40055D09A /* TXCMainMenu.xib */; };
 		4C06E1D820EC4AC40055D09A /* TDCChannelInviteSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E15F20EC4AC40055D09A /* TDCChannelInviteSheet.xib */; };
 		4C06E1DC20EC4AC40055D09A /* TDCNicknameColorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16120EC4AC40055D09A /* TDCNicknameColorSheet.xib */; };
-		4C06E1E020EC4AC40055D09A /* TDCWelcomeSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16320EC4AC40055D09A /* TDCWelcomeSheet.xib */; };
 		4C06E1E420EC4AC40055D09A /* TDCProgressIndicatorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */; };
 		4C06E1E820EC4AC50055D09A /* TDCAddressBookIgnoreSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C06E16720EC4AC40055D09A /* TDCAddressBookIgnoreSheet.xib */; };
 		4CA69EE02C7B64540EAE26A3 /* TDCAddressBookUserTrackingSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4C48CF0A57DBF68C07985190 /* TDCAddressBookUserTrackingSheet.xib */; };
@@ -149,7 +148,6 @@
 		4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31526520EB673E00448776 /* TDCServerPropertiesSheet.m */; };
 		92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */ = {isa = PBXBuildFile; fileRef = D4912B7F13C97C15F77FC798 /* TDCServerPropertiesPane.m */; };
 		4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528A20EB673E00448776 /* TDCSheetBase.m */; };
-		4C06E66C20EC55B90055D09A /* TDCWelcomeSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528B20EB673E00448776 /* TDCWelcomeSheet.m */; };
 		4C06E66D20EC55B90055D09A /* TDCWindowBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C31528420EB673E00448776 /* TDCWindowBase.m */; };
 		4C06E66E20EC55B90055D09A /* NSColorHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C3152E520EB673E00448776 /* NSColorHelper.m */; };
 		4C06E66F20EC55B90055D09A /* NSObjectHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C06E2A120EC4FA50055D09A /* NSObjectHelper.m */; };
@@ -419,7 +417,6 @@
 		4C31572C20EB6D0500448776 /* TDCServerPropertiesSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151E920EB673E00448776 /* TDCServerPropertiesSheetPrivate.h */; };
 		DEC244443E7DF9D92C2A9223 /* TDCServerPropertiesPanePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 155FF385EF7736B43ADAC8CC /* TDCServerPropertiesPanePrivate.h */; };
 		4C31572D20EB6D0500448776 /* TDCSharedProtocolDefinitionsPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151FB20EB673E00448776 /* TDCSharedProtocolDefinitionsPrivate.h */; };
-		4C31572E20EB6D0500448776 /* TDCWelcomeSheetPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151C420EB673E00448776 /* TDCWelcomeSheetPrivate.h */; };
 		4C31572F20EB6D0500448776 /* TextualPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3151D820EB673E00448776 /* TextualPrivate.h */; };
 		4C31573020EB6D0500448776 /* THOPluginDispatcherPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31521620EB673E00448776 /* THOPluginDispatcherPrivate.h */; };
 		4C31573120EB6D0500448776 /* THOPluginItemPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C31521920EB673E00448776 /* THOPluginItemPrivate.h */; };
@@ -716,6 +713,7 @@
 		288C57E8DC69C161C94272CB /* IRCAtlasFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98FB1BA0BADFC646795A6F /* IRCAtlasFeed.swift */; };
 		039885A3C3BB60BA79659DF5 /* IRCAtlasFeedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */; };
 		F747748A74A1BA0FBA8A4B0C /* IRCAtlasFeedTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */; };
+		24B406ED06565286784FDC0F /* TDCSetupServers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA7C39357FF330B3D76EF8F /* TDCSetupServers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -865,7 +863,6 @@
 		4C06E15820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TXCMainMenu.xib; sourceTree = "<group>"; };
 		4C06E16020EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCChannelInviteSheet.xib; sourceTree = "<group>"; };
 		4C06E16220EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCNicknameColorSheet.xib; sourceTree = "<group>"; };
-		4C06E16420EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCWelcomeSheet.xib; sourceTree = "<group>"; };
 		4C06E16620EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCProgressIndicatorSheet.xib; sourceTree = "<group>"; };
 		4C06E16820EC4AC40055D09A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookIgnoreSheet.xib; sourceTree = "<group>"; };
 		4CD0CEB5A1E3D5FE3046AEAB /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TDCAddressBookUserTrackingSheet.xib; sourceTree = "<group>"; };
@@ -1092,7 +1089,6 @@
 		4C3151C120EB673E00448776 /* IRCServerPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCServerPrivate.h; sourceTree = "<group>"; };
 		4C3151C220EB673E00448776 /* TVCLogControllerInlineMediaServicePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCLogControllerInlineMediaServicePrivate.h; sourceTree = "<group>"; };
 		4C3151C320EB673E00448776 /* TDCServerChannelListDialogPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCServerChannelListDialogPrivate.h; sourceTree = "<group>"; };
-		4C3151C420EB673E00448776 /* TDCWelcomeSheetPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDCWelcomeSheetPrivate.h; sourceTree = "<group>"; };
 		4C3151C520EB673E00448776 /* TVCMemberListCellPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMemberListCellPrivate.h; sourceTree = "<group>"; };
 		4C3151C620EB673E00448776 /* TXSharedApplicationPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TXSharedApplicationPrivate.h; sourceTree = "<group>"; };
 		4C3151C720EB673E00448776 /* IRCClientConfigPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCClientConfigPrivate.h; sourceTree = "<group>"; };
@@ -1271,7 +1267,6 @@
 		4C31528820EB673E00448776 /* TDCProgressIndicatorSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCProgressIndicatorSheet.m; sourceTree = "<group>"; };
 		4C31528920EB673E00448776 /* TDCChannelModifyTopicSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCChannelModifyTopicSheet.m; sourceTree = "<group>"; };
 		4C31528A20EB673E00448776 /* TDCSheetBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCSheetBase.m; sourceTree = "<group>"; };
-		4C31528B20EB673E00448776 /* TDCWelcomeSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCWelcomeSheet.m; sourceTree = "<group>"; };
 		4C31528C20EB673E00448776 /* TDCServerChangeNicknameSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCServerChangeNicknameSheet.m; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A18 /* TDCUploadDestinationSheet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCUploadDestinationSheet.m; sourceTree = "<group>"; };
 		4C31529120EB673E00448776 /* TDCFileTransferDialog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TDCFileTransferDialog.m; sourceTree = "<group>"; };
@@ -1627,6 +1622,7 @@
 		20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCAtlasFeedStore.swift; sourceTree = "<group>"; };
 		15A0E8297A74A5FEFF71902A /* IRCAtlasFeedStorePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCAtlasFeedStorePrivate.h; sourceTree = "<group>"; };
 		2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAtlasFeedTests.m; sourceTree = "<group>"; };
+		5DA7C39357FF330B3D76EF8F /* TDCSetupServers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSetupServers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1878,6 +1874,7 @@
 				1D4C8D4A0EDF5B81B225A11D /* TDCSetupAssistant.swift */,
 				FF6B231480555CFAA3949243 /* TDCSetupImport.swift */,
 				8CC7D96D04DD13CDBF8F5276 /* TDCSetupSettings.swift */,
+				5DA7C39357FF330B3D76EF8F /* TDCSetupServers.swift */,
 				4C1D8D9B816DB0C9B206A0C8 /* TDCSetupAssistantPrivate.h */,
 			);
 			path = "Setup Assistant";
@@ -1921,8 +1918,6 @@
 				4CBDC99B9E262357204DE270 /* TDCAcknowledgementsWindowPrivate.h */,
 				4C31529420EB673E00448776 /* TDCNicknameColorSheet.m */,
 				4C3151E620EB673E00448776 /* TDCNicknameColorSheetPrivate.h */,
-				4C31528B20EB673E00448776 /* TDCWelcomeSheet.m */,
-				4C3151C420EB673E00448776 /* TDCWelcomeSheetPrivate.h */,
 			);
 			path = Dialogs;
 			sourceTree = "<group>";
@@ -2830,7 +2825,6 @@
 				4C17305222B4A94000DC5836 /* TDCPreferencesUserStyleSheet.xib */,
 				4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */,
 				4C06E16D20EC4AC40055D09A /* TDCServerChangeNicknameSheet.xib */,
-				4C06E16320EC4AC40055D09A /* TDCWelcomeSheet.xib */,
 				4C06E16920EC4AC40055D09A /* TVCAlert.xib */,
 				4C06E15520EC4AC40055D09A /* TVCChannelSelectionView.xib */,
 				4C06E17520EC4AC40055D09A /* TVCMainWindow.xib */,
@@ -3105,7 +3099,6 @@
 				4C3155F220EB6CB400448776 /* TVCValidatedComboBox.h in Headers */,
 				4C3155C320EB6CB400448776 /* TDCWindowBase.h in Headers */,
 				4C06E3B620EC51380055D09A /* GCDAsyncSocket.h in Headers */,
-				4C31572E20EB6D0500448776 /* TDCWelcomeSheetPrivate.h in Headers */,
 				4C31572F20EB6D0500448776 /* TextualPrivate.h in Headers */,
 				4C3158CA20EB6D1000448776 /* IRCModeInfoInternal.h in Headers */,
 				4C3156EF20EB6D0500448776 /* IRCColorFormatPrivate.h in Headers */,
@@ -3516,7 +3509,6 @@
 				4C52379415C18F6700414852 /* Style Default Templates in Resources */,
 				4C06E30220EC4FF00055D09A /* TDCFileTransferDialog.strings in Resources */,
 				4C06E31620EC4FF00055D09A /* TLOLicenseManager.strings in Resources */,
-				4C06E1E020EC4AC40055D09A /* TDCWelcomeSheet.xib in Resources */,
 				4C06E33220EC4FF00055D09A /* TDCServerChannelListDialog.strings in Resources */,
 				4C06E33620EC4FF00055D09A /* TDCChannelSpotlightController.strings in Resources */,
 				4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */,
@@ -3730,6 +3722,7 @@
 				E8A3EF3127FB006EDD9868D9 /* TDCSetupAssistant.swift in Sources */,
 				A2167628279F96B7C6E36AB4 /* TDCSetupImport.swift in Sources */,
 				C3013843133A009408E99F21 /* TDCSetupSettings.swift in Sources */,
+				24B406ED06565286784FDC0F /* TDCSetupServers.swift in Sources */,
 				6A68928D099CAFE3F857B5A0 /* TDCEditBouncerSheet.swift in Sources */,
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,
@@ -3740,7 +3733,6 @@
 				C76748A11A3B58C8EB43F489 /* TDCServerPropertiesWindow.swift in Sources */,
 				1A71459AB3590A5AC775E675 /* TDCLicenseWindow.swift in Sources */,
 				4C06E66B20EC55B90055D09A /* TDCSheetBase.m in Sources */,
-				4C06E66C20EC55B90055D09A /* TDCWelcomeSheet.m in Sources */,
 				4C06E66D20EC55B90055D09A /* TDCWindowBase.m in Sources */,
 				4C06E66E20EC55B90055D09A /* NSColorHelper.m in Sources */,
 				4C06E66F20EC55B90055D09A /* NSObjectHelper.m in Sources */,
@@ -4064,14 +4056,6 @@
 				4C06E16220EC4AC40055D09A /* en */,
 			);
 			name = TDCNicknameColorSheet.xib;
-			sourceTree = "<group>";
-		};
-		4C06E16320EC4AC40055D09A /* TDCWelcomeSheet.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				4C06E16420EC4AC40055D09A /* en */,
-			);
-			name = TDCWelcomeSheet.xib;
 			sourceTree = "<group>";
 		};
 		4C06E16520EC4AC40055D09A /* TDCProgressIndicatorSheet.xib */ = {

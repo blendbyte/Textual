@@ -137,6 +137,7 @@ Certificates must meet the following criteria:
 "spp-srv-addr" = "Address";
 "spp-srv-addrh" = "A network from the list, a server, or a WebSocket address (wss://…).";
 "spp-srv-networks" = "Networks";
+"spp-srv-netsearch" = "Search networks";
 "spp-srv-port" = "Port";
 "spp-srv-wsh" = "Set by the WebSocket address.";
 "spp-srv-tls" = "Connect securely";

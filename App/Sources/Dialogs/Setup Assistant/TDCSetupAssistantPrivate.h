@@ -46,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* File > Import Settings from Textual 7…; restarts Textual when done */
 + (void)importFromMenu;
 
+/* No servers yet: choosing where to chat, from the main window */
++ (void)addServersFromEmptyState;
+
 /* File > Remove Textual 7 Data… */
 + (void)removeEarlierDataFromMenu;
 @end
