@@ -48,6 +48,7 @@
 #import "TDCLegacyImportAssistantPrivate.h"
 #import "TXApplicationPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
+#import "TDCSetupAssistantPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
@@ -200,7 +201,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* We wait until -awakeFromNib to wake the window so that the menu
 	 controller created by the main nib has time to load. */
-	[RZMainBundle() loadNibNamed:@"TVCMainWindow" owner:self topLevelObjects:nil];
+	[TDCSetupAssistant offerAtLaunchThen:^{
+		[RZMainBundle() loadNibNamed:@"TVCMainWindow" owner:self topLevelObjects:nil];
+	}];
 }
 
 - (void)applicationWakeStepOne
@@ -450,6 +453,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+	/* Quit during setup, before the main window: nothing is running to wind down */
+	if (self.world == nil) {
+		return NSTerminateNow;
+	}
+
 	if ([self queryTerminate] == NO) {
 		return NSTerminateCancel;
 	}

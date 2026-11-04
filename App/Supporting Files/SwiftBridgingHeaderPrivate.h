@@ -43,6 +43,9 @@
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
 
+// TDCSetupAssistant.swift
+#import "TPCLegacyImportPrivate.h"
+
 // TDCSettingsWindow.swift, TDCSettingsSections.swift
 #import "TDCSettingsBridgePrivate.h"
 #import "TVCMainWindow.h"

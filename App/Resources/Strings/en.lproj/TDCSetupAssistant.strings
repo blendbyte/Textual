@@ -1,0 +1,66 @@
+/* *********************************************************************
+*                  _____         _               _
+*                 |_   _|____  _| |_ _   _  __ _| |
+*                   | |/ _ \ \/ / __| | | |/ _` | |
+*                   | |  __/>  <| |_| |_| | (_| | |
+*                   |_|\___/_/\_\\__|\__,_|\__,_|_|
+*
+* Copyright (c) 2026 Blendbyte GmbH & respective contributors.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+*  * Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*  * Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+*  * Neither the name of Textual, "Codeux Software, LLC", nor the
+*    names of its contributors may be used to endorse or promote products
+*    derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+* OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+* SUCH DAMAGE.
+*
+*********************************************************************** */
+
+/* The setup window at first launch (TDCSetupAssistant.swift) */
+"sa-title" = "Set Up Textual";
+"sa-a-step" = "Step %1$ld of %2$ld";
+
+"sa-b-new" = "I’m New to IRC";
+"sa-b-know" = "I Know What I Want";
+"sa-b-continue" = "Continue";
+"sa-b-back" = "Back";
+"sa-b-finish" = "Open Textual";
+
+"sa-w-title" = "Welcome to Textual";
+"sa-w-lead" = "A chat app for IRC, one of the internet’s oldest and most open ways to talk. A few questions and you’re in a conversation.";
+"sa-w-new-t" = "New to IRC?";
+"sa-w-new-d" = "We’ll explain how it works in a minute and suggest good places to start, based on what you’re into.";
+"sa-w-know-t" = "Know what you want?";
+"sa-w-know-d" = "Skip the introduction and go straight to the full list of networks, or your bouncer.";
+
+"sa-h-title" = "How IRC works";
+"sa-h-lead" = "Think of it as thousands of public rooms, run by communities instead of one company.";
+"sa-h-net-t" = "Networks";
+"sa-h-net-d" = "A community that runs chat servers. Each is its own world with its own people and rules. You can be on several at once.";
+"sa-h-chan-t" = "Channels";
+"sa-h-chan-d" = "The rooms inside a network, usually starting with #. Anyone can join most of them. People talk about one topic.";
+"sa-h-ppl-t" = "People";
+"sa-h-ppl-d" = "Everyone picks a nickname. You can write to the whole channel, or to one person privately.";
+"sa-h-know-t" = "Good to know";
+"sa-h-know-d" = "IRC only delivers messages while you’re connected, so you won’t see what was said while you were away. Most channels are public, and messages aren’t end-to-end encrypted. People are usually friendly: lurking first is normal, and a question may take a while to get an answer.";
+
+"sa-d-title" = "You’re all set";
+"sa-d-lead" = "Add a server whenever you’re ready. All of this can be changed in Settings.";
