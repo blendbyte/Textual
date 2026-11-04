@@ -24,7 +24,6 @@
 		69D4705D6D19E20C463A132C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DD116667156B6E9123159A9 /* Assets.xcassets */; };
 		4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */; };
 		4C06DF3420EC49A60055D09A /* IRCCommandIndexRemoteData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */; };
-		4C06DF3520EC49A60055D09A /* IRCNetworks.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A220EB676400448776 /* IRCNetworks.plist */; };
 		4CC2E2E089734BA6F6753ED0 /* EmojiShortcodes.json in Resources */ = {isa = PBXBuildFile; fileRef = 4C82A2BFE6C1DE4253A10996 /* EmojiShortcodes.json */; };
 		4C06DF3820EC49A60055D09A /* StaticStore.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A420EB676400448776 /* StaticStore.plist */; };
 		4C06DF3920EC49A60055D09A /* TemplateLineTypes.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A120EB676400448776 /* TemplateLineTypes.plist */; };
@@ -713,6 +712,10 @@
 		B581F622131D2CB8051ED186 /* TDCServerPropertiesAccountPanes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */; };
 		7C96A0ADB32BD953F1688040 /* TDCServerPropertiesAdvancedPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7BC06CEC4262E2C3EB54380 /* TDCServerPropertiesAdvancedPages.swift */; };
 		46D3990D78A0D6FE05E500D8 /* TDCServerPropertiesListPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */; };
+		EBC419BD6339C09971CBCA5B /* IRCAtlasOnboarding.json in Resources */ = {isa = PBXBuildFile; fileRef = 7B53103FD4D1EAA039EA9C58 /* IRCAtlasOnboarding.json */; };
+		288C57E8DC69C161C94272CB /* IRCAtlasFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98FB1BA0BADFC646795A6F /* IRCAtlasFeed.swift */; };
+		039885A3C3BB60BA79659DF5 /* IRCAtlasFeedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */; };
+		F747748A74A1BA0FBA8A4B0C /* IRCAtlasFeedTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1335,7 +1338,6 @@
 		4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCCommandIndexRemoteData.plist; sourceTree = "<group>"; };
 		4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCCommandIndexLocalData.plist; sourceTree = "<group>"; };
 		4C3153A120EB676400448776 /* TemplateLineTypes.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = TemplateLineTypes.plist; sourceTree = "<group>"; };
-		4C3153A220EB676400448776 /* IRCNetworks.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IRCNetworks.plist; sourceTree = "<group>"; };
 		4C82A2BFE6C1DE4253A10996 /* EmojiShortcodes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = EmojiShortcodes.json; sourceTree = "<group>"; };
 		4C3153A420EB676400448776 /* StaticStore.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = StaticStore.plist; sourceTree = "<group>"; };
 		4C3153A520EB676400448776 /* RegisteredUserDefaults.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = RegisteredUserDefaults.plist; sourceTree = "<group>"; };
@@ -1620,6 +1622,11 @@
 		24CB4104EBEA41383E683568 /* TDCServerPropertiesAccountPanes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAccountPanes.swift; sourceTree = "<group>"; };
 		D7BC06CEC4262E2C3EB54380 /* TDCServerPropertiesAdvancedPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAdvancedPages.swift; sourceTree = "<group>"; };
 		3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesListPages.swift; sourceTree = "<group>"; };
+		7B53103FD4D1EAA039EA9C58 /* IRCAtlasOnboarding.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = IRCAtlasOnboarding.json; sourceTree = "<group>"; };
+		0A98FB1BA0BADFC646795A6F /* IRCAtlasFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCAtlasFeed.swift; sourceTree = "<group>"; };
+		20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCAtlasFeedStore.swift; sourceTree = "<group>"; };
+		15A0E8297A74A5FEFF71902A /* IRCAtlasFeedStorePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCAtlasFeedStorePrivate.h; sourceTree = "<group>"; };
+		2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAtlasFeedTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2347,6 +2354,9 @@
 				4C31513020EB673E00448776 /* IRCModeInfo.m */,
 				4C31519020EB673E00448776 /* IRCModeInfoInternal.h */,
 				4C31513920EB673E00448776 /* IRCNetworkList.m */,
+				15A0E8297A74A5FEFF71902A /* IRCAtlasFeedStorePrivate.h */,
+				20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */,
+				0A98FB1BA0BADFC646795A6F /* IRCAtlasFeed.swift */,
 				4C31512520EB673E00448776 /* IRCPrefix.m */,
 				4C31518B20EB673E00448776 /* IRCPrefixInternal.h */,
 				4C31512C20EB673E00448776 /* IRCSendingMessage.m */,
@@ -2846,8 +2856,8 @@
 				4C3B3C24384141A43C9E9CA7 /* Preferences */,
 				4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */,
 				4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */,
-				4C3153A220EB676400448776 /* IRCNetworks.plist */,
 				4C82A2BFE6C1DE4253A10996 /* EmojiShortcodes.json */,
+				7B53103FD4D1EAA039EA9C58 /* IRCAtlasOnboarding.json */,
 				4C3153A420EB676400448776 /* StaticStore.plist */,
 				4C3153A120EB676400448776 /* TemplateLineTypes.plist */,
 			);
@@ -2985,6 +2995,7 @@
 				4C8A5C9CB4FDF0A9CA7AF3F5 /* TVCInputCompletionTests.m */,
 				4C722724ADF9DDCE8BB13442 /* TVCInputMarkdownTests.m */,
 				4C870CA064CDF0587168CD01 /* IRCAliasTests.m */,
+				2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */,
 				4C90177E4FF69483A56EFC35 /* IRCHighlightKeywordTests.m */,
 				4C704286BAFF193A5E98126B /* IRCClientAccountRegistrationTests.m */,
 				4C799244892769BFA56952EA /* IRCClientBotsAndNetsplitsTests.m */,
@@ -3462,8 +3473,8 @@
 				4C06E2EE20EC4FF00055D09A /* BasicLanguage.strings in Resources */,
 				4C06E21020EC4AC50055D09A /* TVCMemberListAppearance.plist in Resources */,
 				4C06E1C420EC4AC40055D09A /* TVCChannelSelectionView.xib in Resources */,
-				4C06DF3520EC49A60055D09A /* IRCNetworks.plist in Resources */,
 				4CC2E2E089734BA6F6753ED0 /* EmojiShortcodes.json in Resources */,
+				EBC419BD6339C09971CBCA5B /* IRCAtlasOnboarding.json in Resources */,
 				4C06E1EC20EC4AC50055D09A /* TVCAlert.xib in Resources */,
 				4C06E32220EC4FF00055D09A /* Notifications.strings in Resources */,
 				4C06E2F620EC4FF00055D09A /* TDCChannelPropertiesSheet.strings in Resources */,
@@ -3767,6 +3778,8 @@
 				4C06E68C20EC55B90055D09A /* IRCMessageBatch.m in Sources */,
 				4C06E68D20EC55B90055D09A /* IRCModeInfo.m in Sources */,
 				4C06E68E20EC55B90055D09A /* IRCNetworkList.m in Sources */,
+				039885A3C3BB60BA79659DF5 /* IRCAtlasFeedStore.swift in Sources */,
+				288C57E8DC69C161C94272CB /* IRCAtlasFeed.swift in Sources */,
 				4C06E68F20EC55B90055D09A /* IRCPrefix.m in Sources */,
 				4C51327A20F76E980033B703 /* TLOLocalization.swift in Sources */,
 				4C06E69020EC55B90055D09A /* IRCSendingMessage.m in Sources */,
@@ -3915,6 +3928,7 @@
 				4C8039A99A1E59D8BFBE1872 /* TVCInputCompletionTests.m in Sources */,
 				4CE9F00465BB5D17F16D8988 /* TVCInputMarkdownTests.m in Sources */,
 				4C03ABFF9E2EFDF00767BBCD /* IRCAliasTests.m in Sources */,
+				F747748A74A1BA0FBA8A4B0C /* IRCAtlasFeedTests.m in Sources */,
 				4CD9967A3456DDFEB208E332 /* IRCHighlightKeywordTests.m in Sources */,
 				4C6D4C297447B4FB4608E1E8 /* IRCClientAccountRegistrationTests.m in Sources */,
 				4C72F8AED586D7AD152BAE1E /* IRCClientBotsAndNetsplitsTests.m in Sources */,

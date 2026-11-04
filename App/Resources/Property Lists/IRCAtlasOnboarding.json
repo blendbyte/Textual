@@ -1,0 +1,3635 @@
+{
+    "schema_version": 1,
+    "generated_at": "2026-11-04T08:37:07Z",
+    "license": "CC-BY-4.0",
+    "attribution": "IRC Atlas",
+    "tags": [
+        {
+            "tag": "open-source",
+            "name": "Open source",
+            "networks": [
+                "libera-chat",
+                "freenode",
+                "irc-nerds",
+                "afternet",
+                "azzurra",
+                "gimpnet",
+                "ergo"
+            ]
+        },
+        {
+            "tag": "linux-bsd",
+            "name": "Linux and BSD",
+            "networks": [
+                "libera-chat",
+                "freenode",
+                "irc-nerds",
+                "euircnet",
+                "afternet",
+                "azzurra",
+                "german-elite"
+            ]
+        },
+        {
+            "tag": "programming",
+            "name": "Programming",
+            "networks": [
+                "libera-chat",
+                "freenode",
+                "magnet"
+            ]
+        },
+        {
+            "tag": "security",
+            "name": "Security",
+            "networks": [
+                "freeunibg",
+                "2600net"
+            ]
+        },
+        {
+            "tag": "gaming",
+            "name": "Gaming",
+            "networks": [
+                "global-irc-eu",
+                "quakenet",
+                "kampungchat",
+                "irc-nerds",
+                "dejatoons",
+                "shelltalk",
+                "irc4fun",
+                "bgirc-com",
+                "chatlounge",
+                "darkmyst",
+                "darkworld",
+                "ircnet2",
+                "kalbim-net"
+            ]
+        },
+        {
+            "tag": "anime",
+            "name": "Anime",
+            "networks": [
+                "animefriends",
+                "euircnet"
+            ]
+        },
+        {
+            "tag": "retro",
+            "name": "Retro computing",
+            "networks": [
+                "dejatoons"
+            ]
+        },
+        {
+            "tag": "general",
+            "name": "Just chatting",
+            "networks": [
+                "efesnet",
+                "global-irc-eu",
+                "rizon",
+                "cyberirc",
+                "freenode",
+                "hackint",
+                "flexchat",
+                "ptirc",
+                "synirc",
+                "irc-nerds",
+                "snoonet",
+                "virtualife",
+                "tilde-chat",
+                "unifiedchat",
+                "shelltalk",
+                "euircnet",
+                "geeknode",
+                "evilnet",
+                "trendsohbet-com",
+                "brasirc",
+                "afternet",
+                "2600net",
+                "chatlounge",
+                "darkmyst",
+                "darkworld",
+                "ouchnet",
+                "azzurra",
+                "wetfish",
+                "lunarirc",
+                "ergo",
+                "austnet",
+                "kalbim-net",
+                "german-elite",
+                "sohbet-net",
+                "mavra-net"
+            ]
+        },
+        {
+            "tag": "regional",
+            "name": "Regional communities",
+            "networks": [
+                "efesnet",
+                "freeunibg",
+                "cyberirc",
+                "ayochat",
+                "flexchat",
+                "ptirc",
+                "kampungchat",
+                "allnetwork",
+                "unifiedchat",
+                "geeknode",
+                "evilnet",
+                "bgirc-com",
+                "brasirc",
+                "chatlounge",
+                "darkworld",
+                "ircnet2",
+                "austnet",
+                "sohbet-net"
+            ]
+        },
+        {
+            "tag": "art-music",
+            "name": "Art and music",
+            "networks": [
+                "virtualife",
+                "pirc-pl",
+                "atrum",
+                "sohbet-net"
+            ]
+        },
+        {
+            "tag": "science",
+            "name": "Science",
+            "networks": [
+                "unifiedchat"
+            ]
+        },
+        {
+            "tag": "lgbtq",
+            "name": "LGBTQ+",
+            "networks": []
+        },
+        {
+            "tag": "social",
+            "name": "Meeting people",
+            "networks": [
+                "freeunibg",
+                "irc4fun",
+                "allnightcafe",
+                "orixon",
+                "chatlounge",
+                "pirc-pl",
+                "ergo",
+                "atrum"
+            ]
+        }
+    ],
+    "networks": [
+        {
+            "id": "libera-chat",
+            "name": "Libera.Chat",
+            "description": "An IRC network where users gather around Linux and BSD, programming and open-source software, with support channels for distributions, languages and tools.",
+            "tags": [
+                "linux-bsd",
+                "programming",
+                "open-source"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 31330,
+                "channels": 22934
+            },
+            "connection": {
+                "host": "irc.libera.chat",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.libera.chat:6697"
+            },
+            "sasl": true,
+            "website_url": "https://libera.chat",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#libera",
+                    "reason": "This is the network's support channel, a good place to ask questions about using the network.",
+                    "users": 1576,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A busy general channel for questions and discussion about Linux.",
+                    "users": 2371,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#python",
+                    "reason": "Covers anything related to the Python language, including help for new programmers.",
+                    "users": 1336,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "##programming",
+                    "reason": "A broad channel for programming and computer science discussion with a community focus.",
+                    "users": 843,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "##chat",
+                    "reason": "A social, off-topic channel for general conversation.",
+                    "users": 850,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "efesnet",
+            "name": "EfesNet",
+            "description": "A general chat network, begun in 1997, where users gather in Turkish city and chat rooms, radio, LGBT and adult channels, with English also widely used.",
+            "tags": [
+                "regional",
+                "general"
+            ],
+            "languages": [
+                "en",
+                "tr"
+            ],
+            "activity": {
+                "users": 17601,
+                "channels": 507
+            },
+            "connection": {
+                "host": "irc.efes.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.efes.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.efes.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Chat",
+                    "reason": "A general welcome channel whose topic points newcomers to the network's trivia and word games.",
+                    "users": 1994,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#TalkIRC",
+                    "reason": "A busy general channel for meeting people from a global community.",
+                    "users": 3970,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Radio",
+                    "reason": "A music channel with a live DJ and a track list shown in the topic.",
+                    "users": 3987,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#istanbul",
+                    "reason": "A city channel for Turkish speakers in one of the network's regional groups.",
+                    "users": 1027,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Game",
+                    "reason": "A Turkish-English trivia channel for a lighter way to join in.",
+                    "users": 956,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "global-irc-eu",
+            "name": "Global-Irc.Eu",
+            "description": "A community IRC network for general chat, technology and gaming, with game-related channels in English and Dutch.",
+            "tags": [
+                "gaming",
+                "general"
+            ],
+            "languages": [
+                "en",
+                "nl"
+            ],
+            "activity": {
+                "users": 11810,
+                "channels": 71
+            },
+            "connection": {
+                "host": "irc.global-irc.eu",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.global-irc.eu:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#chatarea",
+                    "reason": "It is described as the main channel of the network and a natural place to say hello.",
+                    "users": 15,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#herowars",
+                    "reason": "A channel for players of the Hero Wars game and their guild.",
+                    "users": 26,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#speelhal",
+                    "reason": "A Dutch-language games channel with bot-run games such as Texas Hold'em.",
+                    "users": 18,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "nl"
+                },
+                {
+                    "name": "#IdleRPG",
+                    "reason": "Hosts an idle role-playing game where you take part just by being in the channel.",
+                    "users": 11,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "freeunibg",
+            "name": "FreeUniBG",
+            "description": "A Bulgarian-language IRC network where users gather in city and regional channels, with social chat and a hacker-themed channel alongside.",
+            "tags": [
+                "regional",
+                "social",
+                "security"
+            ],
+            "languages": [
+                "bg",
+                "en",
+                "bg-Latn"
+            ],
+            "activity": {
+                "users": 10664,
+                "channels": 754
+            },
+            "connection": {
+                "host": "irc.freeunibg.eu",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.freeunibg.eu:6697"
+            },
+            "sasl": false,
+            "website_url": "https://www.FreeUniBG.eu",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Bulgaria",
+                    "reason": "It is the network's help channel and a general meeting point for Bulgarian speakers.",
+                    "users": 208,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "bg-Latn"
+                },
+                {
+                    "name": "#Sofia",
+                    "reason": "A busy channel for people from the Bulgarian capital.",
+                    "users": 410,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "bg"
+                },
+                {
+                    "name": "#Varna",
+                    "reason": "A busy channel for people from the coastal city of Varna.",
+                    "users": 424,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#30-40",
+                    "reason": "A social chat channel for casual conversation.",
+                    "users": 383,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#BGChat",
+                    "reason": "A chat channel aimed at young aspiring hackers.",
+                    "users": 374,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "bg"
+                }
+            ]
+        },
+        {
+            "id": "rizon",
+            "name": "Rizon",
+            "description": "General chat network with active anime fansub and release channels, plus regional, gaming and music rooms. Conversation is mostly in English.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en",
+                "id",
+                "tr",
+                "de"
+            ],
+            "activity": {
+                "users": 9239,
+                "channels": 6612
+            },
+            "connection": {
+                "host": "irc.rizon.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.rizon.net:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#chat",
+                    "reason": "A general hangout for relaxed conversation, with rules that ban politics and conspiracy talk.",
+                    "users": 297,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#chatfriendly",
+                    "reason": "A general channel for friendly conversation that also offers a browser link for joining.",
+                    "users": 139,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#myanimelist",
+                    "reason": "An anime discussion channel for fans of the MyAnimeList community.",
+                    "users": 60,
+                    "tags": [
+                        "anime"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A Linux help channel where newcomers can ask questions and read the channel rules first.",
+                    "users": 99,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#RizonIRPG",
+                    "reason": "An idle RPG game channel with a help and commands page for new players.",
+                    "users": 202,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "cyberirc",
+            "name": "CyberIRC",
+            "description": "A general-purpose IRC network where users gather in country and city chat rooms, plus general chat, Linux, LGBTQ and music channels, in English and Turkish.",
+            "tags": [
+                "regional",
+                "general"
+            ],
+            "languages": [
+                "en",
+                "tr",
+                "fr"
+            ],
+            "activity": {
+                "users": 7373,
+                "channels": 124
+            },
+            "connection": {
+                "host": "irc.cyberirc.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.cyberirc.org:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#lobby",
+                    "reason": "A general room where newcomers are invited to grab a seat and say hi.",
+                    "users": 51,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#worldchat",
+                    "reason": "A general channel that welcomes people from everywhere.",
+                    "users": 51,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#cyberirc",
+                    "reason": "The network's own general chat room, with a pointer to #help for support questions.",
+                    "users": 45,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A Linux help and chat channel where conversation can also drift off topic.",
+                    "users": 220,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#sohbet",
+                    "reason": "A busy Turkish-language chat channel for Turkish speakers.",
+                    "users": 1023,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                }
+            ]
+        },
+        {
+            "id": "quakenet",
+            "name": "QuakeNet",
+            "description": "A general-purpose IRC network started in 1997 for Quakeworld players, now home to gaming channels alongside regional, Linux and general chat communities.",
+            "tags": [
+                "gaming"
+            ],
+            "languages": [
+                "en",
+                "fi",
+                "de",
+                "sv",
+                "it",
+                "ro"
+            ],
+            "activity": {
+                "users": 5273,
+                "channels": 5471
+            },
+            "connection": {
+                "host": "irc.quakenet.org",
+                "port": 6667,
+                "tls": false,
+                "certificate_valid": null,
+                "url": "irc://irc.quakenet.org:6667"
+            },
+            "sasl": false,
+            "website_url": "https://www.quakenet.org/",
+            "registration_url": "https://www.quakenet.org/help/q/how-to-register-an-account-with-q",
+            "featured_channels": [
+                {
+                    "name": "#Quakenet",
+                    "reason": "The network's welcome channel, with pointers to where newcomers can find support.",
+                    "users": 92,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linuxhelp",
+                    "reason": "A long-running channel where people ask Linux questions.",
+                    "users": 113,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#CS2",
+                    "reason": "A Counter-Strike 2 channel with news, live match info and bot commands.",
+                    "users": 63,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#qnet.quiz",
+                    "reason": "A casual trivia channel that starts a quiz with a simple command.",
+                    "users": 49,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#anime",
+                    "reason": "A general chat channel for anime fans.",
+                    "users": 40,
+                    "tags": [
+                        "anime"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "freenode",
+            "name": "Freenode",
+            "description": "A general-purpose IRC network where people gather for open-source projects, programming help, Linux and BSD support, and casual chat, mostly in English.",
+            "tags": [
+                "open-source",
+                "programming",
+                "general",
+                "linux-bsd"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 5108,
+                "channels": 7756
+            },
+            "connection": {
+                "host": "chat.freenode.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://chat.freenode.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://freenode.net",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#freenode",
+                    "reason": "The network's main welcome channel, with pointers to help and to community channels for games and radio.",
+                    "users": 334,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A general Linux discussion and support channel that welcomes every distribution.",
+                    "users": 56,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#python",
+                    "reason": "A casual, unofficial chat for Python programming questions and discussion.",
+                    "users": 69,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#git",
+                    "reason": "A support channel for questions about using the Git version control system.",
+                    "users": 55,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#security",
+                    "reason": "A discussion channel for computer and network security topics.",
+                    "users": 63,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "hackint",
+            "name": "hackint",
+            "description": "An IRC network for the hacker community, open to everyone, with channels for Freifunk and CCC groups, NixOS, security topics and Archive Team projects.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en",
+                "de"
+            ],
+            "activity": {
+                "users": 4316,
+                "channels": 1947
+            },
+            "connection": {
+                "host": "irc.hackint.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.hackint.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://hackint.org",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#hackint",
+                    "reason": "The network's main channel, where newcomers can ask questions and get pointed to Matrix and XMPP access.",
+                    "users": 423,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#nixos",
+                    "reason": "A German-language NixOS community channel bridged to Matrix.",
+                    "users": 155,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "de"
+                },
+                {
+                    "name": "#gluon",
+                    "reason": "Discussion of the Gluon mesh firmware framework used by Freifunk communities.",
+                    "users": 104,
+                    "tags": [
+                        "linux-bsd",
+                        "open-source"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#infosec",
+                    "reason": "A security channel carrying news feeds and discussion on information security.",
+                    "users": 47,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#blueteam",
+                    "reason": "A place to meet people interested in defensive security.",
+                    "users": 41,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "ayochat",
+            "name": "AyoChat",
+            "description": "An IRC network with city and region channels for Indonesian places such as Jakarta and Gorontalo.",
+            "tags": [
+                "regional"
+            ],
+            "languages": [
+                "id"
+            ],
+            "activity": {
+                "users": 3977,
+                "channels": 85
+            },
+            "connection": {
+                "host": "irc.ayochat.or.id",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.ayochat.or.id:6697"
+            },
+            "sasl": false,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#jakarta",
+                    "reason": "A welcome channel for Jakarta with a topic asking users not to flood, advertise or spam.",
+                    "users": 64,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Gorontalo",
+                    "reason": "A regional channel for people from or interested in Gorontalo.",
+                    "users": 54,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Indonesia",
+                    "reason": "A country-level channel for Indonesian users to meet people from across the network.",
+                    "users": 36,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "flexchat",
+            "name": "FlexChat",
+            "description": "A general chat network where half of the users in subject-tagged channels are in Malaysia-focused rooms, alongside social, general and Linux channels.",
+            "tags": [
+                "regional",
+                "general"
+            ],
+            "languages": [
+                "en",
+                "ms"
+            ],
+            "activity": {
+                "users": 3284,
+                "channels": 87
+            },
+            "connection": {
+                "host": "irc.flexchat.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.flexchat.org:6697"
+            },
+            "sasl": false,
+            "website_url": "https://cyber.flexchat.org",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#malaysia",
+                    "reason": "The main Malaysia-themed room, with a welcome topic and bot commands for newcomers.",
+                    "users": 2010,
+                    "tags": [
+                        "regional",
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#flexchat",
+                    "reason": "The network's own channel for general questions and a first hello.",
+                    "users": 87,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#lobby",
+                    "reason": "A general lobby room for casual conversation.",
+                    "users": 1003,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A place to talk about Linux distributions.",
+                    "users": 1007,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#xgossip",
+                    "reason": "A social room for casual chat and gossip.",
+                    "users": 1028,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "ptirc",
+            "name": "PTirc",
+            "description": "A Portuguese-oriented IRC network founded in 2016, where users chat in Portuguese and in multilingual rooms.",
+            "tags": [
+                "regional",
+                "general"
+            ],
+            "languages": [
+                "pt",
+                "en"
+            ],
+            "activity": {
+                "users": 2122,
+                "channels": 84
+            },
+            "connection": {
+                "host": "irc.ptirc.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.ptirc.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://ptirc.org",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Portugal",
+                    "reason": "A Portuguese-language chat room with an online radio link, suited to newcomers who speak Portuguese.",
+                    "users": 26,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "#PTirc",
+                    "reason": "The network's multilingual channel, welcoming to newcomers who speak Portuguese or English.",
+                    "users": 12,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "mul"
+                }
+            ]
+        },
+        {
+            "id": "kampungchat",
+            "name": "KampungChat",
+            "description": "A Malaysian IRC network, running since 2002, where about half of channel users are in city and state chat rooms, alongside game, quiz, and music channels.",
+            "tags": [
+                "regional",
+                "gaming"
+            ],
+            "languages": [
+                "en",
+                "ms"
+            ],
+            "activity": {
+                "users": 2104,
+                "channels": 370
+            },
+            "connection": {
+                "host": "irc.kampungchat.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.kampungchat.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.kampungchat.org",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#KualaLumpur",
+                    "reason": "A busy city chat room for Kuala Lumpur with a welcome topic and a link to channel statistics.",
+                    "users": 523,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#worldchat",
+                    "reason": "A general chat channel with quizzes and a link for registering a nickname.",
+                    "users": 288,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#global",
+                    "reason": "A general chat and quiz channel open to everyone on the network.",
+                    "users": 133,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#werewolf",
+                    "reason": "The network's game channel where users type !j to join a round of werewolf.",
+                    "users": 347,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Quiz",
+                    "reason": "A quiz and card game channel that starts games with simple bot commands.",
+                    "users": 190,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "animefriends",
+            "name": "AnimeFriends",
+            "description": "An IRC network for anime fans, with channels for anime picks, music, games and Linux talk, used mostly in English.",
+            "tags": [
+                "anime"
+            ],
+            "languages": [
+                "en",
+                "ja",
+                "de"
+            ],
+            "activity": {
+                "users": 1782,
+                "channels": 120
+            },
+            "connection": {
+                "host": "irc.animefriends.moe",
+                "port": 7000,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.animefriends.moe:7000"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#anime",
+                    "reason": "Anime discussion with a regularly updated pick of the moment.",
+                    "users": 247,
+                    "tags": [
+                        "anime"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#music",
+                    "reason": "A place to talk about music, with a regularly updated pick.",
+                    "users": 109,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#games",
+                    "reason": "A gathering for gaming and visual novels.",
+                    "users": 136,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "Chat about Linux and free software for those who enjoy it.",
+                    "users": 281,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#radio",
+                    "reason": "An unofficial radio channel where you can listen along and use bot commands.",
+                    "users": 94,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "synirc",
+            "name": "synIRC",
+            "description": "A general-purpose IRC network where users mostly gather in open chat channels, with smaller gaming and anime communities.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 1581,
+                "channels": 651
+            },
+            "connection": {
+                "host": "irc.synirc.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.synirc.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.synirc.net/",
+            "registration_url": "https://www.synirc.net/user/register",
+            "featured_channels": [
+                {
+                    "name": "#synirc",
+                    "reason": "The network's own general chat channel, with a pointer to #Help for network questions.",
+                    "users": 33,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Chat",
+                    "reason": "A general chat channel that links to help and tech channels for newcomers.",
+                    "users": 18,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#gamerzone",
+                    "reason": "A casual gaming channel for people who want to talk games.",
+                    "users": 13,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#animu",
+                    "reason": "A channel for anime fans on the network.",
+                    "users": 11,
+                    "tags": [
+                        "anime"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#yospos",
+                    "reason": "One of the busiest general chat channels on the network, for casual conversation.",
+                    "users": 71,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": null
+                }
+            ]
+        },
+        {
+            "id": "irc-nerds",
+            "name": "IRC-Nerds",
+            "description": "A general-interest IRC network founded in 2020 to bring nerds together, where people chat about games, Linux and open-source software, and security.",
+            "tags": [
+                "general",
+                "gaming",
+                "open-source",
+                "linux-bsd"
+            ],
+            "languages": [
+                "en",
+                "ru"
+            ],
+            "activity": {
+                "users": 1195,
+                "channels": 263
+            },
+            "connection": {
+                "host": "irc.irc-nerds.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.irc-nerds.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.irc-nerds.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#nerds",
+                    "reason": "The network's own main channel for general chat, questions and meeting other users.",
+                    "users": 161,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A support channel where newcomers can ask Linux questions and get help when someone is around.",
+                    "users": 167,
+                    "tags": [
+                        "linux-bsd",
+                        "open-source"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#VideoGames",
+                    "reason": "A busy gaming channel covering consoles, PC, mobile and VR.",
+                    "users": 414,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#security",
+                    "reason": "A channel for discussing computer and network security.",
+                    "users": 136,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#hardware",
+                    "reason": "A place to chat about computer hardware and ask for help with it.",
+                    "users": 109,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "snoonet",
+            "name": "Snoonet",
+            "description": "An IRC network with channels tied to Reddit communities, where users gather for general chat alongside Linux, gaming, regional, music and science topics.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en",
+                "pt",
+                "de",
+                "sv"
+            ],
+            "activity": {
+                "users": 1110,
+                "channels": 5609
+            },
+            "connection": {
+                "host": "irc.snoonet.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.snoonet.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://snoonet.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#snoonet",
+                    "reason": "The network's main welcome channel, where newcomers can chat and share feedback.",
+                    "users": 152,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#casualconversation",
+                    "reason": "A relaxed general chat channel with clear rules and pointers to related channels.",
+                    "users": 90,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#talk",
+                    "reason": "A place for more serious conversation that doesn't fit casual chat.",
+                    "users": 89,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linuxmasterrace",
+                    "reason": "An active channel for Linux fans and general banter.",
+                    "users": 123,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#games",
+                    "reason": "A gaming channel for talking about video games.",
+                    "users": 46,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "allnetwork",
+            "name": "AllNetwork",
+            "description": "An Indonesian IRC network of city-based chat channels such as Jakarta, Medan and Bandung, founded in 1999 by a group of founders sharing a common vision.",
+            "tags": [
+                "regional"
+            ],
+            "languages": [
+                "en",
+                "id"
+            ],
+            "activity": {
+                "users": 1071,
+                "channels": 199
+            },
+            "connection": {
+                "host": "irc.allnetwork.org",
+                "port": 6667,
+                "tls": false,
+                "certificate_valid": null,
+                "url": "irc://irc.allnetwork.org:6667"
+            },
+            "sasl": true,
+            "website_url": "https://www.allnetwork.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#allnetwork",
+                    "reason": "The network's main channel, with a welcome message and a good place to say hello.",
+                    "users": 26,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#jakarta",
+                    "reason": "A chat room for people from or interested in the Indonesian capital.",
+                    "users": 326,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "id"
+                },
+                {
+                    "name": "#bandung",
+                    "reason": "A city channel whose topic points newcomers to #help if they need assistance.",
+                    "users": 315,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#medan",
+                    "reason": "A home channel for people from Medan.",
+                    "users": 315,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "id"
+                },
+                {
+                    "name": "#surabaya",
+                    "reason": "A city channel for people from Surabaya.",
+                    "users": 310,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "virtualife",
+            "name": "VirtuaLife",
+            "description": "A Brazilian Portuguese IRC network with general chat, online radio channels, programming help and city and state channels.",
+            "tags": [
+                "general",
+                "art-music"
+            ],
+            "languages": [
+                "pt",
+                "pt-BR",
+                "en"
+            ],
+            "activity": {
+                "users": 997,
+                "channels": 217
+            },
+            "connection": {
+                "host": "irc.virtualife.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.virtualife.org:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Brasil",
+                    "reason": "The network's welcome channel for general conversation in Portuguese.",
+                    "users": 71,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "#Informatica",
+                    "reason": "An active channel for computing and programming talk in Portuguese.",
+                    "users": 201,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "pt-BR"
+                },
+                {
+                    "name": "##WorldChat",
+                    "reason": "A multilingual general chat that accepts English, Portuguese, Spanish, Italian and Esperanto.",
+                    "users": 157,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#RadioPassatempo",
+                    "reason": "One of several radio channels where listeners can see what is playing and make requests.",
+                    "users": 89,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "##Linux",
+                    "reason": "A Portuguese-language channel for Linux questions and links to distributions and news.",
+                    "users": 42,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "pt"
+                }
+            ]
+        },
+        {
+            "id": "tilde-chat",
+            "name": "tilde.chat",
+            "description": "IRC network of the tildeverse, a group of public-access Unix servers; users chat in general channels, with BSD and Linux, radio, security and social rooms.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en",
+                "es"
+            ],
+            "activity": {
+                "users": 744,
+                "channels": 318
+            },
+            "connection": {
+                "host": "irc.tilde.chat",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.tilde.chat:6697"
+            },
+            "sasl": true,
+            "website_url": "https://tilde.chat/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#meta",
+                    "reason": "General chat for the whole tildeverse, and the place most people start.",
+                    "users": 364,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#helpdesk",
+                    "reason": "Newcomers can ask tildeverse questions here and get an intro to IRC.",
+                    "users": 101,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#tilderadio",
+                    "reason": "Listeners gather here around the community radio station and its bot commands.",
+                    "users": 110,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "Open conversation for people who use or are learning Linux.",
+                    "users": 61,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#security",
+                    "reason": "Discussion of security, privacy and the modern web.",
+                    "users": 59,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "dejatoons",
+            "name": "DejaToons",
+            "description": "An IRC network where users gather mostly in gaming channels, especially role-playing games, alongside classic TV and cartoon chat.",
+            "tags": [
+                "gaming",
+                "retro"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 736,
+                "channels": 60
+            },
+            "connection": {
+                "host": "irc.dejatoons.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.dejatoons.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.dejatoons.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#rpg-books",
+                    "reason": "The busiest gaming channel, centered on role-playing games and file sharing with commands to list and search.",
+                    "users": 82,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#classicnickshows",
+                    "reason": "A place to chat about favorite classic Nickelodeon shows.",
+                    "users": 15,
+                    "tags": [
+                        "retro"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "unifiedchat",
+            "name": "UnifiedChat",
+            "description": "A general-purpose IRC network whose users gather in regional, science, Linux and general chat channels, including deal feeds and earthquake monitoring.",
+            "tags": [
+                "regional",
+                "general",
+                "science"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 671,
+                "channels": 29
+            },
+            "connection": {
+                "host": "irc.unifiedchat.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.unifiedchat.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://unifiedchat.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#unifiedchat",
+                    "reason": "The main room of the network, where newcomers can say hello and learn about its network linking project.",
+                    "users": 125,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A place to talk about anything related to Linux, with a news feed.",
+                    "users": 98,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#earthquake",
+                    "reason": "A channel for monitoring earthquakes, suited to anyone interested in science and live events.",
+                    "users": 138,
+                    "tags": [
+                        "science"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#ozbargain",
+                    "reason": "Posts Australian deal listings from a feed and lets users look up current deals with simple commands.",
+                    "users": 190,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#UnifiedRadio",
+                    "reason": "Hosts the network's internet radio with house music streamed around the clock.",
+                    "users": 19,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "shelltalk",
+            "name": "Shelltalk",
+            "description": "A general-purpose IRC network, part of IRCNow, where users mix off-topic chat, game servers, regional rooms and some Unix and programming channels.",
+            "tags": [
+                "general",
+                "gaming"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 627,
+                "channels": 474
+            },
+            "connection": {
+                "host": "shelltalk.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://shelltalk.net:6697"
+            },
+            "sasl": false,
+            "website_url": "https://shelltalk.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#ircnow-offtopic",
+                    "reason": "Off-topic chat for the wider IRCNow community, a easy place to say hello.",
+                    "users": 55,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#offtopic",
+                    "reason": "A general chatter room that asks for a reasonably polite atmosphere.",
+                    "users": 19,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#ircforever",
+                    "reason": "A general channel that points to bouncer and shell services and related community sites.",
+                    "users": 44,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#plan9",
+                    "reason": "Discussion of the Plan 9 operating system for those interested in Unix-like systems.",
+                    "users": 32,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#exile",
+                    "reason": "Linked to in-game chat for an Exile game server, for players of the Minetest game.",
+                    "users": 14,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "euircnet",
+            "name": "euIRCnet",
+            "description": "A German-speaking IRC network where users gather in Linux, general chat, anime and programming channels, with some English speakers.",
+            "tags": [
+                "linux-bsd",
+                "general",
+                "anime"
+            ],
+            "languages": [
+                "de",
+                "en"
+            ],
+            "activity": {
+                "users": 524,
+                "channels": 484
+            },
+            "connection": {
+                "host": "irc.euirc.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.euirc.net:6697"
+            },
+            "sasl": false,
+            "website_url": "https://www.euirc.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#lobby",
+                    "reason": "A welcome channel with a bilingual greeting where newcomers can say hello.",
+                    "users": 31,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "de"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A German-language channel for Linux and free software discussion.",
+                    "users": 52,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "de"
+                },
+                {
+                    "name": "#anime-fansubs",
+                    "reason": "A channel for German anime fansub fans with bots for searching titles.",
+                    "users": 24,
+                    "tags": [
+                        "anime"
+                    ],
+                    "language": "de"
+                },
+                {
+                    "name": "#c++",
+                    "reason": "A programming channel for C++ questions and code sharing.",
+                    "users": 15,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "de"
+                }
+            ]
+        },
+        {
+            "id": "geeknode",
+            "name": "GeekNode",
+            "description": "A French-speaking IRC network founded in 2005 for geeks, now home to associative internet providers, regional groups and free software communities.",
+            "tags": [
+                "general",
+                "regional"
+            ],
+            "languages": [
+                "fr",
+                "en"
+            ],
+            "activity": {
+                "users": 465,
+                "channels": 314
+            },
+            "connection": {
+                "host": "irc.geeknode.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.geeknode.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.geeknode.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#ffdn",
+                    "reason": "The general channel of the federation of associative internet providers, and the busiest place to meet people from that community.",
+                    "users": 91,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "fr"
+                },
+                {
+                    "name": "#arn",
+                    "reason": "The channel of Alsace Réseau Neutre, a regional associative internet provider, open to questions about joining.",
+                    "users": 69,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "fr"
+                },
+                {
+                    "name": "#fediverse",
+                    "reason": "A place to talk about the fediverse and decentralised social networks.",
+                    "users": 17,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#labriqueinter.net",
+                    "reason": "Discussion of La Brique Internet, a self-hosting project, in French and English.",
+                    "users": 16,
+                    "tags": [
+                        "open-source"
+                    ],
+                    "language": "fr"
+                },
+                {
+                    "name": "#tdn",
+                    "reason": "A general public discussion channel for Alfa-Net and its local groups.",
+                    "users": 11,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "fr"
+                }
+            ]
+        },
+        {
+            "id": "irc4fun",
+            "name": "IRC4Fun",
+            "description": "A general-purpose IRC network, started in 2007, where people gather for social chat, bot-run games, LGBT communities, Linux and programming talk.",
+            "tags": [
+                "social",
+                "gaming"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 447,
+                "channels": 186
+            },
+            "connection": {
+                "host": "irc.irc4fun.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.irc4fun.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.IRC4Fun.net",
+            "registration_url": "https://irc4fun.net/accounts/register/",
+            "featured_channels": [
+                {
+                    "name": "#irc4fun",
+                    "reason": "The network's main chat channel, with a welcoming topic and links for registering a nickname.",
+                    "users": 154,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#LGBT",
+                    "reason": "A welcoming community channel for LGBT people and allies.",
+                    "users": 68,
+                    "tags": [
+                        "lgbtq"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#linux4fun",
+                    "reason": "Offers general Linux chat and help for beginners.",
+                    "users": 10,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#trivia",
+                    "reason": "A bot-run trivia game you can start by typing .trivia.",
+                    "users": 40,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#development",
+                    "reason": "The place to talk about the network's own software and to find out how to contribute.",
+                    "users": 48,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "evilnet",
+            "name": "EvilNET",
+            "description": "A general-purpose IRC network where people chat in English and Spanish, with regional channels for several countries and a few game channels.",
+            "tags": [
+                "general",
+                "regional"
+            ],
+            "languages": [
+                "en",
+                "es"
+            ],
+            "activity": {
+                "users": 423,
+                "channels": 84
+            },
+            "connection": {
+                "host": "irc.evilnet.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.evilnet.org:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#evilnet",
+                    "reason": "The network's main channel, where news and announcements are posted and newcomers can find help.",
+                    "users": 92,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#irc4fun",
+                    "reason": "A busy general chat channel with a welcoming topic and nickname registration instructions.",
+                    "users": 116,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#dominicanos",
+                    "reason": "A Spanish-language channel for Dominican users.",
+                    "users": 46,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "es"
+                }
+            ]
+        },
+        {
+            "id": "trendsohbet-com",
+            "name": "TrendSohbet.Com",
+            "description": "A Turkish-language chat network where people from across Turkey meet for general conversation, with some city channels and word games.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "tr"
+            ],
+            "activity": {
+                "users": 409,
+                "channels": 103
+            },
+            "connection": {
+                "host": "irc.trendsohbet.com",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.trendsohbet.com:6697"
+            },
+            "sasl": false,
+            "website_url": "http://www.TrendSohbet.Com",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Sohbet",
+                    "reason": "A busy general chat channel where newcomers can start talking in Turkish.",
+                    "users": 211,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#TRendSohbet",
+                    "reason": "The network's namesake channel for general conversation.",
+                    "users": 216,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#MobiL",
+                    "reason": "A general chat channel with a lighter crowd, suited to mobile users.",
+                    "users": 79,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                }
+            ]
+        },
+        {
+            "id": "allnightcafe",
+            "name": "AllNightCafe",
+            "description": "A general-purpose English-language IRC network where people gather for casual social chat, trivia and hanging out in a busy main lounge channel.",
+            "tags": [
+                "social"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 399,
+                "channels": 48
+            },
+            "connection": {
+                "host": "irc.allnightcafe.com",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.allnightcafe.com:6697"
+            },
+            "sasl": true,
+            "website_url": "https://allnightcafe.com/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#allnightcafe",
+                    "reason": "The network's main lounge, with relaxed English-language social chat.",
+                    "users": 177,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "bgirc-com",
+            "name": "BGirc.com",
+            "description": "A Bulgarian-language IRC network where users gather in city and national chat channels, trivia and word games, and some adult-oriented rooms.",
+            "tags": [
+                "regional",
+                "gaming"
+            ],
+            "languages": [
+                "bg",
+                "en"
+            ],
+            "activity": {
+                "users": 378,
+                "channels": 215
+            },
+            "connection": {
+                "host": "irc.bgirc.com",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.bgirc.com:6697"
+            },
+            "sasl": true,
+            "website_url": "https://bgirc.com/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Bulgaria",
+                    "reason": "The main national channel, with pointers to the network's site, forum, logs and help channel.",
+                    "users": 149,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "bg"
+                },
+                {
+                    "name": "#sofia",
+                    "reason": "A chat room for people from Sofia, the capital of Bulgaria.",
+                    "users": 111,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "bg"
+                },
+                {
+                    "name": "#varna",
+                    "reason": "A chat room for people from Varna, with a forum and channel statistics linked.",
+                    "users": 121,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "bg"
+                },
+                {
+                    "name": "#TriviaMania",
+                    "reason": "A trivia game channel where players compete for ranks.",
+                    "users": 114,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "bg"
+                },
+                {
+                    "name": "#bgchat",
+                    "reason": "A general Bulgarian chat channel that links to a browser-based web chat for the network.",
+                    "users": 133,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "bg"
+                }
+            ]
+        },
+        {
+            "id": "brasirc",
+            "name": "BrasIRC",
+            "description": "A Brazilian Portuguese-language IRC network, founded in 1996, where users chat in city and state channels, general rooms, and game channels.",
+            "tags": [
+                "regional",
+                "general"
+            ],
+            "languages": [
+                "pt",
+                "en"
+            ],
+            "activity": {
+                "users": 349,
+                "channels": 112
+            },
+            "connection": {
+                "host": "irc.brasirc.com.br",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.brasirc.com.br:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.BrasIRC.com.br",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#brasil",
+                    "reason": "The main welcome channel for the network, with links to its site, stats and web chat.",
+                    "users": 65,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "#Fliperama",
+                    "reason": "A games channel where you can play online with other users.",
+                    "users": 30,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "#tanaweb",
+                    "reason": "A general channel for culture, leisure and casual conversation.",
+                    "users": 27,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A place to ask questions and share knowledge about Linux, servers and programming.",
+                    "users": 24,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "pt"
+                },
+                {
+                    "name": "##WorldChat",
+                    "reason": "An open chat that accepts English, Portuguese, Spanish, Italian and Esperanto.",
+                    "users": 18,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "afternet",
+            "name": "AfterNET",
+            "description": "A general-purpose IRC network founded in 1996, where users gather mostly in Linux, open-source and casual chat channels, with some gaming.",
+            "tags": [
+                "linux-bsd",
+                "open-source",
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 337,
+                "channels": 179
+            },
+            "connection": {
+                "host": "irc.afternet.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.afternet.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.afternet.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#linux",
+                    "reason": "Tech discussion about Linux and other operating systems and hardware, with people willing to help if you are patient.",
+                    "users": 61,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#CyberCafe",
+                    "reason": "A casual general chat room for passing time and meeting people.",
+                    "users": 27,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#idlerpg",
+                    "reason": "A low-effort idle game that you join by registering a character, with stats and info on its website.",
+                    "users": 18,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#HexDroid",
+                    "reason": "Focused on an open source IRC client for Android, useful if you chat from a phone.",
+                    "users": 29,
+                    "tags": [
+                        "open-source"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#evilnet",
+                    "reason": "Development talk for the IRC server and services software projects the network's software is built on.",
+                    "users": 29,
+                    "tags": [
+                        "open-source"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "magnet",
+            "name": "MagNET",
+            "description": "A Perl community IRC network, started as a refuge from Efnet #perl, where users gather in programming channels for Perl modules and tools.",
+            "tags": [
+                "programming"
+            ],
+            "languages": [
+                "en",
+                "nl"
+            ],
+            "activity": {
+                "users": 320,
+                "channels": 362
+            },
+            "connection": {
+                "host": "irc.perl.org",
+                "port": 6667,
+                "tls": false,
+                "certificate_valid": null,
+                "url": "irc://irc.perl.org:6667"
+            },
+            "sasl": false,
+            "website_url": "http://www.irc.perl.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#dbi",
+                    "reason": "A channel for Perl's DBI database interface, useful for questions about database code.",
+                    "users": 17,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#mojo",
+                    "reason": "A channel for the Mojolicious web framework, suited to Perl web developers.",
+                    "users": 11,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#pdl",
+                    "reason": "A channel for the Perl Data Language, used for numeric and scientific computing in Perl.",
+                    "users": 20,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#perlde",
+                    "reason": "A German-language Perl channel for discussion among Perl programmers.",
+                    "users": 18,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#amsterdam.pm",
+                    "reason": "The Amsterdam Perl Mongers channel, where Dutch speakers arrange meetups.",
+                    "users": 15,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "nl"
+                }
+            ]
+        },
+        {
+            "id": "2600net",
+            "name": "2600net",
+            "description": "An IRC network for the hacker community, where users gather in general chat, security news, retro tech and phreaking, and gaming channels.",
+            "tags": [
+                "general",
+                "security"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 305,
+                "channels": 232
+            },
+            "connection": {
+                "host": "irc.2600.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.2600.net:6697"
+            },
+            "sasl": false,
+            "website_url": "http://scuttled.net",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#secnews",
+                    "reason": "Bots post security and world news feeds in real time, which makes it easy to read along and learn.",
+                    "users": 88,
+                    "tags": [
+                        "security"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#hope",
+                    "reason": "Discussion around the Hackers On Planet Earth conference, a good fit for people from the hacker community.",
+                    "users": 33,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#telephreak",
+                    "reason": "Covers the Telephreak bulletin board system and phreaking-era retro tech.",
+                    "users": 54,
+                    "tags": [
+                        "retro"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#offthehook",
+                    "reason": "Chat tied to the Off The Hook radio show from 2600.",
+                    "users": 30,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#idlerpg",
+                    "reason": "A low-effort idle game that newcomers can join by registering a character.",
+                    "users": 32,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "orixon",
+            "name": "Orixon",
+            "description": "An Italian-language IRC network, usable from the browser, where people gather in social chat rooms alongside general, music, gaming and regional channels.",
+            "tags": [
+                "social"
+            ],
+            "languages": [
+                "it",
+                "en",
+                "ro",
+                "sc",
+                "es"
+            ],
+            "activity": {
+                "users": 269,
+                "channels": 174
+            },
+            "connection": {
+                "host": "irc.orixon.org",
+                "port": 9999,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.orixon.org:9999"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#chat",
+                    "reason": "The network's welcome channel, with links to its website, forum and support.",
+                    "users": 10,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#dillo",
+                    "reason": "A general chat room with news, horoscope and games run by bots.",
+                    "users": 34,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "it"
+                },
+                {
+                    "name": "#irchelp",
+                    "reason": "A help channel where users are encouraged to assist each other with IRC questions.",
+                    "users": 13,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "chatlounge",
+            "name": "ChatLounge",
+            "description": "A general-purpose IRC network, founded in 2012, where users play channel games like UNO and IdleRPG, chat socially, and join regional and open-source channels.",
+            "tags": [
+                "gaming",
+                "social",
+                "general",
+                "regional"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 263,
+                "channels": 113
+            },
+            "connection": {
+                "host": "irc.chatlounge.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.chatlounge.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.chatlounge.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#social",
+                    "reason": "The network's main lounge channel for chatting, with pointers to the game channels and the help channel.",
+                    "users": 31,
+                    "tags": [
+                        "social",
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#uno",
+                    "reason": "A game channel where you can start or join a round of UNO with simple commands.",
+                    "users": 29,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#multirpg",
+                    "reason": "An idle role-playing game channel where you register a character and play over time.",
+                    "users": 22,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#uSA",
+                    "reason": "A regional channel for people chatting from or about the USA.",
+                    "users": 25,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "darkmyst",
+            "name": "DarkMyst",
+            "description": "An IRC network where users mostly gather in role-playing and game channels, alongside a general chat room.",
+            "tags": [
+                "gaming",
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 253,
+                "channels": 427
+            },
+            "connection": {
+                "host": "irc.darkmyst.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.darkmyst.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.darkmyst.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#DarkMyst",
+                    "reason": "This is the network's general chat channel, with pointers to help and to the role-playing hub.",
+                    "users": 27,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#RPG-Hub",
+                    "reason": "This out-of-character hub helps newcomers find a role-playing game that suits them.",
+                    "users": 22,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#IRPG",
+                    "reason": "This channel runs an idle role-playing game that you join by registering a character with the bot.",
+                    "users": 12,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#test",
+                    "reason": "This is a casual chat channel whose topic says everyone is welcome as long as they are polite.",
+                    "users": 10,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "darkworld",
+            "name": "DarkWorld",
+            "description": "A volunteer-run IRC network founded in 2021, where people chat in general rooms, play bot games like PigeonHunt, and join country channels and shell hosting.",
+            "tags": [
+                "general",
+                "gaming",
+                "regional"
+            ],
+            "languages": [
+                "en",
+                "es",
+                "nl"
+            ],
+            "activity": {
+                "users": 252,
+                "channels": 266
+            },
+            "connection": {
+                "host": "irc.darkworld.network",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.darkworld.network:6697"
+            },
+            "sasl": true,
+            "website_url": "https://darkworld.network",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#darkworld",
+                    "reason": "The network's main channel, with links to help rooms and the other official channels.",
+                    "users": 153,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#DWGames",
+                    "reason": "The hub for the network's games, with a wiki and website to get started.",
+                    "users": 63,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#PigeonHunt",
+                    "reason": "A bot game where players shoot pigeons and compete on score tables.",
+                    "users": 44,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#dwshells",
+                    "reason": "Where members request shell accounts and read the signup rules.",
+                    "users": 80,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Friendship",
+                    "reason": "A friendly social room for relaxed conversation and meeting people.",
+                    "users": 13,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "pirc-pl",
+            "name": "pirc.pl",
+            "description": "A Polish-language IRC network where users gather in channels for music, casual chat, Linux help and quizzes.",
+            "tags": [
+                "art-music",
+                "social"
+            ],
+            "languages": [
+                "pl"
+            ],
+            "activity": {
+                "users": 250,
+                "channels": 195
+            },
+            "connection": {
+                "host": "irc.pirc.pl",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.pirc.pl:6697"
+            },
+            "sasl": true,
+            "website_url": "https://pirc.pl/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#knajpa",
+                    "reason": "A busy pub-themed chat room where newcomers are welcomed to socialise in Polish.",
+                    "users": 47,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "pl"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A place to ask questions about Linux, from compiling sources to drivers and distributions.",
+                    "users": 28,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "pl"
+                },
+                {
+                    "name": "#muzyka",
+                    "reason": "A general music discussion channel for chatting with other listeners.",
+                    "users": 25,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "pl"
+                },
+                {
+                    "name": "#quiz",
+                    "reason": "A channel running quizzes around the clock, with new rounds on weekend evenings.",
+                    "users": 18,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "pl"
+                },
+                {
+                    "name": "#heavymetal",
+                    "reason": "A channel for sharing heavy metal music videos and a YouTube playlist.",
+                    "users": 10,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "pl"
+                }
+            ]
+        },
+        {
+            "id": "ircnet2",
+            "name": "IRCnet2",
+            "description": "A general-purpose IRC network where users gather in gaming channels and in regional channels for places like Poland, Canada, Italy and Chicago.",
+            "tags": [
+                "gaming",
+                "regional"
+            ],
+            "languages": [
+                "en",
+                "pl"
+            ],
+            "activity": {
+                "users": 245,
+                "channels": 130
+            },
+            "connection": {
+                "host": "irc.szczecin.pl",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.szczecin.pl:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": "https://ircnet2.com",
+            "featured_channels": [
+                {
+                    "name": "#gaming-league.cz",
+                    "reason": "A gaming community channel that is linked to a Matrix room.",
+                    "users": 61,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#Polska",
+                    "reason": "A Polish-language meeting place for users from Poland.",
+                    "users": 14,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#canada",
+                    "reason": "A regional channel for people from Canada.",
+                    "users": 11,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "ouchnet",
+            "name": "ouchnet",
+            "description": "A community-run IRC network with general chat, plus smaller gaming and science channels; it describes itself as focused on open conversation and privacy.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 244,
+                "channels": 89
+            },
+            "connection": {
+                "host": "irc.ouch.chat",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.ouch.chat:6697"
+            },
+            "sasl": true,
+            "website_url": "https://ouch.chat",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#ouch",
+                    "reason": "The network's main general discussion channel, a good place to say hello.",
+                    "users": 22,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#ouchtech",
+                    "reason": "A tech-focused channel where general chat is welcome if kept civil.",
+                    "users": 17,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "azzurra",
+            "name": "Azzurra",
+            "description": "An Italian-language IRC network, founded in 1997, where users chat in general channels and talk about Linux, open-source software and programming.",
+            "tags": [
+                "general",
+                "linux-bsd",
+                "open-source"
+            ],
+            "languages": [
+                "it",
+                "en"
+            ],
+            "activity": {
+                "users": 231,
+                "channels": 218
+            },
+            "connection": {
+                "host": "irc.azzurra.chat",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.azzurra.chat:6697"
+            },
+            "sasl": false,
+            "website_url": "https://www.azzurra.chat/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#italia",
+                    "reason": "The network's official welcome channel, with general chat in Italian.",
+                    "users": 61,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "it"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A discussion channel for Linux and related topics.",
+                    "users": 49,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "it"
+                },
+                {
+                    "name": "#0x90",
+                    "reason": "A lounge for talking about computing and technology.",
+                    "users": 34,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "it"
+                },
+                {
+                    "name": "#FOSS",
+                    "reason": "A channel about open-source software, GNU/Linux and computing in general.",
+                    "users": 16,
+                    "tags": [
+                        "open-source"
+                    ],
+                    "language": "it"
+                },
+                {
+                    "name": "#offtopic",
+                    "reason": "An open channel for any subject, with trivia games along the way.",
+                    "users": 11,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "it"
+                }
+            ]
+        },
+        {
+            "id": "wetfish",
+            "name": "WetFish",
+            "description": "A community IRC network, started in 2005 around a channel and imageboard, where people chat, share art, watch anime and meet up through regional channels.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en",
+                "fr"
+            ],
+            "activity": {
+                "users": 231,
+                "channels": 154
+            },
+            "connection": {
+                "host": "irc.wetfish.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.wetfish.net:6697"
+            },
+            "sasl": false,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#wetfish",
+                    "reason": "The main hangout, with a topic pointing to the network's other channels.",
+                    "users": 114,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#anime",
+                    "reason": "Hosts a weekly anime night for fans to watch together.",
+                    "users": 62,
+                    "tags": [
+                        "anime"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#feelings",
+                    "reason": "A welcoming place to talk, vent or chat about personal matters.",
+                    "users": 42,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#art",
+                    "reason": "A channel for sharing drawings and talking about art.",
+                    "users": 31,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#colorado",
+                    "reason": "A channel for members who live in Colorado to meet and make friends.",
+                    "users": 42,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "lunarirc",
+            "name": "LunarIRC",
+            "description": "A general-chat IRC network where most users hang out in casual lobby channels, with smaller groups for gaming, Dutch speakers, LGBTQ+ chat and music.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 230,
+                "channels": 213
+            },
+            "connection": {
+                "host": "irc.lunarirc.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.lunarirc.net:6697"
+            },
+            "sasl": true,
+            "website_url": "https://lunarirc.net",
+            "registration_url": "https://lunarirc.net/faq",
+            "featured_channels": [
+                {
+                    "name": "#LunarIRC",
+                    "reason": "The network lobby, where newcomers can ask questions and find active operators.",
+                    "users": 18,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#LunarBNC",
+                    "reason": "A relaxed channel for chatting or idling that welcomes anyone to stay.",
+                    "users": 187,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "gimpnet",
+            "name": "GIMPnet",
+            "description": "An IRC network where users gather mainly in open-source software project channels, with GIMP the most visible, and conversation in English and Swedish.",
+            "tags": [
+                "open-source"
+            ],
+            "languages": [
+                "en",
+                "sv"
+            ],
+            "activity": {
+                "users": 225,
+                "channels": 131
+            },
+            "connection": {
+                "host": "irc.gimp.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.gimp.org:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#gimp",
+                    "reason": "The main channel for GIMP users, where questions about the image editor are welcome if they are precise.",
+                    "users": 43,
+                    "tags": [
+                        "open-source"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "ergo",
+            "name": "Ergo",
+            "description": "The project network for the Ergo IRC server software, where users gather around open-source discussion, casual social chat and some Linux talk.",
+            "tags": [
+                "open-source",
+                "social",
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 201,
+                "channels": 286
+            },
+            "connection": {
+                "host": "irc.ergo.chat",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.ergo.chat:6697"
+            },
+            "sasl": true,
+            "website_url": "https://ergo.chat/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#ergo",
+                    "reason": "The project's main channel for questions and news about the Ergo server software.",
+                    "users": 172,
+                    "tags": [
+                        "open-source"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#chat",
+                    "reason": "A lounge for casual conversation and meeting other people on the network.",
+                    "users": 112,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#9larp",
+                    "reason": "An off-topic channel for relaxed, non-technical talk.",
+                    "users": 51,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#derive",
+                    "reason": "A channel for Linux and software discussion around the derive project.",
+                    "users": 36,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "austnet",
+            "name": "AustNet",
+            "description": "An IRC network, started in 1996 for Australians, where people chat in city and country channels alongside general chat and some games like idle RPG and trivia.",
+            "tags": [
+                "regional",
+                "general"
+            ],
+            "languages": [
+                "en"
+            ],
+            "activity": {
+                "users": 190,
+                "channels": 131
+            },
+            "connection": {
+                "host": "irc.austnet.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.austnet.org:6697"
+            },
+            "sasl": true,
+            "website_url": "https://www.austnet.org",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#austnet",
+                    "reason": "The network's main channel, a general place to say hello and learn about the community.",
+                    "users": 35,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#melbourne",
+                    "reason": "A busy city channel for people in Melbourne, with instructions for registering a nickname.",
+                    "users": 39,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#sydney",
+                    "reason": "A city channel for chatting with people from Sydney.",
+                    "users": 25,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#aussiechat",
+                    "reason": "A general chat room that is relayed across several other networks.",
+                    "users": 21,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "kalbim-net",
+            "name": "Kalbim.Net",
+            "description": "A Turkish-language chat network where users gather in general chat, radio and game channels such as word and trivia games.",
+            "tags": [
+                "general",
+                "gaming"
+            ],
+            "languages": [
+                "tr"
+            ],
+            "activity": {
+                "users": 189,
+                "channels": 107
+            },
+            "connection": {
+                "host": "irc.kalbim.net",
+                "port": 6667,
+                "tls": false,
+                "certificate_valid": null,
+                "url": "irc://irc.kalbim.net:6667"
+            },
+            "sasl": false,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Sohbet",
+                    "reason": "The main general chat channel, with a welcome topic for new arrivals.",
+                    "users": 143,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Geveze",
+                    "reason": "A busy general chat channel for casual conversation.",
+                    "users": 129,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Radyo",
+                    "reason": "A radio channel where people listen to music and chat.",
+                    "users": 132,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Oyun",
+                    "reason": "A game channel with a monthly top-player list.",
+                    "users": 120,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Sevgi",
+                    "reason": "A social channel for relaxed conversation and meeting people.",
+                    "users": 120,
+                    "tags": [
+                        "social"
+                    ],
+                    "language": "tr"
+                }
+            ]
+        },
+        {
+            "id": "atrum",
+            "name": "Atrum",
+            "description": "A worldwide IRC network where users gather in music, social and adult chat channels, with smaller groups for Afrikaans speakers, gaming and mIRC help.",
+            "tags": [
+                "art-music",
+                "social"
+            ],
+            "languages": [
+                "en",
+                "af"
+            ],
+            "activity": {
+                "users": 173,
+                "channels": 173
+            },
+            "connection": {
+                "host": "irc.atrum.org",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": false,
+                "url": "ircs://irc.atrum.org:6697"
+            },
+            "sasl": false,
+            "website_url": "http://www.atrum.org/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#deathrow",
+                    "reason": "A busy music-themed room dedicated to Tupac and Death Row Records.",
+                    "users": 102,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "en"
+                },
+                {
+                    "name": "#afrikaans",
+                    "reason": "A friendly room for Afrikaans speakers with an accompanying radio stream.",
+                    "users": 10,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "af"
+                }
+            ]
+        },
+        {
+            "id": "german-elite",
+            "name": "German-Elite",
+            "description": "A German-language IRC network where users gather for general chat, with a sizeable Linux community and a smaller group of programmers.",
+            "tags": [
+                "general",
+                "linux-bsd"
+            ],
+            "languages": [
+                "de",
+                "en"
+            ],
+            "activity": {
+                "users": 168,
+                "channels": 80
+            },
+            "connection": {
+                "host": "irc.german-elite.net",
+                "port": 6697,
+                "tls": true,
+                "certificate_valid": true,
+                "url": "ircs://irc.german-elite.net:6697"
+            },
+            "sasl": true,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#talk",
+                    "reason": "The network's official chat channel for general conversation and tips, in German.",
+                    "users": 31,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "de"
+                },
+                {
+                    "name": "#german-elite",
+                    "reason": "The network channel, for questions about German-Elite itself.",
+                    "users": 17,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "de"
+                },
+                {
+                    "name": "#linux",
+                    "reason": "A place to discuss Linux with other users.",
+                    "users": 22,
+                    "tags": [
+                        "linux-bsd"
+                    ],
+                    "language": null
+                },
+                {
+                    "name": "#coding",
+                    "reason": "A channel for programming, with links to learning resources and code-sharing tools.",
+                    "users": 12,
+                    "tags": [
+                        "programming"
+                    ],
+                    "language": "en"
+                }
+            ]
+        },
+        {
+            "id": "sohbet-net",
+            "name": "Sohbet.net",
+            "description": "A Turkish-language chat network where users gather in general conversation rooms, radio and music channels, city rooms and game channels.",
+            "tags": [
+                "general",
+                "art-music",
+                "regional"
+            ],
+            "languages": [
+                "tr"
+            ],
+            "activity": {
+                "users": 137,
+                "channels": 83
+            },
+            "connection": {
+                "host": "irc.sohbet.net",
+                "port": 6667,
+                "tls": false,
+                "certificate_valid": null,
+                "url": "irc://irc.sohbet.net:6667"
+            },
+            "sasl": false,
+            "website_url": null,
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Sohbet",
+                    "reason": "The main general chat room, where Turkish speakers meet and talk.",
+                    "users": 83,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Radyo",
+                    "reason": "A music room tied to an online radio station that takes song requests.",
+                    "users": 64,
+                    "tags": [
+                        "art-music"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Istanbul",
+                    "reason": "A city room for people from or interested in Istanbul.",
+                    "users": 19,
+                    "tags": [
+                        "regional"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#oyun",
+                    "reason": "A games channel that shows monthly monthly rankings of its most active members.",
+                    "users": 13,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "tr"
+                },
+                {
+                    "name": "#Bulmaca",
+                    "reason": "A puzzle and word game room with monthly score rankings.",
+                    "users": 12,
+                    "tags": [
+                        "gaming"
+                    ],
+                    "language": "tr"
+                }
+            ]
+        },
+        {
+            "id": "mavra-net",
+            "name": "Mavra.Net",
+            "description": "A Turkish-language IRC network where users gather for general conversation and chat.",
+            "tags": [
+                "general"
+            ],
+            "languages": [
+                "tr"
+            ],
+            "activity": {
+                "users": 135,
+                "channels": null
+            },
+            "connection": {
+                "host": "irc.mavra.net",
+                "port": 6667,
+                "tls": false,
+                "certificate_valid": null,
+                "url": "irc://irc.mavra.net:6667"
+            },
+            "sasl": true,
+            "website_url": "https://mavra.net/",
+            "registration_url": null,
+            "featured_channels": [
+                {
+                    "name": "#Mavra",
+                    "reason": "The network's main chat channel, with a Turkish welcome topic and general conversation.",
+                    "users": 118,
+                    "tags": [
+                        "general"
+                    ],
+                    "language": "tr"
+                }
+            ]
+        }
+    ]
+}

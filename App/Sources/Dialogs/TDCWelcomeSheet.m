@@ -131,7 +131,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.nicknameTextField.stringValue = [TPCPreferences defaultNickname];
 
 	/* Preselect the largest network */
-	IRCNetwork *defaultNetwork = [self.networkList networkNamed:@"Libera Chat"];
+	IRCNetwork *defaultNetwork = [self.networkList networkNamed:@"Libera.Chat"];
 
 	if (defaultNetwork) {
 		self.serverAddressComboBox.stringValue = defaultNetwork.networkName;

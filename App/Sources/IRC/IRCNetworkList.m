@@ -36,7 +36,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
-#import "TPCResourceManager.h"
+#import "IRCAtlasFeedStorePrivate.h"
 #import "IRCNetworkList.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSMutableArray<IRCNetwork *> *listOfNetworks = [NSMutableArray array];
 
-	NSDictionary *networkList = [TPCResourceManager dictionaryFromResources:@"IRCNetworks" cacheValue:NO];
+	NSDictionary *networkList = [IRCAtlasFeedStore networkConfigurations];
 
 	NSArray *networkNamesUnsorted = networkList.allKeys;
 

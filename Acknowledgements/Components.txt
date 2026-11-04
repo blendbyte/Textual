@@ -23,6 +23,8 @@ style | Simplified style | App/Resources/Styling/Bundled Styles/Simplified/copyr
 style | Sulaco style | App/Resources/Styling/Bundled Styles/Sulaco/LICENSE.txt | all |
 style | Tomorrow style | App/Resources/Styling/Bundled Styles/Tomorrow/copyright.txt | all |
 style | Total Sublime style | App/Resources/Styling/Bundled Styles/Total Sublime/copyright.txt | all |
+code | IRC Atlas | Acknowledgements/IRCAtlas.txt | all | App/Resources/Property Lists/IRCAtlasOnboarding.json
+# The list of networks and the suggestions made from it (CC BY 4.0; the app and the release script use its feed)
 code | gemoji | Acknowledgements/gemoji.txt | all | App/Resources/Property Lists/EmojiShortcodes.json
 # Emoji names for the completion list (only the names, from db/emoji.json)
 assets | Contributed work | Acknowledgements/ContributedWork.txt | all |

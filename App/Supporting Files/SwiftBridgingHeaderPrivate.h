@@ -54,6 +54,7 @@
 #import "IRCClientPrivate.h"
 #import "NSStringHelper.h"
 #import "IRCNetworkList.h"
+#import "TPCPathInfo.h"
 #import "IRCServerPrivate.h"
 #import "IRCStrictTransportSecurityPrivate.h"
 #import "TDCServerPropertiesPanePrivate.h"

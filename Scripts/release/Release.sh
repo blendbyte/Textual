@@ -5,7 +5,8 @@ set -euo pipefail
 # Builds a release of the direct-download Textual and everything the website
 # needs for it, in one go:
 #
-#   1. raises the build number (Configurations/Version.xcconfig)
+#   1. raises the build number (Configurations/Version.xcconfig) and takes the
+#      current IRC Atlas feed as the copy the app ships with
 #   2. archives the Release build and exports it signed with Developer ID and
 #      the "Textual Developer ID" provisioning profile
 #   3. notarizes and staples the app
@@ -38,6 +39,8 @@ NOTARY_PROFILE="Textual Notary"
 SPARKLE_ACCOUNT="textual"
 SIGN_UPDATE="${ROOT}/Frameworks/Vendor/Sparkle/bin/sign_update"
 VERSION_FILE="${ROOT}/Configurations/Version.xcconfig"
+ATLAS_FEED_URL="https://www.ircatlas.org/v1/onboarding.json"
+ATLAS_FEED_FILE="${ROOT}/App/Resources/Property Lists/IRCAtlasOnboarding.json"
 
 channel=""
 licenseManager=""
@@ -119,7 +122,7 @@ released=0
 # A failed release leaves the build number as it was; the work folder goes
 cleanUp() {
 	if [ "${testRun}" = 0 ] && [ "${released}" = 0 ]; then
-		git -C "${ROOT}" checkout -- "${VERSION_FILE}"
+		git -C "${ROOT}" checkout -- "${VERSION_FILE}" "${ATLAS_FEED_FILE}"
 	fi
 
 	rm -rf "${work}"
@@ -128,6 +131,21 @@ cleanUp() {
 trap cleanUp EXIT
 
 echo "Textual ${version} (${build})${channel:+, ${channel} channel} → ${output}"
+
+# The network list the app ships with
+
+step "Refreshing the IRC Atlas feed"
+
+curl --fail --silent --show-error --max-time 60 --output "${work}/onboarding.json" "${ATLAS_FEED_URL}" ||
+	fail "Could not fetch the IRC Atlas feed"
+
+[ "$(plutil -extract schema_version raw -o - "${work}/onboarding.json" 2> /dev/null)" = "1" ] ||
+	fail "The IRC Atlas feed has an unknown schema"
+
+plutil -extract networks.0.connection.host raw -o - "${work}/onboarding.json" > /dev/null 2>&1 ||
+	fail "The IRC Atlas feed has no networks"
+
+cp "${work}/onboarding.json" "${ATLAS_FEED_FILE}"
 
 # Archive
 
@@ -312,7 +330,7 @@ if [ "${testRun}" = 0 ]; then
 
 	step "Committing build ${build} and tagging v${version}-${build}"
 
-	git -C "${ROOT}" commit -q -m "Build ${build} (${version}${channel:+ ${channel}})" -- "${VERSION_FILE}"
+	git -C "${ROOT}" commit -q -m "Build ${build} (${version}${channel:+ ${channel}})" -- "${VERSION_FILE}" "${ATLAS_FEED_FILE}"
 	git -C "${ROOT}" tag "v${version}-${build}"
 
 	echo "Push when the release is published: git push && git push origin v${version}-${build}"

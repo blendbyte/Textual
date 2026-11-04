@@ -64,6 +64,7 @@ Textual bundles or links against the following third-party components:
 | [LimeChat](https://github.com/psychs/limechat) | BSD 2-Clause | (c) 2008-2010 Satoshi Nakagawa |
 | [Colloquy](https://github.com/Colloquy/colloquy) (Chat Core) | BSD-style | (c) 2000-2012 the Colloquy IRC Client |
 | [Sparkle](https://github.com/sparkle-project/Sparkle) | MIT | (c) 2006-2017 Andy Matuschak and contributors |
+| [IRC Atlas](https://www.ircatlas.org) (the list of networks) | CC BY 4.0 | IRC Atlas |
 | [gemoji](https://github.com/github/gemoji) (emoji names) | MIT | (c) 2019 GitHub, Inc. |
 
 The "Cocoa Extensions" internal framework also carries a small number of third-party snippets from Apple, Dave Dribin, Satoshi Nakagawa, and the Chromium developers; see the framework's `ACKNOWLEDGEMENT.txt`. Bundled styles include their own copyright and license files. The application icon was created by Brandon Rodriguez, and parts of the image assets are (c) 2015 Reda Lemeden.
