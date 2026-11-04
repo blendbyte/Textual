@@ -38,10 +38,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* The window that sets Textual up at first launch (TDCSetupAssistant.swift) */
 @interface TDCSetupAssistant : NSObject
-/* After preferences load and before the main window: shown once, on a copy
- without servers. The completion block runs right away when there is nothing
- to offer, otherwise once the window closes. */
-+ (void)offerAtLaunchThen:(dispatch_block_t)completion;
+/* At launch. The first block loads preferences: right away unless Textual 7
+ is found, so that an import needs no restart. The second runs right away when
+ there is nothing to offer, otherwise once the window closes. */
++ (void)offerAtLaunchLoadingPreferences:(dispatch_block_t)loadPreferences then:(dispatch_block_t)completion;
+
+/* File > Import Settings from Textual 7…; restarts Textual when done */
++ (void)importFromMenu;
+
+/* File > Remove Textual 7 Data… */
++ (void)removeEarlierDataFromMenu;
 @end
 
 NS_ASSUME_NONNULL_END

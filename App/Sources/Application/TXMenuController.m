@@ -70,6 +70,7 @@
 #import "TDCServerChangeNicknameSheetPrivate.h"
 #import "TDCServerPropertiesSheetPrivate.h"
 #import "TDCWelcomeSheetPrivate.h"
+#import "TPCLegacyImportPrivate.h"
 #import "TPCApplicationInfo.h"
 #import "TPCPathInfoPrivate.h"
 #import "TPCPreferencesImportExport.h"
@@ -649,6 +650,15 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
+		case MTMMFileRemoveEarlierVersionData: // "Remove Textual 7 Data…"
+		{
+			/* Only after everything of it came over */
+			BOOL removable = (TPCLegacyImport.sourceImportedCompletely != nil);
+
+			menuItem.hidden = (removable == NO);
+
+			return removable;
+		}
 		case MTMMFileCloseWindow: // "Close Window"
 		{
 			TXCommandWKeyAction keyAction = [TPCPreferences commandWKeyAction];

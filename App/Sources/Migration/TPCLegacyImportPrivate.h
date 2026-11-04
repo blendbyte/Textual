@@ -81,7 +81,7 @@ typedef NS_ENUM(NSUInteger, TPCLegacyImportReadError) {
 /* Imports the settings, files, scrollback and licence of Textual 7 (or an
  earlier version) through folders the user grants access to. Textual 8 has
  a new identity, so nothing of the earlier version's is reused in place.
- The window that walks the user through it is TDCLegacyImportAssistant. */
+ The setup window walks the user through it (TDCSetupImport.swift). */
 @interface TPCLegacyImport : NSObject
 /* Sources with settings, most recently used first */
 @property (class, readonly, copy) NSArray<TPCLegacyImportSource *> *availableSources;
@@ -99,6 +99,11 @@ typedef NS_ENUM(NSUInteger, TPCLegacyImportReadError) {
 
 /* The launch offer stays away (after an import, or "Start Fresh") */
 + (void)markOffered;
+
+/* The earlier version whose data can be removed: everything of it came over */
+@property (class, readonly, nullable) TPCLegacyImportSource *sourceImportedCompletely;
++ (void)noteImportedCompletelyFromSource:(TPCLegacyImportSource *)source;
++ (void)clearCompleteImportNote;
 
 /* A folder granted before (security-scoped bookmark), or nil */
 + (nullable NSURL *)rememberedURLForFolder:(NSURL *)folderURL;

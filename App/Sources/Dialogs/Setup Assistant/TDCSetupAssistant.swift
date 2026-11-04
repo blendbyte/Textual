@@ -59,29 +59,55 @@ enum SetupStep
 {
 	case welcome
 	case howIRCWorks
+	case importing
 	case done
+}
+
+enum SetupPath
+{
+	case newInstall
+	case upgrade // Textual 7 or an earlier version was found
+	case importOnly // File > Import Settings from Textual 7…
 }
 
 final class SetupModel: ObservableObject
 {
+	@Published private(set) var path: SetupPath
 	@Published private(set) var step = SetupStep.welcome
 
 	/* From Welcome: new to IRC gets the introduction */
 	private var newToIRC = true
 
+	let importModel: ImportModel?
+
+	/* Before anything reads settings; an import replaces them first */
+	var loadPreferences: (() -> Void)?
+
 	var finish: (() -> Void)?
+	var finishWithoutImport: (() -> Void)?
+
+	/* What the window shows now, for its transitions */
+	var stepIdentity: String
+	{
+		"\(path) \(step)"
+	}
+
+	init(path: SetupPath, importModel: ImportModel? = nil)
+	{
+		self.path = path
+		self.importModel = importModel
+	}
 
 	var steps: [SetupStep]
 	{
-		var steps = [SetupStep.welcome]
-
-		if (newToIRC) {
-			steps.append(.howIRCWorks)
+		switch path {
+			case .newInstall:
+				return (newToIRC ? [.welcome, .howIRCWorks, .done] : [.welcome, .done])
+			case .upgrade:
+				return [.welcome, .importing, .done]
+			case .importOnly:
+				return [.welcome, .importing]
 		}
-
-		steps.append(.done)
-
-		return steps
 	}
 
 	func start(newToIRC: Bool)
@@ -91,12 +117,40 @@ final class SetupModel: ObservableObject
 		goForward()
 	}
 
+	/// Textual 7 was found, but the user begins with an empty Textual: not offered again (the menu item still works)
+	func startFresh()
+	{
+		TPCLegacyImport.markOffered()
+
+		loadPreferences?()
+
+		path = .newInstall
+	}
+
+	func startImport()
+	{
+		importModel?.begin()
+
+		step = .importing
+	}
+
+	func leaveImportAccess()
+	{
+		importModel?.stopUsingGroupFolder()
+
+		step = .welcome
+	}
+
 	func goForward()
 	{
 		guard let index = steps.firstIndex(of: step), index < (steps.count - 1) else {
 			finish?()
 
 			return
+		}
+
+		if (step == .importing) {
+			loadPreferences?()
 		}
 
 		step = steps[index + 1]
@@ -123,27 +177,70 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 	/* Textual Dev only shows it when asked to, so that a test can start it without servers */
 	private static let offerInDebugKey = "Setup Assistant -> Offer in Development Builds"
 
-	private let model = SetupModel()
+	private let model: SetupModel
 	private let window: NSWindow
 
-	@objc(offerAtLaunchThen:)
-	static func offerAtLaunch(then completion: @escaping () -> Void)
+	/* Before settings load when Textual 7 is found, so that an import needs no restart */
+	@objc(offerAtLaunchLoadingPreferences:then:)
+	static func offerAtLaunch(loadingPreferences: @escaping () -> Void, then completion: @escaping () -> Void)
 	{
-		guard shouldOfferAtLaunch else {
+		var preferencesLoaded = false
+
+		let loadPreferencesOnce = {
+			if (preferencesLoaded == false) {
+				preferencesLoaded = true
+
+				loadingPreferences()
+			}
+		}
+
+		let importModel = (TPCLegacyImport.shouldOfferAtLaunch ? ImportModel(fromMenu: false) : nil)
+
+		if (importModel == nil) {
+			loadPreferencesOnce()
+
+			guard shouldOfferAtLaunch else {
+				completion()
+
+				return
+			}
+		}
+
+		/* Not before the app has finished launching: a modal session started
+		 earlier finishes launching early, and the main window ordered in after
+		 it never appears on screen. Started from the run loop, not the main
+		 queue, which the import needs while the window is open. */
+		RunLoop.main.perform(inModes: [.default]) {
+			let assistant = SetupAssistant(path: ((importModel != nil) ? .upgrade : .newInstall), importModel: importModel)
+
+			assistant.model.loadPreferences = loadPreferencesOnce
+
+			assistant.runModal()
+
+			loadPreferencesOnce()
+
 			completion()
+		}
+	}
+
+	/// File > Import Settings from Textual 7…; restarts Textual when done
+	@objc static func importFromMenu()
+	{
+		guard let importModel = ImportModel(fromMenu: true) else {
+			TDCAlert.modalAlert(withMessage: ImportText("1nk-dm"), title: ImportText("2e4-mp"), defaultButton: ImportText("oxy-im"), alternateButton: nil)
 
 			return
 		}
 
-		/* Not before the app has finished launching, for the reason in
-		 +[TDCLegacyImportAssistant offerImportAtLaunchThen:] */
-		RunLoop.main.perform(inModes: [.default]) {
-			let assistant = SetupAssistant()
+		let assistant = SetupAssistant(path: .importOnly, importModel: importModel)
 
-			assistant.runModal()
+		assistant.runModal()
+	}
 
-			completion()
-		}
+	/// File > Remove Textual 7 Data…
+	@objc static func removeEarlierDataFromMenu()
+	{
+		ImportRemoval.run()
 	}
 
 	private static var shouldOfferAtLaunch: Bool
@@ -160,7 +257,7 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 		}
 #endif
 
-		/* Already in use, or imported: it doesn't come back if the servers are removed later */
+		/* Already in use: it doesn't come back if the servers are removed later */
 		if (TPCLegacyImport.hasServers) {
 			markCompleted()
 
@@ -175,8 +272,10 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 		TPCPreferencesUserDefaults.shared().set(currentVersion, forKey: completedKey)
 	}
 
-	private override init()
+	private init(path: SetupPath, importModel: ImportModel?)
 	{
+		model = SetupModel(path: path, importModel: importModel)
+
 		window = NSWindow(contentRect: NSRect(origin: .zero, size: SetupRootView.size),
 						  styleMask: [.titled, .closable, .fullSizeContentView],
 						  backing: .buffered,
@@ -184,7 +283,7 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 		super.init()
 
-		window.title = SetupText("sa-title")
+		window.title = ((path == .importOnly) ? ImportText("k3w-q8") : SetupText("sa-title"))
 		window.titlebarAppearsTransparent = true
 		window.titleVisibility = .hidden
 		window.isMovableByWindowBackground = true
@@ -197,9 +296,13 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 		window.contentView = NSHostingView(rootView: SetupRootView(model: model))
 
-		model.finish = { [weak self] in
-			Self.markCompleted()
+		importModel?.window = window
 
+		model.finish = { [weak self] in
+			self?.finish()
+		}
+
+		model.finishWithoutImport = { [weak self] in
 			self?.stop()
 		}
 	}
@@ -231,6 +334,20 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 		NSApp.stopModal()
 	}
 
+	private func finish()
+	{
+		/* After an import from the menu, Textual has to restart */
+		if (model.path == .importOnly) {
+			TPCLegacyImport.restart()
+
+			return
+		}
+
+		Self.markCompleted()
+
+		stop()
+	}
+
 	/* Quit: setup comes back at the next launch */
 	@objc func worksWhenModal() -> Bool
 	{
@@ -239,18 +356,33 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 	@objc func terminate(_ sender: Any?)
 	{
+		if (model.importModel?.isCopying == true) {
+			return
+		}
+
 		NSApp.terminate(sender)
 	}
 
-	/* Closing on Welcome is "not now": it comes back at the next launch.
-	 Later on, setup ends with what was chosen so far. */
+	/* Closing before anything happened is "not now": it comes back at the next
+	 launch. After an import, setup ends with what was chosen so far. */
 	func windowShouldClose(_ sender: NSWindow) -> Bool
 	{
-		if (model.step != .welcome) {
-			Self.markCompleted()
-		}
+		switch model.step {
+			case .welcome:
+				stop()
+			case .importing:
+				guard let importModel = model.importModel, importModel.isCopying == false else {
+					return false
+				}
 
-		stop()
+				if (importModel.stage == .access || importModel.stage == .nothingToImport) {
+					stop()
+				} else {
+					finish()
+				}
+			default:
+				finish()
+		}
 
 		return false
 	}
@@ -272,7 +404,7 @@ struct SetupRootView: View
 			/* A short step sits in the middle of the window; a long one scrolls */
 			GeometryReader { geometry in
 				ScrollView {
-					SetupStepView(step: model.step)
+					SetupStepView(model: model)
 						.padding(.horizontal, 36)
 						.padding(.top, 28)
 						.padding(.bottom, 12)
@@ -280,26 +412,37 @@ struct SetupRootView: View
 				}
 				.scrollBounceBehavior(.basedOnSize)
 			}
-			.id(model.step)
+			.id(model.stepIdentity)
 			.transition(.opacity)
 
 			SetupFooter(model: model)
 		}
 		.frame(width: Self.size.width, height: Self.size.height)
-		.animation((reduceMotion ? nil : .easeInOut(duration: 0.18)), value: model.step)
+		.animation((reduceMotion ? nil : .easeInOut(duration: 0.18)), value: model.stepIdentity)
 	}
 }
 
 struct SetupStepView: View
 {
-	let step: SetupStep
+	@ObservedObject var model: SetupModel
 
 	var body: some View
 	{
-		switch step {
-			case .welcome: SetupWelcomeStep()
-			case .howIRCWorks: SetupHowIRCWorksStep()
-			case .done: SetupDoneStep()
+		switch model.step {
+			case .welcome:
+				if let importModel = model.importModel, model.path != .newInstall {
+					SetupImportWelcomeStep(model: importModel)
+				} else {
+					SetupWelcomeStep()
+				}
+			case .howIRCWorks:
+				SetupHowIRCWorksStep()
+			case .importing:
+				if let importModel = model.importModel {
+					SetupImportStep(model: importModel)
+				}
+			case .done:
+				SetupDoneStep(upgrade: (model.path == .upgrade))
 		}
 	}
 }
@@ -316,36 +459,73 @@ struct SetupFooter: View
 
 			Spacer()
 
-			switch model.step {
-				case .welcome:
-					Button(SetupText("sa-b-know")) {
-						model.start(newToIRC: false)
-					}
-
-					Button(SetupText("sa-b-new")) {
-						model.start(newToIRC: true)
-					}
-					.keyboardShortcut(.defaultAction)
-				case .done:
-					backButton
-
-					Button(SetupText("sa-b-finish")) {
-						model.goForward()
-					}
-					.keyboardShortcut(.defaultAction)
-				default:
-					backButton
-
-					Button(SetupText("sa-b-continue")) {
-						model.goForward()
-					}
-					.keyboardShortcut(.defaultAction)
-			}
+			buttons
 		}
 		.controlSize(.large)
 		.padding(.horizontal, 20)
 		.padding(.top, 10)
 		.padding(.bottom, 16)
+	}
+
+	@ViewBuilder
+	private var buttons: some View
+	{
+		switch model.step {
+			case .welcome:
+				welcomeButtons
+			case .importing:
+				if let importModel = model.importModel {
+					SetupImportButtons(setup: model, model: importModel)
+				}
+			case .done:
+				if (model.path != .upgrade) {
+					backButton
+				}
+
+				Button((model.path == .upgrade) ? ImportText("weu-cf") : SetupText("sa-b-finish")) {
+					model.goForward()
+				}
+				.keyboardShortcut(.defaultAction)
+			default:
+				backButton
+
+				Button(SetupText("sa-b-continue")) {
+					model.goForward()
+				}
+				.keyboardShortcut(.defaultAction)
+		}
+	}
+
+	@ViewBuilder
+	private var welcomeButtons: some View
+	{
+		switch model.path {
+			case .newInstall:
+				Button(SetupText("sa-b-know")) {
+					model.start(newToIRC: false)
+				}
+
+				Button(SetupText("sa-b-new")) {
+					model.start(newToIRC: true)
+				}
+				.keyboardShortcut(.defaultAction)
+			case .upgrade:
+				Button(ImportText("wpa-sv")) {
+					model.startFresh()
+				}
+
+				if let importModel = model.importModel {
+					SetupImportStartButton(setup: model, model: importModel)
+				}
+			case .importOnly:
+				Button(ImportText("qso-2g")) {
+					model.finishWithoutImport?()
+				}
+
+				if let importModel = model.importModel {
+					SetupImportStartButton(setup: model, model: importModel)
+				}
+		}
 	}
 
 	private var backButton: some View
@@ -556,10 +736,71 @@ struct SetupConceptCard: View
 
 struct SetupDoneStep: View
 {
+	let upgrade: Bool
+
 	var body: some View
 	{
-		SetupHeader(title: SetupText("sa-d-title"), lead: SetupText("sa-d-lead")) {
+		SetupHeader(title: SetupText("sa-d-title"), lead: (upgrade ? SetupText("sa-d-lead-u") : SetupText("sa-d-lead"))) {
 			SetupSymbol(symbol: "checkmark", color: .green)
+		}
+	}
+}
+
+// MARK: - Import buttons
+
+struct SetupImportStartButton: View
+{
+	let setup: SetupModel
+	@ObservedObject var model: ImportModel
+
+	var body: some View
+	{
+		Button(model.replacesServers ? ImportText("6e6-8o") : ImportText("zjw-bd")) {
+			setup.startImport()
+		}
+		.keyboardShortcut(.defaultAction)
+		.disabled(model.earlierVersionIsRunning)
+	}
+}
+
+struct SetupImportButtons: View
+{
+	@ObservedObject var setup: SetupModel
+	@ObservedObject var model: ImportModel
+
+	var body: some View
+	{
+		switch model.stage {
+			case .access:
+				Button(ImportText("ivy-ht")) {
+					setup.leaveImportAccess()
+				}
+
+				Button(ImportText("5je-mb")) {
+					model.requestAccess()
+				}
+				.keyboardShortcut(.defaultAction)
+			case .nothingToImport:
+				Button(ImportText("ivy-ht")) {
+					setup.leaveImportAccess()
+				}
+				.keyboardShortcut(.defaultAction)
+			case .copying:
+				EmptyView()
+			case .license:
+				Button(ImportText("xyt-ns")) {
+					model.skipLicense()
+				}
+
+				Button(ImportText("5je-mb")) {
+					model.requestLicenseAccess()
+				}
+				.keyboardShortcut(.defaultAction)
+			case .summary:
+				Button(model.fromMenu ? ImportText("33s-fi") : ImportText("zjw-bd")) {
+					setup.goForward()
+				}
+				.keyboardShortcut(.defaultAction)
 		}
 	}
 }

@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _bookmarksDefaultsKey			@"Legacy Settings Import -> Bookmarks"
 
 /* Development builds offer the import at launch only when asked to */
+#define _importedCompletelyDefaultsKey	@"Legacy Settings Import -> Imported Completely"
 #define _offerInDebugDefaultsKey		@"Legacy Settings Import -> Offer in Development Builds"
 
 #define _historicLogFilenameKey			@"TVCLogControllerHistoricLogFileSavePath_v3"
@@ -291,6 +292,35 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return (self.availableSources.count > 0);
+}
+
++ (nullable TPCLegacyImportSource *)sourceImportedCompletely
+{
+	NSString *groupIdentifier = [RZUserDefaults() stringForKey:_importedCompletelyDefaultsKey];
+
+	if (groupIdentifier == nil) {
+		return nil;
+	}
+
+	for (TPCLegacyImportSource *source in self.availableSources) {
+		if ([source.groupIdentifier isEqualToString:groupIdentifier]) {
+			return source;
+		}
+	}
+
+	return nil;
+}
+
++ (void)noteImportedCompletelyFromSource:(TPCLegacyImportSource *)source
+{
+	NSParameterAssert(source != nil);
+
+	[RZUserDefaults() _migrateObject:source.groupIdentifier forKey:_importedCompletelyDefaultsKey];
+}
+
++ (void)clearCompleteImportNote
+{
+	[RZUserDefaults() _migrateObject:nil forKey:_importedCompletelyDefaultsKey];
 }
 
 + (void)markOffered

@@ -45,7 +45,6 @@
 #import "TLOLocalization.h"
 #import "TLOSpeechSynthesizerPrivate.h"
 #import "THOPluginManagerPrivate.h"
-#import "TDCLegacyImportAssistantPrivate.h"
 #import "TXApplicationPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCSetupAssistantPrivate.h"
@@ -160,7 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 							 NSProcessInfo.processInfo.environment[@"XCTestSessionIdentifier"] != nil);
 
 	if (hostingUnitTests) {
-		[self _loadPreferencesAndMainWindow:NO];
+		[self _loadPreferences];
 
 		return;
 	}
@@ -179,31 +178,25 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 #endif
 
-	/* Offer to import Textual 7's settings before preferences load, so that
-	 a first-launch import needs no restart. Development builds ("Textual
-	 Dev") only offer it when asked to. */
-	[TDCLegacyImportAssistant offerImportAtLaunchThen:^{
-		[self _loadPreferencesAndMainWindow:YES];
+	/* Setup, with the offer to import Textual 7's settings before preferences
+	 load, so that a first-launch import needs no restart. Development builds
+	 ("Textual Dev") only offer them when asked to. */
+	[TDCSetupAssistant offerAtLaunchLoadingPreferences:^{
+		[self _loadPreferences];
+	} then:^{
+		/* We wait until -awakeFromNib to wake the window so that the menu
+		 controller created by the main nib has time to load. */
+		[RZMainBundle() loadNibNamed:@"TVCMainWindow" owner:self topLevelObjects:nil];
 	}];
 }
 
-- (void)_loadPreferencesAndMainWindow:(BOOL)loadMainWindow
+- (void)_loadPreferences
 {
 	/* Initialize preferences */
 	[TPCPreferences initPreferences];
 
 	/* Call shared instance to warm it */
 	[TXSharedApplication sharedAppearance];
-
-	if (loadMainWindow == NO) {
-		return;
-	}
-
-	/* We wait until -awakeFromNib to wake the window so that the menu
-	 controller created by the main nib has time to load. */
-	[TDCSetupAssistant offerAtLaunchThen:^{
-		[RZMainBundle() loadNibNamed:@"TVCMainWindow" owner:self topLevelObjects:nil];
-	}];
 }
 
 - (void)applicationWakeStepOne

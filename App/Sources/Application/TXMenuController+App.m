@@ -69,7 +69,8 @@
 #import "TDCChannelSpotlightControllerPrivate.h"
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCInputPrompt.h"
-#import "TDCLegacyImportAssistantPrivate.h"
+#import "TDCSetupAssistantPrivate.h"
+#import "TPCLegacyImportPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCNicknameColorSheetPrivate.h"
 #import "TDCServerChangeNicknameSheetPrivate.h"
@@ -183,7 +184,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)importSettingsFromTextual7:(nullable id)sender
 {
-	[TDCLegacyImportAssistant importFromMenu];
+	[TDCSetupAssistant importFromMenu];
+}
+
+- (void)removeEarlierVersionData:(nullable id)sender
+{
+	[TDCSetupAssistant removeEarlierDataFromMenu];
 }
 
 #pragma mark -

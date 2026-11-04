@@ -246,6 +246,11 @@
                                     <action selector="importSettingsFromTextual7:" target="267" id="Lg7-Im-a1c"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Remove Textual 7 Data…" tag="208" id="Rm7-Dt-p0r">
+                                <connections>
+                                    <action selector="removeEarlierVersionData:" target="267" id="Rm7-Dt-a1c"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Import Settings…" tag="9100005" id="3086">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
