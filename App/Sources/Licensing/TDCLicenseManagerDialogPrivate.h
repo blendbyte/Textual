@@ -40,6 +40,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+@class TDCLicenseWindowModel;
+
 TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerActivatedLicenseNotification;
 TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerDeactivatedLicenseNotification;
 TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerTrialExpiredNotification;
@@ -52,6 +54,14 @@ TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerTrialExpiredNotificatio
 
 /* Shows the window and asks how the Textual 7 license that came over upgrades */
 - (void)showTextual7Upgrade;
+
+/* While the setup window is open it shows all this itself, on this model. If it's
+ closed with both seats' question still open, the window asks at the end. */
+@property (nonatomic, strong, readonly) TDCLicenseWindowModel *model;
+
+- (void)beginSetup;
+- (void)checkUpgradeForSetup;
+- (void)endSetup;
 @end
 #endif
 

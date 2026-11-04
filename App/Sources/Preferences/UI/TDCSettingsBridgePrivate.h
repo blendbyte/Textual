@@ -58,6 +58,13 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 /* The servers in the saved settings, before there is a world: name, channels (a count), nickname */
 + (NSArray<NSDictionary<NSString *, id> *> *)savedServerSummaries;
 
+/* The license step of the setup window. Begin returns the license window's model,
+ nil where there is nothing to do: the App Store build, or already licensed. */
++ (nullable id)beginSetupLicense;
++ (BOOL)hasTextual7License;
++ (void)checkTextual7UpgradeForSetup;
++ (void)endSetupLicense;
+
 /* "No bouncer yet?" (not in the App Store build) */
 + (nullable NSURL *)bouncerHostingOfferURL;
 

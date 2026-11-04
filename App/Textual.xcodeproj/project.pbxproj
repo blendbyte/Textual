@@ -714,6 +714,7 @@
 		039885A3C3BB60BA79659DF5 /* IRCAtlasFeedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */; };
 		F747748A74A1BA0FBA8A4B0C /* IRCAtlasFeedTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */; };
 		24B406ED06565286784FDC0F /* TDCSetupServers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA7C39357FF330B3D76EF8F /* TDCSetupServers.swift */; };
+		111677CD7E60231C412433A7 /* TDCSetupLicense.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F9114B3829788EC315C0414 /* TDCSetupLicense.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1623,6 +1624,7 @@
 		15A0E8297A74A5FEFF71902A /* IRCAtlasFeedStorePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCAtlasFeedStorePrivate.h; sourceTree = "<group>"; };
 		2128186F440D58D64DF69EAE /* IRCAtlasFeedTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IRCAtlasFeedTests.m; sourceTree = "<group>"; };
 		5DA7C39357FF330B3D76EF8F /* TDCSetupServers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSetupServers.swift; sourceTree = "<group>"; };
+		8F9114B3829788EC315C0414 /* TDCSetupLicense.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCSetupLicense.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1875,6 +1877,7 @@
 				FF6B231480555CFAA3949243 /* TDCSetupImport.swift */,
 				8CC7D96D04DD13CDBF8F5276 /* TDCSetupSettings.swift */,
 				5DA7C39357FF330B3D76EF8F /* TDCSetupServers.swift */,
+				8F9114B3829788EC315C0414 /* TDCSetupLicense.swift */,
 				4C1D8D9B816DB0C9B206A0C8 /* TDCSetupAssistantPrivate.h */,
 			);
 			path = "Setup Assistant";
@@ -3723,6 +3726,7 @@
 				A2167628279F96B7C6E36AB4 /* TDCSetupImport.swift in Sources */,
 				C3013843133A009408E99F21 /* TDCSetupSettings.swift in Sources */,
 				24B406ED06565286784FDC0F /* TDCSetupServers.swift in Sources */,
+				111677CD7E60231C412433A7 /* TDCSetupLicense.swift in Sources */,
 				6A68928D099CAFE3F857B5A0 /* TDCEditBouncerSheet.swift in Sources */,
 				4C06E66A20EC55B90055D09A /* TDCServerPropertiesSheet.m in Sources */,
 				92901BCD982E350D98E2C869 /* TDCServerPropertiesPane.m in Sources */,

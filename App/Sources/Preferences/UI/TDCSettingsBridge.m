@@ -68,6 +68,8 @@
 #import "IRCWorldPrivate.h"
 #import "IRCBouncerAccountPrivate.h"
 #import "TXWebsiteLinks.h"
+#import "TDCLicenseManagerDialogPrivate.h"
+#import "TLOLicenseManagerPrivate.h"
 #import "TLOSoundPlayer.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TPCPathInfoPrivate.h"
@@ -211,6 +213,48 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	}
 
 	return [summaries copy];
+}
+
++ (nullable id)beginSetupLicense
+{
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	TLOLicenseManagerSetup();
+
+	if (TLOLicenseManagerTextualIsRegistered()) {
+		return nil;
+	}
+
+	TDCLicenseManagerDialog *dialog = [TXSharedApplication sharedLicenseManagerDialog];
+
+	[dialog beginSetup];
+
+	return dialog.model;
+#else
+	return nil;
+#endif
+}
+
++ (BOOL)hasTextual7License
+{
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	return (TLOLicenseManagerTextual7LicenseKey() != nil);
+#else
+	return NO;
+#endif
+}
+
++ (void)checkTextual7UpgradeForSetup
+{
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	[[TXSharedApplication sharedLicenseManagerDialog] checkUpgradeForSetup];
+#endif
+}
+
++ (void)endSetupLicense
+{
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	[[TXSharedApplication sharedLicenseManagerDialog] endSetup];
+#endif
 }
 
 + (nullable NSURL *)bouncerHostingOfferURL

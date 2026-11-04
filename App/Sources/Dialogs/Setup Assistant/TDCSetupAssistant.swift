@@ -36,6 +36,7 @@
 
 
 import AppKit
+import QuartzCore
 import Combine
 import SwiftUI
 
@@ -71,6 +72,7 @@ enum SetupStep
 	case networks
 	case yourName
 	case importedServers
+	case license
 	case done
 }
 
@@ -108,6 +110,11 @@ final class SetupModel: ObservableObject
 	private(set) var reachedEnd = false
 
 	private(set) var importedServers: [String] = []
+
+	/* Nil where there is nothing to do: the App Store build, or already licensed */
+	private(set) var licenseModel: LicenseWindowModel?
+	private var licenseObserver: AnyCancellable?
+	private var checkedTextual7License = false
 
 	/* Made when its step first shows: preferences are loaded and imported by then */
 	private(set) var lookModel: SetupLookModel?
@@ -189,13 +196,18 @@ final class SetupModel: ObservableObject
 		return ((helpsChoose ? [.interests, .suggestions] : [.networks]) + (hasPicked ? [.yourName] : []))
 	}
 
+	private var licenseSteps: [SetupStep]
+	{
+		((licenseModel != nil) ? [.license] : [])
+	}
+
 	var steps: [SetupStep]
 	{
 		switch path {
 			case .newInstall:
-				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.notifications] + choosingSteps + [.done])
+				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.notifications] + choosingSteps + licenseSteps + [.done])
 			case .upgrade:
-				return ([.welcome, .importing] + Self.settingsSteps + [.notifications, .importedServers] + (isAddingToImported ? [.networks] : []) + [.done])
+				return ([.welcome, .importing] + Self.settingsSteps + [.notifications, .importedServers] + (isAddingToImported ? [.networks] : []) + licenseSteps + [.done])
 			case .serversOnly:
 				return choosingSteps
 			case .importOnly:
@@ -302,6 +314,12 @@ final class SetupModel: ObservableObject
 
 		if (newStep == .notifications || newStep == .interests || newStep == .networks) {
 			prepareServers()
+
+			prepareLicense()
+		}
+
+		if (newStep == .license) {
+			enterLicense()
 		}
 
 		if (newStep == .interests || newStep == .networks) {
@@ -313,6 +331,45 @@ final class SetupModel: ObservableObject
 		}
 
 		step = newStep
+	}
+
+	// MARK: License
+
+	private func prepareLicense()
+	{
+		guard licenseModel == nil, path == .newInstall || path == .upgrade, let model = TDCSettingsBridge.beginSetupLicense() as? LicenseWindowModel else {
+			return
+		}
+
+		licenseModel = model
+
+		licenseObserver = model.objectWillChange.sink { [weak self] in
+			self?.objectWillChange.send()
+		}
+
+		importModel?.licenseImportFinished = { [weak self] (imported) in
+			if (imported) {
+				self?.checkTextual7License()
+			}
+		}
+	}
+
+	private func enterLicense()
+	{
+		importModel?.importLicenseIfRemembered()
+
+		checkTextual7License()
+	}
+
+	private func checkTextual7License()
+	{
+		guard checkedTextual7License == false, TDCSettingsBridge.hasTextual7License() else {
+			return
+		}
+
+		checkedTextual7License = true
+
+		TDCSettingsBridge.checkTextual7UpgradeForSetup()
 	}
 
 	// MARK: Choosing where to chat
@@ -492,6 +549,8 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 			completion()
 
 			assistant.createChosenServers()
+
+			TDCSettingsBridge.endSetupLicense()
 		}
 	}
 
@@ -629,7 +688,13 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 		zip(pasteItems, pasteItemTargets).forEach { $0.target = $1 }
 
+		/* Gone before what comes next, which may block on a Keychain prompt: no fading
+		 out, which needs this thread to carry on */
+		window.animationBehavior = .none
+
 		window.orderOut(nil)
+
+		CATransaction.flush()
 	}
 
 	private func stop()
@@ -789,6 +854,10 @@ struct SetupStepView: View
 				if let servers = model.serversModel {
 					SetupImportedServersStep(setup: model, model: servers, imported: model.importedServers)
 				}
+			case .license:
+				if let license = model.licenseModel {
+					SetupLicenseStep(license: license, importModel: model.importModel)
+				}
 			case .done:
 				SetupDoneStep(upgrade: (model.path == .upgrade), connectingTo: model.connectingTo)
 		}
@@ -836,6 +905,12 @@ struct SetupFooter: View
 				backButton
 
 				SetupNotificationsButtons(setup: model, permission: model.notifications)
+			case .license:
+				backButton
+
+				if let license = model.licenseModel {
+					SetupLicenseButtons(setup: model, license: license)
+				}
 			case .done:
 				backButton
 
@@ -934,6 +1009,7 @@ struct SetupHeader<Picture: View>: View
 				.padding(.bottom, 4)
 
 			Text(title)
+				.multilineTextAlignment(.center)
 				.font(.title.weight(.semibold))
 				.accessibilityAddTraits(.isHeader)
 

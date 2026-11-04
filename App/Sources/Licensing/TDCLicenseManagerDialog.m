@@ -82,6 +82,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *activationCheckDownloader;
 @property (nonatomic, copy, nullable) NSString *seatsLicenseKey;
 @property (nonatomic, assign) BOOL operationInProgress;
+@property (nonatomic, assign) BOOL inSetup;
 @property (nonatomic, strong, nullable) TLOTimer *trialTimer;
 @end
 
@@ -169,8 +170,39 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	};
 }
 
+- (void)beginSetup
+{
+	self.inSetup = YES;
+
+	[self importDevelopmentTextual7License];
+
+	[self updateSelectedPane];
+}
+
+- (void)checkUpgradeForSetup
+{
+	[self checkUpgradeOfTextual7LicenseFile];
+}
+
+- (void)endSetup
+{
+	if (self.inSetup == NO) {
+		return;
+	}
+
+	self.inSetup = NO;
+
+	if (self.model.seats.count > 0) {
+		[self show];
+	}
+}
+
 - (void)show
 {
+	if (self.inSetup) {
+		return;
+	}
+
 	BOOL windowVisible = self.window.visible;
 
 	[super show];
@@ -198,6 +230,13 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	[self checkActivationIfDue];
 
+	[self importDevelopmentTextual7License];
+
+	[self checkUpgradeAtLaunch];
+}
+
+- (void)importDevelopmentTextual7License
+{
 #ifdef DEBUG
 	/* For testing the upgrade: a Textual 7 license file (base64) to import
 	 as the legacy import would, since the app's container is closed to others */
@@ -211,8 +250,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		}
 	}
 #endif
-
-	[self checkUpgradeAtLaunch];
 }
 
 - (void)updateSelectedPane

@@ -406,7 +406,8 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 			DispatchQueue.main.async {
 				groupURL.stopAccessingSecurityScopedResource()
 
-				if (self.source.licenseFolderURL != nil) {
+				/* From the menu only: the setup window has a step for it */
+				if (self.source.licenseFolderURL != nil && self.fromMenu) {
 					self.stage = .license
 				} else {
 					self.showSummary()
@@ -427,6 +428,27 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 	}
 
 	// MARK: License
+
+	/* What the license step offers and says */
+	@Published private(set) var triedLicenseFile = false
+	@Published private(set) var licenseImportFailed = false
+
+	var licenseImportFinished: ((Bool) -> Void)?
+
+	var offersLicenseFile: Bool
+	{
+		(source.licenseFolderURL != nil && triedLicenseFile == false)
+	}
+
+	/// Asked before, for the same folder: nothing to ask again
+	func importLicenseIfRemembered()
+	{
+		guard let folderURL = source.licenseFolderURL, triedLicenseFile == false, TPCLegacyImport.rememberedURL(forFolder: folderURL) != nil else {
+			return
+		}
+
+		requestLicenseAccess()
+	}
 
 	func requestLicenseAccess()
 	{
@@ -457,7 +479,17 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 
 		folderURL.stopAccessingSecurityScopedResource()
 
-		showSummary()
+		triedLicenseFile = true
+
+		let imported = TDCSettingsBridge.hasTextual7License()
+
+		licenseImportFailed = (imported == false)
+
+		licenseImportFinished?(imported)
+
+		if (fromMenu) {
+			showSummary()
+		}
 	}
 
 	func skipLicense()
