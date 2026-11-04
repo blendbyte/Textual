@@ -156,6 +156,24 @@
 "sa-p-upd-s1d" = "You see this note and choose when to install.";
 "sa-p-upd-s2d" = "Use Check for Updates in the Textual menu when you want to.";
 
+"sa-n-title" = "Know when someone needs you";
+"sa-n-lead" = "Textual can tell you when your name comes up or someone writes to you, even when it’s in the background.";
+"sa-n-st-t" = "Notifications";
+"sa-n-st-ask" = "macOS asks you once. You can change it any time in System Settings.";
+"sa-n-st-now" = "macOS is asking now, at the top right of your screen. Choose Allow under Options.";
+"sa-n-st-on" = "Allowed. Fine-tune them in Settings › Notifications.";
+"sa-n-st-off" = "Off for Textual. You can turn them on in System Settings.";
+"sa-n-what-t" = "What you’ll hear about";
+"sa-n-what-d" = "Your nickname in a channel, private messages and files sent to you. Not every message.";
+"sa-n-why-t" = "Why again?";
+"sa-n-why-d" = "Your Textual 7 choices came over, but macOS treats Textual 8 as a new app.";
+"sa-n-s1" = "alice in #textual";
+"sa-n-s2" = "are you around?";
+"sa-n-s-t" = "What it looks like";
+"sa-n-s-d" = "A banner like this at the top right of your screen. Click it to go straight to the message.";
+"sa-n-b-allow" = "Allow Notifications…";
+"sa-n-b-later" = "Not Now";
+
 "sa-d-title" = "You’re all set";
 "sa-d-lead" = "Add a server whenever you’re ready. All of this can be changed in Settings.";
 "sa-d-lead-u" = "Everything’s where you left it. All of this can be changed in Settings.";

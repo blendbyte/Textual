@@ -1053,6 +1053,105 @@ struct SetupPrivacyStep: View
 	}
 }
 
+// MARK: - Notifications
+
+struct SetupNotificationsStep: View
+{
+	@ObservedObject var permission: NotificationPermission
+
+	let upgrade: Bool
+
+	var body: some View
+	{
+		VStack(spacing: 0) {
+			SetupHeader(title: SetupText("sa-n-title"), lead: SetupText("sa-n-lead")) {
+				SetupSymbol(symbol: "bell.badge.fill", color: .red)
+			}
+
+			HStack(alignment: .top, spacing: 14) {
+				SetupGroup {
+					statusRow
+
+					SetupTextRow(title: SetupText("sa-n-what-t"), text: SetupText("sa-n-what-d"))
+
+					if (upgrade && permission.state == .notAsked) {
+						SetupTextRow(title: SetupText("sa-n-why-t"), text: SetupText("sa-n-why-d"))
+					}
+				}
+
+				sample
+			}
+		}
+	}
+
+	private var statusRow: some View
+	{
+		SetupControlRow(divider: false, title: SetupText("sa-n-st-t"), text: statusText) {
+			switch permission.state {
+				case .allowed:
+					Image(systemName: "checkmark.circle.fill")
+						.foregroundStyle(.green)
+						.accessibilityHidden(true)
+				case .denied:
+					Button(SettingsText("set-not-po")) {
+						permission.openSystemSettings()
+					}
+				case .notAsked:
+					EmptyView()
+			}
+		}
+	}
+
+	private var statusText: String
+	{
+		if (permission.asking) {
+			return SetupText("sa-n-st-now")
+		}
+
+		switch permission.state {
+			case .allowed: return SetupText("sa-n-st-on")
+			case .denied: return SetupText("sa-n-st-off")
+			case .notAsked: return SetupText("sa-n-st-ask")
+		}
+	}
+
+	private var sample: some View
+	{
+		VStack(alignment: .leading, spacing: 8) {
+			HStack(alignment: .top, spacing: 8) {
+				Image(nsImage: NSApp.applicationIconImage)
+					.resizable()
+					.frame(width: 30, height: 30)
+					.accessibilityHidden(true)
+
+				VStack(alignment: .leading, spacing: 1) {
+					Text(verbatim: SetupText("sa-n-s1"))
+						.fontWeight(.semibold)
+
+					Text(verbatim: SetupText("sa-n-s2"))
+				}
+				.font(.system(size: 11))
+			}
+			.padding(8)
+			.frame(maxWidth: .infinity, alignment: .leading)
+			.background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color(nsColor: .textBackgroundColor)))
+			.overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.primary.opacity(0.1)))
+
+			Text(SetupText("sa-n-s-t"))
+				.padding(.top, 2)
+
+			Text(SetupText("sa-n-s-d"))
+				.font(.callout)
+				.foregroundStyle(.secondary)
+				.fixedSize(horizontal: false, vertical: true)
+		}
+		.padding(10)
+		.frame(width: 250, alignment: .leading)
+		.background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(.quinary))
+		.accessibilityElement(children: .combine)
+	}
+}
+
 // MARK: - Samples
 
 private struct SetupSampleName: View

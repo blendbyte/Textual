@@ -48,6 +48,7 @@
 #import "TXApplicationPrivate.h"
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TDCSetupAssistantPrivate.h"
+#import "TLONotificationControllerPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
@@ -187,6 +188,8 @@ NS_ASSUME_NONNULL_BEGIN
 		/* We wait until -awakeFromNib to wake the window so that the menu
 		 controller created by the main nib has time to load. */
 		[RZMainBundle() loadNibNamed:@"TVCMainWindow" owner:self topLevelObjects:nil];
+
+		[sharedNotificationController() requestAuthorizationAtLaunch];
 	}];
 }
 

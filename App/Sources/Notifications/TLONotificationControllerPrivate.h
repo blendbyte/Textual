@@ -52,6 +52,12 @@ TEXTUAL_EXTERN NSString * const TXNotificationHighlightLogStandardActionFormat;
 TEXTUAL_EXTERN NSString * const TXNotificationHighlightLogStandardMessageFormat;
 
 @interface TLONotificationController ()
+/* macOS asks once. The setup window asks with the reason; "Not Now" there means
+ no asking at launch either, until the user chooses to in Settings. */
+- (void)requestAuthorizationWithCompletionHandler:(nullable void (^)(BOOL granted))completionHandler;
+- (void)requestAuthorizationAtLaunch;
+- (void)declineAuthorizationForNow;
+
 /* All methods in this controller do not honor any user preference for
  silencing notifications. By the time a notification reaches this point,
  it is assumed that those related conditions have been checked. */

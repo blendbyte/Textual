@@ -122,9 +122,101 @@ struct NotificationEventOptions
 	}
 }
 
+// MARK: - Permission
+
+/// Whether macOS lets Textual show notifications
+final class NotificationPermission: ObservableObject
+{
+	enum State: Int
+	{
+		case notAsked = 0
+		case denied = 1
+		case allowed = 2
+	}
+
+	/* Allowed until macOS has answered, so nothing shows that needn't */
+	@Published private(set) var state = State.allowed
+
+	/* The system's question is up; it waits for an answer without blocking anything */
+	@Published private(set) var asking = false
+
+	private var observer: NSObjectProtocol?
+
+	init()
+	{
+		refresh()
+
+		/* Coming back from System Settings */
+		observer = NotificationCenter.default.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.refresh()
+		}
+	}
+
+	deinit
+	{
+		if let observer = observer {
+			NotificationCenter.default.removeObserver(observer)
+		}
+	}
+
+	func refresh()
+	{
+		TDCSettingsBridge.notificationPermission { [weak self] value in
+			self?.state = (State(rawValue: value) ?? .allowed)
+		}
+	}
+
+	func ask()
+	{
+		asking = true
+
+		TDCSettingsBridge.requestNotificationPermission { [weak self] in
+			self?.asking = false
+
+			self?.refresh()
+		}
+	}
+
+	func openSystemSettings()
+	{
+		if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") {
+			NSWorkspace.shared.open(url)
+		}
+	}
+}
+
+/// Notifications aren't allowed yet: what to do about it
+struct NotificationPermissionRow: View
+{
+	@ObservedObject var permission: NotificationPermission
+
+	var body: some View
+	{
+		LabeledContent {
+			if (permission.state == .notAsked) {
+				Button(SettingsText("set-not-pa")) {
+					permission.ask()
+				}
+				.disabled(permission.asking)
+			} else {
+				Button(SettingsText("set-not-po")) {
+					permission.openSystemSettings()
+				}
+			}
+		} label: {
+			SettingLabel(title: SettingsText("set-not-pt"),
+						 help: SettingsText((permission.state == .notAsked) ? "set-not-ph0" : "set-not-ph1"))
+		}
+	}
+}
+
+// MARK: - Page
+
 struct NotificationsSettings: View
 {
 	@ObservedObject private var store = SettingsStore.shared
+
+	@StateObject private var permission = NotificationPermission()
 
 	var body: some View
 	{
@@ -144,6 +236,12 @@ struct NotificationsSettings: View
 		Form {
 			Section {
 				SettingsPageHeader(section: .notifications)
+			}
+
+			if (permission.state != .allowed) {
+				Section {
+					NotificationPermissionRow(permission: permission)
+				}
 			}
 
 			Section {

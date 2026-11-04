@@ -49,6 +49,11 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @property (class) NSInteger updateMode;
 + (void)betaUpdatesChanged;
 
+/* Notifications: 0 macOS hasn't asked yet, 1 not allowed, 2 allowed */
++ (void)notificationPermissionWithCompletionHandler:(void (^)(NSInteger permission))completionHandler;
++ (void)requestNotificationPermissionWithCompletionHandler:(void (^)(void))completionHandler;
++ (void)declineNotificationPermissionForNow;
+
 /* A preference changed: what depends on it updates */
 + (void)preferenceChangedForKey:(NSString *)key;
 

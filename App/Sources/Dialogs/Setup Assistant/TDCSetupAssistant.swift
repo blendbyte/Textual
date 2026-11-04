@@ -64,6 +64,7 @@ enum SetupStep
 	case look
 	case chat
 	case privacy
+	case notifications
 	case done
 }
 
@@ -81,6 +82,8 @@ final class SetupModel: ObservableObject
 
 	/* From Welcome: new to IRC gets the introduction */
 	private var newToIRC = true
+
+	let notifications = NotificationPermission()
 
 	/* Made when its step first shows: preferences are loaded and imported by then */
 	private(set) var lookModel: SetupLookModel?
@@ -114,9 +117,9 @@ final class SetupModel: ObservableObject
 	{
 		switch path {
 			case .newInstall:
-				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.done])
+				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.notifications, .done])
 			case .upgrade:
-				return ([.welcome, .importing] + Self.settingsSteps + [.done])
+				return ([.welcome, .importing] + Self.settingsSteps + [.notifications, .done])
 			case .importOnly:
 				return [.welcome, .importing]
 		}
@@ -184,11 +187,7 @@ final class SetupModel: ObservableObject
 		lookModel?.applyRecommended()
 		choicesModel?.applyRecommended()
 
-		guard let next = steps.first(where: { $0 == .done }) else {
-			return
-		}
-
-		move(to: next)
+		move(to: .notifications)
 	}
 
 	var isSettingsStep: Bool
@@ -504,6 +503,8 @@ struct SetupStepView: View
 				if let choicesModel = model.choicesModel {
 					SetupPrivacyStep(model: choicesModel)
 				}
+			case .notifications:
+				SetupNotificationsStep(permission: model.notifications, upgrade: (model.path == .upgrade))
 			case .done:
 				SetupDoneStep(upgrade: (model.path == .upgrade))
 		}
@@ -547,6 +548,10 @@ struct SetupFooter: View
 				if let importModel = model.importModel {
 					SetupImportButtons(setup: model, model: importModel)
 				}
+			case .notifications:
+				backButton
+
+				SetupNotificationsButtons(setup: model, permission: model.notifications)
 			case .done:
 				backButton
 
@@ -871,6 +876,35 @@ struct SetupImportButtons: View
 					setup.goForward()
 				}
 				.keyboardShortcut(.defaultAction)
+		}
+	}
+}
+
+/// Asks macOS or goes on without asking; once it's asked, only goes on
+struct SetupNotificationsButtons: View
+{
+	let setup: SetupModel
+
+	@ObservedObject var permission: NotificationPermission
+
+	var body: some View
+	{
+		if (permission.state == .notAsked && permission.asking == false) {
+			Button(SetupText("sa-n-b-later")) {
+				TDCSettingsBridge.declineNotificationPermissionForNow()
+
+				setup.goForward()
+			}
+
+			Button(SetupText("sa-n-b-allow")) {
+				permission.ask()
+			}
+			.keyboardShortcut(.defaultAction)
+		} else {
+			Button(SetupText("sa-b-continue")) {
+				setup.goForward()
+			}
+			.keyboardShortcut(.defaultAction)
 		}
 	}
 }

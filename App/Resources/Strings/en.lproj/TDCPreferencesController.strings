@@ -446,6 +446,11 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-typ-nh" = "On servers that support it. Commands don’t count.";
 "set-typ-x1" = "Hey ";
 "set-typ-xa" = "A sample of the field with its suggestion list";
+"set-not-pt" = "Notifications are off";
+"set-not-ph0" = "macOS asks you once whether Textual may show them.";
+"set-not-ph1" = "They’re turned off for Textual in System Settings.";
+"set-not-pa" = "Allow…";
+"set-not-po" = "Open System Settings";
 "set-not-h1" = "Events";
 "set-not-h1h" = "Each kind of event can show a notification, play a sound, bounce the Dock icon and be spoken aloud.";
 "set-not-sn" = "Notification";

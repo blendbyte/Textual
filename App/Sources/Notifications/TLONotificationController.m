@@ -42,6 +42,7 @@
 #import "TVCMainWindowPrivate.h"
 #import "TPCApplicationInfo.h"
 #import "TPCPreferencesLocal.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TLOLocalization.h"
 #import "TDCFileTransferDialogPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
@@ -94,6 +95,13 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 
 	[RZNotificationCenter() addObserver:self selector:@selector(mainWindowSelectionChanged:) name:TVCMainWindowSelectionChangedNotification object:nil];
 
+	[self registerCategories];
+}
+
+- (void)requestAuthorizationWithCompletionHandler:(nullable void (^)(BOOL granted))completionHandler
+{
+	[RZUserDefaults() removeObjectForKey:@"Notifications -> Authorization Declined For Now"];
+
 	[RZUserNotificationCenter() requestAuthorizationWithOptions:(UNAuthorizationOptionAlert |
 																 UNAuthorizationOptionProvidesAppNotificationSettings)
 											  completionHandler:^(BOOL granted, NSError * _Nullable error) {
@@ -102,9 +110,27 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 		}
 
 		LogToConsoleInfo("Notification permission: %{public}@", StringFromBOOL(granted));
-	}];
 
-	[self registerCategories];
+		if (completionHandler) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				completionHandler(granted);
+			});
+		}
+	}];
+}
+
+- (void)requestAuthorizationAtLaunch
+{
+	if ([RZUserDefaults() boolForKey:@"Notifications -> Authorization Declined For Now"]) {
+		return;
+	}
+
+	[self requestAuthorizationWithCompletionHandler:nil];
+}
+
+- (void)declineAuthorizationForNow
+{
+	[RZUserDefaults() setBool:YES forKey:@"Notifications -> Authorization Declined For Now"];
 }
 
 - (NSSet<UNNotificationCategory *> *)categoriesToRegister

@@ -63,7 +63,7 @@
 #import "IRCHighlightKeywordPrivate.h"
 #import "IRCClientPrivate.h"
 #import "IRCWorld.h"
-#import "TLONotificationController.h"
+#import "TLONotificationControllerPrivate.h"
 #import "TLOSoundPlayer.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TPCPathInfoPrivate.h"
@@ -147,6 +147,39 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	updater.automaticallyChecksForUpdates = (updateMode != 2);
 	updater.automaticallyDownloadsUpdates = (updateMode == 0);
 #endif
+}
+
++ (void)notificationPermissionWithCompletionHandler:(void (^)(NSInteger permission))completionHandler
+{
+	NSParameterAssert(completionHandler != nil);
+
+	[RZUserNotificationCenter() getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
+		NSInteger permission = 2;
+
+		if (settings.authorizationStatus == UNAuthorizationStatusNotDetermined) {
+			permission = 0;
+		} else if (settings.authorizationStatus == UNAuthorizationStatusDenied) {
+			permission = 1;
+		}
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			completionHandler(permission);
+		});
+	}];
+}
+
++ (void)requestNotificationPermissionWithCompletionHandler:(void (^)(void))completionHandler
+{
+	NSParameterAssert(completionHandler != nil);
+
+	[sharedNotificationController() requestAuthorizationWithCompletionHandler:^(BOOL granted) {
+		completionHandler();
+	}];
+}
+
++ (void)declineNotificationPermissionForNow
+{
+	[sharedNotificationController() declineAuthorizationForNow];
 }
 
 + (void)betaUpdatesChanged
