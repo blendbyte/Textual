@@ -209,6 +209,28 @@ static BOOL _reportsFailures = YES;
 					   serviceName:[self serviceForKind:kind identifier:identifier]];
 }
 
++ (BOOL)hasPasswordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier
+{
+	NSParameterAssert(identifier != nil);
+
+	NSDictionary *query = @{
+		(id)kSecClass : (id)kSecClassGenericPassword,
+		(id)kSecAttrService : [self serviceForKind:kind identifier:identifier],
+		(id)kSecMatchLimit : (id)kSecMatchLimitOne,
+		(id)kSecReturnAttributes : (id)kCFBooleanTrue
+	};
+
+	CFTypeRef result = NULL;
+
+	OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &result);
+
+	if (result) {
+		CFRelease(result);
+	}
+
+	return (status == errSecSuccess);
+}
+
 #pragma mark -
 #pragma mark Client Certificates
 

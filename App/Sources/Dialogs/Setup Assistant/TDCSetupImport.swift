@@ -495,6 +495,11 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 
 		var notes: [ImportNote] = []
 
+		/* They come right after this screen, so they shouldn't come as a surprise */
+		if (result.foundSavedPasswords) {
+			notes.append(ImportNote(symbol: "key.fill", color: .orange, text: ImportText("k7p-s1")))
+		}
+
 		if (result.triedLicense && result.importedLicense == false) {
 			notes.append(ImportNote(symbol: "key", color: .orange, text: ImportText("3jr-s5")))
 		}

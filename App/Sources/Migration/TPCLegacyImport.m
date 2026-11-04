@@ -50,6 +50,7 @@
 #import "TXMasterController.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
+#import "TLOKeychainPrivate.h"
 #import "TPCLegacyImportPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 
@@ -161,6 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TPCLegacyImportResult ()
 @property (readwrite) NSUInteger serverCount;
+@property (readwrite) BOOL foundSavedPasswords;
 @property (readwrite, copy) NSArray<NSString *> *styles;
 @property (readwrite, copy) NSArray<NSString *> *extensions;
 @property (readwrite, copy) NSArray<NSString *> *inlineMediaModules;
@@ -653,10 +655,44 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.result.serverCount = self.servers.count;
 
+	self.result.foundSavedPasswords = [self _importedServersHaveSavedPasswords];
+
 	[self.class markOffered];
 
 	LogToConsole("Legacy import: done, %{public}lu servers, %{public}lu files failed",
 		self.result.serverCount, self.result.failureCount);
+}
+
+- (BOOL)_importedServersHaveSavedPasswords
+{
+	for (NSDictionary *client in self.servers) {
+		if ([client isKindOfClass:[NSDictionary class]] == NO) {
+			continue;
+		}
+
+		IRCClientConfig *config = [[IRCClientConfig alloc] initWithDictionary:client];
+
+		if ([TLOKeychain hasPasswordOfKind:TLOKeychainItemKindNicknamePassword forIdentifier:config.uniqueIdentifier] ||
+			[TLOKeychain hasPasswordOfKind:TLOKeychainItemKindProxyPassword forIdentifier:config.uniqueIdentifier] ||
+			[TLOKeychain hasPasswordOfKind:TLOKeychainItemKindSASLECDSAKey forIdentifier:config.uniqueIdentifier])
+		{
+			return YES;
+		}
+
+		for (IRCServer *server in config.serverList) {
+			if ([TLOKeychain hasPasswordOfKind:TLOKeychainItemKindServerPassword forIdentifier:server.uniqueIdentifier]) {
+				return YES;
+			}
+		}
+
+		for (IRCChannelConfig *channel in config.channelList) {
+			if ([TLOKeychain hasPasswordOfKind:TLOKeychainItemKindChannelKey forIdentifier:channel.uniqueIdentifier]) {
+				return YES;
+			}
+		}
+	}
+
+	return NO;
 }
 
 - (void)importLicenseFromFolderURL:(NSURL *)folderURL

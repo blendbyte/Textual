@@ -249,6 +249,7 @@ Information encrypted using: %2$@";
 "pjp-bp" = "Not used by Textual 8 and not imported: %@ (inline media is built in now)";
 "k7t-r3" = "Not imported because Textual 8 already has one with the same name: %2$@. The %1$@ version stays in its folder.";
 "to7-nt" = "Files that couldn’t be copied: %lu. The Console app lists them (search for “Textual”).";
+"k7p-s1" = "macOS will ask once for each saved password, because Textual 8 is a new app to it. Enter your Mac’s login password and choose Always Allow.";
 "bmq-fg" = "Worth a Look";
 "33s-fi" = "Restart Textual";
 "weu-cf" = "Start Using Textual";

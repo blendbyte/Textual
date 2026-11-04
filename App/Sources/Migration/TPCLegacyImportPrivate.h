@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSUInteger failureCount;
 @property (readonly, copy) NSArray<NSString *> *keptItems; // styles and extensions not copied: Textual 8 has one of the same name
 @property (readonly) BOOL importedScrollback;
+@property (readonly) BOOL foundSavedPasswords; // macOS asks before Textual 8 can read them
 @property (readonly) BOOL triedLicense;
 @property (readonly) BOOL importedLicense;
 @property (readonly) BOOL hadTranscriptFolder;
