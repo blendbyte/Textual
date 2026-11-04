@@ -233,6 +233,7 @@ enum
 	MTMMHelpTextualHelp = 911, // "Textual Help"
 	MTMMHelpKeyboardShortcuts = 912, // "Keyboard Shortcuts"
 	MTMMHelpWhatsNew = 913, // "What's New in Textual 8"
+	MTMMHelpSetupAssistant = 918, // "Setup Assistant…"
 	MTMMHelpWhatsNewSeparator = 914, // "-"
 	MTMMHelpReportBug = 915, // "Report a Bug…"
 	MTMMHelpIdeasAndQuestions = 916, // "Ideas & Questions"

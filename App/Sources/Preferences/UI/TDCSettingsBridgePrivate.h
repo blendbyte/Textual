@@ -75,6 +75,10 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 
 /* A preference changed: what depends on it updates */
 + (void)preferenceChangedForKey:(NSString *)key;
++ (void)preferencesChangedForKeys:(NSArray<NSString *> *)keys;
+
+/* The setup window from the Help menu wrote a style or font directly */
++ (void)reloadStyleForSetup;
 
 @property (class) BOOL preventSleepWhileConnected;
 @property (class) BOOL keepChannelListSorted;

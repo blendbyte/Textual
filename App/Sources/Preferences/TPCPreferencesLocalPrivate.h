@@ -92,14 +92,9 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setDeveloperModeEnabled:(BOOL)developerModeEnabled;
 
-+ (void)setLogToDisk:(BOOL)logToDisk;
 
-+ (void)setOnlySpeakEventsForSelection:(BOOL)onlySpeakEventsForSelection;
 
-+ (void)setChannelMessageSpeakChannelName:(BOOL)channelMessageSpeakChannelName;
-+ (void)setChannelMessageSpeakNickname:(BOOL)channelMessageSpeakNickname;
 
-+ (void)setHighlightCurrentNickname:(BOOL)highlightCurrentNickname;
 
 + (void)setLocationToSendNotices:(TXNoticeSendLocation)locationToSendNotices;
 
@@ -119,10 +114,8 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setThemeUserStyleSheetRules:(nullable NSString *)themeUserStyleSheetRules;
 
-+ (void)setScrollbackSaveLimit:(NSUInteger)scrollbackSaveLimit;
 + (void)setScrollbackVisibleLimit:(NSUInteger)scrollbackVisibleLimit;
 
-+ (void)setShowInlineMedia:(BOOL)showInlineMedia;
 
 @property (class) BOOL inputMarkdownEnabled;
 
@@ -135,7 +128,6 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 @property (readonly, class) NSUInteger massHighlightThreshold;
 
 + (BOOL)inputCompletionEnabledForKind:(NSUInteger)kind;
-+ (void)setInputCompletion:(BOOL)enabled forKind:(NSUInteger)kind;
 
 /* Inline media: services turned off by name (+[ICPCoreMedia serviceNames]),
  web page cards, audio, and which sites' links are previewed */
@@ -224,7 +216,6 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 + (void)setFileTransferPortRangeStart:(uint16_t)value;
 + (void)setFileTransferPortRangeEnd:(uint16_t)value;
 
-+ (void)setTabCompletionSuffix:(NSString *)value;
 
 + (void)setClientList:(nullable NSArray<NSDictionary *> *)clientList;
 

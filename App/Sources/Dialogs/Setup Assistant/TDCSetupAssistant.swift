@@ -82,6 +82,7 @@ enum SetupPath
 	case upgrade // Textual 7 or an earlier version was found
 	case importOnly // File > Import Settings from Textual 7…
 	case serversOnly // no servers yet, from the main window
+	case again // Help > Setup Assistant…: on today's settings, with the main window open
 }
 
 final class SetupModel: ObservableObject
@@ -141,17 +142,35 @@ final class SetupModel: ObservableObject
 		self.path = path
 		self.importModel = importModel
 
-		if (path == .serversOnly) {
-			helpsChoose = false
+	}
 
-			prepareServers()
+	/// Where the steps that don't begin at Welcome begin, once there's a window
+	func begin()
+	{
+		switch path {
+			case .serversOnly:
+				helpsChoose = TPCPreferencesUserDefaults.shared().bool(forKey: Self.newToIRCKey)
 
-			serversModel?.isNewcomer = false
+				prepareServers()
 
-			step = .networks
+				serversModel?.isNewcomer = helpsChoose
 
-			AtlasFeedStore.shared.refreshIfDue()
+				move(to: (helpsChoose ? .interests : .networks))
+			case .again:
+				helpsChoose = false
+
+				move(to: .style)
+			default:
+				break
 		}
+	}
+
+	private static let newToIRCKey = "Setup Assistant -> New to IRC"
+
+	/* Settings start where they are, rather than on what a new install gets */
+	var keepsCurrentSettings: Bool
+	{
+		(path == .upgrade || path == .again)
 	}
 
 	private func prepareServers()
@@ -169,7 +188,7 @@ final class SetupModel: ObservableObject
 			self?.objectWillChange.send()
 		}
 
-		if (path == .upgrade) {
+		if (keepsCurrentSettings) {
 			let saved = TDCSettingsBridge.savedServerSummaries()
 
 			importedServers = saved.map { (server) in
@@ -208,6 +227,10 @@ final class SetupModel: ObservableObject
 				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.notifications] + choosingSteps + licenseSteps + [.done])
 			case .upgrade:
 				return ([.welcome, .importing] + Self.settingsSteps + [.notifications, .importedServers] + (isAddingToImported ? [.networks] : []) + licenseSteps + [.done])
+			case .again:
+				let servers: [SetupStep] = (importedServers.isEmpty ? choosingSteps : ([.importedServers] + (isAddingToImported ? [.networks] : [])))
+
+				return (Self.settingsSteps + [.notifications] + servers + [.done])
 			case .serversOnly:
 				return choosingSteps
 			case .importOnly:
@@ -220,6 +243,9 @@ final class SetupModel: ObservableObject
 		self.newToIRC = newToIRC
 
 		helpsChoose = newToIRC
+
+		/* For the empty state, if they skip choosing a network */
+		TPCPreferencesUserDefaults.shared().set(newToIRC, forKey: Self.newToIRCKey)
 
 		goForward()
 	}
@@ -308,8 +334,12 @@ final class SetupModel: ObservableObject
 	private func move(to newStep: SetupStep)
 	{
 		if (Self.settingsSteps.contains(newStep) && lookModel == nil) {
-			lookModel = SetupLookModel(upgrade: (path == .upgrade), window: window)
-			choicesModel = SetupChoicesModel(upgrade: (path == .upgrade))
+			lookModel = SetupLookModel(upgrade: keepsCurrentSettings, window: window)
+			choicesModel = SetupChoicesModel(upgrade: keepsCurrentSettings, again: (path == .again), window: window)
+		}
+
+		if (Self.settingsSteps.contains(step)) {
+			applyLive()
 		}
 
 		if (newStep == .notifications || newStep == .interests || newStep == .networks) {
@@ -331,6 +361,17 @@ final class SetupModel: ObservableObject
 		}
 
 		step = newStep
+	}
+
+	/// With the main window open, what was written shows at once
+	func applyLive()
+	{
+		guard path == .again else {
+			return
+		}
+
+		lookModel?.applyLive()
+		choicesModel?.applyLive()
 	}
 
 	// MARK: License
@@ -557,11 +598,36 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 	/// No servers yet: the same choosing, from the main window
 	@objc static func addServersFromEmptyState()
 	{
-		let assistant = SetupAssistant(path: .serversOnly, importModel: nil)
+		openBesideMainWindow(path: .serversOnly)
+	}
 
-		assistant.runModal()
+	/// Help > Setup Assistant…
+	@objc static func runAgain()
+	{
+		openBesideMainWindow(path: .again)
+	}
 
-		assistant.createChosenServers()
+	/* Not modal: IRC carries on behind it, on timers a modal window would hold up */
+	private static var openBeside: SetupAssistant?
+
+	private var isModal = false
+
+	private static func openBesideMainWindow(path: SetupPath)
+	{
+		if let assistant = openBeside {
+			assistant.window.makeKeyAndOrderFront(nil)
+
+			return
+		}
+
+		let assistant = SetupAssistant(path: path, importModel: nil)
+
+		openBeside = assistant
+
+		assistant.model.begin()
+
+		assistant.window.center()
+		assistant.window.makeKeyAndOrderFront(nil)
 	}
 
 	private func createChosenServers()
@@ -658,6 +724,8 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 	private func runModal()
 	{
+		isModal = true
+
 		window.center()
 
 		/* Quit stays available: AppKit dims a menu item during a modal window
@@ -699,7 +767,19 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 	private func stop()
 	{
-		NSApp.stopModal()
+		if (isModal) {
+			NSApp.stopModal()
+
+			return
+		}
+
+		model.applyLive()
+
+		window.orderOut(nil)
+
+		createChosenServers()
+
+		Self.openBeside = nil
 	}
 
 	private func finish()
@@ -859,7 +939,7 @@ struct SetupStepView: View
 					SetupLicenseStep(license: license, importModel: model.importModel)
 				}
 			case .done:
-				SetupDoneStep(upgrade: (model.path == .upgrade), connectingTo: model.connectingTo)
+				SetupDoneStep(upgrade: model.keepsCurrentSettings, connectingTo: model.connectingTo)
 		}
 	}
 }
@@ -873,7 +953,7 @@ struct SetupFooter: View
 	{
 		HStack(spacing: 10) {
 			if (model.isSettingsStep) {
-				Button(SetupText((model.path == .upgrade) ? "sa-b-keepall" : "sa-b-recommended")) {
+				Button(SetupText(model.keepsCurrentSettings ? "sa-b-keepall" : "sa-b-recommended")) {
 					model.skipSettings()
 				}
 				.buttonStyle(.link)
@@ -914,7 +994,7 @@ struct SetupFooter: View
 			case .done:
 				backButton
 
-				Button(model.connectingTo.isEmpty ? ((model.path == .upgrade) ? ImportText("weu-cf") : SetupText("sa-b-finish")) : SetupText("sa-b-chat")) {
+				Button(doneTitle) {
 					model.goForward()
 				}
 				.keyboardShortcut(.defaultAction)
@@ -928,6 +1008,19 @@ struct SetupFooter: View
 				}
 				.keyboardShortcut(.defaultAction)
 				.disabled(model.primaryIsEnabled == false)
+		}
+	}
+
+	private var doneTitle: String
+	{
+		if (model.connectingTo.isEmpty == false) {
+			return SetupText("sa-b-chat")
+		}
+
+		switch model.path {
+			case .again: return SetupText("sa-b-done")
+			case .upgrade: return ImportText("weu-cf")
+			default: return SetupText("sa-b-finish")
 		}
 	}
 
@@ -952,7 +1045,7 @@ struct SetupFooter: View
 				if let importModel = model.importModel {
 					SetupImportStartButton(setup: model, model: importModel)
 				}
-			case .serversOnly:
+			case .serversOnly, .again:
 				EmptyView()
 			case .importOnly:
 				Button(ImportText("qso-2g")) {

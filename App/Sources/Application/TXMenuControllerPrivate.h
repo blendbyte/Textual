@@ -65,6 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addBouncerFilledInWith:(nullable IRCClient *)client;
 - (void)addBouncerWithSetupLink:(NSString *)location;
 
+- (IBAction)showSetupAssistant:(nullable id)sender;
+
 /* The Edit Bouncer sheet for an account (Server › Edit Bouncer…, a bouncer's heading),
  or on another sheet (Server Properties) */
 - (void)editBouncerAccount:(IRCBouncerAccount *)account;

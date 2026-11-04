@@ -192,6 +192,7 @@
 
 "sa-sl-title" = "Choose your networks";
 "sa-sl-lead" = "Every network IRC Atlas lists. Search, filter, or paste an address you already have.";
+"sa-sl-lead-r" = "Every network IRC Atlas lists. Your servers stay as they are.";
 "sa-sl-title-a" = "Add another network";
 "sa-sl-lead-a" = "Every network IRC Atlas lists. Your imported servers are safe.";
 "sa-sl-search" = "Search, or paste an address or irc:// link";
@@ -263,12 +264,14 @@
 
 "sa-sv-title" = "Your servers";
 "sa-sv-lead" = "These came over with their channels and passwords. They connect the way they did in Textual 7.";
+"sa-sv-lead-r" = "The servers you already have stay as they are. You can add more here.";
 "sa-sv-add" = "Add Another Network…";
 "sa-sv-now" = "Added now";
 "sa-sv-line-1" = "%@ · 1 channel";
 "sa-sv-line" = "%@ · %ld channels";
 
 "sa-b-skip" = "Skip for Now";
+"sa-b-done" = "Done";
 "sa-b-doneadding" = "Done Adding";
 "sa-b-chat" = "Start Chatting";
 

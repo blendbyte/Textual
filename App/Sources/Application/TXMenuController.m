@@ -424,6 +424,7 @@ NS_ASSUME_NONNULL_BEGIN
 			case MTMMHelpTextualHelp: // "Textual Help"
 			case MTMMHelpKeyboardShortcuts: // "Keyboard Shortcuts"
 			case MTMMHelpWhatsNew: // "What's New in Textual 8"
+			case MTMMHelpSetupAssistant: // "Setup Assistant…"
 			case MTMMHelpReportBug: // "Report a Bug…"
 			case MTMMHelpIdeasAndQuestions: // "Ideas & Questions"
 			case MTMMHelpContactSupport: // "Contact Support"

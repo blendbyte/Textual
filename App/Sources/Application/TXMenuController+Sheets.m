@@ -251,13 +251,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark -
-#pragma mark Welcome Sheet
+#pragma mark Setup
 
 - (void)showWelcomeSheet:(nullable id)sender
 {
 	[windowController() popMainWindowSheetIfExists];
 
 	[TDCSetupAssistant addServersFromEmptyState];
+}
+
+- (void)showSetupAssistant:(nullable id)sender
+{
+	[TDCSetupAssistant runAgain];
 }
 
 #pragma mark -

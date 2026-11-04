@@ -190,6 +190,13 @@ final class SetupLookModel: ObservableObject
 		TDCSettingsBridge.setMessageGroupingStyle(((display == .chat) ? 1 : 0), in: window)
 	}
 
+	/// The font and style were written directly: with the main window open, it follows
+	func applyLive()
+	{
+		TDCSettingsBridge.reloadStyleForSetup()
+		TDCSettingsBridge.preferencesChanged(forKeys: [Self.spacingKey, "Appearance", Self.nicknameFormatKey, Self.timestampFormatKey])
+	}
+
 	private func restoreImportedFontAndDisplay()
 	{
 		defaults.set(importedFontName, forKey: Self.fontNameKey)
@@ -612,6 +619,16 @@ final class SetupChoicesModel
 
 	let upgrade: Bool
 
+	/* From the Help menu: the app is running, and starting values aren't Textual 7's */
+	let again: Bool
+
+	private weak var window: NSWindow?
+
+	var comesFromTextual7: Bool
+	{
+		(upgrade && again == false)
+	}
+
 	/* As they were when these steps first showed: what Textual 7 had, after an import */
 	private let stored: [String: Any]
 	private let storedEvents: Int
@@ -621,9 +638,11 @@ final class SetupChoicesModel
 		TPCPreferencesUserDefaults.shared()
 	}
 
-	init(upgrade: Bool)
+	init(upgrade: Bool, again: Bool, window: NSWindow?)
 	{
 		self.upgrade = upgrade
+		self.again = again
+		self.window = window
 
 		let defaults = TPCPreferencesUserDefaults.shared()
 
@@ -644,7 +663,37 @@ final class SetupChoicesModel
 	func applyRecommended()
 	{
 		for key in Self.allKeys {
+			/* Changing it may have deleted messages, after asking: that's not undone here */
+			if (again && key == Self.archiveKey) {
+				continue
+			}
+
 			defaults.set(stored[key], forKey: key)
+		}
+
+		if (again) {
+			let checks = ((stored[Self.checksKey] as? NSNumber)?.boolValue ?? true)
+			let installs = ((stored[Self.installsKey] as? NSNumber)?.boolValue ?? false)
+
+			TDCSettingsBridge.updateMode = (checks ? (installs ? 0 : 1) : 2)
+		}
+	}
+
+	/// What was written directly: with the main window open, it follows
+	func applyLive()
+	{
+		TDCSettingsBridge.preferencesChanged(forKeys: Self.allKeys)
+	}
+
+	/// Through what Settings uses: it may delete messages, and asks first
+	func changeArchive(to keepPeriod: Int, then completion: @escaping () -> Void)
+	{
+		guard let window = window else {
+			return
+		}
+
+		TDCSettingsBridge.messageArchiveSize { (count, _) in
+			TDCSettingsBridge.changeMessageArchiveKeepPeriod(keepPeriod, messageCount: count, in: window, completionHandler: completion)
 		}
 	}
 
@@ -848,7 +897,7 @@ struct SetupChatStep: View
 		return SetupExplainedRow(id: "events",
 								 title: SetupText("sa-c-ev-t"),
 								 help: SetupText("sa-c-ev-d"),
-								 was: (upgrade ? model.importedEvents : nil),
+								 was: (model.comesFromTextual7 ? model.importedEvents : nil),
 								 control: AnyView(Picker("", selection: events) {
 									Text(SetupText("sa-c-ev0")).tag(0)
 									Text(SetupText("sa-c-ev1")).tag(1)
@@ -866,8 +915,8 @@ struct SetupChatStep: View
 		return SetupExplainedRow(id: "suggestions",
 								 title: SetupText("sa-c-sug-t"),
 								 help: SetupText("sa-c-sug-d"),
-								 isNew: true,
-								 was: (upgrade ? model.importedSuggestions : nil),
+								 isNew: (model.again == false),
+								 was: (model.comesFromTextual7 ? model.importedSuggestions : nil),
 								 control: AnyView(Toggle("", isOn: suggestions).toggleStyle(.switch).labelsHidden().controlSize(.small)),
 								 sample: AnyView(SetupSuggestionsSample(on: on)),
 								 explanation: [SetupText("sa-c-sug-x1")])
@@ -881,8 +930,8 @@ struct SetupChatStep: View
 		return SetupExplainedRow(id: "markdown",
 								 title: SetupText("sa-c-md-t"),
 								 help: SetupText("sa-c-md-d"),
-								 isNew: true,
-								 was: (upgrade ? model.importedMarkdown : nil),
+								 isNew: (model.again == false),
+								 was: (model.comesFromTextual7 ? model.importedMarkdown : nil),
 								 control: AnyView(Toggle("", isOn: binding).toggleStyle(.switch).labelsHidden().controlSize(.small)),
 								 sample: AnyView(SetupMarkdownSample(on: on)),
 								 explanation: [SetupText("sa-c-md-x1"), SetupText("sa-c-md-x2")])
@@ -896,7 +945,7 @@ struct SetupChatStep: View
 		return SetupExplainedRow(id: "placement",
 								 title: SetupText("sa-c-inp-t"),
 								 help: SetupText("sa-c-inp-d"),
-								 was: (upgrade ? model.importedPlacement : nil),
+								 was: (model.comesFromTextual7 ? model.importedPlacement : nil),
 								 control: AnyView(Picker("", selection: binding) {
 									Text(SetupText("sa-c-inp0")).tag(0)
 									Text(SetupText("sa-c-inp1")).tag(1)
@@ -914,7 +963,7 @@ struct SetupChatStep: View
 		return SetupExplainedRow(id: "arrangement",
 								 title: SetupText("sa-c-arr-t"),
 								 help: SetupText("sa-c-arr-d"),
-								 was: (upgrade ? model.importedArrangement : nil),
+								 was: (model.comesFromTextual7 ? model.importedArrangement : nil),
 								 control: AnyView(Picker("", selection: binding) {
 									Text(SetupText("sa-c-arr0")).tag(0)
 									Text(SetupText("sa-c-arr1")).tag(1)
@@ -979,7 +1028,7 @@ struct SetupPrivacyStep: View
 		return SetupExplainedRow(id: "previews",
 								 title: SetupText("sa-p-prev-t"),
 								 help: SetupText("sa-p-prev-d"),
-								 was: (model.upgrade ? model.importedPreviews : nil),
+								 was: (model.comesFromTextual7 ? model.importedPreviews : nil),
 								 control: AnyView(Toggle("", isOn: binding).toggleStyle(.switch).labelsHidden().controlSize(.small)),
 								 sample: AnyView(SetupPreviewSample(on: on)),
 								 explanation: [SetupText("sa-p-prev-x1"), SetupText("sa-p-prev-x2")])
@@ -1000,12 +1049,12 @@ struct SetupPrivacyStep: View
 
 	private var archiveRow: SetupExplainedRow
 	{
-		let binding = store.integer(SetupChoicesModel.archiveKey)
+		let binding = archiveBinding
 
 		return SetupExplainedRow(id: "archive",
 								 title: SetupText("sa-p-arc-t"),
 								 help: SetupText("sa-p-arc-d"),
-								 isNew: true,
+								 isNew: (model.again == false),
 								 control: AnyView(Picker("", selection: binding) {
 									ForEach(Self.keepPeriods, id: \.self) { period in
 										Text(TDCSettingsBridge.title(forMessageArchiveKeepPeriod: period)).tag(period)
@@ -1016,7 +1065,23 @@ struct SetupPrivacyStep: View
 								 explanation: [SetupText("sa-p-arc-x1")])
 	}
 
-	/* Sparkle reads these when it starts, after setup; it has them from here on */
+	private var archiveBinding: Binding<Int>
+	{
+		guard model.again else {
+			return store.integer(SetupChoicesModel.archiveKey)
+		}
+
+		return store.value(get: {
+			TDCSettingsBridge.messageArchiveKeepPeriod
+		}, set: { (keepPeriod) in
+			model.changeArchive(to: keepPeriod) {
+				store.objectWillChange.send()
+			}
+		})
+	}
+
+	/* Sparkle reads these when it starts, after setup; it has them from here on,
+	 and when it's already running (from the Help menu) it's told */
 	private var updateMode: Binding<Int>
 	{
 		store.value(get: {
@@ -1032,6 +1097,8 @@ struct SetupPrivacyStep: View
 
 			defaults.set((mode != 2), forKey: SetupChoicesModel.checksKey)
 			defaults.set((mode == 0), forKey: SetupChoicesModel.installsKey)
+
+			TDCSettingsBridge.updateMode = mode
 		})
 	}
 

@@ -49,6 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* No servers yet: choosing where to chat, from the main window */
 + (void)addServersFromEmptyState;
 
+/* Help > Setup Assistant… */
++ (void)runAgain;
+
 /* File > Remove Textual 7 Data… */
 + (void)removeEarlierDataFromMenu;
 @end

@@ -1023,6 +1023,12 @@ CQ
                                     <action selector="openHelpMenuItem:" target="267" id="EU6-yQ-pSG"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Setup Assistant…" tag="918" id="sA8-hE-lP1">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="showSetupAssistant:" target="267" id="sA8-aC-tN2"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" tag="914" id="ndF-Le-8uo"/>
                             <menuItem title="Report a Bug…" tag="915" id="694-Ra-LJb">
                                 <modifierMask key="keyEquivalentModifierMask"/>

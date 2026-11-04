@@ -320,6 +320,18 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	[TPCPreferences performReloadActionForKeys:@[key]];
 }
 
++ (void)preferencesChangedForKeys:(NSArray<NSString *> *)keys
+{
+	NSParameterAssert(keys != nil);
+
+	[TPCPreferences performReloadActionForKeys:keys];
+}
+
++ (void)reloadStyleForSetup
+{
+	[TPCPreferences performReloadAction:(TPCPreferencesReloadActionStyle | TPCPreferencesReloadActionTextDirection)];
+}
+
 + (BOOL)preventSleepWhileConnected
 {
 	return [TPCPreferences preventSleepWhileConnected];

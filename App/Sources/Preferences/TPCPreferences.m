@@ -80,16 +80,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return [RZUserDefaults() unsignedIntegerForKey:@"InlineMediaMaximumHeight"];
 }
 
-+ (void)setInlineMediaMaxWidth:(NSUInteger)value
-{
-	[RZUserDefaults() setUnsignedInteger:value forKey:@"InlineMediaScalingWidth"];
-}
-
-+ (void)setInlineMediaMaxHeight:(NSUInteger)value
-{
-	[RZUserDefaults() setUnsignedInteger:value forKey:@"InlineMediaMaximumHeight"];
-}
-
 + (BOOL)inlineMediaWebPageCards
 {
 	return [RZUserDefaults() boolForKey:@"InlineMediaWebPageCards"];

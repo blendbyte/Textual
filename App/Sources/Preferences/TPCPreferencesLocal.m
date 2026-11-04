@@ -376,11 +376,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"LogTranscript"];
 }
 
-+ (void)setLogToDisk:(BOOL)logToDisk
-{
-	[RZUserDefaults() setBool:logToDisk forKey:@"LogTranscript"];
-}
-
 + (BOOL)logToDiskIsEnabled
 {
 	return ([RZUserDefaults() boolForKey:@"LogTranscript"] &&
@@ -418,11 +413,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return messageSpacing;
 }
 
-+ (void)setShowInlineMedia:(BOOL)showInlineMedia
-{
-	[RZUserDefaults() setBool:showInlineMedia forKey:TPCPreferencesShowInlineMediaDefaultsKey];
-}
-
 + (BOOL)showInlineMedia
 {
 	return [RZUserDefaults() boolForKey:TPCPreferencesShowInlineMediaDefaultsKey];
@@ -457,17 +447,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	}
 
 	return [RZUserDefaults() boolForKey:keys[kind]];
-}
-
-+ (void)setInputCompletion:(BOOL)enabled forKind:(NSUInteger)kind
-{
-	NSArray *keys = TPCPreferencesInputCompletionDefaultsKeys();
-
-	if (kind >= keys.count) {
-		return;
-	}
-
-	[RZUserDefaults() setBool:enabled forKey:keys[kind]];
 }
 
 + (NSArray<NSString *> *)inlineMediaDisabledServices
@@ -807,11 +786,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 + (BOOL)displayPublicMessageCountOnDockBadge
 {
 	return [RZUserDefaults() boolForKey:@"DisplayPublicMessageCountInDockBadge"];
-}
-
-+ (void)setHighlightCurrentNickname:(BOOL)highlightCurrentNickname
-{
-	[RZUserDefaults() setBool:highlightCurrentNickname forKey:@"TrackNicknameHighlightsOfLocalUser"];
 }
 
 + (BOOL)highlightCurrentNickname
@@ -1212,13 +1186,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() objectForKey:@"Keyboard -> Tab Key Completion Suffix"];
 }
 
-+ (void)setTabCompletionSuffix:(NSString *)value
-{
-	NSParameterAssert(value != nil);
-
-	[RZUserDefaults() setObject:value forKey:@"Keyboard -> Tab Key Completion Suffix"];
-}
-
 + (BOOL)tabCompletionDoNotAppendWhitespace
 {
 	return [RZUserDefaults() boolForKey:@"Tab Completion -> Do Not Use Whitespace for Missing Completion Suffix"];
@@ -1288,11 +1255,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 + (NSUInteger)scrollbackSaveLimit
 {
 	return [RZUserDefaults() unsignedIntegerForKey:@"ScrollbackMaximumSavedLineCount"];
-}
-
-+ (void)setScrollbackSaveLimit:(NSUInteger)scrollbackSaveLimit
-{
-	[RZUserDefaults() setUnsignedInteger:scrollbackSaveLimit forKey:@"ScrollbackMaximumSavedLineCount"];
 }
 
 + (NSUInteger)scrollbackVisibleLimit
@@ -1494,11 +1456,6 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"OnlySpeakNotificationsForSelection"];
 }
 
-+ (void)setOnlySpeakEventsForSelection:(BOOL)onlySpeakEventsForSelection
-{
-	[RZUserDefaults() setBool:onlySpeakEventsForSelection forKey:@"OnlySpeakNotificationsForSelection"];
-}
-
 + (BOOL)channelMessageSpeakChannelName
 {
 	NSString *eventKey = [self keyForEvent:TXNotificationTypeChannelMessage category:@"Speak Channel Name"];
@@ -1506,25 +1463,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:eventKey];
 }
 
-+ (void)setChannelMessageSpeakChannelName:(BOOL)channelMessageSpeakChannelName
-{
-	NSString *eventKey = [self keyForEvent:TXNotificationTypeChannelMessage category:@"Speak Channel Name"];
-
-	[RZUserDefaults() setBool:channelMessageSpeakChannelName forKey:eventKey];
-}
-
 + (BOOL)channelMessageSpeakNickname
 {
 	NSString *eventKey = [self keyForEvent:TXNotificationTypeChannelMessage category:@"Speak Nickname"];
 
 	return [RZUserDefaults() boolForKey:eventKey];
-}
-
-+ (void)setChannelMessageSpeakNickname:(BOOL)channelMessageSpeakNickname
-{
-	NSString *eventKey = [self keyForEvent:TXNotificationTypeChannelMessage category:@"Speak Nickname"];
-
-	[RZUserDefaults() setBool:channelMessageSpeakNickname forKey:eventKey];
 }
 
 #pragma mark -

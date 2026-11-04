@@ -1140,7 +1140,7 @@ struct SetupNetworksStep: View
 	{
 		VStack(spacing: 0) {
 			SetupHeader(title: SetupText(setup.isAddingToImported ? "sa-sl-title-a" : "sa-sl-title"),
-						lead: SetupText(setup.isAddingToImported ? "sa-sl-lead-a" : "sa-sl-lead")) {
+						lead: SetupText(setup.isAddingToImported ? ((setup.path == .again) ? "sa-sl-lead-r" : "sa-sl-lead-a") : "sa-sl-lead")) {
 				SetupSymbol(symbol: "globe", color: .teal)
 			}
 
@@ -1456,7 +1456,7 @@ struct SetupImportedServersStep: View
 	var body: some View
 	{
 		VStack(spacing: 0) {
-			SetupHeader(title: SetupText("sa-sv-title"), lead: SetupText("sa-sv-lead")) {
+			SetupHeader(title: SetupText("sa-sv-title"), lead: SetupText((setup.path == .again) ? "sa-sv-lead-r" : "sa-sv-lead")) {
 				SetupSymbol(symbol: "server.rack", color: .teal)
 			}
 

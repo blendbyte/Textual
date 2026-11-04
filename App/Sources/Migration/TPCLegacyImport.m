@@ -83,6 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, copy) NSString *displayName;
 @property (readwrite, copy, nullable) NSURL *outsidePreferencesURL;
 @property (nonatomic, copy, nullable) NSString *licenseContainerIdentifier;
+@property (nonatomic, assign) BOOL offeredFirst;
 @end
 
 @implementation TPCLegacyImportSource
@@ -215,6 +216,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	direct.licenseContainerIdentifier = @"com.codeux.apps.textual";
 
+	/* What most people come from, however recently something older was opened */
+	direct.offeredFirst = YES;
+
 	/* One group container for every App Store version (Textual 1 to 7) */
 	TPCLegacyImportSource *appStore = [TPCLegacyImportSource sourceWithGroup:@"8482Q6EPL6.com.codeux.irc.textual" name:TXTLS(@"Prompts[hbs-te]")];
 
@@ -249,6 +253,10 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[sources sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(TPCLegacyImportSource *source1, TPCLegacyImportSource *source2) {
+		if (source1.offeredFirst != source2.offeredFirst) {
+			return (source1.offeredFirst ? NSOrderedAscending : NSOrderedDescending);
+		}
+
 		NSDate *date1 = source1.lastUsedDate ?: [NSDate distantPast];
 		NSDate *date2 = source2.lastUsedDate ?: [NSDate distantPast];
 
