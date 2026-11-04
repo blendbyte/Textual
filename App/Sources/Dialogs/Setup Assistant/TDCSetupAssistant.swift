@@ -62,6 +62,8 @@ enum SetupStep
 	case importing
 	case style
 	case look
+	case chat
+	case privacy
 	case done
 }
 
@@ -82,6 +84,7 @@ final class SetupModel: ObservableObject
 
 	/* Made when its step first shows: preferences are loaded and imported by then */
 	private(set) var lookModel: SetupLookModel?
+	private(set) var choicesModel: SetupChoicesModel?
 
 	let importModel: ImportModel?
 
@@ -105,13 +108,15 @@ final class SetupModel: ObservableObject
 		self.importModel = importModel
 	}
 
+	private static let settingsSteps: [SetupStep] = [.style, .look, .chat, .privacy]
+
 	var steps: [SetupStep]
 	{
 		switch path {
 			case .newInstall:
-				return (newToIRC ? [.welcome, .howIRCWorks, .style, .look, .done] : [.welcome, .style, .look, .done])
+				return ((newToIRC ? [.welcome, .howIRCWorks] : [.welcome]) + Self.settingsSteps + [.done])
 			case .upgrade:
-				return [.welcome, .importing, .style, .look, .done]
+				return ([.welcome, .importing] + Self.settingsSteps + [.done])
 			case .importOnly:
 				return [.welcome, .importing]
 		}
@@ -165,8 +170,9 @@ final class SetupModel: ObservableObject
 
 	private func move(to newStep: SetupStep)
 	{
-		if ((newStep == .style || newStep == .look) && lookModel == nil) {
+		if (Self.settingsSteps.contains(newStep) && lookModel == nil) {
 			lookModel = SetupLookModel(upgrade: (path == .upgrade), window: window)
+			choicesModel = SetupChoicesModel(upgrade: (path == .upgrade))
 		}
 
 		step = newStep
@@ -176,6 +182,7 @@ final class SetupModel: ObservableObject
 	func skipSettings()
 	{
 		lookModel?.applyRecommended()
+		choicesModel?.applyRecommended()
 
 		guard let next = steps.first(where: { $0 == .done }) else {
 			return
@@ -186,7 +193,7 @@ final class SetupModel: ObservableObject
 
 	var isSettingsStep: Bool
 	{
-		(step == .style || step == .look)
+		Self.settingsSteps.contains(step)
 	}
 
 	var canGoBack: Bool
@@ -488,6 +495,14 @@ struct SetupStepView: View
 			case .look:
 				if let lookModel = model.lookModel {
 					SetupLookStep(model: lookModel)
+				}
+			case .chat:
+				if let choicesModel = model.choicesModel {
+					SetupChatStep(model: choicesModel)
+				}
+			case .privacy:
+				if let choicesModel = model.choicesModel {
+					SetupPrivacyStep(model: choicesModel)
 				}
 			case .done:
 				SetupDoneStep(upgrade: (model.path == .upgrade))

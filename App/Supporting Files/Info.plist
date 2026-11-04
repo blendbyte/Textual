@@ -97,6 +97,8 @@
 	<true/>
 	<key>SUBundleName</key>
 	<string>Textual</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 	<key>SUEnableDownloaderService</key>
 	<false/>
 	<key>SUEnableInstallerLauncherService</key>

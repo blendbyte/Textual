@@ -504,11 +504,6 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 			notes.append(ImportNote(symbol: "key", color: .orange, text: ImportText("3jr-s5")))
 		}
 
-		/* The message archive: on for them too, so they hear of it once */
-		if (TPCPreferences.messageArchiveKeepPeriod != .off) {
-			notes.append(ImportNote(symbol: "magnifyingglass", color: .secondary, text: ImportText("arc-i1")))
-		}
-
 		if (result.encryptionComponentsURL != nil) {
 			notes.append(ImportNote(symbol: "lock.doc", color: .orange, text: ImportText("3po-7m"), action: .saveKeys))
 		}
