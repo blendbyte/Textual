@@ -61,6 +61,8 @@ typedef NS_ENUM(NSInteger, TDCLicenseWindowBusy) {
 @property (nonatomic, assign) BOOL registered;
 @property (nonatomic, copy) NSString *statusText;
 @property (nonatomic, assign) double trialFraction; // Below 0: no bar
+@property (nonatomic, copy, nullable) NSString *trialDaysLeft;
+@property (nonatomic, assign) BOOL trialEnded;
 
 /* Licensed */
 @property (nonatomic, copy) NSString *licenseKey;

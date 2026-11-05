@@ -264,6 +264,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	{
 		model.statusText = TXTLS(@"TLOLicenseManager[lw-st2]");
 		model.trialFraction = (-1.0);
+		model.trialDaysLeft = nil;
+		model.trialEnded = NO;
 
 		model.licenseKey = (TLOLicenseManagerLicenseKey() ?: @"");
 		model.licenseDate = (TLOLicenseManagerLicenseDateFormatted() ?: @"");
@@ -276,9 +278,17 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		if (timeLeft <= 0) {
 			model.statusText = TXTLS(@"TLOLicenseManager[lw-st1]");
 			model.trialFraction = (-1.0); // An empty bar says nothing more
+			model.trialDaysLeft = nil;
+			model.trialEnded = YES;
 		} else {
 			model.statusText = TXTLS(@"TLOLicenseManager[lw-st0]", [self formattedDaysLeftInTrial]);
 			model.trialFraction = MIN(1.0, (timeLeft / _trialLength));
+			model.trialEnded = NO;
+
+			/* A day gone counts as started, for a Mac that never reached the server */
+			BOOL trialStarted = (TLOLicenseManagerTrialIsFromServer() || timeLeft < (_trialLength - 86400.0));
+
+			model.trialDaysLeft = (trialStarted ? [self formattedDaysLeftInTrial] : nil);
 		}
 
 		/* Someone with a Textual 7 license upgrades instead of buying */

@@ -90,10 +90,32 @@ struct SetupLicenseStep: View
 		}
 	}
 
+	private var trialTitle: String
+	{
+		if (license.trialEnded) {
+			return SetupText("sa-li-end-t")
+		}
+
+		if let daysLeft = license.trialDaysLeft {
+			return SetupText("sa-li-left-t", daysLeft)
+		}
+
+		return SetupText("sa-li-title")
+	}
+
+	private var trialLead: String
+	{
+		if (license.trialEnded) {
+			return SetupText("sa-li-end-d")
+		}
+
+		return ((license.trialDaysLeft == nil) ? SetupText("sa-li-lead") : SetupText("sa-li-left-d"))
+	}
+
 	private var trial: some View
 	{
 		VStack(spacing: 12) {
-			SetupHeader(title: SetupText("sa-li-title"), lead: SetupText("sa-li-lead")) {
+			SetupHeader(title: trialTitle, lead: trialLead) {
 				SetupSymbol(symbol: "key.fill", color: .yellow)
 			}
 
@@ -177,6 +199,15 @@ struct SetupLicenseButtons: View
 
 	@ObservedObject var license: LicenseWindowModel
 
+	private var trialButtonTitle: String
+	{
+		if (license.registered || license.trialEnded) {
+			return SetupText("sa-b-continue")
+		}
+
+		return ((license.trialDaysLeft == nil) ? SetupText("sa-li-start") : SetupText("sa-li-cont"))
+	}
+
 	var body: some View
 	{
 		if (license.registered == false && license.offerTitle != nil) {
@@ -200,7 +231,7 @@ struct SetupLicenseButtons: View
 				.disabled(license.busy != .none)
 			}
 		} else {
-			Button(license.registered ? SetupText("sa-b-continue") : SetupText("sa-li-start")) {
+			Button(trialButtonTitle) {
 				setup.goForward()
 			}
 			.keyboardShortcut((license.seats.isEmpty) ? .defaultAction : nil)

@@ -278,8 +278,12 @@
 
 "sa-d-lead-c" = "Textual connects to %@. Say hello, or just watch for a while.";
 
-"sa-li-title" = "Try Textual free for 30 days";
-"sa-li-lead" = "Everything works during the trial, with no account and no card. After that, a license keeps it going.";
+"sa-li-title" = "Try Textual free";
+"sa-li-lead" = "Each Mac gets one 30-day trial, with no account and no card. Everything works during it, and after that a license keeps it going.";
+"sa-li-left-t" = "%@ left in your trial";
+"sa-li-left-d" = "Everything works until then, with no account and no card. After that, a license keeps it going.";
+"sa-li-end-t" = "Your trial has ended";
+"sa-li-end-d" = "A license keeps Textual going.";
 "sa-li-key-t" = "Already have a license key?";
 "sa-li-key-d" = "You can also enter it later in Textual › Manage License.";
 "sa-li-key-p" = "License key";
@@ -292,6 +296,7 @@
 "sa-li-ok-t" = "Textual is licensed";
 "sa-li-ok-d" = "It’s activated on this Mac. Thank you for supporting Textual.";
 "sa-li-start" = "Start Trial";
+"sa-li-cont" = "Continue Trial";
 
 "sa-d-title" = "You’re all set";
 "sa-d-lead" = "Add a server whenever you’re ready. All of this can be changed in Settings.";

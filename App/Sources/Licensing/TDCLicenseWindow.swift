@@ -95,6 +95,11 @@ final class LicenseWindowModel: NSObject, ObservableObject
 	@objc var statusText = "" { willSet { objectWillChange.send() } }
 	@objc var trialFraction: Double = -1 { willSet { objectWillChange.send() } } // Below 0: no bar
 
+	/* What this Mac knows of its trial. A new install can't know more: the server
+	 only answers by starting one, and that waits until the setup is over. */
+	@objc var trialDaysLeft: String? { willSet { objectWillChange.send() } }
+	@objc var trialEnded = false { willSet { objectWillChange.send() } }
+
 	/* Licensed */
 	@objc var licenseKey = "" { willSet { objectWillChange.send() } }
 	@objc var licenseDate = "" { willSet { objectWillChange.send() } }
