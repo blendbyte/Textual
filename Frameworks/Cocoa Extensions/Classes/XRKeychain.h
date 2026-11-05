@@ -48,6 +48,13 @@ NS_ASSUME_NONNULL_BEGIN
 			   serviceName:(NSString *)service
 				 fromCloud:(BOOL)deleteFromCloud;
 
+/* errSecSuccess also when there was nothing to delete */
++ (OSStatus)deleteKeychainItemReturningStatus:(NSString *)keychainItemName
+								 withItemKind:(NSString *)keychainItemKind
+								  forUsername:(nullable NSString *)username
+								  serviceName:(NSString *)service
+									fromCloud:(BOOL)deleteFromCloud;
+
 + (BOOL)modifyOrAddKeychainItem:(NSString *)keychainItemName 
 				   withItemKind:(NSString *)keychainItemKind 
 					forUsername:(nullable NSString *)username
@@ -65,6 +72,12 @@ NS_ASSUME_NONNULL_BEGIN
  Keychain's own key, not by name (label): an item saved under another name,
  for example by an older version, is updated and renamed. Returns the
  Keychain's status (errSecSuccess when saved). */
+/* An item with an empty password, added if there is none: where a read stops */
++ (OSStatus)saveEmptyKeychainItemReturningStatus:(NSString *)keychainItemName
+									withItemKind:(NSString *)keychainItemKind
+									 forUsername:(nullable NSString *)username
+									 serviceName:(NSString *)service;
+
 + (OSStatus)modifyOrAddKeychainItemReturningStatus:(NSString *)keychainItemName
 									  withItemKind:(NSString *)keychainItemKind
 									   forUsername:(nullable NSString *)username

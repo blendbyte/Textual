@@ -98,6 +98,42 @@
 	[XRKeychain deleteKeychainItem:@"Textual (NickServ)" withItemKind:@"application password" forUsername:nil serviceName:service];
 }
 
+/* An empty item stops a read from reaching an older copy, so one must really be
+ added when there is no item yet (saving an empty password normally adds nothing) */
+- (void)testEmptyItemIsAddedWhenThereIsNone
+{
+	NSString *service = [NSString stringWithFormat:@"textual.test.%@", [NSUUID UUID].UUIDString];
+
+	OSStatus status = [XRKeychain saveEmptyKeychainItemReturningStatus:@"Textual (Test)"
+														  withItemKind:@"application password"
+														   forUsername:nil
+														   serviceName:service];
+
+	if (status != errSecSuccess) {
+		XCTSkip(@"No usable Keychain here (%d)", (int)status);
+	}
+
+	OSStatus readStatus = errSecItemNotFound;
+
+	NSString *password = [XRKeychain getPasswordFromKeychainItem:@"Textual (Test)"
+													withItemKind:@"application password"
+													 forUsername:nil
+													 serviceName:service
+													   fromCloud:NO
+											  returnedStatusCode:&readStatus];
+
+	XCTAssertEqual(readStatus, errSecSuccess);
+	XCTAssertEqual(password.length, 0);
+
+	/* A second time finds it */
+	XCTAssertEqual([XRKeychain saveEmptyKeychainItemReturningStatus:@"Textual (Test)"
+													   withItemKind:@"application password"
+														forUsername:nil
+														serviceName:service], errSecSuccess);
+
+	[XRKeychain deleteKeychainItem:@"Textual (Test)" withItemKind:@"application password" forUsername:nil serviceName:service];
+}
+
 /* Without an account, deleting matched every item for the service, whatever
  its account. Deleting what is already gone counts as done. */
 - (void)testDeletingItemWithoutAccountKeepsOtherAccounts

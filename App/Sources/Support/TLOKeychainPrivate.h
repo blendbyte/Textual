@@ -54,7 +54,10 @@ typedef NS_ENUM(NSUInteger, TLOKeychainItemKind) {
 
 /* Returns NO if the Keychain refused the password (the user is told why, with
  the Keychain's reason). Callers then keep the password in memory, so it is
- not lost silently. */
+ not lost silently. An empty password deletes the item and Textual 7's copy
+ where macOS allows it, otherwise it's saved in front of that copy so the old
+ value can't come back. Nothing changes if the last read failed: then the field
+ was only empty for lack of it. */
 + (BOOL)setPassword:(NSString *)password ofKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
 
 + (void)deletePasswordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;

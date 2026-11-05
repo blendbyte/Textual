@@ -128,6 +128,21 @@ NS_ASSUME_NONNULL_BEGIN
 			   serviceName:(NSString *)service
 				 fromCloud:(BOOL)deleteFromCloud
 {
+	OSStatus status = [self deleteKeychainItemReturningStatus:itemName
+												 withItemKind:itemKind
+												  forUsername:username
+												  serviceName:service
+													fromCloud:deleteFromCloud];
+
+	return (status == errSecSuccess);
+}
+
++ (OSStatus)deleteKeychainItemReturningStatus:(NSString *)itemName
+								 withItemKind:(NSString *)itemKind
+								  forUsername:(nullable NSString *)username
+								  serviceName:(NSString *)service
+									fromCloud:(BOOL)deleteFromCloud
+{
 	NSParameterAssert(itemName != nil);
 	NSParameterAssert(itemKind != nil);
 	NSParameterAssert(service != nil);
@@ -160,7 +175,8 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	return (status == errSecSuccess || status == errSecItemNotFound);
+	/* Nothing there is as good as deleted */
+	return ((status == errSecItemNotFound) ? errSecSuccess : status);
 }
 
 + (BOOL)modifyOrAddKeychainItem:(NSString *)itemName
@@ -295,6 +311,44 @@ NS_ASSUME_NONNULL_BEGIN
 								   ontoCloud:addToCloud];
 
 	return (status == errSecSuccess);
+}
+
++ (OSStatus)saveEmptyKeychainItemReturningStatus:(NSString *)itemName
+									withItemKind:(NSString *)itemKind
+									 forUsername:(nullable NSString *)username
+									 serviceName:(NSString *)service
+{
+	NSParameterAssert(itemName != nil);
+	NSParameterAssert(itemKind != nil);
+	NSParameterAssert(service != nil);
+
+	OSStatus status = [self modifyOrAddKeychainItemReturningStatus:itemName
+													  withItemKind:itemKind
+													   forUsername:username
+												   withNewPassword:@""
+													   serviceName:service
+														  forCloud:NO];
+
+	if (status != errSecSuccess) {
+		return status;
+	}
+
+	/* Saving an empty password adds nothing when there's no item yet */
+	NSMutableDictionary *dictionary = [self searchDictionary:itemName
+												withItemKind:itemKind
+												 forUsername:username
+												 serviceName:service];
+
+	if (SecItemCopyMatching((__bridge CFDictionaryRef)dictionary, NULL) != errSecItemNotFound) {
+		return errSecSuccess;
+	}
+
+	return [self _addKeychainItem:itemName
+					 withItemKind:itemKind
+					  forUsername:username
+					 withPassword:@""
+					  serviceName:service
+						ontoCloud:NO];
 }
 
 + (OSStatus)_addKeychainItem:(NSString *)itemName

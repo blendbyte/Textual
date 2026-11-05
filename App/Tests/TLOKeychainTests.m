@@ -107,12 +107,35 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
 
-	/* Without declining, an empty password is written as before */
+	/* Without declining, an empty password does reach the Keychain: to delete it */
 	XCTAssertFalse([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindNicknamePassword forIdentifier:identifier]);
 
 	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
 
 	XCTAssertEqual(TLOKeychain.simulatedReadCount, 1);
+}
+
+/* Locked, a field shows empty too: that's no reason to delete what's saved. Once
+ it can be read again, an empty field means cleared. */
+- (void)testEmptyPasswordAfterFailedReadIsNotDeleted
+{
+	NSString *identifier = [NSUUID UUID].UUIDString;
+
+	TLOKeychain.simulatedReadStatus = @(errSecInteractionNotAllowed);
+
+	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	/* A deletion that got through would fail with this */
+	TLOKeychain.simulatedWriteStatus = @(errSecAuthFailed);
+	TLOKeychain.reportsFailures = NO;
+
+	XCTAssertTrue([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	TLOKeychain.simulatedReadStatus = @(errSecItemNotFound);
+
+	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	XCTAssertFalse([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
 }
 
 /* A locked Keychain or a missing item isn't anyone's answer: ask again next time */

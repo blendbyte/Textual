@@ -120,12 +120,29 @@ static BOOL _reportsFailures = YES;
 	return declinedServices;
 }
 
+/* Items whose last read failed, declined or not (a locked Keychain). An empty
+ field for one of these shows nothing was read, not that the user cleared it. */
++ (NSMutableSet<NSString *> *)unreadServices
+{
+	static NSMutableSet<NSString *> *unreadServices = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		unreadServices = [NSMutableSet set];
+	});
+
+	return unreadServices;
+}
+
 + (void)forgetDeclinedService:(NSString *)service
 {
 	NSMutableSet<NSString *> *declinedServices = [self declinedServices];
 
 	@synchronized (declinedServices) {
 		[declinedServices removeObject:service];
+
+		[[self unreadServices] removeObject:service];
 	}
 }
 
@@ -161,11 +178,17 @@ static BOOL _reportsFailures = YES;
 										returnedStatusCode:&status];
 	}
 
-	/* Not a locked Keychain or a missing item: those can change without anyone being asked */
-	if (status == errSecUserCanceled || status == errSecAuthFailed) {
-		LogToConsoleInfo("Access to the %{public}@ for %{public}@ was declined: %{public}d", [self labelForKind:kind], identifier, (int)status);
+	@synchronized (declinedServices) {
+		if (status == errSecSuccess || status == errSecItemNotFound) {
+			[[self unreadServices] removeObject:service];
+		} else {
+			[[self unreadServices] addObject:service];
+		}
 
-		@synchronized (declinedServices) {
+		/* Not a locked Keychain or a missing item: those can change without anyone being asked */
+		if (status == errSecUserCanceled || status == errSecAuthFailed) {
+			LogToConsoleInfo("Access to the %{public}@ for %{public}@ was declined: %{public}d", [self labelForKind:kind], identifier, (int)status);
+
 			[declinedServices addObject:service];
 		}
 	}
@@ -177,18 +200,54 @@ static BOOL _reportsFailures = YES;
 {
 	NSParameterAssert(password != nil);
 
-	/* An empty field after declining shows nothing was read, not that the user cleared it */
+	OSStatus status = errSecSuccess;
+
 	if (password.length == 0) {
+		/* Cleared: Textual 7's copy goes too, or reads would bring it back. macOS only
+		 lets the app it trusts delete that one. If that isn't Textual, an empty item
+		 in front of the copy keeps reads from reaching it. */
+		NSString *service = [self serviceForKind:kind identifier:identifier];
+
 		NSMutableSet<NSString *> *declinedServices = [self declinedServices];
 
 		@synchronized (declinedServices) {
-			if ([declinedServices containsObject:[self serviceForKind:kind identifier:identifier]]) {
+			if ([[self unreadServices] containsObject:service]) {
 				return YES;
 			}
 		}
-	}
 
-	OSStatus status = errSecSuccess;
+#ifdef DEBUG
+		if (_simulatedWriteStatus) {
+			status = (OSStatus)_simulatedWriteStatus.intValue;
+		} else
+#endif
+		{
+			status = [XRKeychain deleteKeychainItemReturningStatus:[self labelForKind:kind]
+													  withItemKind:_keychainItemKind
+													   forUsername:nil
+													   serviceName:service
+														 fromCloud:NO];
+
+			if (status != errSecSuccess) {
+				LogToConsoleInfo("Keychain kept a copy of the %{public}@ for %{public}@: %{public}d", [self labelForKind:kind], identifier, (int)status);
+
+				status = [XRKeychain saveEmptyKeychainItemReturningStatus:[self labelForKind:kind]
+															 withItemKind:_keychainItemKind
+															  forUsername:nil
+															  serviceName:service];
+			}
+		}
+
+		if (status == errSecSuccess) {
+			return YES;
+		}
+
+		LogToConsoleError("Keychain refused to delete the %{public}@ for %{public}@: %{public}d", [self labelForKind:kind], identifier, (int)status);
+
+		[self reportFailureToSaveKind:kind status:status];
+
+		return NO;
+	}
 
 #ifdef DEBUG
 	if (_simulatedWriteStatus) {
