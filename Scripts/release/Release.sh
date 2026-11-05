@@ -26,7 +26,7 @@ set -euo pipefail
 #
 # Needs, on this Mac: the "Developer ID Application: Blendbyte GmbH"
 # certificate, the "Textual Developer ID" provisioning profile, the notarytool
-# profile "Textual Notary" and the Sparkle update key in the login Keychain
+# profile "Textual 8 Notary" and the Sparkle update key in the login Keychain
 # (account "textual"). Output goes to "$TEXTUAL_RELEASE_DIR" (default
 # ~/Textual Releases).
 
@@ -36,7 +36,7 @@ TEAM_ID="FANJ7JNLP5"
 BUNDLE_ID="com.textualapp.app"
 SIGNING_IDENTITY="Developer ID Application: Blendbyte GmbH (${TEAM_ID})"
 PROFILE_NAME="Textual Developer ID"
-NOTARY_PROFILE="Textual Notary"
+NOTARY_PROFILE="Textual 8 Notary"
 SPARKLE_ACCOUNT="textual"
 SIGN_UPDATE="${ROOT}/Frameworks/Vendor/Sparkle/bin/sign_update"
 VERSION_FILE="${ROOT}/Configurations/Version.xcconfig"
