@@ -218,7 +218,7 @@ struct LicenseRootView: View
 		.padding(.bottom, 20)
 		.frame(width: Self.width)
 		.fixedSize(horizontal: false, vertical: true)
-		.animation(.default, value: model.registered)
+		.modifier(MotionAnimation(animation: .default, value: model.registered))
 	}
 }
 

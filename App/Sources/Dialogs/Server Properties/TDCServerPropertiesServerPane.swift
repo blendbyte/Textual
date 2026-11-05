@@ -1211,7 +1211,7 @@ struct FallbackServersPage: View
 				}
 
 				Button {
-					withAnimation {
+					withMotionAnimation {
 						openServer = pane.addFallbackServer()
 					}
 				} label: {
@@ -1241,7 +1241,7 @@ struct FallbackServersPage: View
 		Binding {
 			openServer == id
 		} set: { (isOpen) in
-			withAnimation {
+			withMotionAnimation {
 				openServer = (isOpen ? id : nil)
 			}
 		}

@@ -589,7 +589,7 @@ struct MessagesSample: View
 			RoundedRectangle(cornerRadius: 8, style: .continuous)
 				.strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
 		}
-		.animation(.easeInOut(duration: 0.15), value: [dateChanges, marker, collapse, grouped])
+		.modifier(MotionAnimation(animation: .easeInOut(duration: 0.15), value: [dateChanges, marker, collapse, grouped]))
 		.accessibilityElement(children: .combine)
 		.accessibilityLabel(SettingsText("set-mes-xa"))
 	}

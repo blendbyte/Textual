@@ -306,7 +306,7 @@ struct PreviewsSample: View
 			RoundedRectangle(cornerRadius: 8, style: .continuous)
 				.strokeBorder(Color.primary.opacity(0.1), lineWidth: 1)
 		}
-		.animation(.default, value: imageWidth)
+		.modifier(MotionAnimation(animation: .default, value: imageWidth))
 		.accessibilityElement(children: .combine)
 	}
 }

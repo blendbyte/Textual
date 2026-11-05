@@ -611,6 +611,26 @@ struct ReadableAccentText: ViewModifier
 	}
 }
 
+/// A change that animates, unless the Mac asks for reduced motion
+func withMotionAnimation<Result>(_ body: () throws -> Result) rethrows -> Result
+{
+	try withAnimation((NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? nil : .default), body)
+}
+
+/// As .animation(_:value:), unless the Mac asks for reduced motion
+struct MotionAnimation<Value: Equatable>: ViewModifier
+{
+	let animation: Animation
+	let value: Value
+
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+	func body(content: Content) -> some View
+	{
+		content.animation((reduceMotion ? nil : animation), value: value)
+	}
+}
+
 /// The search field above the sections: the system's, so it looks like one
 struct SettingsSearchField: NSViewRepresentable
 {

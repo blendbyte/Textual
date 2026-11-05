@@ -79,7 +79,7 @@ struct ServerPropertiesMoreRow: View
 	var body: some View
 	{
 		Button {
-			withAnimation {
+			withMotionAnimation {
 				isExpanded.toggle()
 			}
 		} label: {

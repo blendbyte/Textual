@@ -333,7 +333,7 @@ final class ChannelPropertiesModel: ObservableObject
 		Binding {
 			self.customEvents.contains(event.rawValue)
 		} set: { (custom) in
-			withAnimation {
+			withMotionAnimation {
 				if (custom) {
 					self.customEvents.insert(event.rawValue)
 

@@ -236,8 +236,8 @@ struct TypingSample: View
 			}
 		}
 		.padding(.vertical, 4)
-		.animation(.easeInOut(duration: 0.15), value: suggestions)
-		.animation(.easeInOut(duration: 0.15), value: textSize)
+		.modifier(MotionAnimation(animation: .easeInOut(duration: 0.15), value: suggestions))
+		.modifier(MotionAnimation(animation: .easeInOut(duration: 0.15), value: textSize))
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(SettingsText("set-typ-xa"))
 	}
