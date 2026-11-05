@@ -514,7 +514,7 @@ final class SetupModel: ObservableObject
 			case .networks where isAddingToImported:
 				return SetupText("sa-b-doneadding")
 			case .networks, .suggestions:
-				return ((serversModel?.picked.isEmpty == false || serversModel?.typedServer != nil) ? SetupText("sa-b-continue") : SetupText("sa-b-skip"))
+				return ((serversModel?.picked.isEmpty == false || serversModel?.bouncers.isEmpty == false || serversModel?.typedServer != nil) ? SetupText("sa-b-continue") : SetupText("sa-b-skip"))
 			default:
 				return SetupText("sa-b-continue")
 		}
