@@ -77,6 +77,7 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 @property (nonatomic, strong) TDCLicenseWindow *windowContent;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *licenseManagerDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *trialDownloader;
+@property (nonatomic, copy, nullable) NSString *upgradeOfferLicenseKey;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *previousActivationDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *upgradeDownloader;
 @property (nonatomic, strong, nullable) TLOLicenseManagerDownloader *activationCheckDownloader;
@@ -1098,6 +1099,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	NSString *textual7LicenseKeyText = (textual7LicenseKey.prettyLicenseKey ?: @"");
 
+	self.upgradeOfferLicenseKey = textual7LicenseKey;
+
 	TDCLicenseWindowModel *model = self.model;
 
 	__weak TDCLicenseManagerDialog *weakSelf = self;
@@ -1355,6 +1358,13 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 - (void)upgradeDismissed
 {
 	[RZUserDefaults() setObject:[NSDate date] forKey:_upgradeLastDismissedDefaultsKey];
+
+	/* The key the offer was for, not one typed since */
+	NSString *offeredLicenseKey = self.upgradeOfferLicenseKey;
+
+	if (offeredLicenseKey != nil && [self.model.keyText isEqualToStringIgnoringCase:offeredLicenseKey]) {
+		self.model.keyText = @"";
+	}
 
 	[self clearOffer];
 }
