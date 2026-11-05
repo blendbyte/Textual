@@ -273,7 +273,8 @@ final class ChannelListModel: ObservableObject
 
 		var shown = (query.isEmpty ? entries : entries.filter { $0.searchText.contains(query) })
 
-		shown.sort(using: sortOrder)
+		/* Channels that tie stay put: the server answers in no fixed order */
+		shown.sort(using: (sortOrder + [KeyPathComparator(\ChannelListEntry.lowercasedName)]))
 
 		self.shown = shown
 	}
@@ -633,6 +634,10 @@ struct ChannelListTable: View
 			model.join(model.entries(identifiers))
 		}
 		.focused($tableFocused)
+		.onAppear {
+			/* Without focus somewhere in the window, macOS 14 ignores the first click on a row */
+			tableFocused = true
+		}
 		.onChange(of: model.selection) { (_, selection) in
 			if (selection.isEmpty == false) {
 				tableFocused = true
