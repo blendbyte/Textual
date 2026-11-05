@@ -348,6 +348,11 @@ final class SetupServersModel: ObservableObject
 
 	func toggle(_ server: SetupServer)
 	{
+		/* The tick is all the keyboard reaches of a row: the panel follows it */
+		if (server.network != nil) {
+			focusID = server.id
+		}
+
 		if (isPicked(server.id)) {
 			picked.removeAll { $0.id == server.id }
 

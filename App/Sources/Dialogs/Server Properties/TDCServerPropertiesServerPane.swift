@@ -1392,6 +1392,13 @@ struct ServerNetworkPicker: View
 				TextField(ServerPropertiesText("spp-srv-netsearch"), text: $search)
 					.textFieldStyle(.roundedBorder)
 					.multilineTextAlignment(.leading)
+					.onSubmit {
+						if (search.isEmpty == false), let first = matching.first {
+							isShown = false
+
+							choose(first)
+						}
+					}
 
 				List(matching, id: \.networkName) { (network) in
 					Button {
