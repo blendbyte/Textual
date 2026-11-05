@@ -60,7 +60,7 @@ struct GeneralSettings: View
 						Text(SettingsText("set-gen-u1")).tag(1)
 						Text(SettingsText("set-gen-u2")).tag(2)
 					} label: {
-						SettingLabel(title: SettingsText("set-gen-u"), help: SettingsText("set-gen-uh"))
+						SettingLabel(title: SettingsText("set-gen-u"), help: ((TDCSettingsBridge.updateMode == 2) ? nil : SettingsText("set-gen-uh")))
 					}
 
 					SettingToggle(title: SettingsText("set-gen-b"), help: SettingsText("set-gen-bh"),
