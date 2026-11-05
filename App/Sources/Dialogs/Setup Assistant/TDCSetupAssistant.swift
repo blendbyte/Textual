@@ -881,6 +881,57 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 // MARK: - Layout
 
+private struct SetupScrollBottomKey: PreferenceKey
+{
+	static let defaultValue: CGFloat = 0
+
+	static func reduce(value: inout CGFloat, nextValue: () -> CGFloat)
+	{
+		value = max(value, nextValue())
+	}
+}
+
+/// Scrolls, and fades out at the bottom while there's more below: overlay scrollers
+/// stay hidden, and a row cut off or a tidy last row could look like the end
+struct SetupFadingScrollView<Content: View>: View
+{
+	@ViewBuilder let content: (CGFloat) -> Content
+
+	@State private var hasMoreBelow = false
+
+	private static var space: String
+	{
+		"setup scroll"
+	}
+
+	var body: some View
+	{
+		GeometryReader { geometry in
+			ScrollView {
+				content(geometry.size.height)
+					.background(GeometryReader { (inner) in
+						Color.clear.preference(key: SetupScrollBottomKey.self, value: inner.frame(in: .named(Self.space)).maxY)
+					})
+			}
+			.coordinateSpace(.named(Self.space))
+			.scrollBounceBehavior(.basedOnSize)
+			.scrollIndicatorsFlash(onAppear: true)
+			.onPreferenceChange(SetupScrollBottomKey.self) { (bottom) in
+				hasMoreBelow = (bottom > (geometry.size.height + 1))
+			}
+			.transformPreference(SetupScrollBottomKey.self) { $0 = 0 } // A list inside a step is its own matter
+			.mask {
+				VStack(spacing: 0) {
+					Rectangle()
+
+					LinearGradient(colors: [.black, (hasMoreBelow ? .clear : .black)], startPoint: .top, endPoint: .bottom)
+						.frame(height: 32)
+				}
+			}
+		}
+	}
+}
+
 struct SetupRootView: View
 {
 	static let size = NSSize(width: 720, height: 640)
@@ -893,15 +944,12 @@ struct SetupRootView: View
 	{
 		VStack(spacing: 0) {
 			/* A short step sits in the middle of the window; a long one scrolls */
-			GeometryReader { geometry in
-				ScrollView {
-					SetupStepView(model: model)
-						.padding(.horizontal, 36)
-						.padding(.top, 28)
-						.padding(.bottom, 12)
-						.frame(maxWidth: .infinity, minHeight: geometry.size.height)
-				}
-				.scrollBounceBehavior(.basedOnSize)
+			SetupFadingScrollView { (height) in
+				SetupStepView(model: model)
+					.padding(.horizontal, 36)
+					.padding(.top, 28)
+					.padding(.bottom, 12)
+					.frame(maxWidth: .infinity, minHeight: height)
 			}
 			.id(model.stepIdentity)
 			.transition(.opacity)

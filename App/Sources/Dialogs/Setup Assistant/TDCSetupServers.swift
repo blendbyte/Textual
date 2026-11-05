@@ -1245,7 +1245,7 @@ struct SetupNetworksStep: View
 
 	private var list: some View
 	{
-		ScrollView {
+		SetupFadingScrollView { (_) in
 			LazyVStack(alignment: .leading, spacing: 0) {
 				if let typed = model.typedServer {
 					typedRow(typed)
