@@ -11,7 +11,8 @@ set -euo pipefail
 #      the "Textual Developer ID" provisioning profile
 #   3. notarizes and staples the app
 #   4. the Sparkle zip (ditto), signed with the update key (sign_update)
-#   5. the DMG (MakeDMG.sh, dmgbuild), signed, notarized and stapled
+#   5. the DMG (MakeDMG.sh, dmgbuild), showing the website's current terms
+#      (FetchTerms.sh), signed, notarized and stapled
 #   6. release.json, the handover for the website's appcast generator
 #   7. commits the build number and tags the release (locally; push yourself)
 #
@@ -287,7 +288,10 @@ step "Making the disk image"
 
 dmg="${output}/${name}.dmg"
 
-"${ROOT}/Scripts/release/MakeDMG.sh" "${app}" "${version}" "${dmg}" "${SIGNING_IDENTITY}" ||
+"${ROOT}/Scripts/release/FetchTerms.sh" "${output}/terms.rtf" ||
+	fail "Could not get the terms for the disk image"
+
+"${ROOT}/Scripts/release/MakeDMG.sh" "${app}" "${version}" "${dmg}" "${output}/terms.rtf" "${SIGNING_IDENTITY}" ||
 	fail "Making the disk image failed"
 
 if [ "${testRun}" = 0 ]; then
