@@ -582,7 +582,8 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	self->_serverList = @[[server copy]];
 
-	self->_migratedServerPasswordPendingDestroy = YES;
+	/* Nothing read may mean access was declined: the old item stays for next time */
+	self->_migratedServerPasswordPendingDestroy = (serverPassword != nil);
 }
 
 - (BOOL)isEqual:(id)object

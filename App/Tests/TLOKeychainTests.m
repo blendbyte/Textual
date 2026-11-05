@@ -50,7 +50,84 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tearDown
 {
 	TLOKeychain.simulatedWriteStatus = nil;
+	TLOKeychain.simulatedReadStatus = nil;
 	TLOKeychain.reportsFailures = YES;
+}
+
+/* Declining the prompt is an answer: one saved password asks once, not at every read */
+- (void)testDeclinedAccessAsksOnce
+{
+	for (NSNumber *declined in @[@(errSecUserCanceled), @(errSecAuthFailed)]) {
+		NSString *identifier = [NSUUID UUID].UUIDString;
+
+		TLOKeychain.simulatedReadStatus = declined;
+
+		XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+		XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+		XCTAssertEqual(TLOKeychain.simulatedReadCount, 1);
+
+		/* Its own answer: another item still asks */
+		XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindNicknamePassword forIdentifier:identifier]);
+
+		XCTAssertEqual(TLOKeychain.simulatedReadCount, 2);
+	}
+}
+
+/* A password typed in afterwards is the user's new answer */
+- (void)testReplacedPasswordIsReadAgain
+{
+	NSString *identifier = [NSUUID UUID].UUIDString;
+
+	TLOKeychain.simulatedReadStatus = @(errSecUserCanceled);
+
+	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	TLOKeychain.simulatedWriteStatus = @(errSecSuccess);
+
+	XCTAssertTrue([TLOKeychain setPassword:@"secret" ofKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	XCTAssertEqual(TLOKeychain.simulatedReadCount, 2);
+}
+
+/* Declined, a field shows empty. Saving it mustn't replace the password nobody could read. */
+- (void)testEmptyPasswordAfterDecliningIsNotWritten
+{
+	NSString *identifier = [NSUUID UUID].UUIDString;
+
+	TLOKeychain.simulatedReadStatus = @(errSecUserCanceled);
+
+	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	/* A write that got through would fail with this */
+	TLOKeychain.simulatedWriteStatus = @(errSecAuthFailed);
+	TLOKeychain.reportsFailures = NO;
+
+	XCTAssertTrue([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	/* Without declining, an empty password is written as before */
+	XCTAssertFalse([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindNicknamePassword forIdentifier:identifier]);
+
+	XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+	XCTAssertEqual(TLOKeychain.simulatedReadCount, 1);
+}
+
+/* A locked Keychain or a missing item isn't anyone's answer: ask again next time */
+- (void)testOtherFailuresAreNotRemembered
+{
+	for (NSNumber *status in @[@(errSecInteractionNotAllowed), @(errSecItemNotFound)]) {
+		NSString *identifier = [NSUUID UUID].UUIDString;
+
+		TLOKeychain.simulatedReadStatus = status;
+
+		XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+		XCTAssertNil([TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:identifier]);
+
+		XCTAssertEqual(TLOKeychain.simulatedReadCount, 2);
+	}
 }
 
 /* When the Keychain refuses a password (e.g. a denied access prompt), it must

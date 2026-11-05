@@ -44,6 +44,8 @@ static NSString * const _keychainItemKind = @"application password";
 
 #ifdef DEBUG
 static NSNumber * _Nullable _simulatedWriteStatus = nil;
+static NSNumber * _Nullable _simulatedReadStatus = nil;
+static NSUInteger _simulatedReadCount = 0;
 static BOOL _reportsFailures = YES;
 #endif
 
@@ -103,17 +105,88 @@ static BOOL _reportsFailures = YES;
 	return [NSString stringWithFormat:@"%@.%@", prefix, identifier];
 }
 
+/* Items someone declined to give access to, until Textual quits. Textual reads a
+ password every time it needs one, and macOS would ask every time. */
++ (NSMutableSet<NSString *> *)declinedServices
+{
+	static NSMutableSet<NSString *> *declinedServices = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		declinedServices = [NSMutableSet set];
+	});
+
+	return declinedServices;
+}
+
++ (void)forgetDeclinedService:(NSString *)service
+{
+	NSMutableSet<NSString *> *declinedServices = [self declinedServices];
+
+	@synchronized (declinedServices) {
+		[declinedServices removeObject:service];
+	}
+}
+
 + (nullable NSString *)passwordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier
 {
-	return [XRKeychain getPasswordFromKeychainItem:[self labelForKind:kind]
-									  withItemKind:_keychainItemKind
-									   forUsername:nil
-									   serviceName:[self serviceForKind:kind identifier:identifier]];
+	NSString *service = [self serviceForKind:kind identifier:identifier];
+
+	NSMutableSet<NSString *> *declinedServices = [self declinedServices];
+
+	@synchronized (declinedServices) {
+		if ([declinedServices containsObject:service]) {
+			return nil;
+		}
+	}
+
+	OSStatus status = errSecSuccess;
+
+	NSString *password = nil;
+
+#ifdef DEBUG
+	if (_simulatedReadStatus) {
+		status = (OSStatus)_simulatedReadStatus.intValue;
+
+		_simulatedReadCount += 1;
+	} else
+#endif
+	{
+		password = [XRKeychain getPasswordFromKeychainItem:[self labelForKind:kind]
+											  withItemKind:_keychainItemKind
+											   forUsername:nil
+											   serviceName:service
+												 fromCloud:NO
+										returnedStatusCode:&status];
+	}
+
+	/* Not a locked Keychain or a missing item: those can change without anyone being asked */
+	if (status == errSecUserCanceled || status == errSecAuthFailed) {
+		LogToConsoleInfo("Access to the %{public}@ for %{public}@ was declined: %{public}d", [self labelForKind:kind], identifier, (int)status);
+
+		@synchronized (declinedServices) {
+			[declinedServices addObject:service];
+		}
+	}
+
+	return password;
 }
 
 + (BOOL)setPassword:(NSString *)password ofKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier
 {
 	NSParameterAssert(password != nil);
+
+	/* An empty field after declining shows nothing was read, not that the user cleared it */
+	if (password.length == 0) {
+		NSMutableSet<NSString *> *declinedServices = [self declinedServices];
+
+		@synchronized (declinedServices) {
+			if ([declinedServices containsObject:[self serviceForKind:kind identifier:identifier]]) {
+				return YES;
+			}
+		}
+	}
 
 	OSStatus status = errSecSuccess;
 
@@ -132,6 +205,8 @@ static BOOL _reportsFailures = YES;
 	}
 
 	if (status == errSecSuccess) {
+		[self forgetDeclinedService:[self serviceForKind:kind identifier:identifier]];
+
 		return YES;
 	}
 
@@ -203,6 +278,8 @@ static BOOL _reportsFailures = YES;
 
 + (void)deletePasswordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier
 {
+	[self forgetDeclinedService:[self serviceForKind:kind identifier:identifier]];
+
 	[XRKeychain deleteKeychainItem:[self labelForKind:kind]
 					  withItemKind:_keychainItemKind
 					   forUsername:nil
@@ -306,6 +383,23 @@ static BOOL _reportsFailures = YES;
 + (void)setSimulatedWriteStatus:(nullable NSNumber *)simulatedWriteStatus
 {
 	_simulatedWriteStatus = [simulatedWriteStatus copy];
+}
+
++ (nullable NSNumber *)simulatedReadStatus
+{
+	return _simulatedReadStatus;
+}
+
++ (void)setSimulatedReadStatus:(nullable NSNumber *)simulatedReadStatus
+{
+	_simulatedReadStatus = [simulatedReadStatus copy];
+
+	_simulatedReadCount = 0;
+}
+
++ (NSUInteger)simulatedReadCount
+{
+	return _simulatedReadCount;
 }
 
 + (BOOL)reportsFailures

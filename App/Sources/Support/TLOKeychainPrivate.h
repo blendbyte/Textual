@@ -49,6 +49,7 @@ typedef NS_ENUM(NSUInteger, TLOKeychainItemKind) {
 /* The app's secrets in the Keychain (server, NickServ and proxy passwords,
  channel keys, SASL login keys): one place for their names, result checking and errors. */
 @interface TLOKeychain : NSObject
+/* Once access is declined, nil without asking again until Textual quits or the password is replaced */
 + (nullable NSString *)passwordOfKind:(TLOKeychainItemKind)kind forIdentifier:(NSString *)identifier;
 
 /* Returns NO if the Keychain refused the password (the user is told why, with
@@ -73,6 +74,11 @@ typedef NS_ENUM(NSUInteger, TLOKeychainItemKind) {
 @interface TLOKeychain (Testing)
 /* Writes return this status instead of writing (nil: write normally) */
 @property (class, nonatomic, copy, nullable) NSNumber *simulatedWriteStatus;
+
+/* Reads answer nothing with this status, and count, instead of reading (nil: read
+ normally). Setting it starts the count again. */
+@property (class, nonatomic, copy, nullable) NSNumber *simulatedReadStatus;
+@property (class, readonly) NSUInteger simulatedReadCount;
 
 /* Whether failed writes are shown to the user (YES by default) */
 @property (class, nonatomic, assign) BOOL reportsFailures;
