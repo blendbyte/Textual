@@ -599,7 +599,7 @@ struct ChannelListTable: View
 							.foregroundStyle(.secondary)
 							.padding(.horizontal, 5)
 							.padding(.vertical, 1)
-							.background(Capsule().fill(.quaternary))
+							.background(Color.primary.opacity(0.12), in: Capsule()) // A selected row makes .quaternary solid white
 							.fixedSize()
 							.layoutPriority(1)
 					}
