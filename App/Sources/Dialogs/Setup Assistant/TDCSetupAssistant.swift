@@ -1295,7 +1295,7 @@ struct SetupConceptCard: View
 
 			Text(example)
 				.font(.callout.weight(.medium))
-				.foregroundStyle(Color.accentColor)
+				.modifier(ReadableAccentText())
 		}
 		.padding(12)
 		.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

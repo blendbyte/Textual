@@ -120,7 +120,7 @@ struct HistorySettings: View
 				VStack(alignment: .leading, spacing: 6) {
 					LabeledContent {
 						Text(TDCSettingsBridge.title(forMessageArchiveKeepPeriod: shownPeriod))
-							.foregroundStyle(archiveOn ? Color.accentColor : Color.secondary)
+							.modifier(ReadableAccentText(color: (archiveOn ? .accentColor : .secondary)))
 							.fontWeight(.semibold)
 					} label: {
 						SettingLabel(title: SettingsText("set-his-k"), help: SettingsText("set-his-kh"))

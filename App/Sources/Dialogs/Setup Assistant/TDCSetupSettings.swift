@@ -348,7 +348,7 @@ struct SetupStyleStep: View
 	{
 		Text(text)
 			.font(.system(size: 9.5, weight: .semibold))
-			.foregroundStyle(color)
+			.modifier(ReadableAccentText(color: color))
 			.padding(.horizontal, 4)
 			.padding(.vertical, 1)
 			.overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(color.opacity(0.6), lineWidth: 1))
@@ -823,7 +823,7 @@ struct SetupExplainedRows: View
 						if (row.isNew) {
 							Text(SetupText("sa-v-new"))
 								.font(.system(size: 9.5, weight: .bold))
-								.foregroundStyle(Color.accentColor)
+								.modifier(ReadableAccentText())
 						}
 					}
 
@@ -1331,7 +1331,7 @@ struct SetupPreviewSample: View
 	{
 		VStack(alignment: .leading, spacing: 2) {
 			SetupSampleName(name: "alice", color: .blue)
-			Text(verbatim: "https://example.com/sunset.jpg").foregroundStyle(Color.accentColor)
+			Text(verbatim: "https://example.com/sunset.jpg").modifier(ReadableAccentText())
 
 			if (on) {
 				RoundedRectangle(cornerRadius: 5)
@@ -1353,7 +1353,7 @@ struct SetupCardSample: View
 	var body: some View
 	{
 		VStack(alignment: .leading, spacing: 3) {
-			Text(verbatim: "https://example.com/news/story").foregroundStyle(Color.accentColor)
+			Text(verbatim: "https://example.com/news/story").modifier(ReadableAccentText())
 
 			if (on) {
 				VStack(alignment: .leading, spacing: 1) {

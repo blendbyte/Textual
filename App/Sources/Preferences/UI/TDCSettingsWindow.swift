@@ -596,6 +596,21 @@ struct SettingsNavigationButtons: View
 	}
 }
 
+/// Text in the accent colour. Increase Contrast darkens the accent, which is too
+/// dim for text on a dark background, so there it reads as ordinary text.
+struct ReadableAccentText: ViewModifier
+{
+	var color: Color = .accentColor
+
+	@Environment(\.colorScheme) private var colorScheme
+	@Environment(\.colorSchemeContrast) private var contrast
+
+	func body(content: Content) -> some View
+	{
+		content.foregroundStyle((color == .accentColor && colorScheme == .dark && contrast == .increased) ? Color.primary : color)
+	}
+}
+
 /// The search field above the sections: the system's, so it looks like one
 struct SettingsSearchField: NSViewRepresentable
 {
