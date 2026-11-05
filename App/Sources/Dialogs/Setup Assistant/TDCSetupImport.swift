@@ -670,7 +670,7 @@ struct SetupSymbolRow: View
 	{
 		HStack(alignment: .firstTextBaseline, spacing: 8) {
 			Image(systemName: symbol)
-				.foregroundStyle(color)
+				.modifier(ReadableAccentText(color: color))
 				.frame(width: 20)
 				.accessibilityHidden(true)
 
