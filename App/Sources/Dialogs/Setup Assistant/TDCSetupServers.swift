@@ -389,6 +389,13 @@ final class SetupServersModel: ObservableObject
 
 	func addBouncer(_ bouncer: SetupPendingBouncer)
 	{
+		/* The same bouncer and login again: the networks chosen now */
+		bouncers.removeAll { (pending) in
+			(pending.account.serverAddress.caseInsensitiveCompare(bouncer.account.serverAddress) == .orderedSame
+				&& pending.account.serverPort == bouncer.account.serverPort
+				&& pending.account.username.caseInsensitiveCompare(bouncer.account.username) == .orderedSame)
+		}
+
 		bouncers.append(bouncer)
 	}
 

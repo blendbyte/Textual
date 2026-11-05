@@ -180,12 +180,31 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	}
 }
 
++ (nullable IRCClient *)existingServerForNetwork:(IRCBouncerNetwork *)network ofAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(network != nil);
+	NSParameterAssert(account != nil);
+
+	return [worldController() clientAddedByHandForNetwork:network ofAccount:account];
+}
+
 + (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks connect:(BOOL)connect
 {
 	NSParameterAssert(account != nil);
 	NSParameterAssert(networks != nil);
 
-	NSArray<IRCClient *> *clients = [worldController() addBouncerAccount:account withNetworks:networks linkedClients:@{} connect:connect];
+	/* A network that already has a server keeps it: chosen again, it isn't added twice */
+	NSMutableDictionary<NSString *, IRCClient *> *linkedClients = [NSMutableDictionary dictionary];
+
+	for (IRCBouncerNetwork *network in networks) {
+		IRCClient *client = [self existingServerForNetwork:network ofAccount:account];
+
+		if (client) {
+			linkedClients[network.networkIdentifier] = client;
+		}
+	}
+
+	NSArray<IRCClient *> *clients = [worldController() addBouncerAccount:account withNetworks:networks linkedClients:linkedClients connect:connect];
 
 	IRCClient *firstClient = clients.firstObject;
 

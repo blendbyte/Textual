@@ -464,8 +464,12 @@ final class SetupModel: ObservableObject
 			return
 		}
 
-		/* Nothing exists to link yet, and it's all created after setup */
-		let sheet = AddBouncerSheet(existingClient: { (_, _) in nil }, add: { [weak self] (account, networks, _, connect) in
+		/* Only a rerun has a world to look in. Linking is decided when it's all created, after setup */
+		let hasWorld = (path == .again)
+
+		let sheet = AddBouncerSheet(existingClient: { (network, account) in
+			(hasWorld ? TDCSettingsBridge.existingServer(for: network, of: account) : nil)
+		}, add: { [weak self] (account, networks, _, connect) in
 			servers.addBouncer(SetupPendingBouncer(account: account, networks: networks, connect: connect))
 
 			self?.bouncerAdded()

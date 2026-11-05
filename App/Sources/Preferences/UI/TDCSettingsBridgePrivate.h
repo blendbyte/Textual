@@ -36,7 +36,7 @@
 
 #import "TLOLocalization.h"
 
-@class IRCBouncerAccount, IRCBouncerNetwork, IRCClientConfig;
+@class IRCBouncerAccount, IRCBouncerNetwork, IRCClient, IRCClientConfig;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -53,6 +53,7 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 
 /* Servers chosen in the setup window, created once the main window exists */
 + (void)addServerWithConfig:(IRCClientConfig *)config browsesChannels:(BOOL)browsesChannels selects:(BOOL)selects;
++ (nullable IRCClient *)existingServerForNetwork:(IRCBouncerNetwork *)network ofAccount:(IRCBouncerAccount *)account NS_SWIFT_NAME(existingServer(for:of:));
 + (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks connect:(BOOL)connect;
 
 /* The servers in the saved settings, before there is a world: name, channels (a count), nickname */
