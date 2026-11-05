@@ -138,6 +138,32 @@ NS_ASSUME_NONNULL_BEGIN
 						  (@[@"biggest", @"german", @"any language"]));
 }
 
+/* A network with no channels stays listed, behind those someone could start in */
+- (void)testSuggestionsWithoutChannels
+{
+	NSArray *channels = @[@{@"name" : @"#chat", @"reason" : @"Why.", @"users" : @5, @"tags" : @[], @"language" : [NSNull null]}];
+
+	NSArray *networks = @[
+		[self networkWithIdentifier:@"empty" languages:@[@"fr"] certificate:@YES channels:@[]],
+		[self networkWithIdentifier:@"first" languages:@[@"fr"] certificate:@YES channels:channels],
+		[self networkWithIdentifier:@"also" languages:@[@"en", @"fr"] certificate:@YES channels:channels]
+	];
+
+	NSData *feed = [self feedWithNetworks:networks tagged:@[@"empty", @"first", @"also"]];
+
+	XCTAssertEqualObjects(([IRCAtlasFeedStore suggestionsWithFeedData:feed tag:@"gaming" language:@"fr"]),
+						  (@[@"first", @"also", @"empty", @"language"]));
+
+	XCTAssertEqualObjects(([IRCAtlasFeedStore suggestionsWithFeedData:feed tag:@"gaming" language:nil]),
+						  (@[@"first", @"also", @"empty", @"language"]));
+
+	XCTAssertEqualObjects(([IRCAtlasFeedStore suggestionsWithFeedData:feed tag:@"gaming" language:@"fi"]),
+						  (@[@"first", @"also", @"empty", @"any language"]));
+
+	XCTAssertEqualObjects(([IRCAtlasFeedStore starterChannelsWithFeedData:feed network:@"empty" tag:@"gaming" language:nil]),
+						  (@[]));
+}
+
 /* The tag's channels first with the top one ticked; other tags and languages not at all */
 - (void)testStarterChannels
 {

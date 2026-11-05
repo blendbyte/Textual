@@ -189,6 +189,7 @@
 "sa-sg-other" = "Nothing for %@ in %@ yet, so here are the ones in other languages.";
 "sa-sg-none-t" = "Nothing fits yet";
 "sa-sg-none-d" = "Try another interest, or look through all networks.";
+"sa-sg-nochan" = "No channels to suggest here. You’ll get the channel list after connecting, to browse what’s there.";
 
 "sa-sl-title" = "Choose your networks";
 "sa-sl-lead" = "Every network IRC Atlas lists. Search, filter, or paste an address you already have.";

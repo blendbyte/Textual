@@ -832,7 +832,11 @@ struct SetupNetworkPanel: View
 				Text(verbatim: network.description)
 
 				line(SetupText("sa-sp-size"), size(network))
-				line(SetupText("sa-sp-lang"), network.languages.map(setupLanguageName).joined(separator: ", "))
+
+				if (network.languages.isEmpty == false) {
+					line(SetupText("sa-sp-lang"), network.languages.map(setupLanguageName).joined(separator: ", "))
+				}
+
 				line(SetupText("sa-sp-conn"), connection(network))
 				line(SetupText("sa-sp-acct"), (network.sasl ? SetupText("sa-sp-acct-y") : SetupText("sa-sp-acct-n")))
 
@@ -1114,8 +1118,17 @@ struct SetupSuggestionsStep: View
 
 	private func channels(on network: AtlasNetwork) -> some View
 	{
-		VStack(alignment: .leading, spacing: 5) {
-			ForEach(model.starters(on: network), id: \.channel.name) { (starter) in
+		let starters = model.starters(on: network)
+
+		return VStack(alignment: .leading, spacing: 5) {
+			if (starters.isEmpty) {
+				Text(SetupText("sa-sg-nochan"))
+					.font(.caption)
+					.foregroundStyle(.secondary)
+					.fixedSize(horizontal: false, vertical: true)
+			}
+
+			ForEach(starters, id: \.channel.name) { (starter) in
 				HStack(alignment: .top, spacing: 6) {
 					SetupTick(ticked: model.isTicked(starter, on: network), label: starter.channel.name) {
 						model.setTicked(model.isTicked(starter, on: network) == false, starter, on: network)

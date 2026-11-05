@@ -309,7 +309,8 @@ struct AtlasFeed
 
 	/// Where someone new could go for a tag: secure connections only, the networks
 	/// whose first language is theirs ahead, otherwise in the tag's own order
-	/// (largest first). Without a language, the tag's networks as they are.
+	/// (largest first). Without a language, the tag's networks as they are. Networks
+	/// with no channels to offer at all come last, so nobody starts on one by default.
 	func suggestions(tag: String, language: String?, limit: Int = AtlasFeed.suggestionLimit) -> AtlasSuggestions
 	{
 		let inTag = (tags.first { $0.tag == tag }?.networks ?? [])
@@ -317,7 +318,7 @@ struct AtlasFeed
 			.filter(\.connectsSecurely)
 
 		guard let language = language else {
-			return AtlasSuggestions(networks: Array(inTag.prefix(limit)), matchesLanguage: true)
+			return AtlasSuggestions(networks: Array(Self.withChannelsFirst(inTag).prefix(limit)), matchesLanguage: true)
 		}
 
 		let first = inTag.filter { (network) in
@@ -332,10 +333,15 @@ struct AtlasFeed
 		let matching = (first + also)
 
 		guard matching.isEmpty == false else {
-			return AtlasSuggestions(networks: Array(inTag.prefix(limit)), matchesLanguage: false)
+			return AtlasSuggestions(networks: Array(Self.withChannelsFirst(inTag).prefix(limit)), matchesLanguage: false)
 		}
 
-		return AtlasSuggestions(networks: Array(matching.prefix(limit)), matchesLanguage: true)
+		return AtlasSuggestions(networks: Array(Self.withChannelsFirst(matching).prefix(limit)), matchesLanguage: true)
+	}
+
+	private static func withChannelsFirst(_ networks: [AtlasNetwork]) -> [AtlasNetwork]
+	{
+		(networks.filter { $0.channels.isEmpty == false } + networks.filter { $0.channels.isEmpty })
 	}
 
 	/// Channels to start in: those with the tag first and the top one ticked, then
