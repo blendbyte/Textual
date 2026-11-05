@@ -132,7 +132,7 @@ typedef NS_ENUM(NSUInteger, TPCLegacyImportReadError) {
 
 /* After the import */
 - (BOOL)saveEncryptionComponentsToFolderURL:(NSURL *)folderURL groupURL:(NSURL *)groupURL;
-- (void)deleteEarlierDataInGroupURL:(NSURL *)groupURL;
+- (BOOL)deleteEarlierDataInGroupURL:(NSURL *)groupURL; // NO when something stayed
 
 /* Quits without saving and starts a new copy */
 + (void)restart;

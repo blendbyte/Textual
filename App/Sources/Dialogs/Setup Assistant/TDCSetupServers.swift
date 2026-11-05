@@ -157,6 +157,9 @@ final class SetupServersModel: ObservableObject
 
 	@Published private(set) var bouncers: [SetupPendingBouncer] = []
 
+	/* Those whose connection check the user went on from */
+	private var checkedIDs: Set<String> = []
+
 	init()
 	{
 		let preferred = NSUserName()
@@ -462,12 +465,17 @@ final class SetupServersModel: ObservableObject
 		return (config.copy() as! IRCClientConfig)
 	}
 
-	/// Once the main window exists
-	func createEverything()
+	func noteChecked()
+	{
+		checkedIDs = Set(picked.map(\.id))
+	}
+
+	/// Once the main window exists. Bouncers logged in when they were added.
+	func createEverything(onlyChecked: Bool)
 	{
 		var selectsServer = true
 
-		for server in picked {
+		for server in picked where (onlyChecked == false || checkedIDs.contains(server.id)) {
 			let config = configuration(for: server)
 
 			/* No channel to go to: what's there to browse is the next best thing */
@@ -529,10 +537,11 @@ final class SetupConnectionCheck: ObservableObject, Identifiable
 		lines.contains { $0.state == .noAnswer || $0.state == .certificateProblem }
 	}
 
-	/// What testing changed, for those that answered another way than typed
+	/// Those that answered only on the plain port. One that didn't answer at all
+	/// stays as typed: encrypted is never given up without an answer.
 	var replacements: [(id: String, server: SetupServer)]
 	{
-		lines.filter { $0.id != $0.server.id }.map { ($0.id, $0.server) }
+		lines.filter { $0.id != $0.server.id && $0.state == .notEncrypted }.map { ($0.id, $0.server) }
 	}
 
 	func start()

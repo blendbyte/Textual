@@ -107,7 +107,7 @@ final class SetupModel: ObservableObject
 
 	@Published var connectionCheck: SetupConnectionCheck?
 
-	/* The window closed early creates nothing: nobody confirmed a name or a check */
+	/* Closed before the end, only what passed the connection check is created */
 	private(set) var reachedEnd = false
 
 	private(set) var importedServers: [String] = []
@@ -166,6 +166,18 @@ final class SetupModel: ObservableObject
 	}
 
 	private static let newToIRCKey = "Setup Assistant -> New to IRC"
+	private static let archiveExplainedKey = "Setup Assistant -> Explained Message Archive"
+
+	/* The privacy step explains the archive. Whoever skips it hears of it once. */
+	static var shouldExplainArchive: Bool
+	{
+		(TPCPreferencesUserDefaults.shared().bool(forKey: archiveExplainedKey) == false && TPCPreferences.messageArchiveKeepPeriod != .off)
+	}
+
+	static func noteArchiveExplained()
+	{
+		TPCPreferencesUserDefaults.shared().set(true, forKey: archiveExplainedKey)
+	}
 
 	/* Settings start where they are, rather than on what a new install gets */
 	var keepsCurrentSettings: Bool
@@ -297,6 +309,8 @@ final class SetupModel: ObservableObject
 			for replacement in check.replacements {
 				serversModel?.replace(replacement.id, with: replacement.server)
 			}
+
+			serversModel?.noteChecked()
 		}
 
 		connectionCheck = nil
@@ -350,6 +364,10 @@ final class SetupModel: ObservableObject
 
 		if (newStep == .license) {
 			enterLicense()
+		}
+
+		if (newStep == .privacy) {
+			Self.noteArchiveExplained()
 		}
 
 		if (newStep == .interests || newStep == .networks) {
@@ -462,18 +480,27 @@ final class SetupModel: ObservableObject
 
 	private func bouncerAdded()
 	{
-		if (path == .upgrade) {
-			isAddingToImported = false
+		let hasPicked = (serversModel?.picked.isEmpty == false)
 
-			move(to: .importedServers)
-		} else if (serversModel?.picked.isEmpty == false) {
+		if (step == .importedServers) {
+			return
+		}
+
+		if (isAddingToImported) {
+			/* Networks picked are still to be checked: that's the button on this step */
+			if (hasPicked == false) {
+				isAddingToImported = false
+
+				move(to: .importedServers)
+			}
+		} else if (hasPicked) {
 			move(to: .yourName)
 		} else if (path == .serversOnly) {
 			reachedEnd = true
 
 			finish?()
 		} else {
-			move(to: .done)
+			move(to: licenseSteps.first ?? .done)
 		}
 	}
 
@@ -632,8 +659,9 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 	private func createChosenServers()
 	{
-		if (model.reachedEnd) {
-			model.serversModel?.createEverything()
+		/* Welcome again is "not now": setup comes back at the next launch */
+		if (model.step != .welcome) {
+			model.serversModel?.createEverything(onlyChecked: (model.reachedEnd == false))
 		}
 	}
 
@@ -796,6 +824,17 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 		stop()
 	}
 
+	private func finishClosedEarly()
+	{
+		if (model.path == .upgrade && SetupModel.shouldExplainArchive) {
+			SetupModel.noteArchiveExplained()
+
+			TDCAlert.modalAlert(withMessage: ImportText("arc-i1"), title: ImportText("arc-i2"), defaultButton: ImportText("oxy-im"), alternateButton: nil)
+		}
+
+		finish()
+	}
+
 	/* Quit: setup comes back at the next launch */
 	@objc func worksWhenModal() -> Bool
 	{
@@ -826,10 +865,10 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 				if (importModel.stage == .access || importModel.stage == .nothingToImport) {
 					stop()
 				} else {
-					finish()
+					finishClosedEarly()
 				}
 			default:
-				finish()
+				finishClosedEarly()
 		}
 
 		return false

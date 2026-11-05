@@ -122,7 +122,12 @@ released=0
 # A failed release leaves the build number as it was; the work folder goes
 cleanUp() {
 	if [ "${testRun}" = 0 ] && [ "${released}" = 0 ]; then
-		git -C "${ROOT}" checkout -- "${VERSION_FILE}" "${ATLAS_FEED_FILE}"
+		git -C "${ROOT}" checkout -- "${VERSION_FILE}"
+	fi
+
+	# The file is shipped by a release only, and a test run may have other changes
+	if [ "${released}" = 0 ] && [ -f "${work}/feed-before.json" ]; then
+		cp "${work}/feed-before.json" "${ATLAS_FEED_FILE}"
 	fi
 
 	rm -rf "${work}"
@@ -145,6 +150,7 @@ curl --fail --silent --show-error --max-time 60 --output "${work}/onboarding.jso
 plutil -extract networks.0.connection.host raw -o - "${work}/onboarding.json" > /dev/null 2>&1 ||
 	fail "The IRC Atlas feed has no networks"
 
+cp "${ATLAS_FEED_FILE}" "${work}/feed-before.json"
 cp "${work}/onboarding.json" "${ATLAS_FEED_FILE}"
 
 # Archive

@@ -671,6 +671,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.result.serverCount, self.result.failureCount);
 }
 
+/* From the dictionaries, not an IRCClientConfig: making one moves older entries
+ into the Keychain, which can prompt before the summary has warned about it */
 - (BOOL)_importedServersHaveSavedPasswords
 {
 	for (NSDictionary *client in self.servers) {
@@ -678,25 +680,42 @@ NS_ASSUME_NONNULL_BEGIN
 			continue;
 		}
 
-		IRCClientConfig *config = [[IRCClientConfig alloc] initWithDictionary:client];
-
-		if ([TLOKeychain hasPasswordOfKind:TLOKeychainItemKindNicknamePassword forIdentifier:config.uniqueIdentifier] ||
-			[TLOKeychain hasPasswordOfKind:TLOKeychainItemKindProxyPassword forIdentifier:config.uniqueIdentifier] ||
-			[TLOKeychain hasPasswordOfKind:TLOKeychainItemKindSASLECDSAKey forIdentifier:config.uniqueIdentifier])
-		{
+		/* Older entries kept the server password under the client's identifier */
+		if ([self _hasPasswordOfKinds:@[@(TLOKeychainItemKindNicknamePassword), @(TLOKeychainItemKindProxyPassword), @(TLOKeychainItemKindSASLECDSAKey), @(TLOKeychainItemKindServerPassword)] inDictionary:client]) {
 			return YES;
 		}
 
-		for (IRCServer *server in config.serverList) {
-			if ([TLOKeychain hasPasswordOfKind:TLOKeychainItemKindServerPassword forIdentifier:server.uniqueIdentifier]) {
+		for (NSDictionary *server in [client arrayForKey:@"serverList"]) {
+			if ([self _hasPasswordOfKinds:@[@(TLOKeychainItemKindServerPassword)] inDictionary:server]) {
 				return YES;
 			}
 		}
 
-		for (IRCChannelConfig *channel in config.channelList) {
-			if ([TLOKeychain hasPasswordOfKind:TLOKeychainItemKindChannelKey forIdentifier:channel.uniqueIdentifier]) {
+		for (NSDictionary *channel in [client arrayForKey:@"channelList"]) {
+			if ([self _hasPasswordOfKinds:@[@(TLOKeychainItemKindChannelKey)] inDictionary:channel]) {
 				return YES;
 			}
+		}
+	}
+
+	return NO;
+}
+
+- (BOOL)_hasPasswordOfKinds:(NSArray<NSNumber *> *)kinds inDictionary:(NSDictionary *)dictionary
+{
+	if ([dictionary isKindOfClass:[NSDictionary class]] == NO) {
+		return NO;
+	}
+
+	NSString *identifier = dictionary[@"uniqueIdentifier"];
+
+	if ([identifier isKindOfClass:[NSString class]] == NO) {
+		return NO;
+	}
+
+	for (NSNumber *kind in kinds) {
+		if ([TLOKeychain hasPasswordOfKind:kind.unsignedIntegerValue forIdentifier:identifier]) {
+			return YES;
 		}
 	}
 
@@ -800,7 +819,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Only after the copy and only when asked: never the folder itself, only
  what Textual put in it */
-- (void)deleteEarlierDataInGroupURL:(NSURL *)groupURL
+- (BOOL)deleteEarlierDataInGroupURL:(NSURL *)groupURL
 {
 	[groupURL startAccessingSecurityScopedResource];
 
@@ -818,15 +837,21 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	BOOL deletedEverything = YES;
+
 	for (NSURL *item in items) {
 		NSError *deleteError = nil;
 
 		if ([RZFileManager() removeItemAtURL:item error:&deleteError] == NO && [RZFileManager() fileExistsAtURL:item]) {
 			LogToConsoleError("Legacy import: failed to delete %{public}@: %{public}@", item.path, deleteError.localizedDescription);
+
+			deletedEverything = NO;
 		}
 	}
 
 	[groupURL stopAccessingSecurityScopedResource];
+
+	return deletedEverything;
 }
 
 #pragma mark -

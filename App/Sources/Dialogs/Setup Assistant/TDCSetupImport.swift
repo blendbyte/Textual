@@ -473,6 +473,11 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 
 	private func importLicense(from folderURL: URL)
 	{
+		/* After Start Fresh, the license is all that's imported */
+		if (importer == nil) {
+			importer = TPCLegacyImport(source: source)
+		}
+
 		_ = folderURL.startAccessingSecurityScopedResource()
 
 		importer?.importLicense(fromFolderURL: folderURL)
@@ -534,6 +539,13 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 
 		if (result.triedLicense && result.importedLicense == false) {
 			notes.append(ImportNote(symbol: "key", color: .orange, text: ImportText("3jr-s5")))
+		}
+
+		/* From the menu, there's no privacy step to come */
+		if (fromMenu && SetupModel.shouldExplainArchive) {
+			SetupModel.noteArchiveExplained()
+
+			notes.append(ImportNote(symbol: "magnifyingglass", color: .secondary, text: ImportText("arc-i1")))
 		}
 
 		if (result.encryptionComponentsURL != nil) {
@@ -970,7 +982,12 @@ enum ImportRemoval
 			return
 		}
 
-		importer.deleteEarlierData(inGroupURL: groupURL)
+		/* If something stays, so does the menu item, to try again */
+		guard importer.deleteEarlierData(inGroupURL: groupURL) else {
+			TDCAlert.modalAlert(withMessage: ImportText("d4r-n8", source.displayName), title: ImportText("d4r-n7"), defaultButton: ImportText("oxy-im"), alternateButton: nil)
+
+			return
+		}
 
 		TPCLegacyImport.clearCompleteNote()
 	}
@@ -990,7 +1007,12 @@ enum ImportRemoval
 		panel.prompt = ImportText("5wl-b5")
 		panel.delegate = delegate
 
-		guard panel.runModal() == .OK, let url = panel.url else {
+		/* The panel doesn't keep its delegate */
+		let response = withExtendedLifetime(delegate) {
+			panel.runModal()
+		}
+
+		guard response == .OK, let url = panel.url else {
 			return nil
 		}
 
@@ -1018,10 +1040,12 @@ enum ImportRemoval
 /// Only the folder Textual needs can be chosen
 private final class ImportPanelDelegate: NSObject, NSOpenSavePanelDelegate
 {
+	private let itemName: String
 	private let itemPath: String
 
 	init(itemURL: URL)
 	{
+		itemName = itemURL.lastPathComponent
 		itemPath = itemURL.standardizedFileURL.path
 	}
 
@@ -1030,5 +1054,18 @@ private final class ImportPanelDelegate: NSObject, NSOpenSavePanelDelegate
 		let path = url.standardizedFileURL.path
 
 		return (path == itemPath || itemPath.hasPrefix(path + "/"))
+	}
+
+	/* The folders leading to it are there to get to it, not to be chosen */
+	func panel(_ sender: Any, validate url: URL) throws
+	{
+		guard url.standardizedFileURL.path != itemPath else {
+			return
+		}
+
+		throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadNoPermissionError, userInfo: [
+			NSLocalizedDescriptionKey: ImportText("mzr-ak", itemName),
+			NSLocalizedRecoverySuggestionErrorKey: ImportText("wux-a5")
+		])
 	}
 }
