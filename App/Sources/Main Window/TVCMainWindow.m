@@ -501,6 +501,8 @@ static BOOL _popOutsOpened = NO;
 
 	[self.class applySidebarTranslucencyToView:self.inputFieldBackgroundView];
 
+	[self.class applySidebarTranslucencyToView:self.splitViewBackgroundView];
+
 	[self notifyApplicationAppearanceChanged];
 }
 

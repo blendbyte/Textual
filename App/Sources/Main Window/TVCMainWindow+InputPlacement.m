@@ -137,6 +137,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.inputFieldBackgroundView = backgroundView;
 
+	/* The split view draws no dividers, so their one-point gaps showed the
+	 window's white: unseen beside the chat, but a line beside the field's
+	 strip when the lists reach down past it (under the chat only). With the
+	 same material behind, a gap looks like the list next to it. */
+	NSView *splitView = self.contentSplitView;
+
+	if (splitView) {
+		NSVisualEffectView *splitViewBackgroundView = [NSVisualEffectView new];
+
+		splitViewBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+		splitViewBackgroundView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+
+		[self.class applySidebarTranslucencyToView:splitViewBackgroundView];
+
+		[contentView addSubview:splitViewBackgroundView positioned:NSWindowBelow relativeTo:splitView];
+
+		[NSLayoutConstraint activateConstraints:@[
+			[splitViewBackgroundView.topAnchor constraintEqualToAnchor:splitView.topAnchor],
+			[splitViewBackgroundView.bottomAnchor constraintEqualToAnchor:splitView.bottomAnchor],
+			[splitViewBackgroundView.leadingAnchor constraintEqualToAnchor:splitView.leadingAnchor],
+			[splitViewBackgroundView.trailingAnchor constraintEqualToAnchor:splitView.trailingAnchor]
+		]];
+
+		self.splitViewBackgroundView = splitViewBackgroundView;
+	}
+
 	self.inputFieldStack = stack;
 
 	[self updateInputFieldPlacement];
