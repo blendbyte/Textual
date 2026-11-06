@@ -293,7 +293,7 @@
 	<key>Typing Notifications -&gt; Send</key>
 	<true/>
 	<key>Server List -&gt; Keep Channels Sorted</key>
-	<false/>
+	<true/>
 	<key>TrackUserAwayStatusMaximumChannelSize</key>
 	<integer>300</integer>
 	<key>User List Mode Badge Colors -&gt; +a</key>

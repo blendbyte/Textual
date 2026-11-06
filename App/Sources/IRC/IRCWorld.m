@@ -1078,6 +1078,14 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 		[channelList addObject:channel];
 	}
 
+	/* A list saved in its own order, such as one imported from Textual 7, is
+	 sorted as it loads instead of when the next channel comes */
+	if ([TPCPreferences keepChannelListSorted]) {
+		[channelList sortUsingComparator:^NSComparisonResult(IRCChannel *channel1, IRCChannel *channel2) {
+			return [IRCClient compareChannel:channel1 toChannel:channel2];
+		}];
+	}
+
 	client.channelList = channelList;
 
 	@synchronized(self.clients) {
