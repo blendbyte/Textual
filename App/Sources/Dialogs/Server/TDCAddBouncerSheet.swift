@@ -744,6 +744,23 @@ struct AddBouncerCheckLine: View
 		}
 		.accessibilityElement(children: .combine)
 	}
+
+	/* Which bouncer the check found, on the check and the networks pages */
+	static func bouncerKind(of probe: IRCBouncerProbe) -> AddBouncerCheckLine?
+	{
+		switch (probe.kind) {
+			case .soju:
+				if let version = probe.bouncerVersion, version.isEmpty == false, version.lowercased() != "soju" {
+					return AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-sojuv", version))
+				}
+
+				return AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-soju"))
+			case .ZNC:
+				return AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-znc"))
+			default:
+				return nil
+		}
+	}
 }
 
 struct AddBouncerCheckPage: View
@@ -857,17 +874,8 @@ struct AddBouncerCheckPage: View
 		}
 
 		/* Which bouncer */
-		switch (probe.kind) {
-			case .soju:
-				if let version = probe.bouncerVersion, version.isEmpty == false, version.lowercased() != "soju" {
-					lines.append(AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-sojuv", version)))
-				} else {
-					lines.append(AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-soju")))
-				}
-			case .ZNC:
-				lines.append(AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-znc")))
-			default:
-				break
+		if let kind = AddBouncerCheckLine.bouncerKind(of: probe) {
+			lines.append(kind)
 		}
 
 		/* The networks */
@@ -947,6 +955,14 @@ struct AddBouncerNetworksPage: View
 					.background(AddBouncerFitsSheet())
 			}
 
+			/* What the check found stays in view: the check page itself
+			 goes as soon as the networks are read */
+			Section {
+				ForEach(Array(checkLines.enumerated()), id: \.offset) { (_, line) in
+					line
+				}
+			}
+
 			Section {
 				if model.rows.isEmpty {
 					Text(AddBouncerText("ab-3-none"))
@@ -998,6 +1014,26 @@ struct AddBouncerNetworksPage: View
 				.disabled(model.chosenCount == 0)
 			}
 		}
+	}
+
+	/* Connected, logged in, and which bouncer; the networks read are the list below */
+	private var checkLines: [AddBouncerCheckLine]
+	{
+		guard let probe = model.probe else {
+			return []
+		}
+
+		var lines = [AddBouncerCheckLine(state: .done, text: AddBouncerText((probe.isSecured) ? "ab-c-sec" : "ab-c-nsec"))]
+
+		if probe.isLoggedIn {
+			lines.append(AddBouncerCheckLine(state: .done, text: AddBouncerText("ab-c-lin", model.username.trimmingCharacters(in: .whitespaces))))
+		}
+
+		if let kind = AddBouncerCheckLine.bouncerKind(of: probe) {
+			lines.append(kind)
+		}
+
+		return lines
 	}
 
 	private var title: String
