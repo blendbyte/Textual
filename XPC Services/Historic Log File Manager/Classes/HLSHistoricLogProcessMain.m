@@ -367,7 +367,7 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 			return;
 		}
 
-		NSInteger lowestEntryId = (firstEntryId - fetchLimitBefore);
+		NSInteger lowestEntryId = MAX(((NSInteger)firstEntryId - (NSInteger)fetchLimitBefore), 0);
 		NSInteger highestEntryId = (firstEntryId + fetchLimitAfter);
 
 		NSFetchRequest *fetchRequest = [self _fetchRequestForView:viewContext.hls_viewId
@@ -501,7 +501,7 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogUniqueIdentifierFetchType)
 				/* 1 is subtracted so we can still return fetchLimit
 				 while accounting for the fact that firstEntryId is
 				 not a value we are interested in. */
-				lowestEntryId = (firstEntryId - fetchLimit);
+				lowestEntryId = MAX(((NSInteger)firstEntryId - (NSInteger)fetchLimit), 0);
 
 				highestEntryId = (firstEntryId - 1);
 
