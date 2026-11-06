@@ -104,6 +104,17 @@ Textual.scrollToElement = function(elementName) /* PUBLIC */
 
 Textual.scrollToHistoryIndicator = function() /* PUBLIC */
 {
+	/* Hidden while nothing new is under it: the newest line is where it is */
+	var mark = document.getElementById("mark");
+
+	if (mark && mark.hidden) {
+		TextualScroller.scrollToBottom();
+
+		Textual.viewPositionMovedToHistoryIndicator();
+
+		return;
+	}
+
 	if (Textual.scrollToElement("mark")) {
 		Textual.viewPositionMovedToHistoryIndicator();
 	}

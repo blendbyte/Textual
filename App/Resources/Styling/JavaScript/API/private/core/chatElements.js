@@ -312,7 +312,10 @@ _ChatElements._updateEmpty = function(empty) /* PRIVATE */
 
 /* The unread marker is added at the end while the view is in the background,
  and the next message brings its date line below it: it goes below the date
- and session lines that follow it ("Today", then "New") */
+ and session lines that follow it ("Today", then "New"). It shows only once
+ something new is shown under it: Mark All as Read puts it at the end, and a
+ message that is then not shown (ignored, filtered, already there) or a
+ disconnect leaves it there with nothing after it. */
 _ChatElements._placeMark = function(buffer) /* PRIVATE */
 {
 	var mark = document.getElementById("mark");
@@ -323,7 +326,14 @@ _ChatElements._placeMark = function(buffer) /* PRIVATE */
 
 	var lastSeparator = null;
 
+	var followedByContent = false;
+
 	for (var next = mark.nextElementSibling; next !== null; next = next.nextElementSibling) {
+		/* The typing label floats over the chat: it isn't something new */
+		if (next.id === "typing-indicator") {
+			continue;
+		}
+
 		var shown = (next.getClientRects().length > 0);
 
 		if (next.classList.contains("date_indicator") || next.classList.contains("session_indicator")) {
@@ -331,12 +341,18 @@ _ChatElements._placeMark = function(buffer) /* PRIVATE */
 				lastSeparator = next;
 			}
 		} else if (shown) {
+			followedByContent = true;
+
 			break;
 		}
 	}
 
 	if (lastSeparator !== null) {
 		lastSeparator.insertAdjacentElement("afterend", mark);
+	}
+
+	if (mark.hidden === followedByContent) {
+		mark.hidden = !followedByContent;
 	}
 };
 

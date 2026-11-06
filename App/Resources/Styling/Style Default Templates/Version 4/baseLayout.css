@@ -311,10 +311,12 @@ body[data-appearance="dark"] {
 	font-weight: normal;
 }
 
-/* A repeated date, or a session line joined to the date line next to it.
+/* A repeated date, a session line joined to the date line next to it, or
+ the unread marker with nothing new under it yet.
  Not :where: it must win over a style's own display */
 .date_indicator[hidden],
-.session_indicator[hidden] {
+.session_indicator[hidden],
+#mark[hidden] {
 	display: none !important;
 }
 
