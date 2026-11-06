@@ -361,6 +361,10 @@ _MessageActions._updateJumpToPresentNow = function() /* PRIVATE */
 
 	var button = _MessageActions._jumpButton;
 
+	/* The button keeps its corner; the typing label moves up above it
+	 (baseLayout.css) */
+	document.documentElement.classList.toggle("jumpToPresentShown", away);
+
 	if (away === false) {
 		if (button) {
 			button.hidden = true;

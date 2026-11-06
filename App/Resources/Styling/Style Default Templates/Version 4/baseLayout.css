@@ -366,11 +366,17 @@ body[data-appearance="dark"] {
 	box-shadow: 0 0 0 1px rgba(127, 127, 127, 0.22), 0 2px 8px rgba(0, 0, 0, 0.18);
 	pointer-events: none;
 	opacity: 0;
-	transition: opacity 0.2s ease;
+	transition: opacity 0.2s ease, bottom 0.2s ease;
 }
 
 :where(#typing-indicator[data-shown="true"]) {
 	opacity: 1;
+}
+
+/* Jump to Present takes the bottom right corner (always the same spot, to
+ click without looking): the label floats above it meanwhile */
+:where(html.jumpToPresentShown #typing-indicator) {
+	bottom: 44px;
 }
 
 :where(#typing-indicator .typingIndicatorText) {
