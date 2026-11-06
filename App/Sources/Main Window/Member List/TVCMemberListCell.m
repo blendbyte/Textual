@@ -296,25 +296,58 @@ NS_ASSUME_NONNULL_BEGIN
 		[mutableStringValue appendAttributedString:[[NSAttributedString alloc] initWithString:TXLocalizationNotNeeded(@" \u2022") attributes:markerAttributes]];
 	}
 
-	/* A bot (bot mode): "bot" after the name, smaller and faint */
+	/* A bot (bot mode): a faint robot head after the name (VoiceOver reads
+	 "bot" from the row's help) */
 	if (cellItem.user.isBot) {
 		NSColor *markerColor = ((isSelected) ? [controlColor colorWithAlphaComponent:0.6] : [NSColor secondaryLabelColor]);
 
-		CGFloat fontSize = (((controlFont) ? controlFont.pointSize : 12.0) - 2.0);
+		NSFont *font = ((controlFont) ?: [NSFont systemFontOfSize:12.0]);
 
-		NSDictionary *markerAttributes = @{
-			NSFontAttributeName : [NSFont systemFontOfSize:fontSize weight:NSFontWeightSemibold],
-			NSForegroundColorAttributeName : ((markerColor) ?: [NSColor secondaryLabelColor])
-		};
+		[mutableStringValue appendAttributedString:[[NSAttributedString alloc] initWithString:TXLocalizationNotNeeded(@" ") attributes:@{NSFontAttributeName : font}]];
 
-		NSString *marker = [@" " stringByAppendingString:TXTLS(@"TVCMainWindow[bot-l1]")];
-
-		[mutableStringValue appendAttributedString:[[NSAttributedString alloc] initWithString:marker attributes:markerAttributes]];
+		[mutableStringValue appendAttributedString:[self.class botMarkerWithColor:((markerColor) ?: [NSColor secondaryLabelColor]) font:font]];
 	}
 
 	[mutableStringValue endEditing];
 
 	return mutableStringValue;
+}
+
+/* SF Symbols has no robot: a head with two eyes and an antenna, drawn in
+ the marker's color, as tall as the name's capitals and centred on them */
++ (NSAttributedString *)botMarkerWithColor:(NSColor *)color font:(NSFont *)font
+{
+	NSParameterAssert(color != nil);
+	NSParameterAssert(font != nil);
+
+	CGFloat side = round(font.capHeight * 1.25);
+
+	NSImage *image = [NSImage imageWithSize:NSMakeSize(side, side) flipped:YES drawingHandler:^BOOL(NSRect rect) {
+		/* Drawn on a 12-point grid */
+		CGFloat unit = (NSWidth(rect) / 12.0);
+
+		[color setFill];
+
+		NSBezierPath *head = [NSBezierPath bezierPathWithRoundedRect:NSMakeRect(1.0 * unit, 4.0 * unit, 10.0 * unit, 7.5 * unit) xRadius:(2.2 * unit) yRadius:(2.2 * unit)];
+
+		[head appendBezierPath:[NSBezierPath bezierPathWithOvalInRect:NSMakeRect(3.3 * unit, 6.4 * unit, 1.9 * unit, 1.9 * unit)].bezierPathByReversingPath];
+		[head appendBezierPath:[NSBezierPath bezierPathWithOvalInRect:NSMakeRect(6.8 * unit, 6.4 * unit, 1.9 * unit, 1.9 * unit)].bezierPathByReversingPath];
+
+		[head fill];
+
+		[[NSBezierPath bezierPathWithRect:NSMakeRect(5.4 * unit, 1.9 * unit, 1.2 * unit, 2.3 * unit)] fill];
+
+		[[NSBezierPath bezierPathWithOvalInRect:NSMakeRect(4.6 * unit, 0.2 * unit, 2.8 * unit, 2.8 * unit)] fill];
+
+		return YES;
+	}];
+
+	NSTextAttachment *attachment = [NSTextAttachment new];
+
+	attachment.image = image;
+	attachment.bounds = NSMakeRect(0.0, round((font.capHeight - side) / 2.0), side, side);
+
+	return [NSAttributedString attributedStringWithAttachment:attachment];
 }
 
 #pragma mark -
