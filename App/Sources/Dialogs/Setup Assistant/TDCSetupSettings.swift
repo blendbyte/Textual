@@ -370,9 +370,11 @@ struct SetupLookStep: View
 
 	@Environment(\.colorScheme) private var colorScheme
 
+	/* The step fits the window without scrolling: the samples' height and the gaps
+	 are what give way */
 	var body: some View
 	{
-		VStack(spacing: 14) {
+		VStack(spacing: 10) {
 			SetupHeader(title: SetupText("sa-l-title"), lead: SetupText("sa-l-lead")) {
 				SetupSymbol(symbol: "text.bubble.fill", color: .blue)
 			}
@@ -455,7 +457,7 @@ struct SetupLookStep: View
 		} label: {
 			VStack(spacing: 6) {
 				picture()
-					.frame(height: 150)
+					.frame(height: 112)
 					.frame(maxWidth: .infinity)
 					.clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 					.overlay {
