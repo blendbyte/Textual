@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA3905A83E6025D17E00E9D9 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F2867E1D138214BE8A117805 /* PrivacyInfo.xcprivacy */; };
 		4C0C8A531CBB255000A327D3 /* NSURLHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C0C8A511CBB255000A327D3 /* NSURLHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4C0C8A541CBB255000A327D3 /* NSURLHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0C8A521CBB255000A327D3 /* NSURLHelper.m */; };
 		4C1144792C289575008CD785 /* NSStringTokenizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C1144782C289575008CD785 /* NSStringTokenizer.m */; };
@@ -218,6 +219,7 @@
 		4CA41C041AC1A73600756137 /* ACKNOWLEDGEMENT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ACKNOWLEDGEMENT.txt; sourceTree = "<group>"; };
 		4CA41C051AC1A73600756137 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		4CA41C101AC1A76E00756137 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
+		F2867E1D138214BE8A117805 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4CA45C1E1A9149F400AF9C4B /* NSBundleHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSBundleHelper.h; path = Classes/NSBundleHelper.h; sourceTree = "<group>"; };
 		4CA45C1F1A9149F400AF9C4B /* NSBundleHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSBundleHelper.m; path = Classes/NSBundleHelper.m; sourceTree = "<group>"; };
 		4CA5D32C1F9829DA006714D6 /* NSCharacterSetHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NSCharacterSetHelper.h; path = Classes/NSCharacterSetHelper.h; sourceTree = "<group>"; };
@@ -492,6 +494,7 @@
 			isa = PBXGroup;
 			children = (
 				4CA41C101AC1A76E00756137 /* Info.plist */,
+				F2867E1D138214BE8A117805 /* PrivacyInfo.xcprivacy */,
 			);
 			name = "Property Lists";
 			sourceTree = "<group>";
@@ -743,6 +746,7 @@
 				4C1338F91B8E4A860085F6A4 /* XRSystemInformation.strings in Resources */,
 				4CA41C061AC1A73600756137 /* ACKNOWLEDGEMENT.txt in Resources */,
 				4C12328A2C40B27800FF9F5B /* SecureTransportErrorCodes.strings in Resources */,
+				DA3905A83E6025D17E00E9D9 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

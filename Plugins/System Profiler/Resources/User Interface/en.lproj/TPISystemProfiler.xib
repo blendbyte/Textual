@@ -9,6 +9,8 @@
         <customObject id="-2" userLabel="File's Owner" customClass="TPISystemProfiler">
             <connections>
                 <outlet property="preferencePaneView" destination="1" id="2"/>
+                <outlet property="diskInformationCheckbox" destination="14" id="dKi-cB-x7Q"/>
+                <outlet property="systemUptimeCheckbox" destination="12" id="sUp-cB-k3M"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>

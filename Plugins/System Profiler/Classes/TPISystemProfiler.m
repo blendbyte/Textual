@@ -42,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TPISystemProfiler ()
 @property (nonatomic, strong) NSView *preferencePaneView;
+@property (nonatomic, weak) IBOutlet NSButton *systemUptimeCheckbox;
+@property (nonatomic, weak) IBOutlet NSButton *diskInformationCheckbox;
 @end
 
 @implementation TPISystemProfiler
@@ -64,6 +66,11 @@ NS_ASSUME_NONNULL_BEGIN
 		[RZUserDefaults() registerDefaults:defaults];
 
 		[TPIBundleFromClass() loadNibNamed:@"TPISystemProfiler" owner:self topLevelObjects:nil];
+
+#if TPI_SP_SendsUptimeAndDiskSpace == 0
+		self.systemUptimeCheckbox.hidden = YES;
+		self.diskInformationCheckbox.hidden = YES;
+#endif
 	});
 }
 
@@ -86,9 +93,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)subscribedUserInputCommands
 {
-	return @[@"sysinfo", @"memory", @"uptime", @"netstats", 
+#if TPI_SP_SendsUptimeAndDiskSpace
+	return @[@"sysinfo", @"memory", @"uptime", @"netstats",
 	@"msgcount", @"diskspace", @"style", @"screens",
 	@"runcount", @"sysmem"];
+#else
+	return @[@"sysinfo", @"memory", @"netstats",
+	@"msgcount", @"style", @"screens",
+	@"runcount", @"sysmem"];
+#endif
 }
 
 - (void)printDebugInformation:(NSString *)message onClient:(IRCClient *)client inChannel:(IRCChannel *)channel
@@ -148,14 +161,18 @@ NS_ASSUME_NONNULL_BEGIN
 			[self sendMessage:memoryMessage onClient:client toChannel:channel];
 		}
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 	} else if ([commandString isEqualToString:@"UPTIME"]) {
 		messageOut = [TPI_SP_CompiledOutput applicationAndSystemUptime];
+#endif
 	} else if ([commandString isEqualToString:@"NETSTATS"]) {
 		messageOut = [TPI_SP_CompiledOutput systemNetworkInformation];
 	} else if ([commandString isEqualToString:@"MSGCOUNT"]) {
 		messageOut = [TPI_SP_CompiledOutput applicationBandwidthStatistics];
+#if TPI_SP_SendsUptimeAndDiskSpace
 	} else if ([commandString isEqualToString:@"DISKSPACE"]) {
 		messageOut = [TPI_SP_CompiledOutput systemDiskspaceInformation];
+#endif
 	} else if ([commandString isEqualToString:@"STYLE"]) {
 		messageOut = [TPI_SP_CompiledOutput applicationActiveStyle];
 	} else if ([commandString isEqualToString:@"SCREENS"]) {

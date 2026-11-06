@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		310C22E9D5E0D1E445178184 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A58F8E8B2B76F9A4259D6F63 /* PrivacyInfo.xcprivacy */; };
 		69D4705D6D19E20C463A132C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0DD116667156B6E9123159A9 /* Assets.xcassets */; };
 		4C06DF3320EC49A60055D09A /* IRCCommandIndexLocalData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3153A020EB676400448776 /* IRCCommandIndexLocalData.plist */; };
 		4C06DF3420EC49A60055D09A /* IRCCommandIndexRemoteData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */; };
@@ -1619,6 +1620,7 @@
 		D7BC06CEC4262E2C3EB54380 /* TDCServerPropertiesAdvancedPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesAdvancedPages.swift; sourceTree = "<group>"; };
 		3EA2CAAE4F61AD611DE00F48 /* TDCServerPropertiesListPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDCServerPropertiesListPages.swift; sourceTree = "<group>"; };
 		7B53103FD4D1EAA039EA9C58 /* IRCAtlasOnboarding.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = IRCAtlasOnboarding.json; sourceTree = "<group>"; };
+		A58F8E8B2B76F9A4259D6F63 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		0A98FB1BA0BADFC646795A6F /* IRCAtlasFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCAtlasFeed.swift; sourceTree = "<group>"; };
 		20CBC45EDE4B40AB96B45657 /* IRCAtlasFeedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRCAtlasFeedStore.swift; sourceTree = "<group>"; };
 		15A0E8297A74A5FEFF71902A /* IRCAtlasFeedStorePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRCAtlasFeedStorePrivate.h; sourceTree = "<group>"; };
@@ -2855,6 +2857,7 @@
 				4C31539F20EB676400448776 /* IRCCommandIndexRemoteData.plist */,
 				4C82A2BFE6C1DE4253A10996 /* EmojiShortcodes.json */,
 				7B53103FD4D1EAA039EA9C58 /* IRCAtlasOnboarding.json */,
+				A58F8E8B2B76F9A4259D6F63 /* PrivacyInfo.xcprivacy */,
 				4C3153A420EB676400448776 /* StaticStore.plist */,
 				4C3153A120EB676400448776 /* TemplateLineTypes.plist */,
 			);
@@ -3471,6 +3474,7 @@
 				4C06E1C420EC4AC40055D09A /* TVCChannelSelectionView.xib in Resources */,
 				4CC2E2E089734BA6F6753ED0 /* EmojiShortcodes.json in Resources */,
 				EBC419BD6339C09971CBCA5B /* IRCAtlasOnboarding.json in Resources */,
+				310C22E9D5E0D1E445178184 /* PrivacyInfo.xcprivacy in Resources */,
 				4C06E1EC20EC4AC50055D09A /* TVCAlert.xib in Resources */,
 				4C06E32220EC4FF00055D09A /* Notifications.strings in Resources */,
 				4C06E2F620EC4FF00055D09A /* TDCChannelPropertiesSheet.strings in Resources */,

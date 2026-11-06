@@ -41,11 +41,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TPI_SP_CompiledOutput : NSObject
 + (NSString *)applicationActiveStyle;
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (NSString *)applicationAndSystemUptime;
+#endif
 + (NSString *)applicationBandwidthStatistics;
 + (NSString *)applicationMemoryUsage;
 + (NSString *)applicationRuntimeStatistics;
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (NSString *)systemDiskspaceInformation;
+#endif
 + (NSString *)systemDisplayInformation;
 + (NSString *)systemInformation;
 + (NSString *)systemMemoryInformation;

@@ -51,7 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSUInteger)processorVirtualCoreCount;
 + (nullable NSString *)processorClockSpeed;
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (NSTimeInterval)systemUptime;
+#endif
+
 + (NSTimeInterval)applicationUptime;
 
 + (uint64_t)freeMemorySize;
@@ -60,7 +63,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (uint64_t)applicationMemoryInformation;
 
 + (nullable NSString *)formattedGraphicsCardInformation;
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (nullable NSString *)formattedLocalVolumeDiskUsage;
+#endif
 + (NSString *)formattedTotalMemorySize;
 + (NSString *)formattedDiskSize:(uint64_t)diskSize;
 + (NSString *)formattedMemorySize:(uint64_t)memorySize;
@@ -101,6 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 		   themeName, storageLocationLabel, appearanceText);
 }
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (NSString *)applicationAndSystemUptime
 {
 	NSUInteger dateFormat = (NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond);
@@ -110,6 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	return TPILocalizedString(@"BasicLanguage[v03-jx]", systemUptime, textualUptime);
 }
+#endif
 
 + (NSString *)applicationBandwidthStatistics
 {
@@ -159,6 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 			TXHumanReadableTimeInterval(runtime, NO, 0));
 }
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (NSString *)systemDiskspaceInformation
 {
 	NSMutableString *resultString = [NSMutableString string];
@@ -190,6 +198,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return TPILocalizedString(@"BasicLanguage[n6i-xd]", resultString);
 	}
 }
+#endif
 
 + (NSString *)systemDisplayInformation
 {
@@ -242,11 +251,17 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL showGPUModel = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> GPU Model"] == NO);
 #endif
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 	BOOL showDiskInfo = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> Disk Information"] == NO);
+#endif
+
 	BOOL showMemory = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> Memory Information"] == NO);
 	BOOL showOperatingSystem = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> OS Version"] == NO);
 	BOOL showScreenResolution = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> Screen Resolution"] == NO);
+
+#if TPI_SP_SendsUptimeAndDiskSpace
 	BOOL showUptime = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> System Uptime"] == NO);
+#endif
 
 	NSMutableString *resultString = [NSMutableString string];
 
@@ -326,6 +341,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 			[TPI_SP_SysInfo formattedTotalMemorySize])];
 	}
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 	if (showUptime) {
 		[resultString appendString:
 		 TPILocalizedString(@"BasicLanguage[xb6-bh]",
@@ -340,6 +356,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 			 TPILocalizedString(@"BasicLanguage[yrc-6l]", _disk_info)];
 		}
 	}
+#endif
 
 	if (showGPUModel) {
 		NSString *_gpu_model = [TPI_SP_SysInfo formattedGraphicsCardInformation];
@@ -552,6 +569,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	return [self formattedMemorySize:[self totalMemorySize]];
 }
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (nullable NSString *)formattedLocalVolumeDiskUsage
 {
 	NSDictionary *diskInfo = [RZFileManager() attributesOfFileSystemForPath:@"/" error:nil];
@@ -564,6 +582,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	return [self formattedDiskSize:totalSpace];
 }
+#endif
 
 + (NSArray<NSString *> *)graphicsCardModelsOfClass:(const char *)className requiringDisplayClassCode:(BOOL)requireClassCode
 {
@@ -704,6 +723,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 #pragma mark -
 #pragma mark System Information
 
+#if TPI_SP_SendsUptimeAndDiskSpace
 + (NSTimeInterval)systemUptime
 {
 	struct timeval bootTime;
@@ -716,6 +736,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	return [NSDate timeIntervalSinceNow:bootTime.tv_sec];
 }
+#endif
 
 + (NSTimeInterval)applicationUptime
 {
