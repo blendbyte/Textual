@@ -6,8 +6,12 @@
 # private message, a picture and a link, then a few live messages a minute.
 # The people and what they say are invented.
 #
-# Usage: showcase-irc-server.py [--nick alex]
-#        Libera.Chat on 127.0.0.1:6690, OFTC on 127.0.0.1:6691 (plain)
+# Usage: showcase-irc-server.py [--nick alex] [--still] [--listen <address>]...
+#        Libera.Chat on 127.0.0.1:6690, OFTC on 127.0.0.1:6691, hackint on
+#        127.0.0.1:6692 (plain). --still sends no new messages after the
+#        history (someone keeps typing), so shots taken a while apart match.
+#        --listen adds an address to 127.0.0.1, such as a VM's local-network
+#        address for a Mac taking the screenshots.
 
 import argparse
 import asyncio
@@ -17,6 +21,8 @@ import random
 
 NICK = "alex"
 
+STILL = False
+
 # Unsplash licence (free to use, no attribution needed), served by Lorem Picsum
 PHOTO = "https://fastly.picsum.photos/id/1015/1600/1067.jpg?hmac=KcEKhxeliVc8ubKOh05esbmHkJYvmfGYwn6iVZi7OTU"
 
@@ -24,37 +30,48 @@ NETWORKS = {
 	6690: {
 		"network": "Libera.Chat",
 		"server": "tungsten.libera.chat",
+		"icon": "https://libera.chat/favicon.ico",
 		"channels": {
 			"#macdev": {
 				"topic": "Mac and iOS development · SwiftUI, AppKit, Xcode · be kind, paste long code to a pastebin",
-				"members": {"mira": "@", "kenji": "@", "theo": "+", "priya": "", "jonas": "", "nadia": "", "lucas": "", "sofia": "",
-							"ben": "", "ava": "", "omar": "", "lena": "", "felix": "", "chloe": "", "raj": "", "emma_k": "", "sam": "",
-							"yuki": "", "noah": "", "iris": "", "hugo": "", "maya": "", "leo": "", "zoe": "", "arjun": "", "elif": ""},
+				"members": {"mira": "@", "kenji": "@", "theo": "+", "alice": "+", "priya": "", "jonas": "", "nadia": "", "lucas": "",
+							"sofia": "", "ben": "", "ava": "", "omar": "", "lena": "", "felix": "", "chloe": "", "raj": "", "emma_k": "",
+							"sam": "", "yuki": "", "noah": "", "iris": "", "hugo": "", "maya": "", "leo": "", "zoe": "", "arjun": "",
+							"elif": "", "heidi": "", "pia": "", "rami": ""},
 				"away": {"lena", "noah", "hugo", "zoe"},
+				# The first ones are from yesterday evening: a day line above today's
+				"yesterday": 5,
 				"history": [
+					("sofia", "anyone around to look at a crash log?"),
+					("felix", "sure, paste it to a gist"),
+					("sofia", "never mind, found it: a force unwrap in the menu code 🙈"),
+					("theo", "the classic"),
+					("kenji", "heading off, good night everyone"),
 					("priya", "is anyone else seeing Xcode index forever on a fresh clone?"),
 					("theo", "delete DerivedData and give it a minute, mine settles after the first build"),
 					("priya", "that did it, thanks"),
+					("heidi", "📦 swift-format 601.0.0 was released · https://github.com/swiftlang/swift-format/releases"),
+					("*join", "ivy"), ("*join", "nate"), ("*part", "pia"), ("*join", "olli"), ("*quit", "rami"),
 					("jonas", "SwiftUI question: what do you use for a sidebar that remembers its width?"),
-					("kenji", "NavigationSplitView with columnVisibility and a SceneStorage for the width works well"),
+					("kenji", ["here's roughly what I use:", "", "@SceneStorage(\"sidebarWidth\") private var width = 220.0", "",
+							   "NavigationSplitView {", "    Sidebar().frame(minWidth: width)", "} detail: {", "    Detail()", "}"]),
 					("jonas", "nice, I'll try that"),
-					("nadia", "just shipped our first Mac app to TestFlight 🎉", "launch"),
-					("mira", "congrats! what does it do?", None, "launch"),
-					("nadia", "a tiny menu bar app that keeps an eye on build times"),
-					("nadia", "it tells you when a build suddenly gets slower than usual"),
-					("lucas", "@nadia send the link, I want it"),
+					("alice", "the long version is in the docs, worth a read: https://www.swift.org/getting-started/"),
 					("sofia", "Swift 6 strict concurrency finally clicked for me this week"),
 					("sofia", "the trick was moving all the UI state into one @MainActor model"),
 					("felix", "same, once you treat actors as little islands it gets much easier"),
 					("ben", "anyone using the new Observation macros with AppKit views?"),
 					("kenji", "yes, withObservationTracking around the update method, works fine"),
-					("ava", "the release notes for the latest Swift are worth a read: https://www.swift.org/blog/"),
 					("mira", "alex: did the build with the crash fix help on your side?", "mention"),
 					("omar", "Instruments' new hangs view saved me an afternoon today"),
+					("nadia", "just shipped our first Mac app to TestFlight 🎉", "launch"),
+					("alice", "congrats!! what does it do?", None, "launch"),
+					("nadia", "a tiny menu bar app that keeps an eye on build times"),
+					("nadia", "it tells you when a build suddenly gets slower than usual"),
+					("lucas", "@nadia send the link, I want it"),
 					("chloe", "how do you all name your feature flags?"),
 					("raj", "verbs: enablesFoo, showsBar. reads nicely in code"),
 					("theo", "+1, and keep them in one place so they're easy to remove later"),
-					("theo", "we put ours in a single enum, the compiler finds every use"),
 				],
 				"live": [
 					("priya", "did anyone try the new Xcode beta on a big project yet?"),
@@ -66,9 +83,9 @@ NETWORKS = {
 					("jonas", "the sidebar width trick works, thanks kenji"),
 					("arjun", "anyone going to the meetup next week?"),
 				],
-				"typing": "mira",
+				"typing": "alice",
 				"crowd": 64,
-				"reactions": [("launch", "🎉", ["lucas", "kenji", "sofia"]), ("launch", "🚀", ["priya"]), ("mention", "👀", ["theo"])],
+				"reactions": [("launch", "👍", ["kenji", "lucas"]), ("launch", "🎉", ["sofia"]), ("mention", "👀", ["theo"])],
 			},
 			"#photography": {
 				"topic": "Photography · gear, edits, critique · share your shots",
@@ -94,6 +111,7 @@ NETWORKS = {
 	6691: {
 		"network": "OFTC",
 		"server": "helix.oftc.net",
+		"icon": "https://www.oftc.net/img/favicon.ico",
 		"channels": {
 			"#coffee": {
 				"topic": "Coffee: brewing, beans, gear · no judgement for instant",
@@ -144,11 +162,24 @@ MORE_CHANNELS = {
 			("felix", "yes, look at how ViewBuilder does buildEither, it's surprisingly small"),
 			("ravi", "macros are great but the compile times hurt a bit"),
 			("felix", "keep them in their own package, helps a lot"),
+			("alice", "the proposal that explains the new ownership rules: https://github.com/swiftlang/swift-evolution"),
+			("sofia", "thanks, that's the one I was looking for"),
 		], [("ravi", "anyone tried typed throws in a real project yet?")], crowd=38, away=("tess", "piotr")),
-		"#design": channel("Design: UI, type, colour · critique welcome", {"chloe": "@", "maya": ""}, [
+		"#design": channel("Design: UI, type, colour · critique welcome", {"chloe": "@", "maya": "", "alice": ""}, [
+			("ines", "morning! anyone have a favourite tool for colour palettes?"),
+			("maya", "I keep coming back to a plain grid of swatches in a sketch file"),
+			("ola", "same, and checking contrast in both appearances right away"),
+			("alice", "this contrast checker is great for that: https://webaim.org/resources/contrastchecker/"),
+			("ines", "oh nice, bookmarked"),
+			("chloe", "small update: the new onboarding screens are in review"),
+			("maya", "can't wait to see them"),
+			("ola", "are you doing the illustrations yourself?"),
+			("chloe", "yes, simple shapes, two colours each"),
 			("chloe", "does this icon read well at 16 pt?"),
 			("maya", "the inner shape gets lost, try a thicker stroke"),
 			("ines", "+1, and a touch more contrast on the dark variant"),
+			("chloe", "the new app icon PR finally got merged 🎉 https://github.com/blendbyte/Textual/pull/558"),
+			("maya", "and for the weekend, still the best open movie: https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
 		], [("ines", "SF Symbols has a new set of variable icons, worth a look")], crowd=24, away=("ola",)),
 		"#astronomy": channel("Astronomy · clear skies! · share your night shots", {"elif": "@"}, [
 			("elif", "Jupiter is really bright this week, look east after sunset"),
@@ -160,6 +191,18 @@ MORE_CHANNELS = {
 			("leo", "well deserved, the art style is great"),
 		], [("leo", "the next jam theme is 'tiny worlds'")], crowd=31, away=("bram",)),
 	},
+	6692: {
+		"#electronics": channel("Electronics · soldering, PCBs, scopes · show your builds", {"bram": "@", "kira": "+"}, [
+			("kira", "finally fixed the ground loop on my bench supply"),
+			("bram", "what was it?"),
+			("kira", "the scope and the supply shared a bad power strip"),
+			("joel", "the cheapest strips are always the culprit"),
+		], [("joel", "new soldering tip arrived, the fine one")], crowd=22),
+		"#retro": channel("Retro computing · old machines, new tricks", {"otto": "@"}, [
+			("otto", "got a 1989 laptop booting again, new caps and a CF card"),
+			("linh", "pictures or it didn't happen!"),
+		], [("linh", "anyone have spare floppy drive belts?")], crowd=15),
+	},
 	6691: {
 		"#homelab": channel("Homelab · servers, networks, blinkenlights", {"noah": "@", "raj": "+"}, [
 			("raj", "moved everything to a tiny fanless box, power bill thanks me"),
@@ -167,6 +210,8 @@ MORE_CHANNELS = {
 			("raj", "an N100 with 32 GB, runs all my containers"),
 			("tobi", "nice, how's the idle draw?"),
 			("raj", "about 7 W"),
+			("alice", "wrote up my backup setup, restic and a tiny script: https://github.com/restic/restic"),
+			("tobi", "bookmarked, thanks"),
 		], [("tobi", "backups first, then the fun stuff")], crowd=27, away=("vera",)),
 		"#books": channel("Books · what are you reading? · no spoilers without warning", {"iris": "@"}, [
 			("iris", "finished Piranesi last night, what a book"),
@@ -185,6 +230,8 @@ CROWD = ["ravi", "tess", "piotr", "ines", "ola", "kai", "nora", "bram", "tobi", 
 		 "cleo", "dev", "eva", "finn", "gabi", "henk", "ivy", "jana", "karl", "luca", "mona", "nate", "olli", "pia", "rami",
 		 "sol", "tim", "uma", "vito", "wim", "yoel", "zara", "ada", "bo", "cyra", "dag", "esme", "fynn", "gwen", "hal", "ida"]
 
+NETWORKS[6692] = {"network": "hackint", "server": "irc.hackint.org", "channels": {}, "query": None}
+
 for port, extra in MORE_CHANNELS.items():
 	NETWORKS[port]["channels"].update(extra)
 
@@ -198,7 +245,8 @@ for port, network in NETWORKS.items():
 				break
 			chan["members"].setdefault(nick, "")
 		for sender, *rest in chan["history"] + chan["live"]:
-			chan["members"].setdefault(sender, "")
+			if not sender.startswith("*"):  # joins, parts and quits name the person second
+				chan["members"].setdefault(sender, "")
 		chan.setdefault("reactions", [])
 
 CAPABILITIES = ["server-time", "message-tags", "multi-prefix", "echo-message", "away-notify", "account-notify",
@@ -209,19 +257,6 @@ NOT_LOGGED_IN = {"ava", "lucas", "emma_k", "yuki", "sam", "ines", "kai", "tobi",
 NOT_LOGGED_IN.update(CROWD[3::5])
 
 BOTS = {"heidi"}
-
-# #macdev gets a bot, a multi-line message and a run of joins and leaves
-MACDEV = NETWORKS[6690]["channels"]["#macdev"]
-MACDEV["members"]["heidi"] = ""
-MACDEV["members"]["pia"] = ""
-MACDEV["members"]["rami"] = ""
-MACDEV["history"][6:6] = [
-	("heidi", "📦 swift-format 601.0.0 was released · https://github.com/swiftlang/swift-format/releases"),
-	("*join", "ivy"), ("*join", "nate"), ("*part", "pia"), ("*join", "olli"), ("*quit", "rami"),
-]
-MACDEV["history"][12:12] = [
-	("kenji", ["here's roughly what I use:", "", "@SceneStorage(\"sidebarWidth\") private var width = 220.0", "", "NavigationSplitView {", "    Sidebar().frame(minWidth: width)", "} detail: {", "    Detail()", "}"]),
-]
 
 msgids = itertools.count(1000)
 
@@ -272,7 +307,8 @@ class Session:
 		await self.numeric("002", f":Your host is {self.config['server']}")
 		await self.numeric("003", ":This server was created a while ago")
 		await self.numeric("004", f"{self.config['server']} showcase iosw bklmnopstv")
-		await self.numeric("005", f"NETWORK={net} WHOX BOT=B CHANTYPES=# PREFIX=(ov)@+ CHANMODES=b,k,l,imnpst CASEMAPPING=rfc1459 NICKLEN=30 :are supported by this server")
+		icon = f" draft/ICON={self.config['icon']}" if self.config.get("icon") else ""
+		await self.numeric("005", f"NETWORK={net} WHOX BOT=B CHANTYPES=# PREFIX=(ov)@+ CHANMODES=b,k,l,imnpst CASEMAPPING=rfc1459 NICKLEN=30{icon} :are supported by this server")
 		await self.numeric("375", f":- {self.config['server']} Message of the Day -")
 		await self.numeric("372", f":- Welcome to {net}.")
 		await self.numeric("376", ":End of /MOTD command.")
@@ -301,7 +337,9 @@ class Session:
 
 	async def history(self, name, channel, now):
 		history = channel["history"]
-		start = now - datetime.timedelta(minutes=len(history) * 3 + 5)
+		earlier = channel.get("yesterday", 0)
+		start = now - datetime.timedelta(minutes=(len(history) - earlier) * 3 + 5)
+		evening = now - datetime.timedelta(days=1, hours=2)
 		labels = {}
 		for index, entry in enumerate(history):
 			sender, text = entry[0], entry[1]
@@ -310,7 +348,10 @@ class Session:
 			msgid = f"m{next(msgids)}"
 			if label:
 				labels[label] = msgid
-			when = start + datetime.timedelta(minutes=index * 3, seconds=random.randint(0, 50))
+			if index < earlier:
+				when = evening + datetime.timedelta(minutes=index * 4, seconds=random.randint(0, 50))
+			else:
+				when = start + datetime.timedelta(minutes=(index - earlier) * 3, seconds=random.randint(0, 50))
 			if sender.startswith("*"):
 				await self.event(name, sender[1:], text, when)
 				continue
@@ -356,8 +397,10 @@ class Session:
 
 	async def live(self):
 		queue = [(name, line) for name, channel in self.config["channels"].items() for line in channel["live"]]
+		if STILL:
+			queue = []
 		random.shuffle(queue)
-		await asyncio.sleep(20)
+		await asyncio.sleep(0 if STILL else 20)
 		for name, (sender, text) in queue:
 			if self.writer.is_closing():
 				return
@@ -433,7 +476,12 @@ class Session:
 async def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--nick", default=NICK)
+	parser.add_argument("--still", action="store_true")
+	parser.add_argument("--listen", action="append", default=[])
 	arguments = parser.parse_args()
+
+	global STILL
+	STILL = arguments.still
 
 	async def handler_for(port):
 		async def handle(reader, writer):
@@ -443,10 +491,11 @@ async def main():
 			except (ConnectionResetError, BrokenPipeError):
 				pass
 			writer.close()
-		return await asyncio.start_server(handle, "127.0.0.1", port)
+		return await asyncio.start_server(handle, ["127.0.0.1"] + arguments.listen, port)
 
 	servers = [await handler_for(port) for port in NETWORKS]
-	print("Showcase: " + ", ".join(f"{NETWORKS[p]['network']} on 127.0.0.1:{p}" for p in NETWORKS), flush=True)
+	addresses = "/".join(["127.0.0.1"] + arguments.listen)
+	print("Showcase: " + ", ".join(f"{NETWORKS[p]['network']} on {addresses}:{p}" for p in NETWORKS), flush=True)
 	await asyncio.gather(*(server.serve_forever() for server in servers))
 
 
