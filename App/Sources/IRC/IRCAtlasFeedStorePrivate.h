@@ -40,11 +40,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCAtlasFeedStore : NSObject
 /* Network name -> serverAddress, serverPort, prefersSecuredConnection */
 + (NSDictionary<NSString *, NSDictionary<NSString *, id> *> *)networkConfigurations;
+
+/* The logo of the network at this address; nil without one */
++ (nullable NSString *)logoAddressWithServerAddress:(NSString *)serverAddress;
 @end
 
 #ifdef DEBUG
 @interface IRCAtlasFeedStore (Testing)
 + (nullable NSArray<NSString *> *)networkIdentifiersWithFeedData:(NSData *)feedData;
++ (nullable NSDictionary<NSString *, NSString *> *)logoAddressesWithFeedData:(NSData *)feedData;
 + (nullable NSArray<NSString *> *)suggestionsWithFeedData:(NSData *)feedData tag:(NSString *)tag language:(nullable NSString *)language;
 + (nullable NSArray<NSString *> *)starterChannelsWithFeedData:(NSData *)feedData network:(NSString *)identifier tag:(NSString *)tag language:(nullable NSString *)language;
 @end

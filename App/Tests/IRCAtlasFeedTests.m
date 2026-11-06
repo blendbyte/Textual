@@ -114,6 +114,23 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([IRCAtlasFeedStore networkIdentifiersWithFeedData:[NSJSONSerialization dataWithJSONObject:newerSchema options:0 error:NULL]]);
 }
 
+/* A logo is downloaded without asking, so only HTTPS addresses are kept */
+- (void)testLogoAddresses
+{
+	NSMutableDictionary *secure = [[self networkWithIdentifier:@"secure" languages:@[@"en"] certificate:@YES channels:@[]] mutableCopy];
+	secure[@"logo_url"] = @"https://www.ircatlas.org/logos/secure.webp";
+
+	NSMutableDictionary *plain = [[self networkWithIdentifier:@"plain" languages:@[@"en"] certificate:@YES channels:@[]] mutableCopy];
+	plain[@"logo_url"] = @"http://www.ircatlas.org/logos/plain.webp";
+
+	NSMutableDictionary *none = [[self networkWithIdentifier:@"none" languages:@[@"en"] certificate:@YES channels:@[]] mutableCopy];
+	none[@"logo_url"] = [NSNull null];
+
+	NSDictionary *logos = [IRCAtlasFeedStore logoAddressesWithFeedData:[self feedWithNetworks:@[secure, plain, none] tagged:@[]]];
+
+	XCTAssertEqualObjects(logos, @{@"secure" : @"https://www.ircatlas.org/logos/secure.webp"});
+}
+
 /* Secure networks only, the chosen language's own first, and saying so when there are none */
 - (void)testSuggestions
 {

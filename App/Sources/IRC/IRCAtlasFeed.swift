@@ -67,6 +67,7 @@ struct AtlasNetwork
 	let sasl: Bool
 	let websiteURL: URL?
 	let registrationURL: URL?
+	let logoURL: URL? // HTTPS only: downloaded without asking, like draft/ICON
 	let channels: [AtlasChannel]
 
 	/* What Textual suggests by itself. Anything else is in the whole list only,
@@ -194,6 +195,7 @@ struct AtlasFeed
 							sasl: ((entry["sasl"] as? Bool) ?? false),
 							websiteURL: webLink(entry["website_url"]),
 							registrationURL: webLink(entry["registration_url"]),
+							logoURL: webLink(entry["logo_url"], httpsOnly: true),
 							channels: channels)
 	}
 
@@ -262,11 +264,11 @@ struct AtlasFeed
 		return (name.rangeOfCharacter(from: forbidden) == nil)
 	}
 
-	private static func webLink(_ value: Any?) -> URL?
+	private static func webLink(_ value: Any?, httpsOnly: Bool = false) -> URL?
 	{
 		guard let string = value as? String,
 			  let url = URL(string: string),
-			  let scheme = url.scheme?.lowercased(), (scheme == "https" || scheme == "http"),
+			  let scheme = url.scheme?.lowercased(), (scheme == "https" || (scheme == "http" && httpsOnly == false)),
 			  url.host?.isEmpty == false else {
 			return nil
 		}

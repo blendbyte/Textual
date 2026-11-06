@@ -171,9 +171,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *outgoingReplyMsgidValue; // backs outgoingReplyMsgid
 @property (nonatomic, assign) BOOL messageActionsNoteShown; // "This network doesn't pass on replies…", once per connection
 @property (nonatomic, strong, nullable) NSImage *networkIconImage; // draft/ICON: the icon shown, from the caches folder or downloaded
+@property (nonatomic, copy, nullable) NSData *networkIconData; // drawn, as saved
 @property (nonatomic, copy, nullable) NSString *networkIconSavedAddress; // the address it came from
 @property (nonatomic, copy, nullable) NSString *networkIconRequestAddress; // being downloaded
 @property (nonatomic, assign) BOOL networkIconLoaded; // the caches folder was read
+@property (nonatomic, strong, nullable) NSImage *atlasLogoImage; // IRC Atlas's logo for the server's address, shown without a draft/ICON
+@property (nonatomic, copy, nullable) NSData *atlasLogoData; // drawn, as saved
+@property (nonatomic, copy, nullable) NSString *atlasLogoSavedAddress; // the address it came from
+@property (nonatomic, copy, nullable) NSString *atlasLogoRequestAddress; // being downloaded
 @property (nonatomic, strong, nullable) NSImage *customIconImage; // config.customIcon, drawn
 @property (nonatomic, copy, nullable) NSData *customIconSourceData; // the data it was drawn from
 @property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed
@@ -519,6 +524,7 @@ typedef NS_ENUM(NSUInteger, IRCClientAccountRegistrationProblem) {
 
 - (void)updateNetworkIcon; // after each ISUPPORT line
 - (void)finishNetworkIconAfterRegistration; // at the end of the MOTD
+- (void)updateAtlasLogo; // once per launch, and when the configuration changes
 - (void)removeNetworkIconFile;
 @end
 

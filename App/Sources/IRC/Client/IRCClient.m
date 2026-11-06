@@ -345,6 +345,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	/* The server's upload address may have changed */
 	[TVCMainWindow updateUploadButton];
 
+	/* So may the network, and with it IRC Atlas's logo */
+	[self updateAtlasLogo];
+
 	/* Update channel list */
 	{
 		NSMutableArray<IRCChannel *> *channelListOld = [self.channelList mutableCopy];

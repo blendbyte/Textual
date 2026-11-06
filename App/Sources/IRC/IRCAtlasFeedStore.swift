@@ -195,6 +195,17 @@ final class AtlasFeedStore: NSObject, ObservableObject
 		return configurations
 	}
 
+	// MARK: - For network icons
+
+	/* The logo of the network at this address; nil without one. The server
+	 list shows it until the network names an icon of its own (draft/ICON). */
+	@objc static func logoAddress(serverAddress: String) -> String?
+	{
+		shared.feed?.networks
+			.first { $0.host.caseInsensitiveCompare(serverAddress) == .orderedSame }?
+			.logoURL?.absoluteString
+	}
+
 	// MARK: - For tests
 
 #if DEBUG
@@ -202,6 +213,16 @@ final class AtlasFeedStore: NSObject, ObservableObject
 	@objc static func networkIdentifiers(feedData: Data) -> [String]?
 	{
 		AtlasFeed(data: feedData)?.networks.map(\.id)
+	}
+
+	/* Network id -> logo address, for the networks that have one */
+	@objc static func logoAddresses(feedData: Data) -> [String: String]?
+	{
+		AtlasFeed(data: feedData).map { (feed) in
+			Dictionary(uniqueKeysWithValues: feed.networks.compactMap { (network) in
+				network.logoURL.map { (network.id, $0.absoluteString) }
+			})
+		}
 	}
 
 	/* Network ids; the last entry is "language" or "any language" */

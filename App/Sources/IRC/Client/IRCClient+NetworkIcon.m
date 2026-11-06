@@ -39,8 +39,10 @@
 #import "TXGlobalModelsPrivate.h"
 #import "TXMasterControllerPrivate.h"
 #import "TPCPathInfo.h"
-#import "IRCClientConfig.h"
+#import "IRCClientConfigPrivate.h"
+#import "IRCServer.h"
 #import "IRCISupportInfo.h"
+#import "IRCAtlasFeedStorePrivate.h"
 #import "IRCClientPrivate.h"
 #import "IRCClientInternal.h"
 #import "TVCMainWindowPrivate.h"
@@ -53,7 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
  list, unless one was chosen in Server Properties (config.customIcon). It is downloaded through the server's proxy with the inline media
  rules (HTTPS only, no local addresses), drawn at the list's size and kept
  in the caches folder, so it shows before connecting and is downloaded
- again only when the network names a different address. */
+ again only when the network names a different address.
+
+ Until a network names one, IRC Atlas's logo for the server's address is
+ shown instead: downloaded and kept the same way, beside it in the file. */
 
 #define _networkIconPointSize			16
 #define _networkIconPixelSize			(_networkIconPointSize * 2)
@@ -207,7 +212,33 @@ NS_ASSUME_NONNULL_BEGIN
 	return [folder stringByAppendingPathComponent:[self.uniqueIdentifier stringByAppendingPathExtension:@"plist"]];
 }
 
-/* The file has the address it came from and the drawn icon */
+/* The icon under these keys of the file, with the address it came from */
++ (nullable NSImage *)iconInFileContents:(nullable NSDictionary *)contents
+							  addressKey:(NSString *)addressKey
+								 iconKey:(NSString *)iconKey
+								 address:(NSString * _Nullable __autoreleasing * _Nonnull)address
+								iconData:(NSData * _Nullable __autoreleasing * _Nonnull)iconData
+{
+	NSString *savedAddress = contents[addressKey];
+
+	NSData *savedIcon = contents[iconKey];
+
+	if ([savedAddress isKindOfClass:[NSString class]] == NO || [savedIcon isKindOfClass:[NSData class]] == NO) {
+		return nil;
+	}
+
+	NSImage *icon = [IRCClient serverListIconWithData:savedIcon];
+
+	if (icon) {
+		*address = savedAddress;
+		*iconData = savedIcon;
+	}
+
+	return icon;
+}
+
+/* The file has, for the network's icon and for IRC Atlas's logo, the
+ address it came from and the drawn icon */
 - (void)loadNetworkIconIfNeeded
 {
 	if (self.networkIconLoaded) {
@@ -216,26 +247,63 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.networkIconLoaded = YES;
 
+	/* Whether IRC Atlas has a logo for the server, after the list is drawn */
+	__weak IRCClient *weakSelf = self;
+
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[weakSelf updateAtlasLogo];
+	});
+
 	NSString *path = [self networkIconFilePath];
 
 	NSDictionary *contents = ((path) ? [NSDictionary dictionaryWithContentsOfFile:path] : nil);
 
-	NSString *address = contents[@"address"];
+	NSString *address = nil;
 
-	NSData *iconData = contents[@"icon"];
+	NSData *iconData = nil;
 
-	if ([address isKindOfClass:[NSString class]] == NO || [iconData isKindOfClass:[NSData class]] == NO) {
-		return;
-	}
-
-	NSImage *icon = [IRCClient serverListIconWithData:iconData];
-
-	if (icon == nil) {
-		return;
-	}
-
-	self.networkIconImage = icon;
+	self.networkIconImage = [IRCClient iconInFileContents:contents addressKey:@"address" iconKey:@"icon" address:&address iconData:&iconData];
+	self.networkIconData = iconData;
 	self.networkIconSavedAddress = address;
+
+	address = nil;
+
+	iconData = nil;
+
+	self.atlasLogoImage = [IRCClient iconInFileContents:contents addressKey:@"atlasAddress" iconKey:@"atlasIcon" address:&address iconData:&iconData];
+	self.atlasLogoData = iconData;
+	self.atlasLogoSavedAddress = address;
+}
+
+- (void)writeNetworkIconFile
+{
+	NSString *path = [self networkIconFilePath];
+
+	if (path == nil) {
+		return;
+	}
+
+	NSMutableDictionary *contents = [NSMutableDictionary dictionary];
+
+	if (self.networkIconSavedAddress && self.networkIconData) {
+		contents[@"address"] = self.networkIconSavedAddress;
+		contents[@"icon"] = self.networkIconData;
+	}
+
+	if (self.atlasLogoSavedAddress && self.atlasLogoData) {
+		contents[@"atlasAddress"] = self.atlasLogoSavedAddress;
+		contents[@"atlasIcon"] = self.atlasLogoData;
+	}
+
+	if (contents.count == 0) {
+		[self removeNetworkIconFile];
+
+		return;
+	}
+
+	[RZFileManager() createDirectoryAtPath:path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:NULL];
+
+	[contents writeToFile:path atomically:YES];
 }
 
 - (nullable NSImage *)networkIcon
@@ -258,7 +326,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self loadNetworkIconIfNeeded];
 
-	return self.networkIconImage;
+	return ((self.networkIconImage) ?: self.atlasLogoImage);
 }
 
 - (void)saveNetworkIconData:(NSData *)iconData fromAddress:(NSString *)address
@@ -273,15 +341,30 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.networkIconImage = icon;
+	self.networkIconData = iconData;
 	self.networkIconSavedAddress = address;
 
-	NSString *path = [self networkIconFilePath];
+	[self writeNetworkIconFile];
 
-	if (path) {
-		[RZFileManager() createDirectoryAtPath:path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:NULL];
+	[mainWindow() reloadTreeItem:self];
+}
 
-		[@{@"address" : address, @"icon" : iconData} writeToFile:path atomically:YES];
+- (void)saveAtlasLogoData:(NSData *)iconData fromAddress:(NSString *)address
+{
+	NSParameterAssert(iconData != nil);
+	NSParameterAssert(address != nil);
+
+	NSImage *icon = [IRCClient serverListIconWithData:iconData];
+
+	if (icon == nil) {
+		return;
 	}
+
+	self.atlasLogoImage = icon;
+	self.atlasLogoData = iconData;
+	self.atlasLogoSavedAddress = address;
+
+	[self writeNetworkIconFile];
 
 	[mainWindow() reloadTreeItem:self];
 }
@@ -306,11 +389,47 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.networkIconImage = nil;
+	self.networkIconData = nil;
 	self.networkIconSavedAddress = nil;
 
-	[self removeNetworkIconFile];
+	[self writeNetworkIconFile];
 
 	[mainWindow() reloadTreeItem:self];
+
+	/* IRC Atlas's logo, if there is one, takes its place */
+	[self updateAtlasLogo];
+}
+
+/* Downloads through the server's proxy, then draws the image at the list's
+ size; the block gets nil for a failed download or something not an image */
+- (void)downloadIconFromURL:(NSURL *)url completionBlock:(void (^)(NSData * _Nullable iconData))completionBlock
+{
+	NSParameterAssert(url != nil);
+	NSParameterAssert(completionBlock != nil);
+
+	NSURLSession *session = [ICLURLSession sessionForClient:self];
+
+	[ICLURLSession requestDataFromURL:url session:session maximumLength:_networkIconMaximumLength completionBlock:^(NSData * _Nullable data) {
+		if (data == nil) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				completionBlock(nil);
+			});
+
+			return;
+		}
+
+		dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+			NSData *iconData = [IRCClient networkIconDataFromImageData:data pixelSize:_networkIconPixelSize];
+
+			if (iconData == nil) {
+				LogToConsoleDebug("The network icon isn't an image Textual can show");
+			}
+
+			dispatch_async(dispatch_get_main_queue(), ^{
+				completionBlock(iconData);
+			});
+		});
+	}];
 }
 
 - (void)updateNetworkIcon
@@ -341,45 +460,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.networkIconRequestAddress = address;
 
-	NSURLSession *session = [ICLURLSession sessionForClient:self];
-
 	__weak IRCClient *weakSelf = self;
 
 	/* A failed download keeps the icon shown and is tried again on the next connect */
-	[ICLURLSession requestDataFromURL:url session:session maximumLength:_networkIconMaximumLength completionBlock:^(NSData * _Nullable data) {
+	[self downloadIconFromURL:url completionBlock:^(NSData * _Nullable iconData) {
 		IRCClient *client = weakSelf;
 
 		if (client == nil || [address isEqualToString:client.networkIconRequestAddress] == NO) {
 			return;
 		}
 
-		if (data == nil) {
-			client.networkIconRequestAddress = nil;
+		client.networkIconRequestAddress = nil;
 
-			return;
+		if (iconData) {
+			[client saveNetworkIconData:iconData fromAddress:address];
 		}
-
-		dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-			NSData *iconData = [IRCClient networkIconDataFromImageData:data pixelSize:_networkIconPixelSize];
-
-			dispatch_async(dispatch_get_main_queue(), ^{
-				IRCClient *finishedClient = weakSelf;
-
-				if (finishedClient == nil || [address isEqualToString:finishedClient.networkIconRequestAddress] == NO) {
-					return;
-				}
-
-				finishedClient.networkIconRequestAddress = nil;
-
-				if (iconData == nil) {
-					LogToConsoleDebug("The network icon isn't an image Textual can show");
-
-					return;
-				}
-
-				[finishedClient saveNetworkIconData:iconData fromAddress:address];
-			});
-		});
 	}];
 }
 
@@ -389,6 +484,76 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.supportInfo.networkIconAddress == nil) {
 		[self forgetNetworkIcon];
 	}
+}
+
+/* IRC Atlas's logo for the network at the server's address. Not downloaded
+ while the network's own icon is shown, and again only when the feed names
+ a different address; a failed download is tried again on the next launch. */
+- (void)updateAtlasLogo
+{
+	if (self.isTerminating) {
+		return;
+	}
+
+	[self loadNetworkIconIfNeeded];
+
+	/* Behind a bouncer the address is the bouncer's, the same for each network */
+	NSString *serverAddress = ((self.config.bouncerAccountIdentifier == nil) ? self.config.serverList.firstObject.serverAddress : nil);
+
+	NSString *address = ((serverAddress) ? [IRCAtlasFeedStore logoAddressWithServerAddress:serverAddress] : nil);
+
+	/* Another network, or IRC Atlas has no logo for it (any more) */
+	if (address == nil) {
+		self.atlasLogoRequestAddress = nil;
+
+		if (self.atlasLogoSavedAddress == nil) {
+			return;
+		}
+
+		self.atlasLogoImage = nil;
+		self.atlasLogoData = nil;
+		self.atlasLogoSavedAddress = nil;
+
+		[self writeNetworkIconFile];
+
+		[mainWindow() reloadTreeItem:self];
+
+		return;
+	}
+
+	if (self.networkIconSavedAddress != nil) {
+		return;
+	}
+
+	if ([address isEqualToString:self.atlasLogoSavedAddress] ||
+		[address isEqualToString:self.atlasLogoRequestAddress])
+	{
+		return;
+	}
+
+	NSURL *url = [NSURL URLWithString:address];
+
+	if (url == nil) {
+		return;
+	}
+
+	self.atlasLogoRequestAddress = address;
+
+	__weak IRCClient *weakSelf = self;
+
+	[self downloadIconFromURL:url completionBlock:^(NSData * _Nullable iconData) {
+		IRCClient *client = weakSelf;
+
+		if (client == nil || [address isEqualToString:client.atlasLogoRequestAddress] == NO) {
+			return;
+		}
+
+		client.atlasLogoRequestAddress = nil;
+
+		if (iconData) {
+			[client saveAtlasLogoData:iconData fromAddress:address];
+		}
+	}];
 }
 
 @end
