@@ -417,7 +417,9 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 		}
 		case IRCBouncerKindZNC:
 		{
-			[self sendLine:@"PRIVMSG *certauth :add"];
+			/* As a ZNC command, not a message to *certauth: ZNC passes a message on
+			 to the account's other clients, where it shows as yours */
+			[self sendLine:@"ZNC *certauth add"];
 
 			break;
 		}
@@ -899,7 +901,9 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 			self.zncReader = [IRCZNCNetworkListReader new];
 
-			[self sendLine:@"PRIVMSG *status :ListNetworks"];
+			/* A ZNC command, as for a linked server's check: sent as a message to
+			 *status, ZNC showed "ListNetworks" in the account's other clients */
+			[self sendLine:@"ZNC *status ListNetworks"];
 
 			break;
 		}
