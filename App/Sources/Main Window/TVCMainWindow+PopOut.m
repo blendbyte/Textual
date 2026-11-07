@@ -293,6 +293,8 @@ static BOOL _restoringPopOuts = NO;
 
 	self.memberList.keyDelegate = nil;
 
+	[self handUploadQueueToMainWindow];
+
 	[self.class unregisterWindow:self];
 
 	[RZNotificationCenter() removeObserver:self];

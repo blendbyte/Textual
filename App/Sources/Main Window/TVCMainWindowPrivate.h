@@ -41,6 +41,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define TVCMainWindowPastedPicturesFolderName	@"Textual Pasted Pictures" // in the temporary folder, a folder per pasted picture
+
 @class IRCUser;
 @class TLOInputHistory;
 @class TVCServerListBouncerHeading;

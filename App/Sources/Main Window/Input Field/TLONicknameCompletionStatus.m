@@ -423,7 +423,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSInteger nextCharacterInRange = NSMaxRange(self.rangeOfCompletionSuffix);
 
-		if (nextCharacterInRange < maximumCompletionSuffixEndPoint) {
+		/* The last character counts too: a space typed at the very end */
+		if (nextCharacterInRange <= maximumCompletionSuffixEndPoint) {
 			UniChar nextChar = [self.currentTextViewStringValue characterAtIndex:nextCharacterInRange];
 
 			if ([[NSCharacterSet whitespaceCharacterSet] characterIsMember:nextChar]) {
@@ -674,7 +675,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			NSRange completionRangePosition = [self.currentTextViewStringValue rangeOfString:userCompletionSuffix options:0 range:completionSearchRange];
 
-			if (NSRangeIsValid(completionRangePosition) && completionRangePosition.length < 30) {
+			if (NSRangeIsValid(completionRangePosition) && (completionRangePosition.location - selectedRange.location) < 30) {
 				NSRange whitespaceSearchRange = NSMakeRange(selectedRange.location,
 															completionRangePosition.location - selectedRange.location);
 

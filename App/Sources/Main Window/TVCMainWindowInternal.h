@@ -160,6 +160,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateStateBar;
 @end
 
+@interface TVCMainWindow (UploadsInternal)
+- (void)handUploadQueueToMainWindow; // a pop-out closing: its waiting uploads continue there
+@end
+
 @interface TVCMainWindow (TitleAndWindowInternal)
 - (void)addAccessoryViewsToTitlebar;
 - (void)licenseManagerActivatedLicense:(NSNotification *)notification;

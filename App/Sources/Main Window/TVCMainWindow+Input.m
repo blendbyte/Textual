@@ -439,14 +439,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)exitFullscreenMode:(NSEvent *)e // escape key
 {
-	if (self.inFullscreenMode) {
-		[self toggleFullScreen:nil];
-
+	/* Escape stops replying first, in full screen too */
+	if ([self cancelPendingReply]) {
 		return;
 	}
 
-	/* Escape stops replying first */
-	if ([self cancelPendingReply]) {
+	if (self.inFullscreenMode) {
+		[self toggleFullScreen:nil];
+
 		return;
 	}
 

@@ -913,7 +913,7 @@ NS_ASSUME_NONNULL_BEGIN
 	formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
 	formatter.dateFormat = @"yyyy-MM-dd 'at' HH.mm.ss";
 
-	NSString *folder = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"Textual Pasted Pictures/%@", [NSUUID UUID].UUIDString]];
+	NSString *folder = [[NSTemporaryDirectory() stringByAppendingPathComponent:TVCMainWindowPastedPicturesFolderName] stringByAppendingPathComponent:[NSUUID UUID].UUIDString];
 
 	if ([RZFileManager() createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:NULL] == NO) {
 		return;
@@ -936,6 +936,8 @@ NS_ASSUME_NONNULL_BEGIN
 				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
 					   if (buttonClicked == TDCAlertResponseDefault) {
 						   [TVCMainWindow.currentWindow uploadFiles:@[path] onClient:u toItem:item];
+					   } else {
+						   [RZFileManager() removeItemAtPath:folder error:NULL];
 					   }
 				   }];
 }

@@ -538,10 +538,58 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* A pasted picture is written to a temporary folder of its own for the upload */
+- (void)removePastedPictureOfUpload:(TVCMainWindowUpload *)upload
+{
+	NSParameterAssert(upload != nil);
+
+	NSString *folder = upload.path.stringByDeletingLastPathComponent;
+
+	if ([folder.stringByDeletingLastPathComponent.lastPathComponent isEqualToString:TVCMainWindowPastedPicturesFolderName]) {
+		[RZFileManager() removeItemAtPath:folder error:NULL];
+	}
+}
+
+/* A pop-out that closed: what its uploads leave goes to the main window */
+- (TVCMainWindow *)windowForUploadResults
+{
+	if (self.isPopOut && self.popOutItem == nil) {
+		return mainWindow();
+	}
+
+	return self;
+}
+
+/* A pop-out closing: its waiting uploads continue in the main window */
+- (void)handUploadQueueToMainWindow
+{
+	NSArray *queue = [self.uploadQueue copy];
+
+	if (queue.count == 0) {
+		return;
+	}
+
+	[self.uploadQueue removeAllObjects];
+
+	TVCMainWindow *mainWindow = mainWindow();
+
+	[mainWindow.uploadQueue addObjectsFromArray:queue];
+
+	if (mainWindow.currentUpload == nil) {
+		mainWindow.uploadsDone = 0;
+
+		[mainWindow startNextUpload];
+	} else {
+		[mainWindow updateUploadBar];
+	}
+}
+
 /* A paste that didn't go: its text back where it was typed, its file gone */
 - (void)returnPastedTextOfUpload:(TVCMainWindowUpload *)upload
 {
 	NSParameterAssert(upload != nil);
+
+	[self removePastedPictureOfUpload:upload];
 
 	NSString *text = upload.pastedText;
 
@@ -558,7 +606,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (item != self.selectedItem) {
-		[self.inputHistoryManager appendText:text toDraftForTreeItem:item];
+		[self.windowForUploadResults.inputHistoryManager appendText:text toDraftForTreeItem:item];
 
 		return;
 	}
@@ -645,8 +693,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self updateUploadBar];
 
+	/* Held until the upload ends: a pop-out closed meanwhile still puts the
+	 link (or a paste's text) into the main window's drafts */
 	[upload startWithCompletionBlock:^(IRCFileUpload *finishedUpload) {
-		[weakSelf uploadFinished:finishedUpload ofQueuedUpload:next];
+		[self uploadFinished:finishedUpload ofQueuedUpload:next];
 	}];
 }
 
@@ -709,6 +759,8 @@ NS_ASSUME_NONNULL_BEGIN
 			[RZFileManager() removeItemAtPath:queuedUpload.path.stringByDeletingLastPathComponent error:NULL];
 		}
 
+		[self removePastedPictureOfUpload:queuedUpload];
+
 		/* A paste's link goes instead of its lines (if disconnected meanwhile,
 		 it waits in the input field like a file's) */
 		if (queuedUpload.pastedText && client.isLoggedIn) {
@@ -737,7 +789,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[TDCAlert alertSheetWithWindow:self
+	[TDCAlert alertSheetWithWindow:self.windowForUploadResults
 							  body:upload.failureReason
 							 title:((wasPaste) ? TXTLS(@"TVCMainWindow[upl-e2]") : TXTLS(@"TVCMainWindow[upl-e1]", upload.fileName))
 					 defaultButton:TXTLS(@"Prompts[c7s-dq]")
@@ -760,7 +812,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(item != nil);
 
 	if (item != self.selectedItem) {
-		[self.inputHistoryManager appendText:link toDraftForTreeItem:item];
+		[self.windowForUploadResults.inputHistoryManager appendText:link toDraftForTreeItem:item];
 
 		return;
 	}

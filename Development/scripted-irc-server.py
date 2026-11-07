@@ -370,6 +370,31 @@ async def scenario_review_limits(client):
 		pass
 
 
+async def scenario_review_mentions(client):
+	"""Full-review fixes: Mentions keeps its place. In #mentions alice names
+	you 40 times, then once every 5 seconds. Open Mentions (Control-5),
+	scroll down and select a row: new ones go on top while the list stays
+	where it is. Stays connected."""
+	if not await client.register_with_capabilities("server-time message-tags"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #mentions")
+	await client.send(f":{SERVER} 353 {me} = #mentions :{me} alice")
+	await client.send(f":{SERVER} 366 {me} #mentions :End of /NAMES list.")
+	await client.collect(1)
+
+	for index in range(40):
+		await client.send(f":alice!a@alice.test PRIVMSG #mentions :{me}: mention {index + 1}")
+
+	count = 40
+
+	while await client.collect(5):
+		count += 1
+		await client.send(f":alice!a@alice.test PRIVMSG #mentions :{me}: mention {count}")
+
+
 async def scenario_review_cap_flood(client):
 	"""Full-review fixes: CAP LS that keeps going. Answers CAP LS with 2,000
 	continuation lines of 50 capabilities each (100,000 in all), then the
@@ -3040,6 +3065,7 @@ async def scenario_silent(client):
 
 
 SCENARIOS = {
+	"review-mentions": scenario_review_mentions,
 	"review-upload-login": scenario_review_upload_login,
 	"review-cap-flood": scenario_review_cap_flood,
 	"review-limits": scenario_review_limits,
@@ -3118,7 +3144,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

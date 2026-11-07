@@ -595,9 +595,72 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(search) object:nil];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(addNewMentions) object:nil];
 
-	[self performSelector:@selector(search) withObject:nil afterDelay:0.5];
+	[self performSelector:@selector(addNewMentions) withObject:nil afterDelay:0.5];
+}
+
+/* The new ones go on top; the list stays where it was scrolled to and keeps
+ its selection. Starting over is only for a list that can't take that. */
+- (void)addNewMentions
+{
+	TLOMessageArchiveQuery *query = self.query;
+
+	if (query == nil || self.results.count == 0 || query.order != TLOMessageArchiveSearchOrderNewest || self.loading) {
+		[self search];
+
+		return;
+	}
+
+	int64_t newestRowId = self.newestResultRowId;
+
+	NSUInteger generation = self.generation;
+
+	[sharedMessageArchive() search:query offset:0 limit:_pageSize completionHandler:^(TLOMessageArchiveSearchPage *page) {
+		if (generation != self.generation || self.contextMessages) {
+			return;
+		}
+
+		NSMutableArray<TLOMessageArchiveResult *> *newResults = [NSMutableArray array];
+
+		for (TLOMessageArchiveResult *result in page.results) {
+			if (result.rowId > newestRowId) {
+				[newResults addObject:result];
+			}
+		}
+
+		if (newResults.count == 0) {
+			return;
+		}
+
+		/* More new ones than a page: they don't join up with the list */
+		if (newResults.count == page.results.count && page.hasMore) {
+			[self search];
+
+			return;
+		}
+
+		NSIndexSet *newRows = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, newResults.count)];
+
+		NSClipView *clipView = self.scrollView.contentView;
+
+		NSPoint scrollOrigin = clipView.bounds.origin;
+
+		[self.results insertObjects:newResults atIndexes:newRows];
+
+		[self.tableView insertRowsAtIndexes:newRows withAnimation:NSTableViewAnimationEffectNone];
+
+		/* Scrolled down: what was on screen stays there */
+		if (scrollOrigin.y > 0) {
+			CGFloat addedHeight = NSMaxY([self.tableView rectOfRow:(newResults.count - 1)]);
+
+			[clipView scrollToPoint:NSMakePoint(scrollOrigin.x, (scrollOrigin.y + addedHeight))];
+
+			[self.scrollView reflectScrolledClipView:clipView];
+		}
+
+		[self updateResultCountOfQuery:query generation:generation];
+	}];
 }
 
 /* Results, their conversation, or what can be typed */
@@ -823,7 +886,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self loadNextPage];
 
-	NSUInteger generation = self.generation;
+	[self updateResultCountOfQuery:query generation:self.generation];
+}
+
+- (void)updateResultCountOfQuery:(TLOMessageArchiveQuery *)query generation:(NSUInteger)generation
+{
+	NSParameterAssert(query != nil);
 
 	[sharedMessageArchive() countResultsOfSearch:query completionHandler:^(NSUInteger count) {
 		if (generation != self.generation) {
@@ -869,7 +937,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[self.results addObjectsFromArray:page.results];
 
-		[self.tableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(firstRow, page.results.count)] withAnimation:NSTableViewAnimationEffectNone];
+		/* While a conversation is shown, the table shows its lines: the
+		 results come back with it (reloaded when it closes) */
+		if (self.contextMessages == nil) {
+			[self.tableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(firstRow, page.results.count)] withAnimation:NSTableViewAnimationEffectNone];
+		}
 
 		/* A short first page may not fill the list */
 		[self loadMoreIfNearEnd];

@@ -255,8 +255,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
 	if (aSelector == @selector(insertNewline:)) {
-		/* Shift-Return starts a new line in the message, Return sends it */
-		NSEventModifierFlags modifiers = ([NSApp currentEvent].modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask);
+		/* Shift-Return starts a new line in the message, Return sends it.
+		 Only these four count: Caps Lock, the keypad's Enter and fn don't */
+		NSEventModifierFlags modifiers = ([NSApp currentEvent].modifierFlags & (NSEventModifierFlagShift | NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagCommand));
 
 		if (modifiers == NSEventModifierFlagShift) {
 			[aTextView insertNewlineIgnoringFieldEditor:nil];

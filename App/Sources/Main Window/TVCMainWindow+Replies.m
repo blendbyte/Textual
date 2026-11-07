@@ -149,11 +149,29 @@ static TVCReactionPickerController * _Nullable _reactionPicker = nil;
 		return;
 	}
 
+	/* Still being composed (a dead key, an input method): not chosen yet */
+	NSText *editor = self.field.currentEditor;
+
+	if ([editor isKindOfClass:[NSTextView class]] && ((NSTextView *)editor).hasMarkedText) {
+		return;
+	}
+
 	NSRange first = [text rangeOfComposedCharacterSequenceAtIndex:0];
 
-	if (first.length == text.length && [text canBeConvertedToEncoding:NSASCIIStringEncoding] == NO) {
-		[self sendReaction:text];
+	if (first.length != text.length || [text canBeConvertedToEncoding:NSASCIIStringEncoding]) {
+		return;
 	}
+
+	/* An emoji, not a typed letter like "é" or "ü", which Return sends */
+	UTF32Char character = 0;
+
+	if ([text getBytes:&character maxLength:sizeof(character) usedLength:NULL encoding:NSUTF32LittleEndianStringEncoding options:0 range:NSMakeRange(0, first.length) remainingRange:NULL] &&
+		[[NSCharacterSet letterCharacterSet] longCharacterIsMember:CFSwapInt32LittleToHost(character)])
+	{
+		return;
+	}
+
+	[self sendReaction:text];
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
