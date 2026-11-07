@@ -43,6 +43,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSUInteger const _multilineReceivedTextLimit = (64 * 1024);
+
 /* draft/multiline (https://ircv3.net/specs/extensions/multiline): a message of
  several lines, or one too long for a single line, goes out as one batch of
  PRIVMSG or NOTICE lines (draft/multiline-concat on the pieces of a long line),
@@ -282,6 +284,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCMessage *firstMessage = nil;
 
+	/* Servers check max-bytes only for what clients send, so a received
+	 batch is cut off at the size of the longest line we accept */
+	NSUInteger textBytes = 0;
+
+	BOOL truncated = NO;
+
 	for (id entry in batch.queuedEntries) {
 		if ([entry isKindOfClass:[IRCMessage class]] == NO) {
 			continue;
@@ -299,9 +307,23 @@ NS_ASSUME_NONNULL_BEGIN
 			continue; // PRIVMSG and NOTICE don't mix in one
 		}
 
+		NSString *text = message.params.lastObject;
+
+		textBytes += ([text lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1);
+
+		if (parts.count > 0 && textBytes > _multilineReceivedTextLimit) {
+			truncated = YES;
+
+			break;
+		}
+
 		BOOL concat = (parts.count > 0 && message.messageTags[@"draft/multiline-concat"] != nil);
 
-		[parts addObject:[IRCClientMultilinePart partWithText:message.params.lastObject concat:concat]];
+		[parts addObject:[IRCClientMultilinePart partWithText:text concat:concat]];
+	}
+
+	if (truncated) {
+		[parts addObject:[IRCClientMultilinePart partWithText:@"…" concat:(parts.count > 0)]];
 	}
 
 	if (firstMessage == nil) {

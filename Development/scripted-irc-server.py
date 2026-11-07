@@ -312,6 +312,47 @@ async def scenario_review_crashes(client):
 		pass
 
 
+async def scenario_review_limits(client):
+	"""Full-review fixes: what a hostile server can send. Offers batch and
+	draft/multiline. In #limits alice sends a multi-line message of 3,000
+	lines of 100 characters (300,000 in all; it crashed the client while
+	being archived), then a BATCH nested 20 deep with one line inside. The
+	client must stay connected after each. Stays connected."""
+	if not await client.register_with_capabilities("batch message-tags server-time draft/multiline=max-bytes=4096,max-lines=100"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #limits")
+	await client.send(f":{SERVER} 353 {me} = #limits :{me} @alice")
+	await client.send(f":{SERVER} 366 {me} #limits :End of /NAMES list.")
+	await client.collect(2)
+
+	lines = [":alice!a@alice.test BATCH +big draft/multiline #limits"]
+	lines += [f"@batch=big :alice!a@alice.test PRIVMSG #limits :{index:04d} " + ("x" * 95) for index in range(3000)]
+	lines += [":alice!a@alice.test BATCH -big"]
+	log(">>", f"<multi-line batch of {len(lines) - 2} lines>")
+	client.writer.write(("\r\n".join(lines) + "\r\n").encode())
+	await client.writer.drain()
+
+	await client.collect(3)
+	result(await client.is_alive("big"), "client alive after a 300,000-character multi-line message")
+
+	depth = 20
+	for level in range(depth):
+		parent = f"@batch=n{level - 1} " if level > 0 else ""
+		await client.send(f"{parent}:{SERVER} BATCH +n{level} example.com/nested")
+	await client.send(f"@batch=n{depth - 1} :alice!a@alice.test PRIVMSG #limits :Inside a batch nested {depth} deep")
+	for level in reversed(range(depth)):
+		await client.send(f":{SERVER} BATCH -n{level}")
+
+	await client.collect(3)
+	result(await client.is_alive("nested"), "client alive after BATCH nested 20 deep")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_review_irc(client):
 	"""Review fixes, group 3. Set AutojoinChannelOnInvite to YES before starting
 	Textual Dev. Registers with echo-message, server-time and message-tags. Checked
@@ -2927,6 +2968,7 @@ async def scenario_silent(client):
 
 
 SCENARIOS = {
+	"review-limits": scenario_review_limits,
 	"styles": scenario_styles,
 	"collapse": scenario_collapse,
 	"query-info": scenario_query_info,
@@ -3002,7 +3044,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

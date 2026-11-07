@@ -123,6 +123,23 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil(context.exception);
 }
 
+/* A style's handler that throws when old lines go stopped the new line being
+ added: no replies, reactions or grouping for it, and the app never heard */
+- (void)testThrowingRemovalHandlerOfStyleIsContained
+{
+	JSContext *context = [self eventsContext];
+
+	[context evaluateScript:@"var console = { error: function() {} }, removed = [], notified = null;"
+							"Textual.messageRemovedFromView = function(line) { removed.push(line); throw new Error('style'); };"
+							"appPrivate.notifyLinesRemovedFromView = function(lines) { notified = lines; };"
+							"_Textual.messageRemovedFromView([1, 2]);"];
+
+	XCTAssertNil(context.exception);
+
+	XCTAssertEqual([[context evaluateScript:@"removed.length"] toInt32], 2);
+	XCTAssertTrue([[context evaluateScript:@"notified !== null"] toBool]);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

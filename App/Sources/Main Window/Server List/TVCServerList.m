@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "NSViewHelperPrivate.h"
+#import "IRCChannel.h"
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
 #import "TVCMainWindowPrivate.h"
@@ -103,24 +104,36 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 {
 	NSParameterAssert(object != nil);
 
-	NSInteger rowIndex = [self rowForItem:object];
-
-	NSAssert((rowIndex >= 0),
-		@"Object does not exist on outline view");
-
+	/* The index comes from the data source, which the caller changes only
+	 afterwards: the outline view's rows leave out the children of a
+	 collapsed server, which it may not even know the parent of */
 	id parentItem = [self parentForItem:object];
 
-	if (parentItem) {
-		NSArray *childrenItems = [self itemsFromParentGroup:parentItem];
-
-		rowIndex = [childrenItems indexOfObject:object];
-	} else {
-		NSArray *groupItems = self.groupItems;
-
-		rowIndex = [groupItems indexOfObject:object];
+	if (parentItem == nil && [object isKindOfClass:[IRCChannel class]]) {
+		parentItem = [object associatedClient];
 	}
 
-	NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:rowIndex];
+	id <NSOutlineViewDataSource> dataSource = self.dataSource;
+
+	NSInteger childCount = [dataSource outlineView:self numberOfChildrenOfItem:parentItem];
+
+	NSInteger childIndex = NSNotFound;
+
+	for (NSInteger i = 0; i < childCount; i++) {
+		if ([dataSource outlineView:self child:i ofItem:parentItem] == object) {
+			childIndex = i;
+
+			break;
+		}
+	}
+
+	if (childIndex == NSNotFound) {
+		LogToConsoleError("Item to remove is not in the server list");
+
+		return;
+	}
+
+	NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:childIndex];
 
 	[self removeItemsAtIndexes:indexSet
 					  inParent:parentItem

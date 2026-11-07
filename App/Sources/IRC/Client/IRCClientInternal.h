@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _timeoutInterval			360
 #define _whoCheckInterval			120
 #define _batchFlushTimeout			60 // a batch that never closes is processed after this many seconds
+#define _batchNestingLimit			8 // a batch inside this many open batches is not opened
 #define _labeledRequestTimeout		300 // a labeled command whose reply never came is forgotten after this many seconds
 #define _outgoingMessageTimeout		60 // a message sent with a label whose answer never came is forgotten after this many seconds
 #define _outgoingMessageErrorWindow	5 // without labels, an error about a message's target counts this many seconds after it

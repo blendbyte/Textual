@@ -232,16 +232,23 @@ _Textual.messageAddedToView = function(lineNumber, fromBuffer) /* PRIVATE */
 
 _Textual.messageRemovedFromView = function(lineNumber) /* PRIVATE */
 {
-	/* Allow lineNumber to be an array of line numbers or a single line number. */
-	if (Array.isArray(lineNumber)) {
-		for (var i = 0; i < lineNumber.length; i++) {
-			Textual.messageRemovedFromView(lineNumber[i]);
+	/* Allow lineNumber to be an array of line numbers or a single line number.
+	 A style's handler that throws must not stop the line being added. */
+	var lineNumbers = ((Array.isArray(lineNumber)) ? lineNumber : [lineNumber]);
+
+	for (var i = 0; i < lineNumbers.length; i++) {
+		try {
+			Textual.messageRemovedFromView(lineNumbers[i]);
+		} catch (error) {
+			console.error(error);
 		}
-	} else {
-		Textual.messageRemovedFromView(lineNumber);
 	}
 
-	_EventGroups.linesRemoved();
+	try {
+		_EventGroups.linesRemoved();
+	} catch (error) {
+		console.error(error);
+	}
 
 	appPrivate.notifyLinesRemovedFromView(lineNumber);
 };

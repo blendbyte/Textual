@@ -75,6 +75,18 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([NSColor colorWithHexadecimalValue:@"#fff"]);
 }
 
+/* A CMYK or catalog colour from the colour panel raised: it has no RGB
+ components until converted */
+- (void)testHexadecimalValueOfOtherColorKinds
+{
+	XCTAssertEqualObjects([NSColor colorWithDeviceRed:1.0 green:0.0 blue:0.0 alpha:1.0].hexadecimalValue, @"#FF0000");
+	XCTAssertEqualObjects([NSColor colorWithCalibratedWhite:1.0 alpha:1.0].hexadecimalValue, @"#FFFFFF");
+
+	XCTAssertEqualObjects([NSColor colorWithDeviceCyan:0.0 magenta:0.0 yellow:0.0 black:1.0 alpha:1.0].hexadecimalValue, @"#000000");
+	XCTAssertNoThrow([NSColor systemBlueColor].hexadecimalValue);
+	XCTAssertEqual([NSColor controlTextColor].hexadecimalValueWithAlpha.length, 9);
+}
+
 /* The destination was removed before copying: a copy that failed lost it */
 - (void)testFailedReplaceKeepsDestination
 {

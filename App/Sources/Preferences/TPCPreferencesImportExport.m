@@ -203,6 +203,20 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
+		/* Data is a colour: only a keyed archive of one, which is decoded
+		 securely; an old typedstream archive can name any class */
+		if ([object isKindOfClass:[NSData class]] &&
+			[NSKeyedUnarchiver unarchivedObjectOfClass:[NSColor class] fromData:object error:NULL] == nil)
+		{
+			LogToConsoleInfo("Not importing '%{public}@': not a colour", key);
+
+			return;
+		}
+
+		if ([key isEqualToString:@"InlineMediaDomainList"]) {
+			object = [TPCPreferences normalizedInlineMediaDomains:object];
+		}
+
 		importableContents[key] = object;
 	}];
 

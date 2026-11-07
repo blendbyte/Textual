@@ -2212,6 +2212,21 @@ NS_ASSUME_NONNULL_BEGIN
 			parentBatchMessage = [self.batchMessages queuedEntryWithBatchToken:parentBatchMessageToken];
 		}
 
+		/* Real batches nest two or three deep. Deeper ones are not opened,
+		 so their lines are handled as they arrive, and processing a batch
+		 never recurses more than this. */
+		NSUInteger nestingDepth = 0;
+
+		for (IRCMessageBatchMessage *ancestor = parentBatchMessage; ancestor != nil; ancestor = ancestor.parentBatchMessage) {
+			nestingDepth += 1;
+		}
+
+		if (nestingDepth >= _batchNestingLimit) {
+			LogToConsoleError("Ignoring BATCH nested more than %lu deep", (unsigned long)_batchNestingLimit);
+
+			return;
+		}
+
 		/* Create new batch message and queue it. */
 		IRCMessageBatchMessage *newBatchMessage = [IRCMessageBatchMessage new];
 

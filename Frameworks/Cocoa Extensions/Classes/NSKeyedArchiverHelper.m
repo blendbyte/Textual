@@ -39,24 +39,38 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(cls != NULL);
 	NSParameterAssert(data != nil);
 
+	/* Old values (and Textual's own registered defaults) are typedstream
+	 archives, which only NSUnarchiver reads. It decodes any class an archive
+	 names and raises on a damaged one, so it gets only data that is one. */
+	static const char typedstreamHeader[] = "\x04\x0bstreamtyped";
+
+	NSUInteger headerLength = (sizeof(typedstreamHeader) - 1);
+
+	if (data.length > headerLength && memcmp(data.bytes, typedstreamHeader, headerLength) == 0) {
+		id object = nil;
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	id object = [NSUnarchiver unarchiveObjectWithData:data];
+		@try {
+			object = [NSUnarchiver unarchiveObjectWithData:data];
+		}
+		@catch (NSException *exception) {
+			LogToConsoleErrorWithSubsystem(_CSFrameworkInternalLogSubsystem(),
+				"Failed to read archived data: %{public}@",
+				exception.reason);
+		}
+#pragma clang diagnostic pop
 
-	if (object != nil) {
 		if ([object isKindOfClass:cls] == NO) {
 			return nil;
-		} else {
-			return object;
 		}
+
+		return object;
 	}
-#pragma GCC diagnostic pop
 
 	NSError *error;
 
-	/* The keyed archive was never read: this was given the failed result
-	 above (nil) instead of the data, and always asked for a colour */
-	object =
+	id object =
 	[NSKeyedUnarchiver unarchivedObjectOfClass:cls
 									  fromData:data
 										 error:&error];

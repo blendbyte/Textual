@@ -280,17 +280,30 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 - (void)_openDatabase
 {
-	if ([self _openDatabaseAtURL:self.url]) {
+	BOOL damaged = NO;
+
+	if ([self _openDatabaseAtURL:self.url damaged:&damaged]) {
 		return;
 	}
 
-	/* Damaged: put aside (not deleted, it may be rescued) and start again */
-	if (self.database == NULL && [self _moveDamagedDatabaseAside]) {
-		(void)[self _openDatabaseAtURL:self.url];
+	/* Damaged: put aside (not deleted, it may be rescued) and start again.
+	 Anything else (a full disk, a busy or unreadable file) leaves the file
+	 alone: this session goes without the archive and the next one tries
+	 the same file again. */
+	if (damaged && self.database == NULL && [self _moveDamagedDatabaseAside]) {
+		(void)[self _openDatabaseAtURL:self.url damaged:NULL];
 	}
 }
 
-- (BOOL)_openDatabaseAtURL:(NSURL *)url
+/* SQLITE_CORRUPT and SQLITE_NOTADB: the file itself is bad */
++ (BOOL)_errorMeansDamage:(int)result
+{
+	int primaryResult = (result & 0xff);
+
+	return (primaryResult == SQLITE_CORRUPT || primaryResult == SQLITE_NOTADB);
+}
+
+- (BOOL)_openDatabaseAtURL:(NSURL *)url damaged:(nullable BOOL *)damaged
 {
 	sqlite3 *database = NULL;
 
@@ -301,12 +314,20 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 		sqlite3_close_v2(database);
 
+		if (damaged) {
+			*damaged = [self.class _errorMeansDamage:result];
+		}
+
 		return NO;
 	}
 
 	self.database = database;
 
 	if ([self _prepareSchema] == NO) {
+		if (damaged) {
+			*damaged = [self.class _errorMeansDamage:sqlite3_extended_errcode(database)];
+		}
+
 		[self _closeDatabase];
 
 		return NO;
@@ -321,6 +342,10 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 	if (result != SQLITE_OK) {
 		LogToConsoleError("Failed to prepare the message archive: %{public}s", sqlite3_errmsg(database));
+
+		if (damaged) {
+			*damaged = [self.class _errorMeansDamage:result];
+		}
 
 		[self _closeDatabase];
 

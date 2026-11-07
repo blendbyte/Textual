@@ -130,18 +130,40 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 	CGFloat greenValue = 0.0;
 	CGFloat blueValue = 0.0;
 
-	if ([self isInGrayColorSpace]) {
-		redValue = self.whiteComponent;
-		greenValue = self.whiteComponent;
-		blueValue = self.whiteComponent;
-	} else {
-		redValue = self.redComponent;
-		greenValue = self.greenComponent;
-		blueValue = self.blueComponent;
+	/* RGB and gray colours keep their own components, as before. Any other
+	 kind (CMYK, catalog and pattern colours) has no RGB components until
+	 converted, and asking for them raises. */
+	NSColor *color = self;
+
+	NSColorSpaceModel model = ((self.type == NSColorTypeComponentBased) ? self.colorSpace.colorSpaceModel : NSColorSpaceModelUnknown);
+
+	if (model != NSColorSpaceModelRGB && model != NSColorSpaceModelGray) {
+		color = [self colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+
+		if (color == nil) {
+			color = [NSColor colorWithSRGBRed:0.0 green:0.0 blue:0.0 alpha:1.0];
+		}
+
+		model = NSColorSpaceModelRGB;
 	}
 
+	if (model == NSColorSpaceModelGray) {
+		redValue = color.whiteComponent;
+		greenValue = color.whiteComponent;
+		blueValue = color.whiteComponent;
+	} else {
+		redValue = color.redComponent;
+		greenValue = color.greenComponent;
+		blueValue = color.blueComponent;
+	}
+
+	/* Extended-range colours can go past 0 to 1 */
+	redValue = MIN(MAX(redValue, 0.0), 1.0);
+	greenValue = MIN(MAX(greenValue, 0.0), 1.0);
+	blueValue = MIN(MAX(blueValue, 0.0), 1.0);
+
 	if (withAlpha) {
-		CGFloat alphaValue = self.alphaComponent;
+		CGFloat alphaValue = MIN(MAX(color.alphaComponent, 0.0), 1.0);
 
 		return [NSString stringWithFormat:@"#%02lX%02lX%02lX%02lX",
 				(long)(redValue * 0xff),

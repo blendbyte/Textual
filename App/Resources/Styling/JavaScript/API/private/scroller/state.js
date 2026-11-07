@@ -400,6 +400,11 @@ TextualScroller.scrollToBottom = function() /* PUBLIC */
 {
 	var scrolledElement = _TextualScroller._scrolledElement;
 
+	/* Not bound yet: the script runs at document start, before the body */
+	if (scrolledElement === null) {
+		return;
+	}
+
 	scrolledElement.scrollToBottom();
 
 	_TextualScroller.noteAtBottom();

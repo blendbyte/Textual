@@ -138,6 +138,28 @@ NS_ASSUME_NONNULL_BEGIN
 		text = text.trim.stripIRCEffects;
 	}
 
+	/* The channel is held weakly: one closed while this waited in the
+	 queue is gone, and so is the reason to say anything about it */
+	switch (eventType) {
+		case TXNotificationTypeHighlight:
+		case TXNotificationTypeChannelMessage:
+		case TXNotificationTypeChannelNotice:
+		case TXNotificationTypeKick:
+		case TXNotificationTypeUserJoined:
+		case TXNotificationTypeUserParted:
+		{
+			if (channel == nil) {
+				return nil;
+			}
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+
 	switch (eventType) {
 		case TXNotificationTypeHighlight:
 		{

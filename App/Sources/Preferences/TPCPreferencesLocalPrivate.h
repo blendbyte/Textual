@@ -144,6 +144,7 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 /* "https://www.Example.com/x" → "www.example.com", "*.example.com" → "example.com"; nil if not a domain */
 + (nullable NSString *)normalizedInlineMediaDomain:(NSString *)domain;
++ (NSArray<NSString *> *)normalizedInlineMediaDomains:(NSArray *)domains; // non-strings and invalid entries dropped
 
 /* Textual 7's limits: "Only inline images and videos" turns every
  service card and web page cards off; the limits are removed */

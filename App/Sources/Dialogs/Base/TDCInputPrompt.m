@@ -97,7 +97,9 @@ NS_ASSUME_NONNULL_BEGIN
 	alert.informativeText = bodyText;
 
 	[alert setTitle:buttonDefault forButton:TVCAlertResponseButtonFirst];
-	[alert setTitle:buttonAlternate forButton:TVCAlertResponseButtonSecond];
+	if (buttonAlternate) {
+		[alert setTitle:buttonAlternate forButton:TVCAlertResponseButtonSecond];
+	}
 
 	alert.accessoryView = textField;
 

@@ -360,15 +360,19 @@ NSStringEncoding const TXDefaultFallbackStringEncoding = NSISOLatin1StringEncodi
 
 	NSUInteger currentPosition = 0;
 
-	NSUInteger bufferLength = (stringLength * sizeof(UniChar));
+	/* On the heap: a message can be far larger than a background thread's
+	 stack. Kept characters are written back into the same buffer, never
+	 ahead of the one being read. */
+	UniChar *buffer = malloc(stringLength * sizeof(UniChar));
 
-	UniChar *inputBuffer = alloca(bufferLength);
-	UniChar *outputBuffer = alloca(bufferLength);
+	if (buffer == NULL) {
+		return self;
+	}
 
-	[self getCharacters:inputBuffer range:self.range];
+	[self getCharacters:buffer range:self.range];
 
 	for (NSUInteger i = 0; i < stringLength; i++) {
-		UniChar character = inputBuffer[i];
+		UniChar character = buffer[i];
 
 		switch (character) {
 			case IRCTextFormatterEffectBoldCharacter:
@@ -391,14 +395,18 @@ NSStringEncoding const TXDefaultFallbackStringEncoding = NSISOLatin1StringEncodi
 			}
 			default:
 			{
-				outputBuffer[currentPosition++] = character;
+				buffer[currentPosition++] = character;
 
 				break;
 			}
 		}
 	}
 
-	return [NSString stringWithCharacters:outputBuffer length:currentPosition];
+	NSString *result = [NSString stringWithCharacters:buffer length:currentPosition];
+
+	free(buffer);
+
+	return result;
 }
 
 - (NSUInteger)colorComponentsOfCharacter:(UniChar)character startingAt:(NSUInteger)rangeStart foregroundColor:(id _Nullable * _Nullable)foregroundColor backgroundColor:(id _Nullable * _Nullable)backgroundColor

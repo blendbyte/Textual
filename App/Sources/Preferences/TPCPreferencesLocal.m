@@ -520,7 +520,31 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 		return @[];
 	}
 
-	return domains;
+	/* Anything but a string (an imported or hand-edited file) is left out */
+	return [domains filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id domain, NSDictionary *bindings) {
+		return [domain isKindOfClass:[NSString class]];
+	}]];
+}
+
++ (NSArray<NSString *> *)normalizedInlineMediaDomains:(NSArray *)domains
+{
+	NSParameterAssert(domains != nil);
+
+	NSMutableArray<NSString *> *normalizedDomains = [NSMutableArray arrayWithCapacity:domains.count];
+
+	for (id domain in domains) {
+		if ([domain isKindOfClass:[NSString class]] == NO) {
+			continue;
+		}
+
+		NSString *normalizedDomain = [self normalizedInlineMediaDomain:domain];
+
+		if (normalizedDomain && [normalizedDomains containsObject:normalizedDomain] == NO) {
+			[normalizedDomains addObject:normalizedDomain];
+		}
+	}
+
+	return [normalizedDomains copy];
 }
 
 + (void)setInlineMediaDomains:(NSArray<NSString *> *)inlineMediaDomains
@@ -875,7 +899,14 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (TVCMainWindowTextViewFontSize)mainTextViewFontSize
 {
-	return (TVCMainWindowTextViewFontSize)[RZUserDefaults() unsignedIntegerForKey:@"Main Input Text Field -> Font Size"];
+	NSUInteger fontSize = [RZUserDefaults() unsignedIntegerForKey:@"Main Input Text Field -> Font Size"];
+
+	/* A value from an imported or hand-edited file has no font */
+	if (fontSize < TVCMainWindowTextViewFontSizeNormal || fontSize > TVCMainWindowTextViewFontSizeHumongous) {
+		return TVCMainWindowTextViewFontSizeNormal;
+	}
+
+	return (TVCMainWindowTextViewFontSize)fontSize;
 }
 
 + (BOOL)focusMainTextViewOnSelectionChange
