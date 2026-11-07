@@ -179,6 +179,11 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(zncLogins, expectedZNCLogins);
 	XCTAssertEqualObjects([IRCBouncerAccount bouncerPasswordOfServerAddedByHand:config], @"se:cret");
 
+	/* ZNC's client identifier (user@client/network) isn't part of the user */
+	config.serverList = @[[self serverAt:@"bnc.example.com" port:6697 password:@"dan@laptop/libera:se:cret"]];
+
+	XCTAssertEqualObjects([IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config], expectedZNCLogins);
+
 	config.username = @"dan/oftc";
 	config.serverList = @[[self serverAt:@"bnc.example.com" port:6697 password:@"plain"]];
 

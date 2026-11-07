@@ -116,6 +116,10 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 {
 	NSAssert((self.transport == nil), @"Not while connected");
 
+	if (self.cancelled) {
+		return;
+	}
+
 	IRCBouncerAccount *account = self.account;
 
 	/* As a new server would connect */
@@ -149,6 +153,11 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 - (void)cancel
 {
 	self.cancelled = YES;
+
+	self.awaitsRegistrationReply = NO;
+
+	/* Every timer: one left armed opened a new connection after the cancel */
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	[self closeConnection];
 }
@@ -474,7 +483,7 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 - (void)registrationReplyTimedOut
 {
-	if (self.awaitsRegistrationReply == NO) {
+	if (self.awaitsRegistrationReply == NO || self.cancelled) {
 		return;
 	}
 
@@ -954,6 +963,10 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 - (void)networksWithoutBatchComplete
 {
+	if (self.cancelled) {
+		return;
+	}
+
 	[self finishWithNetworks:self.networkList];
 }
 

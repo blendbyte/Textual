@@ -1226,8 +1226,14 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 	if (client.isConnecting || client.isConnected) {
 		__weak IRCWorld *weakSelf = self;
 
+		/* Saved once it's gone: callers that saved right away still had it
+		 in the list, and a crash before the next save brought it back */
 		[client quitThen:^(IRCClient *disconnectedClient) {
-			[weakSelf destroyClient:disconnectedClient];
+			IRCWorld *strongSelf = weakSelf;
+
+			[strongSelf destroyClient:disconnectedClient];
+
+			[strongSelf save];
 		}];
 
 		return;

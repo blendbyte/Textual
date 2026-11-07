@@ -942,14 +942,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *newNickname = nil;
 
-	if (setAway) {
-		newNickname = self.config.awayNickname;
+	NSString *awayNickname = self.config.awayNickname;
 
-		self.preAwayUserNickname = self.userNickname;
+	if (setAway) {
+		/* Only with an away nickname is there a nickname to go back to */
+		if (awayNickname.length > 0) {
+			newNickname = awayNickname;
+
+			self.preAwayUserNickname = self.userNickname;
+		}
 	} else {
 		newNickname = self.preAwayUserNickname;
 
 		self.preAwayUserNickname = nil;
+
+		/* Renamed by hand while away: that name stays */
+		if (newNickname && awayNickname.length > 0 && [self.userNickname isEqualToStringIgnoringCase:awayNickname] == NO) {
+			newNickname = nil;
+		}
 
 		/* If we have an away nickname configured but no preAwayNickname set,
 		 then use the configured nickname instead. User probably was on bouncer

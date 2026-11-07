@@ -1074,11 +1074,11 @@ static NSUInteger _aliasDepth = 0;
 {
 	NSMutableAttributedString *stringIn = context.stringIn;
 	NSInteger commandNumeric = context.commandNumeric;
-	IRCChannel *targetChannel = context.targetChannel;
 
 	BOOL isIgnoreCommand = (commandNumeric == IRCLocalCommandIgnore);
 
-	if (stringIn.length == 0 || targetChannel == nil) {
+	/* In the console too: the person is looked up on the server, not in a channel */
+	if (stringIn.length == 0) {
 		if (isIgnoreCommand) {
 			[menuController() showServerPropertiesSheetForClient:self withSelection:TDCServerPropertiesSheetSelectionNewIgnoreEntry context:@""];
 		} else {
@@ -1859,7 +1859,8 @@ static NSUInteger _aliasDepth = 0;
 
 	IRCChannel *oldQuery = [self findChannel:nickname];
 
-	if (oldQuery) {
+	/* Only the case changes: the query found is this one */
+	if (oldQuery && oldQuery != targetChannel) {
 		BOOL deleteOldQuery =
 		[TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[61s-jc]")
 								  title:TXTLS(@"Prompts[d22-76]", oldQuery.name)

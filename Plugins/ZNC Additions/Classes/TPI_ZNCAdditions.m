@@ -217,7 +217,8 @@ NS_ASSUME_NONNULL_BEGIN
 			matchedChannel = channel;
 		}
 
-		if (matchedChannel == nil) {
+		/* Only channels are attached and detached, not private messages */
+		if (matchedChannel == nil || matchedChannel.isChannel == NO) {
 			return;
 		}
 

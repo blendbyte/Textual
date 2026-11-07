@@ -229,7 +229,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.config = mutableClientConfig;
 
-	[self clearAddressBookCacheForHostmask:hostmask];
+	/* The entry covers a mask (*!*@host): every cached match may change */
+	[self clearAddressBookCache];
 }
 
 - (void)clearAddressBookCache

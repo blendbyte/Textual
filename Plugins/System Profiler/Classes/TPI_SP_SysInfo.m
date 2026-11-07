@@ -118,9 +118,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 #endif
 
-+ (NSString *)applicationBandwidthStatistics
+/* The network the command was typed on, not whichever is selected by now */
++ (NSString *)applicationBandwidthStatisticsOfClient:(IRCClient *)client
 {
-	IRCClient *client = mainWindow().selectedClient;
 
 	NSTimeInterval lastMessage = [NSDate timeIntervalSinceNow:client.lastMessageReceived];
 

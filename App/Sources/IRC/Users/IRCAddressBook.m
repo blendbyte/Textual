@@ -236,6 +236,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)rebuildTrackingNickname
 {
+	/* Several entries matched: the tracking one among them names the person,
+	 or JOIN and QUIT of a tracked user went unnoticed when an ignore matched too */
+	if (self.entryType == IRCAddressBookEntryTypeMixed) {
+		for (IRCAddressBookEntry *parentEntry in self->_parentEntries) {
+			if (parentEntry.entryType == IRCAddressBookEntryTypeUserTracking && parentEntry.trackingNickname) {
+				self->_trackingNickname = [parentEntry.trackingNickname copy];
+
+				return;
+			}
+		}
+
+		return;
+	}
+
 	if (self.entryType != IRCAddressBookEntryTypeUserTracking) {
 		return;
 	}
@@ -444,6 +458,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_parentEntries != childrenEntries) {
 		self->_parentEntries = [childrenEntries copy];
+
+		[self rebuildTrackingNickname];
 	}
 }
 

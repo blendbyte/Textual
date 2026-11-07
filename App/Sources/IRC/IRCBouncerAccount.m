@@ -299,6 +299,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSString *user = [candidate substringToIndex:slash.location];
 
+		/* ZNC's user@client/network: the client identifier isn't part of the user */
+		NSRange userAt = [user rangeOfString:@"@"];
+
+		if (userAt.location != NSNotFound) {
+			user = [user substringToIndex:userAt.location];
+		}
+
+		if (user.length == 0) {
+			continue;
+		}
+
 		NSString *network = [candidate substringFromIndex:NSMaxRange(slash)];
 
 		NSRange at = [network rangeOfString:@"@"];

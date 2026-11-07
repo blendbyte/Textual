@@ -978,7 +978,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Ignore query if the user has configured Textual to do so */
 	if ([TPCPreferences replyToCTCPRequests] == NO) {
-		[self printDebugInformationToConsole:TXTLS(@"IRC[bg3-h2]", command, sender)];
+		/* The note about it obeys the same limit as replies: a flood of
+		 queries doesn't fill the console */
+		if ([self CTCPReplyIsWithinLimitForSender:m.senderAddress]) {
+			[self printDebugInformationToConsole:TXTLS(@"IRC[bg3-h2]", command, sender)];
+		}
 
 		return;
 	}
@@ -1384,7 +1388,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Back after a netsplit: one line for all of them */
-	BOOL netjoin = (myself == NO && [self collectNetsplitNickname:sender inChannel:channel forMessage:m]);
+	BOOL netjoin = (printMessage && myself == NO && [self collectNetsplitNickname:sender inChannel:channel forMessage:m]);
 
 	if (netjoin) {
 		printMessage = NO;

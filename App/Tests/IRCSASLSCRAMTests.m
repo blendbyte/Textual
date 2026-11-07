@@ -108,6 +108,9 @@ static NSString * const IRCSASLSCRAMTestsServerFirst = @"r=rOprNGfwEbeRWgbNEkqO%
 	XCTAssertEqualObjects(scram.clientFirstMessage, @"n,,n=a=3Db=2Cc,r=n");
 
 	XCTAssertEqualObjects([IRCSASLSCRAM preparedString:@"pass wo­rd"], @"pass word");
+
+	/* A joiner or variation selector belongs to the character before it: it went unseen */
+	XCTAssertEqualObjects([IRCSASLSCRAM preparedString:@"ab\u200Dcd\uFE0F"], @"abcd");
 }
 
 /* EXTERNAL first, then a login key, then the strongest SCRAM, then PLAIN; nothing is guessed without a list */

@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if TPI_SP_SendsUptimeAndDiskSpace
 + (NSString *)applicationAndSystemUptime;
 #endif
-+ (NSString *)applicationBandwidthStatistics;
++ (NSString *)applicationBandwidthStatisticsOfClient:(IRCClient *)client;
 + (NSString *)applicationMemoryUsage;
 + (NSString *)applicationRuntimeStatistics;
 #if TPI_SP_SendsUptimeAndDiskSpace

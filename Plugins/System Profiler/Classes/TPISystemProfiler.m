@@ -168,7 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
 	} else if ([commandString isEqualToString:@"NETSTATS"]) {
 		messageOut = [TPI_SP_CompiledOutput systemNetworkInformation];
 	} else if ([commandString isEqualToString:@"MSGCOUNT"]) {
-		messageOut = [TPI_SP_CompiledOutput applicationBandwidthStatistics];
+		messageOut = [TPI_SP_CompiledOutput applicationBandwidthStatisticsOfClient:client];
 #if TPI_SP_SendsUptimeAndDiskSpace
 	} else if ([commandString isEqualToString:@"DISKSPACE"]) {
 		messageOut = [TPI_SP_CompiledOutput systemDiskspaceInformation];

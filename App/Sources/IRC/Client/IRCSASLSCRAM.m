@@ -93,30 +93,33 @@ static NSUInteger const IRCSASLSCRAMMaximumIterations = 1000000;
 
 	NSMutableString *mapped = [NSMutableString stringWithCapacity:string.length];
 
-	[string enumerateSubstringsInRange:NSMakeRange(0, string.length)
-							   options:NSStringEnumerationByComposedCharacterSequences
-							usingBlock:^(NSString *character, NSRange range, NSRange enclosingRange, BOOL *stop) {
-		unichar first = [character characterAtIndex:0];
+	/* Code unit by code unit: joiners and variation selectors belong to the
+	 character before them, so a walk by composed characters never saw them.
+	 Every character below is in the BMP; surrogates pass through as they are. */
+	NSUInteger length = string.length;
+
+	for (NSUInteger i = 0; i < length; i++) {
+		unichar character = [string characterAtIndex:i];
 
 		/* RFC 3454 B.1: soft hyphen, joiners, variation selectors… map to nothing */
-		if (first == 0x00AD || first == 0x034F || first == 0x1806 || first == 0x180B || first == 0x180C ||
-			first == 0x180D || first == 0x200B || first == 0x200C || first == 0x200D || first == 0x2060 ||
-			(first >= 0xFE00 && first <= 0xFE0F) || first == 0xFEFF)
+		if (character == 0x00AD || character == 0x034F || character == 0x1806 || character == 0x180B || character == 0x180C ||
+			character == 0x180D || character == 0x200B || character == 0x200C || character == 0x200D || character == 0x2060 ||
+			(character >= 0xFE00 && character <= 0xFE0F) || character == 0xFEFF)
 		{
-			return;
+			continue;
 		}
 
 		/* RFC 3454 C.1.2: non-ASCII spaces map to SPACE */
-		if (first == 0x00A0 || first == 0x1680 || (first >= 0x2000 && first <= 0x200A) ||
-			first == 0x202F || first == 0x205F || first == 0x3000)
+		if (character == 0x00A0 || character == 0x1680 || (character >= 0x2000 && character <= 0x200A) ||
+			character == 0x202F || character == 0x205F || character == 0x3000)
 		{
 			[mapped appendString:@" "];
 
-			return;
+			continue;
 		}
 
-		[mapped appendString:character];
-	}];
+		[mapped appendFormat:@"%C", character];
+	}
 
 	return mapped.precomposedStringWithCompatibilityMapping;
 }
