@@ -737,7 +737,7 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 			return TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[m0u-tw]");
 		}
 
-		if ([XRRegularExpression string:currentValue isMatchedByRegex:@"^([a-zA-Z0-9\\-\\_\\s]+)$"] == NO) {
+		if ([XRRegularExpression string:currentValue isMatchedByRegex:@"^([a-zA-Z0-9\\-\\_]+)$"] == NO) {
 			return TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[5kd-jt]");
 		}
 

@@ -497,8 +497,16 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.IPAddress = nil;
 
+	BOOL lookupWasRunning = (self.IPAddressRequest != nil);
+
 	[self.IPAddressRequest cancelLookup];
 	self.IPAddressRequest = nil;
+
+	/* A cancelled lookup tells nobody: transfers waiting for it would wait
+	 forever, so it starts again */
+	if (lookupWasRunning) {
+		[self requestIPAddress];
+	}
 }
 
 - (void)requestIPAddress

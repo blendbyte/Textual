@@ -52,3 +52,5 @@
 
 "eqr-7t" = "Configuration file is in format that cannot be read";
 "ybz-7i" = "OK";
+
+"ex-f1" = "The filter couldn’t be saved as “%@”";

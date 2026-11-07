@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSSize minSize = self.contentMinSize;
 
-	[self changeFrameTo:minSize display:display animate:NO];
+	[self changeFrameTo:minSize display:display animate:animate];
 }
 
 - (void)changeFrameTo:(NSSize)minSize display:(BOOL)display animate:(BOOL)animate

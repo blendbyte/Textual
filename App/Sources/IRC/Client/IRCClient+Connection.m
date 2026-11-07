@@ -211,6 +211,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self cancelPerformRequests];
 
+	/* A list that was loading won't finish: Refresh works again */
+	TDCServerChannelListDialog *channelListDialog = [self channelListDialog];
+
+	if (channelListDialog && channelListDialog.contentAlreadyReceived == NO) {
+		channelListDialog.contentAlreadyReceived = YES;
+	}
+
 	if (isTerminating == NO && self.reconnectEnabled) {
 		[self startReconnectTimer];
 	}

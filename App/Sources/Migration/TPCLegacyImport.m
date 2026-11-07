@@ -876,17 +876,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 	configuration.createsNewApplicationInstance = YES;
 
+	/* A launch refused at once (the copy moved or deleted) keeps this one
+	 open rather than leaving nothing running */
+	__block BOOL launchFailed = NO;
+
 	[RZWorkspace() openApplicationAtURL:RZMainBundle().bundleURL
 						  configuration:configuration
 					  completionHandler:^(NSRunningApplication *application, NSError *error) {
-		if (error) {
-			LogToConsoleError("Legacy import: failed to restart: %{public}@", error.localizedDescription);
+		if (error == nil) {
+			return;
 		}
+
+		LogToConsoleError("Legacy import: failed to restart: %{public}@", error.localizedDescription);
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			launchFailed = YES;
+
+			[RZUserDefaults() removeObjectForKey:@"TextualRestartAfterProcess"];
+		});
 	}];
 
 	/* Not in the completion handler: that only runs once the new copy has
 	 launched, and the new copy waits for this one to quit first */
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		if (launchFailed) {
+			return;
+		}
+
 		exit(0);
 	});
 }

@@ -657,7 +657,9 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 {
 	uint64_t currentFilesize = self.currentFilesize;
 
-	if (proposedPosition == 0 || currentFilesize < proposedPosition) {
+	/* Resuming at the end (or past it) leaves nothing to send, and the
+	 transfer would never complete */
+	if (proposedPosition == 0 || currentFilesize < proposedPosition || proposedPosition >= self.totalFilesize) {
 		return;
 	}
 

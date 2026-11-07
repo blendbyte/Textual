@@ -34,8 +34,9 @@ SOJU_COMMIT="3dec1ed4474263ed6057abb665731e61b2da1b11"
 ZNC_VERSION="1.10.3"
 ZNC_SHA256="68f3f6641b480c041010c5596e1234043e05c9137eda06233845017603095f5b"
 BOUNCER_DIR="${DATA}/bouncers"
-# Where ZNC looks for its modules in the VM (the bundle lands in ~/TextualTest)
-ZNC_VM_PREFIX="/Users/textual/TextualTest/data/bouncers/znc"
+# Where ZNC looks for its modules in the VM (the bundle lands in ~/TextualTest
+# of the VM's user; TEXTUAL_VM_HOME for another account, then "bouncer build")
+ZNC_VM_PREFIX="${TEXTUAL_VM_HOME:-/Users/bashgeek}/TextualTest/data/bouncers/znc"
 
 # Standalone Python for the VM, which has no developer tools (python-build-standalone)
 PYTHON_RELEASE="20261003"

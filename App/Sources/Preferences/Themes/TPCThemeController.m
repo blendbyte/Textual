@@ -717,6 +717,10 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 				break;
 			}
 		} // for themeLocation
+
+		if (stopEnumeration) {
+			break;
+		}
 	} // for themeName
 }
 
@@ -1358,6 +1362,10 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 
 		[RZWorkspace() openURL:fileURL];
 	}
+
+	/* A style of this name loaded from there before is gone from disk: it is
+	 read again, not reused with its old settings and templates */
+	[self.themeController removeThemeWithFilename:self.themeName storageLocation:self.destinationLocation];
 
 	/* Maybe reload new theme */
 	if (self.reloadThemeWhenCopied) {

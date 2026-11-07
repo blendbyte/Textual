@@ -274,6 +274,12 @@ NSString * const TPCResourceManagerScriptDocumentTypeExtensionWithoutPeriod		= @
 
 - (BOOL)readFromURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError **)outError
 {
+	/* Nothing stays open: a document left open is only brought forward the
+	 next time the same file is opened, and nothing is imported */
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[self close];
+	});
+
 	NSString *filePath = url.filePathURL.absoluteString;
 
 	if ([filePath hasSuffix:TPCResourceManagerScriptDocumentTypeExtension]) {

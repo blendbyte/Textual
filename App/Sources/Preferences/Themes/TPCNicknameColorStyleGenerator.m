@@ -269,6 +269,11 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 		NSColor *color = [self _nicknameColorStyleOverrideForKey:styleKey];
 
+		/* One entry for every nickname ever shown: started over now and then */
+		if (cachedOverrides.count >= 5000) {
+			[cachedOverrides removeAllObjects];
+		}
+
 		cachedOverrides[styleKey] = ((color) ?: [NSNull null]);
 
 		return color;

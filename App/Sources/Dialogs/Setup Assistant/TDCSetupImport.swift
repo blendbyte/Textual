@@ -280,6 +280,11 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 
 	private func use(groupURL url: URL)
 	{
+		/* Granted again: the access to the folder chosen before ends */
+		if let previousURL = groupURL, previousURL != url {
+			previousURL.stopAccessingSecurityScopedResource()
+		}
+
 		groupURL = url
 
 		_ = url.startAccessingSecurityScopedResource()

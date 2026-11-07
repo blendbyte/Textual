@@ -13,6 +13,9 @@ curl -fsSL https://data.iana.org/TLD/tlds-alpha-by-domain.txt -o "${TEMP}"
 head -1 "${TEMP}" | grep -q '^# Version' || { echo "Unexpected format" >&2; rm -f "${TEMP}"; exit 1; }
 [ "$(grep -vc '^#' "${TEMP}")" -gt 1000 ] || { echo "List too short" >&2; rm -f "${TEMP}"; exit 1; }
 
+# mktemp makes it readable by its owner only; the list ships in the app
+chmod 644 "${TEMP}"
+
 mv "${TEMP}" "${LIST}"
 
 echo "Updated: $(head -1 "${LIST}")"

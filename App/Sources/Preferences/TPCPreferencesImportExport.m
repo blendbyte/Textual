@@ -240,6 +240,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[aDict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id object, BOOL *stop) {
 		[self import:object withKey:key];
+
+		/* Imported values are written without the usual notice: what caches
+		 them (nickname colour overrides) hears of the change this way */
+		[RZNotificationCenter() postNotificationName:TPCPreferencesUserDefaultsDidChangeNotification
+											  object:RZUserDefaults()
+											userInfo:@{@"changedKey" : key}];
 	}];
 
 	if (reloadPreferences) {

@@ -549,10 +549,22 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 			return nil
 		}
 
+		/* Its Common Name, else the summary macOS shows for it: a certificate
+		 without a CN is still there, not "missing" */
 		var commonName: CFString?
 
-		guard SecCertificateCopyCommonName(certificate, &commonName) == errSecSuccess, let name = commonName as String?, name.isEmpty == false else {
-			return nil
+		var name = ""
+
+		if SecCertificateCopyCommonName(certificate, &commonName) == errSecSuccess, let commonName = commonName as String? {
+			name = commonName
+		}
+
+		if name.isEmpty, let summary = SecCertificateCopySubjectSummary(certificate) as String? {
+			name = summary
+		}
+
+		if name.isEmpty {
+			name = "?"
 		}
 
 		let data = (SecCertificateCopyData(certificate) as Data)

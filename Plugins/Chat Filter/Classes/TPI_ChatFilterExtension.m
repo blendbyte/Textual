@@ -319,7 +319,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSURL *pathURL = saveDialog.URL;
 
-		[filter writeToURL:pathURL];
+		if ([filter writeToURL:pathURL] == NO) {
+			/* After the save panel's sheet is gone */
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				[TDCAlert modalAlertWithMessage:@""
+										  title:TPILocalizedString(@"TPI_ChatFilterExtension[ex-f1]", pathURL.lastPathComponent)
+								  defaultButton:TPILocalizedString(@"TPI_ChatFilterExtension[ybz-7i]")
+								alternateButton:nil];
+			});
+		}
 	}];
 }
 
