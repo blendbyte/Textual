@@ -391,13 +391,25 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	IRCChannel *lastQuery = nil;
+
 	for (NSString *nickname in [self selectedMembersNicknames:sender]) {
 		IRCChannel *query = [u findChannelOrCreate:nickname isPrivateMessage:YES];
 
 		[mainWindow() select:query];
+
+		lastQuery = query;
 	}
 
+	/* Before another window comes forward: it clears the current window's list */
 	[self deselectMembers:sender];
+
+	/* From a separate window: the query opened in the main window, which then
+	 comes forward instead of staying behind (a query in a window of its own
+	 already came forward with select:) */
+	if (lastQuery && [TVCMainWindow popOutWindowForItem:lastQuery] == nil) {
+		[mainWindow() makeKeyAndOrderFront:nil];
+	}
 }
 
 - (void)memberSendCTCPPing:(nullable id)sender
