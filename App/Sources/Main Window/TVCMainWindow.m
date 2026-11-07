@@ -395,6 +395,8 @@ static BOOL _popOutsOpened = NO;
 
 	[self registerKeyHandlers];
 
+	[self setUpMemberListActions];
+
 	[self setUpReplyBar];
 
 	[self setUpUploads];

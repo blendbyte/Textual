@@ -162,8 +162,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)stopIfNeeded
 {
-	if (self.iterations > 0 &&
-		self.iterations == self.currentIteration)
+	/* A timer that doesn't repeat is done once it fired: it no longer counts
+	 as active (callers that start it only when it isn't were stuck), and the
+	 source, which holds the timer, goes */
+	if (self.repeatTimer == NO ||
+		(self.iterations > 0 && self.iterations == self.currentIteration))
 	{
 		[self stop];
 	}

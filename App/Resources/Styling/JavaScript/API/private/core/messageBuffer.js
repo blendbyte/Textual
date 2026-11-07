@@ -779,6 +779,12 @@ _MessageBuffer.loadMessagesWithJumpPostflight = function(requestPayload) /* PRIV
 			/* Update buffer size to include appended lines. */
 			_MessageBuffer._bufferCurrentSize += lineNumbers.length;
 
+			/* A new stretch of lines: whether there is more above or below it is
+			not known yet. An earlier "nothing more above" kept scrolling up from
+			loading anything after Jump to Present. */
+			_MessageBuffer._bufferTopIsComplete = false;
+			_MessageBuffer._bufferBottomIsComplete = false;
+
 			/* Post line numbers so style can do something with them. */
 			try {
 				_Textual.messageAddedToView(lineNumbers, true);

@@ -291,6 +291,8 @@ static BOOL _restoringPopOuts = NO;
 
 	self.popOutItem = nil;
 
+	self.memberList.keyDelegate = nil;
+
 	[self.class unregisterWindow:self];
 
 	[RZNotificationCenter() removeObserver:self];

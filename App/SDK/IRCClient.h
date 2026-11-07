@@ -151,6 +151,12 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 @property (readonly, weak) TVCLogLine *lastLine; // Last line in the server console. There is no guarantee it's visible to the user when accessed.
 @property (readonly, copy) NSArray<IRCChannel *> *channelList;
 @property (readonly, copy) NSArray<IRCHighlightLogEntry *> *cachedHighlights; // The newest 100 highlights of this session, newest first
+
+/* While plugins are handed a received line (-receivedText:… and -receivedCommand:…
+ of THOPluginProtocol): YES when it is history (chathistory, bouncer playback) or
+ the user's own message coming back, not something happening now. A plugin that
+ acts on what it receives (replies, runs commands) can skip those. */
+@property (readonly) BOOL receivedMessageIsReplay;
 @property (readonly, copy, nullable) NSString *userHostmask; // The hostmask of the local user
 @property (readonly, copy) NSString *userNickname; // The nickname of the local user
 @property (readonly, copy, nullable) NSString *serverAddress; // The address of the server connected to or nil

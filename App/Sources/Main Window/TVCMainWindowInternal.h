@@ -127,6 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TVCMainWindow (ServerListInternal)
 - (void)saveSelection;
 - (void)setupTrees;
+- (void)setUpMemberListActions;
 - (void)storeLastSelectedChannel;
 - (void)storePreviousSelection;
 @end

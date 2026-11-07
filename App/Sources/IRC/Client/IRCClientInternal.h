@@ -143,6 +143,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageServerTime;
 @property (nonatomic, assign, readwrite) ClientIRCv3SupportedCapability capabilities;
 @property (nonatomic, copy, readwrite) NSArray<IRCHighlightLogEntry *> *cachedHighlights;
+@property (nonatomic, assign, readwrite) BOOL receivedMessageIsReplay;
 @property (nonatomic, copy, readwrite, nullable) NSString *userHostmask;
 @property (nonatomic, copy, readwrite, null_resettable) NSString *userNickname; // nil falls back to the configured nickname
 @property (nonatomic, copy, readwrite) NSString *serverAddress;
@@ -396,6 +397,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)requestChatHistoryForQueries;
 - (BOOL)chatHistoryHidesStandardReply:(IRCMessage *)m;
 - (void)chatHistoryBatchOpenedForTarget:(nullable NSString *)target;
+- (BOOL)messageIsReplay:(IRCMessage *)m; // history or playback, by batch or by an old server time
 - (void)receiveStandardReply:(IRCMessage *)m;
 - (void)scheduleWhoRequestPass;
 - (NSString *)standardReplyText:(IRCMessage *)m;

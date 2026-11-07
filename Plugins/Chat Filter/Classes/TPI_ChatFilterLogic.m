@@ -307,6 +307,13 @@ NS_ASSUME_NONNULL_BEGIN
 				return (filter.filterIgnoreContent == NO);
 			}
 
+			/* History, playback and the user's own lines are filtered (hidden)
+			 like any other, but their actions and copies ran when they first
+			 happened */
+			if (client.receivedMessageIsReplay) {
+				return (filter.filterIgnoreContent == NO);
+			}
+
 			/* Perform actions defined by filter */
 			XRPerformBlockAsynchronouslyOnMainQueue(^{
 				[self performActionForFilter:filter
@@ -392,6 +399,13 @@ NS_ASSUME_NONNULL_BEGIN
 			if (matchTimedOut) {
 				[self reportTimedOutFilter:filter onClient:client];
 
+				return (filter.filterIgnoreContent == NO);
+			}
+
+			/* History, playback and the user's own lines are filtered (hidden)
+			 like any other, but their actions and copies ran when they first
+			 happened */
+			if (client.receivedMessageIsReplay) {
 				return (filter.filterIgnoreContent == NO);
 			}
 
@@ -496,7 +510,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	for (NSString *actionCommand in [self.class commandsForFilterAction:filterAction withValues:values]) {
-		[client sendCommand:actionCommand];
+		/* In the window the filter matched in, not whichever is selected */
+		[client sendCommand:actionCommand completeTarget:(textDestination != nil) target:textDestination.name];
 	}
 
 	/* Log action to a private message */

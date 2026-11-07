@@ -48,6 +48,7 @@
 #import "IRCISupportInfo.h"
 #import "IRCClientPrivate.h"
 #import "IRCClientInternal.h"
+#import "IRCBouncerAccountPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -860,6 +861,25 @@ NSString * const IRCClientFileUploadLoginDecisionPrefix = @"File Upload Login ->
 
 	/* Signed in with SASL: the same login, where it may go */
 	if (self.isAuthenticatedWithSASL && [self fileUploadMayAuthenticateWithAddress:address]) {
+		IRCBouncerAccount *bouncerAccount = self.bouncerAccount;
+
+		NSString *serverHost = self.socket.config.serverAddress;
+
+		/* soju's own upload service, on the bouncer's host, takes the login
+		 SASL used there: the bouncer account's, not the network's (which the
+		 server settings hold for the network's own servers) */
+		if (bouncerAccount.kind == IRCBouncerKindSoju && serverHost && [self.class uploadHost:address.host isWithinServerHost:serverHost]) {
+			if (bouncerAccount.identityClientSideCertificate) {
+				upload.clientCertificateReference = bouncerAccount.identityClientSideCertificate;
+			} else {
+				upload.authorization = [self.class fileUploadAuthorizationForMechanism:@"PLAIN"
+																			   username:bouncerAccount.username
+																			   password:bouncerAccount.password];
+			}
+
+			return upload;
+		}
+
 		NSString *mechanism = self.saslMechanism;
 
 		upload.authorization = [self.class fileUploadAuthorizationForMechanism:mechanism

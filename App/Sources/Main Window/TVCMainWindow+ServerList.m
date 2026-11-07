@@ -161,12 +161,18 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)setupTrees
+/* Pop-out windows too: double-click and keys in their member list */
+- (void)setUpMemberListActions
 {
 	self.memberList.keyDelegate = self;
 
 	self.memberList.target = menuController();
 	self.memberList.doubleAction = @selector(memberInMemberListDoubleClicked:);
+}
+
+- (void)setupTrees
+{
+	[self setUpMemberListActions];
 
 	self.serverList.keyDelegate = self;
 

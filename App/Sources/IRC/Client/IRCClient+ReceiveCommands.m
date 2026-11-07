@@ -379,6 +379,8 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = YES;
 
 	if ([sharedPluginManager() supportsFeature:THOPluginItemSupportedFeatureDidReceivePlainTextMessageEvent]) {
+		self.receivedMessageIsReplay = (isSelfMessage || [self messageIsReplay:m]);
+
 		printMessage = [THOPluginDispatcher receivedText:text
 											  authoredBy:m.sender
 											 destinedFor:channel
@@ -386,6 +388,8 @@ NS_ASSUME_NONNULL_BEGIN
 												onClient:self
 											  receivedAt:m.receivedAt
 											wasEncrypted:NO];
+
+		self.receivedMessageIsReplay = NO;
 	}
 
 	/* Print message */
@@ -613,6 +617,8 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = YES;
 
 	if ([sharedPluginManager() supportsFeature:THOPluginItemSupportedFeatureDidReceivePlainTextMessageEvent]) {
+		self.receivedMessageIsReplay = (isSelfMessage || [self messageIsReplay:m]);
+
 		printMessage = [THOPluginDispatcher receivedText:text
 											  authoredBy:m.sender
 											 destinedFor:query
@@ -620,6 +626,8 @@ NS_ASSUME_NONNULL_BEGIN
 												onClient:self
 											  receivedAt:m.receivedAt
 											wasEncrypted:NO];
+
+		self.receivedMessageIsReplay = NO;
 	}
 
 	/* Print message */
@@ -881,6 +889,8 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = YES;
 
 	if ([sharedPluginManager() supportsFeature:THOPluginItemSupportedFeatureDidReceivePlainTextMessageEvent]) {
+		self.receivedMessageIsReplay = ((m.senderNickname && [self nicknameIsMyself:m.senderNickname]) || [self messageIsReplay:m]);
+
 		printMessage = [THOPluginDispatcher receivedText:text
 											  authoredBy:m.sender
 											 destinedFor:query
@@ -888,6 +898,8 @@ NS_ASSUME_NONNULL_BEGIN
 												onClient:self
 											  receivedAt:m.receivedAt
 											wasEncrypted:NO];
+
+		self.receivedMessageIsReplay = NO;
 	}
 
 	if (printMessage) {

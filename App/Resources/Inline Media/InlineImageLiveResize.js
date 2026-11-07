@@ -61,6 +61,9 @@ var InlineImageLiveResize = (function () {
 			InlineImageLiveResize.previousX = e.clientX;
 			InlineImageLiveResize.previousY = e.clientY;
 
+			InlineImageLiveResize.startX = e.clientX;
+			InlineImageLiveResize.startY = e.clientY;
+
 			var computedSize = window.getComputedStyle(e.target, null);
 
 			InlineImageLiveResize.dragElement.style.height = computedSize.getPropertyValue("height");
@@ -81,22 +84,30 @@ var InlineImageLiveResize = (function () {
 			return;
 		}
 
+		/* A click that wobbles a pixel is still a click (it opens the picture) */
 		if (InlineImageLiveResize.previousMouseActionWasForResizing === false) {
+			if (Math.abs(x - InlineImageLiveResize.startX) + Math.abs(y - InlineImageLiveResize.startY) < 3) {
+				return;
+			}
+
 			InlineImageLiveResize.previousMouseActionWasForResizing = true;
 		}
 
+		/* Sizes need a unit: the page is in standards mode, which ignores bare numbers */
+		var element = InlineImageLiveResize.dragElement;
+
 		if (x > InlineImageLiveResize.previousX && y >= InlineImageLiveResize.previousY) {
-			InlineImageLiveResize.dragElement.style.width = (InlineImageLiveResize.dragElement.offsetWidth + (x - InlineImageLiveResize.previousX));
-			InlineImageLiveResize.dragElement.style.height = "auto";
+			element.style.width = Math.max(16, (element.offsetWidth + (x - InlineImageLiveResize.previousX))) + "px";
+			element.style.height = "auto";
 		} else if (x < InlineImageLiveResize.previousX && y <= InlineImageLiveResize.previousY) {
-			InlineImageLiveResize.dragElement.style.width = (InlineImageLiveResize.dragElement.offsetWidth - (InlineImageLiveResize.previousX - x));
-			InlineImageLiveResize.dragElement.style.height = "auto";
+			element.style.width = Math.max(16, (element.offsetWidth - (InlineImageLiveResize.previousX - x))) + "px";
+			element.style.height = "auto";
 		} else if (y > InlineImageLiveResize.previousY && x >= InlineImageLiveResize.previousX) {
-			InlineImageLiveResize.dragElement.style.height = (InlineImageLiveResize.dragElement.offsetHeight + (y - InlineImageLiveResize.previousY));
-			InlineImageLiveResize.dragElement.style.width = "auto";
+			element.style.height = Math.max(16, (element.offsetHeight + (y - InlineImageLiveResize.previousY))) + "px";
+			element.style.width = "auto";
 		} else if (y < InlineImageLiveResize.previousY && x <= InlineImageLiveResize.previousX) {
-			InlineImageLiveResize.dragElement.style.height = (InlineImageLiveResize.dragElement.offsetHeight - (InlineImageLiveResize.previousY - y));
-			InlineImageLiveResize.dragElement.style.width = "auto";
+			element.style.height = Math.max(16, (element.offsetHeight - (InlineImageLiveResize.previousY - y))) + "px";
+			element.style.width = "auto";
 		}
 
 		InlineImageLiveResize.previousX = x;

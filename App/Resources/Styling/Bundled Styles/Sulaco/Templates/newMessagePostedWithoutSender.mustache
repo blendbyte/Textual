@@ -15,6 +15,14 @@
 	data-member-type="{{nicknameType}}"
 {{/isRemoteMessage}}
 
+{{#eventNickname}}
+	data-event-nickname="{{.}}"
+{{/eventNickname}}
+
+{{#eventNewNickname}}
+	data-event-new-nickname="{{.}}"
+{{/eventNewNickname}}
+
 	data-timestamp="{{timestamp}}"
 	class="line {{lineClassAttribute}}"
 	id="line-{{lineNumber}}">

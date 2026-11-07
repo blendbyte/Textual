@@ -1476,8 +1476,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[self.isonReplyNicknames removeAllObjects];
 
-			/* Start going over the list of tracked nicknames */
-			NSDictionary *trackedUsers = self.trackedUsers.trackedUsers;
+			/* Start going over the list of tracked nicknames. With MONITOR or
+			 WATCH they weren't asked about (only private messages were), so
+			 their absence from the reply says nothing. */
+			NSDictionary *trackedUsers = ((self.supportsAdvancedTracking) ? @{} : self.trackedUsers.trackedUsers);
 
 			[trackedUsers enumerateKeysAndObjectsUsingBlock:^(NSString *trackedUser, NSNumber *trackingStatusInt, BOOL *stop) {
 				IRCAddressBookUserTrackingStatus trackingStatus =

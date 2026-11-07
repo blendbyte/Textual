@@ -426,13 +426,19 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(command != nil);
 	NSParameterAssert(referenceMessage != nil);
 
-	return [THOPluginDispatcher receivedCommand:command
-									   withText:text
-									 authoredBy:referenceMessage.sender
-									destinedFor:textDestination
-									   onClient:self
-									 receivedAt:referenceMessage.receivedAt
-							   referenceMessage:referenceMessage];
+	self.receivedMessageIsReplay = ((referenceMessage.senderNickname && [self nicknameIsMyself:referenceMessage.senderNickname]) || [self messageIsReplay:referenceMessage]);
+
+	BOOL result = [THOPluginDispatcher receivedCommand:command
+											   withText:text
+											 authoredBy:referenceMessage.sender
+											destinedFor:textDestination
+											   onClient:self
+											 receivedAt:referenceMessage.receivedAt
+									   referenceMessage:referenceMessage];
+
+	self.receivedMessageIsReplay = NO;
+
+	return result;
 }
 
 @end

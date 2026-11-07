@@ -991,7 +991,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 									   filesize:self.totalFilesize];
 	}
 
-	NSFileHandle *fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:filePath];
+	/* Sending only reads: a read-only file can be sent */
+	NSFileHandle *fileHandle = ((self.isSender) ? [NSFileHandle fileHandleForReadingAtPath:filePath] : [NSFileHandle fileHandleForUpdatingAtPath:filePath]);
 
 	if (fileHandle == nil) {
 		[self closeWithLocalizedError:@"TDCFileTransferDialog[nab-dx]"];

@@ -71,6 +71,25 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 	return NO;
 }
 
+/* History: a chathistory or ZNC playback batch, or (a bouncer's buffer
+ without a batch) a server time more than two minutes old */
+- (BOOL)messageIsReplay:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if ([self isChatHistoryMessage:m]) {
+		return YES;
+	}
+
+	for (IRCMessageBatchMessage *batch = m.parentBatchMessage; batch != nil; batch = batch.parentBatchMessage) {
+		if ([batch.batchType isEqualToString:@"znc.in/playback"]) {
+			return YES;
+		}
+	}
+
+	return (m.isHistoric && m.receivedAt.timeIntervalSinceNow < -120.0);
+}
+
 - (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel
 {
 	return [self chatHistoryShouldSkipMessage:m inChannel:channel fromHistory:[self isChatHistoryMessage:m]];
