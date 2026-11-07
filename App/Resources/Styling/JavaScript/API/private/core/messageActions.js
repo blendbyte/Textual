@@ -771,6 +771,9 @@ _MessageActions.removeLine = function(lineNumber) /* PRIVATE */
 	}
 
 	line.remove();
+
+	/* The buffer counts its lines to know how many to trim */
+	MessageBuffer.noteMessageRemovedFromBuffer();
 };
 
 /* ************************************************** */

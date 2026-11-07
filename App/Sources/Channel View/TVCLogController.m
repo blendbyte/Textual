@@ -1423,6 +1423,43 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	}
 
+	/* A line past the scrollback: its sender is in the archive's row */
+	if ([lineNumber hasPrefix:_archiveLinePrefix]) {
+		NSString *viewId = [self _archiveViewId];
+
+		int64_t rowId = [lineNumber substringFromIndex:_archiveLinePrefix.length].longLongValue;
+
+		if (viewId == nil || rowId <= 0) {
+			return;
+		}
+
+		[sharedMessageArchive() messagesInView:viewId
+										 rowId:rowId
+										before:0
+										 after:0
+							  scrollbackLineId:nil
+								scrollbackTime:DBL_MAX
+							 completionHandler:^(NSArray<TLOMessageArchiveResult *> *messages, NSUInteger anchorIndex) {
+			TLOMessageArchiveResult *message = ((anchorIndex < messages.count) ? messages[anchorIndex] : nil);
+
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if (message == nil) {
+					return;
+				}
+
+				NSString *nickname = message.nickname;
+
+				if (nickname.length > 0 && message.isSelf == NO && [self.associatedClient ignoresInlineMediaFromNickname:nickname]) {
+					return;
+				}
+
+				[self processInlineMediaAtAddress:address withUniqueIdentifier:uniqueIdentifier atLineNumber:lineNumber index:index addressHasScheme:YES];
+			});
+		}];
+
+		return;
+	}
+
 	[sharedHistoricLog()
 	 fetchEntriesForItem:self.associatedItem
 	withUniqueIdentifier:lineNumber
@@ -1438,6 +1475,11 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 				 break;
 			 }
+		 }
+
+		 /* A line that can't be found isn't processed: who sent it isn't known */
+		 if (savedLine == nil) {
+			 return;
 		 }
 
 		 dispatch_async(dispatch_get_main_queue(), ^{

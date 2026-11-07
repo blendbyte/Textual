@@ -349,6 +349,10 @@ NS_ASSUME_NONNULL_BEGIN
 										   forCaller:caller
 										   inWebView:intWebView];
 
+				if (promiseIndex >= 0) {
+					[intWebView evaluateFunction:@"appInternal.promiseKept" withArguments:@[@(promiseIndex), [NSNull null]]];
+				}
+
 				return;
 			} else {
 				values = valuesObj;
@@ -380,6 +384,11 @@ NS_ASSUME_NONNULL_BEGIN
 		[self.class throwJavaScriptException:@"Invalid arguments, expected: %@"
 								   forCaller:caller
 								   inWebView:intWebView, [self.class descriptionOfKinds:argumentKinds]];
+
+		/* The page's promise is settled (with nothing): its callback is let go */
+		if (promiseIndex >= 0) {
+			[intWebView evaluateFunction:@"appInternal.promiseKept" withArguments:@[@(promiseIndex), [NSNull null]]];
+		}
 
 		return;
 	}

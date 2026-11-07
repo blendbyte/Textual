@@ -148,15 +148,14 @@ NSString * _Nullable TXHumanReadableTimeInterval(NSTimeInterval dateInterval, BO
 			return [NSString stringWithFormat:@"%ld %@", unitValue, TXTLS(languageKey)];
 		}
 
+		/* The separator goes before a part, so a zero last unit leaves none trailing */
 		if (returnResult == nil) {
 			returnResult = [NSMutableString string];
+		} else {
+			[returnResult appendString:@", "];
 		}
 
-		if (unit == units.lastObject) {
-			[returnResult appendFormat:@"%ld %@", unitValue, TXTLS(languageKey)];
-		} else {
-			[returnResult appendFormat:@"%ld %@, ", unitValue, TXTLS(languageKey)];
-		}
+		[returnResult appendFormat:@"%ld %@", unitValue, TXTLS(languageKey)];
 	}
 
 	if (returnResult.length > 0) {

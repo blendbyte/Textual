@@ -349,7 +349,8 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 
 @interface ICLMediaSchemeHandler ()
 @property (nonatomic, strong) NSMutableDictionary<NSString *, ICLMediaSchemeEntry *> *entries;
-@property (nonatomic, strong) NSMutableArray<NSString *> *entryTokens; // oldest first
+@property (nonatomic, strong) NSMutableArray<NSString *> *entryTokens; // least recently used first
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *entryTokensByMedia; // the same media gets the same address
 @property (nonatomic, strong) NSMapTable<id <WKURLSchemeTask>, ICLMediaFetch *> *fetches;
 @end
 
@@ -374,6 +375,7 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 		self.entries = [NSMutableDictionary dictionary];
 
 		self.entryTokens = [NSMutableArray array];
+		self.entryTokensByMedia = [NSMutableDictionary dictionary];
 
 		self.fetches = [NSMapTable mapTableWithKeyOptions:(NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality)
 											 valueOptions:NSPointerFunctionsStrongMemory];
@@ -389,6 +391,18 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 	NSParameterAssert(url != nil);
 	NSParameterAssert(session != nil);
 
+	/* A line rendered again (a style reload, scrolling back) asks for the
+	 same media: it keeps its address, so lines on screen don't lose theirs */
+	NSString *mediaKey = [NSString stringWithFormat:@"%p %lu %llu %@", (__bridge void *)session, (unsigned long)type, maximumLength, url.absoluteString];
+
+	NSString *existingToken = self.entryTokensByMedia[mediaKey];
+
+	if (existingToken && self.entries[existingToken]) {
+		[self _noteTokenUsed:existingToken];
+
+		return [NSURL URLWithString:[NSString stringWithFormat:@"%@://media/%@", ICLMediaSchemeHandlerScheme, existingToken]];
+	}
+
 	ICLMediaSchemeEntry *entry = [ICLMediaSchemeEntry new];
 
 	entry.url = url;
@@ -400,10 +414,19 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 
 	self.entries[token] = entry;
 
+	self.entryTokensByMedia[mediaKey] = token;
+
+	entry.mediaKey = mediaKey;
+
 	[self.entryTokens addObject:token];
 
+	/* The ones used least recently go first */
 	while (self.entryTokens.count > _maximumEntries) {
-		[self.entries removeObjectForKey:self.entryTokens.firstObject];
+		NSString *oldestToken = self.entryTokens.firstObject;
+
+		[self.entryTokensByMedia removeObjectForKey:self.entries[oldestToken].mediaKey];
+
+		[self.entries removeObjectForKey:oldestToken];
 
 		[self.entryTokens removeObjectAtIndex:0];
 	}
@@ -421,7 +444,30 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 		return nil;
 	}
 
-	return self.entries[mediaURL.lastPathComponent];
+	NSString *token = mediaURL.lastPathComponent;
+
+	ICLMediaSchemeEntry *entry = self.entries[token];
+
+	if (entry) {
+		[self _noteTokenUsed:token];
+	}
+
+	return entry;
+}
+
+- (void)_noteTokenUsed:(NSString *)token
+{
+	NSParameterAssert(token != nil);
+
+	NSUInteger index = [self.entryTokens indexOfObject:token];
+
+	if (index == NSNotFound || index == (self.entryTokens.count - 1)) {
+		return;
+	}
+
+	[self.entryTokens removeObjectAtIndex:index];
+
+	[self.entryTokens addObject:token];
 }
 
 #pragma mark -

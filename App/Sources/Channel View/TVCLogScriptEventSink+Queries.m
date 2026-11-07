@@ -80,6 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
 								   forCaller:context.caller
 								   inWebView:context.webView];
 
+		/* The page's promise is settled (with nothing) either way */
+		context.completionBlock(nil);
+
 		return;
 	}
 
@@ -129,6 +132,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[self.class throwJavaScriptException:@"Invalid style"
 								   forCaller:context.caller
 								   inWebView:context.webView];
+
+		/* The page's promise is settled (with nothing) either way */
+		context.completionBlock(nil);
 
 		return;
 	}

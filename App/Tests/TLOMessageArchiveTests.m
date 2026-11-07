@@ -335,6 +335,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSArray<NSString *> *lines = @[
 		line(0, @"<@alice> hello there"),
+		line(30, @"------------- Begin Session -------------"), // not a notice from "------------"
 		line(60, @"• bob: waves"),
 		line(120, @"-carol- a notice"),
 		line(180, @"dave (~dave@example.com) joined the channel"),

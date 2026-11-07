@@ -1382,7 +1382,12 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	components.month = month;
 	components.day = day;
 
-	return [[NSCalendar currentCalendar] dateFromComponents:components];
+	/* Logs are named by the Gregorian calendar, whatever the user's is */
+	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+
+	calendar.timeZone = [NSTimeZone localTimeZone];
+
+	return [calendar dateFromComponents:components];
 }
 
 /* The digits at a place in a string as a number, or -1 */
@@ -1572,6 +1577,12 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	}
 
 	NSString *nickname = [rest substringWithRange:nicknameRange];
+
+	/* "------------- Begin Session -------------" (and End): a marker, not a
+	 notice from someone called "------------" */
+	if ([nickname stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"-"]].length == 0) {
+		return nil;
+	}
 
 	/* A message's sender has their mode symbol before it (<@alice>) */
 	if (lineType == TVCLogLineTypePrivateMessage) {

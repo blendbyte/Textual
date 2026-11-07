@@ -88,6 +88,7 @@ typedef NS_ENUM(NSInteger, ICLMediaFetchErrorCode) {
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, assign) ICLMediaType type;
 @property (nonatomic, assign) unsigned long long maximumLength;
+@property (nonatomic, copy, nullable) NSString *mediaKey; // what it is, for giving the same media the same address
 @end
 
 @interface ICLMediaSchemeHandler : NSObject <WKURLSchemeHandler>

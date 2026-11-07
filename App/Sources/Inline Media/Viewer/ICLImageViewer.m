@@ -230,10 +230,17 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 	fileName = [fileName stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
 	fileName = [fileName stringByReplacingOccurrencesOfString:@":" withString:@"-"];
 
+	/* Control characters (from %00 to %1F in the address) have no place in a name */
+	fileName = [[fileName componentsSeparatedByCharactersInSet:[NSCharacterSet controlCharacterSet]] componentsJoinedByString:@"-"];
+
 	fileName = [fileName stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@". \t\n"]];
 
-	if (fileName.length > 200) {
-		fileName = [fileName substringToIndex:200];
+	/* A name is at most 255 bytes of UTF-8: room is left for the extension,
+	 and a character is never cut in half */
+	while ([fileName lengthOfBytesUsingEncoding:NSUTF8StringEncoding] > 200) {
+		NSRange lastCharacter = [fileName rangeOfComposedCharacterSequenceAtIndex:(fileName.length - 1)];
+
+		fileName = [fileName substringToIndex:lastCharacter.location];
 	}
 
 	if (fileName.length == 0 || [fileName isEqualToString:@"-"]) {
