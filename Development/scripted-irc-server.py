@@ -1961,7 +1961,7 @@ class UploadHost:
 		await writer.drain()
 
 
-async def run_uploads(client, capabilities, offer=True):
+async def run_uploads(client, capabilities, offer=True, address=None):
 	"""Uploads: the welcome names draft/FILEHOST (an HTTP address on
 	the port + 20, see UploadHost) unless offer is False. #uploads with alice.
 	Stays connected."""
@@ -1970,7 +1970,7 @@ async def run_uploads(client, capabilities, offer=True):
 	await host.listen(port)
 
 	if offer:
-		client.isupport_extra = f"draft/FILEHOST=http://127.0.0.1:{port}/upload"
+		client.isupport_extra = f"draft/FILEHOST={address or f'http://127.0.0.1:{port}/upload'}"
 
 	if not await client.register_with_capabilities(capabilities):
 		return
@@ -2001,6 +2001,14 @@ async def scenario_uploads_own(client):
 async def scenario_uploads_sasl(client):
 	"""Uploads after SASL PLAIN (any login works): the upload should carry it."""
 	await run_uploads(client, "message-tags server-time sasl")
+
+
+async def scenario_review_upload_login(client):
+	"""Uploads after SASL PLAIN to another host than the server's
+	(https://localhost:<port + 20>/upload while connected to 127.0.0.1):
+	the first upload asks whether to send the login there. The upload
+	itself fails (the upload host speaks no TLS)."""
+	await run_uploads(client, "message-tags server-time sasl", address=f"https://localhost:{Events.redirect_port - 1 + 20}/upload")
 
 
 async def scenario_sasl_new(client):
@@ -3032,6 +3040,7 @@ async def scenario_silent(client):
 
 
 SCENARIOS = {
+	"review-upload-login": scenario_review_upload_login,
 	"review-cap-flood": scenario_review_cap_flood,
 	"review-limits": scenario_review_limits,
 	"styles": scenario_styles,
@@ -3109,7 +3118,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

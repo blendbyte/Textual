@@ -74,31 +74,29 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil(client.fileUploadAddress);
 }
 
-/* The login goes only to the server's own domain */
-- (void)testLoginOnlyToTheServersDomain
+/* The login goes without asking only to the server's own host and the hosts
+ below it: under a shared parent (a dynamic DNS name) a neighbour is a stranger */
+- (void)testLoginOnlyToTheServersOwnHost
 {
-	XCTAssertTrue([IRCClient uploadHost:@"irc.example.org" sharesDomainWithHost:@"irc.example.org"]);
-	XCTAssertTrue([IRCClient uploadHost:@"files.example.org" sharesDomainWithHost:@"irc.example.org"]);
-	XCTAssertTrue([IRCClient uploadHost:@"Example.org." sharesDomainWithHost:@"irc.example.org"]);
-	XCTAssertTrue([IRCClient uploadHost:@"up.example.org" sharesDomainWithHost:@"example.org"]);
+	XCTAssertTrue([IRCClient uploadHost:@"irc.example.org" isWithinServerHost:@"irc.example.org"]);
+	XCTAssertTrue([IRCClient uploadHost:@"files.irc.example.org" isWithinServerHost:@"irc.example.org"]);
+	XCTAssertTrue([IRCClient uploadHost:@"IRC.Example.org." isWithinServerHost:@"irc.example.org"]);
+	XCTAssertTrue([IRCClient uploadHost:@"up.example.org" isWithinServerHost:@"example.org"]);
 
-	XCTAssertFalse([IRCClient uploadHost:@"evil-example.org" sharesDomainWithHost:@"irc.example.org"]);
-	XCTAssertFalse([IRCClient uploadHost:@"example.org.evil.net" sharesDomainWithHost:@"irc.example.org"]);
-	XCTAssertFalse([IRCClient uploadHost:@"files.other.org" sharesDomainWithHost:@"irc.example.org"]);
-	XCTAssertFalse([IRCClient uploadHost:@"192.0.2.2" sharesDomainWithHost:@"192.0.2.1"]);
-	XCTAssertTrue([IRCClient uploadHost:@"192.0.2.1" sharesDomainWithHost:@"192.0.2.1"]);
+	XCTAssertFalse([IRCClient uploadHost:@"files.example.org" isWithinServerHost:@"irc.example.org"]);
+	XCTAssertFalse([IRCClient uploadHost:@"evil.duckdns.org" isWithinServerHost:@"mybnc.duckdns.org"]);
+	XCTAssertFalse([IRCClient uploadHost:@"evil.co.uk" isWithinServerHost:@"example.co.uk"]);
+	XCTAssertFalse([IRCClient uploadHost:@"evil-irc.example.org" isWithinServerHost:@"irc.example.org"]);
+	XCTAssertFalse([IRCClient uploadHost:@"irc.example.org.evil.net" isWithinServerHost:@"irc.example.org"]);
+	XCTAssertFalse([IRCClient uploadHost:@"192.0.2.2" isWithinServerHost:@"192.0.2.1"]);
+	XCTAssertTrue([IRCClient uploadHost:@"192.0.2.1" isWithinServerHost:@"192.0.2.1"]);
 
-	NSURL *own = [NSURL URLWithString:@"https://files.example.org/upload"];
+	XCTAssertEqualObjects([IRCClient fileUploadAuthorizationForMechanism:@"PLAIN" username:@"alice" password:@"secret"], @"Basic YWxpY2U6c2VjcmV0");
+	XCTAssertNotNil([IRCClient fileUploadAuthorizationForMechanism:@"SCRAM-SHA-256" username:@"alice" password:@"secret"]);
 
-	XCTAssertEqualObjects([IRCClient fileUploadAuthorizationForAddress:own serverHost:@"irc.example.org" mechanism:@"PLAIN" username:@"alice" password:@"secret"],
-						  @"Basic YWxpY2U6c2VjcmV0");
-	XCTAssertNotNil([IRCClient fileUploadAuthorizationForAddress:own serverHost:@"irc.example.org" mechanism:@"SCRAM-SHA-256" username:@"alice" password:@"secret"]);
-
-	/* Not over plain HTTP, not elsewhere, not for EXTERNAL or without a password */
-	XCTAssertNil([IRCClient fileUploadAuthorizationForAddress:[NSURL URLWithString:@"http://files.example.org/upload"] serverHost:@"irc.example.org" mechanism:@"PLAIN" username:@"alice" password:@"secret"]);
-	XCTAssertNil([IRCClient fileUploadAuthorizationForAddress:[NSURL URLWithString:@"https://uploads.other.net/"] serverHost:@"irc.example.org" mechanism:@"PLAIN" username:@"alice" password:@"secret"]);
-	XCTAssertNil([IRCClient fileUploadAuthorizationForAddress:own serverHost:@"irc.example.org" mechanism:@"EXTERNAL" username:@"alice" password:@"secret"]);
-	XCTAssertNil([IRCClient fileUploadAuthorizationForAddress:own serverHost:@"irc.example.org" mechanism:@"PLAIN" username:@"alice" password:nil]);
+	/* Not for EXTERNAL (its certificate goes instead) or without a password */
+	XCTAssertNil([IRCClient fileUploadAuthorizationForMechanism:@"EXTERNAL" username:@"alice" password:@"secret"]);
+	XCTAssertNil([IRCClient fileUploadAuthorizationForMechanism:@"PLAIN" username:@"alice" password:nil]);
 }
 
 /* The name as headers carry it, and the link from a relative Location */

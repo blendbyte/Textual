@@ -96,6 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableArray *uploadQueue; // waiting, oldest first
 @property (nonatomic, strong, nullable) IRCFileUpload *currentUpload;
 @property (nonatomic, assign) NSUInteger uploadsDone; // of this round
+@property (nonatomic, assign) BOOL uploadLoginQuestionShown; // the queue waits for "Send your login to …?"
 @property (nonatomic, strong, nullable) TVCMainWindowSearchPanel *searchPanel; // in the member list's column
 @property (nonatomic, weak) IBOutlet NSView *chatColumn; // the split view's middle column, holding the channel view
 @property (nonatomic, strong, nullable) NSView *inputFieldStack; // the input field with the upload and reply bars above it

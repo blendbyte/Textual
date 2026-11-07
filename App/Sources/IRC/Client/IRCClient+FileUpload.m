@@ -597,6 +597,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 
+NSString * const IRCClientFileUploadLoginDecisionPrefix = @"File Upload Login -> ";
+
 @implementation IRCClient (FileUpload)
 
 /* The network's upload address, if this connection may use it: HTTPS, or
@@ -628,7 +630,10 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
-+ (BOOL)uploadHost:(NSString *)uploadHost sharesDomainWithHost:(NSString *)serverHost
+/* The server's own host and the hosts below it: bnc.example.org and
+ files.bnc.example.org, never a neighbour under a shared parent such as
+ another *.duckdns.org */
++ (BOOL)uploadHost:(NSString *)uploadHost isWithinServerHost:(NSString *)serverHost
 {
 	NSParameterAssert(uploadHost != nil);
 	NSParameterAssert(serverHost != nil);
@@ -659,33 +664,16 @@ NS_ASSUME_NONNULL_BEGIN
 		return NO;
 	}
 
-	/* irc.example.org → example.org: example.org and *.example.org */
-	NSArray *labels = [serverHost componentsSeparatedByString:@"."];
-
-	NSString *domain = serverHost;
-
-	if (labels.count >= 3) {
-		domain = [[labels subarrayWithRange:NSMakeRange(1, (labels.count - 1))] componentsJoinedByString:@"."];
-	}
-
-	return ([uploadHost isEqualToString:domain] || [uploadHost hasSuffix:[@"." stringByAppendingString:domain]]);
+	return [uploadHost hasSuffix:[@"." stringByAppendingString:serverHost]];
 }
 
-/* The login goes along only over HTTPS to the server's own domain: Basic
- for a password mechanism (PLAIN, SCRAM), nothing for EXTERNAL (its
- certificate is offered instead) or anything else */
-+ (nullable NSString *)fileUploadAuthorizationForAddress:(NSURL *)address
-											  serverHost:(nullable NSString *)serverHost
-											   mechanism:(nullable NSString *)mechanism
-												username:(nullable NSString *)username
-												password:(nullable NSString *)password
+/* Basic for a password mechanism (PLAIN, SCRAM), nothing for EXTERNAL (its
+ certificate is offered instead) or anything else. Where it may go is
+ decided by -fileUploadMayAuthenticateWithAddress:. */
++ (nullable NSString *)fileUploadAuthorizationForMechanism:(nullable NSString *)mechanism
+												  username:(nullable NSString *)username
+												  password:(nullable NSString *)password
 {
-	NSParameterAssert(address != nil);
-
-	if ([self fileUploadMayAuthenticateWithAddress:address serverHost:serverHost] == NO) {
-		return nil;
-	}
-
 	mechanism = mechanism.uppercaseString;
 
 	if (([mechanism isEqualToString:@"PLAIN"] || [mechanism hasPrefix:@"SCRAM-"]) == NO || username.length == 0 || password.length == 0) {
@@ -697,15 +685,87 @@ NS_ASSUME_NONNULL_BEGIN
 	return [@"Basic " stringByAppendingString:[[login dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
 }
 
-+ (BOOL)fileUploadMayAuthenticateWithAddress:(NSURL *)address serverHost:(nullable NSString *)serverHost
+/* The login goes along only over HTTPS: to the server's own host without
+ asking, elsewhere once the user said yes for this server and address */
+- (BOOL)fileUploadMayAuthenticateWithAddress:(NSURL *)address
 {
 	NSParameterAssert(address != nil);
 
-	if ([address.scheme.lowercaseString isEqualToString:@"https"] == NO || serverHost == nil || address.host == nil) {
+	NSString *serverHost = self.socket.config.serverAddress;
+
+	if ([address.scheme.lowercaseString isEqualToString:@"https"] == NO || serverHost == nil || address.host.length == 0) {
 		return NO;
 	}
 
-	return [self uploadHost:address.host sharesDomainWithHost:serverHost];
+	if ([self.class uploadHost:address.host isWithinServerHost:serverHost]) {
+		return YES;
+	}
+
+	return [RZUserDefaults() boolForKey:[self fileUploadLoginDecisionKeyForAddress:address]];
+}
+
+- (NSString *)fileUploadLoginDecisionKeyForAddress:(NSURL *)address
+{
+	NSParameterAssert(address != nil);
+
+	return [NSString stringWithFormat:@"%@%@ -> %@", IRCClientFileUploadLoginDecisionPrefix, self.uniqueIdentifier, address.host.lowercaseString];
+}
+
+/* A login to send: a password one, or the certificate of EXTERNAL */
+- (BOOL)fileUploadHasLogin
+{
+	if (self.isAuthenticatedWithSASL == NO) {
+		return NO;
+	}
+
+	NSString *mechanism = self.saslMechanism;
+
+	if ([mechanism isEqualToStringIgnoringCase:@"EXTERNAL"]) {
+		return (self.config.identityClientSideCertificate != nil);
+	}
+
+	return ([self.class fileUploadAuthorizationForMechanism:mechanism username:self.saslUsername password:self.config.nicknamePassword] != nil);
+}
+
+- (nullable NSString *)fileUploadLoginQuestionHostForPastedText:(BOOL)pastedText
+{
+	/* A long paste may go to the paste service, which never gets a login */
+	if (pastedText && self.pasteServiceUsable) {
+		return nil;
+	}
+
+	NSURL *address = self.fileUploadAddress;
+
+	if (address == nil || self.fileUploadHasLogin == NO) {
+		return nil;
+	}
+
+	if ([address.scheme.lowercaseString isEqualToString:@"https"] == NO) {
+		return nil;
+	}
+
+	NSString *serverHost = self.socket.config.serverAddress;
+
+	if (serverHost && [self.class uploadHost:address.host isWithinServerHost:serverHost]) {
+		return nil;
+	}
+
+	if ([RZUserDefaults() objectForKey:[self fileUploadLoginDecisionKeyForAddress:address]] != nil) {
+		return nil;
+	}
+
+	return address.host;
+}
+
+- (void)rememberFileUploadLoginAllowed:(BOOL)allowed
+{
+	NSURL *address = self.fileUploadAddress;
+
+	if (address.host.length == 0) {
+		return;
+	}
+
+	[RZUserDefaults() setBool:allowed forKey:[self fileUploadLoginDecisionKeyForAddress:address]];
 }
 
 /* Where the network offers none: the server's choice */
@@ -799,18 +859,14 @@ NS_ASSUME_NONNULL_BEGIN
 	[IRCConnectionProxy applyClientConfig:self.config toSessionConfiguration:upload.sessionConfiguration];
 
 	/* Signed in with SASL: the same login, where it may go */
-	if (self.isAuthenticatedWithSASL) {
-		NSString *serverHost = self.socket.config.serverAddress;
-
+	if (self.isAuthenticatedWithSASL && [self fileUploadMayAuthenticateWithAddress:address]) {
 		NSString *mechanism = self.saslMechanism;
 
-		upload.authorization = [self.class fileUploadAuthorizationForAddress:address
-																   serverHost:serverHost
-																	mechanism:mechanism
-																	 username:self.saslUsername
-																	 password:self.config.nicknamePassword];
+		upload.authorization = [self.class fileUploadAuthorizationForMechanism:mechanism
+																	   username:self.saslUsername
+																	   password:self.config.nicknamePassword];
 
-		if ([mechanism isEqualToStringIgnoringCase:@"EXTERNAL"] && [self.class fileUploadMayAuthenticateWithAddress:address serverHost:serverHost]) {
+		if ([mechanism isEqualToStringIgnoringCase:@"EXTERNAL"]) {
 			upload.clientCertificateReference = self.config.identityClientSideCertificate;
 		}
 	}

@@ -588,6 +588,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)startNextUpload
 {
+	if (self.uploadLoginQuestionShown) {
+		[self updateUploadBar];
+
+		return;
+	}
+
 	TVCMainWindowUpload *next = self.uploadQueue.firstObject;
 
 	if (next == nil) {
@@ -598,9 +604,19 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[self.uploadQueue removeObjectAtIndex:0];
-
+	/* The network's upload host isn't the server: the login goes there only
+	 if the user says so, asked once per server and host */
 	IRCClient *client = next.client;
+
+	NSString *loginHost = [client fileUploadLoginQuestionHostForPastedText:(next.pastedText != nil)];
+
+	if (loginHost) {
+		[self askAboutUploadLoginForClient:client host:loginHost];
+
+		return;
+	}
+
+	[self.uploadQueue removeObjectAtIndex:0];
 
 	IRCTreeItem *item = next.item;
 
@@ -632,6 +648,43 @@ NS_ASSUME_NONNULL_BEGIN
 	[upload startWithCompletionBlock:^(IRCFileUpload *finishedUpload) {
 		[weakSelf uploadFinished:finishedUpload ofQueuedUpload:next];
 	}];
+}
+
+- (void)askAboutUploadLoginForClient:(IRCClient *)client host:(NSString *)host
+{
+	NSParameterAssert(client != nil);
+	NSParameterAssert(host != nil);
+
+	self.uploadLoginQuestionShown = YES;
+
+	self.currentUpload = nil;
+
+	NSString *networkName = client.networkNameAlt;
+
+	[TDCAlert alertSheetWithWindow:self
+							  body:TXTLS(@"TVCMainWindow[upl-l2]", networkName, host)
+							 title:TXTLS(@"TVCMainWindow[upl-l1]", networkName, host)
+					 defaultButton:TXTLS(@"TVCMainWindow[upl-l3]")
+				   alternateButton:TXTLS(@"TVCMainWindow[upl-l4]")
+					   otherButton:TXTLS(@"Prompts[d7f-c4]")
+				   completionBlock:^(TDCAlertResponse buttonClicked, BOOL suppressed, id underlyingAlert) {
+					   self.uploadLoginQuestionShown = NO;
+
+					   if (buttonClicked == TDCAlertResponseOther) {
+						   [self discardUploadQueue];
+
+						   [self updateUploadBar];
+
+						   return;
+					   }
+
+					   [client rememberFileUploadLoginAllowed:(buttonClicked == TDCAlertResponseDefault)];
+
+					   /* After the alert's sheet is gone */
+					   XRPerformBlockAsynchronouslyOnMainQueue(^{
+						   [self startNextUpload];
+					   });
+				   }];
 }
 
 - (void)uploadFinished:(IRCFileUpload *)upload ofQueuedUpload:(TVCMainWindowUpload *)queuedUpload

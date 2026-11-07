@@ -34,6 +34,7 @@
  *
  *********************************************************************** */
 
+#import "IRCChannel.h"
 #import "TLOLocalization.h"
 
 #import "NSObjectHelperPrivate.h"
@@ -799,6 +800,20 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	return [NSURL fileURLWithPath:[[folder stringByAppendingPathComponent:@"Style Previews"] stringByAppendingPathComponent:file]];
 }
 
+/* The pictures show lines of the chat: they go with the messages */
++ (void)_deleteStylePreviews
+{
+	NSString *folder = [TPCPathInfo applicationSupport];
+
+	if (folder == nil) {
+		return;
+	}
+
+	[RZFileManager() removeItemAtPath:[folder stringByAppendingPathComponent:@"Style Previews"] error:NULL];
+
+	[RZNotificationCenter() postNotificationName:TDCSettingsBridgeStylePreviewsDidChangeNotification object:nil];
+}
+
 + (nullable NSImage *)previewForStyleNamed:(NSString *)name location:(NSInteger)location dark:(BOOL)dark
 {
 	NSParameterAssert(name != nil);
@@ -833,6 +848,11 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	}
 
 	TVCMainWindow *window = mainWindow();
+
+	/* The picture is of the chat on screen: never of a private conversation */
+	if (window.selectedChannel.isPrivateMessage) {
+		return;
+	}
 
 	NSView *webView = window.selectedViewController.backingView.webView;
 
@@ -1473,6 +1493,8 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 
 	if (newPeriod == TPCMessageArchiveKeepPeriodOff) {
 		/* Turned on again, it starts with the scrollback */
+		[self _deleteStylePreviews];
+
 		[archive deleteAllMessagesImportingScrollbackAgain:YES completionHandler:^{
 			completionHandler();
 		}];
@@ -1518,6 +1540,8 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 
 						return;
 					}
+
+					[self _deleteStylePreviews];
 
 					[sharedMessageArchive() deleteAllMessagesImportingScrollbackAgain:NO completionHandler:^{
 						completionHandler();

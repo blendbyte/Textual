@@ -294,18 +294,24 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 + (BOOL)imageHasMetadataAtURL:(NSURL *)url;
 @end
 
+/* Defaults keys of the answers to "Send your login to …?", per server and upload host */
+TEXTUAL_EXTERN NSString * const IRCClientFileUploadLoginDecisionPrefix;
+
 @interface IRCClient (FileUploadPrivate)
 @property (readonly, copy, nullable) NSURL *fileUploadAddress; // the network's (draft/FILEHOST), if this connection may use it
 
-/* The login only goes to the server's own domain: irc.example.org → example.org and *.example.org */
-+ (BOOL)uploadHost:(NSString *)uploadHost sharesDomainWithHost:(NSString *)serverHost;
+/* The login goes without asking only to the server's own host and the hosts below it */
++ (BOOL)uploadHost:(NSString *)uploadHost isWithinServerHost:(NSString *)serverHost;
 
-/* "Basic …" for a password login (PLAIN, SCRAM) to an HTTPS address on the server's domain; otherwise nil */
-+ (nullable NSString *)fileUploadAuthorizationForAddress:(NSURL *)address
-											  serverHost:(nullable NSString *)serverHost
-											   mechanism:(nullable NSString *)mechanism
-												username:(nullable NSString *)username
-												password:(nullable NSString *)password;
+/* "Basic …" for a password login (PLAIN, SCRAM); otherwise nil */
++ (nullable NSString *)fileUploadAuthorizationForMechanism:(nullable NSString *)mechanism
+												  username:(nullable NSString *)username
+												  password:(nullable NSString *)password;
+
+/* The upload host to ask about before the login goes there (another host than
+ the server's, nothing answered yet for it), or nil when there is nothing to ask */
+- (nullable NSString *)fileUploadLoginQuestionHostForPastedText:(BOOL)pastedText;
+- (void)rememberFileUploadLoginAllowed:(BOOL)allowed; // for the current upload address
 
 - (nullable IRCFileUpload *)fileUploadForPath:(NSString *)path; // nil without an upload address
 

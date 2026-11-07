@@ -237,6 +237,11 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertFalse([ICLInlineContentLoader host:@"other.org" isPreviewedWithDomains:domains mode:only]);
 	XCTAssertFalse([ICLInlineContentLoader host:@"anything.net" isPreviewedWithDomains:@[] mode:only]);
 
+	/* A trailing dot or the other form of an international name is the same site */
+	XCTAssertFalse([ICLInlineContentLoader host:@"www.example.com." isPreviewedWithDomains:domains mode:except]);
+	XCTAssertFalse([ICLInlineContentLoader host:@"xn--bcher-kva.de" isPreviewedWithDomains:@[@"bücher.de"] mode:except]);
+	XCTAssertFalse([ICLInlineContentLoader host:@"shop.bücher.de" isPreviewedWithDomains:@[@"xn--bcher-kva.de"] mode:except]);
+
 	XCTAssertEqualObjects([TPCPreferences normalizedInlineMediaDomain:@" https://www.Example.com/page?x=1 "], @"www.example.com");
 	XCTAssertEqualObjects([TPCPreferences normalizedInlineMediaDomain:@"*.example.com"], @"example.com");
 	XCTAssertEqualObjects([TPCPreferences normalizedInlineMediaDomain:@"example.com/path"], @"example.com");

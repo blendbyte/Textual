@@ -185,6 +185,10 @@
 "upl-s2" = "%@ doesn’t offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
 "upl-s3" = "Set Up Upload Address…";
 "upl-s4" = "%@ doesn’t offer uploads, and your own upload address is turned off for this server in Server Properties.";
+"upl-l1" = "Send your %1$@ login to %2$@?";
+"upl-l2" = "%1$@ uploads files to %2$@, which isn’t the server you’re connected to. Send the login you use for %1$@ along with the upload only if you trust %2$@. Textual remembers your answer for this address; Settings › Advanced › Show Again asks again.";
+"upl-l3" = "Send Login";
+"upl-l4" = "Upload Without Login";
 /* The search panel */
 "src-p1" = "Search Messages";
 "src-a1" = "Search messages";

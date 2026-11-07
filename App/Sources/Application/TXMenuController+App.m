@@ -417,6 +417,16 @@ NS_ASSUME_NONNULL_BEGIN
 	NSDictionary *settings = [RZUserDefaults() dictionaryRepresentation];
 
 	for (NSString *key in settings) {
+		/* "Don't ask again" for opening links of a scheme (TLOpenLink), and
+		 the answers about sending a login with uploads, too */
+		if ([key hasPrefix:@"TLOpenLink -> Open Links With Scheme -> "] ||
+			[key hasPrefix:IRCClientFileUploadLoginDecisionPrefix])
+		{
+			[RZUserDefaults() removeObjectForKey:key];
+
+			continue;
+		}
+
 		if ([key hasPrefix:TDCAlertSuppressionPrefix] == NO) {
 			continue;
 		}

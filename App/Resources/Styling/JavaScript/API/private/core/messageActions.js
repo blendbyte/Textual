@@ -725,7 +725,8 @@ _MessageActions._decorateFailed = function(line) /* PRIVATE */
 
 	var text = document.createElement("span");
 
-	text.textContent = ((reason.length > 0) ? (strings.notSent || "Not sent: %@").replace("%@", reason) : (strings.notSentNoReason || "Not sent"));
+	/* A function as the replacement: "$" in the server's reason stays as it is */
+	text.textContent = ((reason.length > 0) ? (strings.notSent || "Not sent: %@").replace("%@", function() { return reason; }) : (strings.notSentNoReason || "Not sent"));
 
 	note.appendChild(text);
 

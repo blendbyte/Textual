@@ -158,7 +158,8 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 		return;
 	}
 
-	NSString *urlHost = urlComponents.host.lowercaseString;
+	/* "example.com." is example.com: without the dot, so rules and modules match */
+	NSString *urlHost = [urlComponents.host.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"."]];
 
 	if (urlHost.length == 0) {
 		return;
@@ -207,17 +208,40 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 	(void)[self _processPayload:payload withModulesForDomain:@"*" addressHasScheme:addressHasScheme];
 }
 
++ (NSString *)_asciiHost:(NSString *)host
+{
+	NSParameterAssert(host != nil);
+
+	host = [host.lowercaseString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"."]];
+
+	NSURLComponents *components = [NSURLComponents new];
+
+	components.host = host;
+
+	NSString *encodedHost = components.encodedHost;
+
+	return ((encodedHost.length > 0) ? encodedHost.lowercaseString : host);
+}
+
 + (BOOL)host:(NSString *)host isPreviewedWithDomains:(NSArray<NSString *> *)domains mode:(TXInlineMediaDomainRuleMode)mode
 {
 	NSParameterAssert(host != nil);
 	NSParameterAssert(domains != nil);
 
-	host = host.lowercaseString;
+	/* Compared in their ASCII (IDNA) form: a rule typed as "bücher.de" and a
+	 link to "xn--bcher-kva.de" are the same site */
+	host = [self _asciiHost:host];
 
 	BOOL listed = NO;
 
 	for (NSString *domain in domains) {
-		if ([host isEqualToString:domain] || [host hasSuffix:[@"." stringByAppendingString:domain]]) {
+		NSString *asciiDomain = [self _asciiHost:domain];
+
+		if (asciiDomain.length == 0) {
+			continue;
+		}
+
+		if ([host isEqualToString:asciiDomain] || [host hasSuffix:[@"." stringByAppendingString:asciiDomain]]) {
 			listed = YES;
 
 			break;
