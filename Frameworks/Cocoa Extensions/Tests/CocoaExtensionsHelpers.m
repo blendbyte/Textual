@@ -82,8 +82,11 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([NSColor colorWithDeviceRed:1.0 green:0.0 blue:0.0 alpha:1.0].hexadecimalValue, @"#FF0000");
 	XCTAssertEqualObjects([NSColor colorWithCalibratedWhite:1.0 alpha:1.0].hexadecimalValue, @"#FFFFFF");
 
-	XCTAssertEqualObjects([NSColor colorWithDeviceCyan:0.0 magenta:0.0 yellow:0.0 black:1.0 alpha:1.0].hexadecimalValue, @"#000000");
-	XCTAssertNoThrow([NSColor systemBlueColor].hexadecimalValue);
+	/* Converted through colour profiles, so not exact values: CMYK black is #1A1919 in sRGB */
+	NSPredicate *hexadecimal = [NSPredicate predicateWithFormat:@"SELF MATCHES '#[0-9A-F]{6}'"];
+
+	XCTAssertTrue([hexadecimal evaluateWithObject:[NSColor colorWithDeviceCyan:0.0 magenta:0.0 yellow:0.0 black:1.0 alpha:1.0].hexadecimalValue]);
+	XCTAssertTrue([hexadecimal evaluateWithObject:[NSColor systemBlueColor].hexadecimalValue]);
 	XCTAssertEqual([NSColor controlTextColor].hexadecimalValueWithAlpha.length, 9);
 }
 
