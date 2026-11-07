@@ -2227,6 +2227,12 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
+		if (self.batchMessages.queuedEntriesCount >= _openBatchLimit) {
+			LogToConsoleError("Ignoring BATCH: %lu batches are open", (unsigned long)_openBatchLimit);
+
+			return;
+		}
+
 		/* Create new batch message and queue it. */
 		IRCMessageBatchMessage *newBatchMessage = [IRCMessageBatchMessage new];
 
@@ -2690,7 +2696,9 @@ NS_ASSUME_NONNULL_BEGIN
 	if (batchToken) {
 		IRCMessageBatchMessage *thisBatchMessage = [self.batchMessages queuedEntryWithBatchToken:batchToken];
 
-		if (thisBatchMessage.batchIsOpen) {
+		/* Past the limit, lines are handled as they arrive instead of being
+		 held: no real batch is this long */
+		if (thisBatchMessage.batchIsOpen && thisBatchMessage.queuedEntriesCount < _batchEntryLimit) {
 			[thisBatchMessage queueEntry:m];
 
 			return YES;

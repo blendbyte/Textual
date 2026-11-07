@@ -685,13 +685,17 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 
 	static const NSUInteger maximumNicknameLength = 64;
 
+	/* Each candidate is looked up in the member list. A real message has a
+	 few hundred; a crafted run of special characters could make millions. */
+	static const NSUInteger maximumCandidates = 4096;
+
 	NSUInteger length = string.length;
 
 	NSMutableArray<NSValue *> *ranges = [NSMutableArray array];
 
 	NSUInteger position = 0;
 
-	while (position < length) {
+	while (position < length && ranges.count < maximumCandidates) {
 		UniChar character = [string characterAtIndex:position];
 
 		if (_isWordCharacter(character) == NO && _isNicknameSpecialCharacter(character) == NO) {
@@ -730,15 +734,16 @@ static BOOL _isNicknameSpecialCharacter(UniChar character)
 		}
 
 		[starts enumerateIndexesUsingBlock:^(NSUInteger start, BOOL *stopStarts) {
-			if (start >= runEnd) {
+			if (start >= runEnd || ranges.count >= maximumCandidates) {
+				*stopStarts = YES;
+
 				return;
 			}
 
-			[ends enumerateIndexesUsingBlock:^(NSUInteger end, BOOL *stopEnds) {
-				if (end <= start || (end - start) > maximumNicknameLength) {
-					return;
-				}
+			/* Only the ends a nickname's length away, not the whole run */
+			NSUInteger lastEnd = MIN(runEnd, (start + maximumNicknameLength));
 
+			[ends enumerateIndexesInRange:NSMakeRange((start + 1), (lastEnd - start)) options:0 usingBlock:^(NSUInteger end, BOOL *stopEnds) {
 				[ranges addObject:[NSValue valueWithRange:NSMakeRange(start, (end - start))]];
 			}];
 		}];

@@ -117,6 +117,7 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSDictionary *> *messageReferences; // msgid → line number, nickname, excerpt (replies); guarded by itself
 @property (nonatomic, strong) NSMutableArray<NSString *> *messageReferenceOrder; // oldest first, to forget beyond the limit
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray<NSMutableDictionary *> *> *messageReactions; // msgid → reactions in order; guarded by messageReferences
+@property (nonatomic, strong) NSMutableArray<NSString *> *unreferencedReactionOrder; // msgids with reactions but no message seen, oldest first; guarded by messageReferences
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *jumpToLineCallbacks; // line number → handlers waiting for it
 @property (nonatomic, strong, readwrite, nullable) TVCLogView *backingView; // nil once torn down
 @property (weak, readonly) IRCTreeItem *associatedItem;
@@ -231,6 +232,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.messageReferences = [NSMutableDictionary dictionary];
 	self.messageReferenceOrder = [NSMutableArray array];
 	self.messageReactions = [NSMutableDictionary dictionary];
+	self.unreferencedReactionOrder = [NSMutableArray array];
 }
 
 - (void)prepareForTermination:(BOOL)isTerminatingApplication
@@ -2572,6 +2574,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 #pragma mark Message References
 
 #define _messageReferenceLimit		2000
+#define _unreferencedReactionLimit	200 // msgids with reactions whose message wasn't seen
+#define _reactionsPerMessageLimit	50
 #define _messageReferenceExcerptLength		120
 
 /* The messages shown in this view by ID, for showing what a reply answers */
@@ -2603,6 +2607,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 		if (existing == nil) {
 			[self.messageReferenceOrder addObject:msgid];
+
+			[self.unreferencedReactionOrder removeObject:msgid];
 		} else if ([existing[@"receivedAt"] compare:logLine.receivedAt] == NSOrderedDescending) {
 			/* Older history loaded later (scrolling up) doesn't take the place
 			 of the newer message with the same ID */
@@ -2790,6 +2796,18 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			reactions = [NSMutableArray array];
 
 			self.messageReactions[msgid] = reactions;
+
+			/* A reaction to a message not seen (yet, or ever): kept for a
+			 while in case the message comes, but not without limit */
+			if (self.messageReferences[msgid] == nil) {
+				[self.unreferencedReactionOrder addObject:msgid];
+
+				while (self.unreferencedReactionOrder.count > _unreferencedReactionLimit) {
+					[self.messageReactions removeObjectForKey:self.unreferencedReactionOrder.firstObject];
+
+					[self.unreferencedReactionOrder removeObjectAtIndex:0];
+				}
+			}
 		}
 
 		NSMutableDictionary *entry = nil;
@@ -2800,6 +2818,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 				break;
 			}
+		}
+
+		/* More different reactions than anyone reads */
+		if (added && entry == nil && reactions.count >= _reactionsPerMessageLimit) {
+			return;
 		}
 
 		NSMutableArray<NSString *> *nicknames = entry[@"nicknames"];

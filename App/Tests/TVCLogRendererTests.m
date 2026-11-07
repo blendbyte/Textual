@@ -94,6 +94,20 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* A long run of special characters made a candidate for every pair of them:
+ one message of dashes took seconds to render */
+- (void)testNicknameCandidatesOfLongSpecialRun
+{
+	NSString *message = [@"" stringByPaddingToLength:20000 withString:@"-" startingAtIndex:0];
+
+	NSDate *start = [NSDate date];
+
+	NSArray *candidates = [TVCLogRenderer nicknameCandidateRangesInString:message];
+
+	XCTAssertLessThanOrEqual(candidates.count, 4096);
+	XCTAssertLessThan(-start.timeIntervalSinceNow, 1.0);
+}
+
 /* Message text is escaped before it goes into the chat view's HTML; the
  escaping skips text that needs none */
 - (void)testHTMLEscaping

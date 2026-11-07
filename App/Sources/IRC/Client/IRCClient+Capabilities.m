@@ -689,6 +689,16 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		[buffer appendString:data];
 	}
 
+	/* No mechanism Textual uses gets a challenge anywhere near this long:
+	 a server that keeps sending full parts is not let fill memory */
+	if (buffer.length > 8192) {
+		self.saslIncomingData = nil;
+
+		[self abortSASLAuthentication];
+
+		return;
+	}
+
 	if (data.length == 400) {
 		self.saslIncomingData = buffer;
 

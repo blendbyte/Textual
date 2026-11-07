@@ -349,6 +349,70 @@ async def scenario_review_limits(client):
 	await client.collect(3)
 	result(await client.is_alive("nested"), "client alive after BATCH nested 20 deep")
 
+	# A run of 60,000 special characters: every pair was a nickname candidate
+	started = time.monotonic()
+	await client.send(":alice!a@alice.test PRIVMSG #limits :" + ("-" * 60000))
+	alive = await client.is_alive("dashes")
+	result(alive and (time.monotonic() - started) < 5, f"client answered within 5 s after 60,000 dashes ({time.monotonic() - started:.1f} s)")
+
+	# A batch of 25,000 lines: past 20,000 they are shown as they arrive
+	lines = [f":{SERVER} BATCH +long example.com/long"]
+	lines += [f"@batch=long :alice!a@alice.test PRIVMSG #limits :batch line {index}" for index in range(25000)]
+	lines += [f":{SERVER} BATCH -long"]
+	log(">>", f"<batch of {len(lines) - 2} lines>")
+	client.writer.write(("\r\n".join(lines) + "\r\n").encode())
+	await client.writer.drain()
+
+	await client.collect(5)
+	result(await client.is_alive("long"), "client alive after a batch of 25,000 lines")
+
+	while await client.collect(3600):
+		pass
+
+
+async def scenario_review_cap_flood(client):
+	"""Full-review fixes: CAP LS that keeps going. Answers CAP LS with 2,000
+	continuation lines of 50 capabilities each (100,000 in all), then the
+	last line. The client must finish registering (it takes the list at
+	1,000 and skips the rest) and stay connected. Stays connected."""
+	seen = set()
+	requested = []
+
+	while True:
+		line = await client.read_line()
+		if line is None:
+			return
+
+		command, _, rest = line.partition(" ")
+		command = command.upper()
+		seen.add(command)
+
+		if command == "CAP" and rest.upper().startswith("LS"):
+			lines = []
+			for block in range(2000):
+				capabilities = " ".join(f"example.com/cap{block}-{index}" for index in range(50))
+				lines.append(f":{SERVER} CAP * LS * :{capabilities}")
+			lines.append(f":{SERVER} CAP * LS :message-tags server-time")
+			log(">>", f"<CAP LS of {len(lines)} lines>")
+			client.writer.write(("\r\n".join(lines) + "\r\n").encode())
+			await client.writer.drain()
+		elif command == "CAP" and rest.upper().startswith("REQ"):
+			capabilities = rest.split(" ", 1)[1].lstrip(":")
+			requested.append(capabilities)
+			await client.send(f":{SERVER} CAP * ACK :{capabilities}")
+		elif command == "CAP" and rest.upper().startswith("END"):
+			if "NICK" in seen and "USER" in seen:
+				break
+		elif command == "NICK":
+			client.nickname = rest.lstrip(":")
+
+	await client.welcome()
+
+	result(True, f"client finished registering after a CAP LS of 100,000 capabilities ({len(requested)} REQ lines)")
+
+	await client.collect(2)
+	result(await client.is_alive("cap"), "client alive after registering")
+
 	while await client.collect(3600):
 		pass
 
@@ -2968,6 +3032,7 @@ async def scenario_silent(client):
 
 
 SCENARIOS = {
+	"review-cap-flood": scenario_review_cap_flood,
 	"review-limits": scenario_review_limits,
 	"styles": scenario_styles,
 	"collapse": scenario_collapse,
@@ -3044,7 +3109,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

@@ -697,6 +697,11 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}];
 
+	/* A bouncer with more networks than this is not one a person uses */
+	if (index == NSNotFound && self.networksMutable.count >= 1000) {
+		return IRCBouncerNetworkChangeNone;
+	}
+
 	IRCBouncerNetwork *network = [[IRCBouncerNetwork alloc] initWithIdentifier:networkIdentifier attributes:merged];
 
 	if (index == NSNotFound) {

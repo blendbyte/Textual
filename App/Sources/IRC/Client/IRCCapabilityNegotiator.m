@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL listReceived;
 @property (nonatomic, assign) NSUInteger openRequestCount;
 @property (nonatomic, strong) NSMutableArray<NSString *> *offeredCapabilities;
+@property (nonatomic, assign) BOOL skippingRestOfList;
 @end
 
 @implementation IRCCapabilityNegotiator
@@ -69,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.listReceived = NO;
 	self.openRequestCount = 0;
 	self.offeredCapabilities = [NSMutableArray array];
+	self.skippingRestOfList = NO;
 }
 
 - (void)registrationCompleted
@@ -110,10 +112,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if ([subcommand isEqualToStringIgnoringCase:@"LS"])
 	{
+		/* Real servers offer a few dozen. A list that keeps going is taken
+		 as it stands at 1,000 and the rest of it is skipped. */
+		if (self.skippingRestOfList) {
+			self.skippingRestOfList = moreLinesFollow;
+
+			return;
+		}
+
 		[self.offeredCapabilities addObjectsFromArray:capabilities];
 
 		if (moreLinesFollow) {
-			return;
+			if (self.offeredCapabilities.count < 1000) {
+				return;
+			}
+
+			self.skippingRestOfList = YES;
 		}
 
 		NSArray *offeredCapabilities = [self.offeredCapabilities copy];

@@ -150,7 +150,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCClientUserNicknameChangedNotification
 @property (readonly, weak) IRCChannel *lastSelectedChannel; // If this is the selected client, then the value of this property is the current selection. If the current client is not selected, then this value is either its previous selection or nil.
 @property (readonly, weak) TVCLogLine *lastLine; // Last line in the server console. There is no guarantee it's visible to the user when accessed.
 @property (readonly, copy) NSArray<IRCChannel *> *channelList;
-@property (readonly, copy) NSArray<IRCHighlightLogEntry *> *cachedHighlights;
+@property (readonly, copy) NSArray<IRCHighlightLogEntry *> *cachedHighlights; // The newest 100 highlights of this session, newest first
 @property (readonly, copy, nullable) NSString *userHostmask; // The hostmask of the local user
 @property (readonly, copy) NSString *userNickname; // The nickname of the local user
 @property (readonly, copy, nullable) NSString *serverAddress; // The address of the server connected to or nil

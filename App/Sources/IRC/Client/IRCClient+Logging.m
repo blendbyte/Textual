@@ -305,6 +305,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[scanner scanInteger:&paddingWidth];
 
+		/* From the style: padding wider than any nickname is not padding */
+		paddingWidth = MAX(MIN(paddingWidth, 64), -64);
+
 		/* Read the output type marker */
 		NSString *outputValue = nil;
 

@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
  all BATCH command events that the client may receive. */
 @interface IRCMessageBatchMessageContainer : NSObject
 @property (readonly, copy) NSDictionary *queuedEntries;
+@property (readonly) NSUInteger queuedEntriesCount; // open batches
 
 - (void)queueEntry:(id)entry;
 - (void)dequeueEntry:(id)entry;
@@ -60,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *batchToken;
 @property (nonatomic, copy, nullable) NSString *batchType;
 @property (readonly, copy) NSArray *queuedEntries;
+@property (readonly) NSUInteger queuedEntriesCount;
 @property (nonatomic, weak) IRCMessageBatchMessage *parentBatchMessage;
 @property (nonatomic, copy, nullable) NSString *label; // labeled-response: the label of the command it answers
 @property (nonatomic, strong, nullable) IRCMessage *openingMessage; // the BATCH line (draft/multiline: its tags)

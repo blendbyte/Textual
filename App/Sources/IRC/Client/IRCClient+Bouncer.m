@@ -224,6 +224,11 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 		return;
 	}
 
+	/* Only a bouncer that offered its network list sends one */
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityBouncerNetworks] == NO) {
+		return;
+	}
+
 	NSString *networkIdentifier = [m paramAt:1];
 	NSString *attributes = [m paramAt:2];
 
@@ -271,7 +276,7 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 
 - (void)bouncerNetworksChanged
 {
-	LogToConsoleInfo("Bouncer networks: %{public}@", [self.bouncerNetworksReceived.networks componentsJoinedByString:@", "]);
+	LogToConsoleInfo("Bouncer networks: %lu", (unsigned long)self.bouncerNetworksReceived.networks.count);
 
 	[RZNotificationCenter() postNotificationName:IRCClientBouncerNetworksDidChangeNotification object:self];
 

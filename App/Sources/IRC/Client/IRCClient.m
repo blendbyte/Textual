@@ -1048,12 +1048,19 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	newEntry.lineLogged = logLine;
 
-	/* We insert at head so that latest is always on top. */
-	NSMutableArray *cachedHighlights = [self.cachedHighlights mutableCopy];
+	/* Newest first. Kept for plugins only (the app reads the archive's
+	 Mentions), so only the newest ones: each holds a whole line. */
+	NSArray *cachedHighlights = self.cachedHighlights;
 
-	[cachedHighlights insertObject:[newEntry copy] atIndex:0];
+	NSUInteger keptCount = MIN(cachedHighlights.count, (_cachedHighlightsLimit - 1));
 
-	self.cachedHighlights = cachedHighlights;
+	NSMutableArray *newHighlights = [NSMutableArray arrayWithCapacity:(keptCount + 1)];
+
+	[newHighlights addObject:[newEntry copy]];
+
+	[newHighlights addObjectsFromArray:[cachedHighlights subarrayWithRange:NSMakeRange(0, keptCount)]];
+
+	self.cachedHighlights = newHighlights;
 }
 
 #pragma mark -

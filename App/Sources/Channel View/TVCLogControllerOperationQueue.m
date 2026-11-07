@@ -240,7 +240,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSArray *operations = [self pendingOperationsForViewController:viewController];
 
-	[operations makeObjectsPerformSelector:@selector(cancel)];
+	/* isReady no longer waits for the view, which the queue has to hear */
+	for (TVCLogControllerPrintingOperation *operation in operations) {
+		[operation cancel];
+
+		[operation willChangeValueForKey:@"isReady"];
+		[operation didChangeValueForKey:@"isReady"];
+	}
 }
 
 #pragma mark -
@@ -297,6 +303,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isReady
 {
+	/* A cancelled operation starts at once and does nothing, so it leaves the
+	 queue: one waiting for a view that will never load again kept its view
+	 controller and its lines alive */
+	if (self.isCancelled) {
+		return super.isReady;
+	}
+
 	if (self.dependencies.count < 1 || self.isStandalone) {
 		return (super.isReady && self.viewController.viewIsLoaded);
 	} else {

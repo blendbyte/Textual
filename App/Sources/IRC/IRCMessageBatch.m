@@ -70,6 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+- (NSUInteger)queuedEntriesCount
+{
+	@synchronized(self.internalBatchEntries) {
+		return self.internalBatchEntries.count;
+	}
+}
+
 - (void)dequeueEntries
 {
 	@synchronized(self.internalBatchEntries) {
@@ -147,6 +154,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	@synchronized(self.internalBatchEntries) {
 		return [self.internalBatchEntries copy];
+	}
+}
+
+- (NSUInteger)queuedEntriesCount
+{
+	@synchronized(self.internalBatchEntries) {
+		return self.internalBatchEntries.count;
 	}
 }
 

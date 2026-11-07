@@ -421,7 +421,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 		self.typingIndicatorSweepTimer =
 		[NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer *timer) {
-			[weakSelf refreshTypingIndicator];
+			TVCMainWindow *strongSelf = weakSelf;
+
+			/* A pop-out closed while someone was typing */
+			if (strongSelf == nil) {
+				[timer invalidate];
+
+				return;
+			}
+
+			[strongSelf refreshTypingIndicator];
 		}];
 	}
 }

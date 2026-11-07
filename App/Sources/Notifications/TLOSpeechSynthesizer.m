@@ -92,8 +92,14 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* A busy channel or a flood can queue faster than anything is said:
+	 only the newest items wait, the oldest are dropped */
 	@synchronized(self.itemsToBeSpoken) {
 		[self.itemsToBeSpoken addObject:object];
+
+		while (self.itemsToBeSpoken.count > 20) {
+			[self.itemsToBeSpoken removeObjectAtIndex:0];
+		}
 	}
 
 	if (self.isSpeaking == NO) {

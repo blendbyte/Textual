@@ -223,6 +223,15 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 	{
 		super.resetState()
 
+		/* Network.framework keeps a connection, and the handler holding this
+		 socket and its configuration, until it is cancelled, failed ones too.
+		 The handler goes first, so the cancel reports nothing more. */
+		if let connection {
+			connection.stateUpdateHandler = nil
+
+			connection.cancel()
+		}
+
 		connection = nil
 
 		readInBuffer = nil
