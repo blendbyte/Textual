@@ -143,7 +143,8 @@ _MessageActions.linesAdded = function(lineNumbers) /* PRIVATE */
 		lineNumbers = [lineNumbers];
 	}
 
-	var addedMessages = false;
+	/* The IDs of messages added: only quotes waiting for one of them change */
+	var addedMessageIdentifiers = null;
 
 	for (var i = 0; i < lineNumbers.length; i++) {
 		var line = document.getElementByLineNumber(lineNumbers[i]);
@@ -153,15 +154,19 @@ _MessageActions.linesAdded = function(lineNumbers) /* PRIVATE */
 		}
 
 		if (line.dataset.msgid) {
-			addedMessages = true;
+			if (addedMessageIdentifiers === null) {
+				addedMessageIdentifiers = {};
+			}
+
+			addedMessageIdentifiers[line.dataset.msgid] = true;
 		}
 
 		_MessageActions.decorateLine(line);
 	}
 
 	/* An older message loaded later may be what an earlier quote waited for */
-	if (addedMessages) {
-		_MessageActions.resolvePendingQuotes();
+	if (addedMessageIdentifiers !== null) {
+		_MessageActions.resolvePendingQuotes(addedMessageIdentifiers);
 	}
 };
 
@@ -202,12 +207,19 @@ _MessageActions._decorateReply = function(line) /* PRIVATE */
 	line.insertBefore(quote, line.firstChild);
 };
 
-_MessageActions.resolvePendingQuotes = function() /* PRIVATE */
+/* With messageIdentifiers (msgid → true): only the quotes waiting for one of those */
+_MessageActions.resolvePendingQuotes = function(messageIdentifiers) /* PRIVATE */
 {
 	var quotes = document.querySelectorAll("div.line > .replyQuote[data-pending]");
 
 	for (var i = 0; i < quotes.length; i++) {
-		_MessageActions._fillQuote(quotes[i], quotes[i].parentNode);
+		var line = quotes[i].parentNode;
+
+		if (messageIdentifiers && messageIdentifiers[line.dataset.replyTo] !== true) {
+			continue;
+		}
+
+		_MessageActions._fillQuote(quotes[i], line);
 	}
 };
 

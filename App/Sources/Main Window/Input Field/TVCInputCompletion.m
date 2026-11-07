@@ -451,8 +451,20 @@ NS_ASSUME_NONNULL_BEGIN
 			NSMutableArray<NSString *> *nicknames = [NSMutableArray array];
 
 			if (channel.isChannel) {
-				/* As Tab completion orders them: who spoke last first */
-				NSArray *members = [channel.memberList sortedArrayUsingSelector:@selector(compareUsingWeights:)];
+				/* As Tab completion orders them: who spoke last first. Only those
+				 that match are sorted: this runs with every key typed, and a big
+				 channel has thousands of members. */
+				NSArray<IRCChannelUser *> *members = channel.memberList;
+
+				NSString *queryText = query.text;
+
+				if (queryText.length > 0) {
+					members = [members filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(IRCChannelUser *member, NSDictionary *bindings) {
+						return ([member.user.nickname rangeOfString:queryText options:(NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch)].location != NSNotFound);
+					}]];
+				}
+
+				members = [members sortedArrayUsingSelector:@selector(compareUsingWeights:)];
 
 				NSString *ownNickname = client.userNickname;
 
@@ -616,6 +628,18 @@ NS_ASSUME_NONNULL_BEGIN
 		query = nil;
 	} else if (query == nil || query.range.location != self.dismissedLocation) {
 		self.dismissedLocation = NSNotFound;
+	}
+
+	/* The list shown is for this already (the selection moved with the text
+	 just typed, which updated it a moment ago) */
+	TVCInputCompletionQuery *shownQuery = self.query;
+
+	if (query && shownQuery && self.visible &&
+		query.kind == shownQuery.kind &&
+		NSEqualRanges(query.range, shownQuery.range) &&
+		[query.text isEqualToString:shownQuery.text])
+	{
+		return;
 	}
 
 	NSArray *items = ((query) ? [self _itemsForQuery:query] : @[]);

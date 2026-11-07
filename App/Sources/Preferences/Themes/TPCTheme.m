@@ -952,7 +952,13 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 		defaultRepository = self.defaultTemplateRepository;
 	}
 
-	GRMustacheTemplate *cachedTemplate = [cache objectForKey:templateName];
+	id cachedTemplate = [cache objectForKey:templateName];
+
+	/* Known to be missing: most styles have no "Line Types" templates, which
+	 are looked for with every rendered line */
+	if (cachedTemplate == [NSNull null]) {
+		return nil;
+	}
 
 	if (cachedTemplate) {
 		return cachedTemplate;
@@ -992,10 +998,9 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 		template = _loadTemplate(defaultRepository);
 	}
 
-	/* Not into a cache the variety has replaced meanwhile */
-	if (template != nil) {
-		[cache setObject:template forKey:templateName];
-	}
+	/* Not into a cache the variety has replaced meanwhile. A miss is kept too
+	 (until the style or its variety changes, which replaces the cache). */
+	[cache setObject:((template) ?: [NSNull null]) forKey:templateName];
 
 	return template;
 }

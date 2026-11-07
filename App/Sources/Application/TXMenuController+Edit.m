@@ -281,6 +281,9 @@ NS_ASSUME_NONNULL_BEGIN
 	searchPasteboard.stringContent = selection;
 
 	NSPerformService(@"Search With %WebSearchProvider@", searchPasteboard);
+
+	/* A pasteboard of its own each time: the pasteboard server keeps it until released */
+	[searchPasteboard releaseGlobally];
 }
 
 - (void)lookUpInDictionary:(nullable id)sender

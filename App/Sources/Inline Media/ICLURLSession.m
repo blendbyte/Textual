@@ -297,13 +297,42 @@ static NSMapTable<NSURLSession *, NSURLSession *> *_mediaSessions = nil;
 	return session;
 }
 
+/* The identifier holds the proxy password, read from the Keychain: worked out
+ once per configuration (a changed server gets a new one), not for every link */
++ (nullable NSString *)_proxyIdentifierForConfig:(IRCClientConfig *)config
+{
+	NSParameterAssert(config != nil);
+
+	static NSMapTable<IRCClientConfig *, id> *identifiers = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		/* By object, not by equal contents: the password isn't in them */
+		identifiers = [NSMapTable mapTableWithKeyOptions:(NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality)
+											valueOptions:NSPointerFunctionsStrongMemory];
+	});
+
+	@synchronized (identifiers) {
+		id identifier = [identifiers objectForKey:config];
+
+		if (identifier == nil) {
+			identifier = ([IRCConnectionProxy identifierForClientConfig:config] ?: [NSNull null]);
+
+			[identifiers setObject:identifier forKey:config];
+		}
+
+		return ((identifier == [NSNull null]) ? nil : identifier);
+	}
+}
+
 + (NSURLSession *)sessionForClient:(nullable IRCClient *)client
 {
 	NSURLSession *sharedSession = self.sharedSession;
 
 	IRCClientConfig *config = client.config;
 
-	NSString *proxyIdentifier = ((config) ? [IRCConnectionProxy identifierForClientConfig:config] : nil);
+	NSString *proxyIdentifier = ((config) ? [self _proxyIdentifierForConfig:config] : nil);
 
 	if (proxyIdentifier == nil) {
 		return sharedSession;

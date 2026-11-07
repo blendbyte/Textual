@@ -745,15 +745,9 @@ NS_ASSUME_NONNULL_BEGIN
 				return ([keyFirstResponder isEditable] && [NSImage canInitWithPasteboard:RZPasteboard()]);
 			}
 
-			NSString *currentPasteboard = RZPasteboard().stringContent;
-
-			/* Files pasted in the main window get the dropped files sheet */
-			BOOL filesOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
-
-			/* And a picture (a screenshot): uploaded where the network offers it */
-			BOOL pictureOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [NSImage canInitWithPasteboard:RZPasteboard()]);
-
-			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
+			/* Something to paste, by the kinds offered, without reading it:
+			 menus are checked often, whenever a shortcut is looked up */
+			if ([self pasteboardHasPasteableContent] == NO) {
 				return NO;
 			}
 
@@ -775,6 +769,23 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return YES;
+}
+
+/* Text anywhere; files (the dropped files sheet) and a picture (uploaded where
+ the network offers it) in the main window */
+- (BOOL)pasteboardHasPasteableContent
+{
+	NSPasteboard *pasteboard = RZPasteboard();
+
+	if ([pasteboard availableTypeFromArray:@[NSPasteboardTypeString]] != nil) {
+		return YES;
+	}
+
+	if (TVCMainWindow.focusedWindow == nil) {
+		return NO;
+	}
+
+	return ([pasteboard availableTypeFromArray:@[NSPasteboardTypeFileURL]] != nil || [NSImage canInitWithPasteboard:pasteboard]);
 }
 
 /* View */
@@ -1225,15 +1236,9 @@ NS_ASSUME_NONNULL_BEGIN
 	switch (tag) {
 		case MTWKGeneralPaste: // "Paste" (WebView)
 		{
-			NSString *currentPasteboard = RZPasteboard().stringContent;
-
-			/* Files pasted in the main window get the dropped files sheet */
-			BOOL filesOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [TDCFileTransferDialog filePathsOnPasteboard:RZPasteboard()].count > 0);
-
-			/* And a picture (a screenshot): uploaded where the network offers it */
-			BOOL pictureOnPasteboard = ((TVCMainWindow.focusedWindow != nil) && [NSImage canInitWithPasteboard:RZPasteboard()]);
-
-			if (currentPasteboard.length == 0 && filesOnPasteboard == NO && pictureOnPasteboard == NO) {
+			/* Something to paste, by the kinds offered, without reading it:
+			 menus are checked often, whenever a shortcut is looked up */
+			if ([self pasteboardHasPasteableContent] == NO) {
 				return NO;
 			}
 

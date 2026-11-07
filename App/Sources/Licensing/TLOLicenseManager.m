@@ -378,10 +378,22 @@ NSDictionary<NSString *, id> * _Nullable TLOLicenseManagerActivationPayload(void
 		return nil;
 	}
 
+	/* A file found unusable isn't read and verified again until it changes:
+	 menus ask for this every time they are shown */
+	static NSDate *rejectedFileModificationDate = nil;
+
+	NSDate *fileModificationDate = [RZFileManager() attributesOfItemAtPath:activationFilePath.path error:NULL].fileModificationDate;
+
+	if (fileModificationDate && [rejectedFileModificationDate isEqualToDate:fileModificationDate]) {
+		return nil;
+	}
+
 	/* A copied file (another Mac, Migration Assistant) is for another Mac's hash */
 	NSDictionary *payload = TLOLicenseManagerLoadSignedAnswerAtURL(activationFilePath, TLOLicenseManagerPayloadTypeActivation);
 
 	if (payload == nil) {
+		rejectedFileModificationDate = fileModificationDate;
+
 		return nil;
 	}
 
@@ -391,8 +403,12 @@ NSDictionary<NSString *, id> * _Nullable TLOLicenseManagerActivationPayload(void
 	{
 		LogToConsoleError("The activation is incomplete or for another license generation");
 
+		rejectedFileModificationDate = fileModificationDate;
+
 		return nil;
 	}
+
+	rejectedFileModificationDate = nil;
 
 	TLOLicenseManagerCachedActivation = payload;
 
@@ -697,6 +713,16 @@ NSDate * _Nullable TLOLicenseManagerLocalTrialStartDate(void)
 		}
 	}
 
+	/* Read once while the file stays the same: menus ask for this every time */
+	static NSDate *cachedStartDate = nil;
+	static NSDate *cachedFileModificationDate = nil;
+
+	NSDate *fileModificationDate = [RZFileManager() attributesOfItemAtPath:localTrialFilePath.path error:NULL].fileModificationDate;
+
+	if (cachedStartDate && fileModificationDate && [cachedFileModificationDate isEqualToDate:fileModificationDate]) {
+		return cachedStartDate;
+	}
+
 	NSData *trialInformationData = [NSData dataWithContentsOfURL:localTrialFilePath];
 
 	if (trialInformationData == nil) {
@@ -714,6 +740,9 @@ NSDate * _Nullable TLOLicenseManagerLocalTrialStartDate(void)
 	if ([trialPeriodStartDate isKindOfClass:[NSDate class]] == NO) {
 		return nil;
 	}
+
+	cachedStartDate = trialPeriodStartDate;
+	cachedFileModificationDate = fileModificationDate;
 
 	return trialPeriodStartDate;
 }

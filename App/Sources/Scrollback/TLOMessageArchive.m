@@ -386,6 +386,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		"CREATE INDEX IF NOT EXISTS messages_time ON messages (time);"
 		"CREATE INDEX IF NOT EXISTS messages_highlights ON messages (time) WHERE is_highlight = 1;"
 		"CREATE INDEX IF NOT EXISTS messages_msgid ON messages (msgid) WHERE msgid IS NOT NULL;"
+		/* Where a view's scrollback starts, asked with each page scrolled back */
+		"CREATE INDEX IF NOT EXISTS messages_view_line ON messages (view_id, line_id);"
 		"CREATE VIRTUAL TABLE IF NOT EXISTS messages_text USING fts5 (body, content = 'messages', content_rowid = 'id', tokenize = 'trigram');"
 		"CREATE TRIGGER IF NOT EXISTS messages_inserted AFTER INSERT ON messages BEGIN "
 			"INSERT INTO messages_text (rowid, body) VALUES (new.id, new.body); "

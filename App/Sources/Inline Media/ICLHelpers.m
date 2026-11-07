@@ -47,11 +47,17 @@ NS_ASSUME_NONNULL_BEGIN
 /* Remembered answers: how long and how many */
 #define _JSONCacheLifetime			(30 * 60)
 #define _JSONCacheLimit				500
+#define _JSONCacheCostLimit			(4 * 1024 * 1024)
+
+/* Page metadata keeps what the cards read, at a length a card can show */
+#define _maximumMetadataValueLength	2048
 
 /* Remembered answers (JSON and page metadata), main thread only */
 @interface ICLHelpers (Cache)
 + (nullable id)_cachedValueForKey:(NSString *)key;
-+ (void)_cacheValue:(id)value forKey:(NSString *)key;
++ (void)_cacheValue:(id)value forKey:(NSString *)key cost:(NSUInteger)cost;
++ (void)_removeCachedValueForKey:(NSString *)key;
++ (NSSet<NSString *> *)_metadataNames;
 @end
 
 NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
@@ -324,6 +330,10 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 			if (titleEnd.location != NSNotFound) {
 				NSString *title = [self plainTextFromHTMLFragment:[html substringWithRange:NSMakeRange(NSMaxRange(titleTagEnd), (titleEnd.location - NSMaxRange(titleTagEnd)))]];
 
+				if (title.length > _maximumMetadataValueLength) {
+					title = [title substringToIndex:_maximumMetadataValueLength];
+				}
+
 				if (title.length > 0) {
 					metadata[@"title"] = title;
 				}
@@ -355,7 +365,7 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 
 		NSString *name = ([self _attribute:@"property" inTag:tag] ?: [self _attribute:@"name" inTag:tag]).lowercaseString;
 
-		if ([name hasPrefix:@"og:"] == NO && [name hasPrefix:@"twitter:"] == NO && [name isEqualToString:@"description"] == NO) {
+		if (name == nil || [[self _metadataNames] containsObject:name] == NO) {
 			continue;
 		}
 
@@ -371,6 +381,10 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 		}
 
 		content = [self stringByDecodingHTMLEntities:content].trim;
+
+		if (content.length > _maximumMetadataValueLength) {
+			content = [content substringToIndex:_maximumMetadataValueLength];
+		}
 
 		if (content.length > 0) {
 			metadata[name] = content;
@@ -502,7 +516,13 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 								return;
 							}
 
-							[self _cacheValue:@[metadata, pageURL] forKey:cacheKey];
+							NSUInteger cost = 0;
+
+							for (NSString *value in metadata.allValues) {
+								cost += (value.length * sizeof(unichar));
+							}
+
+							[self _cacheValue:@[metadata, pageURL] forKey:cacheKey cost:cost];
 
 							completionBlock(metadata, pageURL);
 						}];
@@ -585,8 +605,11 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 	[self requestJSONObject:objectKey ofType:objectType inHierarchy:hierarchy fromURL:url session:session completionBlock:completionBlock];
 }
 
-/* Main thread only: key → @[date, value] */
+/* Main thread only: key → @[date, value, cost]. The cost is the size of the
+ response, so a few large answers can't fill memory under the count limit. */
 static NSMutableDictionary<NSString *, NSArray *> *_JSONCache = nil;
+
+static NSUInteger _JSONCacheCost = 0;
 
 + (nullable id)_cachedValueForKey:(NSString *)key
 {
@@ -599,7 +622,7 @@ static NSMutableDictionary<NSString *, NSArray *> *_JSONCache = nil;
 	NSDate *date = entry[0];
 
 	if (date.timeIntervalSinceNow < -(_JSONCacheLifetime)) {
-		[_JSONCache removeObjectForKey:key];
+		[self _removeCachedValueForKey:key];
 
 		return nil;
 	}
@@ -607,24 +630,72 @@ static NSMutableDictionary<NSString *, NSArray *> *_JSONCache = nil;
 	return entry[1];
 }
 
-+ (void)_cacheValue:(id)value forKey:(NSString *)key
++ (void)_removeCachedValueForKey:(NSString *)key
 {
+	NSArray *entry = _JSONCache[key];
+
+	if (entry == nil) {
+		return;
+	}
+
+	_JSONCacheCost -= [entry[2] unsignedIntegerValue];
+
+	[_JSONCache removeObjectForKey:key];
+}
+
++ (void)_cacheValue:(id)value forKey:(NSString *)key cost:(NSUInteger)cost
+{
+	/* Larger than a quarter of the cache: used once, not kept */
+	if (cost > (_JSONCacheCostLimit / 4)) {
+		return;
+	}
+
 	if (_JSONCache == nil) {
 		_JSONCache = [NSMutableDictionary dictionary];
 	}
 
-	/* Full: the expired go, then the oldest */
-	if (_JSONCache.count >= _JSONCacheLimit) {
+	[self _removeCachedValueForKey:key];
+
+	/* Full: the oldest go, a quarter of them or as many as make room */
+	if (_JSONCache.count >= _JSONCacheLimit || (_JSONCacheCost + cost) > _JSONCacheCostLimit) {
 		NSArray<NSString *> *keys = [_JSONCache keysSortedByValueUsingComparator:^NSComparisonResult(NSArray *entry1, NSArray *entry2) {
 			return [(NSDate *)entry1[0] compare:(NSDate *)entry2[0]];
 		}];
 
-		for (NSString *key in [keys subarrayWithRange:NSMakeRange(0, (keys.count / 4) + 1)]) {
-			[_JSONCache removeObjectForKey:key];
+		NSUInteger removed = 0;
+
+		for (NSString *oldKey in keys) {
+			if (removed > (keys.count / 4) && (_JSONCacheCost + cost) <= _JSONCacheCostLimit) {
+				break;
+			}
+
+			[self _removeCachedValueForKey:oldKey];
+
+			removed += 1;
 		}
 	}
 
-	_JSONCache[key] = @[[NSDate date], value];
+	_JSONCache[key] = @[[NSDate date], value, @(cost)];
+
+	_JSONCacheCost += cost;
+}
+
++ (NSSet<NSString *> *)_metadataNames
+{
+	static NSSet<NSString *> *names = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		names = [NSSet setWithArray:@[
+			@"description",
+			@"og:title", @"og:description", @"og:site_name",
+			@"og:image", @"og:image:url", @"og:image:secure_url",
+			@"twitter:title", @"twitter:description", @"twitter:image", @"twitter:image:src"
+		]];
+	});
+
+	return names;
 }
 
 + (void)requestJSONFromURL:(NSURL *)url session:(NSURLSession *)session completionBlock:(void (^)(id _Nullable json))completionBlock
@@ -663,7 +734,7 @@ static NSMutableDictionary<NSString *, NSArray *> *_JSONCache = nil;
 			return;
 		}
 
-		[self _cacheValue:decodedJson forKey:url.absoluteString];
+		[self _cacheValue:decodedJson forKey:url.absoluteString cost:data.length];
 
 		completionBlock(decodedJson);
 	}];

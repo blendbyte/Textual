@@ -175,14 +175,45 @@ NSString * _Nullable TXFormatDate(id dateObject, NSDateFormatterStyle dateStyle,
 {
 	NSCParameterAssert(dateObject != nil);
 
-	NSDateFormatter *dateFormatter = [NSDateFormatter new];
+	/* One formatter per kind, made once: every rendered line asks for a date.
+	 A change of locale or time zone starts them over. */
+	static NSMutableDictionary<NSString *, NSDateFormatter *> *dateFormatters = nil;
 
-	dateFormatter.doesRelativeDateFormatting = relativeOutput;
+	static dispatch_once_t onceToken;
 
-	dateFormatter.lenient = YES;
+	dispatch_once(&onceToken, ^{
+		dateFormatters = [NSMutableDictionary dictionary];
 
-	dateFormatter.dateStyle = dateStyle;
-	dateFormatter.timeStyle = timeStyle;
+		void (^forget)(NSNotification *) = ^(NSNotification *notification) {
+			@synchronized (dateFormatters) {
+				[dateFormatters removeAllObjects];
+			}
+		};
+
+		[RZNotificationCenter() addObserverForName:NSCurrentLocaleDidChangeNotification object:nil queue:nil usingBlock:forget];
+		[RZNotificationCenter() addObserverForName:NSSystemTimeZoneDidChangeNotification object:nil queue:nil usingBlock:forget];
+	});
+
+	NSString *formatterKey = [NSString stringWithFormat:@"%lu %lu %d", (unsigned long)dateStyle, (unsigned long)timeStyle, relativeOutput];
+
+	NSDateFormatter *dateFormatter = nil;
+
+	@synchronized (dateFormatters) {
+		dateFormatter = dateFormatters[formatterKey];
+
+		if (dateFormatter == nil) {
+			dateFormatter = [NSDateFormatter new];
+
+			dateFormatter.doesRelativeDateFormatting = relativeOutput;
+
+			dateFormatter.lenient = YES;
+
+			dateFormatter.dateStyle = dateStyle;
+			dateFormatter.timeStyle = timeStyle;
+
+			dateFormatters[formatterKey] = dateFormatter;
+		}
+	}
 
 	NSString *resultString = nil;
 

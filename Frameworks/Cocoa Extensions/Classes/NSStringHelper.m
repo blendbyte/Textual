@@ -1051,6 +1051,20 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 		return nil;
 	}
 
+	/* WebKit is needed for a name in other scripts (punycode) and characters a
+	 URL can't hold. An ASCII address NSURL takes needs neither: it skips the
+	 round trips to the pasteboard server, made for each link of each line.
+	 WebKit also lowercases the host, so only a lowercase one is taken as is. */
+	if ([self canBeConvertedToEncoding:NSASCIIStringEncoding]) {
+		NSURL *u = [NSURL URLWithString:self];
+
+		NSString *host = u.host;
+
+		if (host.length > 0 && [host isEqualToString:host.lowercaseString]) {
+			return u;
+		}
+	}
+
 	NSPasteboard *pasteboard = [NSPasteboard pasteboardWithUniqueName];
 
 	pasteboard.stringContent = self;

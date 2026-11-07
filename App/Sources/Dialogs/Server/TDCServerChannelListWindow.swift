@@ -190,6 +190,8 @@ final class ChannelListModel: ObservableObject
 	@Published var sortOrder = [KeyPathComparator(\ChannelListEntry.people, order: .reverse)]
 	{
 		didSet {
+			entries.sort(by: comesBefore)
+
 			update()
 		}
 	}
@@ -235,17 +237,45 @@ final class ChannelListModel: ObservableObject
 
 	func add(_ newEntries: [TDCServerChannelListDialogEntry])
 	{
-		var entries = self.entries
+		/* The list stays sorted: the new batch is sorted and merged in, so
+		 neither a batch nor typing in the search field sorts everything */
+		var batch = [ChannelListEntry]()
 
-		entries.reserveCapacity(entries.count + newEntries.count)
+		batch.reserveCapacity(newEntries.count)
 
 		for entry in newEntries {
-			entries.append(ChannelListEntry(id: nextIdentifier, entry: entry))
+			batch.append(ChannelListEntry(id: nextIdentifier, entry: entry))
 
 			nextIdentifier += 1
 		}
 
-		self.entries = entries
+		batch.sort(by: comesBefore)
+
+		let current = self.entries
+
+		var merged = [ChannelListEntry]()
+
+		merged.reserveCapacity(current.count + batch.count)
+
+		var currentIndex = 0
+		var batchIndex = 0
+
+		while (currentIndex < current.count && batchIndex < batch.count) {
+			if comesBefore(batch[batchIndex], current[currentIndex]) {
+				merged.append(batch[batchIndex])
+
+				batchIndex += 1
+			} else {
+				merged.append(current[currentIndex])
+
+				currentIndex += 1
+			}
+		}
+
+		merged.append(contentsOf: current[currentIndex...])
+		merged.append(contentsOf: batch[batchIndex...])
+
+		self.entries = merged
 
 		update()
 	}
@@ -271,12 +301,23 @@ final class ChannelListModel: ObservableObject
 	{
 		let query = search.trimmingCharacters(in: .whitespaces).lowercased()
 
-		var shown = (query.isEmpty ? entries : entries.filter { $0.searchText.contains(query) })
+		/* Entries are kept in order: filtering keeps it */
+		self.shown = (query.isEmpty ? entries : entries.filter { $0.searchText.contains(query) })
+	}
 
-		/* Channels that tie stay put: the server answers in no fixed order */
-		shown.sort(using: (sortOrder + [KeyPathComparator(\ChannelListEntry.lowercasedName)]))
+	/* The chosen order; channels that tie go by name, so they stay put (the
+	 server answers in no fixed order) */
+	private func comesBefore(_ first: ChannelListEntry, _ second: ChannelListEntry) -> Bool
+	{
+		for comparator in sortOrder {
+			let result = comparator.compare(first, second)
 
-		self.shown = shown
+			if (result != .orderedSame) {
+				return (result == .orderedAscending)
+			}
+		}
+
+		return (first.lowercasedName < second.lowercasedName)
 	}
 
 	func isJoined(_ entry: ChannelListEntry) -> Bool

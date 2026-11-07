@@ -92,18 +92,40 @@ _MessageBuffer._loadingMessagesDuringJump = false; /* PRIVATE */
 /*                  Line Management                   */
 /* ************************************************** */
 
+/* From the end in question: usually the first or second element is the line
+(the typing indicator or a session line may come first). The scroller asks
+with every scroll event, and a buffer can hold thousands of lines. */
 MessageBuffer.firstLineInBuffer = function(buffer) /* PUBLIC */
 {
-	var lines = buffer.querySelectorAll("div.line[id^='line-']");
-
-	return lines[0];
+	return _MessageBuffer._lineFromEnd(buffer, false);
 };
 
 MessageBuffer.lastLineInBuffer = function(buffer) /* PUBLIC */
 {
-	var lines = buffer.querySelectorAll("div.line[id^='line-']");
+	return _MessageBuffer._lineFromEnd(buffer, true);
+};
 
-	return lines[(lines.length - 1)];
+_MessageBuffer._lineFromEnd = function(buffer, last) /* PRIVATE */
+{
+	var selector = "div.line[id^='line-']";
+
+	for (var child = ((last) ? buffer.lastElementChild : buffer.firstElementChild);
+		 child !== null;
+		 child = ((last) ? child.previousElementSibling : child.nextElementSibling))
+	{
+		if (child.matches(selector)) {
+			return child;
+		}
+
+		/* A line inside something else (a group): the first or last one there */
+		var lines = child.querySelectorAll(selector);
+
+		if (lines.length > 0) {
+			return lines[((last) ? (lines.length - 1) : 0)];
+		}
+	}
+
+	return undefined;
 };
 
 /* ************************************************** */
