@@ -200,6 +200,13 @@ final class Connection: NSObject, ConnectionSocketDelegate
 		}
 	}
 
+	fileprivate func sendQueue(addToFront data: Data)
+	{
+		workerQueue?.sync {
+			sendQueue.insert(data, at: 0)
+		}
+	}
+
 	fileprivate func sendQueue(remove data: Data)
 	{
 		workerQueue?.sync {
@@ -218,7 +225,7 @@ final class Connection: NSObject, ConnectionSocketDelegate
 	}
 
 	@discardableResult
-	fileprivate func tryToSend() -> Bool
+	fileprivate func tryToSend(ignoringFloodControl: Bool = false) -> Bool
 	{
 		if (socket.sending) {
 			return false
@@ -228,7 +235,7 @@ final class Connection: NSObject, ConnectionSocketDelegate
 			return false
 		}
 
-		if (floodControlEnforced) {
+		if (floodControlEnforced && ignoringFloodControl == false) {
 			if (floodControlCurrentMessageCount >= config.floodControlMaximumMessages) {
 				return false
 			}
@@ -259,8 +266,13 @@ final class Connection: NSObject, ConnectionSocketDelegate
 			return
 		}
 
+		/* The socket discards a write made while another one is in progress,
+		 so a line that can't wait goes to the head of the queue instead of
+		 straight to the socket, and doesn't wait for flood control. */
 		if (bypassQueue) {
-			send(data, removeFromQueue: false)
+			sendQueue(addToFront: data)
+
+			tryToSend(ignoringFloodControl: true)
 
 			return
 		}
