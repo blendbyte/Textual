@@ -71,8 +71,8 @@ FOUNDATION_EXPORT NSURL * _Nullable ICLResourceURL(NSString *name, NSString *ext
 + (NSString *)stringByDecodingHTMLEntities:(NSString *)string;
 
 /* The page's <title> ("title"), its description <meta> ("description") and
- its og:… and twitter:… <meta> values (property or name lowercased), from
- the part before </head> */
+ the og:… and twitter:… <meta> values a card uses (property or name
+ lowercased; others dropped), from the part before </head> */
 + (NSDictionary<NSString *, NSString *> *)metadataInHTML:(NSString *)html;
 
 /* The start of a page as text: in the response's charset, else that of a

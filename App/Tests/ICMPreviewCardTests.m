@@ -78,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 					  "<meta content='https://f4.bcbits.com/img/a1_5.jpg' property='og:image'/>"
 					  "<meta property=\"og:image\" content=\"https://example.com/second.jpg\">"
 					  "<meta name=\"twitter:card\" content=\"summary\">"
+					  "<meta name=\"Twitter:Title\" content=\"The twitter title\">"
 					  "<meta name=\"description\" content=\"The page&#39;s description\">"
 					  "<meta xproperty=\"og:site_name\" content=\"not a property attribute\">"
 					  "</head><body><meta property=\"og:description\" content=\"in the body\"></body></html>";
@@ -87,7 +88,9 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(metadata[@"title"], @"Plain & title");
 	XCTAssertEqualObjects(metadata[@"og:title"], @"box, by GGG \"Blanstein\"");
 	XCTAssertEqualObjects(metadata[@"og:image"], @"https://f4.bcbits.com/img/a1_5.jpg");
-	XCTAssertEqualObjects(metadata[@"twitter:card"], @"summary");
+	XCTAssertEqualObjects(metadata[@"twitter:title"], @"The twitter title");
+	/* Only the names a card uses are kept */
+	XCTAssertNil(metadata[@"twitter:card"]);
 	XCTAssertEqualObjects(metadata[@"description"], @"The page's description");
 	XCTAssertNil(metadata[@"og:site_name"]);
 	XCTAssertNil(metadata[@"og:description"]);
