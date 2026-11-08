@@ -2835,6 +2835,61 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
+/* A password typed to a service (/msg NickServ IDENTIFY secret) goes on the
+ wire as it is, but not on screen, into scrollback or a log */
++ (NSString *)textHidingPasswordInServiceCommand:(NSString *)text toTarget:(NSString *)target
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(target != nil);
+
+	static NSSet<NSString *> *services = nil;
+	static NSSet<NSString *> *servicesWithHost = nil;
+	static NSSet<NSString *> *commands = nil;
+	static NSSet<NSString *> *settings = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		services = [NSSet setWithArray:@[@"NICKSERV", @"NS", @"USERSERV", @"AUTHSERV", @"CHANSERV", @"CS", @"OPERSERV", @"OS"]];
+
+		servicesWithHost = [NSSet setWithArray:@[@"Q", @"X"]]; // Q@CServe.quakenet.org, X@channels.undernet.org
+
+		commands = [NSSet setWithArray:@[@"IDENTIFY", @"ID", @"LOGIN", @"AUTH", @"REGISTER", @"GHOST", @"RECOVER", @"RELEASE", @"GROUP"]];
+
+		settings = [NSSet setWithArray:@[@"SET", @"SASET"]];
+	});
+
+	NSArray<NSString *> *targetParts = [target.uppercaseString componentsSeparatedByString:@"@"];
+
+	if ([services containsObject:targetParts[0]] == NO &&
+		(targetParts.count < 2 || [servicesWithHost containsObject:targetParts[0]] == NO))
+	{
+		return text;
+	}
+
+	NSArray<NSString *> *words = [text componentsSeparatedByString:@" "];
+
+	NSUInteger wordsKept = 0;
+
+	NSString *firstWord = words[0].uppercaseString;
+
+	if ([commands containsObject:firstWord]) {
+		wordsKept = 1;
+	} else if ([settings containsObject:firstWord] && words.count > 2 &&
+			   ([words[1].uppercaseString isEqualToString:@"PASSWORD"] || [words[1].uppercaseString isEqualToString:@"PASS"]))
+	{
+		wordsKept = 2;
+	}
+
+	if (wordsKept == 0 || words.count <= wordsKept) {
+		return text;
+	}
+
+	NSArray *wordsShown = [words subarrayWithRange:NSMakeRange(0, wordsKept)];
+
+	return [NSString stringWithFormat:@"%@ ••••••••", [wordsShown componentsJoinedByString:@" "]];
+}
+
 - (void)sendText:(NSAttributedString *)string asCommand:(IRCRemoteCommand)command toChannel:(IRCChannel *)channel
 {
 	[self sendText:string asCommand:command toChannel:channel withEncryption:YES];
@@ -2889,7 +2944,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 					return;
 				}
 
-				[self print:originalString
+				[self print:[IRCClient textHidingPasswordInServiceCommand:originalString toTarget:channel.name]
 						 by:self.userNickname
 				  inChannel:channel
 					 asType:lineType
@@ -4943,7 +4998,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 							return;
 						}
 
-						[self print:originalString
+						[self print:[IRCClient textHidingPasswordInServiceCommand:originalString toTarget:destinationName]
 								 by:self.userNickname
 						  inChannel:destination
 							 asType:lineType
@@ -6603,6 +6658,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		self.isConnectedToZNC)
 	{
 		isSelfMessage = [self nicknameIsMyself:sender];
+	}
+
+	/* The echo of a line we sent */
+	if (isSelfMessage) {
+		text = [IRCClient textHidingPasswordInServiceCommand:text toTarget:target];
 	}
 
 	/* Does the query for the sender already exist?... */
