@@ -202,6 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat measuredWidth;
 @property (nonatomic, copy) NSArray<NSString *> *archivedNicknames; // suggested after those around now
 @property (nonatomic, copy) NSArray<NSString *> *archivedViewNames;
+@property (nonatomic, assign) BOOL archivedNamesRequested;
 @end
 
 @implementation TVCMainWindowSearchPanel
@@ -550,9 +551,16 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* Names for suggestions: read again each time the panel opens */
+/* Names for suggestions: a read of the whole archive, so only once someone
+ types from: or in:, and once a launch */
 - (void)loadArchivedNames
 {
+	if (self.archivedNamesRequested) {
+		return;
+	}
+
+	self.archivedNamesRequested = YES;
+
 	[sharedMessageArchive() namesWithLimit:1000 completionHandler:^(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames) {
 		self.archivedNicknames = nicknames;
 		self.archivedViewNames = viewNames;
@@ -829,6 +837,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.generation += 1;
 
+	[sharedMessageArchive() interruptSearch];
+
 	self.contextMessages = nil;
 	self.contextResult = nil;
 
@@ -1075,6 +1085,8 @@ NS_ASSUME_NONNULL_BEGIN
 	if ([self filterBeforePartialWordRange:range inString:fieldEditor.string] == nil) {
 		return;
 	}
+
+	[self loadArchivedNames];
 
 	[fieldEditor complete:nil];
 }
@@ -1760,8 +1772,6 @@ static NSString * const _mentionsLastSeenDefaultsKey = @"Mentions -> Last Seen R
 		memberListScrollView.hidden = YES;
 
 		[self.contentSplitView showSearchColumn];
-
-		[panel loadArchivedNames];
 
 		[panel selectedItemChanged];
 	}

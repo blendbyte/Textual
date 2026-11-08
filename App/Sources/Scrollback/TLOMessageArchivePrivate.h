@@ -229,6 +229,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 		 limit:(NSUInteger)limit
 completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler;
 
+- (void)interruptSearch;
 - (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler;
 
 /* The chat's history past the scrollback: a view's messages older

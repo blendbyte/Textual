@@ -1781,6 +1781,39 @@ async def scenario_small_fixes(client):
 		seen = len(client.received)
 
 
+async def scenario_scrollback_hole(client):
+	"""A hole in the saved lines. #hole gets older-001 to older-260. Say
+	"refuse": it is refused (404), so Delete takes the line out. Say "more" for
+	newer-001 to newer-260. Scrolling up must then reach older-001: a hole
+	must not read as the end of the history. Runs until stopped."""
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	async def say(prefix):
+		for number in range(1, 261):
+			await client.send(f":alice!a@peer.test PRIVMSG #hole :{prefix}-{number:03d}")
+
+	await client.send(f":{me}!user@client.textual.test JOIN #hole")
+	await client.send(f":{SERVER} 353 {me} = #hole :{me} alice")
+	await client.send(f":{SERVER} 366 {me} #hole :End of /NAMES list.")
+	await say("older")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() != "PRIVMSG":
+				continue
+			if rest.endswith(" :refuse"):
+				await client.send(f":{SERVER} 404 {me} #hole :Cannot send to channel (+m)")
+			elif rest.endswith(" :more"):
+				await say("newer")
+		seen = len(client.received)
+
+
 async def scenario_network_icon(client):
 	"""Network icon: the welcome names draft/ICON (Ergo's GitHub picture,
 	with {size}). Say "other" anywhere for a 005 naming another icon (IRCv3's),
@@ -3223,6 +3256,7 @@ SCENARIOS = {
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
 	"safety": scenario_safety,
+	"scrollback-hole": scenario_scrollback_hole,
 	"small-fixes": scenario_small_fixes,
 	"chathistory-time": scenario_chathistory_time,
 	"event-playback": scenario_event_playback,
@@ -3238,7 +3272,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"safety", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

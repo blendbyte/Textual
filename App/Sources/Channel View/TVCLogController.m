@@ -96,6 +96,7 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @interface TVCLogController ()
 @property (nonatomic, assign, readwrite, getter=viewIsLoaded) BOOL loaded; // atomic accessors below: printing operations ask from their threads (isReady)
 @property (nonatomic, assign) BOOL terminating;
+@property (nonatomic, copy, nullable) NSString *queryInfoBarText; // what the document shows
 @property (atomic, assign) BOOL historyLoadedForFirstTime; // atomic (these four): the history reload sets them on a background queue
 @property (atomic, assign) BOOL reloadingHistory;
 @property (nonatomic, assign) BOOL reloadingTheme; // while the new document is built
@@ -386,6 +387,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)loadAlternateHTML:(NSString *)newHTML
 {
+	/* A new document has no bar yet */
+	self.queryInfoBarText = nil;
+
 	NSParameterAssert(newHTML != nil);
 
 	[self.backingView stopLoading];
@@ -656,6 +660,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)setQueryInfoBar:(NSString *)text
 {
+	/* Asked for by every channel joined; a render and a script each */
+	if ([text isEqualToString:self.queryInfoBarText]) {
+		return;
+	}
+
+	self.queryInfoBarText = text;
+
 	NSParameterAssert(text != nil);
 
 	if (self.terminating) {

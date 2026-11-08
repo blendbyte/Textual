@@ -207,6 +207,7 @@ NS_ASSUME_NONNULL_BEGIN
  writer, the writer doesn't wait for them) */
 @property (nonatomic, strong) dispatch_queue_t searchQueue;
 @property (nonatomic, assign, nullable) sqlite3 *searchDatabase;
+@property (nonatomic, assign) BOOL searchIsInterruptible;
 @property (nonatomic, assign) BOOL searchClosed;
 @end
 
@@ -1130,10 +1131,12 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	/* The search connection first: a search after this one waits for the
 	 writer (-_openSearchDatabase), so it opens the new database */
 	dispatch_async(self.searchQueue, ^{
-		if (self.searchDatabase) {
-			sqlite3_close_v2(self.searchDatabase);
+		@synchronized (self.searchQueue) {
+			if (self.searchDatabase) {
+				sqlite3_close_v2(self.searchDatabase);
 
-			self.searchDatabase = NULL;
+				self.searchDatabase = NULL;
+			}
 		}
 
 		dispatch_async(self.queue, ^{
@@ -1917,9 +1920,29 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 
 	(void)sqlite3_exec(database, "PRAGMA query_only = 1;", NULL, NULL, NULL);
 
-	self.searchDatabase = database;
+	@synchronized (self.searchQueue) {
+		self.searchDatabase = database;
+	}
 
 	return database;
+}
+
+/* The queue is serial: while this is set, what it runs is a search's own query */
+- (void)_setSearchIsInterruptible:(BOOL)interruptible
+{
+	@synchronized (self.searchQueue) {
+		self.searchIsInterruptible = interruptible;
+	}
+}
+
+/* A new search makes the one running pointless; its answer is dropped anyway */
+- (void)interruptSearch
+{
+	@synchronized (self.searchQueue) {
+		if (self.searchIsInterruptible && self.searchDatabase) {
+			sqlite3_interrupt(self.searchDatabase);
+		}
+	}
 }
 
 - (void)search:(TLOMessageArchiveQuery *)query
@@ -1938,7 +1961,11 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 		sqlite3 *database = ((query.empty) ? NULL : [self _openSearchDatabase]);
 
 		if (database) {
+			[self _setSearchIsInterruptible:YES];
+
 			page = [query _pageWithOffset:offset limit:limit inDatabase:database];
+
+			[self _setSearchIsInterruptible:NO];
 		} else {
 			page = [TLOMessageArchiveSearchPage new];
 		}
@@ -1962,7 +1989,11 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 		sqlite3 *database = ((query.empty) ? NULL : [self _openSearchDatabase]);
 
 		if (database) {
+			[self _setSearchIsInterruptible:YES];
+
 			count = [query _countInDatabase:database];
+
+			[self _setSearchIsInterruptible:NO];
 		}
 
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -2058,10 +2089,12 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	self.textLogImportCancelled = YES;
 
 	dispatch_sync(self.searchQueue, ^{
-		if (self.searchDatabase) {
-			sqlite3_close_v2(self.searchDatabase);
+		@synchronized (self.searchQueue) {
+			if (self.searchDatabase) {
+				sqlite3_close_v2(self.searchDatabase);
 
-			self.searchDatabase = NULL;
+				self.searchDatabase = NULL;
+			}
 		}
 
 		self.searchClosed = YES;

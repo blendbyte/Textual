@@ -1070,21 +1070,21 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 	NSParameterAssert(logLine != nil);
 	NSParameterAssert(item != nil);
 
-	/* Archived here: the line is immutable, the caller is off the main thread */
-	NSData *data = [logLine archivedData];
-
-	if (data == nil) {
-		LogToConsoleError("Failed to archive a line for the historic log");
-
-		return;
-	}
-
 	NSString *uniqueIdentifier = logLine.uniqueIdentifier;
 	NSUInteger sessionIdentifier = logLine.sessionIdentifier;
 
 	NSString *viewId = item.uniqueIdentifier;
 
 	dispatch_async(self.queue, ^{
+		/* Here rather than in the caller, which is on the main thread */
+		NSData *data = [logLine archivedData];
+
+		if (data == nil) {
+			LogToConsoleError("Failed to archive a line for the historic log");
+
+			return;
+		}
+
 		HLSHistoricLogViewContext *viewContext = [self _contextForView:viewId];
 
 		if (viewContext == nil) {
@@ -1256,6 +1256,7 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 		   uniqueIdentifiers:(NSArray<NSString *> *)uniqueIdentifiers
 				  fetchLimit:(NSUInteger)fetchLimit
 				 limitToDate:(nullable NSDate *)limitToDate
+				 newestFirst:(BOOL)newestFirst
 				  rangeBlock:(NSRange (^)(NSArray<NSNumber *> *entryIdentifiers))rangeBlock
 		 withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock
 {
@@ -1300,13 +1301,15 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 		}
 
 		NSFetchRequest *fetchRequest = [self.class fetchRequestForView:viewId
-															 ascending:YES
+															 ascending:(newestFirst == NO)
 															fetchLimit:fetchLimit
 												 lowestEntryIdentifier:range.location
 												highestEntryIdentifier:(NSMaxRange(range) - 1)
 														   limitToDate:limitToDate];
 
-		[self _fetchInViewContext:viewContext fetchRequest:fetchRequest completionBlock:completionBlock];
+		[self _fetchInViewContext:viewContext fetchRequest:fetchRequest completionBlock:^(NSArray<TVCLogLine *> *entries) {
+			completionBlock((newestFirst) ? entries.reverseObjectEnumerator.allObjects : entries);
+		}];
 	});
 }
 
@@ -1327,6 +1330,7 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 			 uniqueIdentifiers:@[uniqueId]
 					fetchLimit:(fetchLimitBefore + fetchLimitAfter + 1)
 				   limitToDate:limitToDate
+				   newestFirst:NO
 					rangeBlock:^NSRange(NSArray<NSNumber *> *entryIdentifiers) {
 						NSInteger entryIdentifier = entryIdentifiers[0].integerValue;
 
@@ -1353,16 +1357,17 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 			 uniqueIdentifiers:@[uniqueId]
 					fetchLimit:fetchLimit
 				   limitToDate:limitToDate
+				   newestFirst:(direction == HLSHistoricLogFetchDirectionBefore)
 					rangeBlock:^NSRange(NSArray<NSNumber *> *entryIdentifiers) {
 						NSInteger entryIdentifier = entryIdentifiers[0].integerValue;
 
-						/* The line itself is not part of the result */
+						/* The line itself is not part of the result. By count, not a
+						 range of that size: a line taken out leaves a hole in the numbers,
+						 and a short answer reads as the end of the history. */
 						if (direction == HLSHistoricLogFetchDirectionBefore) {
-							NSInteger lowest = MAX((entryIdentifier - (NSInteger)fetchLimit), 0);
-
-							return NSMakeRange(lowest, (entryIdentifier - lowest));
+							return NSMakeRange(0, entryIdentifier);
 						} else {
-							return NSMakeRange((entryIdentifier + 1), fetchLimit);
+							return NSMakeRange((entryIdentifier + 1), (NSUIntegerMax / 2));
 						}
 					}
 		   withCompletionBlock:completionBlock];
@@ -1410,6 +1415,7 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 			 uniqueIdentifiers:@[uniqueIdAfter, uniqueIdBefore]
 					fetchLimit:fetchLimit
 				   limitToDate:nil
+				   newestFirst:NO
 					rangeBlock:^NSRange(NSArray<NSNumber *> *entryIdentifiers) {
 						NSInteger lowest = (entryIdentifiers[0].integerValue + 1);
 						NSInteger highest = (entryIdentifiers[1].integerValue - 1);

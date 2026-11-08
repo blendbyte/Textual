@@ -150,6 +150,24 @@ NS_ASSUME_NONNULL_BEGIN
 				   [NSError errorWithDomain:NSCocoaErrorDomain code:NSPersistentStoreOpenError userInfo:@{NSUnderlyingErrorKey : sqliteError(11)}]]);
 }
 
+/* A line taken out leaves a hole in the numbers; asking for the newest ones still gives a full page */
+- (void)testAHoleDoesNotShortenAPage
+{
+	[self writeLinesToView:@"view" from:1 to:20 inContext:self.viewContext];
+
+	[self.viewContext performBlockAndWait:^{
+		NSFetchRequest *fetchRequest = [HLSHistoricLogManager fetchRequestForView:@"view" ascending:YES fetchLimit:1 lowestEntryIdentifier:15 highestEntryIdentifier:15 limitToDate:nil];
+
+		[self.viewContext deleteObject:[self.viewContext executeFetchRequest:fetchRequest error:NULL].firstObject];
+	}];
+
+	NSArray *page = [self entryIdentifiersInView:@"view" ascending:NO fetchLimit:10 lowest:0 highest:19];
+
+	XCTAssertEqual(page.count, 10);
+	XCTAssertEqualObjects(page.firstObject, @19);
+	XCTAssertEqualObjects(page.lastObject, @9);
+}
+
 - (void)testLinesComeBackInWrittenOrder
 {
 	[self writeLinesToView:@"other" from:1 to:500 inContext:self.parentContext];
