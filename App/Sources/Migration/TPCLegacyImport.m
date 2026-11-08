@@ -53,6 +53,7 @@
 #import "TLOKeychainPrivate.h"
 #import "TPCLegacyImportPrivate.h"
 #import "TLOMessageArchivePrivate.h"
+#import "THOPluginManagerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -167,6 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, copy) NSArray<NSString *> *styles;
 @property (readwrite, copy) NSArray<NSString *> *extensions;
 @property (readwrite, copy) NSArray<NSString *> *inlineMediaModules;
+@property (readwrite, copy) NSArray<NSString *> *unusedExtensions;
 @property (readwrite) NSUInteger failureCount;
 @property (readwrite, copy) NSArray<NSString *> *keptItems;
 @property (readwrite) BOOL importedScrollback;
@@ -186,6 +188,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.styles = @[];
 		self.extensions = @[];
 		self.inlineMediaModules = @[];
+		self.unusedExtensions = @[];
 		self.keptItems = @[];
 	}
 
@@ -451,13 +454,36 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)importStylesFromGroupURL:(NSURL *)groupURL
 {
 	self.result.styles = [self _copyContentsOfFolder:[[self _textualFolderInGroupURL:groupURL] URLByAppendingPathComponent:@"Styles"]
-											toFolder:[TPCPathInfo customThemesURL]];
+											toFolder:[TPCPathInfo customThemesURL]
+											skipping:nil];
 }
 
 - (void)importExtensionsFromGroupURL:(NSURL *)groupURL
 {
+	NSMutableArray<NSString *> *unused = [NSMutableArray array];
+
+	/* Extensions Textual 8 never loads (Blowfish, Wiki-style Link Parser, ones
+	 built in now) stay behind: copied, they were listed as imported and then
+	 refused at the next launch */
 	self.result.extensions = [self _copyContentsOfFolder:[[self _textualFolderInGroupURL:groupURL] URLByAppendingPathComponent:@"Extensions"]
-												toFolder:[TPCPathInfo customExtensionsURL]];
+												toFolder:[TPCPathInfo customExtensionsURL]
+												skipping:^BOOL(NSURL *item) {
+		NSURL *infoURL = [item.URLByResolvingSymlinksInPath URLByAppendingPathComponent:@"Contents/Info.plist"];
+
+		NSString *bundleIdentifier = [NSDictionary dictionaryWithContentsOfURL:infoURL][@"CFBundleIdentifier"];
+
+		if ([bundleIdentifier isKindOfClass:[NSString class]] == NO || [THOPluginManager bundleIdentifierIsNeverLoaded:bundleIdentifier] == NO) {
+			return NO;
+		}
+
+		LogToConsoleInfo("Legacy import: not copying %{public}@ (%{public}@), which Textual 8 doesn't load", item.path, bundleIdentifier);
+
+		[unused addObject:item.lastPathComponent.stringByDeletingPathExtension];
+
+		return YES;
+	}];
+
+	self.result.unusedExtensions = unused;
 }
 
 /* The store can't be replaced while it is open: it is put next to it and
@@ -757,7 +783,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* Copies (never moves) each item; one of the same name already in Textual 8
  is kept and the earlier version's is listed in keptItems. Links are followed,
  so the copy has the files and not a link back into the earlier version's folder. */
-- (NSArray<NSString *> *)_copyContentsOfFolder:(NSURL *)sourceURL toFolder:(nullable NSURL *)destinationURL
+- (NSArray<NSString *> *)_copyContentsOfFolder:(NSURL *)sourceURL toFolder:(nullable NSURL *)destinationURL skipping:(nullable BOOL (NS_NOESCAPE ^)(NSURL *item))skipItem
 {
 	if (destinationURL == nil) {
 		return @[];
@@ -766,6 +792,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSMutableArray<NSString *> *copied = [NSMutableArray array];
 
 	for (NSURL *item in [self _contentsOfFolder:sourceURL]) {
+		if (skipItem && skipItem(item)) {
+			continue;
+		}
+
 		NSURL *destinationItem = [destinationURL URLByAppendingPathComponent:item.lastPathComponent];
 
 		/* Added to the user's, as the import says: a Textual 8 style or

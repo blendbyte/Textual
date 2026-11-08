@@ -246,6 +246,7 @@ Information encrypted using: %2$@";
 "gt5-wm" = "Show Scripts";
 "2zf-mn" = "Choose your transcript folder again in Settings.";
 "voq-wj" = "Choose your download folder again in Settings.";
+"ue8-nx" = "Not used by Textual 8 and not imported: %@ (removed features, or built in now)";
 "pjp-bp" = "Not used by Textual 8 and not imported: %@ (inline media is built in now)";
 "k7t-r3" = "Not imported because Textual 8 already has one with the same name: %2$@. The %1$@ version stays in its folder.";
 "to7-nt" = "Files that couldn’t be copied: %lu. The Console app lists them (search for “Textual”).";

@@ -546,6 +546,14 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 	return [TPCResourceManager arrayFromResources:@"StaticStore" key:@"THOPluginManager List of Unsupported Extensions"];
 }
 
++ (BOOL)bundleIdentifierIsNeverLoaded:(NSString *)bundleIdentifier
+{
+	NSParameterAssert(bundleIdentifier != nil);
+
+	return ([[TPCResourceManager arrayFromResources:@"StaticStore" key:@"THOPluginManager List of Forbidden Extensions"] containsObject:bundleIdentifier] ||
+			[[TPCResourceManager arrayFromResources:@"StaticStore" key:@"THOPluginManager List of Unsupported Extensions"] containsObject:bundleIdentifier]);
+}
+
 - (BOOL)bundleIsUnsupported:(NSBundle *)bundle
 {
 	NSParameterAssert(bundle != nil);

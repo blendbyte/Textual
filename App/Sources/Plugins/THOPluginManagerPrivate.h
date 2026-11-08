@@ -64,6 +64,10 @@ TEXTUAL_EXTERN NSNotificationName const THOPluginManagerFinishedLoadingPluginsNo
 /* YES for extensions of removed features (Blowfish, Wiki-style Link Parser) */
 - (BOOL)bundleIsUnsupported:(NSBundle *)bundle;
 
+/* YES for an extension Textual never loads: a removed feature, or one that
+ is built in now (Caffeine, Smiley Converter, …) */
++ (BOOL)bundleIdentifierIsNeverLoaded:(NSString *)bundleIdentifier;
+
 /* Returns YES if at least one loaded plugin supports the feature */
 - (BOOL)supportsFeature:(THOPluginItemSupportedFeature)feature;
 

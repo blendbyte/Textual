@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSArray<NSString *> *styles;
 @property (readonly, copy) NSArray<NSString *> *extensions;
 @property (readonly, copy) NSArray<NSString *> *inlineMediaModules;
+@property (readonly, copy) NSArray<NSString *> *unusedExtensions; // not copied: Textual 8 never loads them
 @property (readonly) NSUInteger failureCount;
 @property (readonly, copy) NSArray<NSString *> *keptItems; // styles and extensions not copied: Textual 8 has one of the same name
 @property (readonly) BOOL importedScrollback;
