@@ -492,13 +492,13 @@ struct ChatSketch: View
 		VStack(alignment: .leading, spacing: 2) {
 			if (grouped) {
 				HStack(spacing: 4) { Text("alice").bold().foregroundStyle(alice); Text("14:03").foregroundStyle(faint) }
-				Text("morning everyone!").foregroundStyle(text)
+				Text("morning all!").foregroundStyle(text)
 				Text("how’s it going?").foregroundStyle(text)
 				HStack(spacing: 4) { Text("bob").bold().foregroundStyle(bob); Text("14:05").foregroundStyle(faint) }
 					.padding(.top, 3)
 				Text("great, thanks").foregroundStyle(text)
 			} else {
-				HStack(spacing: 3) { Text("14:03").foregroundStyle(faint); Text("<alice>").foregroundStyle(alice); Text("morning everyone!").foregroundStyle(text) }
+				HStack(spacing: 3) { Text("14:03").foregroundStyle(faint); Text("<alice>").foregroundStyle(alice); Text("morning all!").foregroundStyle(text) }
 				HStack(spacing: 3) { Text("14:03").foregroundStyle(faint); Text("<alice>").foregroundStyle(alice); Text("how’s it going?").foregroundStyle(text) }
 				HStack(spacing: 3) { Text("14:05").foregroundStyle(faint); Text("<bob>").foregroundStyle(bob); Text("great, thanks").foregroundStyle(text) }
 			}
