@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _indexedTermLength			3
 
 /* A result's columns, in the order TLOMessageArchiveResult reads them */
-#define _resultColumns				@"m.id, m.server_id, m.server_name, m.view_id, m.view_name, m.view_type, m.time, m.line_type, " \
+#define _resultColumns				@"m.id, v.server_id, v.server_name, v.view_id, v.view_name, v.view_type, m.time, m.line_type, " \
 									@"m.nickname, m.is_self, m.is_highlight, m.has_link, m.msgid, m.line_id, m.body"
 
 @interface TLOMessageArchiveResult ()
@@ -454,11 +454,11 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 
 	NSMutableArray<NSString *> *conditions = [NSMutableArray array];
 
-	NSString *from = @"FROM messages m";
+	NSString *from = @"FROM messages m JOIN views v ON v.id = m.view_key";
 
 	/* Each term as a string: found as it is written (a phrase in one piece) */
 	if (indexedTerms.count > 0) {
-		from = @"FROM messages_text JOIN messages m ON m.id = messages_text.rowid";
+		from = @"FROM messages_text JOIN messages m ON m.id = messages_text.rowid JOIN views v ON v.id = m.view_key";
 
 		NSMutableArray<NSString *> *strings = [NSMutableArray array];
 
@@ -472,11 +472,11 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	}
 
 	if (self.viewId) {
-		[conditions addObject:@"m.view_id = ?"];
+		[conditions addObject:@"v.view_id = ?"];
 
 		[arguments addObject:self.viewId];
 	} else if (self.serverId) {
-		[conditions addObject:@"m.server_id = ?"];
+		[conditions addObject:@"v.server_id = ?"];
 
 		[arguments addObject:self.serverId];
 	}
@@ -498,7 +498,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	};
 
 	anyOf(@"m.nickname", self.nicknames);
-	anyOf(@"m.view_name", [self _viewNamesToMatch]);
+	anyOf(@"v.view_name", [self _viewNamesToMatch]);
 
 	if (self.earliestDate) {
 		[conditions addObject:@"m.time >= ?"];
@@ -631,8 +631,8 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 {
 	NSMutableArray<TLOMessageArchiveResult *> *messages = [NSMutableArray array];
 
-	NSString *before = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) < (?, ?) ORDER BY m.time DESC, m.id DESC LIMIT ?", _resultColumns];
-	NSString *after = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) >= (?, ?) ORDER BY m.time, m.id LIMIT ?", _resultColumns];
+	NSString *before = [NSString stringWithFormat:@"SELECT %@ FROM messages m JOIN views v ON v.id = m.view_key WHERE v.view_id = ? AND (m.time, m.id) < (?, ?) ORDER BY m.time DESC, m.id DESC LIMIT ?", _resultColumns];
+	NSString *after = [NSString stringWithFormat:@"SELECT %@ FROM messages m JOIN views v ON v.id = m.view_key WHERE v.view_id = ? AND (m.time, m.id) >= (?, ?) ORDER BY m.time, m.id LIMIT ?", _resultColumns];
 
 	NSArray *beforeArguments = @[result.viewId, @(result.date.timeIntervalSince1970), @(result.rowId), @(count)];
 	NSArray *afterArguments = @[result.viewId, @(result.date.timeIntervalSince1970), @(result.rowId), @(count + 1)];
@@ -681,7 +681,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	NSNumber *startRowId = @0;
 
 	if (scrollbackLineId) {
-		sqlite3_stmt *statement = [self _prepare:@"SELECT time, id FROM messages WHERE view_id = ? AND line_id = ?" arguments:@[viewId, scrollbackLineId] inDatabase:database];
+		sqlite3_stmt *statement = [self _prepare:@"SELECT time, id FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?) AND line_id = ?" arguments:@[viewId, scrollbackLineId] inDatabase:database];
 
 		if (statement) {
 			if (sqlite3_step(statement) == SQLITE_ROW) {
@@ -699,7 +699,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	TLOMessageArchiveResult *anchor = nil;
 
 	if (rowId != 0) {
-		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.id = ? AND m.view_id = ? AND (m.time, m.id) < (?, ?)", _resultColumns];
+		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m JOIN views v ON v.id = m.view_key WHERE m.id = ? AND v.view_id = ? AND (m.time, m.id) < (?, ?)", _resultColumns];
 
 		sqlite3_stmt *statement = [self _prepare:sql arguments:@[@(rowId), viewId, startTime, startRowId] inDatabase:database];
 
@@ -724,7 +724,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	NSMutableArray<TLOMessageArchiveResult *> *messages = [NSMutableArray array];
 
 	if (before > 0) {
-		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) < (?, ?) ORDER BY m.time DESC, m.id DESC LIMIT ?", _resultColumns];
+		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m JOIN views v ON v.id = m.view_key WHERE v.view_id = ? AND (m.time, m.id) < (?, ?) ORDER BY m.time DESC, m.id DESC LIMIT ?", _resultColumns];
 
 		sqlite3_stmt *statement = [self _prepare:sql arguments:@[viewId, point[0], point[1], @(before)] inDatabase:database];
 
@@ -744,7 +744,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	}
 
 	if (anchor && after > 0) {
-		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m WHERE m.view_id = ? AND (m.time, m.id) > (?, ?) AND (m.time, m.id) < (?, ?) ORDER BY m.time, m.id LIMIT ?", _resultColumns];
+		NSString *sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m JOIN views v ON v.id = m.view_key WHERE v.view_id = ? AND (m.time, m.id) > (?, ?) AND (m.time, m.id) < (?, ?) ORDER BY m.time, m.id LIMIT ?", _resultColumns];
 
 		sqlite3_stmt *statement = [self _prepare:sql arguments:@[viewId, point[0], point[1], startTime, startRowId, @(after)] inDatabase:database];
 
@@ -763,7 +763,13 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 /* The most recent first */
 + (NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database
 {
-	NSString *sql = [NSString stringWithFormat:@"SELECT %1$@ FROM messages WHERE %1$@ IS NOT NULL AND %1$@ != '' GROUP BY %1$@ ORDER BY max(time) DESC LIMIT ?", column];
+	NSString *sql = nil;
+
+	if ([column isEqualToString:@"view_name"]) {
+		sql = @"SELECT view_name, max((SELECT max(time) FROM messages WHERE view_key = views.id)) AS newest FROM views WHERE view_name != '' GROUP BY view_name ORDER BY newest DESC LIMIT ?";
+	} else {
+		sql = [NSString stringWithFormat:@"SELECT %1$@ FROM messages WHERE %1$@ IS NOT NULL AND %1$@ != '' GROUP BY %1$@ ORDER BY max(time) DESC LIMIT ?", column];
+	}
 
 	sqlite3_stmt *statement = [self _prepare:sql arguments:@[@(limit)] inDatabase:database];
 

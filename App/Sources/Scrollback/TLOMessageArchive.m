@@ -60,7 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _databaseFilename			@"Message Archive.sqlite"
 
-#define _schemaVersion				1
+#define _schemaVersion				2
+#define _schemaVersionString		"2"
 
 /* Waiting lines are written two seconds after the first, or at once when
  this many wait (a reconnect replaying history) */
@@ -195,6 +196,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, nullable) sqlite3 *database; // NULL if it failed to open
 @property (nonatomic, assign, nullable) sqlite3_stmt *insertStatement;
 @property (nonatomic, strong) NSMutableArray<TLOMessageArchiveRow *> *pendingRows;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *viewKeys; // writer's queue: view id to key
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *viewKeyNames; // and the names it was stored with
 @property (nonatomic, assign) BOOL writeScheduled;
 @property (nonatomic, strong, nullable) dispatch_source_t removeTimer;
 @property (nonatomic, assign) BOOL closed;
@@ -263,6 +266,9 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		self.searchQueue = dispatch_queue_create("com.textualapp.message-archive.search", DISPATCH_QUEUE_SERIAL);
 
 		self.pendingRows = [NSMutableArray array];
+
+		self.viewKeys = [NSMutableDictionary dictionary];
+		self.viewKeyNames = [NSMutableDictionary dictionary];
 
 		self.keepDaysValue = TPCMessageArchiveKeepPeriodOneYear;
 
@@ -339,8 +345,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 	result = sqlite3_prepare_v2(database,
 		"INSERT OR IGNORE INTO messages "
-		"(server_id, server_name, view_id, view_name, view_type, time, line_type, nickname, is_self, is_highlight, has_link, msgid, line_id, dedupe_key, body) "
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &insertStatement, NULL);
+		"(view_key, time, line_type, nickname, is_self, is_highlight, has_link, msgid, line_id, dedupe_key, body) "
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", -1, &insertStatement, NULL);
 
 	if (result != SQLITE_OK) {
 		LogToConsoleError("Failed to prepare the message archive: %{public}s", sqlite3_errmsg(database));
@@ -363,16 +369,25 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
  tokens find any part of a word in any script, three characters or more. */
 - (BOOL)_prepareSchema
 {
+	if ([self _discardOlderSchema] == NO) {
+		return NO;
+	}
+
 	return [self _execute:
 		"PRAGMA journal_mode = WAL;"
 		"PRAGMA synchronous = NORMAL;"
-		"CREATE TABLE IF NOT EXISTS messages ("
+		/* A view's ids and names once, not in every message */
+		"CREATE TABLE IF NOT EXISTS views ("
 			"id INTEGER PRIMARY KEY, "
+			"view_id TEXT NOT NULL UNIQUE, "
 			"server_id TEXT NOT NULL, "
 			"server_name TEXT NOT NULL, "
-			"view_id TEXT NOT NULL, "
 			"view_name TEXT NOT NULL, "
-			"view_type INTEGER NOT NULL, "
+			"view_type INTEGER NOT NULL);"
+		"CREATE INDEX IF NOT EXISTS views_server ON views (server_id);"
+		"CREATE TABLE IF NOT EXISTS messages ("
+			"id INTEGER PRIMARY KEY, "
+			"view_key INTEGER NOT NULL, "
 			"time REAL NOT NULL, "
 			"line_type INTEGER NOT NULL, "
 			"nickname TEXT, "
@@ -383,13 +398,13 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 			"line_id TEXT NOT NULL, "
 			"dedupe_key TEXT NOT NULL, "
 			"body TEXT NOT NULL);"
-		"CREATE UNIQUE INDEX IF NOT EXISTS messages_dedupe ON messages (view_id, dedupe_key);"
-		"CREATE INDEX IF NOT EXISTS messages_view_time ON messages (view_id, time);"
+		"CREATE UNIQUE INDEX IF NOT EXISTS messages_dedupe ON messages (view_key, dedupe_key);"
+		"CREATE INDEX IF NOT EXISTS messages_view_time ON messages (view_key, time);"
 		"CREATE INDEX IF NOT EXISTS messages_time ON messages (time);"
 		"CREATE INDEX IF NOT EXISTS messages_highlights ON messages (time) WHERE is_highlight = 1;"
 		"CREATE INDEX IF NOT EXISTS messages_msgid ON messages (msgid) WHERE msgid IS NOT NULL;"
 		/* Where a view's scrollback starts, asked with each page scrolled back */
-		"CREATE INDEX IF NOT EXISTS messages_view_line ON messages (view_id, line_id);"
+		"CREATE INDEX IF NOT EXISTS messages_view_line ON messages (view_key, line_id);"
 		"CREATE VIRTUAL TABLE IF NOT EXISTS messages_text USING fts5 (body, content = 'messages', content_rowid = 'id', tokenize = 'trigram');"
 		"CREATE TRIGGER IF NOT EXISTS messages_inserted AFTER INSERT ON messages BEGIN "
 			"INSERT INTO messages_text (rowid, body) VALUES (new.id, new.body); "
@@ -398,7 +413,32 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 			"INSERT INTO messages_text (messages_text, rowid, body) VALUES ('delete', old.id, old.body); "
 		"END;"
 		"CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);"
-		"PRAGMA user_version = 1;"];
+		"PRAGMA user_version = " _schemaVersionString ";"];
+}
+
+/* Archives from before 8.0 shipped: none are in use, so not converted */
+- (BOOL)_discardOlderSchema
+{
+	sqlite3_stmt *statement = NULL;
+
+	if (sqlite3_prepare_v2(self.database, "PRAGMA user_version", -1, &statement, NULL) != SQLITE_OK) {
+		return NO;
+	}
+
+	int version = ((sqlite3_step(statement) == SQLITE_ROW) ? sqlite3_column_int(statement, 0) : 0);
+
+	sqlite3_finalize(statement);
+
+	if (version == 0 || version >= _schemaVersion) {
+		return YES;
+	}
+
+	return [self _execute:
+		"DROP TRIGGER IF EXISTS messages_inserted;"
+		"DROP TRIGGER IF EXISTS messages_deleted;"
+		"DROP TABLE IF EXISTS messages_text;"
+		"DROP TABLE IF EXISTS messages;"
+		"DROP TABLE IF EXISTS meta;"];
 }
 
 - (BOOL)_execute:(const char *)sql
@@ -453,6 +493,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 - (void)_closeDatabase
 {
+	[self _forgetViewKeys];
+
 	if (self.insertStatement) {
 		sqlite3_finalize(self.insertStatement);
 
@@ -643,9 +685,63 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		(void)[self _insertRow:row];
 	}
 
-	(void)[self _execute:"COMMIT;"];
+	if ([self _execute:"COMMIT;"] == NO) {
+		[self _forgetViewKeys];
+	}
 
 	[self _postHighlightsNotificationForRows:rows];
+}
+
+/* On the queue, in a transaction: the view's key, 0 on failure. Its names
+ are those of its newest message. */
+- (int64_t)_viewKeyForRow:(TLOMessageArchiveRow *)row
+{
+	NSString *names = [NSString stringWithFormat:@"%@\n%@\n%ld", row.serverName, row.viewName, (long)row.viewType];
+
+	if ([self.viewKeyNames[row.viewId] isEqualToString:names]) {
+		return self.viewKeys[row.viewId].longLongValue;
+	}
+
+	sqlite3_stmt *statement = NULL;
+
+	int result = sqlite3_prepare_v2(self.database,
+		"INSERT INTO views (view_id, server_id, server_name, view_name, view_type) VALUES (?, ?, ?, ?, ?) "
+		"ON CONFLICT (view_id) DO UPDATE SET server_name = excluded.server_name, view_name = excluded.view_name, view_type = excluded.view_type "
+		"RETURNING id", -1, &statement, NULL);
+
+	if (result != SQLITE_OK) {
+		LogToConsoleError("Failed to prepare a view of the message archive: %{public}s", sqlite3_errmsg(self.database));
+
+		return 0;
+	}
+
+	sqlite3_bind_text(statement, 1, row.viewId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 2, row.serverId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 3, row.serverName.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 4, row.viewName.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(statement, 5, (int)row.viewType);
+
+	int64_t viewKey = 0;
+
+	if (sqlite3_step(statement) == SQLITE_ROW) {
+		viewKey = sqlite3_column_int64(statement, 0);
+	}
+
+	sqlite3_finalize(statement);
+
+	if (viewKey != 0) {
+		self.viewKeys[row.viewId] = @(viewKey);
+		self.viewKeyNames[row.viewId] = names;
+	}
+
+	return viewKey;
+}
+
+/* A rollback or a deletion may have taken views with it */
+- (void)_forgetViewKeys
+{
+	[self.viewKeys removeAllObjects];
+	[self.viewKeyNames removeAllObjects];
 }
 
 /* On the queue, in a transaction: NO when it was there already (or failed) */
@@ -657,33 +753,35 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		return NO;
 	}
 
-	sqlite3_bind_text(statement, 1, row.serverId.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(statement, 2, row.serverName.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(statement, 3, row.viewId.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(statement, 4, row.viewName.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_int(statement, 5, (int)row.viewType);
-	sqlite3_bind_double(statement, 6, row.time);
-	sqlite3_bind_int(statement, 7, (int)row.lineType);
+	int64_t viewKey = [self _viewKeyForRow:row];
+
+	if (viewKey == 0) {
+		return NO;
+	}
+
+	sqlite3_bind_int64(statement, 1, viewKey);
+	sqlite3_bind_double(statement, 2, row.time);
+	sqlite3_bind_int(statement, 3, (int)row.lineType);
 
 	if (row.nickname) {
-		sqlite3_bind_text(statement, 8, row.nickname.UTF8String, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(statement, 4, row.nickname.UTF8String, -1, SQLITE_TRANSIENT);
+	} else {
+		sqlite3_bind_null(statement, 4);
+	}
+
+	sqlite3_bind_int(statement, 5, row.isSelf);
+	sqlite3_bind_int(statement, 6, row.isHighlight);
+	sqlite3_bind_int(statement, 7, row.hasLink);
+
+	if (row.msgid) {
+		sqlite3_bind_text(statement, 8, row.msgid.UTF8String, -1, SQLITE_TRANSIENT);
 	} else {
 		sqlite3_bind_null(statement, 8);
 	}
 
-	sqlite3_bind_int(statement, 9, row.isSelf);
-	sqlite3_bind_int(statement, 10, row.isHighlight);
-	sqlite3_bind_int(statement, 11, row.hasLink);
-
-	if (row.msgid) {
-		sqlite3_bind_text(statement, 12, row.msgid.UTF8String, -1, SQLITE_TRANSIENT);
-	} else {
-		sqlite3_bind_null(statement, 12);
-	}
-
-	sqlite3_bind_text(statement, 13, row.lineId.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(statement, 14, row.dedupeKey.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(statement, 15, row.body.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 9, row.lineId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 10, row.dedupeKey.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 11, row.body.UTF8String, -1, SQLITE_TRANSIENT);
 
 	BOOL inserted = NO;
 
@@ -963,7 +1061,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		/* It may still be waiting to be written */
 		[self _writePendingRows];
 
-		[self _runStatement:"DELETE FROM messages WHERE view_id = ? AND msgid = ?" withStrings:@[viewId, msgid]];
+		[self _runStatement:"DELETE FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?) AND msgid = ?" withStrings:@[viewId, msgid]];
 	});
 }
 
@@ -1203,10 +1301,14 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		[self _writePendingRows];
 
 		if (viewId) {
-			[self _runStatement:"DELETE FROM messages WHERE view_id = ?" withStrings:@[viewId]];
+			[self _runStatement:"DELETE FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?)" withStrings:@[viewId]];
+			[self _runStatement:"DELETE FROM views WHERE view_id = ?" withStrings:@[viewId]];
 		} else {
-			[self _runStatement:"DELETE FROM messages WHERE server_id = ?" withStrings:@[serverId]];
+			[self _runStatement:"DELETE FROM messages WHERE view_key IN (SELECT id FROM views WHERE server_id = ?)" withStrings:@[serverId]];
+			[self _runStatement:"DELETE FROM views WHERE server_id = ?" withStrings:@[serverId]];
 		}
+
+		[self _forgetViewKeys];
 
 		if (completionHandler) {
 			dispatch_async(dispatch_get_main_queue(), completionHandler);
@@ -1248,9 +1350,9 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		const char *sql = "SELECT count(*) FROM messages";
 
 		if (viewId) {
-			sql = "SELECT count(*) FROM messages WHERE view_id = ?";
+			sql = "SELECT count(*) FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?)";
 		} else if (serverId) {
-			sql = "SELECT count(*) FROM messages WHERE server_id = ?";
+			sql = "SELECT count(*) FROM messages WHERE view_key IN (SELECT id FROM views WHERE server_id = ?)";
 		}
 
 		if (database && sqlite3_prepare_v2(database, sql, -1, &statement, NULL) == SQLITE_OK) {
@@ -1725,7 +1827,7 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 
 	sqlite3_stmt *existsStatement = NULL;
 
-	if (sqlite3_prepare_v2(self.database, "SELECT 1 FROM messages WHERE view_id = ? AND time >= ? AND time < ? AND nickname IS ? AND body = ? LIMIT 1", -1, &existsStatement, NULL) != SQLITE_OK) {
+	if (sqlite3_prepare_v2(self.database, "SELECT 1 FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?) AND time >= ? AND time < ? AND nickname IS ? AND body = ? LIMIT 1", -1, &existsStatement, NULL) != SQLITE_OK) {
 		LogToConsoleError("Failed to prepare importing text logs: %{public}s", sqlite3_errmsg(self.database));
 
 		return 0;
@@ -1760,7 +1862,9 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 		}
 	}
 
-	(void)[self _execute:"COMMIT;"];
+	if ([self _execute:"COMMIT;"] == NO) {
+		[self _forgetViewKeys];
+	}
 
 	sqlite3_finalize(existsStatement);
 

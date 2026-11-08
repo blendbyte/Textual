@@ -172,6 +172,49 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(self.allBodies.count, 5);
 }
 
+/* A view's ids and names are stored once however many messages it has */
+- (void)testAViewIsStoredOnce
+{
+	NSDate *time = [NSDate dateWithTimeIntervalSince1970:1700000000];
+
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"one" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:time]];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"two" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:time]];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"three" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:time] inView:@"view-2"];
+
+	NSArray *expected = @[@"view-1", @"view-2"];
+
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT view_id FROM views ORDER BY view_id"], expected);
+	XCTAssertEqual(self.allBodies.count, 3);
+}
+
+/* An archive in the format from before integer keys is replaced */
+- (void)testOlderFormatIsReplaced
+{
+	[self.archive prepareForApplicationTermination];
+
+	for (NSString *suffix in @[@"", @"-wal", @"-shm"]) {
+		[[NSFileManager defaultManager] removeItemAtPath:[self.databaseURL.path stringByAppendingString:suffix] error:NULL];
+	}
+
+	sqlite3 *database = NULL;
+
+	XCTAssertEqual(sqlite3_open_v2(self.databaseURL.fileSystemRepresentation, &database, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), NULL), SQLITE_OK);
+
+	XCTAssertEqual(sqlite3_exec(database, "CREATE TABLE messages (id INTEGER PRIMARY KEY, view_id TEXT NOT NULL, body TEXT NOT NULL);"
+								"INSERT INTO messages (view_id, body) VALUES ('old', 'old line');"
+								"PRAGMA user_version = 1;", NULL, NULL, NULL), SQLITE_OK);
+
+	sqlite3_close_v2(database);
+
+	self.archive = [[TLOMessageArchive alloc] initWithURL:self.databaseURL];
+
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"new line" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[NSDate date]]];
+
+	NSArray *expected = @[@"new line"];
+
+	XCTAssertEqualObjects(self.allBodies, expected);
+}
+
 /* The text index finds any part of a word, three characters or more,
  without IRC formatting */
 - (void)testIndexFindsPartsOfWords
