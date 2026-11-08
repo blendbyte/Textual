@@ -484,6 +484,11 @@ NS_ASSUME_NONNULL_BEGIN
 		isSelfMessage = [self nicknameIsMyself:sender];
 	}
 
+	/* The echo of a line we sent, or history of one */
+	if (isSelfMessage) {
+		text = [IRCClient textHidingPasswordInServiceCommand:text toTarget:target];
+	}
+
 	/* Does the query for the sender already exist?... */
 	IRCChannel *query = nil;
 
@@ -1295,6 +1300,29 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* A server decides what we joined, so not without limits: each channel is
+ a chat view, saved and opened again at every launch */
+- (BOOL)shouldIgnoreJoinOfChannel:(NSString *)channelName
+{
+	NSParameterAssert(channelName != nil);
+
+	if ([self stringIsChannelName:channelName] == NO) {
+		return YES;
+	}
+
+	if (self.channelList.count < IRCClientMaximumChannelCount || [self findChannel:channelName] != nil) {
+		return NO;
+	}
+
+	if (self.channelLimitNoted == NO) {
+		self.channelLimitNoted = YES;
+
+		[self printDebugInformationToConsole:TXTLS(@"IRC[ch-l1]", (unsigned long)IRCClientMaximumChannelCount)];
+	}
+
+	return YES;
+}
+
 - (void)receiveJoin:(IRCMessage *)m
 {
 	NSAssertReturn([m paramsCount] > 0);
@@ -1311,6 +1339,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (isPrintOnlyMessage == NO && myself)
 	{
+		if ([self shouldIgnoreJoinOfChannel:channelName]) {
+			return;
+		}
+
 		channel = [self findChannelOrCreate:channelName];
 
 		if (channel.isActive == NO && channel.isChannel) {

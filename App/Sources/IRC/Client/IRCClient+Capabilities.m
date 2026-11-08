@@ -768,6 +768,10 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	NSString *mechanism = self.saslMechanism;
 
 	if ([mechanism isEqualToString:@"PLAIN"]) {
+		if (self.socket.isSecured == NO) {
+			[self printDebugInformationToConsole:TXTLS(@"IRC[sp-n1]")];
+		}
+
 		NSString *username = [self saslUsername];
 
 		[self sendSASLResponse:[NSString stringWithFormat:@"%@%C%@%C%@", username, 0x00, username, 0x00, [self saslPassword]]];

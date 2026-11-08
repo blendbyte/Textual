@@ -36,6 +36,10 @@
 
 #import <XCTest/XCTest.h>
 
+#import "IRCChannelConfig.h"
+#import "IRCChannelPrivate.h"
+#import "IRCClientConfig.h"
+#import "IRCClientInternal.h"
 #import "IRCClientPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -57,6 +61,40 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([IRCClient knownNickServHostForServerAddress:@"irc.example.net"]);
 }
 
+/* A password typed to a service never reaches the screen or the logs; anything else is left alone */
+- (void)testPasswordsToServicesAreHidden
+{
+	NSString *dots = @"••••••••";
+
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"IDENTIFY hunter2" toTarget:@"NickServ"], ([NSString stringWithFormat:@"IDENTIFY %@", dots]));
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"identify dan hunter2" toTarget:@"nickserv@services.dal.net"], ([NSString stringWithFormat:@"identify %@", dots]));
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"SET PASSWORD hunter2" toTarget:@"NickServ"], ([NSString stringWithFormat:@"SET PASSWORD %@", dots]));
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"AUTH dan hunter2" toTarget:@"Q@CServe.quakenet.org"], ([NSString stringWithFormat:@"AUTH %@", dots]));
+
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"HELP IDENTIFY" toTarget:@"NickServ"], @"HELP IDENTIFY");
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"IDENTIFY" toTarget:@"NickServ"], @"IDENTIFY", @"Nothing to hide");
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"SET email a@b" toTarget:@"NickServ"], @"SET email a@b");
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"identify hunter2" toTarget:@"bob"], @"identify hunter2", @"Not a service");
+	XCTAssertEqualObjects([IRCClient textHidingPasswordInServiceCommand:@"auth me" toTarget:@"Q"], @"auth me", @"A person called Q");
+}
+
+/* A server decides what we joined, within limits */
+- (void)testJoinsAreLimited
+{
+	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	XCTAssertFalse([client shouldIgnoreJoinOfChannel:@"#textual"]);
+	XCTAssertTrue([client shouldIgnoreJoinOfChannel:@"badname"], @"Not a channel name");
+
+	for (NSUInteger i = 0; i < IRCClientMaximumChannelCount; i++) {
+		[client addChannel:[[IRCChannel alloc] initWithConfig:[IRCChannelConfig seedWithName:[NSString stringWithFormat:@"#c%lu", i]]]];
+	}
+
+	XCTAssertTrue([client shouldIgnoreJoinOfChannel:@"#textual"], @"Past the limit");
+	XCTAssertFalse([client shouldIgnoreJoinOfChannel:@"#c5"], @"One it has already");
+}
+
 @end
+
 
 NS_ASSUME_NONNULL_END

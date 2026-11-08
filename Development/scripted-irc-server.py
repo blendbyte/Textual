@@ -1703,6 +1703,31 @@ async def scenario_event_playback(client):
 	pass
 
 
+async def scenario_safety(client):
+	"""Safety checks. Offers sasl=PLAIN on a plaintext connection (give the
+	server a password: the console warns once). Puts the client in #safe and
+	sends a JOIN of "badname", which must make no channel. Say "dcc" for a
+	file offer from alice. Runs until stopped."""
+	if not await client.register_with_capabilities("sasl=PLAIN server-time"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #safe")
+	await client.send(f":{SERVER} 353 {me} = #safe :{me} alice")
+	await client.send(f":{SERVER} 366 {me} #safe :End of /NAMES list.")
+	await client.send(f":{me}!user@client.textual.test JOIN badname")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() == "PRIVMSG" and rest.endswith(" :dcc"):
+				await client.send(f":alice!a@peer.test PRIVMSG {me} :{ctcp('DCC SEND notes.txt 127.0.0.1 7777 1000')}")
+		seen = len(client.received)
+
+
 async def scenario_network_icon(client):
 	"""Network icon: the welcome names draft/ICON (Ergo's GitHub picture,
 	with {size}). Say "other" anywhere for a 005 naming another icon (IRCv3's),
@@ -3144,6 +3169,7 @@ SCENARIOS = {
 	"sts": scenario_sts,
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
+	"safety": scenario_safety,
 	"chathistory-time": scenario_chathistory_time,
 	"event-playback": scenario_event_playback,
 	"sasl-new": scenario_sasl_new,
@@ -3158,7 +3184,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"safety", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

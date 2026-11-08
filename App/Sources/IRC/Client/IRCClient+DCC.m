@@ -414,6 +414,17 @@ present_error:
 	[self print:TXTLS(@"IRC[y3w-la]", sender) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
 }
 
+/* File transfers connect directly: no proxy applies to them */
+- (BOOL)fileTransfersGoAroundProxy
+{
+	return (self.config.proxyType != IRCConnectionProxyTypeNone);
+}
+
+- (BOOL)fileTransfersRefusedByProxy
+{
+	return (self.config.proxyType == IRCConnectionProxyTypeTor);
+}
+
 - (void)receivedDCCSend:(NSString *)nickname filename:(NSString *)filename address:(NSString *)address port:(uint16_t)port filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
 {
 	NSParameterAssert(nickname != nil);
@@ -425,6 +436,12 @@ present_error:
 	[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
 
 	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyIgnore) {
+		return;
+	}
+
+	if (self.fileTransfersRefusedByProxy) {
+		[self print:TXTLS(@"IRC[dc-t1]", nickname, filename) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+
 		return;
 	}
 

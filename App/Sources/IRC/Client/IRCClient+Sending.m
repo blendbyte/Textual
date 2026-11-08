@@ -277,7 +277,11 @@ NS_ASSUME_NONNULL_BEGIN
 		stringIn = string;
 	}
 
-	NSArray *lines = ((NSAttributedString *)stringIn).splitIntoLines;
+	NSArray *lines = [self linesConfirmingCommandsIn:((NSAttributedString *)stringIn).splitIntoLines destination:destination];
+
+	if (lines == nil) {
+		return;
+	}
 
 	/* Several lines, or one too long for a line, as one message where the
 	 server takes them (draft/multiline) */
@@ -324,6 +328,121 @@ NS_ASSUME_NONNULL_BEGIN
 			[self sendText:line asCommand:command toChannel:channel];
 		}
 	}
+}
+
+/* A password typed to a service (/msg NickServ IDENTIFY secret) goes on the
+ wire as it is, but not on screen, into scrollback, the archive or a log */
++ (NSString *)textHidingPasswordInServiceCommand:(NSString *)text toTarget:(NSString *)target
+{
+	NSParameterAssert(text != nil);
+	NSParameterAssert(target != nil);
+
+	static NSSet<NSString *> *services = nil;
+	static NSSet<NSString *> *servicesWithHost = nil;
+	static NSSet<NSString *> *commands = nil;
+	static NSSet<NSString *> *settings = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		services = [NSSet setWithArray:@[@"NICKSERV", @"NS", @"USERSERV", @"AUTHSERV", @"CHANSERV", @"CS", @"OPERSERV", @"OS"]];
+
+		servicesWithHost = [NSSet setWithArray:@[@"Q", @"X"]]; // Q@CServe.quakenet.org, X@channels.undernet.org
+
+		commands = [NSSet setWithArray:@[@"IDENTIFY", @"ID", @"LOGIN", @"AUTH", @"REGISTER", @"GHOST", @"RECOVER", @"RELEASE", @"GROUP"]];
+
+		settings = [NSSet setWithArray:@[@"SET", @"SASET"]];
+	});
+
+	NSArray<NSString *> *targetParts = [target.uppercaseString componentsSeparatedByString:@"@"];
+
+	if ([services containsObject:targetParts[0]] == NO &&
+		(targetParts.count < 2 || [servicesWithHost containsObject:targetParts[0]] == NO))
+	{
+		return text;
+	}
+
+	NSArray<NSString *> *words = [text componentsSeparatedByString:@" "];
+
+	NSUInteger wordsKept = 0;
+
+	NSString *firstWord = words[0].uppercaseString;
+
+	if ([commands containsObject:firstWord]) {
+		wordsKept = 1;
+	} else if ([settings containsObject:firstWord] && words.count > 2 &&
+			   ([words[1].uppercaseString isEqualToString:@"PASSWORD"] || [words[1].uppercaseString isEqualToString:@"PASS"]))
+	{
+		wordsKept = 2;
+	}
+
+	if (wordsKept == 0 || words.count <= wordsKept) {
+		return text;
+	}
+
+	NSArray *wordsShown = [words subarrayWithRange:NSMakeRange(0, wordsKept)];
+
+	return [NSString stringWithFormat:@"%@ ••••••••", [wordsShown componentsJoinedByString:@" "]];
+}
+
+/* Several lines with a command among them: often a pasted log or path rather
+ than something to run. nil when the user cancels; "as text" doubles the "/". */
+- (nullable NSArray<NSAttributedString *> *)linesConfirmingCommandsIn:(NSArray<NSAttributedString *> *)lines destination:(IRCTreeItem *)destination
+{
+	NSParameterAssert(lines != nil);
+	NSParameterAssert(destination != nil);
+
+	if (lines.count < 2 || destination.isClient) {
+		return lines;
+	}
+
+	BOOL (^lineIsCommand)(NSString *) = ^BOOL(NSString *string) {
+		return ([string hasPrefix:@"/"] && [string hasPrefix:@"//"] == NO && string.length > 1);
+	};
+
+	BOOL hasCommand = NO;
+
+	for (NSAttributedString *line in lines) {
+		if (lineIsCommand(line.string)) {
+			hasCommand = YES;
+
+			break;
+		}
+	}
+
+	if (hasCommand == NO) {
+		return lines;
+	}
+
+	TDCAlertResponse response = [TDCAlert modalAlertWithMessage:TXTLS(@"IRC[mlc-b]")
+														   title:TXTLS(@"IRC[mlc-t]")
+												   defaultButton:TXTLS(@"IRC[mlc-c]")
+												 alternateButton:TXTLS(@"Prompts[qso-2g]")
+													 otherButton:TXTLS(@"IRC[mlc-r]")];
+
+	if (response == TDCAlertResponseOther) {
+		return lines;
+	}
+
+	if (response != TDCAlertResponseDefault) {
+		return nil;
+	}
+
+	NSMutableArray<NSAttributedString *> *linesAsText = [NSMutableArray arrayWithCapacity:lines.count];
+
+	for (NSAttributedString *line in lines) {
+		if (lineIsCommand(line.string)) {
+			NSMutableAttributedString *lineMutable = [line mutableCopy];
+
+			[lineMutable replaceCharactersInRange:NSMakeRange(0, 0) withString:@"/"];
+
+			[linesAsText addObject:[lineMutable copy]];
+		} else {
+			[linesAsText addObject:line];
+		}
+	}
+
+	return [linesAsText copy];
 }
 
 /* Text that becomes many messages: send it (YES), not (NO), or, where text can
@@ -540,8 +659,10 @@ NS_ASSUME_NONNULL_BEGIN
 		if (channel && [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] == NO) {
 			outgoing.printedLocally = YES;
 
+			NSString *messageToPrint = [IRCClient textHidingPasswordInServiceCommand:message toTarget:destinationName];
+
 			[self printOutgoingMessage:outgoing usingBlock:^{
-				[self print:message
+				[self print:messageToPrint
 						 by:self.userNickname
 				  inChannel:channel
 					 asType:lineType

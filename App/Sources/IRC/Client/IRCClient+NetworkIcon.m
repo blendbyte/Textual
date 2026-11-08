@@ -93,6 +93,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(data != nil);
 
+	/* NSImage would open a PDF too, which no icon needs */
+	NSData *PDFMarker = [@"%PDF" dataUsingEncoding:NSASCIIStringEncoding];
+
+	if ([data rangeOfData:PDFMarker options:0 range:NSMakeRange(0, MIN(data.length, 1024))].location != NSNotFound) {
+		return nil;
+	}
+
 	/* Refuse a small file that unpacks into a huge picture. SVG isn't
 	 read by ImageIO and has no pixel size; NSImage draws it. */
 	CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
@@ -504,6 +511,14 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self loadNetworkIconIfNeeded];
+
+	/* The address comes from the network behind the bouncer, and fetching
+	 it would show that network where this Mac really is */
+	if (self.config.bouncerAccountIdentifier != nil || self.isConnectedToZNC ||
+		[self isCapabilityEnabled:ClientIRCv3SupportedCapabilityBouncerNetworks])
+	{
+		return;
+	}
 
 	if ([address isEqualToString:self.networkIconSavedAddress] ||
 		[address isEqualToString:self.networkIconRequestAddress])

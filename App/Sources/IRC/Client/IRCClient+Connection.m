@@ -160,6 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.chatHistoryTargetsRemaining = 0;
 	self.chatHistoryMissedConversationsRequested = NO;
+	self.channelLimitNoted = NO;
 
 	self.userIsAway = NO;
 	self.awayRestoredBeforeRegistration = NO;
