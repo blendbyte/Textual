@@ -1549,7 +1549,7 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 				}];
 }
 
-+ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status))progressHandler completionHandler:(void (^)(NSString *status))completionHandler
++ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status, double fraction))progressHandler completionHandler:(void (^)(NSString *status))completionHandler
 {
 	NSParameterAssert(window != nil);
 	NSParameterAssert(progressHandler != nil);
@@ -1579,10 +1579,16 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 
 		BOOL accessing = [folderURL startAccessingSecurityScopedResource];
 
-		progressHandler(TXTLS(@"TDCPreferencesController[set-his-i6]"));
+		/* A fraction below 0: still looking, the bar doesn't know how far */
+		progressHandler(TXTLS(@"TDCPreferencesController[set-his-i6]"), -1);
 
 		[sharedMessageArchive() importTextLogsInFolder:folderURL progressHandler:^(NSUInteger filesDone, NSUInteger fileCount) {
-			progressHandler(TXTLS(@"TDCPreferencesController[set-his-i3]", filesDone, fileCount));
+			NSString *doneString = [NSNumberFormatter localizedStringFromNumber:@(filesDone) numberStyle:NSNumberFormatterDecimalStyle];
+			NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(fileCount) numberStyle:NSNumberFormatterDecimalStyle];
+
+			double fraction = ((fileCount > 0) ? ((double)filesDone / (double)fileCount) : 0);
+
+			progressHandler(TXTLS(@"TDCPreferencesController[set-his-i3]", doneString, countString), fraction);
 		} completionHandler:^(NSUInteger importedCount) {
 			if (accessing) {
 				[folderURL stopAccessingSecurityScopedResource];

@@ -604,7 +604,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-his-d3" = "Delete Archive";
 "set-his-i1" = "Choose the folder with the text logs, or one server’s or channel’s folder in it.";
 "set-his-i2" = "Import";
-"set-his-i3" = "Importing… %1$lu of %2$lu files";
+"set-his-i3" = "%1$@ of %2$@ files";
 "set-his-i4" = "Added %@ messages.";
 "set-his-i5" = "No new messages found.";
 "set-his-i6" = "Looking for text logs…";

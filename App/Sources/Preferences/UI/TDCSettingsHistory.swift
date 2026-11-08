@@ -58,6 +58,7 @@ struct HistorySettings: View
 	@State private var fileSize = ""
 	@State private var busy = false
 	@State private var importStatus = ""
+	@State private var importProgress: Double? = nil // nil: no bar; below 0: a bar that doesn't know how far
 
 	/* Where the slider is: a position in keepPeriods */
 	@State private var keepIndex = 4.0
@@ -167,6 +168,7 @@ struct HistorySettings: View
 						busy = true
 
 						importStatus = ""
+						importProgress = nil
 
 						TDCSettingsBridge.deleteMessageArchive(withMessageCount: messageCount, in: window) {
 							busy = false
@@ -180,33 +182,49 @@ struct HistorySettings: View
 				}
 
 				LabeledContent {
-					HStack {
-						if (importStatus.isEmpty == false) {
-							Text(importStatus)
-								.foregroundStyle(.secondary)
+					Button(SettingsText("set-his-i")) {
+						guard let window = model.window else {
+							return
 						}
 
-						Button(SettingsText("set-his-i")) {
-							guard let window = model.window else {
-								return
-							}
+						busy = true
 
-							busy = true
+						TDCSettingsBridge.importTextLogs(in: window) { (status, fraction) in
+							importStatus = status
+							importProgress = fraction
+						} completionHandler: { (status) in
+							busy = false
 
-							TDCSettingsBridge.importTextLogs(in: window) { (status) in
-								importStatus = status
-							} completionHandler: { (status) in
-								busy = false
+							importStatus = status
+							importProgress = nil
 
-								importStatus = status
-
-								updateArchiveSize()
-							}
+							updateArchiveSize()
 						}
-						.disabled(busy || archiveOn == false)
 					}
+					.disabled(busy || archiveOn == false)
 				} label: {
 					SettingLabel(title: SettingsText("set-his-it"), help: SettingsText("set-his-ih"))
+				}
+
+				/* A row of its own, so the progress isn't squeezed beside the button */
+				if (importStatus.isEmpty == false) {
+					HStack(spacing: 10) {
+						if let importProgress {
+							if (importProgress < 0) {
+								ProgressView()
+									.progressViewStyle(.linear)
+							} else {
+								ProgressView(value: importProgress)
+							}
+
+							Text(importStatus)
+								.foregroundStyle(.secondary)
+								.monospacedDigit()
+								.fixedSize()
+						} else {
+							SettingFooter(text: importStatus)
+						}
+					}
 				}
 			}
 

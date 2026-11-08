@@ -236,7 +236,7 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 + (void)deleteMessageArchiveWithMessageCount:(NSInteger)messageCount inWindow:(NSWindow *)window completionHandler:(void (^)(void))completionHandler;
 
 /* The handlers are given what to show next to the button */
-+ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status))progressHandler completionHandler:(void (^)(NSString *status))completionHandler;
++ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status, double fraction))progressHandler completionHandler:(void (^)(NSString *status))completionHandler;
 
 @property (class, readonly, copy, nullable) NSURL *transcriptFolderURL;
 
