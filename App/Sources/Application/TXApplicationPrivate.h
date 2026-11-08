@@ -44,6 +44,17 @@ NS_ASSUME_NONNULL_BEGIN
  Translocation), where it can't update itself */
 + (BOOL)applicationCanUpdateInPlace;
 + (void)askToMoveToApplicationsFolderAndQuit;
+
+/* Quits without saving and starts a new copy, which waits until this one
+ is gone. With erasing, the new copy first deletes Textual's data (see
+ +eraseDataForFreshStart) and so starts like the first time. */
++ (void)restartErasingData:(BOOL)eraseData;
+
+/* Only from main(), before anything is loaded: the preferences (servers
+ included), the message archive, scrollback, caches and logs go. The
+ licence and trial files, your own styles and addons, the Keychain and
+ text log files in your own folder stay. */
++ (void)eraseDataForFreshStart;
 @end
 
 NS_ASSUME_NONNULL_END

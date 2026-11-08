@@ -27,6 +27,12 @@ int main(int argc, const char *argv[])
 
 				usleep(100000);
 			}
+
+			/* Settings › Advanced › Reset Textual: the old copy is gone, so
+			 nothing it had open or could still save brings data back */
+			if ([restart[@"eraseData"] boolValue]) {
+				[TXApplication eraseDataForFreshStart];
+			}
 		}
 
 #ifndef DEBUG

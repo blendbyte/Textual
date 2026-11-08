@@ -39,10 +39,118 @@
 #import "TLOLocalization.h"
 #import "TPCApplicationInfo.h"
 #import "TXApplicationPrivate.h"
+#import "TPCPathInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation TXApplication
+
+#pragma mark -
+#pragma mark Restart and Reset
+
+/* The process identifier goes through the preferences because a sandboxed
+ app can't pass launch arguments to the copy it starts (main.m) */
++ (void)restartErasingData:(BOOL)eraseData
+{
+	/* Straight into the standard domain, as main() reads it (Textual's own
+	 preferences object only takes keys it knows) */
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+	[defaults setObject:@{
+		@"processIdentifier" : @([NSProcessInfo processInfo].processIdentifier),
+		@"date" : [NSDate date],
+		@"eraseData" : @(eraseData)
+	} forKey:@"TextualRestartAfterProcess"];
+
+	[defaults synchronize];
+
+	NSWorkspaceOpenConfiguration *configuration = [NSWorkspaceOpenConfiguration configuration];
+
+	configuration.createsNewApplicationInstance = YES;
+
+	/* A launch refused at once (the copy moved or deleted) keeps this one
+	 open rather than leaving nothing running */
+	__block BOOL launchFailed = NO;
+
+	[RZWorkspace() openApplicationAtURL:RZMainBundle().bundleURL
+						  configuration:configuration
+					  completionHandler:^(NSRunningApplication *application, NSError *error) {
+		if (error == nil) {
+			return;
+		}
+
+		LogToConsoleError("Failed to restart: %{public}@", error.localizedDescription);
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			launchFailed = YES;
+
+			[defaults removeObjectForKey:@"TextualRestartAfterProcess"];
+		});
+	}];
+
+	/* Not in the completion handler: that only runs once the new copy has
+	 launched, and the new copy waits for this one to quit first */
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		if (launchFailed) {
+			return;
+		}
+
+		exit(0);
+	});
+}
+
++ (void)eraseDataForFreshStart
+{
+	NSString *bundleIdentifier = [NSBundle mainBundle].bundleIdentifier;
+
+	if (bundleIdentifier == nil) {
+		return;
+	}
+
+	/* Only inside Textual's own sandbox container: unsandboxed (an unsigned
+	 build), these folders would be the user's own Library folders */
+	NSString *containerSuffix = [NSString stringWithFormat:@"/Library/Containers/%@/Data", bundleIdentifier];
+
+	if ([NSHomeDirectory() hasSuffix:containerSuffix] == NO) {
+		LogToConsoleError("Reset refused: not running in Textual's sandbox container");
+
+		return;
+	}
+
+	LogToConsoleInfo("Erasing Textual's data for a fresh start");
+
+	[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:bundleIdentifier];
+
+	NSURL *libraryURL = [[NSURL fileURLWithPath:NSHomeDirectory()] URLByAppendingPathComponent:@"Library"];
+
+	for (NSString *folder in @[@"Caches", @"Logs"]) {
+		[RZFileManager() removeItemAtURL:[libraryURL URLByAppendingPathComponent:folder] error:NULL];
+	}
+
+	/* In Application Support: your own styles and addons, and the licence,
+	 activation and trial files (Textual_….plist) stay */
+	NSURL *supportURL = [TPCPathInfo applicationSupportURL];
+
+	if (supportURL == nil) {
+		return;
+	}
+
+	NSArray *contents = [RZFileManager() contentsOfDirectoryAtURL:supportURL includingPropertiesForKeys:nil options:0 error:NULL];
+
+	for (NSURL *itemURL in contents) {
+		NSString *name = itemURL.lastPathComponent;
+
+		if ([name isEqualToString:@"Styles"] || [name isEqualToString:@"Extensions"]) {
+			continue;
+		}
+
+		if ([name hasPrefix:@"Textual_"] && [name.pathExtension isEqualToString:@"plist"]) {
+			continue;
+		}
+
+		[RZFileManager() removeItemAtURL:itemURL error:NULL];
+	}
+}
 
 + (BOOL)checkForOtherCopiesOfTextualRunning
 {

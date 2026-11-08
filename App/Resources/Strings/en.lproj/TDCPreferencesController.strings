@@ -306,6 +306,12 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-adv-wh" = "Shows every warning again that you told not to ask again.";
 "set-adv-wd" = "Done: they show again.";
 "set-adv-we" = "Show Again";
+"set-adv-x" = "Reset Textual";
+"set-adv-xh" = "Starts again like the first time, with the setup. Your licence, saved passwords, your own styles and addons, and text log files are kept.";
+"set-adv-xb" = "Reset…";
+"set-adv-x1" = "Reset Textual and start over?";
+"set-adv-x2" = "Your servers, settings, message archive and scrollback are deleted, and Textual starts again with the setup, as the first time. Your licence, saved passwords, your own styles and addons, and text log files are kept.\n\nThis can’t be undone.";
+"set-adv-x3" = "Reset and Restart";
 
 /* Settings › Appearance */
 "set-app-a0" = "Like the Mac";

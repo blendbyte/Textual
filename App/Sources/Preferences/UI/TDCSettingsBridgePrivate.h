@@ -90,6 +90,10 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 /* Every warning turned off with "Don't ask me again" shows again */
 + (void)resetSuppressedWarnings;
 
+/* Asks (Cancel is the default), then restarts Textual erasing its data,
+ so it starts like the first time */
++ (void)resetTextualInWindow:(NSWindow *)window;
+
 /* Colors stored as archives; nil is the default */
 + (nullable NSColor *)colorForKey:(NSString *)key;
 + (void)setColor:(nullable NSColor *)color forKey:(NSString *)key;

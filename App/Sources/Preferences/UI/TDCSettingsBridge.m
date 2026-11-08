@@ -75,6 +75,7 @@
 #import "TLOMessageArchivePrivate.h"
 #import "TPCPathInfoPrivate.h"
 #import "ICPCoreMediaPrivate.h"
+#import "TXApplicationPrivate.h"
 #import "TDCSettingsBridgePrivate.h"
 #import "TDCAlert.h"
 #import "TPCTheme.h"
@@ -418,6 +419,31 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 + (void)resetSuppressedWarnings
 {
 	[menuController() resetDoNotAskMePopupWarnings:nil];
+}
+
++ (void)resetTextualInWindow:(NSWindow *)window
+{
+	NSParameterAssert(window != nil);
+
+	NSAlert *alert = [NSAlert new];
+
+	alert.alertStyle = NSAlertStyleCritical;
+	alert.messageText = TXTLS(@"TDCPreferencesController[set-adv-x1]");
+	alert.informativeText = TXTLS(@"TDCPreferencesController[set-adv-x2]");
+
+	/* Cancel first, so Return doesn't erase anything */
+	[alert addButtonWithTitle:TXTLS(@"Prompts[qso-2g]")];
+	[alert addButtonWithTitle:TXTLS(@"TDCPreferencesController[set-adv-x3]")];
+
+	alert.buttons.lastObject.hasDestructiveAction = YES;
+
+	[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse response) {
+		if (response != NSAlertSecondButtonReturn) {
+			return;
+		}
+
+		[TXApplication restartErasingData:YES];
+	}];
 }
 
 #pragma mark -

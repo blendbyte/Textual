@@ -656,6 +656,16 @@ struct AdvancedSettings: View
 				} label: {
 					SettingLabel(title: SettingsText("set-adv-w"), help: SettingsText((warningsReset) ? "set-adv-wd" : "set-adv-wh"))
 				}
+
+				LabeledContent {
+					Button(SettingsText("set-adv-xb"), role: .destructive) {
+						if let window = model.window {
+							TDCSettingsBridge.resetTextual(in: window)
+						}
+					}
+				} label: {
+					SettingLabel(title: SettingsText("set-adv-x"), help: SettingsText("set-adv-xh"))
+				}
 			}
 		}
 	}
