@@ -279,6 +279,9 @@ NS_ASSUME_NONNULL_BEGIN
 		} else if (connectionPrefersSecuredConnection) {
 			serverPort = IRCConnectionDefaultSecureServerPort;
 		}
+
+		/* An STS upgrade is the same server, so it logs in the same way */
+		self.server = self.temporaryServerKeptAcrossUpgrade;
 	}
 
 	if (serverAddress.isValidInternetAddress == NO) {
@@ -327,6 +330,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.temporaryServerAddressOverride = nil;
 	self.temporaryServerPortOverride = 0;
 	self.temporaryServerPrefersSecuredConnection = NO;
+	self.temporaryServerKeptAcrossUpgrade = nil;
 
 	/* Reset status */
 	self.connectType = connectMode;
@@ -386,7 +390,9 @@ NS_ASSUME_NONNULL_BEGIN
 	socketConfig.cipherSuites = self.config.cipherSuites;
 
 	socketConfig.connectionPrefersSecuredConnection = connectionPrefersSecuredConnection;
-	socketConfig.connectionShouldValidateCertificateChain = self.config.validateServerCertificateChain;
+	/* strict-transport-security: while a policy lasts, a certificate is always checked */
+	socketConfig.connectionShouldValidateCertificateChain =
+	(self.config.validateServerCertificateChain || [[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress] > 0);
 
 	socketConfig.identityClientSideCertificate = [self clientCertificateReferenceForConnecting];
 

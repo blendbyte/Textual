@@ -108,6 +108,7 @@
 #import "IRCWorldPrivate.h"
 #import "IRCUserListPrivate.h"
 #import "IRCClientInternal.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -198,6 +199,11 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	BOOL isTerminating = self.isTerminating;
+
+	/* The socket no longer says it was secured by now; its configuration does */
+	if (self.isLoggedIn && self.socket.config.connectionPrefersSecuredConnection) {
+		[[IRCStrictTransportSecurity sharedPolicies] rescheduleExpiryForHost:self.socket.config.serverAddress];
+	}
 
 	self.socket = nil;
 

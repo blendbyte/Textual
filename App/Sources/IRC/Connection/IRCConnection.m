@@ -47,6 +47,7 @@
 #import "IRCConnectionPrivate.h"
 #import "IRCBouncerAccountPrivate.h"
 #import "IRCConnectionTransportPrivate.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -500,6 +501,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 			return;
 		}
+	}
+
+	/* strict-transport-security: no way past a bad certificate while a policy lasts */
+	NSString *serverAddress = self.config.serverAddress;
+
+	if ([[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress] > 0) {
+		IRCClient *client = self.client;
+
+		[client printDebugInformationToConsole:TXTLS(@"IRC[st5-u6]", serverAddress)];
+
+		trustBlock(NO);
+
+		return;
 	}
 
 	[self openInsecureCertificateTrustPanel:trustBlock];

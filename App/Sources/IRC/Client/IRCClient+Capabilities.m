@@ -263,6 +263,8 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	[self printDebugInformationToConsole:TXTLS(@"IRC[st5-u1]", host, port)];
 
+	IRCServer *server = self.server;
+
 	[self disconnectThen:^(IRCClient *client) {
 		[client connect];
 	}];
@@ -271,6 +273,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	self.temporaryServerAddressOverride = host;
 	self.temporaryServerPortOverride = (uint16_t)port;
 	self.temporaryServerPrefersSecuredConnection = YES;
+	self.temporaryServerKeptAcrossUpgrade = server;
 }
 
 #pragma mark -

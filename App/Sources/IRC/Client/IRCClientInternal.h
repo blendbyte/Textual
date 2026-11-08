@@ -246,6 +246,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *temporaryServerAddressOverride;
 @property (nonatomic, assign) uint16_t temporaryServerPortOverride;
 @property (nonatomic, assign) BOOL temporaryServerPrefersSecuredConnection;
+@property (nonatomic, strong, nullable) IRCServer *temporaryServerKeptAcrossUpgrade; // STS only: redirects and /CONN go elsewhere, without the password
 @property (readonly) BOOL isBrokenIRCd_aka_Twitch;
 @property (readonly) BOOL monitorAwayStatus;
 @property (readonly) BOOL supportsAdvancedTracking;

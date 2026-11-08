@@ -190,8 +190,39 @@ static NSString * const IRCStrictTransportSecurityPoliciesKey = @"IRCClient Stri
 
 		[self setPolicy:@{
 			@"port" : @(port),
+			@"duration" : @(duration),
 			@"expiresAt" : [date dateByAddingTimeInterval:duration]
 		} forHost:host];
+	}
+}
+
+- (void)rescheduleExpiryForHost:(NSString *)host
+{
+	[self rescheduleExpiryForHost:host atDate:[NSDate date]];
+}
+
+- (void)rescheduleExpiryForHost:(NSString *)host atDate:(NSDate *)date
+{
+	NSParameterAssert(host != nil);
+	NSParameterAssert(date != nil);
+
+	@synchronized (self) {
+		/* A session longer than the policy has outlived it by now, which
+		 is what this is for: the countdown runs from the end of it */
+		NSDictionary *policy = [self policies][host.lowercaseString];
+
+		NSUInteger duration = [policy unsignedIntegerForKey:@"duration"];
+
+		/* No policy, or stored before durations were kept */
+		if (duration == 0) {
+			return;
+		}
+
+		NSMutableDictionary *policyMutable = [policy mutableCopy];
+
+		policyMutable[@"expiresAt"] = [date dateByAddingTimeInterval:duration];
+
+		[self setPolicy:policyMutable forHost:host];
 	}
 }
 

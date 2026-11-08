@@ -58,6 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)storePolicyForHost:(NSString *)host port:(uint16_t)port duration:(NSUInteger)duration;
 - (void)storePolicyForHost:(NSString *)host port:(uint16_t)port duration:(NSUInteger)duration atDate:(NSDate *)date;
 
+/* When a secure connection closes the policy runs from then, not from when it was received */
+- (void)rescheduleExpiryForHost:(NSString *)host;
+- (void)rescheduleExpiryForHost:(NSString *)host atDate:(NSDate *)date;
+
 /* When the policy for host expires, or nil */
 - (nullable NSDate *)expiryForHost:(NSString *)host;
 
