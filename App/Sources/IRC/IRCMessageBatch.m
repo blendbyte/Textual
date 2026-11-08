@@ -80,6 +80,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dequeueEntries
 {
 	@synchronized(self.internalBatchEntries) {
+		/* A batch and its messages hold each other */
+		for (IRCMessageBatchMessage *entry in self.internalBatchEntries.allValues) {
+			[entry dequeueEntries];
+		}
+
 		[self.internalBatchEntries removeAllObjects];
 	}
 }

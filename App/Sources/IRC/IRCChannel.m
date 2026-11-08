@@ -363,6 +363,7 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 
 	self.typingNicknameExpiryDates = nil;
 	self.typingActiveSentAt = nil;
+	self.typingLastSentAt = nil;
 
 	self.channelJoinTime = 0;
 
@@ -508,6 +509,11 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 
 - (void)logFileWriteSessionEnd
 {
+	/* Nothing was logged, as after a connection attempt that failed */
+	if (self.logFileSessionCount == 0) {
+		return;
+	}
+
 	[self.associatedClient logFileRecordSessionChanged:NO inChannel:self];
 
 	self.logFileSessionCount = 0;

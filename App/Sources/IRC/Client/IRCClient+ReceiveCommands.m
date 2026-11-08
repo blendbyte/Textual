@@ -1385,6 +1385,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[channel addMember:member checkForDuplicates:YES];
 
+		/* Earlier, when tags are read, a newcomer wasn't on the list yet */
+		[self processBotTagInMessage:m];
+
 		/* Ours: the channel's member list (end of NAMES) updates the bars */
 		if (myself == NO) {
 			[self updateQueryInfoBarsForNickname:sender];
@@ -1744,7 +1747,10 @@ NS_ASSUME_NONNULL_BEGIN
 	if (myself == NO) {
 		[TVCMainWindow updateTitleFor:self];
 
-		[self notifyEvent:TXNotificationTypeUserDisconnected lineType:TVCLogLineTypeQuit target:nil nickname:sender text:comment];
+		/* A netsplit is one line, not a notification for each person */
+		if (self.netsplitBatch == nil || m.parentBatchMessage != self.netsplitBatch) {
+			[self notifyEvent:TXNotificationTypeUserDisconnected lineType:TVCLogLineTypeQuit target:nil nickname:sender text:comment];
+		}
 
 		[self updateQueryInfoBarsForNickname:sender];
 	}
@@ -1808,6 +1814,13 @@ NS_ASSUME_NONNULL_BEGIN
 		if (myself)
 		{
 			self.userNickname = newNickname;
+
+			/* Long messages are split by the length of this */
+			NSUInteger hostmaskNicknameEnd = [self.userHostmask rangeOfString:@"!"].location;
+
+			if (self.userHostmask && hostmaskNicknameEnd != NSNotFound) {
+				self.userHostmask = [newNickname stringByAppendingString:[self.userHostmask substringFromIndex:hostmaskNicknameEnd]];
+			}
 
 			if (self.tryingNicknameSentNickname != nil) {
 				self.tryingNicknameSentNickname = newNickname;
@@ -2362,6 +2375,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *nickname = m.senderNickname;
 
+	if ([self nicknameIsMyself:nickname]) {
+		self.userHostmask = [NSString stringWithFormat:@"%@!%@@%@", nickname, username, address];
+	}
+
 	[self modifyUserUserWithNickname:nickname withBlock:^(IRCUserMutable *userMutable) {
 		userMutable.username = username;
 		userMutable.address = address;
@@ -2589,7 +2606,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	if (m.isPrintOnlyMessage || m.senderIsServer || m.isHistoric) {
+	/* Replayed lines carry the mode the user had then. Live lines with
+	 server-time are seconds old; a bouncer's backlog is older. */
+	if (m.isPrintOnlyMessage || m.senderIsServer || (m.isHistoric && m.receivedAt.timeIntervalSinceNow < (-60.0))) {
 		return;
 	}
 

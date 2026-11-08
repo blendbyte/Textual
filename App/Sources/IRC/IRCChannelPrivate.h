@@ -69,6 +69,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 
 /* Typing notifications (+typing): who is typing here, until when */
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSDate *> *typingNicknameExpiryDates;
+@property (nonatomic, copy, nullable) NSDate *typingLastSentAt; // our last notification of any kind
 @property (nonatomic, copy, nullable) NSDate *typingActiveSentAt; // our last "active", nil when we said nothing or "done"
 
 /* YES when the set of typing nicknames changed */

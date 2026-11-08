@@ -738,6 +738,15 @@
 		<key>indexValue</key>
 		<integer>5066</integer>
 	</dict>
+	<key>setname</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5126</integer>
+		<key>arguments</key>
+		<string>&lt;real name&gt;</string>
+	</dict>
 	<key>sts</key>
 	<dict>
 		<key>developerModeOnly</key>

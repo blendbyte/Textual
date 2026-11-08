@@ -1728,6 +1728,59 @@ async def scenario_safety(client):
 		seen = len(client.received)
 
 
+async def scenario_small_fixes(client):
+	"""#small with alice. /whois alice: Solanum's 4-parameter 338 and an away
+	line, every time. "mode": a 324 for #listed (join it first; the server
+	ignores that join, so it stays unjoined): "Mode is +nt". "newnick NAME"
+	renames the client, then a long message must fit the new prefix. A bot joins
+	with server-time and the bot tag: it gets its badge. /setname is noted.
+	Runs until stopped."""
+	client.isupport_extra = "BOT=B"
+
+	if not await client.register_with_capabilities("batch server-time message-tags setname chghost away-notify"):
+		return
+
+	me = client.nickname
+
+	def stamp():
+		moment = datetime.datetime.now(datetime.timezone.utc)
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	await client.send(f":{me}!user@client.textual.test JOIN #small")
+	await client.send(f":{SERVER} 353 {me} = #small :{me} alice")
+	await client.send(f":{SERVER} 366 {me} #small :End of /NAMES list.")
+	await client.collect(1)
+	await client.send(f"@time={stamp()};bot :botty!b@bots.test JOIN #small")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "WHOIS":
+				await client.send(f":{SERVER} 311 {me} alice a peer.test * :Alice")
+				await client.send(f":{SERVER} 338 {me} alice 203.0.113.9 :actually using host")
+				await client.send(f":{SERVER} 301 {me} alice :gone fishing")
+				await client.send(f":{SERVER} 318 {me} alice :End of /WHOIS list.")
+			elif command == "SETNAME":
+				result(rest.lstrip(":") == "New Real Name", f"SETNAME: {rest!r}")
+			elif command == "TAGMSG" or command.startswith("@"):
+				log("typing", line)
+			elif command == "PRIVMSG":
+				target, _, text = rest.partition(" :")
+				if text == "mode":
+					await client.send(f":{SERVER} 324 {me} #listed +nt")
+				elif text.startswith("newnick "):
+					new = text.split(" ", 1)[1]
+					await client.send(f":{me}!user@client.textual.test NICK :{new}")
+					me = new
+				elif len(text) > 200:
+					relayed = len(f":{me}!user@client.textual.test PRIVMSG {target} :{text}".encode()) + 2
+					result(relayed <= 512, f"{relayed} bytes relayed for a piece, with the new prefix")
+		seen = len(client.received)
+
+
 async def scenario_network_icon(client):
 	"""Network icon: the welcome names draft/ICON (Ergo's GitHub picture,
 	with {size}). Say "other" anywhere for a 005 naming another icon (IRCv3's),
@@ -3170,6 +3223,7 @@ SCENARIOS = {
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
 	"safety": scenario_safety,
+	"small-fixes": scenario_small_fixes,
 	"chathistory-time": scenario_chathistory_time,
 	"event-playback": scenario_event_playback,
 	"sasl-new": scenario_sasl_new,
@@ -3184,7 +3238,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"safety", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"safety", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

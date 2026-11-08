@@ -306,6 +306,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandUnquiet) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
 			@(IRCLocalCommandVoice) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandWallops) : NSStringFromSelector(@selector(_handleLocalCommandWallops:)),
+			@(IRCLocalCommandSetname) : NSStringFromSelector(@selector(_handleLocalCommandSetname:)),
 			@(IRCLocalCommandSts) : NSStringFromSelector(@selector(_handleLocalCommandSts:)),
 			@(IRCLocalCommandRegister) : NSStringFromSelector(@selector(_handleLocalCommandRegister:)),
 			@(IRCLocalCommandVerify) : NSStringFromSelector(@selector(_handleLocalCommandVerify:)),
@@ -718,6 +719,26 @@ static NSUInteger _aliasDepth = 0;
 - (void)_handleLocalCommandVerify:(IRCLocalCommandContext *)context
 {
 	[self verifyAccountWithArguments:[self _accountRegistrationArgumentsOfContext:context]];
+}
+
+/* SETNAME: the real name, while connected; Server Properties is where it's saved */
+- (void)_handleLocalCommandSetname:(IRCLocalCommandContext *)context
+{
+	NSString *realName = context.stringIn.string.trim;
+
+	if (realName.length == 0) {
+		[self printInvalidSyntaxMessageForCommand:context.command];
+
+		return;
+	}
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilitySetName] == NO) {
+		[self printDebugInformation:TXTLS(@"IRC[stn-n1]")];
+
+		return;
+	}
+
+	[self send:@"SETNAME", realName, nil];
 }
 
 /* STS: the strict transport security policies of this server's addresses; "clear" removes them */

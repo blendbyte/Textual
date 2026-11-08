@@ -100,13 +100,15 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 		return;
 	}
 
-	NSDate *sentAt = channel.typingActiveSentAt;
+	/* Since any notification, so that typing and clearing doesn't send a burst */
+	NSDate *lastSentAt = channel.typingLastSentAt;
 
-	if (sentAt && [[NSDate date] timeIntervalSinceDate:sentAt] < IRCClientTypingActiveInterval) {
+	if (lastSentAt && [[NSDate date] timeIntervalSinceDate:lastSentAt] < IRCClientTypingActiveInterval) {
 		return;
 	}
 
 	channel.typingActiveSentAt = [NSDate date];
+	channel.typingLastSentAt = channel.typingActiveSentAt;
 
 	[self sendLine:[NSString stringWithFormat:@"@+typing=active TAGMSG %@", channel.name]];
 }
@@ -126,6 +128,8 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 		return;
 	}
 
+	channel.typingLastSentAt = [NSDate date];
+
 	[self sendLine:[NSString stringWithFormat:@"@+typing=done TAGMSG %@", channel.name]];
 }
 
@@ -144,6 +148,8 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 	if ([self canSendTypingNotificationsToChannel:channel] == NO) {
 		return;
 	}
+
+	channel.typingLastSentAt = [NSDate date];
 
 	[self sendLine:[NSString stringWithFormat:@"@+typing=paused TAGMSG %@", channel.name]];
 }

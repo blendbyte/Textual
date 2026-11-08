@@ -238,6 +238,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)logFileWriteSessionEnd
 {
+	/* Nothing was logged, as after a connection attempt that failed */
+	if (self.logFileSessionCount == 0) {
+		return;
+	}
+
 	[self logFileRecordSessionChanged:NO inChannel:nil];
 
 	self.logFileSessionCount = 0;

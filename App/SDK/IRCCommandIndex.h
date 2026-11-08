@@ -119,6 +119,7 @@ typedef NS_ENUM(NSUInteger, IRCLocalCommand) {
 	IRCLocalCommandRemove = 5061,
 	IRCLocalCommandServer = 5062,
 	IRCLocalCommandSetcolor = 5103,
+	IRCLocalCommandSetname = 5126,
 	IRCLocalCommandSetqueryname = 5117,
 	IRCLocalCommandShun = 5063,
 	IRCLocalCommandSme = 5064,

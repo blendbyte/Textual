@@ -584,7 +584,8 @@ NS_ASSUME_NONNULL_BEGIN
 					[user markAsAway];
 				}
 
-				if (user.presentAwayMessageFor301 == NO) {
+				/* Not limited when asked for: that's for replies to private messages */
+				if (self.inWhoisResponse == NO && user.presentAwayMessageFor301 == NO) {
 					break;
 				}
 			}
@@ -626,7 +627,10 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case RPL_WHOISACTUALLY:
 		{
-			NSAssertReturnR([m paramsCount] == 5, YES);
+			/* <nickname> <hostmask> <address> :text, or (Solanum) without the hostmask */
+			NSUInteger paramsCount = [m paramsCount];
+
+			NSAssertReturnR(paramsCount == 5 || paramsCount == 4, YES);
 
 			NSAssertReturnR(printMessage, YES);
 
@@ -636,7 +640,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 			NSString *message = nil;
 
-			if (self.inWhowasResponse) { // bahamut sends RPL_WHOISACTUALLY in WHOWAS
+			if (paramsCount == 4) {
+				message = TXTLS(@"IRC[3oa-m4]", nickname, hostmask);
+			} else if (self.inWhowasResponse) { // bahamut sends RPL_WHOISACTUALLY in WHOWAS
 				message = TXTLS(@"IRC[x69-rz]", nickname, hostmask, ipAddress);
 			} else {
 				message = TXTLS(@"IRC[3oa-mv]", nickname, hostmask, ipAddress);
@@ -866,7 +872,8 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			if (printMessage) {
-				NSString *message = channel.modeInfo.stringWithMaskedPassword;
+				/* Only a joined channel keeps its modes */
+				NSString *message = ((channel.isActive) ? channel.modeInfo.stringWithMaskedPassword : modeString);
 
 				[self print:TXTLS(@"IRC[obp-ww]", message)
 						 by:nil
