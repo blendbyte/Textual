@@ -337,6 +337,7 @@ The identifier for a timer can be found using “/timer list”";
 "5h5-sl" = "Server closed read stream";
 "r5h-fj" = "Joining channels has been delayed because because you haven't identified. Perform “/autojoin” to join channels without identifying.";
 "3oa-mv" = "%1$@ is connected from %2$@ (%3$@)";
+"3oa-m4" = "%1$@ is connected from %2$@";
 "x69-rz" = "%1$@ was connected from %2$@ (%3$@)";
 "js3-9v" = "Cannot use nickname “%@“ — Trying another…";
 "dc-t1" = "Ignored a file from %1$@ (%2$@): file transfers connect directly, which would reveal your address on a server that uses Tor.";

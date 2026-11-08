@@ -9300,7 +9300,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		}
 		case RPL_WHOISACTUALLY:
 		{
-			NSAssertReturn([m paramsCount] == 5);
+			/* <nickname> <hostmask> <address> :text, or (Solanum) without the hostmask */
+			NSUInteger paramsCount = [m paramsCount];
+
+			NSAssertReturn(paramsCount == 5 || paramsCount == 4);
 
 			NSAssertReturn(printMessage);
 
@@ -9310,7 +9313,9 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 			NSString *message = nil;
 
-			if (self.inWhowasResponse) { // bahamut sends RPL_WHOISACTUALLY in WHOWAS
+			if (paramsCount == 4) {
+				message = TXTLS(@"IRC[3oa-m4]", nickname, hostmask);
+			} else if (self.inWhowasResponse) { // bahamut sends RPL_WHOISACTUALLY in WHOWAS
 				message = TXTLS(@"IRC[x69-rz]", nickname, hostmask, ipAddress);
 			} else {
 				message = TXTLS(@"IRC[3oa-mv]", nickname, hostmask, ipAddress);
