@@ -57,6 +57,9 @@ TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 
 - (void)setupConfiguration;
 
+/* A second after the last call: a burst of changes is written once */
+- (void)saveSoon;
+
 - (nullable IRCTreeItem *)findItemWithPasteboardString:(NSString *)string;
 - (NSString *)pasteboardStringForItem:(IRCTreeItem *)item;
 

@@ -226,6 +226,8 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	[self saveWindowStateSoon];
+
 	/* Reset state of selections */
 	if (itemChangedFrom) {
 		[itemChangedFrom resetState];

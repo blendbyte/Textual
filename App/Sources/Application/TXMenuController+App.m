@@ -303,6 +303,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[window.contentSplitView toggleServerListVisibility];
+
+	[window saveWindowStateSoon];
 }
 
 - (void)toggleMemberListVisibility:(nullable id)sender
@@ -325,6 +327,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Remembered per pop-out window */
 	if (window.isPopOut) {
 		[TVCMainWindow savePopOuts];
+	} else {
+		[window saveWindowStateSoon];
 	}
 }
 

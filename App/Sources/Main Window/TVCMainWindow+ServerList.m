@@ -1622,6 +1622,8 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 
 		[self serverListMoveTopLevelItem:draggedTopLevelItem toIndex:index];
 
+		[worldController() save];
+
 		[menuController() populateNavigationChannelList];
 
 		return YES;
@@ -1669,6 +1671,9 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 
 		[serverList moveItemAtIndex:originalIndex inParent:client toIndex:index inParent:client];
 	}
+
+	/* A new order is kept at once, not only when Textual quits */
+	[worldController() save];
 
 	[menuController() populateNavigationChannelList];
 

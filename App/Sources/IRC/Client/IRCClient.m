@@ -1661,7 +1661,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		channel = [worldController() createChannelWithConfig:config onClient:self add:YES adjust:YES reload:YES];
 
-		[worldController() savePeriodically];
+		/* A bouncer can bring dozens at once */
+		[worldController() saveSoon];
 	} else {
 		channel = [worldController() createPrivateMessage:withName onClient:self asType:type];
 	}

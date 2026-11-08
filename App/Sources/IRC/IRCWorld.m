@@ -78,6 +78,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 @property (nonatomic, copy) NSArray<IRCBouncerAccount *> *bouncerAccountsPrivate;
 @property (nonatomic, assign) BOOL preferencesDidChangeTimerIsActive;
 @property (nonatomic, assign) CFAbsoluteTime savePeriodicallyLastSave;
+@property (nonatomic, assign) BOOL savePeriodicallyScheduled;
 @property (nonatomic, copy) NSDate *lastDateHasChangedDate;
 @property (nonatomic, strong, nullable) NSTimer *midnightTimer;
 @end
@@ -666,15 +667,54 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 	[mainWindow() reloadServerListStructure];
 }
 
+- (void)saveSoon
+{
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(saveSoonNow) withObject:nil afterDelay:1.0];
+}
+
+- (void)saveSoonNow
+{
+	/* Quitting saves by itself, before servers are taken apart */
+	if (masterController().applicationIsTerminating) {
+		return;
+	}
+
+	[self save];
+}
+
 - (void)savePeriodically
 {
 	CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
 
-	if ((self.savePeriodicallyLastSave + _savePeriodicallyThreshold) < now) {
-		 self.savePeriodicallyLastSave = now;
+	CFAbsoluteTime due = (self.savePeriodicallyLastSave + _savePeriodicallyThreshold);
+
+	if (due < now) {
+		self.savePeriodicallyLastSave = now;
 
 		[self save];
+
+		return;
 	}
+
+	/* Not yet: written when the time is up, not only at the next change
+	 (that may never come before a force quit) */
+	if (self.savePeriodicallyScheduled) {
+		return;
+	}
+
+	self.savePeriodicallyScheduled = YES;
+
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((due - now) * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		self.savePeriodicallyScheduled = NO;
+
+		if (masterController().applicationIsTerminating) {
+			return;
+		}
+
+		self.savePeriodicallyLastSave = CFAbsoluteTimeGetCurrent();
+
+		[self save];
+	});
 }
 
 - (void)prepareForApplicationTermination

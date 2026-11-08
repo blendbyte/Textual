@@ -537,11 +537,43 @@ static BOOL _popOutsOpened = NO;
 
 - (void)saveWindowState
 {
+	[self cancelPerformRequestsWithSelector:@selector(saveWindowStateNow)];
+
 	[RZUserDefaults() setBool:self.isInFullscreenMode forKey:@"Window -> Main Window Is Fullscreen'd"];
 
 	[self saveWindowStateUsingKeyword:@"Main Window"];
 
 	[self.contentSplitView writeSavedFrames];
+
+	[self saveContentSplitViewState];
+
+	[self saveSelection];
+}
+
+/* Written a second after the last change, so a force quit or a crash
+ doesn't lose it, and not on every step: each write tells all views a
+ preference changed */
+- (void)saveWindowStateSoon
+{
+	if (self.isPopOut || masterController().applicationIsTerminating) {
+		return;
+	}
+
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(saveWindowStateNow) withObject:nil afterDelay:1.0];
+}
+
+- (void)saveWindowStateNow
+{
+	if (masterController().applicationIsTerminating) {
+		return;
+	}
+
+	[RZUserDefaults() setBool:self.isInFullscreenMode forKey:@"Window -> Main Window Is Fullscreen'd"];
+
+	/* In full screen the frame is the screen's: the one to go back to stays */
+	if (self.isInFullscreenMode == NO) {
+		[self saveWindowStateUsingKeyword:@"Main Window"];
+	}
 
 	[self saveContentSplitViewState];
 
@@ -776,6 +808,8 @@ static BOOL _popOutsOpened = NO;
 
 	if (self.isPopOut) {
 		[self.class savePopOuts];
+	} else {
+		[self saveWindowStateSoon];
 	}
 }
 
@@ -783,7 +817,19 @@ static BOOL _popOutsOpened = NO;
 {
 	if (self.isPopOut) {
 		[self.class savePopOuts];
+	} else {
+		[self saveWindowStateSoon];
 	}
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification *)notification
+{
+	[self saveWindowStateSoon];
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+	[self saveWindowStateSoon];
 }
 
 - (BOOL)windowShouldZoom:(NSWindow *)awindow toFrame:(NSRect)newFrame

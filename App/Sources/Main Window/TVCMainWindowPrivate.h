@@ -82,6 +82,9 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 /* Once, the scrollback into the message archive (again when it was
  turned off and on), and the scrollback of items that no longer exist out */
 - (void)maintainHistoricLog;
+
+/* The main window's frame, lists shown and selection, a second after a change */
+- (void)saveWindowStateSoon;
 @end
 
 /* Windows: the main window and windows showing one channel.
