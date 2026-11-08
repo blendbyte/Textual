@@ -9238,7 +9238,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 					[user markAsAway];
 				}
 
-				if (user.presentAwayMessageFor301 == NO) {
+				/* Not limited when asked for: that's for replies to private messages */
+				if (self.inWhoisResponse == NO && user.presentAwayMessageFor301 == NO) {
 					break;
 				}
 			}
