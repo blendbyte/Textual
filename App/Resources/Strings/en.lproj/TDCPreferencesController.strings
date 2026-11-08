@@ -133,7 +133,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-k-highlights" = "highlight words keywords mentions nickname exclude regular expression regex mass";
 "set-k-previews" = "inline media images videos cards youtube links sites";
 "set-k-history" = "archive scrollback keep messages delete import text logs transcripts restore behavior";
-"set-k-lists" = "server list member list user list sort double-click colors badges staff operators navigation";
+"set-k-lists" = "server list member list user list channels sort sorted alphabetical order name double-click connect disconnect colors badges staff operators navigation";
 "set-k-files" = "downloads uploads dcc file transfers paste dpaste ports address";
 "set-k-servers" = "nickname username real name identity invite kick rejoin join delay flood control who away ctcp";
 "set-k-commands" = "aliases msg notices amsg away nick clearall kick ban operator kill gline shun command scope";
