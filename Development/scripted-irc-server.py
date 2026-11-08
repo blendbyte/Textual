@@ -1703,6 +1703,11 @@ async def scenario_event_playback(client):
 	pass
 
 
+async def scenario_many_channels(client):
+	"""Measurements with many channels, as many-50 and many-200."""
+	pass
+
+
 async def scenario_safety(client):
 	"""Safety checks. Offers sasl=PLAIN on a plaintext connection (give the
 	server a password: the console warns once). Puts the client in #safe and
@@ -3259,6 +3264,8 @@ SCENARIOS = {
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
 	"safety": scenario_safety,
+	"many-50": scenario_many_channels,
+	"many-200": scenario_many_channels,
 	"scrollback-hole": scenario_scrollback_hole,
 	"small-fixes": scenario_small_fixes,
 	"chathistory-time": scenario_chathistory_time,
@@ -3278,6 +3285,69 @@ SCENARIOS = {
 OWN_REGISTRATION_SCENARIOS = {"safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
+
+
+async def run_many_channels_scenario(port, count):
+	"""Measurements: the client is put in #c1 to #c<count>. Say "drop" anywhere
+	and the server drops the connection; on the next one it joins them again
+	and answers each CHATHISTORY with 100 lines."""
+	capabilities = "batch server-time message-tags draft/chathistory"
+	connections = 0
+
+	def stamp(seconds_ago=0):
+		moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(seconds=seconds_ago)
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	async def handle(reader, writer):
+		nonlocal connections
+		connections += 1
+		number = connections
+		client = Client(reader, writer)
+		client.isupport_extra = "MSGREFTYPES=timestamp CHATHISTORY=100"
+
+		if not await client.register_with_capabilities(capabilities):
+			writer.close()
+			return
+
+		nick = client.nickname
+		names = " ".join(f"member{index}" for index in range(30))
+
+		for channel in range(1, count + 1):
+			await client.send(f":{nick}!user@client.textual.test JOIN #c{channel}")
+			await client.send(f":{SERVER} 353 {nick} = #c{channel} :{nick} {names}")
+			await client.send(f":{SERVER} 366 {nick} #c{channel} :End of /NAMES list.")
+			if number == 1:
+				await client.send(f"@time={stamp()} :member1!m@peer.test PRIVMSG #c{channel} :first line in this channel")
+
+		answered = 0
+
+		while True:
+			line = await client.read_line()
+			if line is None:
+				break
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+			elif command == "PRIVMSG" and rest.endswith(" :drop"):
+				log("<<", "dropping the connection")
+				writer.close()
+				return
+			elif command == "CHATHISTORY" and rest.startswith("LATEST "):
+				target = rest.split(" ")[1]
+				token = f"h{answered}"
+				answered += 1
+				await client.send(f":{SERVER} BATCH +{token} chathistory {target}")
+				for index in range(100):
+					await client.send(f"@batch={token};time={stamp(120 - index)} :member{index % 30}!m@peer.test PRIVMSG {target} :replayed message number {index} with some ordinary length of text")
+				await client.send(f":{SERVER} BATCH -{token}")
+				if answered == count:
+					log("<<", f"answered {answered} history requests")
+
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'many-channels' with {count} waiting on irc://127.0.0.1:{port}", flush=True)
+	await asyncio.sleep(1800)
+	server.close()
 
 
 async def run_chathistory_time_scenario(port):
@@ -3820,6 +3890,10 @@ async def main():
 
 	if arguments.scenario == "chathistory":
 		await run_chathistory_scenario(arguments.port)
+		return
+
+	if arguments.scenario in ("many-50", "many-200"):
+		await run_many_channels_scenario(arguments.port, int(arguments.scenario.split("-")[1]))
 		return
 
 	if arguments.scenario == "chathistory-time":
