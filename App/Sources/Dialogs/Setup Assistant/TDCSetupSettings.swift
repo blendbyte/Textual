@@ -610,13 +610,14 @@ final class SetupChoicesModel
 	static let arrangementKey = "ChannelViewArrangement"
 	static let previewsKey = "DisplayEventInLogView -> Inline Media"
 	static let cardsKey = "InlineMediaWebPageCards"
+	static let sortedKey = "Server List -> Keep Channels Sorted"
 	static let archiveKey = "Message Archive -> Keep Period"
 	static let checksKey = "SUEnableAutomaticChecks"
 	static let installsKey = "SUAutomaticallyUpdate"
 
 	private static var allKeys: [String]
 	{
-		eventKeys + completionKeys + [markdownKey, placementKey, arrangementKey, previewsKey, cardsKey, archiveKey, checksKey, installsKey]
+		eventKeys + completionKeys + [markdownKey, sortedKey, placementKey, arrangementKey, previewsKey, cardsKey, archiveKey, checksKey, installsKey]
 	}
 
 	let upgrade: Bool
@@ -805,8 +806,9 @@ struct SetupExplainedRows: View
 				.accessibilityElement(children: .combine)
 			}
 		}
-		/* The same height for every row, so the step doesn't move as they are clicked */
-		.frame(height: 330, alignment: .top)
+		/* At least the same height for every row, so the step doesn't move as they
+		 are clicked; more rows than fit make it taller (Chat after an import) */
+		.frame(minHeight: 330, alignment: .top)
 	}
 
 	private func rowView(_ row: SetupExplainedRow, divider: Bool) -> some View
@@ -866,7 +868,11 @@ struct SetupChatStep: View
 				SetupSymbol(symbol: "text.bubble.fill", color: .blue)
 			}
 
-			SetupExplainedRows(rows: [eventsRow, suggestionsRow, markdownRow, placementRow, arrangementRow])
+			/* Sorting is offered only after an import: new installs start sorted, and a
+			 rerun has Settings › Lists. Sorted, a Textual 7 order can't be brought back. */
+			SetupExplainedRows(rows: (model.comesFromTextual7 ?
+				[eventsRow, suggestionsRow, markdownRow, sortedRow, placementRow, arrangementRow] :
+				[eventsRow, suggestionsRow, markdownRow, placementRow, arrangementRow]))
 		}
 	}
 
@@ -937,6 +943,21 @@ struct SetupChatStep: View
 								 control: AnyView(Toggle("", isOn: binding).toggleStyle(.switch).labelsHidden().controlSize(.small)),
 								 sample: AnyView(SetupMarkdownSample(on: on)),
 								 explanation: [SetupText("sa-c-md-x1"), SetupText("sa-c-md-x2")])
+	}
+
+	private var sortedRow: SetupExplainedRow
+	{
+		let binding = store.bool(SetupChoicesModel.sortedKey)
+		let on = binding.wrappedValue
+
+		return SetupExplainedRow(id: "sorted",
+								 title: SetupText("sa-c-srt-t"),
+								 help: SetupText("sa-c-srt-d"),
+								 isNew: true,
+								 was: SetupText("sa-c-srt-was"),
+								 control: AnyView(Toggle("", isOn: binding).toggleStyle(.switch).labelsHidden().controlSize(.small)),
+								 sample: AnyView(SetupSortedSample(on: on)),
+								 explanation: [SetupText("sa-c-srt-x1"), SetupText("sa-c-srt-x2")])
 	}
 
 	private var placementRow: SetupExplainedRow
@@ -1322,6 +1343,31 @@ struct SetupMarkdownSample: View
 		}
 		.font(.system(size: 11))
 		.padding(8)
+	}
+}
+
+/// A server's channels, in an order arranged by hand or by name
+struct SetupSortedSample: View
+{
+	let on: Bool
+
+	private var names: [String]
+	{
+		(on ? ["#help", "#macos", "#textual", "alice", "bob"] : ["#textual", "#help", "#macos", "bob", "alice"])
+	}
+
+	var body: some View
+	{
+		VStack(alignment: .leading, spacing: 2) {
+			Text(verbatim: "Libera.Chat").fontWeight(.semibold)
+
+			ForEach(names, id: \.self) { name in
+				Text(verbatim: name).padding(.leading, 10)
+			}
+		}
+		.font(.system(size: 11))
+		.padding(8)
+		.animation(.default, value: on)
 	}
 }
 

@@ -638,9 +638,10 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Markdown when sending is new too: off for Textual 7 users (decided 2026-10-13) */
 	[RZUserDefaults() _migrateObject:@(NO) forKey:TPCPreferencesInputMarkdownDefaultsKey];
 
-	/* Channels sorted by name for everyone, Textual 7 users too (decided
-	 2026-11-06): the imported list is sorted as it loads */
-	[RZUserDefaults() _migrateObject:@(YES) forKey:@"Server List -> Keep Channels Sorted"];
+	/* Sorting by name is new: off for Textual 7 users, whose list may be in an
+	 order they arranged (decided 2026-11-08), offered on purpose. On, the list
+	 is sorted as it loads, and that order can't be brought back. */
+	[RZUserDefaults() _migrateObject:@(NO) forKey:@"Server List -> Keep Channels Sorted"];
 
 	/* Textual 7 showed no previews unless turned on; Textual 8 does,
 	 which is offered on purpose too */

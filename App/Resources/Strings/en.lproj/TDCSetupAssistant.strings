@@ -118,6 +118,11 @@
 "sa-c-md-x2" = "Turn it off if you often post code or text with stars and underscores in it.";
 "sa-c-md-you" = "You type";
 "sa-c-md-see" = "People see";
+"sa-c-srt-t" = "Channels sorted by name";
+"sa-c-srt-d" = "New ones go in their place";
+"sa-c-srt-was" = "your own order";
+"sa-c-srt-x1" = "Textual keeps each server’s channels in alphabetical order, then its private messages. New channels and private messages go straight into their place.";
+"sa-c-srt-x2" = "Leave it off to keep the order you arranged in Textual 7: once sorted, that order can’t be brought back. Channels can be dragged only while it’s off. It’s in Settings › Lists.";
 "sa-c-inp-t" = "Where you type";
 "sa-c-inp-d" = "The width of the message field";
 "sa-c-inp0" = "Whole window";
