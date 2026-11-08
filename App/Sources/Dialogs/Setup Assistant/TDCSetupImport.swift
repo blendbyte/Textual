@@ -573,6 +573,10 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 			notes.append(ImportNote(symbol: "photo", color: .secondary, text: ImportText("pjp-bp", result.inlineMediaModules.joined(separator: ", "))))
 		}
 
+		if (result.serversWithBouncerClientName.isEmpty == false) {
+			notes.append(ImportNote(symbol: "person.2", color: .orange, text: ImportText("bc7-nm", result.serversWithBouncerClientName.joined(separator: ", "))))
+		}
+
 		if (result.unusedExtensions.isEmpty == false) {
 			notes.append(ImportNote(symbol: "puzzlepiece.extension", color: .secondary, text: ImportText("ue8-nx", result.unusedExtensions.joined(separator: ", "))))
 		}

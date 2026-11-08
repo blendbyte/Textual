@@ -251,6 +251,7 @@ Information encrypted using: %2$@";
 "k7t-r3" = "Not imported because Textual 8 already has one with the same name: %2$@. The %1$@ version stays in its folder.";
 "to7-nt" = "Files that couldn’t be copied: %lu. The Console app lists them (search for “Textual”).";
 "k7p-s1" = "macOS may ask more than once for each saved password, because Textual 8 is a new app to it. Enter your Mac’s login password and choose Always Allow.";
+"bc7-nm" = "%@: the username has a bouncer client name, so Textual 7 and Textual 8 count as one client and share what they play back. Using both? Give Textual 8 its own name in Server Properties.";
 "bmq-fg" = "Worth a Look";
 "33s-fi" = "Restart Textual";
 "weu-cf" = "Start Using Textual";

@@ -170,6 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, copy) NSArray<NSString *> *extensions;
 @property (readwrite, copy) NSArray<NSString *> *inlineMediaModules;
 @property (readwrite, copy) NSArray<NSString *> *unusedExtensions;
+@property (readwrite, copy) NSArray<NSString *> *serversWithBouncerClientName;
 @property (readwrite) NSUInteger failureCount;
 @property (readwrite, copy) NSArray<NSString *> *keptItems;
 @property (readwrite) BOOL importedScrollback;
@@ -190,6 +191,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.extensions = @[];
 		self.inlineMediaModules = @[];
 		self.unusedExtensions = @[];
+		self.serversWithBouncerClientName = @[];
 		self.keptItems = @[];
 	}
 
@@ -440,6 +442,39 @@ NS_ASSUME_NONNULL_BEGIN
 	LogToConsole("Legacy import: start, from %{public}@", self.source.groupIdentifier);
 
 	return TPCLegacyImportReadErrorNone;
+}
+
+/* A bouncer tells its clients apart by a name in the login: "user@client/network"
+ (ZNC) or "user/network@client" (soju). Imported as it is, Textual 8 is the
+ same client as Textual 7, and the two share one playback position. Only
+ usernames: a name in the server password is in the Keychain. */
+- (NSArray<NSString *> *)_serversWithBouncerClientName
+{
+	NSMutableArray<NSString *> *names = [NSMutableArray array];
+
+	for (NSDictionary *server in self.servers) {
+		if ([server isKindOfClass:[NSDictionary class]] == NO) {
+			continue;
+		}
+
+		NSString *username = (server[@"username"] ?: server[@"identityUsername"]);
+
+		if ([username isKindOfClass:[NSString class]] == NO) {
+			continue;
+		}
+
+		NSRange at = [username rangeOfString:@"@"];
+
+		if (at.location == NSNotFound || at.location == 0 || NSMaxRange(at) == username.length) {
+			continue;
+		}
+
+		NSString *name = server[@"connectionName"];
+
+		[names addObject:(([name isKindOfClass:[NSString class]] && name.length > 0) ? name : username)];
+	}
+
+	return [names copy];
 }
 
 - (NSUInteger)serverCount
@@ -696,6 +731,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.result.serverCount = self.servers.count;
 
 	self.result.foundSavedPasswords = [self _importedServersHaveSavedPasswords];
+
+	self.result.serversWithBouncerClientName = [self _serversWithBouncerClientName];
 
 	[self.class markOffered];
 
