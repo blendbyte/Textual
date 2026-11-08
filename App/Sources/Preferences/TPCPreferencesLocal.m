@@ -351,9 +351,13 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"AutojoinChannelOnInvite"];
 }
 
+/* Settings offers "Connects" and "Connects or disconnects": disconnecting
+ alone (possible in Textual 7, and imported from it) connects too, as the
+ choice it shows says */
 + (BOOL)connectOnDoubleclick
 {
-	return [RZUserDefaults() boolForKey:@"ServerListDoubleClickConnectServer"];
+	return ([RZUserDefaults() boolForKey:@"ServerListDoubleClickConnectServer"] ||
+			[RZUserDefaults() boolForKey:@"ServerListDoubleClickDisconnectServer"]);
 }
 
 + (BOOL)disconnectOnDoubleclick
@@ -361,9 +365,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"ServerListDoubleClickDisconnectServer"];
 }
 
+/* "Joins" or "Joins or leaves", as with servers */
 + (BOOL)joinOnDoubleclick
 {
-	return [RZUserDefaults() boolForKey:@"ServerListDoubleClickJoinChannel"];
+	return ([RZUserDefaults() boolForKey:@"ServerListDoubleClickJoinChannel"] ||
+			[RZUserDefaults() boolForKey:@"ServerListDoubleClickLeaveChannel"]);
 }
 
 + (BOOL)leaveOnDoubleclick
