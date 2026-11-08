@@ -114,13 +114,21 @@ static NSString * const _searchWidthDefaultsKey = @"Window -> Main Window -> Sea
 	return dividerColor;
 }
 
-/* No line beside the server list and the member list: their sidebar
- material already sets them apart from the chat, and a grey line (inverted
- in dark mode) looked like a border. The divider is still there to drag.
- Channels shown side by side keep theirs (TVCMainWindowChannelView uses
- -dividerColor). */
+/* No line beside the server list and the member list while their
+ translucent material sets them apart from the chat: a grey line (inverted
+ in dark mode) looked like a border. With translucent sidebars off they are
+ the chat's white too, so a separator line is drawn. The divider is there
+ to drag either way. Channels shown side by side keep theirs
+ (TVCMainWindowChannelView uses -dividerColor). */
 - (void)drawDividerInRect:(NSRect)rect
 {
+	if ([TPCPreferences disableSidebarTranslucency] == NO) {
+		return;
+	}
+
+	[[NSColor separatorColor] setFill];
+
+	NSRectFillUsingOperation(rect, NSCompositingOperationSourceOver);
 }
 
 - (void)awakeFromNib

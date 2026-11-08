@@ -291,7 +291,7 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 
 	NSVisualEffectView *visualEffectView = self.visualEffectView;
 
-	[TVCMainWindow applySidebarTranslucencyToView:visualEffectView];
+	[TVCMainWindow applySidebarTranslucencyToView:visualEffectView filled:YES];
 }
 
 - (void)applicationAppearanceChanged

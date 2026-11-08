@@ -237,6 +237,10 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 /* Translucent or opaque, as Settings → Appearance says */
 + (void)applySidebarTranslucencyToView:(nullable NSVisualEffectView *)view;
 
+/* The same, and with translucent sidebars off a solid grey in light mode
+ (the server list, the member list and the message field's strip) */
++ (void)applySidebarTranslucencyToView:(nullable NSVisualEffectView *)view filled:(BOOL)filled;
+
 - (BOOL)reloadLoadingScreen;
 
 - (void)updateTitle;

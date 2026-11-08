@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 	backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
 	backgroundView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
 
-	[self.class applySidebarTranslucencyToView:backgroundView];
+	[self.class applySidebarTranslucencyToView:backgroundView filled:YES];
 
 	[stack addSubview:backgroundView positioned:NSWindowBelow relativeTo:nil];
 
@@ -136,6 +136,29 @@ NS_ASSUME_NONNULL_BEGIN
 	]];
 
 	self.inputFieldBackgroundView = backgroundView;
+
+	/* With translucent sidebars off the strip is the chat's white too:
+	 a line sets it apart, as the split view's dividers do the lists */
+	NSBox *topLine = [NSBox new];
+
+	topLine.translatesAutoresizingMaskIntoConstraints = NO;
+	topLine.boxType = NSBoxCustom;
+	topLine.borderWidth = 0.0;
+	topLine.fillColor = [NSColor separatorColor];
+	topLine.titlePosition = NSNoTitle;
+
+	topLine.hidden = ([TPCPreferences disableSidebarTranslucency] == NO);
+
+	[stack addSubview:topLine positioned:NSWindowAbove relativeTo:nil];
+
+	[NSLayoutConstraint activateConstraints:@[
+		[topLine.topAnchor constraintEqualToAnchor:stack.topAnchor],
+		[topLine.leadingAnchor constraintEqualToAnchor:stack.leadingAnchor],
+		[topLine.trailingAnchor constraintEqualToAnchor:stack.trailingAnchor],
+		[topLine.heightAnchor constraintEqualToConstant:1.0]
+	]];
+
+	self.inputFieldTopLine = topLine;
 
 	/* The split view draws no dividers, so their one-point gaps showed the
 	 window's white: unseen beside the chat, but a line beside the field's

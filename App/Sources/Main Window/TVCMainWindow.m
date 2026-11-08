@@ -501,9 +501,14 @@ static BOOL _popOutsOpened = NO;
 		[self.class applySidebarTranslucencyToView:(NSVisualEffectView *)self.titlebarBackgroundView];
 	}
 
-	[self.class applySidebarTranslucencyToView:self.inputFieldBackgroundView];
+	[self.class applySidebarTranslucencyToView:self.inputFieldBackgroundView filled:YES];
 
 	[self.class applySidebarTranslucencyToView:self.splitViewBackgroundView];
+
+	/* Lines between the areas only where the sidebars are opaque */
+	self.inputFieldTopLine.hidden = ([TPCPreferences disableSidebarTranslucency] == NO);
+
+	[self.contentSplitView setNeedsDisplay:YES];
 
 	[self notifyApplicationAppearanceChanged];
 }

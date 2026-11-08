@@ -286,6 +286,72 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+/* With translucent sidebars off the window background material is about
+ as white as the chat. A solid light grey, as Textual 7's opaque lists were,
+ lets the chat stand out; in dark mode that material is already darker than
+ the chat, so nothing is added. Below the view's content. */
++ (void)applySidebarTranslucencyToView:(nullable NSVisualEffectView *)view filled:(BOOL)filled
+{
+	[self applySidebarTranslucencyToView:view];
+
+	if (view == nil) {
+		return;
+	}
+
+	static NSUserInterfaceItemIdentifier const fillIdentifier = @"TVCMainWindowOpaqueSidebarFill";
+
+	NSBox *fill = nil;
+
+	for (NSView *subview in view.subviews) {
+		if ([subview.identifier isEqualToString:fillIdentifier]) {
+			fill = (NSBox *)subview;
+
+			break;
+		}
+	}
+
+	BOOL wanted = (filled && [TPCPreferences disableSidebarTranslucency]);
+
+	if (wanted && fill == nil) {
+		static NSColor *fillColor = nil;
+
+		static dispatch_once_t onceToken;
+
+		dispatch_once(&onceToken, ^{
+			fillColor = [NSColor colorWithName:nil dynamicProvider:^NSColor *(NSAppearance *appearance) {
+				NSAppearanceName name = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+
+				if ([name isEqualToString:NSAppearanceNameDarkAqua]) {
+					return [NSColor clearColor];
+				}
+
+				return [NSColor colorWithWhite:0.925 alpha:1.0];
+			}];
+		});
+
+		fill = [NSBox new];
+
+		fill.identifier = fillIdentifier;
+
+		fill.translatesAutoresizingMaskIntoConstraints = NO;
+		fill.boxType = NSBoxCustom;
+		fill.borderWidth = 0.0;
+		fill.fillColor = fillColor;
+		fill.titlePosition = NSNoTitle;
+
+		[view addSubview:fill positioned:NSWindowBelow relativeTo:nil];
+
+		[NSLayoutConstraint activateConstraints:@[
+			[fill.topAnchor constraintEqualToAnchor:view.topAnchor],
+			[fill.bottomAnchor constraintEqualToAnchor:view.bottomAnchor],
+			[fill.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
+			[fill.trailingAnchor constraintEqualToAnchor:view.trailingAnchor]
+		]];
+	}
+
+	fill.hidden = (wanted == NO);
+}
+
 - (void)addAccessoryViewsToTitlebar
 {
 	/* AppKit's own title moves to the left next to accessory views. It stays
