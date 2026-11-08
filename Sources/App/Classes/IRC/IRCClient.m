@@ -9530,7 +9530,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 			}
 
 			if (printMessage) {
-				NSString *message = channel.modeInfo.stringWithMaskedPassword;
+				/* Only a joined channel keeps its modes */
+				NSString *message = ((channel.isActive) ? channel.modeInfo.stringWithMaskedPassword : modeString);
 
 				[self print:TXTLS(@"IRC[obp-ww]", message)
 						 by:nil
