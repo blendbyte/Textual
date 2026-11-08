@@ -146,8 +146,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSColor *corner = [[icon colorAtX:0 y:0] colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
 
-	XCTAssertEqualWithAccuracy(corner.alphaComponent, 1.0, 0.01);
-	XCTAssertEqualWithAccuracy(corner.redComponent, 1.0, 0.01);
+	/* See-through parts stay see-through: the row's selection shows behind them */
+	XCTAssertEqualWithAccuracy(corner.alphaComponent, 0.0, 0.01);
 
 	NSData *text = [@"not a picture" dataUsingEncoding:NSUTF8StringEncoding];
 
