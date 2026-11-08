@@ -44,6 +44,7 @@
 #import "TPCPreferencesLocal.h"
 #import "TLOEncryptionManagerPrivate.h"
 #import "TLOLocalization.h"
+#import "TDCAlert.h"
 #import "TDCFileTransferDialogTableCellPrivate.h"
 #import "TDCFileTransferDialogTransferControllerPrivate.h"
 #import "TDCFileTransferDialogInternal.h"
@@ -60,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _resumeAcceptTimeout	10.0
 
 @interface TDCFileTransferDialogTransferController ()
+@property (nonatomic, assign) BOOL directConnectionConfirmed; // for the start under way
 @property (nonatomic, strong, readwrite) IRCClient *client;
 @property (nonatomic, copy, readwrite) NSString *clientId;
 @property (nonatomic, assign, readwrite) BOOL isResume;
@@ -350,8 +352,41 @@ NS_ASSUME_NONNULL_BEGIN
 	[self openWithPath:path];
 }
 
+/* No proxy applies to a file transfer, so it's the user's call each time */
+- (BOOL)directConnectionAllowed
+{
+	IRCClient *client = self.client;
+
+	if (client.fileTransfersGoAroundProxy == NO) {
+		return YES;
+	}
+
+	if (client.fileTransfersRefusedByProxy) {
+		return NO;
+	}
+
+	if (self.directConnectionConfirmed) {
+		return YES;
+	}
+
+	self.directConnectionConfirmed =
+	[TDCAlert modalAlertWithMessage:TXTLS(@"IRC[dc-p1]", self.peerNickname)
+							  title:TXTLS(@"IRC[dc-p2]")
+					  defaultButton:TXTLS(@"Prompts[zjw-bd]")
+					alternateButton:TXTLS(@"Prompts[qso-2g]")];
+
+	return self.directConnectionConfirmed;
+}
+
 - (void)openWithPath:(nullable NSString *)path
 {
+	if ([self directConnectionAllowed] == NO) {
+		return;
+	}
+
+	/* Asked again the next time this transfer starts */
+	self.directConnectionConfirmed = NO;
+
 	if (self.path == nil) {
 		self.path = path;
 	}

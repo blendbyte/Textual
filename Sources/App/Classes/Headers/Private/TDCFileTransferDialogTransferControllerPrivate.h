@@ -85,6 +85,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)openWithPathOrUserDownloads;
 - (void)openWithPath:(nullable NSString *)path; // Only changes path if self.path == nil
 
+/* NO if the user declines to connect around the server's proxy */
+- (BOOL)directConnectionAllowed;
+
 - (void)close;
 - (void)closeAndPostNotification:(BOOL)postNotification;
 

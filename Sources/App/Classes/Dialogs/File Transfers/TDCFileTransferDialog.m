@@ -43,6 +43,8 @@
 #import "TLOInternetAddressLookup.h"
 #import "TLOLocalization.h"
 #import "TLOTimer.h"
+#import "IRCClientPrivate.h"
+#import "TVCLogLine.h"
 #import "IRCWorld.h"
 #import "TVCBasicTableView.h"
 #import "TDCFileTransferDialogTableCellPrivate.h"
@@ -235,7 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *savePath = self.downloadDestinationURLPrivate.path;
 
-	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyAutomaticallyDownload) {
+	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyAutomaticallyDownload && client.fileTransfersGoAroundProxy == NO) {
 		if (savePath == nil) {
 			savePath = [TPCPathInfo userDownloads];
 		}
@@ -251,6 +253,12 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(client != nil);
 	NSParameterAssert(nickname != nil);
 	NSParameterAssert(path != nil);
+
+	if (client.fileTransfersRefusedByProxy) {
+		[client print:TXTLS(@"IRC[dc-t2]") by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+
+		return nil;
+	}
 
 	TDCFileTransferDialogTransferController *controller = [TDCFileTransferDialogTransferController senderForClient:client nickname:nickname path:path];
 
@@ -440,7 +448,10 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
-		[fileTransfersPending addObject:fileTransfer];
+		/* Before choosing a folder for something that isn't going to happen */
+		if ([fileTransfer directConnectionAllowed]) {
+			[fileTransfersPending addObject:fileTransfer];
+		}
 	}];
 
 	/* If there are file transfers that weren't opened because of a missing

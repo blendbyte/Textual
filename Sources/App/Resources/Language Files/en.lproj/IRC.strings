@@ -339,3 +339,7 @@ The identifier for a timer can be found using “/timer list”";
 "3oa-mv" = "%1$@ is connected from %2$@ (%3$@)";
 "x69-rz" = "%1$@ was connected from %2$@ (%3$@)";
 "js3-9v" = "Cannot use nickname “%@“ — Trying another…";
+"dc-t1" = "Ignored a file from %1$@ (%2$@): file transfers connect directly, which would reveal your address on a server that uses Tor.";
+"dc-t2" = "File transfers aren’t available on this server: they connect directly, which would reveal your address when using Tor.";
+"dc-p1" = "This file transfer with %@ connects directly, not through the proxy set for this server, so they can see your IP address.";
+"dc-p2" = "Connect directly?";
