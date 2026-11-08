@@ -35,6 +35,7 @@
  *********************************************************************** */
 
 #import <ImageIO/ImageIO.h>
+#import <objc/runtime.h>
 
 #import "TXGlobalModelsPrivate.h"
 #import "TXMasterControllerPrivate.h"
@@ -65,6 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
 #define _networkIconMaximumLength		(1024 * 1024)
 #define _networkIconMaximumDimension	4096
 #define _customIconPixelSize			64 // also shown larger in Server Properties
+
+/* Icons in files without this version were stored on a white tile:
+ they are downloaded again */
+#define _networkIconFileVersion			2
 
 @implementation IRCClient (NetworkIcon)
 
@@ -146,39 +151,89 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[image drawInRect:drawnRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
 
-	/* A logo with see-through parts goes on a white tile: on the
-	 selection's blue or in Dark Mode a dark logo would disappear */
-	if ([self bitmapHasTransparency:bitmap]) {
-		[[NSColor whiteColor] setFill];
-
-		NSRectFillUsingOperation(NSMakeRect(0, 0, pixelSize, pixelSize), NSCompositingOperationDestinationOver);
-	}
-
+	/* See-through parts stay see-through, so the selection shows behind
+	 them; a dark logo gets its tile only where it's drawn on dark
+	 (+networkIconNeedsTileOnDark:) */
 	[NSGraphicsContext restoreGraphicsState];
 
 	return [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
 }
 
-+ (BOOL)bitmapHasTransparency:(NSBitmapImageRep *)bitmap
+/* A logo with see-through parts whose visible part is dark: on a dark
+ row it would disappear without a light tile behind it. Worked out once
+ per image. */
++ (BOOL)networkIconNeedsTileOnDark:(NSImage *)icon
 {
-	NSParameterAssert(bitmap != nil);
+	NSParameterAssert(icon != nil);
 
-	NSInteger width = bitmap.pixelsWide;
-	NSInteger height = bitmap.pixelsHigh;
+	static char _tileKey;
 
-	NSUInteger samples[4];
+	NSNumber *cached = objc_getAssociatedObject(icon, &_tileKey);
 
-	for (NSInteger y = 0; y < height; y++) {
-		for (NSInteger x = 0; x < width; x++) {
-			[bitmap getPixel:samples atX:x y:y];
-
-			if (samples[3] < 255) {
-				return YES;
-			}
-		}
+	if (cached) {
+		return cached.boolValue;
 	}
 
-	return NO;
+	NSInteger side = 16;
+
+	NSBitmapImageRep *bitmap =
+	[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+											pixelsWide:side
+											pixelsHigh:side
+										 bitsPerSample:8
+									   samplesPerPixel:4
+											  hasAlpha:YES
+											  isPlanar:NO
+										colorSpaceName:NSDeviceRGBColorSpace
+										   bytesPerRow:0
+										  bitsPerPixel:0];
+
+	NSGraphicsContext *context = [NSGraphicsContext graphicsContextWithBitmapImageRep:bitmap];
+
+	BOOL needsTile = NO;
+
+	if (context) {
+		[NSGraphicsContext saveGraphicsState];
+
+		NSGraphicsContext.currentContext = context;
+
+		[icon drawInRect:NSMakeRect(0, 0, side, side) fromRect:NSZeroRect operation:NSCompositingOperationCopy fraction:1.0];
+
+		[NSGraphicsContext restoreGraphicsState];
+
+		BOOL seeThrough = NO;
+
+		double luminance = 0;
+
+		NSUInteger visible = 0;
+
+		NSUInteger samples[4];
+
+		for (NSInteger y = 0; y < side; y++) {
+			for (NSInteger x = 0; x < side; x++) {
+				[bitmap getPixel:samples atX:x y:y];
+
+				if (samples[3] < 255) {
+					seeThrough = YES;
+				}
+
+				/* Premultiplied: undone for pixels that are mostly there */
+				if (samples[3] >= 128) {
+					double alpha = samples[3];
+
+					luminance += (0.2126 * samples[0] + 0.7152 * samples[1] + 0.0722 * samples[2]) / alpha;
+
+					visible += 1;
+				}
+			}
+		}
+
+		needsTile = (seeThrough && visible > 0 && (luminance / visible) < 0.4);
+	}
+
+	objc_setAssociatedObject(icon, &_tileKey, @(needsTile), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+	return needsTile;
 }
 
 + (nullable NSData *)customIconDataFromImageData:(NSData *)data
@@ -258,6 +313,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *contents = ((path) ? [NSDictionary dictionaryWithContentsOfFile:path] : nil);
 
+	if ([contents[@"version"] integerValue] < _networkIconFileVersion) {
+		contents = nil;
+	}
+
 	NSString *address = nil;
 
 	NSData *iconData = nil;
@@ -300,6 +359,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		return;
 	}
+
+	contents[@"version"] = @(_networkIconFileVersion);
 
 	[RZFileManager() createDirectoryAtPath:path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:NULL];
 

@@ -686,6 +686,16 @@ NS_ASSUME_NONNULL_BEGIN
 		iconView.image = icon;
 	}
 
+	/* See-through, so the row's selection shows behind it; a dark logo
+	 gets a light tile on a dark row, where it would disappear */
+	BOOL tile = (icon && appearance.isDarkAppearance && [IRCClient networkIconNeedsTileOnDark:icon]);
+
+	CGColorRef tileColor = ((tile) ? [NSColor whiteColor].CGColor : NULL);
+
+	if (CGColorEqualToColor(iconView.layer.backgroundColor, tileColor) == NO) {
+		iconView.layer.backgroundColor = tileColor;
+	}
+
 	/* Faded while disconnected, as the name is */
 	CGFloat alphaValue = self.cellTextField.alphaValue;
 

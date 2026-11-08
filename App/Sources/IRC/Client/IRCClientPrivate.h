@@ -243,10 +243,13 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 @property (readonly, nullable) NSImage *networkProvidedIcon; // draft/ICON only
 
-/* A picture as config.customIcon (a PNG square, see-through parts on white); nil if it isn't one */
+/* A picture as config.customIcon (a PNG square, see-through parts kept); nil if it isn't one */
 + (nullable NSData *)customIconDataFromImageData:(NSData *)data;
 
 + (nullable NSImage *)serverListIconWithData:(NSData *)data; // 16 points
+
+/* A dark logo with see-through parts, which needs a light tile on a dark row */
++ (BOOL)networkIconNeedsTileOnDark:(NSImage *)icon;
 @end
 
 /* Reactions (IRCClient+Reactions.m) */
