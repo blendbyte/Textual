@@ -1575,11 +1575,61 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 				}];
 }
 
-+ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status, double fraction))progressHandler completionHandler:(void (^)(NSString *status))completionHandler
+static BOOL _textLogImportRunning = NO;
+static BOOL _textLogImportCancelling = NO;
+static double _textLogImportFraction = -1;
+static NSString *_textLogImportStatus = @"";
+static void (^_textLogImportObserver)(NSString *status, double fraction, BOOL running) = nil;
+
++ (void)_setTextLogImportStatus:(NSString *)status fraction:(double)fraction running:(BOOL)running
+{
+	_textLogImportStatus = [status copy];
+	_textLogImportFraction = fraction;
+	_textLogImportRunning = running;
+
+	if (_textLogImportObserver) {
+		_textLogImportObserver(status, fraction, running);
+	}
+}
+
++ (void)observeTextLogImportWithHandler:(void (^)(NSString *status, double fraction, BOOL running))handler
+{
+	NSParameterAssert(handler != nil);
+
+	_textLogImportObserver = [handler copy];
+
+	handler(_textLogImportStatus, _textLogImportFraction, _textLogImportRunning);
+}
+
++ (void)cancelTextLogImport
+{
+	if (_textLogImportRunning == NO || _textLogImportCancelling) {
+		return;
+	}
+
+	_textLogImportCancelling = YES;
+
+	[sharedMessageArchive() cancelTextLogImport];
+
+	[self _setTextLogImportStatus:TXTLS(@"TDCPreferencesController[set-his-i8]") fraction:_textLogImportFraction running:YES];
+}
+
++ (void)forgetTextLogImportStatus
+{
+	if (_textLogImportRunning) {
+		return;
+	}
+
+	[self _setTextLogImportStatus:@"" fraction:-1 running:NO];
+}
+
++ (void)importTextLogsInWindow:(NSWindow *)window
 {
 	NSParameterAssert(window != nil);
-	NSParameterAssert(progressHandler != nil);
-	NSParameterAssert(completionHandler != nil);
+
+	if (_textLogImportRunning) {
+		return;
+	}
 
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 
@@ -1595,9 +1645,7 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 	panel.prompt = TXTLS(@"TDCPreferencesController[set-his-i2]");
 
 	[panel beginSheetModalForWindow:window completionHandler:^(NSInteger returnCode) {
-		if (returnCode != NSModalResponseOK) {
-			completionHandler(@"");
-
+		if (returnCode != NSModalResponseOK || _textLogImportRunning) {
 			return;
 		}
 
@@ -1605,28 +1653,41 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 
 		BOOL accessing = [folderURL startAccessingSecurityScopedResource];
 
-		/* A fraction below 0: still looking, the bar doesn't know how far */
-		progressHandler(TXTLS(@"TDCPreferencesController[set-his-i6]"), -1);
+		_textLogImportCancelling = NO;
+
+		[self _setTextLogImportStatus:TXTLS(@"TDCPreferencesController[set-his-i6]") fraction:-1 running:YES];
 
 		[sharedMessageArchive() importTextLogsInFolder:folderURL progressHandler:^(NSUInteger filesDone, NSUInteger fileCount) {
+			if (_textLogImportCancelling) {
+				return;
+			}
+
 			NSString *doneString = [NSNumberFormatter localizedStringFromNumber:@(filesDone) numberStyle:NSNumberFormatterDecimalStyle];
 			NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(fileCount) numberStyle:NSNumberFormatterDecimalStyle];
 
 			double fraction = ((fileCount > 0) ? ((double)filesDone / (double)fileCount) : 0);
 
-			progressHandler(TXTLS(@"TDCPreferencesController[set-his-i3]", doneString, countString), fraction);
+			[self _setTextLogImportStatus:TXTLS(@"TDCPreferencesController[set-his-i3]", doneString, countString) fraction:fraction running:YES];
 		} completionHandler:^(NSUInteger importedCount) {
 			if (accessing) {
 				[folderURL stopAccessingSecurityScopedResource];
 			}
 
-			if (importedCount == 0) {
-				completionHandler(TXTLS(@"TDCPreferencesController[set-his-i5]"));
-			} else {
-				NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(importedCount) numberStyle:NSNumberFormatterDecimalStyle];
+			NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(importedCount) numberStyle:NSNumberFormatterDecimalStyle];
 
-				completionHandler(TXTLS(@"TDCPreferencesController[set-his-i4]", countString));
+			NSString *status = nil;
+
+			if (_textLogImportCancelling) {
+				status = ((importedCount == 0) ? TXTLS(@"TDCPreferencesController[set-his-ia]") : TXTLS(@"TDCPreferencesController[set-his-i9]", countString));
+			} else if (importedCount == 0) {
+				status = TXTLS(@"TDCPreferencesController[set-his-i5]");
+			} else {
+				status = TXTLS(@"TDCPreferencesController[set-his-i4]", countString);
 			}
+
+			_textLogImportCancelling = NO;
+
+			[self _setTextLogImportStatus:status fraction:-1 running:NO];
 		}];
 	}];
 }

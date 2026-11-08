@@ -201,6 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Read on the queue, set on any thread */
 @property (atomic, assign) NSInteger keepDaysValue;
+@property (atomic, assign) BOOL textLogImportCancelled;
 
 /* Search reads on a connection of its own (WAL: readers don't wait for the
  writer, the writer doesn't wait for them) */
@@ -1293,6 +1294,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	NSParameterAssert(resolver != nil);
 	NSParameterAssert(completionHandler != nil);
 
+	self.textLogImportCancelled = NO;
+
 	dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
 		NSUInteger importedCount = 0;
 
@@ -1311,14 +1314,26 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 		NSUInteger fileIndex = 0;
 
+		CFAbsoluteTime lastProgress = 0;
+
 		for (NSURL *file in files) {
+			if (self.textLogImportCancelled) {
+				break;
+			}
+
 			@autoreleasepool {
 				importedCount += [self _importTextLogFile:file targets:targets resolver:resolver oldestTime:oldestTime];
 			}
 
 			fileIndex += 1;
 
-			if (progressHandler) {
+			/* A few times a second: every update redraws Settings, and files
+			 outside the keep period go by thousands at a time */
+			CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
+
+			if (progressHandler && (now - lastProgress) >= 0.25) {
+				lastProgress = now;
+
 				NSUInteger filesDone = fileIndex;
 
 				dispatch_async(dispatch_get_main_queue(), ^{
@@ -1326,6 +1341,13 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 				});
 			}
 		}
+
+		/* The write-ahead file keeps the size it grew to otherwise */
+		dispatch_sync(self.queue, ^{
+			if (self.database && self.closed == NO) {
+				sqlite3_wal_checkpoint_v2(self.database, NULL, SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
+			}
+		});
 
 		LogToConsoleInfo("Imported %{public}lu messages from text logs into the message archive", importedCount);
 
@@ -2026,8 +2048,15 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	});
 }
 
+- (void)cancelTextLogImport
+{
+	self.textLogImportCancelled = YES;
+}
+
 - (void)prepareForApplicationTermination
 {
+	self.textLogImportCancelled = YES;
+
 	dispatch_sync(self.searchQueue, ^{
 		if (self.searchDatabase) {
 			sqlite3_close_v2(self.searchDatabase);

@@ -59,6 +59,12 @@ struct HistorySettings: View
 	@State private var busy = false
 	@State private var importStatus = ""
 	@State private var importProgress: Double? = nil // nil: no bar; below 0: a bar that doesn't know how far
+	@State private var importRunning = false // goes on while Settings is closed
+
+	private var working: Bool
+	{
+		(busy || importRunning)
+	}
 
 	/* Where the slider is: a position in keepPeriods */
 	@State private var keepIndex = 4.0
@@ -79,7 +85,7 @@ struct HistorySettings: View
 
 	private func changeKeepPeriod(to keepPeriod: Int)
 	{
-		guard let window = model.window, busy == false, keepPeriod != TDCSettingsBridge.messageArchiveKeepPeriod else {
+		guard let window = model.window, working == false, keepPeriod != TDCSettingsBridge.messageArchiveKeepPeriod else {
 			return
 		}
 
@@ -148,7 +154,7 @@ struct HistorySettings: View
 						keepIndex = Double(index)
 					}
 				}
-				.disabled(archiveOn == false || busy)
+				.disabled(archiveOn == false || working)
 
 				LabeledContent {
 					Text(fileSize)
@@ -170,38 +176,26 @@ struct HistorySettings: View
 						importStatus = ""
 						importProgress = nil
 
+						TDCSettingsBridge.forgetTextLogImportStatus()
+
 						TDCSettingsBridge.deleteMessageArchive(withMessageCount: messageCount, in: window) {
 							busy = false
 
 							updateArchiveSize()
 						}
 					}
-					.disabled(busy || messageCount == 0)
+					.disabled(working || messageCount == 0)
 				} label: {
 					SettingLabel(title: SettingsText("set-his-dt"), help: SettingsText("set-his-dh"))
 				}
 
 				LabeledContent {
 					Button(SettingsText("set-his-i")) {
-						guard let window = model.window else {
-							return
-						}
-
-						busy = true
-
-						TDCSettingsBridge.importTextLogs(in: window) { (status, fraction) in
-							importStatus = status
-							importProgress = fraction
-						} completionHandler: { (status) in
-							busy = false
-
-							importStatus = status
-							importProgress = nil
-
-							updateArchiveSize()
+						if let window = model.window {
+							TDCSettingsBridge.importTextLogs(in: window)
 						}
 					}
-					.disabled(busy || archiveOn == false)
+					.disabled(working || archiveOn == false)
 				} label: {
 					SettingLabel(title: SettingsText("set-his-it"), help: SettingsText("set-his-ih"))
 				}
@@ -221,6 +215,10 @@ struct HistorySettings: View
 								.foregroundStyle(.secondary)
 								.monospacedDigit()
 								.fixedSize()
+
+							Button(SettingsText("set-his-i7")) {
+								TDCSettingsBridge.cancelTextLogImport()
+							}
 						} else {
 							SettingFooter(text: importStatus)
 						}
@@ -293,6 +291,16 @@ struct HistorySettings: View
 			}
 
 			updateArchiveSize()
+
+			TDCSettingsBridge.observeTextLogImport { (status, fraction, running) in
+				if (importRunning && running == false) {
+					updateArchiveSize()
+				}
+
+				importStatus = status
+				importProgress = ((running) ? fraction : nil)
+				importRunning = running
+			}
 		}
 	}
 }

@@ -614,3 +614,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-his-i4" = "Added %@ messages.";
 "set-his-i5" = "No new messages found.";
 "set-his-i6" = "Looking for text logs…";
+"set-his-i7" = "Stop";
+"set-his-i8" = "Stopping…";
+"set-his-i9" = "Stopped. Added %@ messages.";
+"set-his-ia" = "Stopped. No new messages were added.";

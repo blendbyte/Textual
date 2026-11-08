@@ -291,6 +291,10 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 			   progressHandler:(nullable void (^)(NSUInteger filesDone, NSUInteger fileCount))progressHandler
 			 completionHandler:(void (^)(NSUInteger importedCount))completionHandler;
 
+/* Stops a running text log import after the file it's reading. What was
+ added stays; importing again skips it. */
+- (void)cancelTextLogImport;
+
 /* Writes what is waiting and waits for the queue to be done */
 - (void)flush;
 

@@ -240,7 +240,13 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 + (void)deleteMessageArchiveWithMessageCount:(NSInteger)messageCount inWindow:(NSWindow *)window completionHandler:(void (^)(void))completionHandler;
 
 /* The handlers are given what to show next to the button */
-+ (void)importTextLogsInWindow:(NSWindow *)window progressHandler:(void (^)(NSString *status, double fraction))progressHandler completionHandler:(void (^)(NSString *status))completionHandler;
+/* One at a time, and it goes on while Settings is closed. The handler is
+ told the state at once and at each change (fraction below 0: not known
+ yet); a new handler replaces the one before. */
++ (void)importTextLogsInWindow:(NSWindow *)window;
++ (void)observeTextLogImportWithHandler:(void (^)(NSString *status, double fraction, BOOL running))handler;
++ (void)cancelTextLogImport;
++ (void)forgetTextLogImportStatus; // the result of the last one, shown until then
 
 @property (class, readonly, copy, nullable) NSURL *transcriptFolderURL;
 
