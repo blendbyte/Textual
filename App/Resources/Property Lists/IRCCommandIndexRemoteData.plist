@@ -47,6 +47,11 @@
 		<key>indexValue</key>
 		<real>1055</real>
 	</dict>
+	<key>chathistory</key>
+	<dict>
+		<key>indexValue</key>
+		<integer>1069</integer>
+	</dict>
 	<key>chatops</key>
 	<dict>
 		<key>indexValue</key>

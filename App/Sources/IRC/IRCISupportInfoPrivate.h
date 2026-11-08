@@ -44,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IRCISupportInfo ()
 @property (atomic, copy, readwrite, nullable) NSString *serverAddress; // atomic: read while rendering and by plugins
 
+/* What CHATHISTORY takes as a message reference (MSGREFTYPES, lower case); nil if not said */
+@property (atomic, copy, readwrite, nullable) NSArray<NSString *> *chatHistoryMessageReferenceTypes;
+
 /* Client-only tags (without the "+") the server lets through (CLIENTTAGDENY) */
 - (BOOL)isClientTagAllowed:(NSString *)tagName;
 

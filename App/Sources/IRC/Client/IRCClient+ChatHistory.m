@@ -34,6 +34,8 @@
  *
  *********************************************************************** */
 
+#import "NSStringHelper.h"
+#import "TLOLocalization.h"
 #import "IRCChannelPrivate.h"
 #import "IRCISupportInfoPrivate.h"
 #import "IRCMessagePrivate.h"
@@ -51,10 +53,13 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 @implementation IRCClient (ChatHistory)
 
 /* draft/chathistory gap-fill: each channel and query remembers the newest
- message ID it saw in this run of the app; after a reconnect, the messages
+ message it saw in this run of the app; after a reconnect, the messages
  since then are requested (for a channel once it is joined again, for
- queries at login). Lines already shown are skipped, backfilled lines
- don't notify, and errors leave things as they were without it. */
+ queries at the end of login), by message ID or by time, as the server
+ takes them (soju only by time). After a relaunch nothing is remembered per
+ channel, so the newest server time seen, which is saved, stands in. Lines
+ already shown are skipped, backfilled lines don't notify, and errors leave
+ things as they were without it. */
 
 - (BOOL)isChatHistoryMessage:(IRCMessage *)m
 {
@@ -109,30 +114,40 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 		{
 			return YES;
 		}
+
+		/* Asked for by time: a server may include the line at that time */
+		NSDate *requestBound = channel.chatHistoryRequestBound;
+
+		if (requestBound && [m.receivedAt compare:requestBound] != NSOrderedDescending) {
+			return YES;
+		}
 	}
 
 	NSString *messageId = m.msgid;
 
-	if (messageId == nil) {
+	if (messageId) {
+		NSMutableOrderedSet *recentMessageIds = channel.chatHistoryRecentMessageIds;
+
+		if (recentMessageIds == nil) {
+			recentMessageIds = [NSMutableOrderedSet orderedSet];
+
+			channel.chatHistoryRecentMessageIds = recentMessageIds;
+		}
+
+		if ([recentMessageIds containsObject:messageId]) {
+			return fromHistory;
+		}
+
+		[recentMessageIds addObject:messageId];
+
+		if (recentMessageIds.count > IRCClientChatHistoryRecentMessageIdLimit) {
+			[recentMessageIds removeObjectAtIndex:0];
+		}
+	}
+
+	/* A private line shown in a channel (+channel-context, ChanServ) isn't part of its history */
+	if (channel.isChannel && [self stringIsChannelName:[m paramAt:0]] == NO) {
 		return NO;
-	}
-
-	NSMutableOrderedSet *recentMessageIds = channel.chatHistoryRecentMessageIds;
-
-	if (recentMessageIds == nil) {
-		recentMessageIds = [NSMutableOrderedSet orderedSet];
-
-		channel.chatHistoryRecentMessageIds = recentMessageIds;
-	}
-
-	if ([recentMessageIds containsObject:messageId]) {
-		return fromHistory;
-	}
-
-	[recentMessageIds addObject:messageId];
-
-	if (recentMessageIds.count > IRCClientChatHistoryRecentMessageIdLimit) {
-		[recentMessageIds removeObjectAtIndex:0];
 	}
 
 	/* The anchor only moves forward: a batch processed after newer live lines doesn't move it back */
@@ -146,16 +161,18 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 	return NO;
 }
 
-- (nullable NSString *)chatHistoryRequestForChannel:(IRCChannel *)channel
+/* A server that doesn't say what it takes (MSGREFTYPES) is assumed to take both */
+- (BOOL)chatHistoryServerTakesReferenceType:(NSString *)type
 {
-	NSParameterAssert(channel != nil);
+	NSParameterAssert(type != nil);
 
-	NSString *anchor = channel.chatHistoryAnchorMessageId;
+	NSArray<NSString *> *types = self.supportInfo.chatHistoryMessageReferenceTypes;
 
-	if (anchor == nil) {
-		return nil;
-	}
+	return (types == nil || [types containsObject:type]);
+}
 
+- (NSUInteger)chatHistoryRequestLimit
+{
 	NSUInteger limit = IRCClientChatHistoryRequestLimit;
 
 	NSUInteger serverLimit = self.supportInfo.chatHistoryLimit;
@@ -164,23 +181,77 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 		limit = serverLimit;
 	}
 
-	return [NSString stringWithFormat:@"CHATHISTORY LATEST %@ msgid=%@ %lu", channel.name, anchor, (unsigned long)limit];
+	return limit;
+}
+
+/* The time to ask from; nil when asking by message ID, or when there's nothing to go by */
+- (nullable NSDate *)chatHistoryTimeBoundForChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if (channel.chatHistoryAnchorMessageId && [self chatHistoryServerTakesReferenceType:@"msgid"]) {
+		return nil;
+	}
+
+	if ([self chatHistoryServerTakesReferenceType:@"timestamp"] == NO) {
+		return nil;
+	}
+
+	if (channel.chatHistoryAnchorTime) {
+		return channel.chatHistoryAnchorTime;
+	}
+
+	if (channel.chatHistoryResumesFromLastSession && self.chatHistoryResumeTime > 0) {
+		return [NSDate dateWithTimeIntervalSince1970:self.chatHistoryResumeTime];
+	}
+
+	return nil;
+}
+
+- (nullable NSString *)chatHistoryRequestForChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	NSString *reference = nil;
+
+	NSDate *timeBound = [self chatHistoryTimeBoundForChannel:channel];
+
+	if (timeBound) {
+		reference = [NSString stringWithFormat:@"timestamp=%@", [IRCClient readMarkerTimestampForDate:timeBound]];
+	} else if (channel.chatHistoryAnchorMessageId && [self chatHistoryServerTakesReferenceType:@"msgid"]) {
+		reference = [NSString stringWithFormat:@"msgid=%@", channel.chatHistoryAnchorMessageId];
+	}
+
+	if (reference == nil) {
+		return nil;
+	}
+
+	return [NSString stringWithFormat:@"CHATHISTORY LATEST %@ %@ %lu", channel.name, reference, (unsigned long)[self chatHistoryRequestLimit]];
+}
+
+- (BOOL)chatHistoryRequestsAreAutomatic
+{
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityChatHistory] == NO) {
+		return NO;
+	}
+
+	/* Playback (ZNC's module, Ergo) replays by itself */
+	return ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityPlayback] == NO);
 }
 
 - (void)requestChatHistoryForChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(channel != nil);
 
-	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityChatHistory] == NO) {
-		return;
-	}
-
-	/* A ZNC with its playback module replays itself */
-	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityPlayback]) {
+	if ([self chatHistoryRequestsAreAutomatic] == NO) {
 		return;
 	}
 
 	NSString *request = [self chatHistoryRequestForChannel:channel];
+
+	channel.chatHistoryRequestBound = [self chatHistoryTimeBoundForChannel:channel];
+
+	channel.chatHistoryResumesFromLastSession = NO;
 
 	if (request == nil) {
 		return;
@@ -189,6 +260,8 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 	[self.chatHistoryPendingTargets addObject:[self.supportInfo foldedString:channel.name]];
 
 	channel.chatHistoryRequestTime = [NSDate date];
+
+	channel.chatHistoryRequestLimit = [self chatHistoryRequestLimit];
 
 	[self sendLine:request];
 }
@@ -202,6 +275,126 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 	}
 }
 
+- (void)chatHistoryNoteConnectionRegistered
+{
+	self.chatHistoryResumeTime = self.lastMessageServerTime;
+
+	for (IRCChannel *channel in self.channelList) {
+		channel.chatHistoryResumesFromLastSession = YES;
+	}
+}
+
+/* An attempt that never logged in ended nothing: what happened since the real drop is still missed */
+- (void)chatHistoryNoteConnectionEnded
+{
+	if (self.isLoggedIn) {
+		self.chatHistoryDisconnectTime = [NSDate date];
+	}
+}
+
+/* Who wrote while we were away, for conversations with no window yet */
+- (nullable NSString *)chatHistoryTargetsRequestUntil:(NSDate *)date
+{
+	NSParameterAssert(date != nil);
+
+	if (self.chatHistoryResumeTime <= 0 || [self chatHistoryServerTakesReferenceType:@"timestamp"] == NO) {
+		return nil;
+	}
+
+	NSString *from = [IRCClient readMarkerTimestampForDate:[NSDate dateWithTimeIntervalSince1970:self.chatHistoryResumeTime]];
+	NSString *until = [IRCClient readMarkerTimestampForDate:date];
+
+	return [NSString stringWithFormat:@"CHATHISTORY TARGETS timestamp=%@ timestamp=%@ %lu", from, until, (unsigned long)[self chatHistoryRequestLimit]];
+}
+
+- (void)requestMissedConversations
+{
+	if (self.chatHistoryMissedConversationsRequested) {
+		return;
+	}
+
+	self.chatHistoryMissedConversationsRequested = YES;
+
+	[self requestChatHistoryForQueries];
+
+	if ([self chatHistoryRequestsAreAutomatic]) {
+		/* An hour on: this Mac's clock and the server's may differ */
+		NSString *request = [self chatHistoryTargetsRequestUntil:[NSDate dateWithTimeIntervalSinceNow:3600]];
+
+		if (request) {
+			self.chatHistoryTargetsRemaining = [self chatHistoryRequestLimit];
+
+			[self sendLine:request];
+		}
+	}
+
+	/* After the history, so that it can't bring back a badge the marker clears */
+	[self requestReadMarkersForQueries];
+}
+
+/* CHATHISTORY TARGETS <target> <time>: someone we have no window for wrote.
+ Their lines open one as they arrive; a notice alone doesn't. */
+- (void)receiveChatHistory:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if ([m paramsCount] < 2 || [[m paramAt:0] isEqualToStringIgnoringCase:@"TARGETS"] == NO) {
+		return;
+	}
+
+	if (self.chatHistoryTargetsRemaining == 0) {
+		return;
+	}
+
+	self.chatHistoryTargetsRemaining -= 1;
+
+	NSString *target = [m paramAt:1];
+
+	if ([self stringIsChannelName:target] || [self nicknameIsMyself:target] || [self findChannel:target] != nil) {
+		return;
+	}
+
+	if ([target hasPrefix:@"*"] || [target isHostmaskNicknameOn:self] == NO) {
+		return;
+	}
+
+	NSString *from = [IRCClient readMarkerTimestampForDate:[NSDate dateWithTimeIntervalSince1970:self.chatHistoryResumeTime]];
+
+	[self.chatHistoryPendingTargets addObject:[self.supportInfo foldedString:target]];
+
+	[self sendLine:[NSString stringWithFormat:@"CHATHISTORY LATEST %@ timestamp=%@ %lu", target, from, (unsigned long)[self chatHistoryRequestLimit]]];
+
+	[self requestReadMarkerForTarget:target];
+}
+
+/* A full answer means there may be more than was asked for */
+- (void)chatHistoryBatchWillBeProcessed:(IRCMessageBatchMessage *)batchMessage
+{
+	NSParameterAssert(batchMessage != nil);
+
+	NSString *target = [batchMessage.openingMessage paramAt:2];
+
+	IRCChannel *channel = ((target.length > 0) ? [self findChannel:target] : nil);
+
+	if (channel == nil) {
+		return;
+	}
+
+	NSUInteger limit = channel.chatHistoryRequestLimit;
+
+	channel.chatHistoryRequestLimit = 0;
+
+	if (limit == 0 || batchMessage.queuedEntriesCount < limit) {
+		return;
+	}
+
+	[self print:TXTLS(@"IRC[ch7-g1]", (unsigned long)limit)
+			 by:nil
+	  inChannel:channel
+		 asType:TVCLogLineTypeDebug
+		command:TVCLogLineDefaultCommandValue];
+}
+
 - (nullable IRCMessage *)chatHistoryEventMessage:(IRCMessage *)m
 {
 	NSParameterAssert(m != nil);
@@ -213,6 +406,21 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 	dispatch_once(&onceToken, ^{
 		eventCommands = [NSSet setWithArray:@[@"JOIN", @"PART", @"QUIT", @"NICK", @"KICK", @"MODE", @"TOPIC"]];
 	});
+
+	/* An invite from history is shown, never acted on; it needs no channel to go in */
+	if ([m.command isEqualToStringIgnoringCase:@"INVITE"]) {
+		NSDate *disconnectTime = self.chatHistoryDisconnectTime;
+
+		if (disconnectTime && [m.receivedAt compare:disconnectTime] != NSOrderedDescending) {
+			return nil;
+		}
+
+		IRCMessageMutable *invite = [m mutableCopy];
+
+		invite.isPrintOnlyMessage = YES;
+
+		return [invite copy];
+	}
 
 	if ([eventCommands containsObject:m.command.uppercaseString] == NO) {
 		return m;
@@ -298,6 +506,20 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 
 			return YES;
 		}
+	}
+
+	/* A failure that names no target: the reference wasn't taken, or TARGETS isn't offered */
+	NSString *subcommand = [m paramAt:2];
+
+	BOOL automaticLatest = ([subcommand isEqualToStringIgnoringCase:@"LATEST"] && self.chatHistoryPendingTargets.count > 0);
+	BOOL automaticTargets = ([subcommand isEqualToStringIgnoringCase:@"TARGETS"] && self.chatHistoryTargetsRemaining > 0);
+
+	if (automaticLatest || automaticTargets) {
+		self.chatHistoryTargetsRemaining = ((automaticTargets) ? 0 : self.chatHistoryTargetsRemaining);
+
+		LogToConsoleInfo("CHATHISTORY %{public}@ failed: %{public}@", subcommand, [m paramAt:1]);
+
+		return YES;
 	}
 
 	return NO;

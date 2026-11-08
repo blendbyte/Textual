@@ -1678,6 +1678,19 @@ async def scenario_chathistory(client):
 	pass
 
 
+async def scenario_chathistory_time(client):
+	"""draft/chathistory on a server that only takes times, as soju does
+	(MSGREFTYPES=timestamp). Connection 1: #ch gets line 1, a private message
+	from gina opens her query, then the server drops the connection. Connection
+	2: the client must ask for #ch and gina by timestamp= (never msgid=), ask
+	CHATHISTORY TARGETS, and ask MARKREAD gina after her history. #ch shows line 1
+	once, the missed lines and "Only the latest 100 missed messages", and an
+	old invite as a line, with no notification and no join. dana's query opens
+	from TARGETS; NickServ (a notice only) opens none; *status isn't asked for.
+	Runs for five minutes."""
+	pass
+
+
 async def scenario_event_playback(client):
 	"""draft/event-playback and draft/pre-away. Connection 1: #ch with
 	gina, bob, dave and erin, line 1 (msgid m1); say "drop" (after /away, to
@@ -3131,6 +3144,7 @@ SCENARIOS = {
 	"sts": scenario_sts,
 	"sasl-scram": scenario_sasl_scram,
 	"chathistory": scenario_chathistory,
+	"chathistory-time": scenario_chathistory_time,
 	"event-playback": scenario_event_playback,
 	"sasl-new": scenario_sasl_new,
 	"utf8only": scenario_utf8only,
@@ -3147,6 +3161,111 @@ SCENARIOS = {
 OWN_REGISTRATION_SCENARIOS = {"review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
+
+
+async def run_chathistory_time_scenario(port):
+	capabilities = "batch server-time message-tags draft/chathistory draft/event-playback draft/read-marker"
+	connections = 0
+	stamps = {}
+
+	def stamp(seconds_ago=0):
+		moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(seconds=seconds_ago)
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	async def handle(reader, writer):
+		nonlocal connections
+		connections += 1
+		number = connections
+		client = Client(reader, writer)
+		client.isupport_extra = "MSGREFTYPES=timestamp CHATHISTORY=100"
+
+		if not await client.register_with_capabilities(capabilities):
+			writer.close()
+			return
+
+		nick = client.nickname
+
+		async def joined():
+			await client.send(f":{nick}!user@client.textual.test JOIN #ch")
+			await client.send(f":{SERVER} 353 {nick} = #ch :{nick} gina")
+			await client.send(f":{SERVER} 366 {nick} #ch :End of /NAMES list.")
+
+		async def batch(token, target, lines):
+			await client.send(f":{SERVER} BATCH +{token} chathistory {target}")
+			for line in lines:
+				await client.send(f"@batch={token};{line}")
+			await client.send(f":{SERVER} BATCH -{token}")
+
+		if number == 1:
+			await joined()
+			await client.collect(1)
+			stamps["line1"] = stamp()
+			await client.send(f"@time={stamps['line1']} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop")
+			await client.send(f"@time={stamp()} :gina!g@friend.test PRIVMSG {nick} :private before the drop")
+			await client.collect(2)
+			log("<<", "dropping the connection")
+			writer.close()
+			return
+
+		requests = []
+		end = time.monotonic() + 15
+
+		while time.monotonic() < end:
+			try:
+				line = await asyncio.wait_for(client.read_line(), 1)
+			except asyncio.TimeoutError:
+				continue
+			if line is None:
+				break
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+			elif command == "JOIN":
+				await joined()
+			elif command == "MARKREAD":
+				requests.append(line)
+				await client.send(f":{SERVER} MARKREAD {rest} timestamp={stamp()}")
+			elif command == "CHATHISTORY":
+				requests.append(line)
+				parts = rest.split(" ")
+				if parts[0] == "TARGETS":
+					await client.send(f":{SERVER} BATCH +t1 draft/chathistory-targets")
+					for target in ["#ch", "dana", "*status", "NickServ"]:
+						await client.send(f"@batch=t1 :{SERVER} CHATHISTORY TARGETS {target} timestamp={stamp()}")
+					await client.send(f":{SERVER} BATCH -t1")
+				elif parts[1] == "#ch":
+					lines = [f"time={stamps['line1']} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop"]
+					lines.append(f"time={stamp(5)} :dana!d@friend.test INVITE {nick} #elsewhere")
+					lines += [f"time={stamp(4)} :gina!g@friend.test PRIVMSG #ch :missed {number_}" for number_ in range(2, 100)]
+					await batch("h1", "#ch", lines)
+				elif parts[1] == "gina":
+					await batch("h2", "gina", [f"time={stamp(3)} :gina!g@friend.test PRIVMSG {nick} :private while away"])
+				elif parts[1] == "dana":
+					await batch("h3", "dana", [f"time={stamp(3)} :dana!d@friend.test PRIVMSG {nick} :a new conversation"])
+				elif parts[1] == "NickServ":
+					await batch("h4", "NickServ", [f"time={stamp(3)} :NickServ!s@services.test NOTICE {nick} :you are identified"])
+
+		def asked(prefix):
+			return next((index for index, line in enumerate(requests) if line.startswith(prefix)), None)
+
+		channel = asked("CHATHISTORY LATEST #ch")
+		query = asked("CHATHISTORY LATEST gina")
+		marker = asked("MARKREAD gina")
+
+		result(channel is not None and "timestamp=" in requests[channel], f"#ch asked by time: {requests!r}")
+		result(not any("msgid=" in line for line in requests), "no request by message ID")
+		result(asked("CHATHISTORY TARGETS timestamp=") is not None, "TARGETS asked by time")
+		result(asked("CHATHISTORY LATEST dana") is not None, "history for dana, found by TARGETS")
+		result(asked("CHATHISTORY LATEST *status") is None, "*status isn't asked for")
+		result(query is not None and marker is not None and marker > query, "MARKREAD gina comes after her history")
+		await client.collect(240)
+		writer.close()
+
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'chathistory-time' waiting on irc://127.0.0.1:{port}", flush=True)
+	await asyncio.sleep(300)
+	server.close()
 
 
 async def run_chathistory_scenario(port):
@@ -3199,7 +3318,7 @@ async def run_chathistory_scenario(port):
 				await client.send(f":{nick}!user@client.textual.test JOIN #ch")
 				await client.send(f":{SERVER} 353 {nick} = #ch :{nick} gina")
 				await client.send(f":{SERVER} 366 {nick} #ch :End of /NAMES list.")
-			elif command == "CHATHISTORY":
+			elif command == "CHATHISTORY" and not rest.upper().startswith("TARGETS"):
 				requested = line
 				await client.send(f":{SERVER} BATCH +h1 chathistory #ch")
 				await client.send(f"@batch=h1;msgid=m1;time={stamps['line1']} :gina!g@friend.test PRIVMSG #ch :1 seen live before the drop")
@@ -3280,7 +3399,7 @@ async def run_event_playback_scenario(port):
 				await client.send(f":{SERVER} PONG {SERVER} {rest}")
 			elif command == "JOIN":
 				await join(client, nick)
-			elif command == "CHATHISTORY":
+			elif command == "CHATHISTORY" and not rest.upper().startswith("TARGETS"):
 				gap = moments["drop"] + datetime.timedelta(milliseconds=300)
 				def at(offset):
 					return stamp_at(gap + datetime.timedelta(milliseconds=offset))
@@ -3584,6 +3703,10 @@ async def main():
 
 	if arguments.scenario == "chathistory":
 		await run_chathistory_scenario(arguments.port)
+		return
+
+	if arguments.scenario == "chathistory-time":
+		await run_chathistory_time_scenario(arguments.port)
 		return
 
 	if arguments.scenario == "event-playback":

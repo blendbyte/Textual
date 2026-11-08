@@ -363,7 +363,7 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 			}
 
-			if (postEvent == NO) {
+			if (postEvent == NO || [self readMarkerCoversMessage:m inChannel:channel]) {
 				return;
 			}
 
@@ -499,6 +499,11 @@ NS_ASSUME_NONNULL_BEGIN
 	(isSelfMessage && query == nil && [self isChatHistoryMessage:m] == NO &&
 	 ([self stringIsNickname:target] == NO || [self.secretMessageTargets containsObject:[self.supportInfo foldedString:target]]));
 
+	/* A notice in history with no window for it (a service's at login, say): old news */
+	if (query == nil && lineType == TVCLogLineTypeNotice && [self isChatHistoryMessage:m]) {
+		return;
+	}
+
 	BOOL newPrivateMessage = NO;
 
 	if (isPlainText == NO) {
@@ -547,7 +552,7 @@ NS_ASSUME_NONNULL_BEGIN
 				postEvent = [self notifyPrintedText:TXNotificationTypePrivateNotice lineType:lineType target:query nickname:sender text:text];
 			}
 
-			if (postEvent && query != nil) {
+			if (postEvent && query != nil && [self readMarkerCoversMessage:m inChannel:query] == NO) {
 				[self setUnreadStateForChannel:query];
 			}
 		};
@@ -593,7 +598,7 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 			}
 
-			if (postEvent == NO) {
+			if (postEvent == NO || [self readMarkerCoversMessage:m inChannel:query]) {
 				return;
 			}
 
@@ -2097,6 +2102,11 @@ NS_ASSUME_NONNULL_BEGIN
 		 receivedAt:m.receivedAt];
 	}
 
+	/* From history: it's in the past, so neither a notification nor a join */
+	if (m.isPrintOnlyMessage) {
+		return;
+	}
+
 	[self notifyEvent:TXNotificationTypeInvite lineType:TVCLogLineTypeInvite target:nil nickname:sender text:channelName];
 
 	/* Only one real channel: "0" or "#a,0" would make us leave every channel */
@@ -2809,6 +2819,10 @@ NS_ASSUME_NONNULL_BEGIN
 		[self labeledBatchFinished:batchMessage];
 
 		return;
+	}
+
+	if ([batchType isEqualToString:@"chathistory"] || [batchType isEqualToString:@"draft/chathistory"]) {
+		[self chatHistoryBatchWillBeProcessed:batchMessage];
 	}
 
 	/* Process queued entries for this batch message. */

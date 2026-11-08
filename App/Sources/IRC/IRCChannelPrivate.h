@@ -53,6 +53,9 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 @property (nonatomic, copy, nullable) NSString *chatHistoryAnchorMessageId; // newest message seen
 @property (nonatomic, copy, nullable) NSDate *chatHistoryRequestTime; // when history was last asked for: later events were seen live
 @property (nonatomic, copy, nullable) NSDate *chatHistoryAnchorTime;
+@property (nonatomic, copy, nullable) NSDate *chatHistoryRequestBound; // the time asked from, when asked by time: lines up to it are on screen
+@property (nonatomic, assign) NSUInteger chatHistoryRequestLimit; // lines asked for by the request under way
+@property (nonatomic, assign) BOOL chatHistoryResumesFromLastSession; // in the list when this connection began: no anchor means asking from the server's last seen time
 @property (nonatomic, strong, nullable) NSMutableOrderedSet<NSString *> *chatHistoryRecentMessageIds;
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *pendingReply; // +reply: msgid, nickname, excerpt of the message being answered
 

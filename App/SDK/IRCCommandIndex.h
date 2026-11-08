@@ -157,6 +157,7 @@ typedef NS_ENUM(NSUInteger, IRCRemoteCommand) {
 	IRCRemoteCommandBouncer = 1068,
 	IRCRemoteCommandCap = 1004,
 	IRCRemoteCommandCertinfo = 1055,
+	IRCRemoteCommandChathistory = 1069,
 	IRCRemoteCommandChatops = 1006,
 	IRCRemoteCommandChghost = 1057,
 	IRCRemoteCommandError = 1016,

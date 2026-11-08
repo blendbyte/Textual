@@ -157,6 +157,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.secretMessageTargets = nil;
 	self.silentEchoes = nil;
 
+	self.chatHistoryTargetsRemaining = 0;
+	self.chatHistoryMissedConversationsRequested = NO;
+
 	self.userIsAway = NO;
 	self.awayRestoredBeforeRegistration = NO;
 	self.userIsIRCop = NO;
@@ -234,7 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.chatHistoryPendingTargets removeAllObjects];
 
-	self.chatHistoryDisconnectTime = [NSDate date];
+	[self chatHistoryNoteConnectionEnded];
 
 	if (isTerminating == NO) {
 		/* Lines still queued for the console (it may be loading) are kept: they
@@ -721,6 +724,12 @@ NS_ASSUME_NONNULL_BEGIN
 			case IRCRemoteCommandMarkread: // Command: MARKREAD (draft/read-marker)
 			{
 				[self receiveMarkRead:message];
+
+				break;
+			}
+			case IRCRemoteCommandChathistory: // Command: CHATHISTORY (draft/chathistory TARGETS)
+			{
+				[self receiveChatHistory:message];
 
 				break;
 			}

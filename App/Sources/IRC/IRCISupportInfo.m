@@ -121,6 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.caseMapping = IRCISupportInfoCaseMappingRFC1459;
 
 	self.chatHistoryLimit = 0;
+	self.chatHistoryMessageReferenceTypes = nil;
 
 	self.utf8Only = NO;
 
@@ -247,6 +248,8 @@ NS_ASSUME_NONNULL_BEGIN
 				if (chatHistoryLimit > 0) {
 					self.chatHistoryLimit = chatHistoryLimit;
 				}
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"MSGREFTYPES"]) {
+				self.chatHistoryMessageReferenceTypes = [segmentValue.lowercaseString componentsSeparatedByString:@","];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHANMODES"]) {
 				[self parseChannelModes:segmentValue];
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"CHANNELLEN"]) {
@@ -415,6 +418,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.fileHostAddress = nil;
 	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"] || [token isEqualToStringIgnoringCase:@"draft/CHATHISTORY"]) {
 		self.chatHistoryLimit = 0;
+	} else if ([token isEqualToStringIgnoringCase:@"MSGREFTYPES"]) {
+		self.chatHistoryMessageReferenceTypes = nil;
 	} else if ([token isEqualToStringIgnoringCase:@"CASEMAPPING"]) {
 		self.caseMapping = IRCISupportInfoCaseMappingRFC1459;
 	} else if ([token isEqualToStringIgnoringCase:@"EXCEPTS"]) {

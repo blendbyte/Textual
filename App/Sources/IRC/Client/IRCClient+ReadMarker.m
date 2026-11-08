@@ -167,6 +167,39 @@ static NSTimeInterval const IRCClientReadMarkerDelay = 2.0;
 	[self sendLine:request];
 }
 
+/* Read elsewhere already. Lines are rendered off the main thread, so a
+ backfilled one can finish after the marker for it has arrived. */
+- (BOOL)readMarkerCoversMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(m != nil);
+	NSParameterAssert(channel != nil);
+
+	NSDate *readMarkerTime = channel.readMarkerTime;
+
+	return (readMarkerTime != nil && [m.receivedAt compare:readMarkerTime] != NSOrderedDescending);
+}
+
+/* Servers only volunteer the read position of channels */
+- (void)requestReadMarkerForTarget:(NSString *)target
+{
+	NSParameterAssert(target != nil);
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityReadMarker] == NO) {
+		return;
+	}
+
+	[self sendLine:[NSString stringWithFormat:@"MARKREAD %@", target]];
+}
+
+- (void)requestReadMarkersForQueries
+{
+	for (IRCChannel *channel in self.channelList) {
+		if (channel.isPrivateMessage && [self readMarkerCanTarget:channel]) {
+			[self requestReadMarkerForTarget:channel.name];
+		}
+	}
+}
+
 /* MARKREAD <target> timestamp=<time or *>; YES when it cleared the badges */
 - (BOOL)applyReadMarker:(IRCMessage *)m
 {

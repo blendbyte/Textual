@@ -100,6 +100,92 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([self.client chatHistoryRequestForChannel:self.channel], @"CHATHISTORY LATEST #textual msgid=new 50");
 }
 
+/* soju only takes times: the request goes by time, also when the newest line has an ID */
+- (void)testRequestGoesByTimeWhereTheServerTakesOnlyTimes
+{
+	[self.client.supportInfo processConfigurationData:@"me MSGREFTYPES=timestamp :are supported by this server"];
+
+	[self.client chatHistoryShouldSkipMessage:[self message:@"new" from:@"bob" at:20] inChannel:self.channel fromHistory:NO];
+
+	XCTAssertEqualObjects([self.client chatHistoryRequestForChannel:self.channel],
+						  @"CHATHISTORY LATEST #textual timestamp=2023-11-14T22:13:40.000Z 100");
+}
+
+/* After a relaunch only the saved server time is known, for what was in the list at the start of the connection */
+- (void)testRequestAfterRelaunchGoesFromTheSavedTime
+{
+	self.client.lastMessageServerTime = (1700000000 + 30);
+
+	[self.client addChannel:self.channel];
+
+	[self.client chatHistoryNoteConnectionRegistered];
+
+	XCTAssertEqualObjects([self.client chatHistoryRequestForChannel:self.channel],
+						  @"CHATHISTORY LATEST #textual timestamp=2023-11-14T22:13:50.000Z 100");
+
+	IRCChannel *joinedLater = [[IRCChannel alloc] initWithConfig:[IRCChannelConfig seedWithName:@"#later"]];
+
+	XCTAssertNil([self.client chatHistoryRequestForChannel:joinedLater], @"Nothing to catch up on");
+}
+
+/* By time there's no ID to recognise a line by: what's at or before the time asked from was shown */
+- (void)testBackfillByTimeSkipsTheLineAtTheBound
+{
+	self.channel.chatHistoryRequestBound = [NSDate dateWithTimeIntervalSince1970:(1700000000 + 20)];
+
+	XCTAssertTrue([self.client chatHistoryShouldSkipMessage:[self message:@"a" from:@"bob" at:20] inChannel:self.channel fromHistory:YES]);
+	XCTAssertFalse([self.client chatHistoryShouldSkipMessage:[self message:@"b" from:@"bob" at:21] inChannel:self.channel fromHistory:YES]);
+}
+
+/* A private line shown in a channel must not become that channel's anchor */
+- (void)testPrivateLineShownInChannelIsNotItsAnchor
+{
+	[self.client chatHistoryShouldSkipMessage:[self message:@"in-channel" from:@"bob" at:10] inChannel:self.channel fromHistory:NO];
+
+	IRCMessage *private = [[IRCMessage alloc] initWithLine:@"@msgid=private;time=2023-11-14T22:13:50.000Z :bot!u@host.test NOTICE me :only you" onClient:self.client];
+
+	[self.client chatHistoryShouldSkipMessage:private inChannel:self.channel fromHistory:NO];
+
+	XCTAssertEqualObjects([self.client chatHistoryRequestForChannel:self.channel], @"CHATHISTORY LATEST #textual msgid=in-channel 100");
+}
+
+/* A connection attempt that never logged in is not when we went away */
+- (void)testFailedAttemptKeepsTheDisconnectTime
+{
+	NSDate *dropped = [NSDate dateWithTimeIntervalSince1970:1700000000];
+
+	self.client.chatHistoryDisconnectTime = dropped;
+
+	[self.client chatHistoryNoteConnectionEnded];
+
+	XCTAssertEqualObjects(self.client.chatHistoryDisconnectTime, dropped);
+}
+
+/* A TARGETS request spans the time away, and answers are only taken when asked for */
+- (void)testTargetsAskFromTheSavedTime
+{
+	XCTAssertNil([self.client chatHistoryTargetsRequestUntil:[NSDate dateWithTimeIntervalSince1970:1700000100]], @"Never connected before");
+
+	self.client.lastMessageServerTime = 1700000000;
+
+	[self.client chatHistoryNoteConnectionRegistered];
+
+	XCTAssertEqualObjects([self.client chatHistoryTargetsRequestUntil:[NSDate dateWithTimeIntervalSince1970:1700000100]],
+						  @"CHATHISTORY TARGETS timestamp=2023-11-14T22:13:20.000Z timestamp=2023-11-14T22:15:00.000Z 100");
+}
+
+/* FAIL with no target (a reference the server doesn't take) is ours while a request is out */
+- (void)testFailureNamingNoTargetIsHiddenOnlyWhileAsking
+{
+	IRCMessage *failure = [[IRCMessage alloc] initWithLine:@":s FAIL CHATHISTORY INVALID_PARAMS LATEST msgid=x :Invalid first bound" onClient:self.client];
+
+	XCTAssertFalse([self.client chatHistoryHidesStandardReply:failure]);
+
+	[self.client.chatHistoryPendingTargets addObject:@"#textual"];
+
+	XCTAssertTrue([self.client chatHistoryHidesStandardReply:failure]);
+}
+
 /* Backfilled lines already shown, and our own lines from before the connection ended, are skipped */
 - (void)testBackfillSkipsWhatIsOnScreen
 {

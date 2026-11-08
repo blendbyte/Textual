@@ -513,3 +513,4 @@ The identifier for a timer can be found using “/timer list”";
 "pst-n1" = "“Send as Link” puts the text on %@ instead and sends its link. Anyone with the link can read it.";
 "upl-d1" = "%@ (offered by the network)";
 "upl-d2" = "%@ (your upload address)";
+"ch7-g1" = "Only the latest %lu missed messages were loaded here; older ones are still on the server.";

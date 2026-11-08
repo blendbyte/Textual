@@ -226,8 +226,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* ZNC's networks, for a server linked to a ZNC account */
 	[self requestBouncerNetworksAfterRegistration];
 
-	/* draft/chathistory: missed private messages (channels ask once joined) */
-	[self requestChatHistoryForQueries];
+	/* draft/chathistory: where this connection takes up from */
+	[self chatHistoryNoteConnectionRegistered];
 
 	/* Activate existing queries */
 	for (IRCChannel *c in self.channelList) {
@@ -451,6 +451,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 				/* CLIENTTAGDENY comes after the welcome */
 				[self updateMessageActionsInViews];
+
+				/* draft/chathistory: missed private messages (channels ask once joined) */
+				[self requestMissedConversations];
 			}
 
 			if (printMessage && [TPCPreferences displayServerMOTD]) {

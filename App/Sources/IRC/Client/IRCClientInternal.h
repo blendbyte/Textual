@@ -229,7 +229,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableSet<NSString *> *secretMessageTargets; // folded names sent /SMSG or /SME without a query; their echoes open none
 @property (nonatomic, strong, nullable) NSMutableArray<NSString *> *silentEchoes; // folded target + text of lines Textual sent itself, oldest first; their echoes show nowhere
 @property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
-@property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last connection ended
+@property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last logged-in connection ended
+@property (nonatomic, assign) NSTimeInterval chatHistoryResumeTime; // the newest server time seen before this connection
+@property (nonatomic, assign) NSUInteger chatHistoryTargetsRemaining; // answers still taken to a CHATHISTORY TARGETS of ours
+@property (nonatomic, assign) BOOL chatHistoryMissedConversationsRequested; // once per connection, at the end of the MOTD
 @property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate
 @property (nonatomic, assign) IRCISupportInfoCaseMapping channelMapCaseMapping;
@@ -375,6 +378,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* draft/read-marker (IRCClient+ReadMarker.m) */
 - (void)readMarkerNoteMessageAt:(NSDate *)receivedAt inChannel:(IRCChannel *)channel;
 - (nullable NSString *)readMarkerRequestForChannel:(IRCChannel *)channel;
+- (BOOL)readMarkerCoversMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel;
+- (void)requestReadMarkerForTarget:(NSString *)target;
+- (void)requestReadMarkersForQueries;
 - (BOOL)applyReadMarker:(IRCMessage *)m;
 
 /* draft/event-playback: an event (JOIN, QUIT, …) from history as one to print
@@ -395,8 +401,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)chatHistoryRequestForChannel:(IRCChannel *)channel;
 - (void)requestChatHistoryForChannel:(IRCChannel *)channel;
 - (void)requestChatHistoryForQueries;
+- (nullable NSString *)chatHistoryTargetsRequestUntil:(NSDate *)date;
+- (void)chatHistoryNoteConnectionRegistered; // at the welcome, before later lines move the server time
+- (void)chatHistoryNoteConnectionEnded;
+- (void)requestMissedConversations; // at the end of the MOTD: ISUPPORT is known by then
+- (void)receiveChatHistory:(IRCMessage *)m;
 - (BOOL)chatHistoryHidesStandardReply:(IRCMessage *)m;
 - (void)chatHistoryBatchOpenedForTarget:(nullable NSString *)target;
+- (void)chatHistoryBatchWillBeProcessed:(IRCMessageBatchMessage *)batchMessage;
 - (BOOL)messageIsReplay:(IRCMessage *)m; // history or playback, by batch or by an old server time
 - (void)receiveStandardReply:(IRCMessage *)m;
 - (void)scheduleWhoRequestPass;
