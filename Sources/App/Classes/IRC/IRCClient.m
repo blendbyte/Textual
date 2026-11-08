@@ -7764,6 +7764,13 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		{
 			self.userNickname = newNickname;
 
+			/* Long messages are split by the length of this */
+			NSUInteger hostmaskNicknameEnd = [self.userHostmask rangeOfString:@"!"].location;
+
+			if (self.userHostmask && hostmaskNicknameEnd != NSNotFound) {
+				self.userHostmask = [newNickname stringByAppendingString:[self.userHostmask substringFromIndex:hostmaskNicknameEnd]];
+			}
+
 			if (self.tryingNicknameSentNickname != nil) {
 				self.tryingNicknameSentNickname = newNickname;
 			}
@@ -8234,6 +8241,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 
 	NSString *nickname = m.senderNickname;
+
+	if ([self nicknameIsMyself:nickname]) {
+		self.userHostmask = [NSString stringWithFormat:@"%@!%@@%@", nickname, username, address];
+	}
 
 	[self modifyUserUserWithNickname:nickname withBlock:^(IRCUserMutable *userMutable) {
 		userMutable.username = username;
