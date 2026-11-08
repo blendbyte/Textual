@@ -335,7 +335,10 @@ div.line[data-line-type="kill"],
 div.line[data-line-type="nick"],
 div.line[data-line-type="mode"],
 div.line[data-line-type="topic"],
-div.line[data-line-type="website"] {
+div.line[data-line-type="website"],
+div.line[data-line-type="away"],
+div.line[data-line-type="back"],
+div.line[data-line-type="event-group"] {
  	padding: 3px 5px 3px 5px;
 	color: var(--event-color);
 }
@@ -360,6 +363,15 @@ body[dir="ltr"] div.line[data-line-type="nick"] .message:before {
   	/* margin-right: 0.4em; */
 }
 
+/* Away and back (away-notify): the style's event color */
+body[dir="ltr"] div.line[data-line-type="away"] .message:before {
+	content: "○";
+}
+
+body[dir="ltr"] div.line[data-line-type="back"] .message:before {
+	content: "●";
+}
+
 body[dir="rtl"] div.line[data-line-type="join"] .message:before {
 	content: "→";
   	color: #0c0;
@@ -378,6 +390,14 @@ body[dir="rtl"] div.line[data-line-type="nick"] .message:before {
 	content:"•";
   	color: #0c0;
   	/* margin-left: 0.4em; */
+}
+
+body[dir="rtl"] div.line[data-line-type="away"] .message:before {
+	content: "○";
+}
+
+body[dir="rtl"] div.line[data-line-type="back"] .message:before {
+	content: "●";
 }
 
 /* Nickname Colors */
@@ -407,12 +427,12 @@ body[data-spacing="roomy"] div.line[data-line-type] {
 }
 
 /* Event lines have a pixel more padding than messages */
-body[data-spacing="compact"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"]) {
+body[data-spacing="compact"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"], [data-line-type="away"], [data-line-type="back"], [data-line-type="event-group"]) {
 	padding-top: 2px;
 	padding-bottom: 2px;
 }
 
-body[data-spacing="roomy"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"]) {
+body[data-spacing="roomy"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"], [data-line-type="away"], [data-line-type="back"], [data-line-type="event-group"]) {
 	padding-top: 4px;
 	padding-bottom: 4px;
 }
