@@ -273,7 +273,10 @@ NS_ASSUME_NONNULL_BEGIN
 	[NSLayoutConstraint activateConstraints:@[
 		[stack.leadingAnchor constraintEqualToAnchor:bar.leadingAnchor],
 		[stack.trailingAnchor constraintEqualToAnchor:bar.trailingAnchor],
-		[stack.centerYAnchor constraintEqualToAnchor:bar.centerYAnchor],
+		/* A little below the middle: the text's letters sit above the middle
+		 of its line, and the field below adds its own margin, which left
+		 almost twice the room under the text as above it */
+		[stack.centerYAnchor constraintEqualToAnchor:bar.centerYAnchor constant:3.0],
 		heightConstraint
 	]];
 
