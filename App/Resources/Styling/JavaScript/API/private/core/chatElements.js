@@ -183,6 +183,8 @@ _ChatElements.tidy = function() /* PRIVATE */
 		return;
 	}
 
+	var keepAtBottom = _ChatElements._prepareToKeepAtBottom();
+
 	var lastDay = null;
 
 	/* A separator shown with nothing shown after it yet */
@@ -253,6 +255,36 @@ _ChatElements.tidy = function() /* PRIVATE */
 	_ChatElements._placeMark(buffer);
 
 	_ChatElements._updateEmpty(shown === false);
+
+	keepAtBottom();
+};
+
+/* A date line or "New" that shows now makes the chat taller after the
+ scroller followed the newest line (this runs a frame later), and half of
+ that line ended up below the edge. Returns what to call after the change. */
+_ChatElements._prepareToKeepAtBottom = function() /* PRIVATE */
+{
+	if (typeof TextualScroller === "undefined" || typeof _TextualScroller === "undefined") {
+		return function() {};
+	}
+
+	var scrolledElement = _TextualScroller._scrolledElement;
+
+	if (!scrolledElement || !TextualScroller.isScrolledToBottom()) {
+		return function() {};
+	}
+
+	var heightBefore = scrolledElement.scrollHeight;
+
+	return function() {
+		if (scrolledElement.scrollHeight === heightBefore) {
+			return;
+		}
+
+		if (TextualScroller.automaticScrollingEnabled && TextualScroller.documentIsVisible) {
+			TextualScroller.scrollToBottom();
+		}
+	};
 };
 
 /* ************************************************** */
