@@ -79,6 +79,13 @@ body[data-spacing="roomy"] {
 	opacity: 0; /* Set by JavaScript */
 }
 
+/* Room under the last line, so it doesn't sit on the window's edge */
+#body::after {
+	content: "";
+	display: block;
+	height: 2px;
+}
+
 /* Only factor in height of topic bar when selected == true
  because that is only time the topic is displayed according
  to the logic defined by baseLayout.css */
@@ -162,7 +169,7 @@ a:hover {
 	opacity: 0; /* Set by JavaScript */
 	color: var(--text);
 	position: fixed;
-	padding: 4px 10px 5px;
+	padding: 4px 10px 5px 7px; /* the left lines up with the messages' 7px */
 	border-bottom: 1px solid var(--rule);
 	background-color: color-mix(in srgb, var(--bg) 82%, transparent);
 	-webkit-backdrop-filter: blur(20px) saturate(1.6);
@@ -188,7 +195,7 @@ a:hover {
 /* Base message row */
 
 div.line {
-	padding: var(--spacing-padding-small) 10px;
+	padding: var(--spacing-padding-small) 10px var(--spacing-padding-small) 4px;
 	border-left: 3px solid transparent;
 }
 
