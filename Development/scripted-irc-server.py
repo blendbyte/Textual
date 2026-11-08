@@ -1769,7 +1769,10 @@ async def scenario_small_fixes(client):
 				log("typing", line)
 			elif command == "PRIVMSG":
 				target, _, text = rest.partition(" :")
-				if text == "mode":
+				if text == "highlight":
+					await asyncio.sleep(4)
+					await client.send(f":alice!a@peer.test PRIVMSG {target} :{me}: are you there?")
+				elif text == "mode":
 					await client.send(f":{SERVER} 324 {me} #listed +nt")
 				elif text.startswith("newnick "):
 					new = text.split(" ", 1)[1]

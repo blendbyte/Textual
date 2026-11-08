@@ -59,6 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)destroy:(IRCTreeItem *)treeItem;
 
+/* What is in the input fields too, for the next launch */
++ (void)saveDrafts;
+- (void)keepDraftOfCurrentItem;
+
 - (void)noteInputHistoryObjectScopeDidChange;
 
 - (void)add:(NSAttributedString *)string;

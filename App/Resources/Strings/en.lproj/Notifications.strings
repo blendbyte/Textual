@@ -113,6 +113,7 @@
 /* Notification bubble reply button placeholders */
 "3t4-kl" = "Reply";
 "bhn-uo" = "Send Message";
+"hl-rp" = "Reply in this channel";
 "do4-2e" = "Enter message to reply to this private message";
 
 /* Notification type titles */

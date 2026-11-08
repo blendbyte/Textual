@@ -45,8 +45,12 @@
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowTextView.h"
 #import "TLOInputHistoryPrivate.h"
+#import "TPCPreferencesUserDefaults.h"
+#import "NSStringHelper.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+#define _inputDraftsKey		@"Main Window -> Input Drafts"
 
 #pragma mark -
 #pragma mark Private Interface
@@ -103,7 +107,72 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 {
 	self.historyObjects = [NSMutableDictionary dictionary];
 
-	self.drafts = [NSMutableDictionary dictionary];
+	self.drafts = [self.class sharedDrafts];
+}
+
+/* One set for every window, kept across launches */
++ (NSMutableDictionary<NSString *, NSAttributedString *> *)sharedDrafts
+{
+	static NSMutableDictionary *sharedDrafts = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		sharedDrafts = [NSMutableDictionary dictionary];
+
+		NSDictionary *saved = [RZUserDefaults() dictionaryForKey:_inputDraftsKey];
+
+		for (NSString *itemId in saved) {
+			if ([saved[itemId] isKindOfClass:[NSString class]]) {
+				sharedDrafts[itemId] = [NSAttributedString attributedStringWithString:saved[itemId]];
+			}
+		}
+	});
+
+	return sharedDrafts;
+}
+
+- (void)keepDraftOfCurrentItem
+{
+	NSString *itemId = self.currentTreeItem;
+
+	if (itemId == nil) {
+		return;
+	}
+
+	NSAttributedString *draft = self.window.inputTextField.attributedStringValue;
+
+	if (draft.length > 0) {
+		self.drafts[itemId] = [draft copy];
+	} else {
+		[self.drafts removeObjectForKey:itemId];
+	}
+}
+
+/* Unsent text, as plain text. Not a command: it may be someone's password. */
++ (void)saveDrafts
+{
+	for (TVCMainWindow *window in TVCMainWindow.windows) {
+		[window.inputHistoryManager keepDraftOfCurrentItem];
+	}
+
+	NSMutableDictionary<NSString *, NSString *> *saved = [NSMutableDictionary dictionary];
+
+	NSDictionary<NSString *, NSAttributedString *> *drafts = [self sharedDrafts];
+
+	for (NSString *itemId in drafts) {
+		NSString *string = drafts[itemId].string;
+
+		if (string.length > 0 && [string hasPrefix:@"/"] == NO) {
+			saved[itemId] = string;
+		}
+	}
+
+	if (saved.count > 0) {
+		[RZUserDefaults() setObject:[saved copy] forKey:_inputDraftsKey];
+	} else {
+		[RZUserDefaults() removeObjectForKey:_inputDraftsKey];
+	}
 }
 
 - (void)destroy:(IRCTreeItem *)treeItem
@@ -141,8 +210,6 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 
 	TVCMainWindow *window = self.window;
 
-	TVCMainWindowTextView *textView = window.inputTextField;
-
 	@synchronized(self.historyObjects) {
 		NSString *oldItemId = self.currentTreeItem;
 
@@ -152,15 +219,7 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 			return;
 		}
 
-		if (oldItemId) {
-			NSAttributedString *draft = textView.attributedStringValue;
-
-			if (draft.length > 0) {
-				self.drafts[oldItemId] = [draft copy];
-			} else {
-				[self.drafts removeObjectForKey:oldItemId];
-			}
-		}
+		[self keepDraftOfCurrentItem];
 
 		self.currentTreeItem = newItemId;
 

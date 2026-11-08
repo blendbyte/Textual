@@ -66,6 +66,7 @@ NSString * const TXNotificationCategoryIdentifierFileTransfer = @"TXNotification
 NSString * const TXNotificationActionIdentifierFileTransferAccept = @"TXNotificationActionIdentifierFileTransferAccept";
 
 NSString * const TXNotificationCategoryIdentifierPrivateMessage = @"TXNotificationCategoryIdentifierPrivateMessage";
+NSString * const TXNotificationCategoryIdentifierHighlight = @"TXNotificationCategoryIdentifierHighlight";
 NSString * const TXNotificationActionIdentifierPrivateMessageReply = @"TXNotificationActionIdentifierPrivateMessageReply";
 
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
@@ -161,6 +162,20 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 								 intentIdentifiers:@[]
 										   options:UNNotificationCategoryOptionCustomDismissAction];
 
+	/* Replies go to the channel through the same action as a private message's */
+	UNTextInputNotificationAction *highlightReplyAction =
+	[UNTextInputNotificationAction actionWithIdentifier:TXNotificationActionIdentifierPrivateMessageReply
+												  title:TXTLS(@"Notifications[3t4-kl]")
+												options:0
+								   textInputButtonTitle:TXTLS(@"Notifications[bhn-uo]")
+								   textInputPlaceholder:TXTLS(@"Notifications[hl-rp]")];
+
+	UNNotificationCategory *highlightCategory =
+	[UNNotificationCategory categoryWithIdentifier:TXNotificationCategoryIdentifierHighlight
+										   actions:@[highlightReplyAction]
+								 intentIdentifiers:@[]
+										   options:UNNotificationCategoryOptionCustomDismissAction];
+
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 	UNNotificationAction *lmMoreInfoAction =
 	[UNNotificationAction actionWithIdentifier:TXNotificationActionIdentifierLicenseManagerMoreInfo
@@ -173,9 +188,9 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 								 intentIdentifiers:@[]
 										   options:UNNotificationCategoryOptionCustomDismissAction];
 
-	NSSet *categories = [NSSet setWithObjects:ftCategory, pmCategory, lmCategory, nil];
+	NSSet *categories = [NSSet setWithObjects:ftCategory, pmCategory, highlightCategory, lmCategory, nil];
 #else
-	NSSet *categories = [NSSet setWithObjects:ftCategory, pmCategory, nil];
+	NSSet *categories = [NSSet setWithObjects:ftCategory, pmCategory, highlightCategory, nil];
 #endif
 
 	return categories;
@@ -375,6 +390,8 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 			   eventType == TXNotificationTypePrivateMessage)
 	{
 		categoryIdentifier = TXNotificationCategoryIdentifierPrivateMessage;
+	} else if (eventType == TXNotificationTypeHighlight) {
+		categoryIdentifier = TXNotificationCategoryIdentifierHighlight;
 	}
 
 	NSString *clientId = eventContext[TXNotificationUserInfoClientIdentifierKey];

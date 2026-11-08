@@ -41,6 +41,7 @@
 #import "TXMenuControllerPrivate.h"
 #import "TVCLogControllerPrivate.h"
 #import "TVCMainWindowPrivate.h"
+#import "TLOInputHistoryPrivate.h"
 #import "TVCServerListPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
@@ -189,6 +190,8 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 	[TPCPreferences setClientList:clientList];
 
 	[self saveBouncerAccounts];
+
+	[TLOInputHistory saveDrafts];
 }
 
 #pragma mark -
