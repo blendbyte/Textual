@@ -98,10 +98,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)open;
-- (void)openWithPath:(nullable NSString *)path;
+- (void)openWithPath:(nullable NSString *)path; // Only changes path if self.path == nil
 
 /* NO if the user declines to connect around the server's proxy */
-- (BOOL)directConnectionAllowed; // Only changes path if self.path == nil
+- (BOOL)directConnectionAllowed;
 
 - (void)close;
 - (void)closeAndPostNotification:(BOOL)postNotification;

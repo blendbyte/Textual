@@ -414,10 +414,13 @@ present_error:
 	[self print:TXTLS(@"IRC[y3w-la]", sender) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
 }
 
-/* File transfers connect directly: no proxy applies to them */
+/* File transfers connect directly: no proxy applies to them.
+ "Automatic" is the default and usually means no proxy at all, so it doesn't count. */
 - (BOOL)fileTransfersGoAroundProxy
 {
-	return (self.config.proxyType != IRCConnectionProxyTypeNone);
+	IRCConnectionProxyType proxyType = self.config.proxyType;
+
+	return (proxyType != IRCConnectionProxyTypeNone && proxyType != IRCConnectionProxyTypeAutomatic);
 }
 
 - (BOOL)fileTransfersRefusedByProxy
