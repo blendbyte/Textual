@@ -3450,7 +3450,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	templateTokens[@"userConfiguredTextEncoding"] = [NSString charsetRepFromStringEncoding:client.config.primaryEncoding];
 
-	templateTokens[@"userStyleSheetRules"] = [TPCPreferences themeUserStyleSheetRules];
+	templateTokens[@"userStyleSheetRules"] = [TPCPreferences themeUserStyleSheetRulesForStyleElement];
 
 	templateTokens[@"usesCustomScrollers"] = @([self usesCustomScrollers]);
 

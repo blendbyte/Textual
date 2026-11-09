@@ -50,6 +50,12 @@
 	<integer>0</integer>
 	<key>TLOLicenseManagerAuthorizationCode</key>
 	<integer>0</integer>
+	<key>TLOpenLink -&gt; Open Links With Scheme -&gt; </key>
+	<integer>1</integer>
+	<key>ReceiveBetaUpdates</key>
+	<integer>0</integer>
+	<key>TPCPreferencesDictionaryVersion</key>
+	<integer>0</integer>
 	<key>TVCLogControllerHistoricLogFileSavePath_v3</key>
 	<integer>0</integer>
 </dict>

@@ -101,7 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 		[keys containsObject:@"Theme -> Timestamp Format Preference Enabled"] ||
 		[keys containsObject:TPCPreferencesThemeFontNameDefaultsKey] ||
 		[keys containsObject:TPCPreferencesThemeFontSizeDefaultsKey] ||
-		[keys containsObject:TPCPreferencesThemeNameDefaultsKey])
+		[keys containsObject:TPCPreferencesThemeNameDefaultsKey] ||
+		[keys containsObject:@"Theme -> User Style Sheet Rules"])
 	{
 		reloadAction |= TPCPreferencesReloadActionStyle;
 	}

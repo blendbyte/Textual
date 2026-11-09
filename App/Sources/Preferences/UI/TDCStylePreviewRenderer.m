@@ -362,7 +362,7 @@ static NSTimeInterval const _previewRenderTimeout = 8.0;
 	}
 
 	/* What the chat's scripts would show, and from the top: the cards show the top */
-	tokens[@"userStyleSheetRules"] = [([TPCPreferences themeUserStyleSheetRules] ?: @"") stringByAppendingString:@"\n#loadingScreen { display: none !important; }\n#body { opacity: 1 !important; top: 0 !important; bottom: auto !important; }"];
+	tokens[@"userStyleSheetRules"] = [([TPCPreferences themeUserStyleSheetRulesForStyleElement] ?: @"") stringByAppendingString:@"\n#loadingScreen { display: none !important; }\n#body { opacity: 1 !important; top: 0 !important; bottom: auto !important; }"];
 
 	return [TVCLogRenderer renderTemplate:template attributes:tokens];
 }

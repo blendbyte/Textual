@@ -59,6 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 		@"Theme -> Name -> Did Not Exist During Last Sync" : @YES, // not exported
 		@"TXRunCount" : @1000, // excluded from export
 		@"SUFeedURL" : @"https://example.com/feed.xml", // excluded from export
+		@"ReceiveBetaUpdates" : @YES, // excluded from export
+		@"TPCPreferencesDictionaryVersion" : @[], // excluded from export
+		@"TLOpenLink -> Open Links With Scheme -> ssh" : @YES, // excluded from export
 		@"Some Key Textual Never Wrote" : @"value"
 	};
 

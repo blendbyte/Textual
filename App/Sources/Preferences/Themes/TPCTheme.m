@@ -335,7 +335,11 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 		(result & _TPCThemeMonitoringResultVarietyCreated) == _TPCThemeMonitoringResultVarietyCreated ||
 		(result & _TPCThemeMonitoringResultVarietyDeleted) == _TPCThemeMonitoringResultVarietyDeleted)
 	{
-		[self _verifyIntegrity];
+		BOOL varietyChanged = [self _verifyIntegrity];
+
+		if (varietyChanged == NO && self.usable) {
+			[self _reactToFilesAddedOrRemoved];
+		}
 	}
 
 	/* CSS or JavaScript file in the current variety was modified. */
@@ -475,6 +479,24 @@ typedef NS_OPTIONS(NSUInteger, _TPCThemeMonitoringResult) {
 	return ((varietyDeleted) ?
 			_TPCThemeMonitoringResultVarietyDeleted :
 			_TPCThemeMonitoringResultVarietyCreated);
+}
+
+/* A design.css or scripts.js came or went without the variety changing: the
+ file lists are only built when it changes */
+- (void)_reactToFilesAddedOrRemoved
+{
+	NSArray<NSURL *> *cssFiles = self.cssFiles;
+	NSArray<NSURL *> *jsFiles = self.jsFiles;
+
+	@synchronized (self) {
+		[self _combineFiles];
+	}
+
+	if ([cssFiles isEqualToArray:self.cssFiles] && [jsFiles isEqualToArray:self.jsFiles]) {
+		return;
+	}
+
+	[self _notifyRecentlyModified];
 }
 
 - (void)_reactToDeletion

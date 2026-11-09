@@ -130,7 +130,8 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (NSUInteger)autojoinMaximumChannelJoins
 {
-	return [RZUserDefaults() unsignedIntegerForKey:@"AutojoinMaximumChannelJoinCount"];
+	/* Zero would join nothing, and autojoin would never finish */
+	return MAX([RZUserDefaults() unsignedIntegerForKey:@"AutojoinMaximumChannelJoinCount"], 1);
 }
 
 + (NSTimeInterval)autojoinDelayBetweenChannelJoins
@@ -165,7 +166,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (nullable NSString *)masqueradeCTCPVersion
 {
-	return [RZUserDefaults() objectForKey:@"ApplicationCTCPVersionMasquerade"];
+	return [RZUserDefaults() stringForKey:@"ApplicationCTCPVersionMasquerade"];
 }
 
 + (BOOL)channelNavigationIsServerSpecific
@@ -1170,7 +1171,15 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (nullable NSString *)themeUserStyleSheetRules
 {
-	return [RZUserDefaults() objectForKey:@"Theme -> User Style Sheet Rules"];
+	return [RZUserDefaults() stringForKey:@"Theme -> User Style Sheet Rules"];
+}
+
+/* The rules are written inside the page's style element, which only "</" can
+ end. Escaped, they can't close it and add HTML of their own; inside a CSS
+ string, "<\/" still means "</". */
++ (nullable NSString *)themeUserStyleSheetRulesForStyleElement
+{
+	return [[self themeUserStyleSheetRules] stringByReplacingOccurrencesOfString:@"</" withString:@"<\\/"];
 }
 
 + (void)setThemeUserStyleSheetRules:(nullable NSString *)themeUserStyleSheetRules
@@ -1220,7 +1229,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (nullable NSString *)tabCompletionSuffix
 {
-	return [RZUserDefaults() objectForKey:@"Keyboard -> Tab Key Completion Suffix"];
+	return [RZUserDefaults() stringForKey:@"Keyboard -> Tab Key Completion Suffix"];
 }
 
 + (BOOL)tabCompletionDoNotAppendWhitespace
@@ -1278,12 +1287,12 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 
 + (nullable NSString *)fileTransferManuallyEnteredIPAddress
 {
-	return [RZUserDefaults() objectForKey:@"File Transfers -> File Transfer Manually Entered IP Address"];
+	return [RZUserDefaults() stringForKey:@"File Transfers -> File Transfer Manually Entered IP Address"];
 }
 
 + (nullable NSString *)fileTransferIPAddressInterfaceName
 {
-	return [RZUserDefaults() objectForKey:@"File Transfers -> File Transfer IP Address Interface Name"];
+	return [RZUserDefaults() stringForKey:@"File Transfers -> File Transfer IP Address Interface Name"];
 }
 
 #pragma mark -
@@ -1364,7 +1373,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 		return nil;
 	}
 
-	return [RZUserDefaults() objectForKey:eventKey];
+	return [RZUserDefaults() stringForKey:eventKey];
 }
 
 + (void)setSound:(nullable NSString *)value forEvent:(TXNotificationType)event
@@ -1793,9 +1802,7 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 	 already set so that if the user opens an older version, we do not
 	 perform migrations more than once. Probably would have been smart
 	 to do this from the beginning. */
-	NSNumber *dictionaryVersion = [RZUserDefaults() objectForKey:@"TPCPreferencesDictionaryVersion"];
-
-	if (dictionaryVersion.integerValue >= TPCPreferencesDictionaryVersion) {
+	if ([RZUserDefaults() integerForKey:@"TPCPreferencesDictionaryVersion"] >= TPCPreferencesDictionaryVersion) {
 		return;
 	}
 

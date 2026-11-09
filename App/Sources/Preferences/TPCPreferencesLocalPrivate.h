@@ -114,6 +114,9 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setThemeUserStyleSheetRules:(nullable NSString *)themeUserStyleSheetRules;
 
+/* What goes into a chat page */
++ (nullable NSString *)themeUserStyleSheetRulesForStyleElement;
+
 + (void)setScrollbackVisibleLimit:(NSUInteger)scrollbackVisibleLimit;
 
 

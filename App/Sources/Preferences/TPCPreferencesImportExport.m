@@ -175,7 +175,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* A settings file can come from anyone. Import only the keys export writes
  (on the master list, not excluded: no migration state, bookmarks, run count,
- licence or update settings) and only values of the type each preference has. */
+ licence or update settings) and, where a preference has a default to compare
+ with, only values of its type. The rest are read in a way that checks the type. */
 + (NSDictionary<NSString *, id> *)importableContentsOfDictionary:(NSDictionary *)aDict
 {
 	NSParameterAssert(aDict != nil);

@@ -113,18 +113,12 @@ NS_ASSUME_NONNULL_BEGIN
 	self.js_postPreferencesDidChangesNotifications = [settings boolForKey:@"Post Textual.preferencesDidChange() Notifications"];
 
 	/* Disable indentation? */
-	id indentationOffset = settings[@"Indentation Offset"];
+	double indentationOffset = [settings doubleForKey:@"Indentation Offset" orUseDefault:TPCThemeSettingsDisabledIndentationOffset];
 
-	if (indentationOffset == nil) {
+	if (indentationOffset < 0.0) {
 		self.indentationOffset = TPCThemeSettingsDisabledIndentationOffset;
 	} else {
-		double indentationOffsetDouble = [indentationOffset doubleValue];
-
-		if (indentationOffsetDouble < 0.0) {
-			self.indentationOffset = TPCThemeSettingsDisabledIndentationOffset;
-		} else {
-			self.indentationOffset = indentationOffsetDouble;
-		}
+		self.indentationOffset = indentationOffset;
 	}
 
 	/* Nickname color style */

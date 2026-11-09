@@ -732,6 +732,25 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 - (void)themeVarietyChanged:(NSNotification *)notification
 {
 	[self updatePreferences];
+
+	/* The views reload right after this. A variety added while the style is in
+	 use isn't in the temporary copy they load from yet. */
+	if (notification.object == self.theme && [self temporaryCopyOfThemeHasAllFiles] == NO) {
+		[self createTemporaryCopyOfTheme];
+	}
+}
+
+- (BOOL)temporaryCopyOfThemeHasAllFiles
+{
+	TPCTheme *theme = self.theme;
+
+	for (NSURL *file in [theme.temporaryCSSFiles arrayByAddingObjectsFromArray:theme.temporaryJSFiles]) {
+		if ([RZFileManager() fileExistsAtURL:file] == NO) {
+			return NO;
+		}
+	}
+
+	return YES;
 }
 
 - (void)themeIntegrityCompromised:(NSNotification *)notification
@@ -1071,9 +1090,10 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 	else if ([themeSource isEqualToString:TPCThemeControllerCustomThemeNameBasicPrefix])
 	{
 		if ([self themeExists:validatedTheme] == NO) {
-			NSString *bundledTheme = [self.class buildFilename:themeName forStorageLocation:TPCThemeStorageLocationBundle];
+			/* No name at all ("user:" alone) has no bundled theme either */
+			NSString *bundledTheme = ((themeName) ? [self.class buildFilename:themeName forStorageLocation:TPCThemeStorageLocationBundle] : nil);
 
-			if ([self themeExists:bundledTheme]) {
+			if (bundledTheme && [self themeExists:bundledTheme]) {
 				/* Use a bundled theme with the same name if available. */
 				if ( suggestedThemeName) {
 					*suggestedThemeName = bundledTheme;
