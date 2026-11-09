@@ -11,4 +11,4 @@
 // 260703.02), so no comparison ever ranks a Textual 7 build as newer.
 
 MARKETING_VERSION = 8.0
-CURRENT_PROJECT_VERSION = 300002
+CURRENT_PROJECT_VERSION = 300003
