@@ -1302,6 +1302,84 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	});
 }
 
+- (void)adoptEarlierConversationsOfView:(TLOMessageArchiveView *)view completionHandler:(void (^)(void))completionHandler
+{
+	NSParameterAssert(view != nil);
+	NSParameterAssert(completionHandler != nil);
+
+	dispatch_async(self.queue, ^{
+		/* Some may still be waiting to be written */
+		[self _writePendingRows];
+
+		[self _adoptEarlierConversationsOfView:view];
+
+		dispatch_async(dispatch_get_main_queue(), completionHandler);
+	});
+}
+
+- (void)_adoptEarlierConversationsOfView:(TLOMessageArchiveView *)view
+{
+	if (self.database == NULL || view.viewType != TLOMessageArchiveViewTypeQuery) {
+		return;
+	}
+
+	sqlite3_stmt *statement = NULL;
+
+	if (sqlite3_prepare_v2(self.database, "SELECT id FROM views WHERE server_id = ? AND view_type = ? AND view_name = ? COLLATE NOCASE AND view_id <> ?", -1, &statement, NULL) != SQLITE_OK) {
+		LogToConsoleError("Message archive: %{public}s", sqlite3_errmsg(self.database));
+
+		return;
+	}
+
+	sqlite3_bind_text(statement, 1, view.serverId.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(statement, 2, (int)view.viewType);
+	sqlite3_bind_text(statement, 3, view.viewName.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(statement, 4, view.viewId.UTF8String, -1, SQLITE_TRANSIENT);
+
+	NSMutableArray<NSString *> *earlierViewKeys = [NSMutableArray array];
+
+	while (sqlite3_step(statement) == SQLITE_ROW) {
+		[earlierViewKeys addObject:@(sqlite3_column_int64(statement, 0)).stringValue];
+	}
+
+	sqlite3_finalize(statement);
+
+	if (earlierViewKeys.count == 0 || [self _execute:"BEGIN;"] == NO) {
+		return;
+	}
+
+	TLOMessageArchiveRow *row = [TLOMessageArchiveRow new];
+
+	row.serverId = view.serverId;
+	row.serverName = view.serverName;
+	row.viewId = view.viewId;
+	row.viewName = view.viewName;
+	row.viewType = view.viewType;
+
+	int64_t viewKey = [self _viewKeyForRow:row];
+
+	if (viewKey == 0) {
+		(void)[self _execute:"ROLLBACK;"];
+
+		return;
+	}
+
+	NSString *viewKeyString = @(viewKey).stringValue;
+
+	for (NSString *earlierViewKey in earlierViewKeys) {
+		/* The same message twice (in both conversations) is kept once */
+		[self _runStatement:"UPDATE OR IGNORE messages SET view_key = ? WHERE view_key = ?" withStrings:@[viewKeyString, earlierViewKey]];
+		[self _runStatement:"DELETE FROM messages WHERE view_key = ?" withStrings:@[earlierViewKey]];
+		[self _runStatement:"DELETE FROM views WHERE id = ?" withStrings:@[earlierViewKey]];
+	}
+
+	if ([self _execute:"COMMIT;"] == NO) {
+		(void)[self _execute:"ROLLBACK;"];
+	}
+
+	[self _forgetViewKeys];
+}
+
 - (void)deleteMessagesOfServer:(nullable NSString *)serverId inView:(nullable NSString *)viewId completionHandler:(nullable void (^)(void))completionHandler
 {
 	NSParameterAssert(serverId != nil || viewId != nil);

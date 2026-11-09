@@ -582,9 +582,13 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 
 	NSString *fromAndWhere = [self _fromAndWhereWithArguments:arguments usesIndex:&usesIndex];
 
+	if (usesIndex && self.order != TLOMessageArchiveSearchOrderBestMatch) {
+		return [self _newestPageWithFromAndWhere:fromAndWhere arguments:arguments offset:offset limit:limit inDatabase:database];
+	}
+
 	NSString *order = @"m.time DESC, m.id DESC";
 
-	if (usesIndex && self.order == TLOMessageArchiveSearchOrderBestMatch) {
+	if (usesIndex) {
 		order = @"messages_text.rank, m.time DESC, m.id DESC";
 	}
 
@@ -616,6 +620,81 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 
 	if (result != SQLITE_ROW && result != SQLITE_DONE) {
 		LogToConsoleError("Message archive search failed: %{public}s", sqlite3_errmsg(database));
+	}
+
+	sqlite3_finalize(statement);
+
+	page.results = results;
+
+	return page;
+}
+
+/* Newest first, one page at a time. ORDER BY time would have SQLite find and
+ sort every match in the archive before the first result. The index walks
+ by message number and stops at the page's end; that's the order messages were
+ stored in, nearly that of their time, so each page is then sorted by time. */
+- (TLOMessageArchiveSearchPage *)_newestPageWithFromAndWhere:(NSString *)fromAndWhere
+												   arguments:(NSMutableArray *)arguments
+													  offset:(NSUInteger)offset
+													   limit:(NSUInteger)limit
+												  inDatabase:(sqlite3 *)database
+{
+	TLOMessageArchiveSearchPage *page = [TLOMessageArchiveSearchPage new];
+
+	/* One more than asked for tells whether there is a next page */
+	NSString *sql = [NSString stringWithFormat:@"SELECT m.id %@ ORDER BY messages_text.rowid DESC LIMIT ? OFFSET ?", fromAndWhere];
+
+	[arguments addObject:@(limit + 1)];
+	[arguments addObject:@(offset)];
+
+	sqlite3_stmt *statement = [self.class _prepare:sql arguments:arguments inDatabase:database];
+
+	if (statement == NULL) {
+		return page;
+	}
+
+	NSMutableArray<NSNumber *> *rowIds = [NSMutableArray array];
+
+	int result = SQLITE_OK;
+
+	while ((result = sqlite3_step(statement)) == SQLITE_ROW) {
+		[rowIds addObject:@(sqlite3_column_int64(statement, 0))];
+	}
+
+	if (result != SQLITE_DONE) {
+		LogToConsoleError("Message archive search failed: %{public}s", sqlite3_errmsg(database));
+	}
+
+	sqlite3_finalize(statement);
+
+	if (rowIds.count > limit) {
+		page.hasMore = YES;
+
+		[rowIds removeLastObject];
+	}
+
+	if (rowIds.count == 0) {
+		return page;
+	}
+
+	NSMutableArray<NSString *> *placeholders = [NSMutableArray arrayWithCapacity:rowIds.count];
+
+	for (NSUInteger index = 0; index < rowIds.count; index++) {
+		[placeholders addObject:@"?"];
+	}
+
+	sql = [NSString stringWithFormat:@"SELECT %@ FROM messages m JOIN views v ON v.id = m.view_key WHERE m.id IN (%@) ORDER BY m.time DESC, m.id DESC", _resultColumns, [placeholders componentsJoinedByString:@", "]];
+
+	statement = [self.class _prepare:sql arguments:rowIds inDatabase:database];
+
+	if (statement == NULL) {
+		return page;
+	}
+
+	NSMutableArray<TLOMessageArchiveResult *> *results = [NSMutableArray arrayWithCapacity:rowIds.count];
+
+	while (sqlite3_step(statement) == SQLITE_ROW) {
+		[results addObject:[TLOMessageArchiveResult _resultWithStatement:statement terms:self.terms]];
 	}
 
 	sqlite3_finalize(statement);
@@ -802,7 +881,8 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 
 	BOOL usesIndex = NO;
 
-	NSString *sql = [NSString stringWithFormat:@"SELECT count(*) %@", [self _fromAndWhereWithArguments:arguments usesIndex:&usesIndex]];
+	/* Stops counting past the limit: a next page waits behind this on the search queue */
+	NSString *sql = [NSString stringWithFormat:@"SELECT count(*) FROM (SELECT 1 %@ LIMIT %lu)", [self _fromAndWhereWithArguments:arguments usesIndex:&usesIndex], (unsigned long)(TLOMessageArchiveSearchCountLimit + 1)];
 
 	sqlite3_stmt *statement = [self.class _prepare:sql arguments:arguments inDatabase:database];
 

@@ -603,6 +603,47 @@ NS_ASSUME_NONNULL_BEGIN
 	[self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
+/* Each closed query was a view of its own: a reopened one takes in what was
+ said with that nickname on that server, and nothing of anyone else's */
+- (void)testReopenedQueryTakesInEarlierConversations
+{
+	NSDate *time = [NSDate dateWithTimeIntervalSince1970:1791633600];
+
+	void (^say)(NSString *, NSString *, NSString *, NSString *, TLOMessageArchiveViewType) = ^(NSString *body, NSString *viewId, NSString *viewName, NSString *serverId, TLOMessageArchiveViewType type) {
+		[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:body nickname:@"carol" msgid:nil command:@"PRIVMSG" time:time]
+			   inView:viewId named:viewName type:type server:serverId highlighted:NO hasLink:NO];
+	};
+
+	say(@"first conversation", @"old-1", @"Carol", @"server-1", TLOMessageArchiveViewTypeQuery);
+	say(@"second conversation", @"old-2", @"carol", @"server-1", TLOMessageArchiveViewTypeQuery);
+	say(@"another network's carol", @"other-server", @"carol", @"server-2", TLOMessageArchiveViewTypeQuery);
+	say(@"a channel named alike", @"a-channel", @"carol", @"server-1", TLOMessageArchiveViewTypeChannel);
+
+	TLOMessageArchiveView *view =
+	[[TLOMessageArchiveView alloc] initWithViewId:@"reopened"
+										 viewName:@"carol"
+										 viewType:TLOMessageArchiveViewTypeQuery
+										 serverId:@"server-1"
+									   serverName:@"server-1"];
+
+	XCTestExpectation *expectation = [self expectationWithDescription:@"adopted"];
+
+	[self.archive adoptEarlierConversationsOfView:view completionHandler:^{
+		[expectation fulfill];
+	}];
+
+	[self waitForExpectationsWithTimeout:10 handler:nil];
+
+	NSArray *expected = @[@"first conversation", @"second conversation"];
+
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT body FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = 'reopened') ORDER BY body"], expected);
+	XCTAssertEqual([self bodiesForQuery:@"SELECT view_id FROM views WHERE view_id IN ('old-1', 'old-2')"].count, 0);
+	XCTAssertEqual([self bodiesForQuery:@"SELECT view_id FROM views WHERE view_id IN ('other-server', 'a-channel')"].count, 2);
+
+	/* Still found by the text index */
+	XCTAssertEqual([self bodiesFound:@"conversation" inView:@"reopened"].count, 2);
+}
+
 /* A long message cut around what was found */
 - (void)testSnippets
 {

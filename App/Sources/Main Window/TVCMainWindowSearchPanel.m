@@ -916,6 +916,8 @@ NS_ASSUME_NONNULL_BEGIN
 			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r3]" : @"TVCMainWindow[src-r3]");
 		} else if (count == 1) {
 			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r2]" : @"TVCMainWindow[src-r2]");
+		} else if (count > TLOMessageArchiveSearchCountLimit) {
+			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r4]" : @"TVCMainWindow[src-r6]", TLOMessageArchiveSearchCountLimit);
 		} else {
 			self.statusField.stringValue = TXTLS((mentions) ? @"TVCMainWindow[men-r1]" : @"TVCMainWindow[src-r1]", count);
 		}

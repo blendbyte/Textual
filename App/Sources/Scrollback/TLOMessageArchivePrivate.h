@@ -37,6 +37,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* A search counts its results up to this many */
+static NSUInteger const TLOMessageArchiveSearchCountLimit = 1000;
+
 @class IRCTreeItem, TVCLogLine;
 
 #define sharedMessageArchive()			[TLOMessageArchive sharedArchive]
@@ -230,7 +233,13 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler;
 
 - (void)interruptSearch;
+
+/* Counted up to one more than TLOMessageArchiveSearchCountLimit */
 - (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler;
+
+/* The earlier conversations with this nickname on this server become part of
+ this query's: each closed query was a view of its own. On the main queue. */
+- (void)adoptEarlierConversationsOfView:(TLOMessageArchiveView *)view completionHandler:(void (^)(void))completionHandler;
 
 /* The chat's history past the scrollback: a view's messages older
  than where its scrollback starts (the line with scrollbackLineId, found in

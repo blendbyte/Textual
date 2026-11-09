@@ -940,10 +940,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	if (
 		/* 1 */ (firstTimeLoadingHistory &&
 				 [TPCPreferences reloadScrollbackOnLaunch] == NO) ||
-		/* 2 */  channel.isUtility ||
-		/* 3 */ (firstTimeLoadingHistory &&
-				 channel.isPrivateMessage &&
-				 [TPCPreferences rememberServerListQueryStates] == NO))
+		/* 2 */  channel.isUtility)
 	{
 		self.historyLoadedForFirstTime = YES;
 
@@ -1001,21 +998,49 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	 reach the fetch: a clear raises historyGeneration instead */
 	NSUInteger historyGeneration = self.historyGeneration;
 
+	/* A reopened query is a new view: first its earlier conversations with
+	 this nickname are made its own, and with no scrollback they are what's shown */
+	BOOL reopenableQuery = (firstTimeLoadingHistory && channel.isPrivateMessage);
+
 	TVCLogControllerPrintingBlock operationBlock = ^(id operation) {
 		NSDate *limitToDate = [NSDate dateWithTimeIntervalSince1970:self.viewLoadedTimestamp];
 
-		[sharedHistoricLog()
-		 fetchEntriesForItem:self.associatedItem
-				   ascending:NO
-				  fetchLimit:100
-				 limitToDate:limitToDate
-		 withCompletionBlock:^(NSArray<TVCLogLine *> *objects) {
-				if ([operation isCancelled] || self.historyGeneration != historyGeneration) {
-					return;
-				}
+		void (^fetchBlock)(void) = ^{
+			[sharedHistoricLog()
+			 fetchEntriesForItem:self.associatedItem
+					   ascending:NO
+					  fetchLimit:100
+					 limitToDate:limitToDate
+			 withCompletionBlock:^(NSArray<TVCLogLine *> *objects) {
+					if ([operation isCancelled] || self.historyGeneration != historyGeneration) {
+						return;
+					}
 
-				reloadBlock(objects.reverseObjectEnumerator.allObjects);
-		 }];
+					NSString *archiveViewId = ((reopenableQuery && objects.count == 0) ? [self _archiveViewId] : nil);
+
+					if (archiveViewId == nil) {
+						reloadBlock(objects.reverseObjectEnumerator.allObjects);
+
+						return;
+					}
+
+					[self _collectArchiveMessagesInView:archiveViewId rowId:0 older:YES count:100 oldestLine:nil completionBlock:^(NSArray<TLOMessageArchiveResult *> *messages, TLOMessageArchiveResult *previous) {
+						if ([operation isCancelled] || self.historyGeneration != historyGeneration) {
+							return;
+						}
+
+						reloadBlock([self _logLinesForArchiveMessages:messages previous:previous]);
+					}];
+			 }];
+		};
+
+		TLOMessageArchiveView *archiveView = ((reopenableQuery) ? [TLOMessageArchiveView viewForItem:self.associatedItem] : nil);
+
+		if (archiveView) {
+			[sharedMessageArchive() adoptEarlierConversationsOfView:archiveView completionHandler:fetchBlock];
+		} else {
+			fetchBlock();
+		}
 	};
 
 	_enqueueBlockStandalone(operationBlock)

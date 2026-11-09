@@ -201,6 +201,7 @@
 "src-r2" = "1 message";
 "src-r3" = "No messages found";
 "src-r4" = "Searching…";
+"src-r6" = "More than %lu messages";
 "src-h1" = "%@ are searched, by any part of a word. Narrow it down with:\n\nfrom:nick — said by someone\nin:#channel — in a channel\nbefore:, after:, during: — a day (2026-10-05), a month (2026-10), a year, today or yesterday\nhas:link — with a link\nmentions:me — your highlights\n\"exact words\" — together, in this order";
 "src-b1" = "Results";
 "src-t1" = "Topic";
@@ -210,6 +211,7 @@
 "men-r1" = "%lu mentions";
 "men-r2" = "1 mention";
 "men-r3" = "No mentions yet";
+"men-r4" = "More than %lu mentions";
 /* Before a new mention's sender */
 "men-n1" = "● ";
 "jtp-b1" = "Jump to Present";
