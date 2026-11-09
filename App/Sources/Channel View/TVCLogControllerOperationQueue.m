@@ -268,7 +268,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(viewController != nil);
 
 	/* Taken out so that what they hold on to isn't released inside the lock */
-	NSArray *entries = nil;
+	NS_VALID_UNTIL_END_OF_SCOPE NSArray *entries = nil;
 
 	TVCLogControllerPrintingOperation *turn = nil;
 
