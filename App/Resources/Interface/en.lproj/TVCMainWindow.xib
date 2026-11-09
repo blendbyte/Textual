@@ -234,7 +234,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="150" height="439"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="22" rowSizeStyle="custom" viewBased="YES" floatsGroupRows="NO" id="bgh-q2-4XX" customClass="TVCMemberList">
+                                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" tableStyle="fullWidth" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="20" rowSizeStyle="custom" viewBased="YES" floatsGroupRows="NO" id="bgh-q2-4XX" customClass="TVCMemberList">
                                                     <rect key="frame" x="0.0" y="0.0" width="150" height="439"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
@@ -275,7 +275,7 @@
                                                                     <constraints>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="top" relation="greaterThanOrEqual" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="P2i-Rd-QtT"/>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="leading" secondItem="Lq2-t9-aDp" secondAttribute="trailing" constant="6" id="cd6-99-HOk"/>
-                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="3" id="fAn-nx-R4H"/>
+                                                                        <constraint firstItem="Lq2-t9-aDp" firstAttribute="top" secondItem="nyR-GE-ZXL" secondAttribute="top" constant="2" id="fAn-nx-R4H"/>
                                                                         <constraint firstItem="Lq2-t9-aDp" firstAttribute="leading" secondItem="nyR-GE-ZXL" secondAttribute="leading" id="fBT-mI-gYa"/>
                                                                         <constraint firstItem="jld-0X-vn0" firstAttribute="centerY" secondItem="nyR-GE-ZXL" secondAttribute="centerY" id="pEP-xB-8EX"/>
                                                                         <constraint firstAttribute="trailing" secondItem="jld-0X-vn0" secondAttribute="trailing" id="xer-US-fgj"/>
