@@ -681,7 +681,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	NSNumber *startRowId = @0;
 
 	if (scrollbackLineId) {
-		sqlite3_stmt *statement = [self _prepare:@"SELECT time, id FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?) AND line_id = ?" arguments:@[viewId, scrollbackLineId] inDatabase:database];
+		sqlite3_stmt *statement = [self _prepare:@"SELECT time, id FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?) AND line_id = ? AND line_id <> ''" arguments:@[viewId, scrollbackLineId] inDatabase:database];
 
 		if (statement) {
 			if (sqlite3_step(statement) == SQLITE_ROW) {

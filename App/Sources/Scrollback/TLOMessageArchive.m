@@ -60,8 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _databaseFilename			@"Message Archive.sqlite"
 
-#define _schemaVersion				2
-#define _schemaVersionString		"2"
+#define _schemaVersion				3
+#define _schemaVersionString		"3"
 
 /* Waiting lines are written two seconds after the first, or at once when
  this many wait (a reconnect replaying history) */
@@ -162,7 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL hasLink;
 @property (nonatomic, copy, nullable) NSString *msgid;
 @property (nonatomic, copy) NSString *lineId;
-@property (nonatomic, copy) NSString *dedupeKey;
+@property (nonatomic, assign) int64_t dedupeKey;
 @property (nonatomic, copy) NSString *body;
 @end
 
@@ -396,15 +396,16 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 			"has_link INTEGER NOT NULL DEFAULT 0, "
 			"msgid TEXT, "
 			"line_id TEXT NOT NULL, "
-			"dedupe_key TEXT NOT NULL, "
+			"dedupe_key INTEGER NOT NULL, "
 			"body TEXT NOT NULL);"
 		"CREATE UNIQUE INDEX IF NOT EXISTS messages_dedupe ON messages (view_key, dedupe_key);"
 		"CREATE INDEX IF NOT EXISTS messages_view_time ON messages (view_key, time);"
 		"CREATE INDEX IF NOT EXISTS messages_time ON messages (time);"
 		"CREATE INDEX IF NOT EXISTS messages_highlights ON messages (time) WHERE is_highlight = 1;"
 		"CREATE INDEX IF NOT EXISTS messages_msgid ON messages (msgid) WHERE msgid IS NOT NULL;"
-		/* Where a view's scrollback starts, asked with each page scrolled back */
-		"CREATE INDEX IF NOT EXISTS messages_view_line ON messages (view_key, line_id);"
+		/* Where a view's scrollback starts, asked with each page scrolled back.
+		 Lines from text logs have no line id: the query has to repeat the condition. */
+		"CREATE INDEX IF NOT EXISTS messages_view_line ON messages (view_key, line_id) WHERE line_id <> '';"
 		"CREATE VIRTUAL TABLE IF NOT EXISTS messages_text USING fts5 (body, content = 'messages', content_rowid = 'id', tokenize = 'trigram');"
 		"CREATE TRIGGER IF NOT EXISTS messages_inserted AFTER INSERT ON messages BEGIN "
 			"INSERT INTO messages_text (rowid, body) VALUES (new.id, new.body); "
@@ -416,7 +417,8 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		"PRAGMA user_version = " _schemaVersionString ";"];
 }
 
-/* Archives from before 8.0 shipped: none are in use, so not converted */
+/* Archives of test builds are not converted: they start again. Dropping
+ tables keeps the file's size, so it is compacted (almost nothing to copy). */
 - (BOOL)_discardOlderSchema
 {
 	sqlite3_stmt *statement = NULL;
@@ -433,12 +435,21 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		return YES;
 	}
 
-	return [self _execute:
+	BOOL discarded = [self _execute:
 		"DROP TRIGGER IF EXISTS messages_inserted;"
 		"DROP TRIGGER IF EXISTS messages_deleted;"
 		"DROP TABLE IF EXISTS messages_text;"
 		"DROP TABLE IF EXISTS messages;"
+		"DROP TABLE IF EXISTS views;"
 		"DROP TABLE IF EXISTS meta;"];
+
+	if (discarded) {
+		/* Not vital: the space is used again by new messages if this fails */
+		(void)[self _execute:"VACUUM;"];
+		(void)[self _execute:"PRAGMA wal_checkpoint(TRUNCATE);"];
+	}
+
+	return discarded;
 }
 
 - (BOOL)_execute:(const char *)sql
@@ -546,35 +557,34 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 /* The same message replayed (history after a reconnect, a bouncer's
  playback) has the same key: its msgid, else its time, sender and text */
-+ (NSString *)_dedupeKeyForLogLine:(TVCLogLine *)logLine body:(NSString *)body
++ (int64_t)_dedupeKeyForLogLine:(TVCLogLine *)logLine body:(NSString *)body
 {
 	NSString *msgid = logLine.msgid;
 
 	if (msgid.length > 0) {
-		return [@"m:" stringByAppendingString:msgid];
+		return [self _dedupeKeyOfString:[@"m:" stringByAppendingString:msgid]];
 	}
 
 	long long milliseconds = (long long)(logLine.receivedAt.timeIntervalSince1970 * 1000.0);
 
-	return [NSString stringWithFormat:@"t:%lld:%@:%@", milliseconds, ((logLine.nickname) ?: @""), [self _hashOfBody:body]];
+	return [self _dedupeKeyOfString:[NSString stringWithFormat:@"t:%lld:%@:%@", milliseconds, ((logLine.nickname) ?: @""), body]];
 }
 
-/* The first 8 bytes of the text's SHA-256, in hex */
-+ (NSString *)_hashOfBody:(NSString *)body
+/* The first 8 bytes of the string's SHA-256, as a number. Lossy so that text
+ that isn't valid Unicode still gives a key of its own. */
++ (int64_t)_dedupeKeyOfString:(NSString *)string
 {
-	NSData *bodyData = [body dataUsingEncoding:NSUTF8StringEncoding];
+	NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
 
 	unsigned char digest[CC_SHA256_DIGEST_LENGTH];
 
-	CC_SHA256(bodyData.bytes, (CC_LONG)bodyData.length, digest);
+	CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
 
-	NSMutableString *bodyHash = [NSMutableString stringWithCapacity:16];
+	int64_t key = 0;
 
-	for (NSUInteger i = 0; i < 8; i++) {
-		[bodyHash appendFormat:@"%02x", digest[i]];
-	}
+	memcpy(&key, digest, sizeof(key));
 
-	return [bodyHash copy];
+	return key;
 }
 
 /* The row for a line, or nil when it isn't kept */
@@ -780,7 +790,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	}
 
 	sqlite3_bind_text(statement, 9, row.lineId.UTF8String, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(statement, 10, row.dedupeKey.UTF8String, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int64(statement, 10, row.dedupeKey);
 	sqlite3_bind_text(statement, 11, row.body.UTF8String, -1, SQLITE_TRANSIENT);
 
 	BOOL inserted = NO;
@@ -1751,7 +1761,7 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	row.isHighlight = highlighted;
 	row.hasLink = ([TLOLinkParser locateLinksInString:body].count > 0);
 	row.lineId = @""; // not in the scrollback
-	row.dedupeKey = [NSString stringWithFormat:@"l:%lld:%@:%@", (long long)row.time, nickname, [self _hashOfBody:body]];
+	row.dedupeKey = [self _dedupeKeyOfString:[NSString stringWithFormat:@"l:%lld:%@:%@", (long long)row.time, nickname, body]];
 	row.body = body;
 
 	return row;

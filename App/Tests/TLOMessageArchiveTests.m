@@ -187,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(self.allBodies.count, 3);
 }
 
-/* An archive in the format from before integer keys is replaced */
+/* An archive in an older format is replaced, and its space given back */
 - (void)testOlderFormatIsReplaced
 {
 	[self.archive prepareForApplicationTermination];
@@ -201,10 +201,13 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(sqlite3_open_v2(self.databaseURL.fileSystemRepresentation, &database, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), NULL), SQLITE_OK);
 
 	XCTAssertEqual(sqlite3_exec(database, "CREATE TABLE messages (id INTEGER PRIMARY KEY, view_id TEXT NOT NULL, body TEXT NOT NULL);"
-								"INSERT INTO messages (view_id, body) VALUES ('old', 'old line');"
+								"WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 5000) "
+								"INSERT INTO messages (view_id, body) SELECT 'old', printf('%01000d', i) FROM n;"
 								"PRAGMA user_version = 1;", NULL, NULL, NULL), SQLITE_OK);
 
 	sqlite3_close_v2(database);
+
+	unsigned long long oldSize = [[NSFileManager defaultManager] attributesOfItemAtPath:self.databaseURL.path error:NULL].fileSize;
 
 	self.archive = [[TLOMessageArchive alloc] initWithURL:self.databaseURL];
 
@@ -213,6 +216,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray *expected = @[@"new line"];
 
 	XCTAssertEqualObjects(self.allBodies, expected);
+
+	XCTAssertLessThan(self.archive.fileSize, (oldSize / 4));
 }
 
 /* The text index finds any part of a word, three characters or more,
