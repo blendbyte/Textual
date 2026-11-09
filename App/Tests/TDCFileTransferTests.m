@@ -151,6 +151,29 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(answer(0, nil, NO), TDCFileTransferDropAnswerNoRecipient);
 }
 
+/* An offer can name any address: only one out on the internet connects unasked */
+- (void)testOnlyPublicAddressesCountAsPublic
+{
+	for (NSString *address in @[@"0.0.0.0", @"127.0.0.1", @"10.1.2.3", @"100.64.0.1", @"169.254.1.1", @"172.16.0.1", @"192.168.1.1", @"224.0.0.1", @"::1", @"fe80::1", @"fd00::1", @"::ffff:127.0.0.1", @"evil.example"]) {
+		XCTAssertFalse([TDCFileTransferDialogTransferController addressIsPublic:address], @"%@", address);
+	}
+
+	for (NSString *address in @[@"8.8.8.8", @"172.32.0.1", @"2001:4860:4860::8888"]) {
+		XCTAssertTrue([TDCFileTransferDialogTransferController addressIsPublic:address], @"%@", address);
+	}
+}
+
+/* A right-to-left override could show a harmless extension for a different real one */
+- (void)testOfferedFilenamesLoseBidirectionalControls
+{
+	NSString *filename = [TDCFileTransferDialogTransferController filenameForOfferedFilename:@"photo\u202Efdp.command"];
+
+	XCTAssertEqualObjects(filename, @"photofdp.command");
+
+	/* Joiners stay: they are part of emoji */
+	XCTAssertEqualObjects([TDCFileTransferDialogTransferController filenameForOfferedFilename:@"\U0001F469\u200D\U0001F4BB.png"], @"\U0001F469\u200D\U0001F4BB.png");
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

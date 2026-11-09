@@ -54,6 +54,7 @@
 "ftw-on" = "%1$@ on %2$@";
 
 "ftw-offer" = "%@ wants to send you this file";
+"ftw-offer-at" = "%1$@ wants to send you this file from %2$@";
 "ftw-preparing" = "Getting ready…";
 "ftw-wait-accept" = "Waiting for %@ to accept";
 "ftw-wait-connect" = "Waiting for %@ to connect";
@@ -81,7 +82,7 @@
 "ftw-settings" = "Settings…";
 
 "ftw-empty" = "No File Transfers";
-"ftw-empty-h" = "To send someone a file, drag it onto your private chat with them. Or right-click their name and choose Client-to-Client › Send file…";
+"ftw-empty-h" = "To send someone a file, drag it onto your private chat with them. Or right-click their name and choose Client-to-Client › Send File…";
 
 "ftw-remove-q1" = "Stop and remove “%@”?";
 "ftw-remove-qn" = "Stop and remove %ld transfers?";

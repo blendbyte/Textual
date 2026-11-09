@@ -109,9 +109,8 @@ NS_ASSUME_NONNULL_BEGIN
 	[self _finish];
 }
 
-/* Textual's own service first, then public ones: a failed lookup leaves file
- transfers behind NAT unable to work. With "Router and third party" chosen,
- only the public ones, in random order. All HTTPS (App Transport Security). */
+/* Textual's own service, or with "Router and third party" chosen, only the
+ public ones in random order. All HTTPS (App Transport Security). */
 + (NSArray<NSURL *> *)addressSources
 {
 	NSArray *thirdParty = @[
@@ -133,8 +132,6 @@ NS_ASSUME_NONNULL_BEGIN
 		[addresses addObjectsFromArray:shuffled];
 	} else {
 		[addresses addObject:@"https://myip.textualapp.com/"];
-
-		[addresses addObjectsFromArray:thirdParty];
 	}
 
 	NSMutableArray<NSURL *> *sources = [NSMutableArray arrayWithCapacity:addresses.count];

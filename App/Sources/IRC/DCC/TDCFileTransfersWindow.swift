@@ -145,7 +145,13 @@ struct FileTransferRow: Identifiable, Equatable
 				/* An offer has no folder until it's accepted */
 				if (transfer.isSender == false && transfer.path == nil) {
 					state = .offer
-					status = FileTransfersText("ftw-offer", peer)
+
+					/* Not out to the internet: it waited for a click, and this says why */
+					if let address = transfer.nonPublicOfferAddress {
+						status = FileTransfersText("ftw-offer-at", peer, address)
+					} else {
+						status = FileTransfersText("ftw-offer", peer)
+					}
 				} else {
 					state = .stopped
 					status = FileTransfersText((transfer.isSender ? "ftw-stopped-to" : "ftw-stopped-from"), peer)

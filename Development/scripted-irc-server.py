@@ -12,7 +12,9 @@ import argparse
 import asyncio
 import datetime
 import os
+import re
 import ssl
+import struct
 import sys
 import time
 
@@ -688,6 +690,116 @@ async def scenario_review_connection(client):
 		pass
 
 
+async def scenario_review_dcc(client):
+	"""Review fixes for DCC offers, with "Download it" on and without
+	-TextualDevAllowLocalFileOffers. An offer naming this Mac waits for a click,
+	so nothing connects. 12 different offers from one person: 10 are kept, 2 are
+	refused in the console. A repeat of a kept offer is dropped without a line."""
+	await client.collect(1)
+
+	connections = []
+
+	async def on_connect(reader, writer):
+		connections.append(True)
+		writer.close()
+
+	server = await asyncio.start_server(on_connect, "127.0.0.1", Events.dcc_port)
+
+	nick = client.nickname
+	await client.send(f":alice!a@peer.test PRIVMSG {nick} :{ctcp(f'DCC SEND local.bin {DCC_ADDRESS} {Events.dcc_port} 1000')}")
+	await client.collect(6)
+	result(len(connections) == 0, "an offer naming this Mac doesn't connect unasked")
+	server.close()
+
+	for index in range(12):
+		await client.send(f":mallory!m@evil.test PRIVMSG {nick} :{ctcp(f'DCC SEND spam{index:02d}.bin {DCC_ADDRESS} {Events.dcc_port} 1000')}")
+		await client.collect(0.2)
+
+	await client.send(f":mallory!m@evil.test PRIVMSG {nick} :{ctcp(f'DCC SEND spam00.bin {DCC_ADDRESS} {Events.dcc_port} 1000')}")
+	await client.collect(3)
+	print("OFFERS SENT", flush=True)
+
+	while await client.collect(3600):
+		pass
+
+
+async def scenario_review_dcc_send(client):
+	"""(DCC) Who may take a file: alice is seen from 8.8.8.8, and a connection from
+	here is refused. Run "Development/dev send alice ~/Downloads/textual-dev-send2.bin"
+	when asked, twice. After the first, alice is seen from 127.0.0.1 and gets the file."""
+	name = "textual-dev-send2.bin"
+	remove_downloads(name)
+
+	nick = client.nickname
+
+	await client.send(f":{nick}!user@client.textual.test JOIN #d")
+	await client.send(f":{SERVER} 353 {nick} = #d :@{nick}")
+	await client.send(f":{SERVER} 366 {nick} #d :End of /NAMES list.")
+	await client.send(":alice!a@8.8.8.8 JOIN #d")
+	await client.collect(1)
+
+	data = os.urandom(50_000)
+	peer = DCCSender(data)
+	await peer.listen(Events.dcc_port)
+	await client.send(f":alice!a@8.8.8.8 PRIVMSG {nick} :{ctcp(f'DCC SEND {name} {DCC_ADDRESS} {Events.dcc_port} {len(data)}')}")
+	await wait_while_collecting(client, peer.done, 15)
+	peer.close()
+	await client.collect(1)
+
+	async def wait_for_offer():
+		end = time.monotonic() + 60
+
+		while time.monotonic() < end:
+			count = len(client.received)
+
+			if not await client.collect(0.5):
+				return None
+
+			for line in client.received[count:]:
+				match = re.search(r"DCC SEND \S+ \S+ (\d+) \d+", line)
+
+				if match:
+					return int(match.group(1))
+
+		return None
+
+	print("WAITING: send 1", flush=True)
+	port = await wait_for_offer()
+	result(port is not None, "the offer went out")
+
+	reader, writer = await asyncio.open_connection("127.0.0.1", port)
+	refused = await asyncio.wait_for(reader.read(1024), 5)
+	writer.close()
+	result(refused == b"", "a connection from another address than alice's gets nothing")
+
+	await client.send(":alice!a@8.8.8.8 QUIT :moving")
+	await client.send(":alice!a@127.0.0.1 JOIN #d")
+	await client.collect(1)
+
+	print("WAITING: send 2", flush=True)
+	port = await wait_for_offer()
+
+	reader, writer = await asyncio.open_connection("127.0.0.1", port)
+	received = bytearray()
+
+	while len(received) < len(data):
+		chunk = await asyncio.wait_for(reader.read(65536), 10)
+
+		if not chunk:
+			break
+
+		received.extend(chunk)
+		writer.write(struct.pack(">I", len(received)))
+		await writer.drain()
+
+	result(bytes(received) == data, "the file reaches a connection from alice's address")
+	await client.collect(2)
+	writer.close()
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_redirect_tls(client):
 	"""(TLS) The server redirects the client (RPL_REDIR 010) to port+1; the client
 	must disconnect and not follow it."""
@@ -739,8 +851,10 @@ async def scenario_links(client):
 # MARK: - DCC
 #
 # Start Textual Dev so that it downloads offers automatically and announces 127.0.0.1:
-#   Development/dev start "-File Transfers -> File Transfer Request Reply Action" 3 \
-#     "-File Transfers -> File Transfer IP Address Detection Method" 2 \
+# (offers from this Mac only download unasked with -TextualDevAllowLocalFileOffers)
+#   Development/dev start "-File Transfers -> File Transfer Request Reply Action" "<integer>3</integer>" \
+#     -TextualDevAllowLocalFileOffers YES \
+#     "-File Transfers -> File Transfer IP Address Detection Method" "<integer>2</integer>" \
 #     "-File Transfers -> File Transfer Manually Entered IP Address" 127.0.0.1 \
 #     "-File Transfers -> File Transfer Requests Use Reverse DCC" YES
 
@@ -3359,6 +3473,8 @@ SCENARIOS = {
 	"review-crashes": scenario_review_crashes,
 	"review-irc": scenario_review_irc,
 	"review-receive": scenario_review_receive,
+	"review-dcc-send": scenario_review_dcc_send,
+	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
 	"review-view": scenario_review_view,

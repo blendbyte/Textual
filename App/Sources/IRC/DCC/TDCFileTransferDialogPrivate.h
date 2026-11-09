@@ -113,6 +113,7 @@ typedef NS_ENUM(NSUInteger, TDCFileTransferDropAnswer) {
 - (void)startFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;
 
 - (void)stopFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;
+- (BOOL)hasUnansweredOfferFromClient:(IRCClient *)client nickname:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize;
 - (void)removeFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers; // Stops them too
 - (void)openFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers; // Received files
 - (void)revealFileTransfers:(NSArray<TDCFileTransferDialogTransferController *> *)fileTransfers;

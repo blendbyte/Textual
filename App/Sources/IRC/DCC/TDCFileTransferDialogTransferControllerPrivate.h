@@ -77,6 +77,12 @@ NS_ASSUME_NONNULL_BEGIN
 /* A file name offered by a peer, safe to create in the download folder */
 + (NSString *)filenameForOfferedFilename:(NSString *)filename;
 
+/* Not this Mac, its network or a name: what an offer may connect to unasked */
++ (BOOL)addressIsPublic:(nullable NSString *)address;
+
+/* "host:port" of an offer that doesn't point at the internet, for its row */
+@property (readonly, nullable) NSString *nonPublicOfferAddress;
+
 /* Downloads are recorded while incomplete so that only Textual's own partial
  downloads from the same peer are ever resumed. */
 + (void)recordPartialDownloadAtPath:(NSString *)path clientIdentifier:(NSString *)clientIdentifier peer:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize;

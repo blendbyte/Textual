@@ -40,6 +40,8 @@
 #import "TPCPathInfo.h"
 #import "TPCPreferencesLocal.h"
 #import "TPCPreferencesUserDefaults.h"
+#import <Network/Network.h>
+
 #import "TLOInternetAddressLookup.h"
 #import "TLOLocalization.h"
 #import "TLOTimer.h"
@@ -56,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Refuse more than this many unfinished incoming transfers at a time. */
 #define _addReceiverHardLimit			120
+#define _unansweredOffersPerPersonLimit 10
+#define _unansweredOfferLifetime 3600.0 // seconds
 
 @interface TDCFileTransferDialog () <NSWindowDelegate>
 /* Newest first; changed on the main queue only */
@@ -64,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) TLOInternetAddressLookup *IPAddressRequest;
 @property (nonatomic, strong) TLOTimer *maintenanceTimer;
 @property (nonatomic, strong) TPCSecurityScopedFolder *downloadDestination;
+@property (nonatomic, strong) nw_path_monitor_t networkPathMonitor;
 @end
 
 @implementation TDCFileTransferDialog
@@ -95,12 +100,27 @@ NS_ASSUME_NONNULL_BEGIN
 		[self onMaintenanceTimer];
 	} onQueue:dispatch_get_main_queue()];
 
+	/* Another network, another address: the one found earlier is stale */
+	__weak TDCFileTransferDialog *weakSelf = self;
+
+	self.networkPathMonitor = nw_path_monitor_create();
+
+	nw_path_monitor_set_queue(self.networkPathMonitor, dispatch_get_main_queue());
+
+	nw_path_monitor_set_update_handler(self.networkPathMonitor, ^(nw_path_t path) {
+		[weakSelf clearIPAddress];
+	});
+
+	nw_path_monitor_start(self.networkPathMonitor);
+
 	[RZNotificationCenter() addObserver:self selector:@selector(clientWillBeDestroyed:) name:IRCWorldWillDestroyClientNotification object:nil];
 }
 
 - (void)dealloc
 {
 	[RZNotificationCenter() removeObserver:self];
+
+	nw_path_monitor_cancel(self.networkPathMonitor);
 
 	[self.maintenanceTimer stop];
 }
@@ -190,6 +210,40 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
+/* Offers nobody has accepted or refused; with a filename, only that very offer */
+- (NSArray<TDCFileTransferDialogTransferController *> *)unansweredOffersFromClient:(IRCClient *)client nickname:(NSString *)nickname filename:(nullable NSString *)filename filesize:(uint64_t)totalFilesize
+{
+	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *fileTransfer) {
+		if (fileTransfer.isSender || fileTransfer.path != nil || fileTransfer.isStopped == NO || [fileTransfer isWithClient:client peer:nickname] == NO) {
+			return NO;
+		}
+
+		return (filename == nil || ([fileTransfer.filename isEqualToString:filename] && fileTransfer.totalFilesize == totalFilesize));
+	}];
+}
+
+- (BOOL)hasUnansweredOfferFromClient:(IRCClient *)client nickname:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize
+{
+	return ([self unansweredOffersFromClient:client nickname:nickname filename:filename filesize:totalFilesize].count > 0);
+}
+
+- (void)expireOfferLater:(TDCFileTransferDialogTransferController *)offer
+{
+	__weak TDCFileTransferDialog *weakSelf = self;
+	__weak TDCFileTransferDialogTransferController *weakOffer = offer;
+
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_unansweredOfferLifetime * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		TDCFileTransferDialogTransferController *strongOffer = weakOffer;
+
+		/* Accepted in the meantime: it has a folder */
+		if (strongOffer == nil || strongOffer.path != nil || strongOffer.isStopped == NO) {
+			return;
+		}
+
+		[weakSelf removeFileTransfers:@[strongOffer]];
+	});
+}
+
 - (nullable NSString *)addReceiverForClient:(IRCClient *)client nickname:(NSString *)nickname address:(NSString *)hostAddress port:(uint16_t)hostPort filename:(NSString *)filename filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
 {
 	NSParameterAssert(client != nil);
@@ -205,6 +259,13 @@ NS_ASSUME_NONNULL_BEGIN
 		return nil;
 	}
 
+	/* One person can't use up the room for everyone else's offers */
+	if ([self unansweredOffersFromClient:client nickname:nickname filename:nil filesize:0].count >= _unansweredOffersPerPersonLimit) {
+		LogToConsoleError("Max unanswered offers from one person exceeded");
+
+		return nil;
+	}
+
 	TDCFileTransferDialogTransferController *controller = [TDCFileTransferDialogTransferController receiverForClient:client nickname:nickname address:hostAddress port:hostPort filename:filename filesize:totalFilesize token:transferToken];
 
 	if (controller == nil) {
@@ -215,9 +276,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self addFileTransfer:controller];
 
+	[self expireOfferLater:controller];
+
 	NSString *savePath = self.downloadDestination.URL.path;
 
-	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyAutomaticallyDownload && client.fileTransfersGoAroundProxy == NO) {
+	/* Unasked, only out to the internet: an offer can name any address, such
+	 as a service on this Mac, and a reverse one would open a port here */
+	BOOL offerMayOpenUnasked = (controller.isReversed == NO && controller.nonPublicOfferAddress == nil);
+
+#ifdef DEBUG
+	/* The scripted test server's DCC scenarios offer files from this Mac */
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:@"TextualDevAllowLocalFileOffers"]) {
+		offerMayOpenUnasked = YES;
+	}
+#endif
+
+	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyAutomaticallyDownload &&
+		client.fileTransfersGoAroundProxy == NO &&
+		offerMayOpenUnasked)
+	{
 		if (savePath == nil) {
 			savePath = [TPCPathInfo userDownloads];
 		}
@@ -243,6 +320,10 @@ NS_ASSUME_NONNULL_BEGIN
 	TDCFileTransferDialogTransferController *controller = [TDCFileTransferDialogTransferController senderForClient:client nickname:nickname path:path];
 
 	if (controller == nil) {
+		if ([RZFileManager() attributesOfItemAtPath:path error:NULL].fileSize == 0) {
+			[client print:TXTLS(@"IRC[dc-e1]", path.lastPathComponent) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+		}
+
 		return nil;
 	}
 

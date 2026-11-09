@@ -434,6 +434,11 @@ present_error:
 	NSParameterAssert(filename != nil);
 	NSParameterAssert(address != nil);
 
+	/* The same offer again: the row is there already */
+	if ([[self fileTransferController] hasUnansweredOfferFromClient:self nickname:nickname filename:filename filesize:totalFilesize]) {
+		return;
+	}
+
 	NSString *message = TXTLS(@"IRC[snf-45]", nickname, filename, [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile]);
 
 	[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
@@ -495,6 +500,11 @@ present_error:
 	NSParameterAssert(filename != nil);
 
 	NSString *address = [self DCCTransferAddress];
+
+	/* A reverse offer (port 0) needs no address: the peer connects to nothing of ours */
+	if (address == nil && port == 0 && transferToken.length > 0) {
+		address = @"0";
+	}
 
 	if (address == nil) {
 		return;

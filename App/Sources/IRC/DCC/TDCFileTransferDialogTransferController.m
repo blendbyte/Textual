@@ -38,10 +38,13 @@
 
 #include <sys/stat.h>
 
+#import <arpa/inet.h>
+#import <netinet/in.h>
 #import "NSObjectHelperPrivate.h"
 #import "GCDAsyncSocket.h"
 #import "TXGlobalModels.h"
 #import "IRCClientPrivate.h"
+#import "IRCUser.h"
 #import "TPCPreferencesLocal.h"
 #import "TPCPreferencesUserDefaultsPrivate.h"
 #import "TLOLocalization.h"
@@ -112,7 +115,7 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *speedRecordsPrivate;
 @property (atomic, copy, readwrite, nullable) NSString *errorMessageDescription; // atomic (with the two above): the window reads them on main
 @property (atomic, copy, readwrite, nullable) NSString *path;
-@property (nonatomic, copy, readwrite) NSString *filename;
+@property (atomic, copy, readwrite) NSString *filename; // atomic: its queue picks a free name while the window reads it
 @property (nonatomic, copy, readwrite) NSString *hostAddress;
 @property (nonatomic, copy, readwrite) NSString *peerNickname;
 @property (nonatomic, copy, readwrite, nullable) NSString *transferToken;
@@ -121,11 +124,19 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 @property (atomic, strong, nullable) NSFileHandle *fileHandle; // atomic: cleared on main by a close while the transfer's queue uses it
 @property (nonatomic, strong, nullable) XRPortMapper *portMapping;
 @property (nonatomic, assign) NSUInteger sendQueueSize;
-@property (nonatomic, strong, nullable) dispatch_queue_t serverDispatchQueue;
-@property (nonatomic, strong, nullable) dispatch_queue_t serverSocketQueue;
-@property (nonatomic, strong, nullable) GCDAsyncSocket *listeningServer;
-@property (nonatomic, strong, nullable) GCDAsyncSocket *listeningServerConnectedClient;
-@property (nonatomic, strong, nullable) GCDAsyncSocket *connectionToRemoteServer;
+@property (atomic, strong, nullable) dispatch_queue_t serverDispatchQueue; // atomic, as the sockets: closed on main while its queue reads them
+@property (atomic, strong, nullable) dispatch_queue_t serverSocketQueue;
+@property (atomic, strong, nullable) GCDAsyncSocket *listeningServer;
+@property (atomic, strong, nullable) GCDAsyncSocket *listeningServerConnectedClient;
+@property (atomic, strong, nullable) GCDAsyncSocket *connectionToRemoteServer;
+@property (atomic, copy, nullable) NSString *expectedPeerAddress; // the peer's IRC address, when that's a real IP
+@property (atomic, assign) BOOL refusedConnectionNoted;
+@property (atomic, copy, nullable) NSString *emptyDownloadPath; // created here, and nothing written to it yet
+@property (nonatomic, assign) BOOL allDataWritten; // sender: on the transfer's queue
+@property (nonatomic, strong, nullable) NSMutableData *acknowledgementRemainder;
+@property (nonatomic, assign) uint32_t lastAcknowledgement;
+@property (nonatomic, assign) BOOL acknowledgementInFlight; // receiver: at most one is written at a time
+@property (nonatomic, assign) BOOL acknowledgementWaiting;
 @property (nonatomic, strong, nullable) id transferProgressHandler; // Used to prevent system sleep
 @property (atomic, assign) NSUInteger peerResponseTimeoutGeneration; // Changes on close, so older timeouts do nothing
 @property (readonly) uint64_t currentFilesize;
@@ -439,6 +450,9 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	self.transferStatus = TDCFileTransferDialogTransferStatusConnecting;
 
+	/* First: a close, however early, ends it again */
+	[self disableSystemSleep];
+
 	GCDAsyncSocket *connectionToRemoteServer =
 	[[GCDAsyncSocket alloc] initWithDelegate:(id)self
 							   delegateQueue:self.serverDispatchQueue
@@ -467,11 +481,7 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		}
 
 		[self closeWithLocalizedError:@"TDCFileTransferDialog[fn8-sx]"];
-
-		return;
 	}
-
-	[self disableSystemSleep];
 }
 
 - (void)openConnectionAsServer
@@ -484,6 +494,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	self.transferStatus = TDCFileTransferDialogTransferStatusInitializing;
 
+	[self disableSystemSleep];
+
 	uint16_t portRangeStart = [TPCPreferences fileTransferPortRangeStart];
 	uint16_t portRangeEnd = [TPCPreferences fileTransferPortRangeEnd];
 
@@ -492,8 +504,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		self.hostPort = (uint16_t)port;
 
 		if ([self tryToOpenConnectionAsServer]) {
-			[self disableSystemSleep];
-
 			return;
 		}
 	}
@@ -556,12 +566,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	LogToConsoleError("Port mapping failed with error code: %{public}i", self.portMapping.error);
 
-	if (self.isReversed) {
-		[self closeWithLocalizedError:@"TDCFileTransferDialog[vxc-sd]"];
-
-		return;
-	}
-
 	/* If mapping fails, we silently fail */
 	/* We tried and it was successful, then that is good, but if we
 	 did not, still start listening just incase other conditions allow
@@ -583,12 +587,12 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	
 	/* Only a working mapping's address: one from another NAT in front (private)
 	 would be cached and offered to every later transfer */
-	if (address == nil && manuallyDetect == NO && self.portMapping.isMapped) {
+	if (manuallyDetect == NO && self.portMapping.isMapped) {
 		NSString *publicAddress = self.portMapping.publicAddress;
 
 		LogToConsoleDebug("Port mapper public IP address: %{private}@", publicAddress);
 
-		if (publicAddress.isIPAddress) {
+		if ([self.class addressIsPublic:publicAddress]) {
 			self.transferDialog.IPAddress = publicAddress;
 
 			address = publicAddress;
@@ -597,6 +601,13 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	/* Request address? */
 	if (address == nil) {
+		/* A reverse offer: the peer connects to nothing of ours */
+		if (self.isSender && self.isReversed && detectionMethod == TXFileTransferIPAddressMethodRouterOnly) {
+			[self noteIPAddressLookupSucceeded];
+
+			return;
+		}
+
 		if (manuallyDetect || detectionMethod == TXFileTransferIPAddressMethodRouterOnly) {
 			LogToConsoleError("User has set IP address detection to be manual but have no address set");
 
@@ -608,6 +619,13 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 			self.transferStatus = TDCFileTransferDialogTransferStatusWaitingForLocalIPAddress;
 		}
+
+		return;
+	}
+
+	/* Typed by hand (a hostname, a typo): an offer can't carry that */
+	if (address.isIPAddress == NO) {
+		[self noteIPAddressLookupFailed];
 
 		return;
 	}
@@ -633,6 +651,16 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 - (void)noteIPAddressLookupSucceeded
 {
 	LogStackTraceWithType(LogToConsoleTypeDebug);
+
+	/* Who may connect: only known once the offer goes out, and the user list is on main */
+	__block NSString *peerAddress = nil;
+
+	XRPerformBlockSynchronouslyOnMainQueue(^{
+		peerAddress = [self.client findUser:self.peerNickname].address;
+	});
+
+	self.expectedPeerAddress = ((peerAddress.isIPAddress) ? peerAddress : nil);
+	self.refusedConnectionNoted = NO;
 
 	if (self.isSender) {
 		if (self.isReversed) {
@@ -886,20 +914,18 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	self.peerResponseTimeoutGeneration += 1;
 
-	if ( self.listeningServer) {
-		[self.listeningServer disconnect];
-		 self.listeningServer = nil;
-	}
+	/* Cleared first: callbacks of a socket being closed then find it isn't current */
+	GCDAsyncSocket *listeningServer = self.listeningServer;
+	GCDAsyncSocket *listeningServerConnectedClient = self.listeningServerConnectedClient;
+	GCDAsyncSocket *connectionToRemoteServer = self.connectionToRemoteServer;
 
-	if ( self.listeningServerConnectedClient) {
-		[self.listeningServerConnectedClient disconnect];
-		 self.listeningServerConnectedClient = nil;
-	}
+	self.listeningServer = nil;
+	self.listeningServerConnectedClient = nil;
+	self.connectionToRemoteServer = nil;
 
-	if ( self.connectionToRemoteServer) {
-		[self.connectionToRemoteServer disconnect];
-		 self.connectionToRemoteServer = nil;
-	}
+	[listeningServer disconnect];
+	[listeningServerConnectedClient disconnect];
+	[connectionToRemoteServer disconnect];
 
 	dispatch_queue_t dispatchQueue = self.serverDispatchQueue;
 
@@ -908,6 +934,17 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	[self closePortMapping];
 
 	[self closeFileHandleOnQueue:dispatchQueue];
+
+	/* Nothing arrived: no empty file left for every retry to step around */
+	NSString *emptyDownloadPath = self.emptyDownloadPath;
+
+	self.emptyDownloadPath = nil;
+
+	if (emptyDownloadPath && self.processedFilesize == 0) {
+		[RZFileManager() removeItemAtPath:emptyDownloadPath error:NULL];
+
+		[self.class forgetPartialDownloadAtPath:emptyDownloadPath];
+	}
 
 	if (postNotification) {
 		TXNotificationType notificationType = 0;
@@ -979,60 +1016,74 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 #pragma mark -
 #pragma mark File Handle
 
-- (void)setNonexistentFilename
+/* Creates the file under the first free name, as one step: two downloads
+ with the same name can't both pick it. Returns the descriptor, or -1. */
+- (int)createFileUnderFreeName
 {
-	NSString *filePath = self.filePath;
+	NSString *filename = self.filename;
 
-	if ([RZFileManager() fileExistsAtPath:filePath] == NO) {
-		return;
-	}
+	NSString *filenameExtension = filename.pathExtension;
 
-	NSString *filenameExtension = self.filename.pathExtension;
+	NSString *filenameWithoutExtension = filename.stringByDeletingPathExtension;
 
-	NSString *filenameWithoutExtension = self.filename.stringByDeletingPathExtension;
+	for (NSUInteger i = 0; i < 100000; i++) {
+		NSString *candidate = filename;
 
-	NSUInteger i = 1;
-
-	do {
-		NSString *newFilename = nil;
-
-		if (filenameExtension.length == 0) {
-			newFilename = [NSString stringWithFormat:@"%@_%lu", filenameWithoutExtension, i];
-		} else {
-			newFilename = [NSString stringWithFormat:@"%@_%lu.%@", filenameWithoutExtension, i, filenameExtension];
+		if (i > 0 && filenameExtension.length == 0) {
+			candidate = [NSString stringWithFormat:@"%@_%lu", filenameWithoutExtension, i];
+		} else if (i > 0) {
+			candidate = [NSString stringWithFormat:@"%@_%lu.%@", filenameWithoutExtension, i, filenameExtension];
 		}
 
-		filePath = [self.path stringByAppendingPathComponent:newFilename];
+		NSString *filePath = [self.path stringByAppendingPathComponent:candidate];
 
-		i += 1;
-	} while ([RZFileManager() fileExistsAtPath:filePath]);
+		int descriptor = open(filePath.fileSystemRepresentation, (O_CREAT | O_EXCL | O_RDWR), 0644);
 
-	self.filename = filePath.lastPathComponent;
+		if (descriptor >= 0) {
+			self.filename = candidate;
+
+			return descriptor;
+		}
+
+		if (errno != EEXIST) {
+			return (-1);
+		}
+	}
+
+	return (-1);
 }
 
 - (BOOL)openFileHandle
 {
 	NSString *filePath = self.filePath;
 
+	NSFileHandle *fileHandle = nil;
+
 	if (self.isSender == NO && self.isResume == NO) {
-		[self setNonexistentFilename];
+		int descriptor = [self createFileUnderFreeName];
 
-		filePath = self.filePath;
+		if (descriptor >= 0) {
+			fileHandle = [[NSFileHandle alloc] initWithFileDescriptor:descriptor closeOnDealloc:YES];
 
-		[RZFileManager() createFileAtPath:filePath contents:[NSData data] attributes:nil];
+			filePath = self.filePath;
 
-		[self.class recordPartialDownloadAtPath:filePath
-							   clientIdentifier:self.clientId
-										   peer:self.peerNickname
-									   filename:self.filename
-									   filesize:self.totalFilesize];
+			self.emptyDownloadPath = filePath;
+
+			[self.class recordPartialDownloadAtPath:filePath
+								   clientIdentifier:self.clientId
+											   peer:self.peerNickname
+										   filename:self.filename
+										   filesize:self.totalFilesize];
+		}
+	} else if (self.isSender) {
+		/* Sending only reads: a read-only file can be sent */
+		fileHandle = [NSFileHandle fileHandleForReadingAtPath:filePath];
+	} else {
+		fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:filePath];
 	}
 
-	/* Sending only reads: a read-only file can be sent */
-	NSFileHandle *fileHandle = ((self.isSender) ? [NSFileHandle fileHandleForReadingAtPath:filePath] : [NSFileHandle fileHandleForUpdatingAtPath:filePath]);
-
 	if (fileHandle == nil) {
-		[self closeWithLocalizedError:@"TDCFileTransferDialog[nab-dx]"];
+		[self closeWithLocalizedError:((self.isSender) ? @"TDCFileTransferDialog[nab-dx]" : @"TDCFileTransferDialog[05g-c8]")];
 
 		return NO;
 	}
@@ -1081,6 +1132,18 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 - (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket
 {
 	if (self.isActingAsServer == NO || [self isCurrentSocket:sock] == NO) {
+		return;
+	}
+
+	/* Not before the offer is out, and only from the peer's address when
+	 that is known. The listener stays open for the real one. */
+	TDCFileTransferDialogTransferStatus status = self.transferStatus;
+
+	if ((status != TDCFileTransferDialogTransferStatusIsListeningAsSender && status != TDCFileTransferDialogTransferStatusIsListeningAsReceiver) ||
+		[self connectionIsFromPeer:newSocket.connectedHost] == NO)
+	{
+		[newSocket disconnect];
+
 		return;
 	}
 
@@ -1153,6 +1216,13 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		return;
 	}
 
+	/* Everything was written and the receiver hung up: it has the file */
+	if (self.isSender && self.allDataWritten) {
+		[self finishSending];
+
+		return;
+	}
+
 	if (error) {
 		[self closeWithLocalizedError:@"TDCFileTransferDialog[s79-3a]" description:error.localizedDescription];
 	} else {
@@ -1174,6 +1244,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	}
 
 	if (self.isSender) {
+		[self readAcknowledgements:data];
+
 		[self drainAcknowledgements];
 
 		return;
@@ -1212,21 +1284,7 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		} // @catch
 	}
 
-	/* Send acknowledgement back to server */
-	uint32_t processedFilesize = (self.processedFilesize & 0xFFFFFFFF);
-
-	unsigned char ackPacket[4];
-
-	ackPacket[0] = ((processedFilesize >> 24) & 0xFF);
-	ackPacket[1] = ((processedFilesize >> 16) & 0xFF);
-	ackPacket[2] = ((processedFilesize >> 8) & 0xFF);
-	ackPacket[3] =  (processedFilesize & 0xFF);
-
-	NSData *ackPacketData = [NSData dataWithBytes:ackPacket length:4];
-
-	/* No timeout: senders that don't read acknowledgements (Textual before 8
-	 did not) let them back up, which must not fail the transfer */
-	[self.readSocket writeData:ackPacketData withTimeout:(-1) tag:0];
+	[self sendAcknowledgement];
 
 	/* Continue requesting data if the transfer is not complete */
 	if (self.processedFilesize < self.totalFilesize) {
@@ -1244,11 +1302,125 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 }
 
 #pragma mark -
+#pragma mark Acknowledgements
+
+/* Cumulative, so only the newest matters: one written at a time, and a sender
+ that never reads them can't make them pile up here */
+- (void)sendAcknowledgement
+{
+	if (self.acknowledgementInFlight) {
+		self.acknowledgementWaiting = YES;
+
+		return;
+	}
+
+	self.acknowledgementInFlight = YES;
+
+	uint32_t processedFilesize = (self.processedFilesize & 0xFFFFFFFF);
+
+	unsigned char ackPacket[4];
+
+	ackPacket[0] = ((processedFilesize >> 24) & 0xFF);
+	ackPacket[1] = ((processedFilesize >> 16) & 0xFF);
+	ackPacket[2] = ((processedFilesize >> 8) & 0xFF);
+	ackPacket[3] =  (processedFilesize & 0xFF);
+
+	NSData *ackPacketData = [NSData dataWithBytes:ackPacket length:4];
+
+	/* No timeout: senders that don't read acknowledgements (Textual before 8
+	 did not) let them back up, which must not fail the transfer */
+	[self.readSocket writeData:ackPacketData withTimeout:(-1) tag:0];
+}
+
+- (void)readAcknowledgements:(NSData *)data
+{
+	if (self.acknowledgementRemainder == nil) {
+		self.acknowledgementRemainder = [NSMutableData data];
+	}
+
+	NSMutableData *buffer = self.acknowledgementRemainder;
+
+	[buffer appendData:data];
+
+	NSUInteger wholeBytes = (buffer.length - (buffer.length % 4));
+
+	if (wholeBytes > 0) {
+		const unsigned char *bytes = ((const unsigned char *)buffer.bytes + (wholeBytes - 4));
+
+		self.lastAcknowledgement = (((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) | (uint32_t)bytes[3]);
+
+		[buffer replaceBytesInRange:NSMakeRange(0, wholeBytes) withBytes:NULL length:0];
+	}
+
+	if (self.allDataWritten && self.lastAcknowledgement == (uint32_t)(self.totalFilesize & 0xFFFFFFFF)) {
+		[self finishSending];
+	}
+}
+
+- (void)finishSending
+{
+	if (self.transferStatus != TDCFileTransferDialogTransferStatusSending) {
+		return;
+	}
+
+	self.transferStatus = TDCFileTransferDialogTransferStatusComplete;
+
+	[self close];
+}
+
+/* The last write only reached this Mac's network buffers. Closing now would
+ reset the connection when the receiver's acknowledgements arrive, and cut
+ off what hadn't been sent. Done when the receiver has it all or hangs up. */
+- (void)waitForReceiverToFinish
+{
+	self.allDataWritten = YES;
+
+	if (self.lastAcknowledgement == (uint32_t)(self.totalFilesize & 0xFFFFFFFF)) {
+		[self finishSending];
+
+		return;
+	}
+
+	dispatch_queue_t dispatchQueue = self.serverDispatchQueue;
+
+	if (dispatchQueue == nil) {
+		return;
+	}
+
+	NSUInteger generation = self.peerResponseTimeoutGeneration;
+
+	__weak TDCFileTransferDialogTransferController *weakSelf = self;
+
+	/* For receivers that never acknowledge */
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), dispatchQueue, ^{
+		TDCFileTransferDialogTransferController *strongSelf = weakSelf;
+
+		if (strongSelf == nil || strongSelf.peerResponseTimeoutGeneration != generation) {
+			return;
+		}
+
+		[strongSelf finishSending];
+	});
+}
+
+#pragma mark -
 #pragma mark Socket Write
 
 - (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
 {
-	if (self.isSender == NO || [self isCurrentSocket:sock] == NO) {
+	if ([self isCurrentSocket:sock] == NO) {
+		return;
+	}
+
+	if (self.isSender == NO) {
+		self.acknowledgementInFlight = NO;
+
+		if (self.acknowledgementWaiting) {
+			self.acknowledgementWaiting = NO;
+
+			[self sendAcknowledgement];
+		}
+
 		return;
 	}
 
@@ -1269,10 +1441,7 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		return;
 	}
 
-	/* Update status and tear down transfer */
-	self.transferStatus = TDCFileTransferDialogTransferStatusComplete;
-
-	[self close];
+	[self waitForReceiverToFinish];
 }
 
 - (void)send
@@ -1396,11 +1565,118 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 #pragma mark -
 #pragma mark Offered Files
 
+/* Somewhere on the internet: not this Mac or its network. A name isn't known
+ to be either until it's looked up, which is already a connection it asked for. */
++ (BOOL)addressIsPublic:(nullable NSString *)address
+{
+	if (address == nil) {
+		return NO;
+	}
+
+	NSString *value = address;
+
+	if ([value.lowercaseString hasPrefix:@"::ffff:"] && [value containsString:@"."]) {
+		value = [value substringFromIndex:7];
+	}
+
+	struct in_addr v4;
+
+	if (inet_pton(AF_INET, value.UTF8String, &v4) == 1) {
+		const uint8_t *b = (const uint8_t *)&v4;
+
+		return (b[0] != 0 && b[0] != 10 && b[0] != 127 && b[0] < 224 &&
+				(b[0] == 100 && (b[1] & 0xC0) == 64) == NO &&
+				(b[0] == 169 && b[1] == 254) == NO &&
+				(b[0] == 172 && (b[1] & 0xF0) == 16) == NO &&
+				(b[0] == 192 && b[1] == 168) == NO);
+	}
+
+	struct in6_addr v6;
+
+	if (inet_pton(AF_INET6, value.UTF8String, &v6) == 1) {
+		const uint8_t *b = v6.s6_addr;
+
+		return (IN6_IS_ADDR_UNSPECIFIED(&v6) == NO && IN6_IS_ADDR_LOOPBACK(&v6) == NO &&
+				(b[0] == 0xFE && (b[1] & 0xC0) == 0x80) == NO &&
+				(b[0] & 0xFE) != 0xFC &&
+				b[0] != 0xFF);
+	}
+
+	return NO;
+}
+
++ (BOOL)address:(NSString *)address1 isSameAddressAs:(NSString *)address2
+{
+	NSString *(^plain)(NSString *) = ^NSString *(NSString *address) {
+		return (([address.lowercaseString hasPrefix:@"::ffff:"] && [address containsString:@"."]) ? [address substringFromIndex:7] : address);
+	};
+
+	NSString *value1 = plain(address1);
+	NSString *value2 = plain(address2);
+
+	struct in6_addr v6a;
+	struct in6_addr v6b;
+
+	if (inet_pton(AF_INET6, value1.UTF8String, &v6a) == 1 && inet_pton(AF_INET6, value2.UTF8String, &v6b) == 1) {
+		return (memcmp(&v6a, &v6b, sizeof(struct in6_addr)) == 0);
+	}
+
+	return [value1 isEqualToString:value2];
+}
+
+- (BOOL)connectionIsFromPeer:(nullable NSString *)connectedHost
+{
+	NSString *expectedPeerAddress = self.expectedPeerAddress;
+
+	/* A cloak, a hostname or nobody known: nothing to compare with */
+	if (expectedPeerAddress == nil) {
+		return YES;
+	}
+
+	if (connectedHost && [self.class address:connectedHost isSameAddressAs:expectedPeerAddress]) {
+		return YES;
+	}
+
+	if (self.refusedConnectionNoted == NO) {
+		self.refusedConnectionNoted = YES;
+
+		IRCClient *client = self.client;
+
+		NSString *message = TXTLS(@"IRC[dc-r1]", self.filename, (connectedHost ?: @"?"), self.peerNickname);
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[client printDebugInformationToConsole:message];
+		});
+	}
+
+	return NO;
+}
+
+- (nullable NSString *)nonPublicOfferAddress
+{
+	if ([self.class addressIsPublic:self.hostAddress]) {
+		return nil;
+	}
+
+	return [NSString stringWithFormat:@"%@:%hu", self.hostAddress, self.hostPort];
+}
+
 + (NSString *)filenameForOfferedFilename:(NSString *)filename
 {
 	NSParameterAssert(filename != nil);
 
-	NSString *safeFilename = filename.safeFilename;
+	/* Control characters, and the bidirectional ones that can show a harmless
+	 extension for a different real one. Not all format characters: joiners
+	 are part of emoji and of Persian and Indic names. */
+	NSMutableCharacterSet *removedCharacters = [NSMutableCharacterSet characterSetWithRange:NSMakeRange(0x00, 0x20)];
+
+	[removedCharacters addCharactersInRange:NSMakeRange(0x7F, 0x21)];
+	[removedCharacters addCharactersInRange:NSMakeRange(0x202A, 5)];
+	[removedCharacters addCharactersInRange:NSMakeRange(0x2066, 4)];
+
+	NSString *cleanFilename = [[filename componentsSeparatedByCharactersInSet:removedCharacters] componentsJoinedByString:@""];
+
+	NSString *safeFilename = cleanFilename.safeFilename;
 
 	/* A leading dot would hide the file, or with the home folder as the
 	 download folder, put it in place of a dotfile such as .zshrc */
@@ -1586,6 +1862,12 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	self.errorMessageDescription = nil;
 
 	self.sendQueueSize = 0;
+
+	self.allDataWritten = NO;
+	self.acknowledgementRemainder = nil;
+	self.lastAcknowledgement = 0;
+	self.acknowledgementInFlight = NO;
+	self.acknowledgementWaiting = NO;
 
 	@synchronized(self.speedRecordsPrivate) {
 		[self.speedRecordsPrivate removeAllObjects];
