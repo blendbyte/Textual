@@ -975,7 +975,7 @@ NS_ASSUME_NONNULL_BEGIN
 		/* If we have an away nickname configured but no preAwayNickname set,
 		 then use the configured nickname instead. User probably was on bouncer
 		 and relaunched Textual, losing preAwayNickname.*/
-		if (newNickname == nil && self.config.awayNickname.length > 0) {
+		if (newNickname == nil && awayNickname.length > 0 && [self.userNickname isEqualToStringIgnoringCase:awayNickname]) {
 			newNickname = self.config.nickname;
 		}
 	}

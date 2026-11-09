@@ -335,6 +335,7 @@ TEXTUAL_EXTERN NSString * const IRCClientFileUploadLoginDecisionPrefix;
 @interface IRCClient (FailedSendsPrivate)
 /* Resend on a message the server refused: NO when it can't be sent now */
 + (BOOL)textEndsInHiddenPassword:(nullable NSString *)text;
+@property (nonatomic, assign) BOOL inputCancelledByUser; // the input field gets its text back
 - (BOOL)resendFailedLine:(TVCLogLine *)logLine inChannel:(IRCChannel *)channel;
 @end
 

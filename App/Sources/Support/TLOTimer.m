@@ -176,6 +176,9 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.currentIteration += 1;
 
+	/* What's left is counted from here: -timeRemaining of a repeating timer */
+	self.startTime = CFAbsoluteTimeGetCurrent();
+
 	/* In the logic presented below, we call
 	 -stopIfNeeded before the action. */
 	/* We should probably always keep this progression so

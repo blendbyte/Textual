@@ -209,6 +209,8 @@ NS_ASSUME_NONNULL_BEGIN
 		[[IRCStrictTransportSecurity sharedPolicies] rescheduleExpiryForHost:self.socket.config.serverAddress];
 	}
 
+	BOOL certificateRefusedByUser = self.socket.certificateRefusedByUser;
+
 	self.socket = nil;
 
 	[self removeTimedCommands];
@@ -231,7 +233,7 @@ NS_ASSUME_NONNULL_BEGIN
 		channelListDialog.contentAlreadyReceived = YES;
 	}
 
-	if (isTerminating == NO && self.reconnectEnabled) {
+	if (isTerminating == NO && self.reconnectEnabled && certificateRefusedByUser == NO) {
 		[self startReconnectTimer];
 	}
 

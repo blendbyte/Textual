@@ -85,6 +85,16 @@ NS_ASSUME_NONNULL_BEGIN
 	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/a,b,c,d,e,f"];
 
 	XCTAssertEqualObjects(link.channelList, @"#a,#b,#c,#d,#e");
+
+	/* Split first, then decoded: an encoded slash belongs to the name */
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/%23a%2Fb"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#a/b"]));
+
+	/* Schemes are compared in any case: this one is still TLS */
+	link = [IRCProtocolLink linkWithString:@"IRCS://irc.example.com/#textual"];
+
+	XCTAssertEqualObjects(link.serverInfo, @"-SSL irc.example.com:6697");
 }
 
 /* A channel name never has spaces or control characters: decoded line

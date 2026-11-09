@@ -793,7 +793,10 @@ static NSUInteger _aliasDepth = 0;
 
 	NSAssertReturn(self.isLoggedIn);
 
-	if (targetChannel && targetChannel != selectedChannel) {
+	/* A timer gives its channel, but "/ctcp bob version" still names the target */
+	BOOL targetIsTyped = ([stringIn.string.trim containsString:@" "]);
+
+	if (targetChannel && targetChannel != selectedChannel && targetIsTyped == NO) {
 		if (targetChannel.isUtility) {
 			[self printDebugInformation:TXTLS(@"IRC[sxf-qx]")];
 
@@ -981,10 +984,10 @@ static NSUInteger _aliasDepth = 0;
 		@"Send WHO Command Requests to Channels"			: @"setSendWhoCommandRequestsToChannels:",
 	};
 
-	BOOL enableFeature = [action isEqualToString:@"enable"];
+	BOOL enableFeature = [action isEqualToStringIgnoringCase:@"enable"];
 
-	/* Cannot toggle feature if the user doesn't tell us which */
-	if (feature.length == 0) {
+	/* Cannot toggle feature if the user doesn't tell us which, or what to do */
+	if (feature.length == 0 || (enableFeature == NO && [action isEqualToStringIgnoringCase:@"disable"] == NO)) {
 		[self printDebugInformation:TXTLS(@"IRC[1dz-jb]")];
 
 		return;
@@ -1052,6 +1055,18 @@ static NSUInteger _aliasDepth = 0;
 	NSAssertReturn(self.isLoggedIn);
 
 	NSString *segment1 = stringIn.getTokenAsString;
+
+	/* TEMPSHUN takes a target and a reason of any length: no second token */
+	if (context.commandNumeric == IRCLocalCommandTempshun) {
+		if (stringIn.length > 0) {
+			[self send:uppercaseCommand, segment1, stringIn.string, nil];
+		} else {
+			[self send:uppercaseCommand, segment1, nil];
+		}
+
+		return;
+	}
+
 	NSString *segment2 = stringIn.getTokenAsString;
 
 	[self send:uppercaseCommand, segment1, segment2, stringIn.string, nil];
@@ -2475,7 +2490,7 @@ static NSUInteger _aliasDepth = 0;
 		 not exist, then fail here. The user may be trying to send something 
 		 secret with an expectation for privacy and we cannot deliver that. */
 		if (channelNamePrefix == nil) {
-			[self printDebugInformation:TXTLS(@"IRC[54l-h7]", @"o")];
+			[self printDebugInformation:TXTLS(@"IRC[54l-h7]")];
 
 			return;
 		}
@@ -2641,6 +2656,15 @@ static NSUInteger _aliasDepth = 0;
 		[context maybeSetObject:targetChannel.name forKey:@"targetChannel"];
 
 		[self executeTextualCmdScriptInContext:context];
+
+		return;
+	}
+
+	/* Their whole text is one parameter, which only -send: marks as such */
+	if (self.isLoggedIn && stringIn.length > 0 &&
+		[@[@"ADCHAT", @"CHATOPS", @"GLOBOPS", @"LOCOPS", @"NACHAT"] containsObject:uppercaseCommand])
+	{
+		[self send:uppercaseCommand, stringIn.string, nil];
 
 		return;
 	}

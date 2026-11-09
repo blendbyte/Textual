@@ -280,6 +280,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray *lines = [self linesConfirmingCommandsIn:((NSAttributedString *)stringIn).splitIntoLines destination:destination];
 
 	if (lines == nil) {
+		self.inputCancelledByUser = YES;
+
 		return;
 	}
 
@@ -774,7 +776,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *stringToSend = nil;
 
-	if (text == nil) {
+	if (text.length == 0) {
 		stringToSend = command;
 	} else {
 		stringToSend = [NSString stringWithFormat:@"%@ %@", command, text];

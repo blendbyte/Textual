@@ -401,7 +401,15 @@ NS_ASSUME_NONNULL_BEGIN
 	/* ZNC's "user/network:password"; else the password as it is (soju) */
 	NSRange colon = [serverPassword rangeOfString:@":"];
 
-	if (colon.location != NSNotFound && [[serverPassword substringToIndex:colon.location] containsString:@"/"]) {
+	NSString *login = ((colon.location != NSNotFound) ? [serverPassword substringToIndex:colon.location] : nil);
+
+	NSString *username = config.username;
+
+	/* With the login in the username field, only that same login counts:
+	 otherwise it's a password that happens to have a slash and a colon */
+	if ([login containsString:@"/"] &&
+		([username containsString:@"/"] == NO || [[login componentsSeparatedByString:@"/"].firstObject isEqualToString:[username componentsSeparatedByString:@"/"].firstObject]))
+	{
 		NSString *password = [serverPassword substringFromIndex:NSMaxRange(colon)];
 
 		return ((password.length > 0) ? password : nil);
@@ -838,6 +846,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return nil;
+}
+
+- (BOOL)lineBelongsToTable:(NSString *)line
+{
+	NSParameterAssert(line != nil);
+
+	return (self.bordersRead > 0 || [self.class lineIsBorder:[line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]]);
 }
 
 - (BOOL)readLine:(NSString *)line

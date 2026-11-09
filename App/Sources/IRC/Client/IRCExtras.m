@@ -173,6 +173,16 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if ([link.scheme isEqualToString:@"textual"]) {
+		/* From a web page or another app: joining a network is the user's call */
+		if (event && [link.host isEqualToStringIgnoringCase:@"support-channel"] &&
+			[TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[sup-q2]")
+									  title:TXTLS(@"Prompts[sup-q1]")
+							  defaultButton:TXTLS(@"Prompts[sup-b1]")
+							alternateButton:TXTLS(@"Prompts[qso-2g]")] == NO)
+		{
+			return;
+		}
+
 		[self performSpecialActionForTextualScheme:link.host source:link.location];
 
 		return;
@@ -416,11 +426,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* If merging is enabled, try to find first possible client
 	 by comparing server address values. */
-	/* Merging is only performed if a channel is being joined. */
 	IRCClient *existingClient = nil;
 
-	if (mergeConnectionIfPossible && channelListCount > 0) {
+	if (mergeConnectionIfPossible) {
 		existingClient = [worldController() findClientWithServerAddress:serverAddress];
+	}
+
+	/* A link with no channel to a server already in the list: nothing to add */
+	if (existingClient != nil && channelListCount == 0) {
+		[mainWindow() select:existingClient];
+
+		return;
 	}
 
 	if (existingClient != nil) {
@@ -440,7 +456,7 @@ NS_ASSUME_NONNULL_BEGIN
 											  alternateButton:TXTLS(@"Prompts[xca-5h]")];
 		}
 
-		// YES = default button (create new connection)
+		// YES = default button (use the existing connection)
 		if (mergeConnection == NO) {
 			existingClient = nil;
 		}
@@ -458,14 +474,15 @@ NS_ASSUME_NONNULL_BEGIN
 				firstChannelAdded = channel;
 			}
 
-			if (connectWhenCreated) {
+			/* The user just agreed to this in the alert above */
+			if (existingClient.isLoggedIn) {
 				[existingClient joinChannel:channel];
 			}
 		}
 
 		[worldController() save];
 
-		if (selectFirstChannelAdded && firstChannelAdded) {
+		if (firstChannelAdded) {
 			[mainWindow() select:firstChannelAdded];
 		}
 	}
@@ -515,8 +532,11 @@ NS_ASSUME_NONNULL_BEGIN
 			[client connect];
 		}
 
+		/* A link shows what it added, even with no channel to select */
 		if (selectFirstChannelAdded) {
 			[client selectFirstChannelInChannelList];
+		} else if (mergeConnectionIfPossible) {
+			[mainWindow() select:client];
 		}
 	}
 }

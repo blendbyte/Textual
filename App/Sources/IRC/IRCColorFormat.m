@@ -76,6 +76,10 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 @property (nonatomic, assign, readwrite) NSUInteger maximumLength;
 @end
 
+@interface NSMutableString (IRCTextFormatterSeparator)
+- (void)appendIRCColorSeparatorBeforeTextAtIndex:(NSUInteger)index ofString:(NSString *)string;
+@end
+
 @implementation IRCTextFormatterEffect
 
 + (nullable instancetype)effectWithType:(IRCTextFormatterEffectType)type
@@ -422,6 +426,9 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 	 locate a character to perform wrapping on. */
 #define	_textTruncationWrapMaxDistance			25
 
+	/* Count bytes in the encoding the line is sent in (UTF8ONLY: always UTF-8) */
+	NSStringEncoding encoding = (client.supportInfo.utf8Only) ? NSUTF8StringEncoding : client.config.primaryEncoding;
+
 	/* Add length of colon (":") */
 	NSUInteger minimumLength = 1;
 
@@ -431,7 +438,7 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 	if (userHostmask == nil) {
 		minimumLength += _textTruncationHostmaskConstant; // It's better to have something rather than nothing
 	} else {
-		minimumLength += userHostmask.length;
+		minimumLength += ([userHostmask lengthOfBytesUsingEncoding:encoding] ?: userHostmask.length);
 	}
 
 	/* Add length of command */
@@ -446,7 +453,7 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 	}
 
 	/* Add length of channel name */
-	minimumLength += channelName.length;
+	minimumLength += ([channelName lengthOfBytesUsingEncoding:encoding] ?: channelName.length);
 
 	/* Add length of space trailing channel name and colon (" :") */
 	minimumLength += 2;
@@ -459,9 +466,6 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 
 	/* Perform truncation */
 	NSString *string = self.string;
-
-	/* Count bytes in the encoding the line is sent in (UTF8ONLY: always UTF-8) */
-	NSStringEncoding encoding = (client.supportInfo.utf8Only) ? NSUTF8StringEncoding : client.config.primaryEncoding;
 
 	NSMutableString *result = [NSMutableString string];
 
@@ -606,6 +610,12 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 		/* Close formatters */
 		[formatters appendToEndOf:result];
 
+		NSUInteger lengthBeforeSeparator = result.length;
+
+		[result appendIRCColorSeparatorBeforeTextAtIndex:NSMaxRange(segmentRange) ofString:string];
+
+		resultLength += (result.length - lengthBeforeSeparator);
+
 		/* Break from enumeration */
 		if (breakLoopAfterAppend) {
 			break;
@@ -669,6 +679,33 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 
 #pragma mark -
 
+@implementation NSMutableString (IRCTextFormatterSeparator)
+
+/* A colour's closing code right before a digit (or hex digit) would be read as
+ a new colour, swallowing the text: two bold codes in between cancel out */
+- (void)appendIRCColorSeparatorBeforeTextAtIndex:(NSUInteger)index ofString:(NSString *)string
+{
+	if (self.length == 0 || index >= string.length) {
+		return;
+	}
+
+	unichar closer = [self characterAtIndex:(self.length - 1)];
+
+	unichar next = [string characterAtIndex:index];
+
+	BOOL nextIsDecimal = (next >= '0' && next <= '9');
+
+	BOOL nextIsHex = (nextIsDecimal || (next >= 'a' && next <= 'f') || (next >= 'A' && next <= 'F'));
+
+	if ((closer == 0x03 && nextIsDecimal) || (closer == 0x04 && nextIsHex)) {
+		[self appendFormat:@"%c%c", 0x02, 0x02];
+	}
+}
+
+@end
+
+#pragma mark -
+
 @implementation NSAttributedString (IRCTextFormatter)
 
 #pragma mark -
@@ -693,6 +730,8 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 		 [result appendString:segment];
 
 		 [formatters appendToEndOf:result];
+
+		 [result appendIRCColorSeparatorBeforeTextAtIndex:NSMaxRange(effectiveRange) ofString:string];
 	 }];
 
 	return result;
@@ -1000,28 +1039,29 @@ NSString * const IRCTextFormatterSpoilerAttributeName = @"IRCTextFormatterSpoile
 			 }
 			 case IRCTextFormatterEffectBold:
 			 {
+				 /* A font with no bold of its own still has the attribute */
+				 [self removeAttribute:IRCTextFormatterBoldAttributeName range:effectiveRange];
+
 				 if ([baseFont fontTraitSet:NSBoldFontMask]) {
 					 baseFont = [RZFontManager() convertFont:baseFont toNotHaveTrait:NSBoldFontMask];
 
 					 if (baseFont) {
 						 [self addAttribute:NSFontAttributeName value:baseFont range:effectiveRange];
 					 }
-
-					 [self removeAttribute:IRCTextFormatterBoldAttributeName range:effectiveRange];
 				 }
 
 				 break;
 			 }
 			 case IRCTextFormatterEffectItalic:
 			 {
+				 [self removeAttribute:IRCTextFormatterItalicAttributeName range:effectiveRange];
+
 				 if ([baseFont fontTraitSet:NSItalicFontMask]) {
 					 baseFont = [RZFontManager() convertFont:baseFont toNotHaveTrait:NSItalicFontMask];
 
 					 if (baseFont) {
 						 [self addAttribute:NSFontAttributeName value:baseFont range:effectiveRange];
 					 }
-
-					 [self removeAttribute:IRCTextFormatterItalicAttributeName range:effectiveRange];
 				 }
 
 				 break;

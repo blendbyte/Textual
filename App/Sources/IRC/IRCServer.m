@@ -257,6 +257,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return self.serverPasswordFromKeychain;
 }
 
+- (BOOL)hasPendingServerPassword
+{
+	return (self->_serverPassword != nil);
+}
+
 - (nullable NSString *)serverPasswordFromKeychain
 {
 	return [TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier];

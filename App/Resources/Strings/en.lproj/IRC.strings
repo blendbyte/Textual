@@ -522,6 +522,7 @@ The identifier for a timer can be found using “/timer list”";
 "dc-p1" = "This file transfer with %@ connects directly, not through the proxy set for this server, so they can see your IP address.";
 "dc-p2" = "Connect directly?";
 "ch-l1" = "This server added more than %lu channels. Any more are being ignored.";
+"tmr-g1" = "A timer’s channel no longer exists, so its command “%@” was not run and the timer was removed.";
 "qry-l1" = "More than %lu people started a private conversation within a minute. Messages from new nicknames go to this console for the rest of the minute.";
 "qry-l2" = "This server has more than %lu channels and private conversations. Private messages from new nicknames now go to this console.";
 "sp-n1" = "This connection doesn’t use TLS, so the login password is sent unencrypted.";

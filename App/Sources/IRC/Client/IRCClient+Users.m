@@ -231,6 +231,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* The entry covers a mask (*!*@host): every cached match may change */
 	[self clearAddressBookCache];
+
+	[worldController() save];
 }
 
 - (void)clearAddressBookCache

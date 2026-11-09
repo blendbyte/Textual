@@ -242,19 +242,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 		if (isBuiltinScript)
 		{
-			NSAppleScript *appleScript = [[NSAppleScript alloc] initWithContentsOfURL:pathURL error:NULL];
+			/* NSAppleScript is for the main thread only */
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				NSAppleScript *appleScript = [[NSAppleScript alloc] initWithContentsOfURL:pathURL error:NULL];
 
-			if (appleScript == nil) {
-				return;
-			}
+				if (appleScript == nil) {
+					return;
+				}
 
-			NSAppleEventDescriptor *result = [appleScript executeAppleEvent:event error:NULL];
+				NSAppleEventDescriptor *result = [appleScript executeAppleEvent:event error:NULL];
 
-			if (result == nil) {
-				return;
-			}
+				if (result == nil) {
+					return;
+				}
 
-			[self sendTextualCmdScriptResult:result.stringValue toChannel:targetChannel];
+				[self sendTextualCmdScriptResult:result.stringValue toChannel:targetChannel];
+			});
 		}
 		else // isBuiltinScript
 		{

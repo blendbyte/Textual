@@ -75,7 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(location != nil);
 
-	NSString *locationValue = location.percentDecodedString.trim;
+	/* Decoded only once split: an encoded slash or comma is part of a channel's name */
+	NSString *locationValue = location.trim;
 
 	/* The channel part is cut off before the rest goes to NSURL, which
 	 doesn't handle channels separated by # well */
@@ -99,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSURL *baseURL = [NSURL URLWithString:serverInfo];
 
-	NSString *scheme = baseURL.scheme;
+	NSString *scheme = baseURL.scheme.lowercaseString;
 
 	NSString *host = baseURL.host;
 
@@ -116,7 +117,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSUInteger sectionCount = sections.count;
 
-		[sections enumerateObjectsUsingBlock:^(NSString *section, NSUInteger index, BOOL *stop) {
+		[sections enumerateObjectsUsingBlock:^(NSString *sectionIn, NSUInteger index, BOOL *stop) {
+			NSString *section = (sectionIn.percentDecodedString ?: sectionIn);
+
 			if (section.length == 0) {
 				return;
 			}

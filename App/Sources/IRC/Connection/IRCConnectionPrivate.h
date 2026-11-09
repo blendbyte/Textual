@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readwrite) BOOL isConnectedWithClientSideCertificate;
 @property (nonatomic, assign, readwrite) BOOL EOFReceived;
 @property (nonatomic, copy, readwrite, nullable) NSString *connectedAddress;
+@property (nonatomic, assign) BOOL certificateRefusedByUser; // no retry: it would only ask again
 @property (nonatomic, assign) BOOL certificateTrustedByUser; // the user accepted a certificate that failed validation
 
 - (void)enforceFloodControl;

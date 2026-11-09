@@ -313,6 +313,14 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 		updatedAccount.password = account.password;
 		updatedAccount.checksForNetworkChanges = account.checksForNetworkChanges;
 
+		if (account.trustedServerCertificate) {
+			updatedAccount.trustedServerCertificate = account.trustedServerCertificate;
+		}
+
+		if (account.identityClientSideCertificate) {
+			updatedAccount.identityClientSideCertificate = account.identityClientSideCertificate;
+		}
+
 		account = [updatedAccount copy];
 
 		break;

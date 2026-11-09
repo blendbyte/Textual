@@ -176,6 +176,12 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 		return NO;
 	}
 
+	/* Attached to a network, so the list can't be empty: a line before the
+	 table is ordinary *status chat, not "no networks" */
+	if ([reader lineBelongsToTable:[m paramAt:1]] == NO) {
+		return NO;
+	}
+
 	if ([reader readLine:[m paramAt:1]] == NO) {
 		return NO;
 	}

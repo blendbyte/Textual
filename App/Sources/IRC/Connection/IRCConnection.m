@@ -326,6 +326,8 @@ NS_ASSUME_NONNULL_BEGIN
 										 strongSelf.trustPanelDoNotInvokeCompletionBlock = NO;
 
 										 trusted = NO;
+									 } else {
+										 strongSelf.certificateRefusedByUser = (trusted == NO);
 									 }
 
 									 strongSelf.certificateTrustedByUser = trusted;

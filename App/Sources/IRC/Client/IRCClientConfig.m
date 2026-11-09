@@ -181,6 +181,19 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self->_connectionName.length == 0) {
 		self->_connectionName = TXTLS(@"BasicLanguage[vfu-c0]");
 	}
+
+	/* Out of range would stop the connection configuration at connect */
+	if (self->_floodControlDelayTimerInterval < IRCConnectionConfigFloodControlMinimumDelayInterval ||
+		self->_floodControlDelayTimerInterval > IRCConnectionConfigFloodControlMaximumDelayInterval)
+	{
+		self->_floodControlDelayTimerInterval = IRCConnectionConfigFloodControlDefaultDelayInterval;
+	}
+
+	if (self->_floodControlMaximumMessages < IRCConnectionConfigFloodControlMinimumMessageCount ||
+		self->_floodControlMaximumMessages > IRCConnectionConfigFloodControlMaximumMessageCount)
+	{
+		self->_floodControlMaximumMessages = IRCConnectionConfigFloodControlDefaultMessageCount;
+	}
 }
 
 + (instancetype)newConfigByMerging:(IRCClientConfig *)config1 with:(IRCClientConfig *)config2
@@ -565,7 +578,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 		return;
 	}
 
-	BOOL prefersSecuredConnection = [dic boolForKey:@"prefersSecuredConnection"];
+	BOOL prefersSecuredConnection = self->_prefersSecuredConnection; // from "connectUsingSSL"
 
 	NSString *serverPassword = [TLOKeychain passwordOfKind:TLOKeychainItemKindServerPassword forIdentifier:self.uniqueIdentifier];
 
@@ -606,7 +619,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	NSDictionary *s2 = objectCast.dictionaryValue;
 
-	return ([s1 isEqualToDictionary:s2] &&
+	BOOL equalBesidesLists = ([s1 isEqualToDictionary:s2] &&
 			
 			((self->_nicknamePassword == nil && objectCast->_nicknamePassword == nil) ||
 			 [self->_nicknamePassword isEqualToString:objectCast->_nicknamePassword]) &&
@@ -616,6 +629,39 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 			((self->_saslECDSAKey == nil && objectCast->_saslECDSAKey == nil) ||
 			 [self->_saslECDSAKey isEqualToString:objectCast->_saslECDSAKey]));
+
+	if (equalBesidesLists == NO) {
+		return NO;
+	}
+
+	/* Server passwords and channel keys aren't in the dictionaries: a change
+	 of only those must count, or it's thrown away */
+	if ([self.channelList isEqualToArray:objectCast.channelList] == NO) {
+		return NO;
+	}
+
+	NSArray<IRCServer *> *servers1 = self.serverList;
+	NSArray<IRCServer *> *servers2 = objectCast.serverList;
+
+	if (servers1.count != servers2.count) {
+		return NO;
+	}
+
+	for (NSUInteger index = 0; index < servers1.count; index++) {
+		IRCServer *server1 = servers1[index];
+		IRCServer *server2 = servers2[index];
+
+		/* Both in the Keychain: the same item, not worth reading */
+		if (server1.hasPendingServerPassword == NO && server2.hasPendingServerPassword == NO) {
+			continue;
+		}
+
+		if ([(server1.serverPassword ?: @"") isEqualToString:(server2.serverPassword ?: @"")] == NO) {
+			return NO;
+		}
+	}
+
+	return YES;
 }
 
 - (NSUInteger)hash

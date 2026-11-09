@@ -116,7 +116,7 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 {
 	NSAssert((self.transport == nil), @"Not while connected");
 
-	if (self.cancelled) {
+	if (self.cancelled || self.finished) {
 		return;
 	}
 
@@ -231,6 +231,10 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 	self.error = error;
 	self.errorDetail = detail;
+
+	self.awaitsRegistrationReply = NO;
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(registrationReplyTimedOut) object:nil];
 
 	self.finished = YES;
 
@@ -483,7 +487,7 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 - (void)registrationReplyTimedOut
 {
-	if (self.awaitsRegistrationReply == NO || self.cancelled) {
+	if (self.awaitsRegistrationReply == NO || self.cancelled || self.finished) {
 		return;
 	}
 

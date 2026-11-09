@@ -1090,6 +1090,8 @@ static BOOL _popOutsOpened = NO;
 		[self.inputHistoryManager add:stringValue];
 	}
 
+	NSAttributedString *typedValue = stringValue;
+
 	if (applyMarkdown) {
 		stringValue = [TVCInputMarkdown attributedStringByApplyingMarkdown:stringValue];
 	}
@@ -1109,7 +1111,26 @@ static BOOL _popOutsOpened = NO;
 		replyClient.outgoingReplyMsgid = replyMsgid;
 	}
 
+	IRCClient *inputClient = self.selectedClient;
+
+	inputClient.inputCancelledByUser = NO;
+
 	[self inputText:stringValue asCommand:command];
+
+	/* "Run these lines as commands?" was cancelled: the text comes back */
+	if (inputClient.inputCancelledByUser) {
+		inputClient.inputCancelledByUser = NO;
+
+		if (self.inputTextField.attributedStringValue.length == 0) {
+			self.inputTextField.attributedStringValue = typedValue;
+		}
+
+		if (replyMsgid && isMessage) {
+			replyClient.outgoingReplyMsgid = nil;
+		}
+
+		return;
+	}
 
 	if (replyMsgid && isMessage) {
 		replyClient.outgoingReplyMsgid = nil;

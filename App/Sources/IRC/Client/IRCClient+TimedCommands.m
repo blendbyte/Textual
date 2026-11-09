@@ -245,13 +245,26 @@ NS_ASSUME_NONNULL_BEGIN
 		[self removeTimedCommand:timedCommand];
 	}
 
-	/* The -channelId is only a suggestion. It's okay if this returns nil.
-	 The channel is what was selected at the time that the timer was created.
-	 -sendCommand:completeTarget:target: may very well ignore the channel we
-	 give it, even if it's non-nil, depending on format of command. */
-	IRCChannel *channel = (IRCChannel *)[worldController() findItemWithId:timedCommand.channelId];
+	/* The channel selected when the timer was made. Without one (made in the
+	 console) the command has no channel; with one that is gone it can't run,
+	 or it would act on whatever is selected now. */
+	NSString *channelId = timedCommand.channelId;
 
-	[self sendCommand:timedCommand.command completeTarget:YES target:channel.name];
+	IRCTreeItem *item = ((channelId) ? [worldController() findItemWithId:channelId] : nil);
+
+	if (channelId && item == nil) {
+		[timedCommand stop];
+
+		[self removeTimedCommand:timedCommand];
+
+		[self printDebugInformationToConsole:TXTLS(@"IRC[tmr-g1]", timedCommand.command)];
+
+		return;
+	}
+
+	IRCChannel *channel = ((item.isClient) ? nil : (IRCChannel *)item);
+
+	[self sendCommand:timedCommand.command completeTarget:(channel != nil) target:channel.name];
 }
 
 @end

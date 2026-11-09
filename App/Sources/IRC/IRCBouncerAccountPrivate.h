@@ -172,6 +172,9 @@ typedef NS_ENUM(NSUInteger, IRCBouncerNetworkChange) {
 
 /* A line from *status; NO when it isn't part of the answer */
 - (BOOL)readLine:(NSString *)line;
+
+/* The table has started, or this line starts it */
+- (BOOL)lineBelongsToTable:(NSString *)line;
 @end
 
 NS_ASSUME_NONNULL_END

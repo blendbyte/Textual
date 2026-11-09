@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)parseWebSocketAddress:(NSString *)address host:(NSString * _Nullable * _Nonnull)host port:(uint16_t *)port secure:(BOOL *)secure path:(NSString * _Nullable * _Nonnull)path;
 
 + (NSString *)webSocketAddressWithHost:(NSString *)host port:(uint16_t)port secure:(BOOL)secure path:(NSString *)path;
+@property (readonly) BOOL hasPendingServerPassword; // typed, not in the Keychain yet
 @end
 
 NS_ASSUME_NONNULL_END

@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* Object properties are atomic: lines are rendered on other threads while a
  disconnect (-reset) or ISUPPORT replaces them on the main thread */
 @property (nonatomic, weak) IRCClient *client;
-@property (nonatomic, copy) NSArray<NSDictionary *> *cachedConfiguration;
+@property (nonatomic, copy, nullable) NSDictionary *lastConfiguration;
 @property (nonatomic, assign, readwrite) NSUInteger maximumAwayLength;
 @property (nonatomic, assign, readwrite) NSUInteger chatHistoryLimit;
 @property (nonatomic, assign, readwrite) BOOL utf8Only;
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reset
 {
-	self.cachedConfiguration = @[];
+	self.lastConfiguration = nil;
 
 	self.serverAddress = nil;
 
@@ -141,6 +141,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.maximumModeCount = TXMaximumNodesPerModeCommand;
 	self.maximumNicknameLength = IRCProtocolDefaultNicknameMaximumLength;
+
+	self.maximumAwayLength = 0;
+	self.maximumChannelNameLength = 0;
+	self.maximumKeyLength = 0;
+	self.maximumKickLength = 0;
+	self.maximumTopicLength = 0;
+
+	self.banExceptionModeSymbol = nil;
+	self.inviteExceptionModeSymbol = nil;
 
 	self.userModeSymbols = @{
 		@"modeSymbols" : @[@"o", @"v"],
@@ -339,7 +348,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	} // while()
 
-	self.cachedConfiguration = [self.cachedConfiguration arrayByAddingObject:configuration];
+	self.lastConfiguration = configuration;
 }
 
 /* Values escape characters as \xHH (\x20 for a space, \x5C for a backslash, \x3D for "=") */
@@ -537,7 +546,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)stringValueForLastUpdate
 {
-	NSDictionary *configuration = self.cachedConfiguration.lastObject;
+	NSDictionary *configuration = self.lastConfiguration;
 
 	if (configuration == nil) {
 		return nil;
@@ -814,7 +823,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)configurationReceived
 {
-	return (self.cachedConfiguration.count > 0);
+	return (self.lastConfiguration != nil);
 }
 
 - (BOOL)isListSupported:(IRCISupportInfoListType)listType
