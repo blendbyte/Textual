@@ -129,6 +129,8 @@ NS_ASSUME_NONNULL_BEGIN
  migrated, not for a passing reason such as a full disk */
 + (BOOL)storeErrorMeansDamage:(nullable NSError *)error;
 
++ (NSRange)rangeOfEntriesAfterEntryIdentifier:(NSInteger)entryIdentifier;
+
 + (NSFetchRequest *)fetchRequestForView:(NSString *)viewId
 							  ascending:(BOOL)ascending
 							 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap

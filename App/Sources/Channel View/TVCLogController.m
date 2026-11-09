@@ -959,7 +959,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 		[self notifyViewFinishedLoadingHistory];
 
-		[self.associatedClient printDebugInformation:TXTLS(@"TVCMainWindow[rpl-c1]") inChannel:channel];
+		[self.associatedClient printDebugInformation:TXTLS(@"TVCMainWindow[vwr-f1]") inChannel:channel];
 
 		return;
 	}

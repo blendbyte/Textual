@@ -302,7 +302,7 @@ The identifier for a timer can be found using “/timer list”";
 "ky3-36" = "Retrying…";
 "c3r-c1" = "Your client certificate is no longer in the Keychain, so it isn’t sent. Choose it again in Server Properties › Account › Client certificate.";
 "c3r-c2" = "Your bouncer’s client certificate is no longer in the Keychain, so it isn’t sent. Choose it again in Server › Edit Bouncer….";
-"c3r-c2" = "The client certificate for “%@” is missing";
+"c3r-c5" = "The client certificate for “%@” is missing";
 "c3r-c3" = "Textual can’t find it, or its private key, in the Keychain, so it connects without it. Choose the certificate again, or remove it from the server’s settings.";
 "c3r-c4" = "Choose Certificate…";
 "v5d-ix" = "\002%1$@\002 sets mode \002%2$@\002";

@@ -182,8 +182,8 @@
 "upl-s2" = "%@ doesn’t offer uploads. Set up an upload address of your own (a service that takes files over HTTPS) to upload files here.";
 "upl-s3" = "Set Up Upload Address…";
 "upl-s4" = "%@ doesn’t offer uploads, and your own upload address is turned off for this server in Server Properties.";
-"upl-l1" = "Send your %1$@ login to %2$@?";
-"upl-l2" = "%1$@ uploads files to %2$@, which isn’t the server you’re connected to. Send the login you use for %1$@ along with the upload only if you trust %2$@. Textual remembers your answer for this address; Settings › Advanced › Show Again asks again.";
+"upl-q1" = "Send your %1$@ login to %2$@?";
+"upl-q2" = "%1$@ uploads files to %2$@, which isn’t the server you’re connected to. Send the login you use for %1$@ along with the upload only if you trust %2$@. Textual remembers your answer for this address; Settings › Advanced › Show Again asks again.";
 "upl-l3" = "Send Login";
 "upl-l4" = "Upload Without Login";
 /* The search panel */
@@ -225,4 +225,4 @@
 "src-k5" = "Messages of the last 2 years";
 "src-k4" = "The message archive is off, so there is nothing to search. It can be turned on in Settings › History.";
 "src-r5" = "The message archive is off (Settings › History)";
-"rpl-c1" = "The chat view stopped working twice while showing this view's saved lines, so they aren't shown now. They are still saved.";
+"vwr-f1" = "The chat view stopped working twice while showing this view's saved lines, so they aren't shown now. They are still saved.";

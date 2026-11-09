@@ -712,8 +712,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *networkName = client.networkNameAlt;
 
 	[TDCAlert alertSheetWithWindow:self
-							  body:TXTLS(@"TVCMainWindow[upl-l2]", networkName, host)
-							 title:TXTLS(@"TVCMainWindow[upl-l1]", networkName, host)
+							  body:TXTLS(@"TVCMainWindow[upl-q2]", networkName, host)
+							 title:TXTLS(@"TVCMainWindow[upl-q1]", networkName, host)
 					 defaultButton:TXTLS(@"TVCMainWindow[upl-l3]")
 				   alternateButton:TXTLS(@"TVCMainWindow[upl-l4]")
 					   otherButton:TXTLS(@"Prompts[d7f-c4]")

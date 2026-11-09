@@ -204,7 +204,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[TDCAlert alertWithMessage:TXTLS(@"IRC[c3r-c3]")
-							 title:TXTLS(@"IRC[c3r-c2]", weakSelf.networkNameAlt)
+							 title:TXTLS(@"IRC[c3r-c5]", weakSelf.networkNameAlt)
 					 defaultButton:TXTLS(@"IRC[c3r-c4]")
 				   alternateButton:TXTLS(@"Prompts[qso-2g]")
 					   otherButton:nil

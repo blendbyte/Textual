@@ -168,6 +168,20 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(page.lastObject, @9);
 }
 
+/* Loading newer lines while scrolling down finds the lines after the last one shown */
+- (void)testLinesAfterALineAreFound
+{
+	[self writeLinesToView:@"view" from:1 to:20 inContext:self.viewContext];
+
+	NSRange range = [HLSHistoricLogManager rangeOfEntriesAfterEntryIdentifier:5];
+
+	XCTAssertEqualObjects([self entryIdentifiersInView:@"view" ascending:YES fetchLimit:3 lowest:range.location highest:(NSMaxRange(range) - 1)],
+						  [self numbersFrom:6 to:8]);
+
+	XCTAssertEqualObjects([self entryIdentifiersInView:@"view" ascending:YES fetchLimit:100 lowest:range.location highest:(NSMaxRange(range) - 1)],
+						  [self numbersFrom:6 to:20]);
+}
+
 - (void)testLinesComeBackInWrittenOrder
 {
 	[self writeLinesToView:@"other" from:1 to:500 inContext:self.parentContext];

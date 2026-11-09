@@ -1341,6 +1341,14 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 		   withCompletionBlock:completionBlock];
 }
 
+/* Every line after this one: ends at the largest entry identifier, because
+ a longer range would give an end that doesn't fit an NSInteger and wraps
+ round to a negative number, which matches no line */
++ (NSRange)rangeOfEntriesAfterEntryIdentifier:(NSInteger)entryIdentifier
+{
+	return NSMakeRange((entryIdentifier + 1), (NSIntegerMax - entryIdentifier));
+}
+
 - (void)_fetchEntriesForItem:(IRCTreeItem *)item
 		withUniqueIdentifier:(NSString *)uniqueId
 				   direction:(HLSHistoricLogFetchDirection)direction
@@ -1367,7 +1375,7 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 						if (direction == HLSHistoricLogFetchDirectionBefore) {
 							return NSMakeRange(0, entryIdentifier);
 						} else {
-							return NSMakeRange((entryIdentifier + 1), (NSUIntegerMax / 2));
+							return [HLSHistoricLogManager rangeOfEntriesAfterEntryIdentifier:entryIdentifier];
 						}
 					}
 		   withCompletionBlock:completionBlock];
