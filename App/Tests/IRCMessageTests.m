@@ -180,6 +180,15 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertTrue(message.isHistoric);
 	XCTAssertEqualWithAccuracy(message.receivedAt.timeIntervalSince1970, 1767323045.0, 0.001);
 
+	/* A leap day, and a month that doesn't exist, which keeps the time the line arrived */
+	IRCMessage *leapDay = [self parse:@"@time=2024-02-29T12:00:00.500Z :nick!user@host PRIVMSG #channel :x" onClient:client];
+
+	XCTAssertEqualWithAccuracy(leapDay.receivedAt.timeIntervalSince1970, 1709208000.5, 0.001);
+
+	IRCMessage *badMonth = [self parse:@"@time=2024-13-01T12:00:00.500Z :nick!user@host PRIVMSG #channel :x" onClient:client];
+
+	XCTAssertFalse(badMonth.isHistoric);
+
 	/* A date no calendar can show keeps the time the line arrived */
 	IRCMessage *farFuture = [self parse:@"@time=99999999999999999 :nick!user@host PRIVMSG #channel :x" onClient:client];
 

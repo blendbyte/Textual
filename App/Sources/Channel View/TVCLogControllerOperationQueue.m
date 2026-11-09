@@ -35,6 +35,8 @@
  *
  *********************************************************************** */
 
+#import <os/lock.h>
+
 #import "TXMasterController.h"
 #import "IRCClient.h"
 #import "IRCChannel.h"
@@ -43,27 +45,39 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* How many lines of a view are printed before other views get their turn */
+#define _blocksPerTurn		32
+
 #pragma mark -
 #pragma mark Define Private Header
 
 @interface TVCLogControllerPrintingOperation : NSOperation
 @property (nonatomic, copy, nullable) TVCLogControllerPrintingBlock executionBlock;
+@end
+
+@interface TVCLogControllerPrintingEntry : NSObject
+@property (nonatomic, copy) TVCLogControllerPrintingBlock block;
+@property (nonatomic, assign) BOOL standalone;
+@end
+
+/* What a view has waiting. Its entries are printed in order by one operation
+ at a time (its turn), which the queue only sees while the view can print:
+ a bouncer's backlog is one operation per few dozen lines, not one per line,
+ which had the main thread and every worker waiting on the queue's lock. */
+@interface TVCLogControllerPrintingLane : NSObject
 @property (nonatomic, weak) TVCLogController *viewController;
-@property (readonly, getter=isPending) BOOL pending;
-@property (nonatomic, assign, getter=isStandalone) BOOL standalone;
+@property (nonatomic, strong) NSMutableArray<TVCLogControllerPrintingEntry *> *entries;
+@property (nonatomic, strong, nullable) TVCLogControllerPrintingOperation *turn;
+@property (nonatomic, strong) NSHashTable<TVCLogControllerPrintingOperation *> *standaloneOperations;
 @end
 
 @interface TVCLogControllerPrintingOperationQueue ()
-/* This queue is application wide and stores all printing operations. 
- Having a single queue gives us greater control over what happens,
- instead of trying to optimize one queue per-server. */
-/* One problem of having a single queue through, is indexing which
- operations are associated with which view controller. To make this
- task easier, we maintain our own internal cache of pending operations
- which we can query at any time to know whats happening. The queue
- then observes the isFinished property to know when to remove the
- operations from our internal cache. */
-@property (nonatomic, strong) NSMutableDictionary<NSString *, NSMutableArray *> *pendingOperations;
+{
+	os_unfair_lock _lanesLock;
+}
+
+/* Keys are weak: a lane goes when its view controller does. Guarded by the lock. */
+@property (nonatomic, strong) NSMapTable<TVCLogController *, TVCLogControllerPrintingLane *> *lanes;
 @end
 
 #pragma mark -
@@ -88,7 +102,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.name = @"TVCLogControllerPrintingOperationQueue";
 
-	self.pendingOperations = [NSMutableDictionary dictionary];
+	self->_lanesLock = OS_UNFAIR_LOCK_INIT;
+
+	self.lanes = [NSMapTable mapTableWithKeyOptions:(NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality)
+									   valueOptions:NSPointerFunctionsStrongMemory];
 
 	self.qualityOfService = NSQualityOfServiceDefault;
  }
@@ -110,125 +127,137 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	TVCLogControllerPrintingOperation *operation = [TVCLogControllerPrintingOperation new];
+	TVCLogControllerPrintingEntry *entry = [TVCLogControllerPrintingEntry new];
 
-	operation.executionBlock = callbackBlock;
+	entry.block = callbackBlock;
 
-	operation.standalone = isStandalone;
+	entry.standalone = isStandalone;
 
-	operation.viewController = viewController;
+	os_unfair_lock_lock(&self->_lanesLock);
 
-	[self addPendingOperation:operation];
+	TVCLogControllerPrintingLane *lane = [self.lanes objectForKey:viewController];
+
+	if (lane == nil) {
+		lane = [TVCLogControllerPrintingLane new];
+
+		lane.viewController = viewController;
+
+		[self.lanes setObject:lane forKey:viewController];
+	}
+
+	[lane.entries addObject:entry];
+
+	os_unfair_lock_unlock(&self->_lanesLock);
+
+	[self _beginTurnInLane:lane ofViewController:viewController];
 }
 
 #pragma mark -
-#pragma mark Internal Operation Management
+#pragma mark Turns
 
-- (NSArray<TVCLogControllerPrintingOperation *> *)pendingOperationsForViewController:(TVCLogController *)viewController
+- (void)_beginTurnInLane:(TVCLogControllerPrintingLane *)lane ofViewController:(TVCLogController *)viewController
 {
-	NSParameterAssert(viewController != nil);
-
-	NSString *pendingOperationsKey = viewController.description;
-
-	NSArray<TVCLogControllerPrintingOperation *> *pendingOperations = nil;
-
-	/* Copied inside the lock: finished operations are removed on other threads */
-	@synchronized (self.pendingOperations) {
-		pendingOperations = [self.pendingOperations[pendingOperationsKey] copy];
+	/* Lines wait for the view; -updateReadinessState: starts them */
+	if (viewController.viewIsLoaded == NO) {
+		return;
 	}
 
-	if (pendingOperations == nil) {
-		return @[];
+	TVCLogControllerPrintingOperation *turn = nil;
+
+	os_unfair_lock_lock(&self->_lanesLock);
+
+	if (lane.turn == nil && lane.entries.count > 0) {
+		turn = [TVCLogControllerPrintingOperation new];
+
+		lane.turn = turn;
 	}
 
-	return pendingOperations;
+	os_unfair_lock_unlock(&self->_lanesLock);
+
+	if (turn == nil) {
+		return;
+	}
+
+	__weak TVCLogControllerPrintingOperation *weakTurn = turn;
+
+	turn.executionBlock = ^(NSOperation *sender) {
+		TVCLogControllerPrintingOperation *strongTurn = weakTurn;
+
+		if (strongTurn) {
+			[self _takeTurn:strongTurn inLane:lane];
+		}
+	};
+
+	[super addOperation:turn];
 }
 
-- (void)addPendingOperation:(TVCLogControllerPrintingOperation *)operation
+- (void)_takeTurn:(TVCLogControllerPrintingOperation *)turn inLane:(TVCLogControllerPrintingLane *)lane
 {
-	NSParameterAssert(operation != nil);
+	NSArray<TVCLogControllerPrintingEntry *> *entries = nil;
 
-	TVCLogControllerPrintingOperation *operationDependency = nil;
+	os_unfair_lock_lock(&self->_lanesLock);
 
-	/* Add operation to list of pending operations and while we have those,
-	 also pick out what will be its dependency. */
-	NSString *pendingOperationsKey = operation.viewController.description;
+	if (lane.turn == turn) {
+		NSRange range = NSMakeRange(0, MIN(_blocksPerTurn, lane.entries.count));
 
-	@synchronized (self.pendingOperations) {
-		NSMutableArray *pendingOperations = self.pendingOperations[pendingOperationsKey];
+		entries = [lane.entries subarrayWithRange:range];
 
-		if (pendingOperations == nil) {
-			pendingOperations = [NSMutableArray array];
+		[lane.entries removeObjectsInRange:range];
+	}
 
-			self.pendingOperations[pendingOperationsKey] = pendingOperations;
-		} else {
-			for (TVCLogControllerPrintingOperation *pendingOperation in pendingOperations.reverseObjectEnumerator) {
-				if (pendingOperation.isCancelled || pendingOperation.isStandalone) {
-					continue;
-				}
+	os_unfair_lock_unlock(&self->_lanesLock);
 
-				operationDependency = pendingOperation;
-
-				break;
-			}
+	for (TVCLogControllerPrintingEntry *entry in entries) {
+		if (turn.isCancelled) {
+			break;
 		}
 
-		[pendingOperations addObject:operation];
+		if (entry.standalone) {
+			[self _startStandaloneEntry:entry duringTurn:turn inLane:lane];
+
+			continue;
+		}
+
+		@autoreleasepool {
+			entry.block(turn);
+		}
 	}
 
-	/* Add dependency to operation */
-	if (operationDependency) {
-		[operation addDependency:operationDependency];
+	os_unfair_lock_lock(&self->_lanesLock);
+
+	if (lane.turn == turn) {
+		lane.turn = nil;
 	}
 
-	/* Begin observing when the status of the operation changes */
-	[operation addObserver:self forKeyPath:@"isFinished" options:NSKeyValueObservingOptionNew context:nil];
+	os_unfair_lock_unlock(&self->_lanesLock);
 
-	/* Add operation to the queue */
-	[super addOperation:operation];
+	TVCLogController *viewController = lane.viewController;
+
+	if (viewController && turn.isCancelled == NO) {
+		[self _beginTurnInLane:lane ofViewController:viewController];
+	}
 }
 
-- (void)removePendingOperation:(TVCLogControllerPrintingOperation *)operation
+/* Runs beside the lines that follow it, after the lines before it */
+- (void)_startStandaloneEntry:(TVCLogControllerPrintingEntry *)entry duringTurn:(TVCLogControllerPrintingOperation *)turn inLane:(TVCLogControllerPrintingLane *)lane
 {
-	NSParameterAssert(operation != nil);
+	TVCLogControllerPrintingOperation *operation = [TVCLogControllerPrintingOperation new];
 
-	/* Remove operation from list of pending operations */
-	NSString *pendingOperationsKey = operation.viewController.description;
+	operation.executionBlock = entry.block;
 
-	@synchronized (self.pendingOperations) {
-		NSMutableArray *pendingOperations = self.pendingOperations[pendingOperationsKey];
+	os_unfair_lock_lock(&self->_lanesLock);
 
-		if (pendingOperations == nil) {
-			LogToConsoleError("'pendingOperations' is nil when it's not supposed to be. wat?");
+	BOOL cancelled = (lane.turn != turn);
 
-			return;
-		}
-
-		[pendingOperations removeObjectIdenticalTo:operation];
+	if (cancelled == NO) {
+		[lane.standaloneOperations addObject:operation];
 	}
 
-	/* Remove dependency to operation */
-	/* Having a ton of chained dependencies can cause a stack overflow
-	 when they deallocate. Manually removing dependencies fixes this pattern:
+	os_unfair_lock_unlock(&self->_lanesLock);
 
-	 0   CoreFoundation                       0x00007fffa2694d1e -[__NSArrayM dealloc] + 14
-	 1   Foundation                           0x00007fffa410d79b -[__NSOperationInternal dealloc] + 177
-	 2   Foundation                           0x00007fffa410d664 -[NSOperation dealloc] + 58
-	 3   CoreFoundation                       0x00007fffa27e237e common_removeAllObjects + 254
-	 4   CoreFoundation                       0x00007fffa2694d23 -[__NSArrayM dealloc] + 19
-	 5   Foundation                           0x00007fffa410d79b -[__NSOperationInternal dealloc] + 177
-	 6   Foundation                           0x00007fffa410d664 -[NSOperation dealloc] + 58
-	 7   CoreFoundation                       0x00007fffa27e237e common_removeAllObjects + 254
-
-	 ... repeated for a total of 512 hops before crashing. */
-	NSOperation *operationDependency = operation.dependencies.firstObject;
-
-	if (operationDependency) {
-		[operation removeDependency:operationDependency];
+	if (cancelled == NO) {
+		[super addOperation:operation];
 	}
-
-	/* End observing when the status of the operation changes */
-	[operation removeObserver:self forKeyPath:@"isFinished"];
 }
 
 #pragma mark -
@@ -238,14 +267,35 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(viewController != nil);
 
-	NSArray *operations = [self pendingOperationsForViewController:viewController];
+	/* Taken out so that what they hold on to isn't released inside the lock */
+	NSArray *entries = nil;
 
-	/* isReady no longer waits for the view, which the queue has to hear */
-	for (TVCLogControllerPrintingOperation *operation in operations) {
+	TVCLogControllerPrintingOperation *turn = nil;
+
+	NSArray<TVCLogControllerPrintingOperation *> *standaloneOperations = nil;
+
+	os_unfair_lock_lock(&self->_lanesLock);
+
+	TVCLogControllerPrintingLane *lane = [self.lanes objectForKey:viewController];
+
+	if (lane) {
+		entries = lane.entries;
+
+		lane.entries = [NSMutableArray array];
+
+		turn = lane.turn;
+
+		lane.turn = nil;
+
+		standaloneOperations = lane.standaloneOperations.allObjects;
+	}
+
+	os_unfair_lock_unlock(&self->_lanesLock);
+
+	[turn cancel];
+
+	for (TVCLogControllerPrintingOperation *operation in standaloneOperations) {
 		[operation cancel];
-
-		[operation willChangeValueForKey:@"isReady"];
-		[operation didChangeValueForKey:@"isReady"];
 	}
 }
 
@@ -256,22 +306,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(viewController != nil);
 
-	NSArray *operations = [self pendingOperationsForViewController:viewController];
+	os_unfair_lock_lock(&self->_lanesLock);
 
-	for (TVCLogControllerPrintingOperation *operation in operations) {
-		if (operation.isPending == NO || operation.dependencies.count > 0) {
-			continue;
-		}
+	TVCLogControllerPrintingLane *lane = [self.lanes objectForKey:viewController];
 
-		[operation willChangeValueForKey:@"isReady"];
-		[operation didChangeValueForKey:@"isReady"];
-	}
-}
+	os_unfair_lock_unlock(&self->_lanesLock);
 
-- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString *, id> *)change context:(nullable void *)context
-{
-	if ([keyPath isEqualToString:@"isFinished"]) {
-		[self removePendingOperation:object];
+	if (lane) {
+		[self _beginTurnInLane:lane ofViewController:viewController];
 	}
 }
 
@@ -280,41 +322,37 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Operation Queue Items
 
+@implementation TVCLogControllerPrintingEntry
+@end
+
+@implementation TVCLogControllerPrintingLane
+
+- (instancetype)init
+{
+	if ((self = [super init])) {
+		self.entries = [NSMutableArray array];
+
+		self.standaloneOperations = [NSHashTable weakObjectsHashTable];
+
+		return self;
+	}
+
+	return nil;
+}
+
+@end
+
 @implementation TVCLogControllerPrintingOperation
 
-- (BOOL)isPending
-{
-	return (self.isCancelled == NO && self.isExecuting == NO && self.isFinished == NO);
-}
-
 - (void)main
-{
-	[self executeBlock];
-}
-
-- (void)executeBlock
 {
 	if (self.isCancelled) {
 		return;
 	}
 
 	self.executionBlock(self);
-}
 
-- (BOOL)isReady
-{
-	/* A cancelled operation starts at once and does nothing, so it leaves the
-	 queue: one waiting for a view that will never load again kept its view
-	 controller and its lines alive */
-	if (self.isCancelled) {
-		return super.isReady;
-	}
-
-	if (self.dependencies.count < 1 || self.isStandalone) {
-		return (super.isReady && self.viewController.viewIsLoaded);
-	} else {
-		return  super.isReady;
-	}
+	self.executionBlock = nil;
 }
 
 @end

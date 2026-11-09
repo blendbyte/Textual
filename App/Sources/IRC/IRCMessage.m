@@ -45,6 +45,71 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/* The digits at a place, -1 if there's anything else */
+static NSInteger _numberInCharacters(const unichar *characters, NSUInteger location, NSUInteger length)
+{
+	NSInteger number = 0;
+
+	for (NSUInteger i = location; i < (location + length); i++) {
+		if (characters[i] < '0' || characters[i] > '9') {
+			return -1;
+		}
+
+		number = ((number * 10) + (characters[i] - '0'));
+	}
+
+	return number;
+}
+
+/* "2011-10-19T16:40:51.620Z", as servers send it, or nil for anything else
+ (which the date formatter then decides on). A backlog has thousands of these
+ on the main thread, and the formatter is slow. */
+static NSDate * _Nullable _dateOfServerTime(NSString *string)
+{
+	if (string.length != 24) {
+		return nil;
+	}
+
+	unichar c[24];
+
+	[string getCharacters:c range:NSMakeRange(0, 24)];
+
+	if (c[4] != '-' || c[7] != '-' || c[10] != 'T' || c[13] != ':' || c[16] != ':' || c[19] != '.' || c[23] != 'Z') {
+		return nil;
+	}
+
+	NSInteger year = _numberInCharacters(c, 0, 4);
+	NSInteger month = _numberInCharacters(c, 5, 2);
+	NSInteger day = _numberInCharacters(c, 8, 2);
+	NSInteger hour = _numberInCharacters(c, 11, 2);
+	NSInteger minute = _numberInCharacters(c, 14, 2);
+	NSInteger second = _numberInCharacters(c, 17, 2);
+	NSInteger millisecond = _numberInCharacters(c, 20, 3);
+
+	if (year < 1970 || month < 1 || month > 12 || day < 1 || hour < 0 || hour > 23 ||
+		minute < 0 || minute > 59 || second < 0 || second > 59 || millisecond < 0)
+	{
+		return nil;
+	}
+
+	BOOL leapYear = ((year % 4) == 0 && ((year % 100) != 0 || (year % 400) == 0));
+
+	static const NSInteger daysInMonths[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+	if (day > (daysInMonths[month - 1] + ((month == 2 && leapYear) ? 1 : 0))) {
+		return nil;
+	}
+
+	/* Days since 1970: years count from March, so a leap day comes last */
+	NSInteger shiftedYear = (year - ((month <= 2) ? 1 : 0));
+	NSInteger yearOfEra = (shiftedYear % 400);
+	NSInteger dayOfYear = ((((153 * (month + ((month > 2) ? -3 : 9))) + 2) / 5) + day - 1);
+	NSInteger dayOfEra = ((yearOfEra * 365) + (yearOfEra / 4) - (yearOfEra / 100) + dayOfYear);
+	NSInteger days = (((shiftedYear / 400) * 146097) + dayOfEra - 719468);
+
+	return [NSDate dateWithTimeIntervalSince1970:((days * 86400) + (hour * 3600) + (minute * 60) + second + (millisecond / 1000.0))];
+}
+
 @implementation IRCMessage
 
 DESIGNATED_INITIALIZER_EXCEPTION_BODY_BEGIN
@@ -404,7 +469,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 			if ([dateString onlyContainsCharactersFromCharacterSet:[NSCharacterSet ZeroToNineDecimalCharacterSet]]) {
 				dateObject = [NSDate dateWithTimeIntervalSince1970:dateString.doubleValue];
 			} else {
-				dateObject = [TXSharedISOStandardDateFormatter() dateFromString:dateString];
+				dateObject = (_dateOfServerTime(dateString) ?: [TXSharedISOStandardDateFormatter() dateFromString:dateString]);
 			}
 
 			/* A date before 1970 or over a day ahead isn't believed:
