@@ -1708,6 +1708,12 @@ async def scenario_many_channels(client):
 	pass
 
 
+async def scenario_backlog(client):
+	"""A bouncer's backlog: on every connection, 400 lines each in #c1 to #c100,
+	sent as fast as the client reads them, right after each join."""
+	pass
+
+
 async def scenario_safety(client):
 	"""Safety checks. Offers sasl=PLAIN on a plaintext connection (give the
 	server a password: the console warns once). Puts the client in #safe and
@@ -3266,6 +3272,7 @@ SCENARIOS = {
 	"safety": scenario_safety,
 	"many-50": scenario_many_channels,
 	"many-200": scenario_many_channels,
+	"backlog": scenario_backlog,
 	"scrollback-hole": scenario_scrollback_hole,
 	"small-fixes": scenario_small_fixes,
 	"chathistory-time": scenario_chathistory_time,
@@ -3346,6 +3353,50 @@ async def run_many_channels_scenario(port, count):
 
 	server = await asyncio.start_server(handle, "127.0.0.1", port)
 	print(f"Scenario 'many-channels' with {count} waiting on irc://127.0.0.1:{port}", flush=True)
+	await asyncio.sleep(1800)
+	server.close()
+
+
+async def run_backlog_scenario(port, channels=100, lines=400):
+	"""Like a bouncer: nothing is asked for, each channel's backlog follows its
+	join at once, without a batch. Lines aren't logged: only the time matters."""
+	capabilities = "server-time message-tags"
+
+	def stamp(seconds_ago):
+		moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(seconds=seconds_ago)
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	async def handle(reader, writer):
+		client = Client(reader, writer)
+
+		if not await client.register_with_capabilities(capabilities):
+			writer.close()
+			return
+
+		nick = client.nickname
+		names = " ".join(f"member{index}" for index in range(30))
+
+		for channel in range(1, channels + 1):
+			target = f"#c{channel}"
+			burst = [f":{nick}!user@client.textual.test JOIN {target}",
+					 f":{SERVER} 353 {nick} = {target} :{nick} {names}",
+					 f":{SERVER} 366 {nick} {target} :End of /NAMES list."]
+			for index in range(lines):
+				burst.append(f"@time={stamp(lines * 10 - index * 10)} :member{index % 30}!m@peer.test PRIVMSG {target} :backlog line {index} of {target}, about as long as a chat line")
+			await client.send_raw(("\r\n".join(burst) + "\r\n").encode())
+
+		log("<<", f"sent {channels * lines} backlog lines")
+
+		while True:
+			line = await client.read_line()
+			if line is None:
+				break
+			command, _, rest = line.partition(" ")
+			if command.upper() == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'backlog' waiting on irc://127.0.0.1:{port}", flush=True)
 	await asyncio.sleep(1800)
 	server.close()
 
@@ -3894,6 +3945,10 @@ async def main():
 
 	if arguments.scenario in ("many-50", "many-200"):
 		await run_many_channels_scenario(arguments.port, int(arguments.scenario.split("-")[1]))
+		return
+
+	if arguments.scenario == "backlog":
+		await run_backlog_scenario(arguments.port)
 		return
 
 	if arguments.scenario == "chathistory-time":
