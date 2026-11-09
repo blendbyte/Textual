@@ -26,6 +26,14 @@
 	height: 100%;
 }
 
+/* Room under the last line, to match the 5 pixels most styles have on the
+ left: 2 of its own padding and these 3. */
+:where(#body)::after {
+	content: "";
+	display: block;
+	height: 3px;
+}
+
 :where(body) {
 	min-height: 100%;
 }
