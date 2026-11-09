@@ -320,12 +320,8 @@ NS_ASSUME_NONNULL_BEGIN
 	 the member list's column while it's open */
 	if (self.isSearchPanelVisible) {
 		[self.searchPanel selectedItemChanged];
-	} else if (isChannel) {
-		if (self.memberList.isHiddenByUser == NO) {
-			[self.contentSplitView expandMemberList];
-		}
 	} else {
-		[self.contentSplitView collapseMemberList];
+		[self updateMemberListVisibility];
 	}
 
 	/* Notify WebKit its selection status has changed */

@@ -108,9 +108,6 @@
 "stb-p1" = "Not connected";
 "stb-p2" = "Not in %@";
 
-/* The member list of a channel you're not in */
-"mbl-h1" = "Join to see who’s here";
-
 "vi3-23" = "(No Topic)";
 
 /* A collapsed run of joins, parts, quits and nickname changes: "3 joined, 1 left, 2 quit" (%@ is the count) */

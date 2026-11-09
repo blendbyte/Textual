@@ -51,6 +51,9 @@
 #import "TVCLogViewPrivate.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMemberList.h"
+#import "TLOKeyEventHandler.h"
+#import "TLONicknameCompletionStatusPrivate.h"
+#import "TVCMainWindowInternal.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowSplitView.h"
 #import "TVCMainWindowTextView.h"
@@ -322,7 +325,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	memberList.isHiddenByUser = (memberList.isHiddenByUser == NO);
 
-	[window.contentSplitView toggleMemberListVisibility];
+	[window updateMemberListVisibility];
 
 	/* Remembered per pop-out window */
 	if (window.isPopOut) {

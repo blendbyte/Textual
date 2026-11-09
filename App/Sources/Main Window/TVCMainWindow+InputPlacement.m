@@ -47,6 +47,7 @@
 #import "TPCPreferencesLocalPrivate.h"
 #import "TVCMainWindowChannelViewPrivate.h"
 #import "TVCMainWindowLoadingScreenPrivate.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TVCMainWindowSplitViewPrivate.h"
 #import "TVCMemberListPrivate.h"
 #import "TVCMainWindowTextViewPrivate.h"
@@ -281,6 +282,38 @@ NS_ASSUME_NONNULL_BEGIN
 	return bar;
 }
 
+/* Only for a channel you're in, unless hidden from the View menu */
+- (BOOL)shouldShowMemberList
+{
+	IRCChannel *channel = self.selectedChannel;
+
+	if (channel.isChannel == NO || channel.status != IRCChannelStatusJoined || self.selectedClient.isLoggedIn == NO) {
+		return NO;
+	}
+
+	return (self.memberList.isHiddenByUser == NO);
+}
+
+/* The search panel has the member list's column while it's open */
+- (void)updateMemberListVisibility
+{
+	if (self.isSearchPanelVisible) {
+		return;
+	}
+
+	BOOL showMemberList = self.shouldShowMemberList;
+
+	if (showMemberList == self.isMemberListVisible) {
+		return;
+	}
+
+	if (showMemberList) {
+		[self.contentSplitView expandMemberList];
+	} else {
+		[self.contentSplitView collapseMemberList];
+	}
+}
+
 /* With the title: on selection, connection, join and part changes */
 - (void)updateStateBar
 {
@@ -314,8 +347,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.inputTextField.placeholderStatus = placeholder;
 
-	/* Who's here shows once joined */
-	[self.memberList setShowsNotJoinedHint:(channel.isChannel && (channel.status == IRCChannelStatusParted || client.isLoggedIn == NO))];
+	[self updateMemberListVisibility];
 
 	NSView *bar = self.stateBar;
 

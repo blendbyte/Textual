@@ -157,6 +157,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TVCMainWindow (InputPlacementInternal)
+@property (readonly) BOOL shouldShowMemberList;
+- (void)updateMemberListVisibility;
 - (void)updateStateBar;
 @end
 

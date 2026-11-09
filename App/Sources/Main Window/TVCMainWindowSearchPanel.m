@@ -1806,7 +1806,7 @@ static NSString * const _mentionsLastSeenDefaultsKey = @"Mentions -> Last Seen R
 
 	[splitView hideSearchColumn];
 
-	if (self.selectedItem.isChannel && self.memberList.isHiddenByUser == NO) {
+	if (self.shouldShowMemberList) {
 		[splitView expandMemberList];
 	} else {
 		[splitView collapseMemberList];
