@@ -17,11 +17,9 @@ body {
 	color: var(--text);
 	height: 100%;
 	z-index: 100;
-	font-size: 13px;
 	line-height: var(--spacing-line-height);
 	overflow: hidden;
 	background-color: var(--bg);
-	font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -83,7 +81,7 @@ body[data-spacing="roomy"] {
 #body::after {
 	content: "";
 	display: block;
-	height: 2px;
+	height: 3px;
 }
 
 /* Only factor in height of topic bar when selected == true
@@ -307,10 +305,6 @@ div.line[data-line-type="action"][data-highlight="true"] {
 	background-color: var(--mention-fill);
 }
 
-div.line[data-line-type="privmsg"] .message {
-	color: var(--text-strong);
-}
-
 div.line[data-line-type="privmsg"] .sender {
 	font-weight: 600;
 	white-space: pre-wrap;
@@ -319,7 +313,6 @@ div.line[data-line-type="privmsg"] .sender {
 /* ACTION */
 
 div.line[data-line-type="action"] .message {
-	color: var(--text-strong);
 	font-style: italic;
 }
 
@@ -341,6 +334,43 @@ body[dir="ltr"] div.line[data-line-type="action"] .sender:before {
 body[dir="rtl"] div.line[data-line-type="action"] .sender:before {
 	content: "\2022";
 	margin-left: 0.4em;
+}
+
+/* In the Chat display an action is one sentence: the name, what they did, then
+the time. The name and time are in .header, above the text in every other kind
+of message; display: contents puts them on one row with it. A reply's quote,
+reactions and a failure note are children of the line and keep rows of their own. */
+div.line[data-line-type="action"]:has(> .header) {
+	display: grid;
+	grid-template-columns: auto minmax(0, max-content) auto;
+	justify-content: start;
+	align-items: baseline;
+	column-gap: 0.4em;
+}
+
+div.line[data-line-type="action"] > .header {
+	display: contents;
+}
+
+div.line[data-line-type="action"] > .header .sender {
+	grid-area: 2 / 1;
+}
+
+div.line[data-line-type="action"] > .messageBody {
+	grid-area: 2 / 2;
+}
+
+div.line[data-line-type="action"] > .header .time {
+	grid-area: 2 / 3;
+}
+
+div.line[data-line-type="action"]:has(> .header) > .replyQuote {
+	grid-area: 1 / 1 / auto / -1;
+}
+
+div.line[data-line-type="action"]:has(> .header) > .reactions,
+div.line[data-line-type="action"]:has(> .header) > .failedNote {
+	grid-column: 1 / -1;
 }
 
 /* DEBUG/INVITE */
@@ -393,7 +423,7 @@ with what people actually said. They recede without ever changing type
 size -- message text renders at whatever size is configured in
 preferences -- using the faintest color in the ramp, desaturated glyphs,
 and tighter leading so a burst of joins reads as one block.
-Hovering brings a line back up to full strength for when you do care. */
+Hovering raises a line a step for when you do care. */
 div.line[data-line-type="join"],
 div.line[data-line-type="part"],
 div.line[data-line-type="kick"],
@@ -409,7 +439,7 @@ div.line[data-line-type="back"] {
 	padding-top: var(--spacing-event-padding);
 	padding-bottom: var(--spacing-event-padding);
 	line-height: var(--spacing-event-line-height);
-	color: var(--text-faint);
+	color: var(--text-status);
 	transition: color 0.15s ease;
 }
 
@@ -487,6 +517,52 @@ body[dir="rtl"] div.line[data-line-type="away"] .message:before {
 body[dir="rtl"] div.line[data-line-type="back"] .message:before {
 	content: "●";
 	margin-left: 0.4em;
+}
+
+/* In the Chat display names start at the edge, so status lines don't start
+with a time: as for a grouped message, it trails the text when pointed at. */
+body[data-display="chat"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"], [data-line-type="away"], [data-line-type="back"]) p {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5em;
+}
+
+body[data-display="chat"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"], [data-line-type="away"], [data-line-type="back"]) .message {
+	order: 1;
+	min-width: 0;
+}
+
+body[data-display="chat"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"], [data-line-type="away"], [data-line-type="back"]) .time {
+	order: 2;
+	flex: none;
+	display: none;
+	font-size: 0.75em;
+}
+
+body[data-display="chat"] div.line:is([data-line-type="join"], [data-line-type="part"], [data-line-type="kick"], [data-line-type="quit"], [data-line-type="kill"], [data-line-type="nick"], [data-line-type="mode"], [data-line-type="topic"], [data-line-type="website"], [data-line-type="away"], [data-line-type="back"]):hover .time {
+	display: inline;
+}
+
+/* mIRC colours: the variety's palette is for text on the chat's own background.
+Text with a colour of its own behind it (ASCII art, mostly) keeps the standard
+colours it was drawn with: initial makes baseLayout.css fall back to them. */
+.effect[data-background-color] {
+	--mirc-foreground-color-0: initial;
+	--mirc-foreground-color-1: initial;
+	--mirc-foreground-color-2: initial;
+	--mirc-foreground-color-3: initial;
+	--mirc-foreground-color-4: initial;
+	--mirc-foreground-color-5: initial;
+	--mirc-foreground-color-6: initial;
+	--mirc-foreground-color-7: initial;
+	--mirc-foreground-color-8: initial;
+	--mirc-foreground-color-9: initial;
+	--mirc-foreground-color-10: initial;
+	--mirc-foreground-color-11: initial;
+	--mirc-foreground-color-12: initial;
+	--mirc-foreground-color-13: initial;
+	--mirc-foreground-color-14: initial;
+	--mirc-foreground-color-15: initial;
 }
 
 /* Monospace runs (IRCv3 formatting, and <tt> from baseLayout.css) */

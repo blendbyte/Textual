@@ -3172,6 +3172,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	NSString *nickname = [logLine formattedNicknameInChannel:self.associatedChannel];
 
+	/* The Chat display gives the name a line of its own: nothing for -name- to set apart */
+	if (lineType == TVCLogLineTypeNotice && nickname.length > 0 && [self groupedDisplayEnabled]) {
+		nickname = logLine.nickname;
+	}
+
 	if (nickname.length == 0) {
 		templateAttributes[@"isNicknameAvailable"] = @(NO);
 	} else {

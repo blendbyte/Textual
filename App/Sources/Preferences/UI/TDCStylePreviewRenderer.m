@@ -372,7 +372,7 @@ static NSTimeInterval const _previewRenderTimeout = 8.0;
 	if (lineType == TVCLogLineTypeAction) {
 		return nickname;
 	} else if (lineType == TVCLogLineTypeNotice) {
-		return [NSString stringWithFormat:TVCLogLineNoticeNicknameFormat, nickname];
+		return (([self _groupedDisplayInStyle:style]) ? nickname : [NSString stringWithFormat:TVCLogLineNoticeNicknameFormat, nickname]);
 	}
 
 	NSString *format = style.settings.themeNicknameFormat;

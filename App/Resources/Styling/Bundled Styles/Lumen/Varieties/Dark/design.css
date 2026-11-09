@@ -11,12 +11,12 @@
 	--rule: #34343a;
 
 	/* Text. Four steps, in descending order of how much attention the
-	content deserves: message bodies, chrome, secondary metadata, and
-	status lines (joins/parts/modes). */
-	--text-strong: #f2f2f5;
+	content deserves: messages and chrome, secondary metadata, timestamps,
+	and status lines (joins/parts/modes), which sit below everything you read. */
 	--text: #e2e2e5;
 	--text-muted: #9a9aa3;
 	--text-faint: #78787f;
+	--text-status: #5f5f66;
 
 	--link: #4c9dff;
 	--link-hover: #7ab8ff;
@@ -51,4 +51,24 @@
 	--nick-self-action: #8f8cff;
 
 	--font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+	/* mIRC colours, for text on the chat's own background. Every colour
+	keeps its hue and is at least 4.5:1 here; the standard black, navy,
+	maroon, purple and blue are close to invisible on this background. */
+	--mirc-foreground-color-0: #f2f2f5;
+	--mirc-foreground-color-1: #85858d;
+	--mirc-foreground-color-2: #7b97dc;
+	--mirc-foreground-color-3: #4fb86a;
+	--mirc-foreground-color-4: #ff6b60;
+	--mirc-foreground-color-5: #c9736b;
+	--mirc-foreground-color-6: #b98ad6;
+	--mirc-foreground-color-7: #ff9f45;
+	--mirc-foreground-color-8: #f5d24a;
+	--mirc-foreground-color-9: #8fe07a;
+	--mirc-foreground-color-10: #3fbfbf;
+	--mirc-foreground-color-11: #7fe3e3;
+	--mirc-foreground-color-12: #5aa2ff;
+	--mirc-foreground-color-13: #f27fd0;
+	--mirc-foreground-color-14: #a3a3ab;
+	--mirc-foreground-color-15: #cfcfd4;
 }
