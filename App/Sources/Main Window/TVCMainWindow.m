@@ -505,9 +505,6 @@ static BOOL _popOutsOpened = NO;
 
 	[self.class applySidebarTranslucencyToView:self.splitViewBackgroundView];
 
-	/* Lines between the areas only where the sidebars are opaque */
-	self.inputFieldTopLine.hidden = ([TPCPreferences disableSidebarTranslucency] == NO);
-
 	[self.contentSplitView setNeedsDisplay:YES];
 
 	[self notifyApplicationAppearanceChanged];

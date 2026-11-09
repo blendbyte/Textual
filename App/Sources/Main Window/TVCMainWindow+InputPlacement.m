@@ -137,8 +137,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.inputFieldBackgroundView = backgroundView;
 
-	/* With translucent sidebars off the strip is the chat's white too:
-	 a line sets it apart, as the split view's dividers do the lists */
+	/* A line sets the strip apart from the chat, as the split view's
+	 dividers do the lists */
 	NSBox *topLine = [NSBox new];
 
 	topLine.translatesAutoresizingMaskIntoConstraints = NO;
@@ -146,8 +146,6 @@ NS_ASSUME_NONNULL_BEGIN
 	topLine.borderWidth = 0.0;
 	topLine.fillColor = [NSColor separatorColor];
 	topLine.titlePosition = NSNoTitle;
-
-	topLine.hidden = ([TPCPreferences disableSidebarTranslucency] == NO);
 
 	[stack addSubview:topLine positioned:NSWindowAbove relativeTo:nil];
 
@@ -158,12 +156,10 @@ NS_ASSUME_NONNULL_BEGIN
 		[topLine.heightAnchor constraintEqualToConstant:1.0]
 	]];
 
-	self.inputFieldTopLine = topLine;
-
-	/* The split view draws no dividers, so their one-point gaps showed the
-	 window's white: unseen beside the chat, but a line beside the field's
-	 strip when the lists reach down past it (under the chat only). With the
-	 same material behind, a gap looks like the list next to it. */
+	/* The dividers' line is see-through, so their one-point gaps would show
+	 the window's white: a bright line where the lists reach down past the
+	 field's strip (under the chat only). With the same material behind, a
+	 gap looks like the list next to it. */
 	NSView *splitView = self.contentSplitView;
 
 	if (splitView) {
