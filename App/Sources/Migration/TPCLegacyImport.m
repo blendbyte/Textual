@@ -62,6 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
  then stays away (the menu item always works) */
 #define _offeredDefaultsKey				@"Legacy Settings Import -> Offered"
 
+/* The summary's "Don't connect imported servers yet" */
+#define _skipsNextAutoConnectDefaultsKey	@"Legacy Settings Import -> Skip Next Auto Connect"
+
 /* Security-scoped bookmarks of granted folders, by path, so a later import
  from the same place needs no new grant */
 #define _bookmarksDefaultsKey			@"Legacy Settings Import -> Bookmarks"
@@ -171,6 +174,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, copy) NSArray<NSString *> *inlineMediaModules;
 @property (readwrite, copy) NSArray<NSString *> *unusedExtensions;
 @property (readwrite, copy) NSArray<NSString *> *serversWithBouncerClientName;
+@property (readwrite, copy) NSArray<NSString *> *serversWithSavedServerPassword;
 @property (readwrite) NSUInteger failureCount;
 @property (readwrite, copy) NSArray<NSString *> *keptItems;
 @property (readwrite) BOOL importedScrollback;
@@ -192,6 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.inlineMediaModules = @[];
 		self.unusedExtensions = @[];
 		self.serversWithBouncerClientName = @[];
+		self.serversWithSavedServerPassword = @[];
 		self.keptItems = @[];
 	}
 
@@ -344,6 +349,16 @@ NS_ASSUME_NONNULL_BEGIN
 	[RZUserDefaults() _migrateObject:@(YES) forKey:_offeredDefaultsKey];
 }
 
++ (BOOL)skipsNextAutoConnect
+{
+	return [RZUserDefaults() boolForKey:_skipsNextAutoConnectDefaultsKey];
+}
+
++ (void)setSkipsNextAutoConnect:(BOOL)skipsNextAutoConnect
+{
+	[RZUserDefaults() _migrateObject:((skipsNextAutoConnect) ? @(YES) : nil) forKey:_skipsNextAutoConnectDefaultsKey];
+}
+
 #pragma mark -
 #pragma mark Access
 
@@ -457,21 +472,71 @@ NS_ASSUME_NONNULL_BEGIN
 			continue;
 		}
 
-		NSString *username = (server[@"username"] ?: server[@"identityUsername"]);
-
-		if ([username isKindOfClass:[NSString class]] == NO) {
+		if ([self _usernameHasBouncerClientNameInServer:server] == NO) {
 			continue;
 		}
 
-		NSRange at = [username rangeOfString:@"@"];
+		NSString *username = (server[@"username"] ?: server[@"identityUsername"]);
 
-		if (at.location == NSNotFound || at.location == 0 || NSMaxRange(at) == username.length) {
+		NSString *name = server[@"connectionName"];
+
+		[names addObject:(([name isKindOfClass:[NSString class]] && name.length > 0) ? name : username)];
+	}
+
+	return [names copy];
+}
+
+- (BOOL)_usernameHasBouncerClientNameInServer:(NSDictionary *)server
+{
+	NSString *username = (server[@"username"] ?: server[@"identityUsername"]);
+
+	if ([username isKindOfClass:[NSString class]] == NO) {
+		return NO;
+	}
+
+	NSRange at = [username rangeOfString:@"@"];
+
+	return (at.location != NSNotFound && at.location != 0 && NSMaxRange(at) != username.length);
+}
+
+/* A client name can be in the server password too ("user@client/network:password").
+ Reading one could prompt before the summary has warned about that, so a saved
+ server password is enough to mention the server: they're rare outside bouncers. */
+- (NSArray<NSString *> *)_serversWithSavedServerPassword
+{
+	NSMutableArray<NSString *> *names = [NSMutableArray array];
+
+	NSArray<NSNumber *> *kinds = @[@(TLOKeychainItemKindServerPassword)];
+
+	for (NSDictionary *server in self.servers) {
+		if ([server isKindOfClass:[NSDictionary class]] == NO || [self _usernameHasBouncerClientNameInServer:server]) {
+			continue;
+		}
+
+		NSArray *endpoints = [server arrayForKey:@"serverList"];
+
+		/* Older entries kept the server password under the client's identifier */
+		BOOL hasPassword = [self _hasPasswordOfKinds:kinds inDictionary:server];
+
+		for (NSDictionary *endpoint in endpoints) {
+			hasPassword = (hasPassword || [self _hasPasswordOfKinds:kinds inDictionary:endpoint]);
+		}
+
+		if (hasPassword == NO) {
 			continue;
 		}
 
 		NSString *name = server[@"connectionName"];
 
-		[names addObject:(([name isKindOfClass:[NSString class]] && name.length > 0) ? name : username)];
+		if ([name isKindOfClass:[NSString class]] == NO || name.length == 0) {
+			NSDictionary *endpoint = endpoints.firstObject;
+
+			name = (([endpoint isKindOfClass:[NSDictionary class]]) ? endpoint[@"serverAddress"] : nil);
+		}
+
+		if ([name isKindOfClass:[NSString class]] && name.length > 0) {
+			[names addObject:name];
+		}
 	}
 
 	return [names copy];
@@ -733,6 +798,8 @@ NS_ASSUME_NONNULL_BEGIN
 	self.result.foundSavedPasswords = [self _importedServersHaveSavedPasswords];
 
 	self.result.serversWithBouncerClientName = [self _serversWithBouncerClientName];
+
+	self.result.serversWithSavedServerPassword = [self _serversWithSavedServerPassword];
 
 	[self.class markOffered];
 

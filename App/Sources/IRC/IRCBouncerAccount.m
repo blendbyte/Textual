@@ -258,8 +258,10 @@ NS_ASSUME_NONNULL_BEGIN
 		return nil;
 	}
 
+	NSString *user = [self.class userOfBouncerLogin:self.username];
+
 	for (NSArray<NSString *> *login in [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config]) {
-		if ([login[0] isEqualToStringIgnoringCase:self.username]) {
+		if ([login[0] isEqualToStringIgnoringCase:user]) {
 			return login[1];
 		}
 	}
@@ -267,10 +269,61 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
++ (NSString *)userOfBouncerLogin:(NSString *)login
+{
+	NSParameterAssert(login != nil);
+
+	NSRange at = [login rangeOfString:@"@"];
+
+	if (at.location == NSNotFound || at.location == 0) {
+		return login;
+	}
+
+	return [login substringToIndex:at.location];
+}
+
+- (BOOL)hasSameLoginAsAccount:(IRCBouncerAccount *)account
+{
+	NSParameterAssert(account != nil);
+
+	return ([self.serverAddress isEqualToStringIgnoringCase:account.serverAddress] &&
+			self.serverPort == account.serverPort &&
+			[[self.class userOfBouncerLogin:self.username] isEqualToStringIgnoringCase:[self.class userOfBouncerLogin:account.username]]);
+}
+
 + (NSArray<NSArray<NSString *> *> *)bouncerLoginsOfServerAddedByHand:(IRCClientConfig *)config
 {
 	NSParameterAssert(config != nil);
 
+	NSMutableArray<NSArray<NSString *> *> *logins = [NSMutableArray array];
+
+	for (NSArray<NSString *> *parts in [self _loginPartsOfServerAddedByHand:config]) {
+		[logins addObject:@[parts[0], parts[1]]];
+	}
+
+	return [logins copy];
+}
+
++ (nullable NSString *)bouncerUsernameOfServerAddedByHand:(IRCClientConfig *)config
+{
+	NSParameterAssert(config != nil);
+
+	NSArray<NSString *> *parts = [self _loginPartsOfServerAddedByHand:config].firstObject;
+
+	if (parts == nil) {
+		return nil;
+	}
+
+	if (parts[2].length == 0) {
+		return parts[0];
+	}
+
+	return [NSString stringWithFormat:@"%@@%@", parts[0], parts[2]];
+}
+
+/* User, network and client name ("" without one) of each login */
++ (NSArray<NSArray<NSString *> *> *)_loginPartsOfServerAddedByHand:(IRCClientConfig *)config
+{
 	IRCServer *server = config.serverList.firstObject;
 
 	NSMutableArray<NSString *> *candidates = [NSMutableArray array];
@@ -299,10 +352,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSString *user = [candidate substringToIndex:slash.location];
 
+		NSString *clientName = @"";
+
 		/* ZNC's user@client/network: the client identifier isn't part of the user */
 		NSRange userAt = [user rangeOfString:@"@"];
 
 		if (userAt.location != NSNotFound) {
+			clientName = [user substringFromIndex:NSMaxRange(userAt)];
+
 			user = [user substringToIndex:userAt.location];
 		}
 
@@ -312,14 +369,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSString *network = [candidate substringFromIndex:NSMaxRange(slash)];
 
+		/* soju's user/network@client */
 		NSRange at = [network rangeOfString:@"@"];
 
 		if (at.location != NSNotFound) {
+			if (clientName.length == 0) {
+				clientName = [network substringFromIndex:NSMaxRange(at)];
+			}
+
 			network = [network substringToIndex:at.location];
 		}
 
 		if (network.length > 0) {
-			[logins addObject:@[user, network]];
+			[logins addObject:@[user, network, clientName]];
 		}
 	}
 

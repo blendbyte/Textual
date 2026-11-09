@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy) NSArray<NSString *> *inlineMediaModules;
 @property (readonly, copy) NSArray<NSString *> *unusedExtensions; // not copied: Textual 8 never loads them
 @property (readonly, copy) NSArray<NSString *> *serversWithBouncerClientName; // same bouncer client as Textual 7
+@property (readonly, copy) NSArray<NSString *> *serversWithSavedServerPassword; // may be a bouncer login with a client name
 @property (readonly) NSUInteger failureCount;
 @property (readonly, copy) NSArray<NSString *> *keptItems; // styles and extensions not copied: Textual 8 has one of the same name
 @property (readonly) BOOL importedScrollback;
@@ -102,6 +103,10 @@ typedef NS_ENUM(NSUInteger, TPCLegacyImportReadError) {
 
 /* The launch offer stays away (after an import, or "Start Fresh") */
 + (void)markOffered;
+
+/* "Don't connect imported servers yet": the next launch that would connect
+ servers on its own doesn't, once. Their auto-connect settings stay as they are. */
+@property (class) BOOL skipsNextAutoConnect;
 
 /* The earlier version whose data can be removed: everything of it came over */
 @property (class, readonly, nullable) TPCLegacyImportSource *sourceImportedCompletely;

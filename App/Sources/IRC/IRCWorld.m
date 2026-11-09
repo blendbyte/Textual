@@ -43,6 +43,7 @@
 #import "TVCMainWindowPrivate.h"
 #import "TLOInputHistoryPrivate.h"
 #import "TVCServerListPrivate.h"
+#import "TPCLegacyImportPrivate.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TPCThemeController.h"
@@ -82,6 +83,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 @property (nonatomic, assign) BOOL savePeriodicallyScheduled;
 @property (nonatomic, copy) NSDate *lastDateHasChangedDate;
 @property (nonatomic, strong, nullable) NSTimer *midnightTimer;
+@property (nonatomic, strong, nullable) NSMapTable<IRCClient *, NSArray *> *bouncerLinkingKeysCache;
 @end
 
 @implementation IRCWorld
@@ -299,15 +301,13 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 	/* The same bouncer and login again: that account, with what was typed now */
 	for (IRCBouncerAccount *existingAccount in self.bouncerAccounts) {
-		if ([existingAccount.serverAddress isEqualToStringIgnoringCase:account.serverAddress] == NO ||
-			existingAccount.serverPort != account.serverPort ||
-			[existingAccount.username isEqualToStringIgnoringCase:account.username] == NO)
-		{
+		if ([existingAccount hasSameLoginAsAccount:account] == NO) {
 			continue;
 		}
 
 		IRCBouncerAccountMutable *updatedAccount = [existingAccount mutableCopy];
 
+		updatedAccount.username = account.username; // its client name may be a new one
 		updatedAccount.kind = account.kind;
 		updatedAccount.prefersSecuredConnection = account.prefersSecuredConnection;
 		updatedAccount.password = account.password;
@@ -393,10 +393,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 		return [account networkOfServerAddedByHand:client.config];
 	}
 
-	if ([linkedAccount.serverAddress isEqualToStringIgnoringCase:account.serverAddress] &&
-		linkedAccount.serverPort == account.serverPort &&
-		[linkedAccount.username isEqualToStringIgnoringCase:account.username])
-	{
+	if ([linkedAccount hasSameLoginAsAccount:account]) {
 		return client.config.bouncerNetwork;
 	}
 
@@ -545,7 +542,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 
 /* The bouncers whose servers added by hand were offered for linking:
  "address:port:user", in lower case */
-static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Controller -> Bouncer Linking Offered";
+static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Controller -> Bouncer Linking Offered (Completed)";
 
 /* "address:port:user" for each bouncer login of a server added by hand */
 - (NSArray<NSString *> *)bouncerLinkingKeysOfClient:(IRCClient *)client
@@ -554,57 +551,82 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 
 	IRCClientConfig *config = client.config;
 
-	IRCServer *server = config.serverList.firstObject;
-
-	if (config.bouncerAccountIdentifier != nil || server.serverAddress.length == 0) {
-		return @[];
+	/* Asked at every change of selection, and it reads passwords from the
+	 Keychain: kept for as long as the server's configuration is the same */
+	if (self.bouncerLinkingKeysCache == nil) {
+		self.bouncerLinkingKeysCache = [NSMapTable weakToStrongObjectsMapTable];
 	}
+
+	NSArray *cached = [self.bouncerLinkingKeysCache objectForKey:client];
+
+	if (cached && cached[0] == config) {
+		return cached[1];
+	}
+
+	IRCServer *server = config.serverList.firstObject;
 
 	NSMutableArray<NSString *> *keys = [NSMutableArray array];
 
-	for (NSArray<NSString *> *login in [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config]) {
-		NSString *key = [NSString stringWithFormat:@"%@:%u:%@", server.serverAddress, server.serverPort, login[0]].lowercaseString;
+	if (config.bouncerAccountIdentifier == nil && server.serverAddress.length > 0) {
+		for (NSArray<NSString *> *login in [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config]) {
+			NSString *key = [NSString stringWithFormat:@"%@:%u:%@", server.serverAddress, server.serverPort, login[0]].lowercaseString;
 
-		if ([keys containsObject:key] == NO) {
-			[keys addObject:key];
+			if ([keys containsObject:key] == NO) {
+				[keys addObject:key];
+			}
 		}
 	}
+
+	[self.bouncerLinkingKeysCache setObject:@[config, [keys copy]] forKey:client];
 
 	return [keys copy];
 }
 
-- (NSArray<IRCClient *> *)clientsToOfferLinkingWith:(IRCClient *)client
+- (NSArray<IRCClient *> *)clientsToOfferLinking
 {
-	NSParameterAssert(client != nil);
-
-	NSArray<NSString *> *keys = [self bouncerLinkingKeysOfClient:client];
-
-	if (keys.count == 0) {
-		return @[];
-	}
-
 	NSArray *offeredKeys = ([RZUserDefaults() arrayForKey:IRCWorldBouncerLinkingOfferedDefaultsKey] ?: @[]);
 
-	for (NSString *key in keys) {
-		if ([offeredKeys containsObject:key]) {
-			continue;
-		}
+	NSMutableDictionary<NSString *, NSMutableArray<IRCClient *> *> *clientsOfKeys = [NSMutableDictionary dictionary];
 
-		NSMutableArray<IRCClient *> *clients = [NSMutableArray array];
+	NSMutableArray<NSString *> *keysInOrder = [NSMutableArray array];
 
-		for (IRCClient *otherClient in self.clientList) {
-			if ([[self bouncerLinkingKeysOfClient:otherClient] containsObject:key]) {
-				[clients addObject:otherClient];
+	for (IRCClient *client in self.clientList) {
+		for (NSString *key in [self bouncerLinkingKeysOfClient:client]) {
+			if ([offeredKeys containsObject:key]) {
+				continue;
 			}
-		}
 
+			if (clientsOfKeys[key] == nil) {
+				clientsOfKeys[key] = [NSMutableArray array];
+
+				[keysInOrder addObject:key];
+			}
+
+			[clientsOfKeys[key] addObject:client];
+		}
+	}
+
+	for (NSString *key in keysInOrder) {
 		/* Several servers: one alone may be a network's own "user/…" login */
-		if (clients.count >= 2) {
-			return [clients copy];
+		if (clientsOfKeys[key].count >= 2) {
+			return [clientsOfKeys[key] copy];
 		}
 	}
 
 	return @[];
+}
+
+- (NSArray<IRCClient *> *)clientsNotLinkedToBouncer
+{
+	NSMutableArray<IRCClient *> *clients = [NSMutableArray array];
+
+	for (IRCClient *client in self.clientList) {
+		if (client.config.bouncerAccountIdentifier == nil) {
+			[clients addObject:client];
+		}
+	}
+
+	return [clients copy];
 }
 
 - (void)rememberLinkingOfferedForClients:(NSArray<IRCClient *> *)clients
@@ -817,6 +839,13 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 - (void)autoConnectAfterWakeup:(BOOL)afterWakeUp
 {
 	if (masterController().ghostModeIsOn && afterWakeUp == NO) {
+		return;
+	}
+
+	/* The import's "Don't connect imported servers yet" */
+	if (afterWakeUp == NO && TPCLegacyImport.skipsNextAutoConnect) {
+		TPCLegacyImport.skipsNextAutoConnect = NO;
+
 		return;
 	}
 

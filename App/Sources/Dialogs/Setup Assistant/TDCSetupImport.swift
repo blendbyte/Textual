@@ -106,6 +106,13 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 	@Published private(set) var notes: [ImportNote] = []
 	@Published private(set) var savedKeys = false
 
+	@Published var skipsNextAutoConnect = TPCLegacyImport.skipsNextAutoConnect
+	{
+		didSet {
+			TPCLegacyImport.skipsNextAutoConnect = skipsNextAutoConnect
+		}
+	}
+
 	/* The window for the panels, and what to do once access was refused or it's all done */
 	weak var window: NSWindow?
 	var showStage: (() -> Void)?
@@ -125,6 +132,11 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 	var replacesServers: Bool
 	{
 		TPCLegacyImport.hasServers
+	}
+
+	var importedServers: Bool
+	{
+		((importer?.result.serverCount ?? 0) > 0)
 	}
 
 	init?(fromMenu: Bool)
@@ -577,6 +589,10 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 			notes.append(ImportNote(symbol: "person.2", color: .orange, text: ImportText("bc7-nm", result.serversWithBouncerClientName.joined(separator: ", "))))
 		}
 
+		if (result.serversWithSavedServerPassword.isEmpty == false) {
+			notes.append(ImportNote(symbol: "person.2", color: .orange, text: ImportText("bc7-pw", result.serversWithSavedServerPassword.joined(separator: ", "))))
+		}
+
 		if (result.unusedExtensions.isEmpty == false) {
 			notes.append(ImportNote(symbol: "puzzlepiece.extension", color: .secondary, text: ImportText("ue8-nx", result.unusedExtensions.joined(separator: ", "))))
 		}
@@ -905,6 +921,24 @@ struct SetupImportStep: View
 							}
 						}
 					}
+					.padding(12)
+				}
+			}
+
+			if (model.importedServers) {
+				SetupGroup {
+					Toggle(isOn: $model.skipsNextAutoConnect) {
+						VStack(alignment: .leading, spacing: 2) {
+							Text(ImportText("bc7-ht"))
+
+							Text(ImportText("bc7-hd"))
+								.font(.callout)
+								.foregroundStyle(.secondary)
+								.fixedSize(horizontal: false, vertical: true)
+						}
+					}
+					.toggleStyle(.checkbox)
+					.frame(maxWidth: .infinity, alignment: .leading)
 					.padding(12)
 				}
 			}

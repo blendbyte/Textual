@@ -139,6 +139,31 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([zncWithCertificate serverForNetwork:@"libera"].serverPassword, @"dan/libera:");
 }
 
+/* A client name is not part of the user: a new one for Textual 8 in the
+ account still finds the servers that log in with the old one */
+- (void)testClientNameDoesNotStopServersBeingRecognised
+{
+	IRCBouncerAccountMutable *account = [[self accountOfKind:IRCBouncerKindZNC password:@"secret"] mutableCopy];
+
+	account.username = @"dan@textual8";
+
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	config.serverList = @[[self serverAt:@"bnc.example.com" port:6697 password:@"dan@textual/Libera:secret"]];
+
+	XCTAssertEqualObjects([account networkOfServerAddedByHand:config], @"Libera");
+
+	/* What Add Bouncer is filled in with: the client name is kept */
+	XCTAssertEqualObjects([IRCBouncerAccount bouncerUsernameOfServerAddedByHand:config], @"dan@textual");
+
+	/* The same login, whichever client names it */
+	XCTAssertTrue([account hasSameLoginAsAccount:[self accountOfKind:IRCBouncerKindZNC password:nil]]);
+
+	account.username = @"bob@textual8";
+
+	XCTAssertFalse([account hasSameLoginAsAccount:[self accountOfKind:IRCBouncerKindZNC password:nil]]);
+}
+
 /* Servers added by hand before (dan/libera logins) are recognised, to be
  linked: the network from the username or the server password, only with
  the account's address, port and user, and not when already linked */

@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* The first step filled in (servers added by hand, a setup link) */
 - (void)fillInAddress:(NSString *)address port:(uint16_t)port secured:(BOOL)secured username:(NSString *)username password:(nullable NSString *)password;
 
-@property (nonatomic, assign) BOOL linksServersAddedByHand; // offered for linking: they're ticked in the last step
+@property (nonatomic, copy) NSArray<IRCClient *> *serversToLinkTo; // the last step's "Link to" menus
 @property (nonatomic, copy, nullable) NSURL *hostingOfferURL; // "No bouncer yet? ZNCHost runs one for you." under the login
 
 - (void)beginInWindow:(NSWindow *)window;

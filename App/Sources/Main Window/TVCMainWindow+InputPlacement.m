@@ -396,8 +396,9 @@ NS_ASSUME_NONNULL_BEGIN
  [Ignore] [Add…]", then "hackint was removed from your bouncer [Keep]
  [Remove from Textual]". Ignore and Keep are remembered per network;
  nothing is ever changed on the bouncer. On servers added by hand that go
- through one bouncer, once: "These 3 servers go through the same bouncer at
- bnc.example.com [Not Now] [Link…]" (Add Bouncer, filled in). */
+ through one bouncer, on every server until answered: "3 of your servers go
+ through the same bouncer at bnc.example.com [Not Now] [Link…]" (Add Bouncer,
+ filled in). */
 - (NSView *)makeBouncerBar
 {
 	NSTextField *label = [self makeNoticeBarLabel];
@@ -439,13 +440,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *text = nil;
 
-	if (client && account == nil) {
-		linkableClients = [worldController() clientsToOfferLinkingWith:client];
-
-		if (linkableClients.count == 0) {
-			linkableClients = nil;
-		}
-	} else if (account) {
+	if (account) {
 		addedNetworks = [worldController() networksAddedToBouncerAccount:account];
 
 		if (addedNetworks.count == 0) {
@@ -459,8 +454,19 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	/* Whichever server is selected: it isn't noticed on the affected ones alone */
+	if (addedNetworks == nil && removedClients == nil) {
+		linkableClients = [worldController() clientsToOfferLinking];
+
+		if (linkableClients.count == 0) {
+			linkableClients = nil;
+		}
+	}
+
+	self.bouncerBarLabel.textColor = ((linkableClients) ? [NSColor labelColor] : [NSColor secondaryLabelColor]);
+
 	if (linkableClients) {
-		NSString *address = client.config.serverList.firstObject.serverAddress;
+		NSString *address = linkableClients.firstObject.config.serverList.firstObject.serverAddress;
 
 		text = TXTLS(@"TVCMainWindow[bnb-l1]", linkableClients.count, address);
 
@@ -561,11 +567,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<IRCClient *> *linkableClients = self.bouncerBarLinkableClients;
 
 	if (linkableClients) {
-		IRCClient *client = self.selectedClient;
-
-		[worldController() rememberLinkingOfferedForClients:linkableClients];
-
-		[menuController() addBouncerFilledInWith:client];
+		/* Remembered once the sheet is completed: cancelled, it's offered again */
+		[menuController() addBouncerFilledInWith:linkableClients.firstObject linkingClients:linkableClients];
 
 		return;
 	}

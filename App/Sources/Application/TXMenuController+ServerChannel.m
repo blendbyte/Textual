@@ -183,20 +183,26 @@ NS_ASSUME_NONNULL_BEGIN
 /* The Add Bouncer sheet: the account and a server per network it adds here */
 - (void)addBouncer:(nullable id)sender
 {
-	[self openAddBouncerSheetFillingIn:nil];
+	[self openAddBouncerSheetFillingIn:nil whenCompleted:nil];
 }
 
-- (void)addBouncerFilledInWith:(nullable IRCClient *)client
+- (void)addBouncerFilledInWith:(nullable IRCClient *)client linkingClients:(NSArray<IRCClient *> *)linkingClients
 {
-	/* Its address and login, the network left out */
+	NSParameterAssert(linkingClients != nil);
+
+	void (^completed)(void) = ^{
+		[worldController() rememberLinkingOfferedForClients:linkingClients];
+	};
+
+	/* Its address and login with its client name, the network left out */
 	IRCClientConfig *config = client.config;
 
 	IRCServer *server = config.serverList.firstObject;
 
-	NSArray<NSString *> *login = ((config) ? [IRCBouncerAccount bouncerLoginsOfServerAddedByHand:config].firstObject : nil);
+	NSString *username = ((config) ? [IRCBouncerAccount bouncerUsernameOfServerAddedByHand:config] : nil);
 
-	if (config == nil || server == nil || login == nil) {
-		[self openAddBouncerSheetFillingIn:nil];
+	if (config == nil || server == nil || username == nil) {
+		[self openAddBouncerSheetFillingIn:nil whenCompleted:completed];
 
 		return;
 	}
@@ -207,11 +213,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[sheet fillInAddress:server.serverAddress
 						port:server.serverPort
 					 secured:server.prefersSecuredConnection
-					username:login[0]
+					username:username
 					password:password];
-
-		sheet.linksServersAddedByHand = YES;
-	}];
+	} whenCompleted:completed];
 }
 
 - (void)addBouncerWithSetupLink:(NSString *)location
@@ -232,7 +236,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* A link never carries a password: one in it is left out */
 	if (address.length == 0) {
-		[self openAddBouncerSheetFillingIn:nil];
+		[self openAddBouncerSheetFillingIn:nil whenCompleted:nil];
 
 		return;
 	}
@@ -249,10 +253,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self openAddBouncerSheetFillingIn:^(TDCAddBouncerSheet *sheet) {
 		[sheet fillInAddress:address port:port secured:secured username:username password:nil];
-	}];
+	} whenCompleted:nil];
 }
 
-- (void)openAddBouncerSheetFillingIn:(nullable void (^)(TDCAddBouncerSheet *sheet))fillIn
+- (void)openAddBouncerSheetFillingIn:(nullable void (^)(TDCAddBouncerSheet *sheet))fillIn whenCompleted:(nullable void (^)(void))completed
 {
 	[windowController() popMainWindowSheetIfExists];
 
@@ -262,6 +266,11 @@ NS_ASSUME_NONNULL_BEGIN
 	[[TDCAddBouncerSheet alloc] initWithExistingClient:^IRCClient *(IRCBouncerNetwork *network, IRCBouncerAccount *account) {
 		return [worldController() clientAddedByHandForNetwork:network ofAccount:account];
 	} add:^(IRCBouncerAccount *account, NSArray<IRCBouncerNetwork *> *networks, NSDictionary<NSString *, IRCClient *> *linkedClients, BOOL connect) {
+		/* Before linking: a linked server has no login of its own to remember */
+		if (completed) {
+			completed();
+		}
+
 		NSArray *clients = [worldController() addBouncerAccount:account withNetworks:networks linkedClients:linkedClients connect:connect];
 
 		IRCClient *firstClient = clients.firstObject;
@@ -288,6 +297,8 @@ NS_ASSUME_NONNULL_BEGIN
 	/* "No bouncer yet?" (not in the App Store build) */
 	sheet.hostingOfferURL = [NSURL URLWithString:TXWebsiteZNCHost];
 #endif
+
+	sheet.serversToLinkTo = [worldController() clientsNotLinkedToBouncer];
 
 	if (fillIn) {
 		fillIn(sheet);

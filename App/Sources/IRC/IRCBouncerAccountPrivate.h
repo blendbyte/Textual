@@ -74,9 +74,15 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
 
 /* The network a server added by hand reaches through this bouncer: its
  address and port are the account's, and its username or server password
- is "username/network" (ZNC's and soju's login, "@client" ignored); nil
- for anything else */
+ is "username/network" (ZNC's and soju's login, "@client" ignored on both
+ sides); nil for anything else */
 - (nullable NSString *)networkOfServerAddedByHand:(IRCClientConfig *)config;
+
+/* A login without its "@client": the bouncer's user */
++ (NSString *)userOfBouncerLogin:(NSString *)login;
+
+/* The same bouncer and user, whichever client names their logins have */
+- (BOOL)hasSameLoginAsAccount:(IRCBouncerAccount *)account NS_SWIFT_NAME(hasSameLogin(as:));
 
 /* The bouncer logins of a server added by hand: "user/network" as its
  username or before ":" in its server password ("@client" left out), as
@@ -84,6 +90,9 @@ typedef NS_ENUM(NSUInteger, IRCBouncerKind) {
  else the server password) */
 + (NSArray<NSArray<NSString *> *> *)bouncerLoginsOfServerAddedByHand:(IRCClientConfig *)config;
 + (nullable NSString *)bouncerPasswordOfServerAddedByHand:(IRCClientConfig *)config;
+
+/* The username for the bouncer's account, "user@client" if the login names a client */
++ (nullable NSString *)bouncerUsernameOfServerAddedByHand:(IRCClientConfig *)config;
 
 /* What changed on the bouncer, from its list of networks: its networks
  without a server in Textual (knownNetworks: the networks of the servers

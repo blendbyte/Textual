@@ -91,7 +91,10 @@
 "ab-3-st-cing" = "Connecting";
 "ab-3-st-d" = "Disconnected";
 "ab-3-in" = "Already in Textual";
-"ab-3-hand" = "Added by hand before: ticked, it is linked to the bouncer instead of added again";
+"ab-3-hand" = "Keeps its channels and settings";
+"ab-3-link" = "Link to";
+"ab-3-new" = "Add as new server";
+"ab-3-to" = "Link to %@";
 "ab-3-none" = "No networks yet. Add one on your bouncer, then Refresh.";
 "ab-now" = "Connect now";
 "ab-notify" = "Tell me when networks are added or removed";
@@ -100,6 +103,9 @@
 "ab-b-add0" = "Add Networks";
 "ab-b-add1" = "Add 1 Network";
 "ab-b-addn" = "Add %@ Networks";
+"ab-b-link1" = "Link 1 Server";
+"ab-b-linkn" = "Link %@ Servers";
+"ab-b-mix" = "Add %1$@ and Link %2$@";
 
 /* Edit Bouncer (TDCEditBouncerSheet.swift) */
 "eb-title" = "Edit Bouncer";

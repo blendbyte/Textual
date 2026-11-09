@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
  ticked to be linked), or from textual://add-bouncer?host=…&port=…&tls=…&user=…
  (a bouncer host's setup link: filled in only, never a password, nothing
  connects until Connect) */
-- (void)addBouncerFilledInWith:(nullable IRCClient *)client;
+- (void)addBouncerFilledInWith:(nullable IRCClient *)client linkingClients:(NSArray<IRCClient *> *)linkingClients;
 - (void)addBouncerWithSetupLink:(NSString *)location;
 
 - (IBAction)showSetupAssistant:(nullable id)sender;

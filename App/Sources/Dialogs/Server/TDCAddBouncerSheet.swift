@@ -66,17 +66,20 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 		case networks
 	}
 
-	/// A network of the bouncer, ticked to be added (or linked, when added by hand before)
+	/// A network of the bouncer, ticked to be added, or linked to a server already here
 	struct NetworkRow: Identifiable
 	{
 		let network: IRCBouncerNetwork
-		let existingClient: IRCClient?
+		var existingClient: IRCClient?
 		var isChosen: Bool
 
 		var id: String { network.networkIdentifier }
 
 		/// Linked to this bouncer already (not added by hand)
 		var isLinked: Bool { existingClient?.config.bouncerAccountIdentifier != nil }
+
+		/// Ticked, and goes to a server that's here already: it keeps its channels and settings
+		var linksExistingServer: Bool { (isChosen && existingClient != nil && isLinked == false) }
 	}
 
 	@Published var page = Page.login
@@ -122,8 +125,8 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 
 	var close: () -> Void = {}
 
-	/* Opened to link servers added by hand: they're ticked */
-	var linksServersAddedByHand = false
+	/* What the last step's "Link to" menus offer */
+	var serversToLinkTo: [IRCClient] = []
 
 	/* A bouncer host to sign up with, under the login */
 	@Published var hostingOfferURL: URL?
@@ -255,12 +258,35 @@ final class AddBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegate
 		rows = (probe?.networkList?.networks ?? []).map { (network) in
 			let client = existingClient(network, account)
 
-			let addedByHand = (client != nil && client?.config.bouncerAccountIdentifier == nil)
-
-			return NetworkRow(network: network, existingClient: client, isChosen: (client == nil || (addedByHand && linksServersAddedByHand)))
+			/* Ticked unless it's linked to this bouncer already */
+			return NetworkRow(network: network, existingClient: client, isChosen: (client?.config.bouncerAccountIdentifier == nil))
 		}
 
 		page = .networks
+	}
+
+	/// The servers a row's menu offers: the one it matched, and the others not linked to a bouncer
+	func linkChoices(for row: NetworkRow) -> [IRCClient]
+	{
+		var choices = serversToLinkTo
+
+		if let client = row.existingClient, choices.contains(where: { $0 === client }) == false {
+			choices.insert(client, at: 0)
+		}
+
+		return choices
+	}
+
+	/// One network to a server: another row that had this server goes back to being added as new
+	func setLinkedClient(_ client: IRCClient?, forRow id: String)
+	{
+		for index in rows.indices {
+			if (rows[index].id == id) {
+				rows[index].existingClient = client
+			} else if let client = client, rows[index].isLinked == false, rows[index].existingClient === client {
+				rows[index].existingClient = nil
+			}
+		}
 	}
 
 	func back()
@@ -377,11 +403,11 @@ final class AddBouncerSheet: NSObject
 		model.password = (password ?? "")
 	}
 
-	/* Offered for linking: servers added by hand are ticked in the last step */
-	@objc var linksServersAddedByHand: Bool
+	/* What the last step's "Link to" menus offer */
+	@objc var serversToLinkTo: [IRCClient]
 	{
-		get { model.linksServersAddedByHand }
-		set { model.linksServersAddedByHand = newValue }
+		get { model.serversToLinkTo }
+		set { model.serversToLinkTo = newValue }
 	}
 
 	/* "No bouncer yet?" under the login (the direct build only) */
@@ -971,7 +997,7 @@ struct AddBouncerNetworksPage: View
 				}
 
 				ForEach($model.rows) { $row in
-					AddBouncerNetworkRow(row: $row)
+					AddBouncerNetworkRow(model: model, row: $row)
 				}
 			}
 
@@ -1058,6 +1084,20 @@ struct AddBouncerNetworksPage: View
 	private var addTitle: String
 	{
 		let count = model.chosenCount
+		let linkCount = model.rows.filter(\.linksExistingServer).count
+
+		func number(_ value: Int) -> String
+		{
+			NumberFormatter.localizedString(from: NSNumber(value: value), number: .decimal)
+		}
+
+		if (linkCount > 0 && linkCount < count) {
+			return AddBouncerText("ab-b-mix", number(count - linkCount), number(linkCount))
+		}
+
+		if (linkCount > 0) {
+			return ((linkCount == 1) ? AddBouncerText("ab-b-link1") : AddBouncerText("ab-b-linkn", number(linkCount)))
+		}
 
 		switch (count) {
 			case 0:
@@ -1065,7 +1105,7 @@ struct AddBouncerNetworksPage: View
 			case 1:
 				return AddBouncerText("ab-b-add1")
 			default:
-				return AddBouncerText("ab-b-addn", NumberFormatter.localizedString(from: NSNumber(value: count), number: .decimal))
+				return AddBouncerText("ab-b-addn", number(count))
 		}
 	}
 }
@@ -1073,11 +1113,24 @@ struct AddBouncerNetworksPage: View
 /// A network with its tick, its host and nickname (or that it is in Textual already), and its state
 struct AddBouncerNetworkRow: View
 {
+	@ObservedObject var model: AddBouncerModel
+
 	@Binding var row: AddBouncerModel.NetworkRow
+
+	/// Add as new (""), or the server to link to
+	private var linkChoice: Binding<String>
+	{
+		Binding(get: { row.existingClient?.uniqueIdentifier ?? "" }, set: { (identifier) in
+			let client = model.linkChoices(for: row).first { $0.uniqueIdentifier == identifier }
+
+			model.setLinkedClient(client, forRow: row.id)
+		})
+	}
 
 	var body: some View
 	{
 		let network = row.network
+		let choices = model.linkChoices(for: row)
 
 		HStack(alignment: .firstTextBaseline, spacing: 8) {
 			Toggle(network.name, isOn: $row.isChosen)
@@ -1092,6 +1145,20 @@ struct AddBouncerNetworkRow: View
 					.font(.callout)
 					.foregroundStyle(.secondary)
 					.fixedSize(horizontal: false, vertical: true)
+
+				if (row.isChosen && row.isLinked == false && choices.isEmpty == false) {
+					Picker(AddBouncerText("ab-3-link"), selection: linkChoice) {
+						Text(AddBouncerText("ab-3-new")).tag("")
+
+						ForEach(choices, id: \.uniqueIdentifier) { (client) in
+							Text(AddBouncerText("ab-3-to", client.name)).tag(client.uniqueIdentifier)
+						}
+					}
+					.pickerStyle(.menu)
+					.labelsHidden()
+					.controlSize(.small)
+					.fixedSize()
+				}
 			}
 
 			Spacer()

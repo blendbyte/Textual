@@ -92,8 +92,8 @@
 "bnb-b3" = "Keep";
 "bnb-b4" = "Remove from Textual";
 
-/* Above the input field on servers added by hand that log in to one bouncer (%ld is how many, %@ the bouncer's address) */
-"bnb-l1" = "These %ld servers go through the same bouncer at %@";
+/* Above the input field while servers added by hand log in to one bouncer (%ld is how many, %@ the bouncer's address) */
+"bnb-l1" = "%ld of your servers go through the same bouncer at %@";
 "bnb-b5" = "Not Now";
 "bnb-b6" = "Link…";
 

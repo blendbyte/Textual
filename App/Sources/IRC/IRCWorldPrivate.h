@@ -131,11 +131,14 @@ TEXTUAL_EXTERN NSString * const IRCWorldBouncerAccountsDefaultsKey;
 - (void)bouncerNetworksOfAccountChanged:(IRCBouncerAccount *)account;
 
 /* Servers added by hand that go through one bouncer (the same address and
- port, the same user before "/" in their logins), offered once for linking:
- two or more with this one, else none */
-- (NSArray<IRCClient *> *)clientsToOfferLinkingWith:(IRCClient *)client;
+ port, the same user before "/" in their logins), offered until it's answered:
+ two or more, else none */
+- (NSArray<IRCClient *> *)clientsToOfferLinking;
 
-/* Not offered again (Link… or Not Now) */
+/* What a network of a bouncer can be linked to by hand */
+- (NSArray<IRCClient *> *)clientsNotLinkedToBouncer;
+
+/* Not offered again (Not Now, or the sheet from Link… was completed) */
 - (void)rememberLinkingOfferedForClients:(NSArray<IRCClient *> *)clients;
 @end
 
