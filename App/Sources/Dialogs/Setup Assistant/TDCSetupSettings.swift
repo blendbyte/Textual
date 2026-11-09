@@ -309,7 +309,7 @@ struct SetupStyleStep: View
 			model.choose(style: style)
 		} label: {
 			VStack(alignment: .leading, spacing: 3) {
-				StylePreviewImage(style: style.settingsStyle, dark: (colorScheme == .dark))
+				StylePreviewImage(style: style.settingsStyle)
 					.frame(height: 82)
 					.clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 					.overlay {

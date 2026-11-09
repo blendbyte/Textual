@@ -57,6 +57,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)emptyCaches;
 
+/* Blocks every remote load, for any web view showing a style */
++ (void)compileRemoteLoadsRuleListWithCompletionHandler:(void (^)(WKContentRuleList * _Nullable ruleList))completionHandler;
+
 /* Inline media in a server's views goes through that server's proxy */
 + (void)applyProxyOfClient:(IRCClient *)client;
 + (void)forgetClient:(IRCClient *)client;

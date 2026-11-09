@@ -115,7 +115,7 @@ static NSMutableArray<dispatch_block_t> *_loadsWaitingForContentRules = nil;
 /* Every http(s) and ws(s) load is blocked: scripts, frames, images, media,
  fonts, style sheets and requests. Content rule regular expressions have no
  alternation, hence two rules. */
-+ (void)_t_addRemoteLoadsRuleList
++ (void)compileRemoteLoadsRuleListWithCompletionHandler:(void (^)(WKContentRuleList * _Nullable ruleList))completionHandler
 {
 	NSString *rules =
 	@"["
@@ -128,10 +128,19 @@ static NSMutableArray<dispatch_block_t> *_loadsWaitingForContentRules = nil;
 				  encodedContentRuleList:rules
 					   completionHandler:^(WKContentRuleList *ruleList, NSError *error) {
 		 /* Called on the main thread */
+		 if (error) {
+			 LogToConsoleError("Failed to compile the chat view's content rules: %{public}@", error.localizedDescription);
+		 }
+
+		 completionHandler(ruleList);
+	 }];
+}
+
++ (void)_t_addRemoteLoadsRuleList
+{
+	[self compileRemoteLoadsRuleListWithCompletionHandler:^(WKContentRuleList * _Nullable ruleList) {
 		 if (ruleList) {
 			 [_sharedUserContentController addContentRuleList:ruleList];
-		 } else {
-			 LogToConsoleError("Failed to compile the chat view's content rules: %{public}@", error.localizedDescription);
 		 }
 
 		 _contentRulesReady = YES;

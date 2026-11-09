@@ -39,7 +39,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class ICLPayload;
+@class ICLPayload, TPCThemeSettings;
 
 @interface TVCLogController ()
 
@@ -133,6 +133,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logViewWebViewReceivedDropWithFiles:(NSArray<NSString *> *)files;
 
 - (nullable TVCLogLine *)lastLine;
+
+/* The font and layout rules of a page in a style's settings (not only the active style's) */
++ (NSMutableDictionary<NSString *, id> *)overrideStyleTokensForSettings:(TPCThemeSettings *)settings groupedDisplay:(BOOL)groupedDisplayEnabled;
 @end
 
 NS_ASSUME_NONNULL_END

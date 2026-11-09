@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)nicknameColorStyleForString:(NSString *)inputString isOverride:(BOOL * _Nullable)isOverride;
 
 + (NSNumber *)hashForString:(NSString *)inputString colorStyle:(TPCThemeSettingsNicknameColorStyle)colorStyle;
++ (NSString *)nicknameColorStyleForHash:(NSNumber *)stringHash colorStyle:(TPCThemeSettingsNicknameColorStyle)colorStyle;
 
 + (nullable NSColor *)nicknameColorStyleOverrideForKey:(NSString *)styleKey;
 + (void)setNicknameColorStyleOverride:(nullable NSColor *)styleValue forKey:(NSString *)styleKey;

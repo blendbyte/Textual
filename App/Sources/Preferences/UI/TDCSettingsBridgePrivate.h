@@ -40,7 +40,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/* A picture of a style of one's own was taken */
+/* A picture of a style was drawn, or one should be drawn again */
 TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification;
 
 /* What the Settings window (SwiftUI) needs from the rest of the app
@@ -143,16 +143,13 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 
 /* A picture of the style: the bundled ones' from the app, a style of one's own
  from the chat the last time it was used (nil before) */
-+ (nullable NSImage *)previewForStyleNamed:(NSString *)name location:(NSInteger)location dark:(BOOL)dark;
++ (nullable NSImage *)previewForStyleNamed:(NSString *)name location:(NSInteger)location;
 
 /* The active style chose some settings itself: which ("time format, font"), or nil */
 @property (class, readonly, copy, nullable) NSString *settingsChosenByStyle;
 @property (class, readonly) BOOL styleSupportsChatDisplay;
 @property (class, readonly) BOOL styleSupportsMessageSpacing;
 + (void)openStyleFilesInWindow:(NSWindow *)window;
-
-/* Pictures of styles of one's own: taken after a style loads (from now on) */
-+ (void)startTakingStylePreviews;
 
 /* Chat or Classic; changing it may ask whether to change the formats too */
 + (NSInteger)messageGroupingStyle;

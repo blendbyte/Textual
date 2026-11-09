@@ -3488,11 +3488,16 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 - (NSMutableDictionary<NSString *, id> *)generateOverrideStyle
 {
+	return [self.class overrideStyleTokensForSettings:themeSettings() groupedDisplay:[self groupedDisplayEnabled]];
+}
+
++ (NSMutableDictionary<NSString *, id> *)overrideStyleTokensForSettings:(TPCThemeSettings *)settings groupedDisplay:(BOOL)groupedDisplayEnabled
+{
 	NSMutableDictionary<NSString *, id> *templateTokens = [NSMutableDictionary dictionary];
 
 	// ---- //
 
-	NSFont *channelFont = themeSettings().themeChannelViewFont;
+	NSFont *channelFont = settings.themeChannelViewFont;
 
 	/* The system font is a CSS keyword, not a name in quotes */
 	BOOL usesSystemFont = NO;
@@ -3527,9 +3532,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	// ---- //
 
-	double indentOffset = themeSettings().indentationOffset;
-
-	BOOL groupedDisplayEnabled = [self groupedDisplayEnabled];
+	double indentOffset = settings.indentationOffset;
 
 	templateTokens[@"groupedDisplayEnabled"] = @(groupedDisplayEnabled);
 
@@ -3539,7 +3542,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	} else {
 		templateTokens[@"nicknameIndentationAvailable"] = @(YES);
 
-		NSString *timeFormat = themeSettings().themeTimestampFormat;
+		NSString *timeFormat = settings.themeTimestampFormat;
 
 		if (timeFormat == nil) {
 			timeFormat = [TPCPreferences themeTimestampFormat];

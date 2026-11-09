@@ -77,6 +77,7 @@
 #import "ICPCoreMediaPrivate.h"
 #import "TXApplicationPrivate.h"
 #import "TDCSettingsBridgePrivate.h"
+#import "TDCStylePreviewRendererPrivate.h"
 #import "TDCAlert.h"
 #import "TPCTheme.h"
 #import "TPCThemeControllerPrivate.h"
@@ -810,140 +811,9 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	[TPCPreferences performReloadAction:(TPCPreferencesReloadActionStyle | TPCPreferencesReloadActionTextDirection)];
 }
 
-/* Application Support/Textual/Style Previews: pictures of styles of one's own */
-+ (nullable NSURL *)_snapshotURLForStyleNamed:(NSString *)name location:(NSInteger)location dark:(BOOL)dark
++ (nullable NSImage *)previewForStyleNamed:(NSString *)name location:(NSInteger)location
 {
-	NSString *filename = [TPCThemeController buildFilename:name forStorageLocation:location];
-
-	NSString *folder = [TPCPathInfo applicationSupport];
-
-	if (filename == nil || folder == nil) {
-		return nil;
-	}
-
-	NSString *file = [NSString stringWithFormat:@"%@ %@.png", filename.safeFilename, ((dark) ? @"dark" : @"light")];
-
-	return [NSURL fileURLWithPath:[[folder stringByAppendingPathComponent:@"Style Previews"] stringByAppendingPathComponent:file]];
-}
-
-/* The pictures show lines of the chat: they go with the messages */
-+ (void)_deleteStylePreviews
-{
-	NSString *folder = [TPCPathInfo applicationSupport];
-
-	if (folder == nil) {
-		return;
-	}
-
-	[RZFileManager() removeItemAtPath:[folder stringByAppendingPathComponent:@"Style Previews"] error:NULL];
-
-	[RZNotificationCenter() postNotificationName:TDCSettingsBridgeStylePreviewsDidChangeNotification object:nil];
-}
-
-+ (nullable NSImage *)previewForStyleNamed:(NSString *)name location:(NSInteger)location dark:(BOOL)dark
-{
-	NSParameterAssert(name != nil);
-
-	/* Styles with only one look have only the dark picture */
-	if (location == TPCThemeStorageLocationBundle) {
-		for (NSString *look in ((dark) ? @[@"dark"] : @[@"light", @"dark"])) {
-			NSString *file = [NSString stringWithFormat:@"Style Previews/%@ %@.jpg", name, look];
-
-			NSImage *image = [[NSImage alloc] initWithContentsOfURL:[[NSBundle mainBundle].resourceURL URLByAppendingPathComponent:file]];
-
-			if (image) {
-				return image;
-			}
-		}
-	}
-
-	NSURL *snapshotURL = [self _snapshotURLForStyleNamed:name location:location dark:dark];
-
-	if (snapshotURL == nil) {
-		return nil;
-	}
-
-	return [[NSImage alloc] initWithContentsOfURL:snapshotURL];
-}
-
-/* After a style of one's own loaded: a picture of the chat, for its preview */
-+ (void)snapshotActiveStyle
-{
-	if (themeController().bundledTheme) {
-		return;
-	}
-
-	TVCMainWindow *window = mainWindow();
-
-	/* The picture is of the chat on screen: never of a private conversation */
-	if (window.selectedChannel.isPrivateMessage) {
-		return;
-	}
-
-	NSView *webView = window.selectedViewController.backingView.webView;
-
-	if ([webView isKindOfClass:[WKWebView class]] == NO || webView.window == nil) {
-		return;
-	}
-
-	NSURL *snapshotURL = [self _snapshotURLForStyleNamed:themeController().name location:themeController().storageLocation dark:window.usingDarkAppearance];
-
-	if (snapshotURL == nil) {
-		return;
-	}
-
-	WKSnapshotConfiguration *configuration = [WKSnapshotConfiguration new];
-
-	/* The newest lines, at the bottom; about as much as the bundled pictures show */
-	CGFloat height = MIN(380, NSHeight(webView.bounds));
-
-	configuration.rect = NSMakeRect(0, (NSHeight(webView.bounds) - height), MIN(460, NSWidth(webView.bounds)), height);
-
-	configuration.snapshotWidth = @(460);
-
-	[(WKWebView *)webView takeSnapshotWithConfiguration:configuration completionHandler:^(NSImage * _Nullable image, NSError * _Nullable error) {
-		if (image == nil) {
-			return;
-		}
-
-		CGImageRef cgImage = [image CGImageForProposedRect:NULL context:nil hints:nil];
-
-		if (cgImage == NULL) {
-			return;
-		}
-
-		NSData *data = [[[NSBitmapImageRep alloc] initWithCGImage:cgImage] representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
-
-		[RZFileManager() createDirectoryAtURL:snapshotURL.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:NULL];
-
-		[data writeToURL:snapshotURL atomically:YES];
-
-		[RZNotificationCenter() postNotificationName:TDCSettingsBridgeStylePreviewsDidChangeNotification object:nil];
-	}];
-}
-
-+ (void)_themeDidReload:(NSNotification *)notification
-{
-	/* The chat redraws in the new style first */
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		[self snapshotActiveStyle];
-	});
-}
-
-+ (void)startTakingStylePreviews
-{
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		[RZNotificationCenter() addObserver:self selector:@selector(_themeDidReload:) name:TVCMainWindowDidReloadThemeNotification object:nil];
-	});
-
-	/* A style of one's own in use without a picture yet */
-	NSURL *snapshotURL = [self _snapshotURLForStyleNamed:themeController().name location:themeController().storageLocation dark:mainWindow().usingDarkAppearance];
-
-	if (snapshotURL && [RZFileManager() fileExistsAtPath:snapshotURL.path] == NO) {
-		[self snapshotActiveStyle];
-	}
+	return [[TDCStylePreviewRenderer sharedRenderer] previewForStyleNamed:name location:location];
 }
 
 + (nullable NSString *)settingsChosenByStyle
@@ -1519,8 +1389,6 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 
 	if (newPeriod == TPCMessageArchiveKeepPeriodOff) {
 		/* Turned on again, it starts with the scrollback */
-		[self _deleteStylePreviews];
-
 		[archive deleteAllMessagesImportingScrollbackAgain:YES completionHandler:^{
 			completionHandler();
 		}];
@@ -1566,8 +1434,6 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 
 						return;
 					}
-
-					[self _deleteStylePreviews];
 
 					[sharedMessageArchive() deleteAllMessagesImportingScrollbackAgain:NO completionHandler:^{
 						completionHandler();

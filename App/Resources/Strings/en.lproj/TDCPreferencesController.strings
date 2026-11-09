@@ -325,7 +325,16 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-app-ct" = "time format";
 "set-app-cn" = "nickname format";
 "set-app-cf" = "font";
-"set-app-np" = "Preview after first use";
+"set-sam-1" = "Good morning, everyone";
+"set-sam-2" = "A second line right after the first";
+"set-sam-3" = "Morning! Different names get different colours";
+"set-sam-4" = "This line mentions you and stands out";
+"set-sam-5" = "waves at the channel";
+"set-sam-6" = "A notice to the channel";
+"set-sam-fb" = "bold";
+"set-sam-fi" = "italic";
+"set-sam-fu" = "underline";
+"set-sam-fm" = "monospace";
 "set-app-own" = "A style of your own.";
 "set-app-h2" = "Messages appear as";
 "set-app-d1" = "Chat groups each person’s messages under their name, like modern messengers. The time shows next to the name.";

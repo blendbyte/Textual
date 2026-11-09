@@ -67,7 +67,6 @@ struct AppearanceSettings: View
 {
 	@ObservedObject private var store = SettingsStore.shared
 	@EnvironmentObject private var model: SettingsModel
-	@Environment(\.colorScheme) private var colorScheme
 
 	private var styles: [SettingsStyle]
 	{
@@ -118,7 +117,7 @@ struct AppearanceSettings: View
 				NavigationLink(value: SettingsSubpage.styles) {
 					HStack(spacing: 12) {
 						if let style = selectedStyle {
-							StylePreviewImage(style: style, dark: (colorScheme == .dark))
+							StylePreviewImage(style: style)
 								.frame(width: 120, height: 64)
 								.clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
 								.overlay {
@@ -242,12 +241,6 @@ struct AppearanceSettings: View
 		.onReceive(NotificationCenter.default.publisher(for: .TVCMainWindowDidReloadTheme)) { _ in
 			store.objectWillChange.send()
 		}
-		.onReceive(NotificationCenter.default.publisher(for: .TDCSettingsBridgeStylePreviewsDidChange)) { _ in
-			store.objectWillChange.send()
-		}
-		.onAppear {
-			TDCSettingsBridge.startTakingStylePreviews()
-		}
 	}
 }
 
@@ -256,7 +249,6 @@ struct StylePickerPage: View
 {
 	@ObservedObject private var store = SettingsStore.shared
 	@EnvironmentObject private var model: SettingsModel
-	@Environment(\.colorScheme) private var colorScheme
 
 	var body: some View
 	{
@@ -274,8 +266,7 @@ struct StylePickerPage: View
 				LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 16) {
 					ForEach(styles) { style in
 						StyleCard(style: style,
-								  selected: (style.id == selectedID),
-								  dark: (colorScheme == .dark)) {
+								  selected: (style.id == selectedID)) {
 							store.objectWillChange.send()
 
 							TDCSettingsBridge.selectStyleNamed(style.name, location: style.location)
@@ -318,9 +309,6 @@ struct StylePickerPage: View
 		.onReceive(NotificationCenter.default.publisher(for: .TVCMainWindowDidReloadTheme)) { _ in
 			store.objectWillChange.send()
 		}
-		.onReceive(NotificationCenter.default.publisher(for: .TDCSettingsBridgeStylePreviewsDidChange)) { _ in
-			store.objectWillChange.send()
-		}
 	}
 }
 
@@ -328,33 +316,32 @@ struct StylePickerPage: View
 struct StylePreviewImage: View
 {
 	let style: SettingsStyle
-	let dark: Bool
+
+	/* Asks again when a picture was drawn */
+	@State private var revision = 0
 
 	var body: some View
 	{
-		if let image = TDCSettingsBridge.preview(forStyleNamed: style.name, location: style.location, dark: dark) {
-			GeometryReader { geometry in
-				/* Bundled pictures are wider (600 for 460 points of chat) */
-				let width = (geometry.size.width * (style.bundled ? 1.6 : 1.25))
-				let height = (width * (image.size.height / max(1, image.size.width)))
+		let _ = revision
 
-				Image(nsImage: image)
-					.resizable()
-					.frame(width: width, height: height)
-					.frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
-			}
-		} else {
-			/* A style of one's own before it was used */
-			VStack(spacing: 6) {
-				Image(systemName: "paintbrush.pointed")
-					.font(.title2)
+		Group {
+			if let image = TDCSettingsBridge.preview(forStyleNamed: style.name, location: style.location) {
+				GeometryReader { geometry in
+					let width = (geometry.size.width * 1.25)
+					let height = (width * (image.size.height / max(1, image.size.width)))
 
-				Text(SettingsText("set-app-np"))
-					.font(.caption)
+					Image(nsImage: image)
+						.resizable()
+						.frame(width: width, height: height)
+						.frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
+				}
+			} else {
+				/* While it is being drawn */
+				Color.primary.opacity(0.05)
 			}
-			.foregroundStyle(.secondary)
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
-			.background(Color.primary.opacity(0.05))
+		}
+		.onReceive(NotificationCenter.default.publisher(for: .TDCSettingsBridgeStylePreviewsDidChange)) { _ in
+			revision += 1
 		}
 	}
 }
@@ -399,14 +386,13 @@ struct StyleCard: View
 {
 	let style: SettingsStyle
 	let selected: Bool
-	let dark: Bool
 	let action: () -> Void
 
 	var body: some View
 	{
 		Button(action: action) {
 			VStack(alignment: .leading, spacing: 5) {
-				StylePreviewImage(style: style, dark: dark)
+				StylePreviewImage(style: style)
 				.frame(height: 104)
 				.clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 				.overlay {
