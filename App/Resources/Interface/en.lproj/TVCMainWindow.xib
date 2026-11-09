@@ -159,8 +159,8 @@
                                                                     <constraints>
                                                                         <constraint firstItem="68i-pd-Me5" firstAttribute="leading" secondItem="AKs-o3-7CO" secondAttribute="leading" constant="2" id="30q-JO-bxw"/>
                                                                         <constraint firstItem="Ybi-Bk-q6V" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="YvY-15-HQ3" secondAttribute="trailing" constant="8" id="4RY-SZ-rtF"/>
-                                                                        <constraint firstItem="68i-pd-Me5" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="3" id="4bj-uN-9BF"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="68i-pd-Me5" secondAttribute="bottom" constant="3" id="5La-r3-bcy"/>
+                                                                        <constraint firstItem="68i-pd-Me5" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="2" id="4bj-uN-9BF"/>
+                                                                        <constraint firstAttribute="bottom" secondItem="68i-pd-Me5" secondAttribute="bottom" constant="2" id="5La-r3-bcy"/>
                                                                         <constraint firstItem="68i-pd-Me5" firstAttribute="centerY" secondItem="AKs-o3-7CO" secondAttribute="centerY" id="CqV-vG-O0t"/>
                                                                         <constraint firstAttribute="trailing" secondItem="Ybi-Bk-q6V" secondAttribute="trailing" constant="2" id="F6K-Cf-KhL"/>
                                                                         <constraint firstItem="YvY-15-HQ3" firstAttribute="centerY" secondItem="AKs-o3-7CO" secondAttribute="centerY" id="FCv-Qe-6RD"/>
@@ -168,7 +168,7 @@
                                                                         <constraint firstItem="YvY-15-HQ3" firstAttribute="top" relation="greaterThanOrEqual" secondItem="AKs-o3-7CO" secondAttribute="top" constant="2" id="hR7-ul-DBq"/>
                                                                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="YvY-15-HQ3" secondAttribute="trailing" constant="2" id="jg3-oa-ktd"/>
                                                                         <constraint firstItem="YvY-15-HQ3" firstAttribute="leading" secondItem="68i-pd-Me5" secondAttribute="trailing" constant="6" id="tLx-Q1-geB"/>
-                                                                        <constraint firstItem="Ybi-Bk-q6V" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="3" id="zDv-Ef-pSt"/>
+                                                                        <constraint firstItem="Ybi-Bk-q6V" firstAttribute="top" secondItem="AKs-o3-7CO" secondAttribute="top" constant="2" id="zDv-Ef-pSt"/>
                                                                     </constraints>
                                                                     <connections>
                                                                         <outlet property="cellTextField" destination="YvY-15-HQ3" id="9HX-hd-ONy"/>

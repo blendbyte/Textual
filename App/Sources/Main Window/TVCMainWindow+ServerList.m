@@ -1229,9 +1229,9 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 	}
 }
 
-/* Fixed heights, Textual 7's and a point more above and below: server rows
- 25 (the 14 pt bold name), channel rows 22 (the 16 pt icon 3 points from the
- top and bottom; the fonts are fixed, TVCServerListAppearance.plist). Automatic heights measured each row
+/* Fixed heights, Textual 7's: server rows 23 (the 14 pt bold name), channel
+ rows 20 (the 16 pt icon 2 points from the top and bottom; the fonts are
+ fixed, TVCServerListAppearance.plist). Automatic heights measured each row
  again while the list drew it (a selected name turns bold), which AppKit
  warns about at launch ("reentrant operation in its NSTableView delegate")
  and will make an assert. */
@@ -1248,10 +1248,10 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 	}
 
 	if (item == nil || [item isClient]) {
-		return 25.0;
+		return 23.0;
 	}
 
-	return 22.0;
+	return 20.0;
 }
 
 - (nullable NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(nullable NSTableColumn *)tableColumn item:(id)item
