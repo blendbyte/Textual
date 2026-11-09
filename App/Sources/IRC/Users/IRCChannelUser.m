@@ -258,6 +258,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Above the operator: super operator (a), owner (q), IRC operator (Y) */
 	if (position < operatorPosition) {
+		/* The usual letters mean the same on any server, whatever else its
+		 PREFIX has; the distance is for letters only that server uses */
+		if ([modeSymbol isEqualToString:@"q"]) {
+			return IRCUserRankChannelOwner;
+		} else if ([modeSymbol isEqualToString:@"a"]) {
+			return IRCUserRankSuperOperator;
+		} else if ([modeSymbol isEqualToString:@"Y"] || [modeSymbol isEqualToString:@"y"]) {
+			return IRCUserRankIRCopByMode;
+		}
+
 		NSUInteger distance = (operatorPosition - position);
 
 		if (distance == 1) {

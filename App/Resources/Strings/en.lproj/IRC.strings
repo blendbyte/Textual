@@ -530,4 +530,4 @@ The identifier for a timer can be found using “/timer list”";
 "mlc-b" = "Some of these lines start with “/”, so they would run as commands.";
 "mlc-c" = "Send as Text";
 "mlc-r" = "Run as Commands";
-"stn-n1" = "This server doesn’t support changing your real name while connected.";
+"stn-n1" = "This server hasn’t said it supports changing your real name while connected, so no confirmation will arrive.";

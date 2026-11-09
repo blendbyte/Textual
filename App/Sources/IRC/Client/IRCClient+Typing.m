@@ -55,6 +55,8 @@ static NSTimeInterval const IRCClientTypingActiveInterval = 3.0;
 /* Someone shown as typing without a refresh for this long has stopped */
 static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 
+static NSTimeInterval const IRCClientTypingPausedExpiryInterval = 30.0;
+
 @implementation IRCClient (Typing)
 
 - (BOOL)canSendTypingNotificationsToChannel:(IRCChannel *)channel
@@ -113,6 +115,13 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 	[self sendLine:[NSString stringWithFormat:@"@+typing=active TAGMSG %@", channel.name]];
 }
 
+- (BOOL)typingNotificationIsThrottledInChannel:(IRCChannel *)channel
+{
+	NSDate *lastSentAt = channel.typingLastSentAt;
+
+	return (lastSentAt && [[NSDate date] timeIntervalSinceDate:lastSentAt] < IRCClientTypingActiveInterval);
+}
+
 - (void)sendTypingDoneToChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(channel != nil);
@@ -125,6 +134,11 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 	channel.typingActiveSentAt = nil;
 
 	if ([self canSendTypingNotificationsToChannel:channel] == NO) {
+		return;
+	}
+
+	/* At most one notification in the interval; "active" expires by itself */
+	if ([self typingNotificationIsThrottledInChannel:channel]) {
 		return;
 	}
 
@@ -146,6 +160,10 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 	channel.typingActiveSentAt = nil;
 
 	if ([self canSendTypingNotificationsToChannel:channel] == NO) {
+		return;
+	}
+
+	if ([self typingNotificationIsThrottledInChannel:channel]) {
 		return;
 	}
 
@@ -195,9 +213,11 @@ static NSTimeInterval const IRCClientTypingExpiryInterval = 6.0;
 		return;
 	}
 
-	/* "paused" and "done" both end the indicator */
+	/* "paused" stays for a while, "done" ends it */
 	if ([state isEqualToString:@"active"]) {
 		[channel markNicknameAsTyping:sender until:[NSDate dateWithTimeIntervalSinceNow:IRCClientTypingExpiryInterval]];
+	} else if ([state isEqualToString:@"paused"]) {
+		[channel markNicknameAsTyping:sender until:[NSDate dateWithTimeIntervalSinceNow:IRCClientTypingPausedExpiryInterval]];
 	} else {
 		[channel clearTypingForNickname:sender];
 	}

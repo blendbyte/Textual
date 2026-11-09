@@ -92,6 +92,17 @@ struct ProxySettings
 		configuration = proxy
 	}
 
+	/// A proxy is chosen but can't be used: never a reason to connect directly
+	static func addressIsMissing(type: IRCConnectionProxyType, address: String?, port: UInt16) -> Bool
+	{
+		switch type {
+			case .socks4, .socks5, .HTTP, .HTTPS:
+				return ((address?.isEmpty ?? true) || port == 0)
+			default:
+				return false
+		}
+	}
+
 	/// The same server settings as the IRC connection gets them
 	/// (IRCClient+Commands builds its connection configuration this way)
 	init?(clientConfig config: IRCClientConfig)
@@ -142,6 +153,14 @@ final class ConnectionProxy: NSObject
 	{
 		if let settings = ProxySettings(clientConfig: config) {
 			return [settings.configuration]
+		}
+
+		/* Chosen but with no address: a proxy nothing answers on, so previews
+		 fail instead of going out directly */
+		if (ProxySettings.addressIsMissing(type: config.proxyType, address: config.proxyAddress, port: config.proxyPort)),
+		   let unreachable = ProxySettings(type: .socks5, address: "127.0.0.1", port: 1, username: nil, password: nil)
+		{
+			return [unreachable.configuration]
 		}
 
 		return []

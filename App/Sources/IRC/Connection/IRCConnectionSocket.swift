@@ -215,6 +215,10 @@ protocol ConnectionSocketProtocol
 	/// Logic for waiting for data (receiving)
 	func read()
 
+	/// Stops and restarts waiting for data, while what arrived is worked through
+	func pauseReading()
+	func resumeReading()
+
 	/// Logic for reading data from socket (receiving)
 	func readIn(_ data: Data)
 

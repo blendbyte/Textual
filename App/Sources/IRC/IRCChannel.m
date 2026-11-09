@@ -578,11 +578,15 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 
 - (void)removeMemberWithNickname:(NSString *)nickname
 {
+	[self clearTypingForNickname:nickname];
+
 	[self.memberInfo removeMemberWithNickname:nickname];
 }
 
 - (void)removeMember:(IRCChannelUser *)member
 {
+	[self clearTypingForNickname:member.user.nickname];
+
 	[self.memberInfo removeMember:member];
 }
 
@@ -713,6 +717,15 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	}
 
 	BOOL wasTyping = (self.typingNicknameExpiryDates[nickname] != nil);
+
+	/* Only the selected channel is swept: what others send can't grow this */
+	if (wasTyping == NO && self.typingNicknameExpiryDates.count >= 200) {
+		[self typingNicknamesAtDate:[NSDate date]];
+
+		if (self.typingNicknameExpiryDates.count >= 200) {
+			return NO;
+		}
+	}
 
 	self.typingNicknameExpiryDates[nickname] = expiryDate;
 

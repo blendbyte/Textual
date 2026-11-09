@@ -45,4 +45,5 @@
 "DNS Error: %@ (%ld)" = "DNS Error: %1$@ (%2$ld)";
 "POSIX Error: %@ (%ld)" = "POSIX Error: %1$@ (%2$ld)";
 "The server refused the WebSocket connection. Check the address, including its path." = "The server refused the WebSocket connection. Check the address, including its path.";
+"Proxy without an address" = "The proxy set for this server has no address or port, so Textual didn’t connect. Set one in Server Properties, or turn the proxy off.";
 "Connection timed out" = "The server didn’t respond within 30 seconds";

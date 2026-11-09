@@ -59,9 +59,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Flags not understood are ignored */
 	for (NSString *flag in [value componentsSeparatedByString:@","]) {
-		if ([flag isEqualToString:@"email-required"]) {
+		/* A token may carry a value */
+		NSString *name = [flag componentsSeparatedByString:@"="].firstObject;
+
+		if ([name isEqualToString:@"email-required"]) {
 			requiresEmail = YES;
-		} else if ([flag isEqualToString:@"custom-account-name"]) {
+		} else if ([name isEqualToString:@"custom-account-name"]) {
 			allowsCustomName = YES;
 		}
 	}

@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL listReceived;
 @property (nonatomic, assign) NSUInteger openRequestCount;
 @property (nonatomic, strong) NSMutableArray<NSString *> *offeredCapabilities;
+@property (nonatomic, strong) NSMutableArray<NSString *> *acknowledgedCapabilities;
 @property (nonatomic, assign) BOOL skippingRestOfList;
 @end
 
@@ -70,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.listReceived = NO;
 	self.openRequestCount = 0;
 	self.offeredCapabilities = [NSMutableArray array];
+	self.acknowledgedCapabilities = [NSMutableArray array];
 	self.skippingRestOfList = NO;
 }
 
@@ -146,7 +148,18 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 	else if ([subcommand isEqualToStringIgnoringCase:@"ACK"])
 	{
-		for (NSString *capability in capabilities) {
+		/* Spread over several lines: nothing changes until the last one */
+		[self.acknowledgedCapabilities addObjectsFromArray:capabilities];
+
+		if (moreLinesFollow) {
+			return;
+		}
+
+		NSArray<NSString *> *acknowledgedCapabilities = [self.acknowledgedCapabilities copy];
+
+		[self.acknowledgedCapabilities removeAllObjects];
+
+		for (NSString *capability in acknowledgedCapabilities) {
 			if ([capability hasPrefix:@"-"]) {
 				[delegate capabilityNegotiator:self didDisableCapability:[capability substringFromIndex:1]];
 			} else {
@@ -209,21 +222,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSMutableArray<NSString *> *wantedCapabilities = [NSMutableArray array];
 
-	for (NSString *offeredCapability in offeredCapabilities) {
+	/* Offered more than once: the last value counts */
+	NSMutableSet<NSString *> *capabilitiesSeen = [NSMutableSet set];
+
+	for (NSString *offeredCapability in offeredCapabilities.reverseObjectEnumerator) {
 		NSString *value = nil;
 
 		NSString *capability = [self.class capabilityName:offeredCapability value:&value];
 
-		if ([wantedCapabilities containsObject:capability]) {
+		if ([capabilitiesSeen containsObject:capability]) {
 			continue;
 		}
+
+		[capabilitiesSeen addObject:capability];
 
 		if ([delegate capabilityNegotiator:self shouldRequestCapability:capability value:value]) {
 			[wantedCapabilities addObject:capability];
 		}
 	}
 
-	NSArray *requests = [self.class requestDataForCapabilities:wantedCapabilities maximumLength:_requestDataMaximumLength];
+	NSArray *requests = [self.class requestDataForCapabilities:wantedCapabilities.reverseObjectEnumerator.allObjects maximumLength:_requestDataMaximumLength];
 
 	self.openRequestCount += requests.count;
 

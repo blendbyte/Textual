@@ -2005,6 +2005,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 					[channel resortMember:member];
 
+					[channel clearTypingForNickname:oldNickname];
+
 					break;
 				}
 				case IRCChannelTypePrivateMessage:

@@ -674,10 +674,12 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* draft/read-marker: the newest message someone viewing the channel has seen */
-	if (lineType == TVCLogLineTypePrivateMessage ||
-		lineType == TVCLogLineTypeAction ||
-		lineType == TVCLogLineTypeNotice)
+	if (referenceMessage.isHistoric &&
+		(lineType == TVCLogLineTypePrivateMessage ||
+		 lineType == TVCLogLineTypeAction ||
+		 lineType == TVCLogLineTypeNotice))
 	{
+		/* The server's time only: a MARKREAD can't carry this Mac's clock */
 		[self readMarkerNoteMessageAt:receivedAt inChannel:channel];
 	}
 

@@ -206,7 +206,7 @@ static const IRCClientCapabilityTableEntry IRCClientCapabilityTable[] = {
 static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableEntryNamed(NSString *capabilityString)
 {
 	for (size_t i = 0; i < (sizeof(IRCClientCapabilityTable) / sizeof(IRCClientCapabilityTable[0])); i++) {
-		if ([capabilityString isEqualToStringIgnoringCase:@(IRCClientCapabilityTable[i].name)]) {
+		if ([capabilityString isEqualToString:@(IRCClientCapabilityTable[i].name)]) {
 			return &IRCClientCapabilityTable[i];
 		}
 	}
@@ -228,7 +228,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	NSString *host = socketConfig.serverAddress;
 
-	if (host.length == 0 || host.isIPAddress) {
+	if (host.length == 0) {
 		return;
 	}
 
@@ -245,7 +245,9 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	[IRCStrictTransportSecurity parseValue:value port:&port duration:&duration];
 
 	if (self.socket.isSecured) {
+		/* A policy is only kept for a name; an upgrade applies to an address too */
 		if (duration < 0 ||
+			host.isIPAddress ||
 			socketConfig.connectionShouldValidateCertificateChain == NO ||
 			self.socket.certificateTrustedByUser)
 		{
@@ -442,7 +444,7 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 - (BOOL)capabilityNegotiator:(IRCCapabilityNegotiator *)negotiator shouldRequestCapability:(NSString *)capability value:(nullable NSString *)value
 {
 	/* sts is never requested, only acted on */
-	if ([capability isEqualToStringIgnoringCase:@"sts"]) {
+	if ([capability isEqualToString:@"sts"]) {
 		[self processStrictTransportSecurityValue:value];
 
 		return NO;
@@ -454,8 +456,14 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 
 	const IRCClientCapabilityTableEntry *entry = IRCClientCapabilityTableEntryNamed(capability);
 
-	/* Already enabled (a repeated LS or NEW) */
+	/* Already enabled (a repeated LS or NEW): a NEW can bring a new value */
 	if ([self isCapabilityEnabled:entry->enables]) {
+		if (value.length > 0 && entry->request == ClientIRCv3SupportedCapabilityMultiline) {
+			[self processMultilineCapabilityValue:value];
+		} else if (value.length > 0 && entry->request == ClientIRCv3SupportedCapabilityAccountRegistration) {
+			[self processAccountRegistrationCapabilityValue:value];
+		}
+
 		return NO;
 	}
 

@@ -66,6 +66,14 @@ NS_ASSUME_NONNULL_BEGIN
 	return [member copy];
 }
 
+/* The usual letters keep their meaning: no +a here, and +q is still the owner */
+- (void)testUsualLettersKeepTheirRank
+{
+	[self.client.supportInfo processConfigurationData:@"me PREFIX=(qohv)~@%+ :are supported by this server"];
+
+	XCTAssertEqual([self memberWithModes:@"q"].rank, IRCUserRankChannelOwner);
+}
+
 /* Ranks follow the server's PREFIX order, measured from the operator mode */
 - (void)testRanksFollowThePrefixOrder
 {

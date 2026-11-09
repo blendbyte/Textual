@@ -173,6 +173,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 @implementation IRCClient
 
+@synthesize userNickname = _userNickname;
+
 #pragma mark -
 #pragma mark Initialization
 
@@ -809,9 +811,21 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	return self.server.serverAddress;
 }
 
+/* Read while rendering on other threads, and replaced on the main thread */
+- (void)setUserNickname:(nullable NSString *)userNickname
+{
+	@synchronized (self) {
+		self->_userNickname = [userNickname copy];
+	}
+}
+
 - (NSString *)userNickname
 {
-	NSString *userNickname = self->_userNickname;
+	NSString *userNickname = nil;
+
+	@synchronized (self) {
+		userNickname = self->_userNickname;
+	}
 
 	if (userNickname) {
 		return userNickname;

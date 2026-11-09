@@ -235,13 +235,11 @@ NS_ASSUME_NONNULL_BEGIN
 				if (segmentValue.length == 1) {
 					self.botModeCharacter = segmentValue;
 				}
-			} else if ([segmentKey isEqualToStringIgnoringCase:@"draft/ICON"] ||
-					   [segmentKey isEqualToStringIgnoringCase:@"ICON"])
+			} else if ([segmentKey isEqualToStringIgnoringCase:@"draft/ICON"])
 			{
 				self.networkIconAddress = segmentValue;
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"draft/FILEHOST"] ||
-					   [segmentKey isEqualToStringIgnoringCase:@"soju.im/FILEHOST"] ||
-					   [segmentKey isEqualToStringIgnoringCase:@"FILEHOST"])
+					   [segmentKey isEqualToStringIgnoringCase:@"soju.im/FILEHOST"])
 			{
 				/* An early draft allowed several, space separated: the first */
 				self.fileHostAddress = [segmentValue componentsSeparatedByString:@" "].firstObject;
@@ -423,7 +421,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.whoxSupported = NO;
 	} else if ([token isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
 		self.clientTagDenyList = @[];
-	} else if ([token isEqualToStringIgnoringCase:@"draft/FILEHOST"] || [token isEqualToStringIgnoringCase:@"soju.im/FILEHOST"] || [token isEqualToStringIgnoringCase:@"FILEHOST"]) {
+	} else if ([token isEqualToStringIgnoringCase:@"draft/FILEHOST"] || [token isEqualToStringIgnoringCase:@"soju.im/FILEHOST"]) {
 		self.fileHostAddress = nil;
 	} else if ([token isEqualToStringIgnoringCase:@"CHATHISTORY"] || [token isEqualToStringIgnoringCase:@"draft/CHATHISTORY"]) {
 		self.chatHistoryLimit = 0;

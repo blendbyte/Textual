@@ -60,6 +60,22 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 		}, on: queue)
 	}()
 
+	/// Lines given to the main queue and not worked through yet. A server
+	/// sending faster than that is held back by no longer reading from it.
+	fileprivate var linesOnMainQueue = 0
+
+	fileprivate var readingPaused = false
+
+	fileprivate let linesOnMainQueueHighWater = 5000
+
+	fileprivate let linesOnMainQueueLowWater = 1000
+
+	/// When the client batch being written began: nothing goes in between
+	fileprivate var clientBatchStartDate: Date?
+
+	/// A PONG waits at most this long for a batch to end: late is a disconnect
+	fileprivate let maximumPongHoldInterval: TimeInterval = 10
+
 	fileprivate var floodControlCurrentMessageCount = 0
 	fileprivate var floodControlEnforced = false
 
@@ -136,6 +152,15 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 				return
 			}
 
+			/* Never without the proxy that was asked for */
+			if (ProxySettings.addressIsMissing(type: self.config.proxyType, address: self.config.proxyAddress, port: self.config.proxyPort)) {
+				let error = ConnectionError(otherError: LocalizedString("Proxy without an address", table: "CommonErrors")) as NSError
+
+				self.notifyDelegate { $0.ircConnectionDidDisconnectWithError(error) }
+
+				return
+			}
+
 			self.startFloodControlTimer()
 
 			self.startConnectTimeout()
@@ -168,6 +193,12 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 		floodControlCurrentMessageCount = 0
 
 		sendQueue.removeAll()
+
+		clientBatchStartDate = nil
+
+		linesOnMainQueue = 0
+
+		readingPaused = false
 
 		stopFloodControlTimer()
 
@@ -213,13 +244,51 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 	{
 		queue.async {
 			self.sendQueue.removeAll()
+
+			self.clientBatchStartDate = nil
 		}
 	}
 
+	fileprivate func lineIsPong(_ line: Data) -> Bool
+	{
+		return line.starts(with: Array("PONG".utf8))
+	}
+
+	/// Whether a line, after any tags, starts with this text
+	fileprivate func line(_ line: Data, startsWith text: String) -> Bool
+	{
+		var command = line[line.startIndex...]
+
+		if (command.first == UInt8(ascii: "@")) {
+			guard let space = command.firstIndex(of: UInt8(ascii: " ")) else {
+				return false
+			}
+
+			command = command[command.index(after: space)...]
+		}
+
+		return command.starts(with: Array(text.utf8))
+	}
+
+	/// Where a PONG goes: first, or right after a client batch being written
+	/// (one in the middle of it is a protocol error), for a limited time
+	fileprivate var pongInsertionIndex: Int
+	{
+		guard let startDate = clientBatchStartDate, Date().timeIntervalSince(startDate) < maximumPongHoldInterval else {
+			return 0
+		}
+
+		if let batchEnd = sendQueue.firstIndex(where: { line($0, startsWith: "BATCH -") }) {
+			return (batchEnd + 1)
+		}
+
+		return sendQueue.count
+	}
+
 	/// Writes the next line if the socket is free and flood control allows it.
-	/// Priority lines (PONG) are at the head of the queue and ignore the limit.
+	/// A PONG ignores the limit, whenever it gets to the head of the queue.
 	@discardableResult
-	fileprivate func tryToSend(ignoringFloodControl: Bool = false) -> Bool
+	fileprivate func tryToSend() -> Bool
 	{
 		if (socket.sending || socket.connected == false) {
 			return false
@@ -229,7 +298,7 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 			return false
 		}
 
-		if (floodControlEnforced && ignoringFloodControl == false) {
+		if (floodControlEnforced && lineIsPong(line) == false) {
 			if (floodControlCurrentMessageCount >= config.floodControlMaximumMessages) {
 				return false
 			}
@@ -238,6 +307,12 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 		floodControlCurrentMessageCount += 1
 
 		sendQueue.removeFirst()
+
+		if (self.line(line, startsWith: "BATCH +")) {
+			clientBatchStartDate = Date()
+		} else if (self.line(line, startsWith: "BATCH -")) {
+			clientBatchStartDate = nil
+		}
 
 		socket.write(line)
 
@@ -255,9 +330,12 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 			}
 
 			if (priority) {
-				self.sendQueue.insert(data, at: 0)
+				/* One late reply is enough: a server that stopped reading can't pile these up */
+				self.sendQueue.removeAll { self.lineIsPong($0) }
 
-				self.tryToSend(ignoringFloodControl: true)
+				self.sendQueue.insert(data, at: self.pongInsertionIndex)
+
+				self.tryToSend()
 			} else {
 				self.sendQueue.append(data)
 
@@ -392,7 +470,38 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 
 	final func connection(_ connection: ConnectionSocket, received data: Data)
 	{
-		notifyDelegate { $0.ircConnectionDidReceive(data) }
+		linesOnMainQueue += 1
+
+		if (readingPaused == false && linesOnMainQueue >= linesOnMainQueueHighWater) {
+			readingPaused = true
+
+			socket.pauseReading()
+		}
+
+		DispatchQueue.main.async { [weak self] in
+			guard let self = self, let delegate = self.delegate else {
+				return
+			}
+
+			delegate.ircConnectionDidReceive(data)
+
+			self.queue.async {
+				self.lineWorkedThrough()
+			}
+		}
+	}
+
+	fileprivate func lineWorkedThrough()
+	{
+		if (linesOnMainQueue > 0) {
+			linesOnMainQueue -= 1
+		}
+
+		if (readingPaused && linesOnMainQueue <= linesOnMainQueueLowWater) {
+			readingPaused = false
+
+			socket.resumeReading()
+		}
 	}
 
 	final func connection(_ connection: ConnectionSocket, willSend data: Data)

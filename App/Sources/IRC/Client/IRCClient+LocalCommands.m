@@ -732,10 +732,9 @@ static NSUInteger _aliasDepth = 0;
 		return;
 	}
 
+	/* Sent either way: without the capability the server just won't confirm it */
 	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilitySetName] == NO) {
 		[self printDebugInformation:TXTLS(@"IRC[stn-n1]")];
-
-		return;
 	}
 
 	[self send:@"SETNAME", realName, nil];

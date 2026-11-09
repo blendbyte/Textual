@@ -155,11 +155,14 @@ static NSString * const IRCStrictTransportSecurityPoliciesKey = @"IRCClient Stri
 
 		NSInteger port = [policy integerForKey:@"port"];
 
-		if ([expiresAt isKindOfClass:[NSDate class]] == NO || [expiresAt compare:date] != NSOrderedDescending ||
-			port <= 0 || port > UINT16_MAX)
-		{
+		if ([expiresAt isKindOfClass:[NSDate class]] == NO || port <= 0 || port > UINT16_MAX) {
 			[self setPolicy:nil forHost:host];
 
+			return 0;
+		}
+
+		/* Expired, but kept: a session still open restarts its countdown at the end */
+		if ([expiresAt compare:date] != NSOrderedDescending) {
 			return 0;
 		}
 

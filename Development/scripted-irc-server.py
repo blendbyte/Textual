@@ -658,6 +658,36 @@ async def scenario_review_receive(client):
 	await client.collect(600)
 
 
+async def scenario_review_connection(client):
+	"""Review fixes for the connection. draft/multiline offered twice and SERVER-TIME
+	in capitals: SERVER-TIME isn't requested, as capability names are case-sensitive.
+	Then 30,000 lines arrive at once in #burst and the client must still answer a PING
+	and show the last line. Finally run /setname New Name: SETNAME goes out although
+	the capability wasn't offered."""
+	if not await client.register_with_capabilities("draft/multiline=max-bytes=4096 draft/multiline=max-bytes=2048 SERVER-TIME batch message-tags"):
+		return
+
+	requests = [line for line in client.registration_lines if line.upper().startswith("CAP REQ")]
+	result(any("draft/multiline" in line for line in requests), "draft/multiline offered twice is requested once")
+	result(not any("SERVER-TIME" in line for line in requests), "SERVER-TIME is not treated as server-time")
+
+	nick = client.nickname
+
+	await client.send(f":{nick}!user@client.textual.test JOIN #burst")
+	await client.send(f":{SERVER} 353 {nick} = #burst :@{nick}")
+	await client.send(f":{SERVER} 366 {nick} #burst :End of /NAMES list.")
+	await client.collect(2)
+
+	client.writer.write("".join(f":burster!b@burst.test PRIVMSG #burst :burst-line-{index:05d}\r\n" for index in range(30000)).encode())
+	await client.writer.drain()
+	print("BURST SENT", flush=True)
+	await client.collect(20)
+	result(await client.is_alive("burst"), "still answers a PING after 30,000 lines")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_redirect_tls(client):
 	"""(TLS) The server redirects the client (RPL_REDIR 010) to port+1; the client
 	must disconnect and not follow it."""
@@ -3329,6 +3359,7 @@ SCENARIOS = {
 	"review-crashes": scenario_review_crashes,
 	"review-irc": scenario_review_irc,
 	"review-receive": scenario_review_receive,
+	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
 	"review-view": scenario_review_view,
 	"links": scenario_links,
@@ -3379,7 +3410,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

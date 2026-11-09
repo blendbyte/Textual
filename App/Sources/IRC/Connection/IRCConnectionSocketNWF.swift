@@ -41,6 +41,10 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 {
 	fileprivate var readInBuffer: Data?
 
+	fileprivate var readingPaused = false
+
+	fileprivate var readWanted = false
+
 	fileprivate var connection: NWConnection?
 
 	fileprivate var trustRef: SecTrust?
@@ -243,9 +247,31 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	// MARK: - Socket Read & Write
 
+	func pauseReading()
+	{
+		readingPaused = true
+	}
+
+	func resumeReading()
+	{
+		readingPaused = false
+
+		if (readWanted) {
+			readWanted = false
+
+			read()
+		}
+	}
+
 	func read()
 	{
 		if (connected == false || disconnecting) {
+			return
+		}
+
+		if (readingPaused) {
+			readWanted = true
+
 			return
 		}
 
