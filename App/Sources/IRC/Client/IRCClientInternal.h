@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _batchFlushTimeout			60 // a batch that never closes is processed after this many seconds
 #define _batchNestingLimit			8 // a batch inside this many open batches is not opened
 #define IRCClientMaximumChannelCount	1000 // channels and queries of a server created by what it sends
+#define IRCClientMaximumNewQueriesPerMinute	100 // private conversations other people can open within a minute
 #define _batchEntryLimit			20000 // lines held in one batch; later ones are handled as they arrive
 #define _openBatchLimit				1000 // batches open at once; more are not opened
 #define _cachedHighlightsLimit		100 // newest highlights kept in cachedHighlights (for plugins)
@@ -235,6 +236,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger chatHistoryTargetsRemaining; // answers still taken to a CHATHISTORY TARGETS of ours
 @property (nonatomic, assign) BOOL chatHistoryMissedConversationsRequested; // once per connection, at the end of the MOTD
 @property (nonatomic, assign) BOOL channelLimitNoted;
+@property (nonatomic, assign) NSTimeInterval newQueryLimitPeriodStart;
+@property (nonatomic, assign) NSUInteger newQueryCountInLimitPeriod;
+@property (nonatomic, assign) BOOL newQueryLimitNoted;
 @property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate
 @property (nonatomic, assign) IRCISupportInfoCaseMapping channelMapCaseMapping;
@@ -416,6 +420,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)messageIsReplay:(IRCMessage *)m; // history or playback, by batch or by an old server time
 - (void)receiveStandardReply:(IRCMessage *)m;
 + (NSString *)textHidingPasswordInServiceCommand:(NSString *)text toTarget:(NSString *)target;
+- (BOOL)awayMessageGivesNoReason:(NSString *)message; // draft/pre-away: "*"
 - (void)scheduleWhoRequestPass;
 - (NSString *)standardReplyText:(IRCMessage *)m;
 - (void)receiveAccount:(IRCMessage *)m;

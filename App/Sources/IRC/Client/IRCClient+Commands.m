@@ -589,6 +589,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)joinKickedChannel:(IRCChannel *)channel
 {
+	/* Closed in the meantime: joining would bring it back */
+	if ([self findChannel:channel.name] != channel) {
+		return;
+	}
+
 	[self joinChannel:channel];
 }
 

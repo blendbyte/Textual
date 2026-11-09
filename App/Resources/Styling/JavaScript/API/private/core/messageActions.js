@@ -744,7 +744,11 @@ _MessageActions._decorateFailed = function(line) /* PRIVATE */
 
 	var lineNumber = line.id.replace(/^line-/, "");
 
-	var actions = [["resend", (strings.resend || "Resend")], ["delete", (strings.deleteFailed || "Delete")]];
+	var actions = [["delete", (strings.deleteFailed || "Delete")]];
+
+	if (line.classList.contains("noResend") === false) {
+		actions.unshift(["resend", (strings.resend || "Resend")]);
+	}
 
 	actions.forEach(function(action) {
 		var button = document.createElement("button");

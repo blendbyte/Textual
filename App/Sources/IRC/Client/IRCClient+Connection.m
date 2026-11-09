@@ -161,6 +161,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.chatHistoryTargetsRemaining = 0;
 	self.chatHistoryMissedConversationsRequested = NO;
 	self.channelLimitNoted = NO;
+	self.newQueryLimitPeriodStart = 0;
+	self.newQueryCountInLimitPeriod = 0;
+	self.newQueryLimitNoted = NO;
 
 	self.userIsAway = NO;
 	self.awayRestoredBeforeRegistration = NO;

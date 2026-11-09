@@ -282,7 +282,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Never shown (echo-message): now, as not sent */
 	[self printOutgoingMessage:outgoing usingBlock:^{
-		[self print:outgoing.text
+		[self print:[IRCClient textHidingPasswordInServiceCommand:outgoing.text toTarget:outgoing.target]
 				 by:self.userNickname
 		  inChannel:channel
 			 asType:outgoing.lineType
@@ -302,6 +302,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(channel != nil);
 
 	if (self.isLoggedIn == NO || channel.isUtility) {
+		return NO;
+	}
+
+	/* The line only has the dots: sending it would make them the password */
+	if ([IRCClient textEndsInHiddenPassword:logLine.messageBody]) {
 		return NO;
 	}
 

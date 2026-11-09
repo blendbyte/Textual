@@ -444,6 +444,26 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
+		BOOL printContextMessage = YES;
+
+		if ([sharedPluginManager() supportsFeature:THOPluginItemSupportedFeatureDidReceivePlainTextMessageEvent]) {
+			self.receivedMessageIsReplay = [self messageIsReplay:m];
+
+			printContextMessage = [THOPluginDispatcher receivedText:text
+														 authoredBy:m.sender
+														destinedFor:contextChannel
+														 asLineType:lineType
+														   onClient:self
+														 receivedAt:m.receivedAt
+													   wasEncrypted:NO];
+
+			self.receivedMessageIsReplay = NO;
+		}
+
+		if (printContextMessage == NO) {
+			return;
+		}
+
 		[self print:text
 				 by:sender
 		  inChannel:contextChannel
@@ -459,7 +479,7 @@ NS_ASSUME_NONNULL_BEGIN
 			postEvent = [self notifyPrintedText:TXNotificationTypePrivateMessage lineType:lineType target:contextChannel nickname:sender text:text];
 		}
 
-		if (postEvent) {
+		if (postEvent && [self readMarkerCoversMessage:m inChannel:contextChannel] == NO) {
 			[self setUnreadStateForChannel:contextChannel];
 		}
 	}];
@@ -515,14 +535,17 @@ NS_ASSUME_NONNULL_BEGIN
 		/* Logic for notices */
 
 		/* Process services */
+		BOOL routedToChannel = NO;
+
 		if ([sender isEqualToStringIgnoringCase:@"ChanServ"]) {
-			[self _receiveText_PrivateNoticeFromChanServ:&query text:&text];
-		} else if ([sender isEqualToStringIgnoringCase:@"NickServ"]) {
+			routedToChannel = [self _receiveText_PrivateNoticeFromChanServ:&query text:&text sender:m.sender];
+		} else if ([sender isEqualToStringIgnoringCase:@"NickServ"] && [self messageIsReplay:m] == NO) {
+			/* From history, an old prompt mustn't send the password again */
 			[self _receiveText_PrivateNoticeFromNickServ:&query text:&text sender:m.sender];
 		}
 
 		/* Determine where to send notice messages */
-		if ([TPCPreferences locationToSendNotices] == TXNoticeSendLocationSelectedChannel) {
+		if (routedToChannel == NO && [TPCPreferences locationToSendNotices] == TXNoticeSendLocationSelectedChannel) {
 			query = [TVCMainWindow.currentWindow selectedChannelOn:self];
 		}
 
@@ -536,11 +559,7 @@ NS_ASSUME_NONNULL_BEGIN
 			if ([TPCPreferences locationToSendNotices] == TXNoticeSendLocationQuery) {
 //				newPrivateMessage = YES;
 
-				if (isSelfMessage) {
-					query = [worldController() createPrivateMessage:target onClient:self];
-				} else {
-					query = [worldController() createPrivateMessage:sender onClient:self];
-				}
+				query = [self createQueryNamed:((isSelfMessage) ? target : sender) forMessage:m];
 			}
 		}
 
@@ -571,19 +590,16 @@ NS_ASSUME_NONNULL_BEGIN
 				return;
 			}
 
-			newPrivateMessage = YES;
+			query = [self createQueryNamed:((isSelfMessage) ? target : sender) forMessage:m];
 
-			if (isSelfMessage) {
-				query = [worldController() createPrivateMessage:target onClient:self];
-			} else {
-				query = [worldController() createPrivateMessage:sender onClient:self];
-			}
+			newPrivateMessage = (query != nil);
 		}
 
 		printCompletionBlock =
 		^(TVCLogControllerPrintOperationContext *context)
 		{
-			if (isSelfMessage) {
+			/* Past the limit on new conversations it's in the console: no notification either */
+			if (isSelfMessage || query == nil) {
 				return;
 			}
 
@@ -658,7 +674,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* Update query status (a message, unlike a notice, always has a query) */
+	/* Update query status */
 	if (query != nil && query.isActive == NO) {
 		[query activate];
 
@@ -666,10 +682,58 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (void)_receiveText_PrivateNoticeFromChanServ:(IRCChannel **)target text:(NSString **)text
+/* What others send decides how many of these open, and each is a chat view: a
+ limit per minute and one overall. Past them the message goes to the console. */
+- (nullable IRCChannel *)createQueryNamed:(NSString *)name forMessage:(IRCMessage *)m
+{
+	NSParameterAssert(name != nil);
+	NSParameterAssert(m != nil);
+
+	if (self.channelList.count >= IRCClientMaximumChannelCount) {
+		if (self.channelLimitNoted == NO) {
+			self.channelLimitNoted = YES;
+
+			[self printDebugInformationToConsole:TXTLS(@"IRC[qry-l2]", (unsigned long)IRCClientMaximumChannelCount)];
+		}
+
+		return nil;
+	}
+
+	/* The user's own lines and history after a reconnect aren't a flood */
+	if ([self nicknameIsMyself:m.senderNickname] == NO && [self messageIsReplay:m] == NO) {
+		NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+
+		if ((now - self.newQueryLimitPeriodStart) >= 60.0) {
+			self.newQueryLimitPeriodStart = now;
+			self.newQueryCountInLimitPeriod = 0;
+			self.newQueryLimitNoted = NO;
+		}
+
+		if (self.newQueryCountInLimitPeriod >= IRCClientMaximumNewQueriesPerMinute) {
+			if (self.newQueryLimitNoted == NO) {
+				self.newQueryLimitNoted = YES;
+
+				[self printDebugInformationToConsole:TXTLS(@"IRC[qry-l1]", (unsigned long)IRCClientMaximumNewQueriesPerMinute)];
+			}
+
+			return nil;
+		}
+
+		self.newQueryCountInLimitPeriod += 1;
+	}
+
+	return [worldController() createPrivateMessage:name onClient:self];
+}
+
+/* Anyone can use the nickname "ChanServ": a line is only placed in a channel
+ when it comes from the network's services host or from someone in that channel.
+ Returns whether it was. Never the first-use check NickServ has, which would
+ save this sender's host as the services host. */
+- (BOOL)_receiveText_PrivateNoticeFromChanServ:(IRCChannel **)target text:(NSString **)text sender:(IRCPrefix *)sender
 {
 	NSParameterAssert(target != NULL);
 	NSParameterAssert(text != NULL);
+	NSParameterAssert(sender != nil);
 
 	NSString *textIn = (*text);
 
@@ -678,31 +742,41 @@ NS_ASSUME_NONNULL_BEGIN
 	NSInteger spacePosition = [textIn stringPosition:@" "];
 
 	if ([textIn hasPrefix:@"["] == NO || spacePosition < 4) {
-		return;
+		return NO;
 	}
 
 	NSString *textHead = [textIn substringToIndex:spacePosition];
 
 	if ([textHead hasSuffix:@"]"] == NO) {
-		return;
+		return NO;
 	}
 
 	textHead = [textHead substringToIndex:(textHead.length - 1)]; // Remove the ]
 	textHead = [textHead substringFromIndex:1]; // Remove the [
 
 	if ([self stringIsChannelName:textHead] == NO) {
-		return;
+		return NO;
 	}
 
 	IRCChannel *channel = [self findChannel:textHead];
 
 	if (channel == nil) {
-		return;
+		return NO;
+	}
+
+	NSString *servicesHost = self.nickServHostForVerification;
+
+	BOOL senderIsTrusted = ((servicesHost && [sender.address isEqualToStringIgnoringCase:servicesHost]) || [channel findMember:sender.nickname] != nil);
+
+	if (senderIsTrusted == NO) {
+		return NO;
 	}
 
 	*text = [textIn substringFromIndex:(textHead.length + 2)]; // Remove the [#channelname] from the text
 
 	*target = channel;
+
+	return YES;
 }
 
 /* Anyone can use the nickname "NickServ" (during a services outage, for example),
@@ -892,7 +966,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if (isPlainText == NO) {
 		query = [self findChannel:sender];
 	} else { // NOTICE message
-		query = [self findChannelOrCreate:sender isPrivateMessage:YES];
+		query = [self findChannel:sender];
+
+		if (query == nil) {
+			query = [self createQueryNamed:sender forMessage:m];
+		}
 	}
 
 	/* Print message */
@@ -976,6 +1054,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if ([command isEqualToString:@"LAGCHECK"]) {
 		[self receiveCTCPLagCheckQuery:m text:textMutable];
 
+		return;
+	}
+
+	/* From history: the question is old, and an old file offer is gone */
+	if ([self messageIsReplay:m]) {
 		return;
 	}
 
@@ -1257,6 +1340,13 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
+- (BOOL)awayMessageGivesNoReason:(NSString *)message
+{
+	NSParameterAssert(message != nil);
+
+	return ([message isEqualToString:@"*"] && [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityPreAway]);
+}
+
 /* An event line in each channel shared with them (Preferences → Style →
  Events: hidden unless shown there) */
 - (void)printAwayChangeOfUser:(IRCUser *)user toAway:(BOOL)away message:(IRCMessage *)m
@@ -1274,7 +1364,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (away == NO) {
 		message = TXTLS(@"IRC[awy-b1]", nickname);
-	} else if (m.sequence.length > 0) {
+	} else if (m.sequence.length > 0 && [self awayMessageGivesNoReason:m.sequence] == NO) {
 		message = TXTLS(@"IRC[awy-a1]", nickname, m.sequence.stringByAppendingIRCFormattingStop);
 	} else {
 		message = TXTLS(@"IRC[awy-a2]", nickname);
@@ -1298,6 +1388,11 @@ NS_ASSUME_NONNULL_BEGIN
 						command:m.command
 					 receivedAt:m.receivedAt];
 	}
+}
+
+- (BOOL)nickname:(NSString *)nickname1 isSameAs:(NSString *)nickname2
+{
+	return [[self.supportInfo foldedString:nickname1] isEqualToString:[self.supportInfo foldedString:nickname2]];
 }
 
 /* A server decides what we joined, so not without limits: each channel is
@@ -1455,7 +1550,7 @@ NS_ASSUME_NONNULL_BEGIN
 		if (self.config.sendWhoCommandRequestsToChannels && self.isBrokenIRCd_aka_Twitch == NO) {
 			[self requestModesForChannel:channel];
 		}
-	} else if (netjoin == NO) {
+	} else if (printMessage) {
 		[self notifyEvent:TXNotificationTypeUserJoined lineType:TVCLogLineTypeJoin target:channel nickname:sender text:nil];
 	}
 }
@@ -1498,9 +1593,6 @@ NS_ASSUME_NONNULL_BEGIN
 			[mainWindow() reloadTreeItem:channel];
 		} else {
 			[channel removeMemberWithNickname:sender];
-
-			/* Notify user */
-			[self notifyEvent:TXNotificationTypeUserParted lineType:TVCLogLineTypePart target:channel nickname:sender text:comment];
 		}
 
 		[self updateQueryInfoBarsForNickname:((myself) ? nil : sender)];
@@ -1512,6 +1604,10 @@ NS_ASSUME_NONNULL_BEGIN
 		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
 
 		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
+	}
+
+	if (printMessage && myself == NO && isPrintOnlyMessage == NO) {
+		[self notifyEvent:TXNotificationTypeUserParted lineType:TVCLogLineTypePart target:channel nickname:sender text:comment];
 	}
 
 	if (printMessage) {
@@ -1657,8 +1753,15 @@ NS_ASSUME_NONNULL_BEGIN
 		messageToPrint = TXTLS(@"IRC[tok-st]", messageToPrint, comment.stringByAppendingIRCFormattingStop);
 	}
 
+	__block BOOL shownSomewhere = NO;
+
 	void (^printingBlock)(IRCChannel *) = ^(IRCChannel *channel)
 	{
+		/* Our own quit: only in the channels we're in */
+		if (myself && isPrintOnlyMessage == NO && (channel.isChannel == NO || channel.isActive == NO)) {
+			return;
+		}
+
 		if (myself == NO && isPrintOnlyMessage == NO) {
 			switch (channel.type) {
 				case IRCChannelTypeChannel:
@@ -1675,7 +1778,7 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 				case IRCChannelTypePrivateMessage:
 				{
-					if ([sender isEqualToStringIgnoringCase:channel.name] == NO) {
+					if ([self nickname:sender isSameAs:channel.name] == NO) {
 						return;
 					}
 
@@ -1710,6 +1813,8 @@ NS_ASSUME_NONNULL_BEGIN
 				return;
 			}
 
+			shownSomewhere = YES;
+
 			/* Lost in a netsplit: one line for all of them */
 			if (myself == NO && [self collectNetsplitNickname:sender inChannel:channel forMessage:m]) {
 				return;
@@ -1717,6 +1822,8 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		else // -isChannel
 		{
+			shownSomewhere = YES;
+
 			message = TXTLS(@"IRC[8bk-mx]", sender);
 		}
 
@@ -1748,7 +1855,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[TVCMainWindow updateTitleFor:self];
 
 		/* A netsplit is one line, not a notification for each person */
-		if (self.netsplitBatch == nil || m.parentBatchMessage != self.netsplitBatch) {
+		if (shownSomewhere && (self.netsplitBatch == nil || m.parentBatchMessage != self.netsplitBatch)) {
 			[self notifyEvent:TXNotificationTypeUserDisconnected lineType:TVCLogLineTypeQuit target:nil nickname:sender text:comment];
 		}
 
@@ -1789,6 +1896,11 @@ NS_ASSUME_NONNULL_BEGIN
 		newNickname = [m paramAt:1];
 	} else {
 		newNickname = [m paramAt:0];
+	}
+
+	/* A server can't rename someone to nothing, or a query to a channel's name */
+	if (newNickname.length == 0 || [self stringIsChannelName:newNickname]) {
+		return;
 	}
 
 	/* There's no reason to perform an update if nothing changed */
@@ -1898,7 +2010,7 @@ NS_ASSUME_NONNULL_BEGIN
 				case IRCChannelTypePrivateMessage:
 				{
 					/* Rename private message if one with old name is found */
-					if ([oldNickname isEqualToStringIgnoringCase:channel.name] == NO) {
+					if ([self nickname:oldNickname isSameAs:channel.name] == NO) {
 						return;
 					}
 
@@ -2043,8 +2155,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	BOOL printMessage = [self postReceivedMessage:m withText:modeString destinedFor:channel];
 
-	if (printMessage) {
-		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:nil];
+	/* Our own changes always show, a server has no address book entry */
+	if (printMessage && [self nicknameIsMyself:sender] == NO) {
+		IRCAddressBookEntry *ignoreInfo = ((m.senderIsServer) ? nil : [self findAddressBookEntryForHostmask:m.senderHostmask]);
+
+		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
 
 	if (printMessage) {
@@ -2110,6 +2225,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *invitedNickname = [m paramAt:0];
 
 	NSString *channelName = [m paramAt:1];
+
+	if ([self findAddressBookEntryForHostmask:m.senderHostmask].ignoreGeneralEventMessages) {
+		return;
+	}
 
 	/* invite-notify also tells channel members about invites for others:
 	 a quiet line in that channel, without notification or auto-join */
@@ -2596,8 +2715,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* The server tags every command of a bot (bot mode); a live message without
- the tag means the sender isn't one (any more) */
+/* The server should tag a bot's commands (bot mode), but needn't: a message
+ without the tag says nothing. A WHO reply without the flag clears it. */
 - (void)processBotTagInMessage:(IRCMessage *)m
 {
 	NSParameterAssert(m != nil);
@@ -2624,7 +2743,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[self markUserWithNickname:nickname asBot:(m.messageTags[@"bot"] != nil)];
+	if (m.messageTags[@"bot"] != nil) {
+		[self markUserWithNickname:nickname asBot:YES];
+	}
 }
 
 - (BOOL)collectNetsplitNickname:(NSString *)nickname inChannel:(IRCChannel *)channel forMessage:(IRCMessage *)m

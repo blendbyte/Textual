@@ -3230,6 +3230,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	if (sendFailedReason) {
 		classAttribute = [classAttribute stringByAppendingString:@" failed"];
 
+		/* Only the dots of a password are left: it can't be sent again */
+		if ([IRCClient textEndsInHiddenPassword:logLine.messageBody]) {
+			classAttribute = [classAttribute stringByAppendingString:@" noResend"];
+		}
+
 		templateAttributes[@"sendFailedReason"] = sendFailedReason;
 	}
 

@@ -349,7 +349,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		servicesWithHost = [NSSet setWithArray:@[@"Q", @"X"]]; // Q@CServe.quakenet.org, X@channels.undernet.org
 
-		commands = [NSSet setWithArray:@[@"IDENTIFY", @"ID", @"LOGIN", @"AUTH", @"REGISTER", @"GHOST", @"RECOVER", @"RELEASE", @"GROUP"]];
+		commands = [NSSet setWithArray:@[@"IDENTIFY", @"ID", @"LOGIN", @"AUTH", @"REGISTER", @"GHOST", @"RECOVER", @"RELEASE", @"GROUP", @"REGAIN", @"DROP", @"PASSWD", @"RESETPASS", @"CONFIRM"]];
 
 		settings = [NSSet setWithArray:@[@"SET", @"SASET"]];
 	});
@@ -383,6 +383,11 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray *wordsShown = [words subarrayWithRange:NSMakeRange(0, wordsKept)];
 
 	return [NSString stringWithFormat:@"%@ ••••••••", [wordsShown componentsJoinedByString:@" "]];
+}
+
++ (BOOL)textEndsInHiddenPassword:(nullable NSString *)text
+{
+	return [text hasSuffix:@" ••••••••"];
 }
 
 /* Several lines with a command among them: often a pasted log or path rather

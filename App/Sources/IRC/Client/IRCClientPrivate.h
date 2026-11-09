@@ -334,6 +334,7 @@ TEXTUAL_EXTERN NSString * const IRCClientFileUploadLoginDecisionPrefix;
 /* Failed sends (IRCClient+FailedSends.m) */
 @interface IRCClient (FailedSendsPrivate)
 /* Resend on a message the server refused: NO when it can't be sent now */
++ (BOOL)textEndsInHiddenPassword:(nullable NSString *)text;
 - (BOOL)resendFailedLine:(TVCLogLine *)logLine inChannel:(IRCChannel *)channel;
 @end
 

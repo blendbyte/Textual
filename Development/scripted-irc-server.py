@@ -569,9 +569,98 @@ async def scenario_malformed(client):
 	print("CHECK: #real shows 'legit message' and no SPOOFED line", flush=True)
 
 
+async def wait_for_client_line(client, text, seconds=120):
+	"""Until the client sends a line with this text; nothing else is answered but PING."""
+	end = time.monotonic() + seconds
+
+	while (remaining := end - time.monotonic()) > 0:
+		try:
+			line = await asyncio.wait_for(client.read_line(), remaining)
+		except asyncio.TimeoutError:
+			break
+
+		if line is None:
+			return None
+
+		client.received.append(line)
+
+		if line.upper().startswith("PING"):
+			await client.send(f":{SERVER} PONG {SERVER} {line.partition(' ')[2]}")
+		elif text in line:
+			return line
+
+	return None
+
+
+async def scenario_review_receive(client):
+	"""Review fixes for incoming lines. An old CTCP from history gets no answer and a
+	live one does. A ChanServ notice for #r from outside it stays out of #r; one from
+	a member of #member goes there. bob's query survives NICK #secret and NICK with
+	no name. Away "*" reads as no reason. Then run, in order: /join #banned (refused:
+	the state bar offers Join), /msg NickServ IDENTIFY hunter2 (refused: dots, no
+	Resend), /msg NickServ REGAIN me hunter2 (dots), /query foo{ (renamed to bar by
+	foo[ under rfc1459). Finally 130 new nicknames message the client: 100 queries
+	open, the rest go to the console with one note."""
+	client.isupport_extra = "CASEMAPPING=rfc1459"
+
+	if not await client.register_with_capabilities("echo-message server-time message-tags draft/pre-away"):
+		return
+
+	nick = client.nickname
+
+	await client.send(f":{nick}!user@client.textual.test JOIN #r")
+	await client.send(f":{SERVER} 353 {nick} = #r :@{nick} bob")
+	await client.send(f":{SERVER} 366 {nick} #r :End of /NAMES list.")
+	await client.send(f":{nick}!user@client.textual.test JOIN #member")
+	await client.send(f":{SERVER} 353 {nick} = #member :@{nick} ChanServ")
+	await client.send(f":{SERVER} 366 {nick} #member :End of /NAMES list.")
+	await client.collect(2)
+
+	await client.send(f"@time=2020-01-01T00:00:00.000Z :oldcaller!o@old.test PRIVMSG {nick} :\x01VERSION\x01")
+	await client.send(f":livecaller!l@live.test PRIVMSG {nick} :\x01VERSION\x01")
+	await client.collect(3)
+	result(len(client.sent(lambda line: line.upper().startswith("NOTICE OLDCALLER "))) == 0, "a CTCP from history gets no answer")
+	result(len(client.sent(lambda line: line.upper().startswith("NOTICE LIVECALLER "))) == 1, "a live CTCP is answered")
+
+	await client.send(f":ChanServ!x@evil.test NOTICE {nick} :[#r] spoofed-entry-line")
+	await client.send(f":ChanServ!cs@member.test NOTICE {nick} :[#member] real-entry-line")
+	await client.send(f":bob!b@friend.test PRIVMSG {nick} :hello-from-bob")
+	await client.collect(2)
+	await client.send(":bob!b@friend.test NICK #secret")
+	await client.send(":bob!b@friend.test NICK :")
+	await client.send(f":{SERVER} 301 {nick} unknowncarol :*")
+	result(await client.is_alive("nick"), "still connected after NICK #secret and an empty NICK")
+
+	print("WAITING: /join #banned", flush=True)
+	if await wait_for_client_line(client, "JOIN #banned"):
+		await client.send(f":{SERVER} 474 {nick} #banned :Cannot join channel (+b)")
+	await client.collect(2)
+
+	print("WAITING: /msg NickServ IDENTIFY hunter2", flush=True)
+	if await wait_for_client_line(client, "IDENTIFY hunter2"):
+		await client.send(f":{SERVER} 401 {nick} NickServ :No such nick/channel")
+	await client.collect(2)
+
+	print("WAITING: /msg NickServ REGAIN me hunter2", flush=True)
+	if await wait_for_client_line(client, "REGAIN me hunter2"):
+		await client.send(f":{nick}!user@client.textual.test PRIVMSG NickServ :REGAIN me hunter2")
+	await client.collect(8)
+
+	await client.send(":foo[!f@friend.test NICK bar")
+	await client.collect(2)
+
+	await client.send(f":{nick}!user@client.textual.test QUIT :self-quit-line")
+	await client.collect(2)
+
+	print("FLOOD", flush=True)
+	for index in range(130):
+		await client.send(f":flooder{index:03d}!f@flood.test PRIVMSG {nick} :flood-line-{index:03d}")
+	await client.collect(600)
+
+
 async def scenario_redirect_tls(client):
 	"""(TLS) The server redirects the client (RPL_REDIR 010) to port+1; the client
-	must reconnect there with TLS."""
+	must disconnect and not follow it."""
 	await client.collect(1)
 
 	await client.send(f":{SERVER} 010 {client.nickname} 127.0.0.1 {Events.redirect_port} :Please use this server")
@@ -579,10 +668,10 @@ async def scenario_redirect_tls(client):
 	try:
 		await asyncio.wait_for(Events.reconnected.wait(), 15)
 	except asyncio.TimeoutError:
-		result(False, "client reconnected after the redirect")
+		result(True, "client did not follow the redirect")
 		return
 
-	result(Events.reconnected_with_tls, "redirected connection uses TLS")
+	result(False, "client did not follow the redirect")
 
 
 async def scenario_conn_tls(client):
@@ -3239,6 +3328,7 @@ SCENARIOS = {
 	"idle": scenario_idle,
 	"review-crashes": scenario_review_crashes,
 	"review-irc": scenario_review_irc,
+	"review-receive": scenario_review_receive,
 	"silent-echo": scenario_silent_echo,
 	"review-view": scenario_review_view,
 	"links": scenario_links,
@@ -3289,7 +3379,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

@@ -132,6 +132,25 @@ NS_ASSUME_NONNULL_BEGIN
 	[self postReceivedMessage:m];
 }
 
+/* Refused: back to parted, so the state bar offers Join again. Setting the
+ status clears the flag, so the flag comes after it. */
+- (void)joinOfChannelFailed:(nullable IRCChannel *)channel
+{
+	if (channel == nil || channel.isChannel == NO) {
+		return;
+	}
+
+	if (channel.status == IRCChannelStatusJoining) {
+		channel.status = IRCChannelStatusParted;
+
+		[mainWindow() reloadTreeItem:channel];
+
+		[TVCMainWindow updateTitleFor:channel];
+	}
+
+	channel.errorOnLastJoinAttempt = YES;
+}
+
 - (void)receiveAwayNotifyCapability:(IRCMessage *)m
 {
 	NSParameterAssert(m != nil);
@@ -368,38 +387,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 			self.disconnectType = IRCClientDisconnectModeServerRedirect;
 
-			/* If the address is thought to be invalid, then we still
-			 perform the disconnect suggested by the redirect, but
-			 we do not go any further than that. */
-			if (serverAddress.validInternetAddress == NO ||
-				serverPort.validInternetPort == NO)
-			{
-				[self disconnect];
+			/* Never followed: a server could otherwise make this Mac connect to
+			 any address, inside the user's network too, and send it the login */
+			[self printDebugInformationToConsole:TXTLS(@"IRC[r3d-t2]", serverAddress, serverPort)];
 
-				return YES;
-			}
+			[self cancelReconnect];
 
-			/* A redirect never drops TLS: a server (or anyone tampering with the
-			 redirect) could otherwise move the session, and SASL or NickServ
-			 passwords, to plaintext. Read the state before -disconnect
-			 destroys the socket. */
-			BOOL connectionIsSecured = (self.socket.isSecured || self.socket.config.connectionPrefersSecuredConnection);
+			[self disconnect];
 
-			if (connectionIsSecured) {
-				[self printDebugInformationToConsole:TXTLS(@"IRC[r3d-t1]", serverAddress, serverPort)];
-			}
-
-			/* Perform reconnect to specified locations */
-			[self disconnectThen:^(IRCClient *client) {
-				[client connect];
-			}];
-
-			/* -disconnect would destroy this so we set them after... */
-			self.temporaryServerAddressOverride = serverAddress;
-			self.temporaryServerPortOverride = serverPort.integerValue;
-			self.temporaryServerPrefersSecuredConnection = connectionIsSecured;
-
-			break;
+			return YES;
 		}
 		case RPL_STATSCONN:
 		case RPL_LUSERCLIENT:
@@ -571,7 +567,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			IRCChannel *channel = [self findChannel:awayNickname];
 
-			NSString *message = TXTLS(@"IRC[c1h-fq]", awayNickname, awayComment);
+			NSString *message = (([self awayMessageGivesNoReason:awayComment]) ? TXTLS(@"IRC[awy-a2]", awayNickname) : TXTLS(@"IRC[c1h-fq]", awayNickname, awayComment));
 
 			if (channel == nil) {
 				channel = self.selectedChannelForReplies;
@@ -1482,7 +1478,11 @@ NS_ASSUME_NONNULL_BEGIN
 				break;
 			}
 
-			NSArray *onlineNicknames = [self.isonReplyNicknames copy];
+			NSMutableSet<NSString *> *onlineNicknames = [NSMutableSet set];
+
+			for (NSString *nickname in self.isonReplyNicknames) {
+				[onlineNicknames addObject:[self.supportInfo foldedString:nickname]];
+			}
 
 			[self.isonReplyNicknames removeAllObjects];
 
@@ -1501,14 +1501,14 @@ NS_ASSUME_NONNULL_BEGIN
 				if (ison) {
 					/* If the user was on before, but is not in the list of ISON
 					 users in this reply, then they are considered gone. Log that. */
-					if ([onlineNicknames containsObjectIgnoringCase:trackedUser] == NO) {
+					if ([onlineNicknames containsObject:[self.supportInfo foldedString:trackedUser]] == NO) {
 						if (self.invokingISONCommandForFirstTime == NO) {
 							trackingStatus = IRCAddressBookUserTrackingStatusSignedOff;
 						}
 					}
 				} else {
 					/* If they were not on but now are, then log that too. */
-					if ([onlineNicknames containsObjectIgnoringCase:trackedUser]) {
+					if ([onlineNicknames containsObject:[self.supportInfo foldedString:trackedUser]]) {
 						if (self.invokingISONCommandForFirstTime) {
 							trackingStatus = IRCAddressBookUserTrackingStatusAvailable;
 						} else {
@@ -1536,14 +1536,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 				if (channel.isActive) {
 					/* If the user is no longer on, deactivate the private message */
-					if ([onlineNicknames containsObjectIgnoringCase:channel.name] == NO) {
+					if ([onlineNicknames containsObject:[self.supportInfo foldedString:channel.name]] == NO) {
 						[channel deactivate];
 
 						[mainWindow() reloadTreeItem:channel];
 					}
 				} else {
 					/* Activate the private message if the user is back online */
-					if ([onlineNicknames containsObjectIgnoringCase:channel.name]) {
+					if ([onlineNicknames containsObject:[self.supportInfo foldedString:channel.name]]) {
 						[channel activate];
 
 						[mainWindow() reloadTreeItem:channel];
@@ -2061,6 +2061,12 @@ NS_ASSUME_NONNULL_BEGIN
 		case ERR_NOSUCHSERVER:
 		case ERR_NOSUCHCHANNEL:
 		{
+			IRCChannel *channel = (([m paramsCount] > 1) ? [self findChannel:[m paramAt:1]] : nil);
+
+			if (channel.status == IRCChannelStatusJoining) {
+				[self joinOfChannelFailed:channel];
+			}
+
 			if (printMessage) {
 				[self printErrorReply:m];
 			}
@@ -2139,7 +2145,7 @@ NS_ASSUME_NONNULL_BEGIN
 			IRCChannel *channel = [self findChannel:channelName];
 
 			if (channel) {
-				channel.errorOnLastJoinAttempt = YES;
+				[self joinOfChannelFailed:channel];
 
 				/* In addition to the console, print join errors in
 				 the channel itself because user might check there. */
