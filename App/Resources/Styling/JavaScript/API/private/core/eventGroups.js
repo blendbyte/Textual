@@ -108,15 +108,27 @@ _EventGroups._applyDisplay = function() /* PRIVATE */
 
 	rules.push(":where(div.line.eventGroupSummary[data-dimmed=\"true\"]) { opacity: 0.5; }");
 
-	/* "bot" after the name of a bot (bot mode), "only you" before a private
-	 message shown in the channel it is about (+channel-context) */
+	/* A robot head after the name of a bot (bot mode), "only you" before a
+	 private message shown in the channel it is about (+channel-context) */
 	var strings = (_EventGroups.strings || {});
 
 	var label = "margin: 0 0.35em; padding: 0 0.3em; border: 1px solid currentColor; border-radius: 0.3em; " +
 				"font-size: 0.75em; font-weight: 600; opacity: 0.6; vertical-align: 0.08em;";
 
+	/* The member list's robot (TVCMemberListCell), faint and in the name's
+	 colour; VoiceOver reads the label (the first content is for WebKit
+	 without alternative text) */
 	if (strings.botLabel) {
-		rules.push(":where(div.line.bot .sender)::after { content: " + JSON.stringify(strings.botLabel) + "; " + label + " }");
+		var robot = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'>" +
+					"<path fill-rule='evenodd' d='M3.2 4h5.6a2.2 2.2 0 0 1 2.2 2.2v3.1a2.2 2.2 0 0 1-2.2 2.2H3.2A2.2 2.2 0 0 1 1 9.3V6.2A2.2 2.2 0 0 1 3.2 4z" +
+					"M4.25 6.4a.95.95 0 1 0 0 1.9a.95.95 0 1 0 0-1.9zM7.75 6.4a.95.95 0 1 0 0 1.9a.95.95 0 1 0 0-1.9z'/>" +
+					"<rect x='5.4' y='1.9' width='1.2' height='2.3'/><circle cx='6' cy='1.6' r='1.4'/></svg>";
+
+		var mask = "url(\"data:image/svg+xml," + encodeURIComponent(robot) + "\") center / contain no-repeat";
+
+		rules.push(":where(div.line.bot .sender)::after { content: \"\"; content: \"\" / " + JSON.stringify(strings.botLabel) + "; " +
+				   "display: inline-block; width: 0.9em; height: 0.9em; margin: 0 0.3em; vertical-align: -0.08em; " +
+				   "background-color: currentColor; opacity: 0.45; -webkit-mask: " + mask + "; mask: " + mask + "; }");
 	}
 
 	if (strings.privateLabel) {

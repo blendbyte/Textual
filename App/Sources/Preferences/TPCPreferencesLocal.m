@@ -399,6 +399,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"DisplayEventInLogView -> Date Changes"];
 }
 
++ (BOOL)showBotMark
+{
+	return [RZUserDefaults() boolForKey:@"DisplayEventInLogView -> Bot Mark"];
+}
+
 + (TVCLogLineGroupingStyle)messageGroupingStyle
 {
 	return (TVCLogLineGroupingStyle)[RZUserDefaults() unsignedIntegerForKey:@"DisplayEventInLogView -> Message Grouping Style"];

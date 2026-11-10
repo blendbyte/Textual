@@ -120,6 +120,9 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 + (void)setScrollbackVisibleLimit:(NSUInteger)scrollbackVisibleLimit;
 
 
+/* The robot after a bot's name in the chat (the member list always has it) */
+@property (class, readonly) BOOL showBotMark;
+
 @property (class, readonly) BOOL inputMarkdownEnabled;
 
 @property (class, readonly) TXInputFieldPlacement inputFieldPlacement;
