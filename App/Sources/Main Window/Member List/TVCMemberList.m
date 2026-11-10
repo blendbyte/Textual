@@ -367,12 +367,24 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 		return NO;
 	}
 
+	/* This window's channel and member: another window may have been key last */
+	TVCMainWindow *window = self.mainWindow;
+
+	IRCClient *client = window.selectedClient;
+	IRCChannel *channel = window.selectedChannel;
+
+	if (client == nil) {
+		return NO;
+	}
+
 	NSInteger row = [self draggedRow:sender];
 
-	if (row >= 0) {
-		[menuController() memberSendDroppedFiles:files row:row];
+	IRCChannelUser *member = ((row >= 0) ? [self itemAtRow:row] : nil);
+
+	if (member) {
+		[menuController() sendDroppedFiles:files toMember:member onClient:client inChannel:channel];
 	} else {
-		[menuController() answerDroppedFiles:files];
+		[menuController() answerDroppedFiles:files onClient:client inChannel:channel];
 	}
 
 	return YES;

@@ -207,6 +207,9 @@ static TVCReactionPickerController * _Nullable _reactionPicker = nil;
 	if (_reactionPicker == self) {
 		_reactionPicker = nil;
 	}
+
+	/* The popover holds this as its content: both stayed for good */
+	self.popover = nil;
 }
 
 @end

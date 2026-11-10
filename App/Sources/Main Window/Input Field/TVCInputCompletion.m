@@ -493,7 +493,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 			NSMutableArray<NSString *> *names = [NSMutableArray array];
 
-			NSMutableDictionary<NSString *, IRCChannel *> *channels = [NSMutableDictionary dictionary];
+			/* #help and &help are both "help": each is offered */
+			NSMutableDictionary<NSString *, NSMutableArray<IRCChannel *> *> *channels = [NSMutableDictionary dictionary];
 
 			for (IRCChannel *serverChannel in client.channelList) {
 				if (serverChannel.isChannel == NO) {
@@ -503,23 +504,31 @@ NS_ASSUME_NONNULL_BEGIN
 				/* "#textual" is matched as "textual" */
 				NSString *name = [serverChannel.name substringFromIndex:1];
 
-				[names addObject:name];
+				if (channels[name] == nil) {
+					[names addObject:name];
 
-				channels[name] = serverChannel;
+					channels[name] = [NSMutableArray array];
+				}
+
+				[channels[name] addObject:serverChannel];
 			}
 
 			[names sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
 
 			for (NSString *name in [TVCInputCompletion names:names matching:query.text limit:_maximumItems]) {
-				IRCChannel *serverChannel = channels[name];
+				for (IRCChannel *serverChannel in channels[name]) {
+					if (items.count >= _maximumItems) {
+						break;
+					}
 
-				NSString *detail = nil;
+					NSString *detail = nil;
 
-				if (serverChannel.isActive) {
-					detail = TXTLS(@"TVCMainWindow[icp-mc]", serverChannel.numberOfMembers);
+					if (serverChannel.isActive) {
+						detail = TXTLS(@"TVCMainWindow[icp-mc]", serverChannel.numberOfMembers);
+					}
+
+					[items addObject:[TVCInputCompletionItem itemWithKind:TVCInputCompletionKindChannel value:serverChannel.name title:serverChannel.name detail:detail]];
 				}
-
-				[items addObject:[TVCInputCompletionItem itemWithKind:TVCInputCompletionKindChannel value:serverChannel.name title:serverChannel.name detail:detail]];
 			}
 
 			break;
@@ -615,7 +624,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	TVCInputCompletionQuery *query = nil;
 
-	if (window.firstResponder == textView) {
+	/* Not while an input method composes: its keys are its own */
+	if (window.firstResponder == textView && textView.hasMarkedText == NO) {
 		query = [TVCInputCompletion queryInString:string selectedRange:textView.selectedRange];
 	}
 
@@ -668,6 +678,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[self.panel orderOut:nil];
 	}
+}
+
+- (void)reset
+{
+	self.dismissedLocation = NSNotFound;
+
+	[self close];
 }
 
 - (void)_showList
@@ -825,6 +842,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self close];
 
+	/* Not marked as misspelled, as with Tab */
+	if (item.kind == TVCInputCompletionKindNickname || item.kind == TVCInputCompletionKindChannel) {
+		[RZSpellChecker() ignoreWord:item.value inSpellDocumentWithTag:textView.spellCheckerDocumentTag];
+	}
+
 	if ([textView shouldChangeTextInRange:query.range replacementString:replacement]) {
 		[textView replaceCharactersInRange:query.range withString:replacement];
 
@@ -840,6 +862,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)handleKeyEvent:(NSEvent *)event
 {
 	if (self.visible == NO) {
+		return NO;
+	}
+
+	/* An input method composing gets Return, Tab, the arrows and Esc */
+	if (self.window.inputTextField.hasMarkedText) {
+		[self close];
+
 		return NO;
 	}
 

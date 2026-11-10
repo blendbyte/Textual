@@ -137,7 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)createChannelBanListSheet:(TDCChannelBanListSheetEntryType)entryType
 {
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
@@ -157,7 +157,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[listSheet start];
 
-	[windowController() addWindowToWindowList:listSheet];
+	[windowController() addWindowToWindowList:listSheet withDescription:[TDCChannelBanListSheet windowListDescriptionForChannelId:c.uniqueIdentifier entryType:entryType]];
 }
 
 - (void)channelBanListSheetOnUpdate:(TDCChannelBanListSheet *)sender

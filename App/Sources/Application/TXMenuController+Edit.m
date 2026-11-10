@@ -282,8 +282,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSPerformService(@"Search With %WebSearchProvider@", searchPasteboard);
 
-	/* A pasteboard of its own each time: the pasteboard server keeps it until released */
-	[searchPasteboard releaseGlobally];
+	/* A pasteboard of its own each time: the pasteboard server keeps it until
+	 released. Not at once: a service that has to launch reads it later. */
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		[searchPasteboard releaseGlobally];
+	});
 }
 
 - (void)lookUpInDictionary:(nullable id)sender

@@ -44,6 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
  are left alone too, except /me. */
 @interface TVCInputMarkdown : NSObject
 + (NSAttributedString *)attributedStringByApplyingMarkdown:(NSAttributedString *)string;
+
+/* A word that is one of these nicknames (in any case) is never formatting:
+ someone called _bob_ is addressed as _bob_ */
++ (NSAttributedString *)attributedStringByApplyingMarkdown:(NSAttributedString *)string protectingNicknames:(nullable NSArray<NSString *> *)nicknames;
 @end
 
 NS_ASSUME_NONNULL_END

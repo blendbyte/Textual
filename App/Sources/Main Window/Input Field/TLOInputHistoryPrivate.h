@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* What is in the input fields too, for the next launch */
 + (void)saveDrafts;
 - (void)keepDraftOfCurrentItem;
+- (void)forgetCurrentItem;
 
 - (void)noteInputHistoryObjectScopeDidChange;
 

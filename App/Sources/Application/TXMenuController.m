@@ -1070,6 +1070,24 @@ NS_ASSUME_NONNULL_BEGIN
 			return [viewController highlightAvailable:(tag == MTMMNavigationPreviousHighlight)];
 		}
 
+		/* They move the main window's selection: a pop-out has no server list */
+		case MTMMNavigationServersMenuNextServer:
+		case MTMMNavigationServersMenuPreviousServer:
+		case MTMMNavigationServersMenuNextActiveServer:
+		case MTMMNavigationServersMenuPreviousActiveServer:
+		case MTMMNavigationChannelsMenuNextChannel:
+		case MTMMNavigationChannelsMenuPreviousChannel:
+		case MTMMNavigationChannelsMenuNextActiveChannel:
+		case MTMMNavigationChannelsMenuPreviousActiveChannel:
+		case MTMMNavigationChannelsMenuNextUnreadChannel:
+		case MTMMNavigationChannelsMenuPreviousUnreadChannel:
+		case MTMMNavigationMoveBackward:
+		case MTMMNavigationMoveForward:
+		case MTMMNavigationPreviousSelection:
+		{
+			return (TVCMainWindow.currentWindow.isPopOut == NO);
+		}
+
 		default:
 		{
 			break;
@@ -1567,7 +1585,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 		case MTUserControlsInviteTo: // "Invite To…"
 		{
-			if (u.isLoggedIn == NO || c.isUtility) {
+			/* From a channel you are in, as the action needs */
+			if (u.isLoggedIn == NO || c.isChannel == NO || c.isActive == NO) {
 				return NO;
 			}
 

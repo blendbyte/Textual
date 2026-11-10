@@ -143,21 +143,28 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	if (firstSelection) {
-		NSInteger n = [self.serverList rowForItem:firstSelection];
+	/* A server in a folded section has no row: the first one that does */
+	NSInteger n = ((firstSelection) ? [self.serverList rowForItem:firstSelection] : -1);
 
+	if (n >= 0) {
 		if (firstSelection.channelCount > 0) {
 			n++;
 		}
 
 		[self.serverList selectItemAtIndex:n];
-	} else {
-		/* The first server: row 0 may be a bouncer's heading */
-		IRCClient *firstClient = worldController().clientList.firstObject;
 
-		NSInteger firstRow = ((firstClient) ? [self.serverList rowForItem:firstClient] : -1);
+		return;
+	}
 
-		[self.serverList selectItemAtIndex:MAX(firstRow, 0)];
+	/* Row 0 may be a bouncer's heading */
+	for (IRCClient *client in worldController().clientList) {
+		NSInteger row = [self.serverList rowForItem:client];
+
+		if (row >= 0) {
+			[self.serverList selectItemAtIndex:row];
+
+			return;
+		}
 	}
 }
 
@@ -289,7 +296,9 @@ NS_ASSUME_NONNULL_BEGIN
 	/* If the selected rows have not changed, then only select the one item */
 	NSIndexSet *selectedRows = self.serverList.selectedRowIndexes;
 
-	if ([selectedRows isEqualToIndexSet:itemRows] == NO) {
+	/* Nothing to select: the list keeps a selection (no empty one), so no
+	 change would come to clear the flag below, and the next real one was lost */
+	if ([selectedRows isEqualToIndexSet:itemRows] == NO && itemRows.count > 0) {
 		/* Selection updates are disabled and selection changes are faked so that
 		 the correct next item is selected when moving to previous group. */
 		self.ignoreNextOutlineViewSelectionChange = YES;
@@ -432,6 +441,11 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (oldItem == newItem) {
 		return;
+	}
+
+	/* In a folded bouncer section it has no row: the section opens */
+	if (newItem) {
+		[self unfoldBouncerHeadingsHidingItems:@[newItem]];
 	}
 
 	/* If the next item is a channel, then make sure the client
@@ -815,29 +829,44 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 	if ([foldedBouncers containsObject:accountIdentifier]) {
 		[foldedBouncers removeObject:accountIdentifier];
 	} else {
-		/* The selection moves to a server that stays in view */
+		/* The selection moves to what stays in view: any selected item of the
+		 section, not only the one in front, would open it again */
 		NSArray *clients = heading.clients;
 
-		IRCClient *selectedClient = self.selectedClient;
+		NSMutableArray<IRCTreeItem *> *itemsStaying = [NSMutableArray array];
 
-		if (selectedClient && [clients containsObject:selectedClient]) {
-			IRCClient *otherClient = nil;
+		BOOL selectionInSection = NO;
 
-			for (id item in [self serverListTopLevelItems]) {
-				if ([item isKindOfClass:[IRCClient class]] && [clients containsObject:item] == NO) {
-					otherClient = item;
+		for (IRCTreeItem *item in self.selectedItems) {
+			if ([clients containsObject:item.associatedClient]) {
+				selectionInSection = YES;
+			} else {
+				[itemsStaying addObject:item];
+			}
+		}
 
-					break;
+		if (selectionInSection) {
+			if (itemsStaying.count == 0) {
+				IRCClient *otherClient = nil;
+
+				for (id item in [self serverListTopLevelItems]) {
+					if ([item isKindOfClass:[IRCClient class]] && [clients containsObject:item] == NO && [self.class popOutWindowForItem:item] == nil) {
+						otherClient = item;
+
+						break;
+					}
 				}
+
+				if (otherClient == nil) {
+					NSBeep();
+
+					return;
+				}
+
+				[itemsStaying addObject:otherClient];
 			}
 
-			if (otherClient == nil) {
-				NSBeep();
-
-				return;
-			}
-
-			[self select:otherClient];
+			[self adjustSelectionWithItems:itemsStaying selectedItem:itemsStaying.lastObject];
 		}
 
 		[foldedBouncers addObject:accountIdentifier];
@@ -922,7 +951,18 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 			return NO;
 		}
 
-		return (TVCServerListItemIsDecoration([serverList itemAtRow:candidate]) == NO);
+		id item = [serverList itemAtRow:candidate];
+
+		if (TVCServerListItemIsDecoration(item)) {
+			return NO;
+		}
+
+		/* Shown in a window of its own: selecting it here takes its view away */
+		if (self.isPopOut == NO && [item isKindOfClass:[IRCTreeItem class]] && [self.class popOutWindowForItem:item]) {
+			return NO;
+		}
+
+		return YES;
 	};
 
 	NSInteger step = ((row > oldRow) ? 1 : -1);
@@ -1139,6 +1179,14 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 
 - (void)outlineViewDoubleClicked:(nullable id)sender
 {
+	/* On the selected row: a heading, a gap or the space below isn't selected,
+	 and the server that is had nothing to do with the click */
+	NSInteger clickedRow = self.serverList.clickedRow;
+
+	if (clickedRow < 0 || [self.serverList itemAtRow:clickedRow] != self.selectedItem) {
+		return;
+	}
+
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
@@ -1390,6 +1438,19 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 	}];
 
 	if (rowsShownHere.count == 0 && proposedSelectionIndexes.count > 0) {
+		/* An arrow key onto a heading or gap goes on to the next row there is */
+		NSEvent *event = NSApp.currentEvent;
+
+		if (event.type == NSEventTypeKeyDown && proposedSelectionIndexes.count == 1) {
+			NSInteger proposedRow = (NSInteger)proposedSelectionIndexes.firstIndex;
+
+			NSInteger row = [self serverListSelectableRowFrom:proposedRow around:outlineView.selectedRow forbidden:nil];
+
+			if (row >= 0 && row != proposedRow) {
+				return [NSIndexSet indexSetWithIndex:row];
+			}
+		}
+
 		return outlineView.selectedRowIndexes;
 	}
 
@@ -1463,8 +1524,8 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pasteboard
 {
-	/* TODO (March 27, 2016): Support dragging multiple items */
-	if (items.count == 1 && [items[0] isKindOfClass:[TVCServerListSectionGap class]]) {
+	/* One row at a time: with several, the pasteboard kept an earlier drag's row */
+	if (items.count != 1 || [items[0] isKindOfClass:[TVCServerListSectionGap class]]) {
 		return NO;
 	}
 
@@ -1493,6 +1554,11 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 	}
 
 	if (NSPointInRect(screenPoint, self.frame)) {
+		return;
+	}
+
+	/* Cancelled with Escape: that is no tear-off */
+	if (NSApp.currentEvent.type == NSEventTypeKeyDown) {
 		return;
 	}
 

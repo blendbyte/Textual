@@ -261,7 +261,7 @@ struct PreviewsSample: View
 
 			if (previews && cards) {
 				HStack(spacing: 10) {
-					Image(nsImage: NSApp.applicationIconImage)
+					Image(nsImage: TVCDockIcon.applicationIcon())
 						.resizable()
 						.frame(width: 40, height: 40)
 

@@ -203,6 +203,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<NSString *> *archivedNicknames; // suggested after those around now
 @property (nonatomic, copy) NSArray<NSString *> *archivedViewNames;
 @property (nonatomic, assign) BOOL archivedNamesRequested;
+@property (nonatomic, assign) BOOL newMentionsWaiting; // came while a conversation was shown
 @end
 
 @implementation TVCMainWindowSearchPanel
@@ -599,7 +600,14 @@ NS_ASSUME_NONNULL_BEGIN
 /* Mentions: new highlights were written (in batches, two seconds apart) */
 - (void)highlightsArchived:(NSNotification *)notification
 {
-	if (self.isViewLoaded == NO || self.view.window.visible == NO || self.contextMessages) {
+	if (self.isViewLoaded == NO || self.view.window.visible == NO) {
+		return;
+	}
+
+	/* Added on the way back to the list */
+	if (self.contextMessages) {
+		self.newMentionsWaiting = YES;
+
 		return;
 	}
 
@@ -1641,6 +1649,13 @@ NS_ASSUME_NONNULL_BEGIN
 		[self.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 
 		[self.tableView scrollRowToVisible:row];
+	}
+
+	/* Those that came meanwhile go on top, so later pages don't repeat rows */
+	if (self.newMentionsWaiting) {
+		self.newMentionsWaiting = NO;
+
+		[self addNewMentions];
 	}
 }
 

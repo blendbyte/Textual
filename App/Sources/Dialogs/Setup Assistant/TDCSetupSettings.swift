@@ -1209,7 +1209,7 @@ struct SetupNotificationsStep: View
 	{
 		VStack(alignment: .leading, spacing: 8) {
 			HStack(alignment: .top, spacing: 8) {
-				Image(nsImage: NSApp.applicationIconImage)
+				Image(nsImage: TVCDockIcon.applicationIcon())
 					.resizable()
 					.frame(width: 30, height: 30)
 					.accessibilityHidden(true)

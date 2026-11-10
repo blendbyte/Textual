@@ -98,6 +98,9 @@ typedef NS_ENUM(NSUInteger, TVCInputCompletionKind) {
 
 - (void)close;
 
+/* Another channel's text: closed, and a word dismissed with Esc counts no more */
+- (void)reset;
+
 /* ↑ ↓ Tab Return Enter Esc while the list is open; YES when handled */
 - (BOOL)handleKeyEvent:(NSEvent *)event;
 @end

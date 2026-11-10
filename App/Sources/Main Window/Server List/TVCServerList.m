@@ -373,6 +373,13 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 		return nil;
 	}
 
+	/* In a window of its own: that window comes forward, as a click does */
+	if ([itemBeneathMouse isKindOfClass:[IRCTreeItem class]] && [TVCMainWindow popOutWindowForItem:itemBeneathMouse] && self.mainWindow.isPopOut == NO) {
+		[self.mainWindow select:itemBeneathMouse];
+
+		return nil;
+	}
+
 	if (rowBeneathMouse >= 0) {
 		if (rowBeneathMouse != self.selectedRow || self.numberOfSelectedRows > 1) {
 			[self selectItemAtIndex:rowBeneathMouse];

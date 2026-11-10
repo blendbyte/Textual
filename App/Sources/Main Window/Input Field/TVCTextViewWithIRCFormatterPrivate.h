@@ -46,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)keyDownToSuper:(NSEvent *)e;
 
 - (void)updateAllFontSizesToMatchTheDefaultFont;
+
+/* Ends an input method's composition: what was composed so far stays */
+- (void)endComposition;
 @end
 
 NS_ASSUME_NONNULL_END

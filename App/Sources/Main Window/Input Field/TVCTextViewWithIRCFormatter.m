@@ -156,6 +156,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(stringValue != nil);
 
+	[self endComposition];
+
 	[self.undoManager removeAllActions];
 
 	[self.textStorage replaceCharactersInRange:self.range withString:stringValue];
@@ -172,9 +174,21 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(attributedStringValue != nil);
 
+	[self endComposition];
+
 	[self.undoManager removeAllActions];
 
-	[self.textStorage replaceCharactersInRange:self.range withAttributedString:attributedStringValue];
+	/* Text without a font of its own (a draft from the last launch, a link
+	 added to a draft) is in the field's font, not AppKit's Helvetica 12 */
+	NSMutableAttributedString *withFonts = [attributedStringValue mutableCopy];
+
+	[attributedStringValue enumerateAttribute:NSFontAttributeName inRange:NSMakeRange(0, attributedStringValue.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
+		if (value == nil) {
+			[withFonts addAttribute:NSFontAttributeName value:self.preferredFont range:range];
+		}
+	}];
+
+	[self.textStorage replaceCharactersInRange:self.range withAttributedString:withFonts];
 
 	[self didChangeText];
 }
@@ -356,12 +370,28 @@ NS_ASSUME_NONNULL_BEGIN
 	return TVCTextViewCaretLocationMiddle;
 }
 
+/* An input method's text still being composed is ended: what was composed so
+ far stays, and the input method is told */
+- (void)endComposition
+{
+	if (self.hasMarkedText == NO) {
+		return;
+	}
+
+	[self.inputContext discardMarkedText];
+
+	[self unmarkText];
+}
+
 /* The height of the text plus padding, or of as many whole lines as fit below the maximum */
 - (CGFloat)highestHeightBelowHeight:(CGFloat)maximumHeight withPadding:(CGFloat)valuePadding
 {
 	NSLayoutManager *layoutManager = self.layoutManager;
 
 	NSTextContainer *textContainer = self.textContainer;
+
+	/* Text just replaced may not be laid out yet: the used rect doesn't do it */
+	[layoutManager ensureLayoutForTextContainer:textContainer];
 
 	/* Usually it all fits: one measurement instead of a walk over every line */
 	CGFloat usedHeight = [layoutManager usedRectForTextContainer:textContainer].size.height;

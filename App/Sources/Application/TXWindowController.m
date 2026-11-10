@@ -38,6 +38,7 @@
 #import "TDCSheetBase.h"
 #import "TXMasterController.h"
 #import "TVCMainWindow.h"
+#import "TVCMainWindowPrivate.h"
 #import "TXWindowControllerPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -223,10 +224,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* Through the sheet's controller, which ends the sheet, removes its observers,
- closes its child sheets and tells its delegate: closing the window skipped all of that */
-- (void)popMainWindowSheetIfExists
+ closes its child sheets and tells its delegate: closing the window skipped all of that.
+ The window the new sheet goes on: a sheet on another window (the main window
+ behind a pop-out) stays, with whatever was typed in it. */
+- (void)popSheetOfCurrentWindowIfExists
 {
-	NSWindow *attachedSheet = mainWindow().attachedSheet;
+	NSWindow *attachedSheet = TVCMainWindow.currentWindow.attachedSheet;
 
 	if (attachedSheet == nil) {
 		return;

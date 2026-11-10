@@ -483,14 +483,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSArray *colorCodes = @[@(4), @(7), @(8), @(3), @(12), @(2), @(6)];
 
-	for (NSUInteger charCountIndex = 0; charCountIndex < mutableStringCopy.length; charCountIndex++) {
+	/* A colour per character as seen, not per UTF-16 unit: an emoji (two units,
+	 or several joined) split by colour codes doesn't survive */
+	NSString *rainbowString = mutableStringCopy.string;
+
+	for (NSUInteger charCountIndex = 0; charCountIndex < rainbowString.length; ) {
 		if (rainbowArrayIndex > 6) {
 			rainbowArrayIndex = 0;
 		}
 
 		NSUInteger currentColorCode = [colorCodes unsignedIntegerAtIndex:rainbowArrayIndex];
 
-		NSRange currentCharacterRange = NSMakeRange(charCountIndex, 1);
+		NSRange currentCharacterRange = [rainbowString rangeOfComposedCharacterSequenceAtIndex:charCountIndex];
+
+		charCountIndex = NSMaxRange(currentCharacterRange);
 
 		if (asForegroundColor) {
 			[self applyEffect:IRCTextFormatterEffectForegroundColor withValue:@(currentColorCode) inRange:currentCharacterRange toMutableString:mutableStringCopy];

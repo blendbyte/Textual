@@ -39,6 +39,7 @@
 #include <objc/message.h>
 
 #import "NSObjectHelperPrivate.h"
+#import "TDCChannelBanListSheetPrivate.h"
 #import "TXMasterController.h"
 #import "TXWindowControllerPrivate.h"
 #import "TVCMainWindowPrivate.h"
@@ -437,11 +438,16 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 
 	[self.config destroySecretKeyKeychainItem];
 
+	NSString *channelId = self.uniqueIdentifier;
+
 	NSArray *openWindows = [windowController()
 							windowsFromWindowList:@[@"TDCChannelPropertiesSheet",
 													@"TDCChannelModifyTopicSheet",
 													@"TDCChannelModifyModesSheet",
-													@"TDCChannelBanListSheet"]];
+													[TDCChannelBanListSheet windowListDescriptionForChannelId:channelId entryType:TDCChannelBanListSheetEntryTypeBan],
+													[TDCChannelBanListSheet windowListDescriptionForChannelId:channelId entryType:TDCChannelBanListSheetEntryTypeBanException],
+													[TDCChannelBanListSheet windowListDescriptionForChannelId:channelId entryType:TDCChannelBanListSheetEntryTypeInviteException],
+													[TDCChannelBanListSheet windowListDescriptionForChannelId:channelId entryType:TDCChannelBanListSheetEntryTypeQuiet]]];
 
 	for (TDCSheetBase <TDCChannelPrototype> *windowObject in openWindows) {
 		if ([windowObject.channelId isEqualToString:self.uniqueIdentifier]) {

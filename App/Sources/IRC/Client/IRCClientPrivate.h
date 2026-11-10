@@ -111,6 +111,11 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 - (void)prepareForApplicationTerminationWithoutWaiting;
 
 - (IRCAddressBookUserTrackingContainer *)trackedUsers;
+
+/* "Run these lines as commands?" was cancelled: the input field gets its text
+ back. In the class itself: a category's property has no storage, and setting
+ it raised, so nothing typed was sent. */
+@property (nonatomic, assign) BOOL inputCancelledByUser;
 @end
 
 @interface IRCClient (NotificationsPrivate)
@@ -335,7 +340,6 @@ TEXTUAL_EXTERN NSString * const IRCClientFileUploadLoginDecisionPrefix;
 @interface IRCClient (FailedSendsPrivate)
 /* Resend on a message the server refused: NO when it can't be sent now */
 + (BOOL)textEndsInHiddenPassword:(nullable NSString *)text;
-@property (nonatomic, assign) BOOL inputCancelledByUser; // the input field gets its text back
 - (BOOL)resendFailedLine:(TVCLogLine *)logLine inChannel:(IRCChannel *)channel;
 @end
 

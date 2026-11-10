@@ -50,7 +50,23 @@ typedef NS_ENUM(NSUInteger, TVCInputMarkdownEffect) {
 
 + (NSAttributedString *)attributedStringByApplyingMarkdown:(NSAttributedString *)string
 {
+	return [self attributedStringByApplyingMarkdown:string protectingNicknames:nil];
+}
+
++ (NSAttributedString *)attributedStringByApplyingMarkdown:(NSAttributedString *)string protectingNicknames:(nullable NSArray<NSString *> *)nicknames
+{
 	NSParameterAssert(string != nil);
+
+	/* Only those a marker could take apart */
+	NSCharacterSet *markerCharacters = [NSCharacterSet characterSetWithCharactersInString:@"`_*|"];
+
+	NSMutableArray<NSString *> *protectedNicknames = [NSMutableArray array];
+
+	for (NSString *nickname in nicknames) {
+		if ([nickname rangeOfCharacterFromSet:markerCharacters].location != NSNotFound) {
+			[protectedNicknames addObject:nickname];
+		}
+	}
 
 	NSMutableAttributedString *result = [NSMutableAttributedString new];
 
@@ -66,7 +82,7 @@ typedef NS_ENUM(NSUInteger, TVCInputMarkdownEffect) {
 
 		NSAttributedString *line = [string attributedSubstringFromRange:NSMakeRange(lineStart, (lineEnd - lineStart))];
 
-		[result appendAttributedString:[self _lineByApplyingMarkdown:line]];
+		[result appendAttributedString:[self _lineByApplyingMarkdown:line protectingNicknames:protectedNicknames]];
 
 		if (newline.location == NSNotFound) {
 			break;
@@ -80,14 +96,17 @@ typedef NS_ENUM(NSUInteger, TVCInputMarkdownEffect) {
 	return [result copy];
 }
 
-+ (NSAttributedString *)_lineByApplyingMarkdown:(NSAttributedString *)line
++ (NSAttributedString *)_lineByApplyingMarkdown:(NSAttributedString *)line protectingNicknames:(NSArray<NSString *> *)nicknames
 {
 	NSString *text = line.string;
 
-	/* Commands are left alone, except an action's text */
+	/* Commands are left alone, except an action's text and a message that
+	 starts with a slash (//) */
 	NSUInteger contentStart = 0;
 
-	if ([text hasPrefix:@"/"]) {
+	if ([text hasPrefix:@"//"]) {
+		contentStart = 2;
+	} else if ([text hasPrefix:@"/"]) {
 		if ([text.lowercaseString hasPrefix:@"/me "] == NO) {
 			return line;
 		}
@@ -105,6 +124,33 @@ typedef NS_ENUM(NSUInteger, TVCInputMarkdownEffect) {
 	[linkDetector enumerateMatchesInString:text options:0 range:NSMakeRange(0, text.length) usingBlock:^(NSTextCheckingResult *match, NSMatchingFlags flags, BOOL *stop) {
 		[protectedIndexes addIndexesInRange:match.range];
 	}];
+
+	/* So do nicknames of the channel, as whole words */
+	NSMutableCharacterSet *nicknameCharacters = [NSMutableCharacterSet alphanumericCharacterSet];
+
+	[nicknameCharacters addCharactersInString:@"_-[]\\`^{}|"];
+
+	for (NSString *nickname in nicknames) {
+		NSUInteger searchFrom = contentStart;
+
+		while (searchFrom < text.length) {
+			NSRange found = [text rangeOfString:nickname options:NSCaseInsensitiveSearch range:NSMakeRange(searchFrom, (text.length - searchFrom))];
+
+			if (found.location == NSNotFound) {
+				break;
+			}
+
+			searchFrom = NSMaxRange(found);
+
+			BOOL startsWord = (found.location == 0 || [nicknameCharacters characterIsMember:[text characterAtIndex:(found.location - 1)]] == NO);
+
+			BOOL endsWord = (NSMaxRange(found) == text.length || [nicknameCharacters characterIsMember:[text characterAtIndex:NSMaxRange(found)]] == NO);
+
+			if (startsWord && endsWord) {
+				[protectedIndexes addIndexesInRange:found];
+			}
+		}
+	}
 
 	NSArray<NSString *> *markers = @[@"`", @"||", @"**", @"_"];
 

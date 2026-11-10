@@ -411,7 +411,7 @@ struct NotificationSample: View
 	var body: some View
 	{
 		HStack(alignment: .top, spacing: 10) {
-			Image(nsImage: NSApp.applicationIconImage)
+			Image(nsImage: TVCDockIcon.applicationIcon())
 				.resizable()
 				.frame(width: 34, height: 34)
 

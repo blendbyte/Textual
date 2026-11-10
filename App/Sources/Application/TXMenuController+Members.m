@@ -823,6 +823,14 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	[self answerDroppedFiles:files onClient:u inChannel:c];
+}
+
+- (void)answerDroppedFiles:(NSArray<NSString *> *)files onClient:(IRCClient *)u inChannel:(nullable IRCChannel *)c
+{
+	NSParameterAssert(files != nil);
+	NSParameterAssert(u != nil);
+
 	NSString *recipient = ((c.isPrivateMessage) ? c.name : nil);
 
 	if ([self offerToUploadFiles:files recipient:recipient onClient:u inChannel:c]) {
@@ -968,6 +976,19 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannelUser *member = [TVCMainWindow.currentWindow.memberList itemAtRow:row];
 
 	if (member == nil) {
+		return;
+	}
+
+	[self sendDroppedFiles:files toMember:member onClient:u inChannel:c];
+}
+
+- (void)sendDroppedFiles:(NSArray<NSString *> *)files toMember:(IRCChannelUser *)member onClient:(IRCClient *)u inChannel:(nullable IRCChannel *)c
+{
+	NSParameterAssert(files != nil);
+	NSParameterAssert(member != nil);
+	NSParameterAssert(u != nil);
+
+	if (c == nil || c.isChannel == NO) {
 		return;
 	}
 

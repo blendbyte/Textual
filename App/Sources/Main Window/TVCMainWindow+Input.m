@@ -341,7 +341,14 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Not typing: no suggestion list for the line's last word, no typing notification */
+	[self.inputCompletion close];
+
+	self.inputDraftBeingRestored = YES;
+
 	self.inputTextField.attributedStringValue = stringValue;
+
+	self.inputDraftBeingRestored = NO;
 
 	[self.inputTextField focus];
 

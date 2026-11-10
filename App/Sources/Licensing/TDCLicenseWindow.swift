@@ -235,7 +235,7 @@ struct LicenseHeader: View
 	var body: some View
 	{
 		VStack(spacing: 6) {
-			Image(nsImage: NSApp.applicationIconImage)
+			Image(nsImage: TVCDockIcon.applicationIcon())
 				.resizable()
 				.frame(width: 64, height: 64)
 
@@ -786,7 +786,7 @@ struct LicenseTrialEndedView: View
 	var body: some View
 	{
 		VStack(spacing: 16) {
-			Image(nsImage: NSApp.applicationIconImage)
+			Image(nsImage: TVCDockIcon.applicationIcon())
 				.resizable()
 				.frame(width: 96, height: 96)
 

@@ -205,6 +205,18 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.mainWindow inputTextDidChange];
 }
 
+/* The suggestion list is for the field: it goes when the focus does (Esc couldn't reach it) */
+- (BOOL)resignFirstResponder
+{
+	BOOL resigned = [super resignFirstResponder];
+
+	if (resigned) {
+		[self.mainWindow inputTextFieldLostFocus];
+	}
+
+	return resigned;
+}
+
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
 	[self.mainWindow inputSelectionDidChange];

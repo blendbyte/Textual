@@ -37,6 +37,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TXMasterController.h"
 #import "TPCPreferencesLocal.h"
 #import "IRCClient.h"
@@ -105,9 +106,23 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 
 - (void)prepareInitialState
 {
-	self.historyObjects = [NSMutableDictionary dictionary];
+	/* Both follow a channel into a pop-out and back */
+	self.historyObjects = [self.class sharedHistoryObjects];
 
 	self.drafts = [self.class sharedDrafts];
+}
+
++ (NSMutableDictionary *)sharedHistoryObjects
+{
+	static NSMutableDictionary *sharedHistoryObjects = nil;
+
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken, ^{
+		sharedHistoryObjects = [NSMutableDictionary dictionary];
+	});
+
+	return sharedHistoryObjects;
 }
 
 /* One set for every window, kept across launches */
@@ -124,12 +139,21 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 
 		for (NSString *itemId in saved) {
 			if ([saved[itemId] isKindOfClass:[NSString class]]) {
-				sharedDrafts[itemId] = [NSAttributedString attributedStringWithString:saved[itemId]];
+				sharedDrafts[itemId] = [[NSAttributedString alloc] initWithString:saved[itemId]];
 			}
 		}
 	});
 
 	return sharedDrafts;
+}
+
+/* The window no longer shows its item (popped out): what it keeps after
+ this must not take the place of the draft the item takes along */
+- (void)forgetCurrentItem
+{
+	[self keepDraftOfCurrentItem];
+
+	self.currentTreeItem = nil;
 }
 
 - (void)keepDraftOfCurrentItem
@@ -160,12 +184,24 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 
 	NSDictionary<NSString *, NSAttributedString *> *drafts = [self sharedDrafts];
 
+	BOOL queriesComeBack = [TPCPreferences rememberServerListQueryStates];
+
 	for (NSString *itemId in drafts) {
 		NSString *string = drafts[itemId].string;
 
-		if (string.length > 0 && [string hasPrefix:@"/"] == NO) {
-			saved[itemId] = string;
+		if (string.length == 0 || [string hasPrefix:@"/"]) {
+			continue;
 		}
+
+		/* Only what is there at the next launch: a closed query gets a new
+		 identifier, so its draft could never be shown and would stay forever */
+		IRCTreeItem *item = [worldController() findItemWithId:itemId];
+
+		if (item == nil || (item.isClient == NO && ((IRCChannel *)item).isPrivateMessage && queriesComeBack == NO)) {
+			continue;
+		}
+
+		saved[itemId] = string;
 	}
 
 	if (saved.count > 0) {
@@ -219,6 +255,9 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 			return;
 		}
 
+		/* A composition still going on ends here, not in another channel's text */
+		[window.inputTextField endComposition];
+
 		[self keepDraftOfCurrentItem];
 
 		self.currentTreeItem = newItemId;
@@ -252,7 +291,7 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 
 		NSString *separator = ((draft.length > 0 && [draft.string hasSuffix:@" "] == NO) ? @" " : @"");
 
-		[draft appendAttributedString:[NSAttributedString attributedStringWithString:[NSString stringWithFormat:@"%@%@ ", separator, text]]];
+		[draft appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@%@ ", separator, text]]];
 
 		self.drafts[itemId] = [draft copy];
 	}
@@ -428,6 +467,14 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 	NSParameterAssert(string != nil);
 
 	@synchronized(self.historyBuffer) {
+		/* Already at the oldest: nothing further back, and the text stays (it
+		 was added again on every press, pushing out the real history) */
+		if (self.historyBufferPosition <= 0) {
+			self.historyBufferPosition = 0;
+
+			return nil;
+		}
+
 		if (string.length > 0) {
 			NSAttributedString *lastEntry = [self entryAtBufferPosition];
 
@@ -463,6 +510,9 @@ NSString * const _inputHistoryGlobalObjectKey	= @"TLOInputHistoryDefaultObject";
 
 		if (lastEntry == nil || [lastEntry.string isEqualToString:string.string] == NO) {
 			[self addToBuffer:string];
+
+			/* After it: the next Up brings it back */
+			self.historyBufferPosition = self.historyBuffer.count;
 
 			return [NSAttributedString attributedString];
 		}

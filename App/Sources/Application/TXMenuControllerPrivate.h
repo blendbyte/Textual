@@ -87,6 +87,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)answerDroppedFiles:(NSArray<NSString *> *)files;
 - (void)answerPastedPictureOnPasteboard:(NSPasteboard *)pasteboard; // uploaded where the network offers it
 - (void)memberSendDroppedFiles:(NSArray<NSString *> *)files row:(NSUInteger)row;
+- (void)answerDroppedFiles:(NSArray<NSString *> *)files onClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel;
+- (void)sendDroppedFiles:(NSArray<NSString *> *)files toMember:(IRCChannelUser *)member onClient:(IRCClient *)client inChannel:(nullable IRCChannel *)channel;
 @end
 
 @interface TXMenuController (WindowPrivate)

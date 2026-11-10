@@ -85,6 +85,9 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 
 /* The main window's frame, lists shown and selection, a second after a change */
 - (void)saveWindowStateSoon;
+
+/* The input field is no longer first responder: the suggestion list closes */
+- (void)inputTextFieldLostFocus;
 @end
 
 /* Windows: the main window and windows showing one channel.
@@ -135,6 +138,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 
 + (void)restorePopOuts; // at launch, once the servers are there
 + (void)savePopOuts; // which, where, member list shown; for the next launch
++ (void)savePopOutsSoon; // a second after the last call
 + (void)closePopOutsForTermination; // their places are kept for the next launch
 @end
 

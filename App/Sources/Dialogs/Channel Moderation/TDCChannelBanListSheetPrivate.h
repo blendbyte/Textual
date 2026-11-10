@@ -51,6 +51,9 @@ typedef NS_ENUM(NSUInteger, TDCChannelBanListSheetEntryType) {
 };
 
 @interface TDCChannelBanListSheet : TDCSheetBase <TDCChannelPrototype>
+/* Its name in the window list: one list per channel and kind can be open */
++ (NSString *)windowListDescriptionForChannelId:(NSString *)channelId entryType:(TDCChannelBanListSheetEntryType)entryType;
+
 @property (readonly) TDCChannelBanListSheetEntryType entryType;
 @property (readonly, copy) NSString *modeSymbol;
 @property (readonly, copy, nullable) NSArray<NSString *> *listOfChanges;

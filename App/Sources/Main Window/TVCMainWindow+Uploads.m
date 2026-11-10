@@ -553,7 +553,8 @@ NS_ASSUME_NONNULL_BEGIN
 /* A pop-out that closed: what its uploads leave goes to the main window */
 - (TVCMainWindow *)windowForUploadResults
 {
-	if (self.isPopOut && self.popOutItem == nil) {
+	/* Closed, it's no longer among the windows (isPopOut is NO by then) */
+	if (self != mainWindow() && [TVCMainWindow.windows containsObject:self] == NO) {
 		return mainWindow();
 	}
 
@@ -588,6 +589,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)returnPastedTextOfUpload:(TVCMainWindowUpload *)upload
 {
 	NSParameterAssert(upload != nil);
+
+	/* Its pop-out closed: back in the main window's field */
+	TVCMainWindow *resultsWindow = self.windowForUploadResults;
+
+	if (resultsWindow != self) {
+		[resultsWindow returnPastedTextOfUpload:upload];
+
+		return;
+	}
 
 	[self removePastedPictureOfUpload:upload];
 
@@ -810,6 +820,15 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(link != nil);
 	NSParameterAssert(item != nil);
+
+	/* Into the main window's field when it shows the item, not a draft it overwrites */
+	TVCMainWindow *resultsWindow = self.windowForUploadResults;
+
+	if (resultsWindow != self) {
+		[resultsWindow insertUploadedLink:link forItem:item];
+
+		return;
+	}
 
 	if (item != self.selectedItem) {
 		[self.windowForUploadResults.inputHistoryManager appendText:link toDraftForTreeItem:item];

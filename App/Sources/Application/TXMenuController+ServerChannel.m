@@ -162,7 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addServerFilledInWith:(nullable IRCClientConfig *)config
 {
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCServerPropertiesSheet *sheet =
 	[[TDCServerPropertiesSheet alloc] initWithClient:nil];
@@ -258,7 +258,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)openAddBouncerSheetFillingIn:(nullable void (^)(TDCAddBouncerSheet *sheet))fillIn whenCompleted:(nullable void (^)(void))completed
 {
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	__weak TXMenuController *weakSelf = self;
 
@@ -333,7 +333,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(account != nil);
 
 	if (window == nil) {
-		[windowController() popMainWindowSheetIfExists];
+		[windowController() popSheetOfCurrentWindowIfExists];
 
 		window = TVCMainWindow.currentWindow;
 	}
@@ -492,7 +492,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCChannelPropertiesSheet *sheet =
 	[[TDCChannelPropertiesSheet alloc] initWithClient:u];

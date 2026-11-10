@@ -1229,7 +1229,7 @@ struct SetupAppIcon: View
 {
 	var body: some View
 	{
-		Image(nsImage: NSApp.applicationIconImage)
+		Image(nsImage: TVCDockIcon.applicationIcon())
 			.resizable()
 			.frame(width: 72, height: 72)
 			.accessibilityHidden(true)

@@ -189,7 +189,7 @@ static BOOL _restoringPopOuts = NO;
 		frame = NSMakeRect((NSMinX(mainFrame) + offset), (NSMaxY(mainFrame) - _popOutDefaultHeight - offset), _popOutDefaultWidth, _popOutDefaultHeight);
 	}
 
-	NSScreen *screen = (mainWindow.screen ?: [NSScreen mainScreen]);
+	NSScreen *screen = nil;
 
 	for (NSScreen *candidate in [NSScreen screens]) {
 		if (NSIntersectsRect(candidate.visibleFrame, frame)) {
@@ -197,6 +197,16 @@ static BOOL _restoringPopOuts = NO;
 
 			break;
 		}
+	}
+
+	/* On a display that is gone: placed as a new one, beside the main window
+	 (constraining moves a window only up and down, so it stayed out of sight) */
+	if (screen == nil) {
+		screen = (mainWindow.screen ?: [NSScreen mainScreen]);
+
+		NSRect mainFrame = mainWindow.frame;
+
+		frame = NSMakeRect(NSMinX(mainFrame), (NSMaxY(mainFrame) - NSHeight(frame)), NSWidth(frame), NSHeight(frame));
 	}
 
 	[window setFrame:[window constrainFrameRect:frame toScreen:screen] display:NO];
@@ -255,6 +265,27 @@ static BOOL _restoringPopOuts = NO;
 
 		if ([self.class popOutWindowForItem:client] == nil) {
 			[items addObject:client];
+		}
+	}
+
+	/* A console alone (or one whose console has a window too): another server.
+	 The list can't be left without a selection, and the field without an item. */
+	if (items.count == 0) {
+		for (IRCClient *client in worldController().clientList) {
+			if (client != item && [self.class popOutWindowForItem:client] == nil) {
+				[items addObject:client];
+
+				break;
+			}
+		}
+	}
+
+	/* What was typed goes with it (moved by -popOutItem:) */
+	if (self.selectedItem == item) {
+		[self.inputHistoryManager forgetCurrentItem];
+
+		if (items.count == 0) {
+			[self restoreInputDraft:nil];
 		}
 	}
 
@@ -352,6 +383,9 @@ static BOOL _restoringPopOuts = NO;
 			continue;
 		}
 
+		/* What was typed comes back with it next time */
+		[window.inputHistoryManager keepDraftOfCurrentItem];
+
 		window.popOutClosingQuietly = YES;
 
 		[window close];
@@ -360,6 +394,14 @@ static BOOL _restoringPopOuts = NO;
 
 #pragma mark -
 #pragma mark Keeping
+
+/* Moving or resizing: once it's done, not at every step (each write tells every view) */
++ (void)savePopOutsSoon
+{
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(savePopOuts) object:nil];
+
+	[self performSelector:@selector(savePopOuts) withObject:nil afterDelay:1.0];
+}
 
 + (void)savePopOuts
 {

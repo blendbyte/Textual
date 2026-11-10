@@ -104,6 +104,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* ||spoiler|| is the classic IRC spoiler: black on black */
+/* Someone called _bob_ is addressed as _bob_; a message escaped with // gets Markdown */
+- (void)testNicknamesAndSlashMessages
+{
+	NSAttributedString *result = [TVCInputMarkdown attributedStringByApplyingMarkdown:[[NSAttributedString alloc] initWithString:@"_bob_: see _this_"] protectingNicknames:@[@"_Bob_", @"alice"]];
+
+	XCTAssertEqualObjects(result.string, @"_bob_: see this");
+
+	XCTAssertEqualObjects([self marked:@"//etc is **important**"], @"//etc is <B>important</B>");
+}
+
 - (void)testSpoilerColours
 {
 	NSAttributedString *result = [TVCInputMarkdown attributedStringByApplyingMarkdown:[[NSAttributedString alloc] initWithString:@"||x||"]];

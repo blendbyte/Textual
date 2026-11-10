@@ -42,6 +42,7 @@
 #import "IRCChannel.h"
 #import "IRCChannelUserPrivate.h"
 #import "IRCCommandIndex.h"
+#import "IRCAliasPrivate.h"
 #import "IRCISupportInfo.h"
 #import "IRCUser.h"
 #import "THOPluginManagerPrivate.h"
@@ -195,6 +196,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[choicesUppercase addObjectsFromArray:sharedPluginManager().supportedUserInputCommands];
 		[choicesUppercase addObjectsFromArray:sharedPluginManager().supportedAppleScriptCommands];
+
+		/* Aliases, as the suggestion list offers them */
+		for (NSString *alias in IRCAlias.aliases) {
+			if ([choicesUppercase containsObjectIgnoringCase:alias] == NO) {
+				[choicesUppercase addObject:alias];
+			}
+		}
 
 		/* complete commands in alphabetical order */
 		[choicesUppercase sortUsingSelector:@selector(localizedCompare:)];
@@ -427,7 +435,7 @@ NS_ASSUME_NONNULL_BEGIN
 		if (nextCharacterInRange <= maximumCompletionSuffixEndPoint) {
 			UniChar nextChar = [self.currentTextViewStringValue characterAtIndex:nextCharacterInRange];
 
-			if ([[NSCharacterSet whitespaceCharacterSet] characterIsMember:nextChar]) {
+			if ([[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:nextChar]) {
 				whitespaceAlreadyInPosition = YES;
 			}
 		}
@@ -574,7 +582,8 @@ NS_ASSUME_NONNULL_BEGIN
 		for (NSInteger i = (selectedRange.location - 1); i >= 0; i--) {
 			UniChar cc = [self.currentTextViewStringValue characterAtIndex:i];
 
-			if ([[NSCharacterSet whitespaceCharacterSet] characterIsMember:cc] || cc == '\x02c') {
+			/* A line break too: each line of a message is a message of its own */
+			if ([[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:cc] || cc == '\x02c') {
 				searchPatternStartingPoint = (i + 1); // Starting point is plus one to
 													  // position the starting index as
 													  // character after separator
@@ -595,7 +604,10 @@ NS_ASSUME_NONNULL_BEGIN
 		self.cachedSearchPattern = [self.currentTextViewStringValue substringWithRange:self.rangeOfSearchPattern];
 	}
 
-	self.searchPatternIsAtStart = (searchPatternStartingPoint == 0);
+	/* The start of a later line is a start too (its own message, so a command
+	 there is completed as one) */
+	self.searchPatternIsAtStart = (searchPatternStartingPoint == 0 ||
+								   [[NSCharacterSet newlineCharacterSet] characterIsMember:[self.currentTextViewStringValue characterAtIndex:(searchPatternStartingPoint - 1)]]);
 
 	return YES;
 }
@@ -680,7 +692,7 @@ NS_ASSUME_NONNULL_BEGIN
 															completionRangePosition.location - selectedRange.location);
 
 				NSRange whitespaceSearchResult =
-				[self.currentTextViewStringValue rangeOfCharacterFromSet:[NSCharacterSet whitespaceCharacterSet] options:0 range:whitespaceSearchRange];
+				[self.currentTextViewStringValue rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] options:0 range:whitespaceSearchRange];
 
 				if (whitespaceSearchResult.location == NSNotFound) {
 					completionSuffixRange.length = (NSMaxRange(completionRangePosition) - selectedRangeStartPoint);
@@ -700,7 +712,7 @@ NS_ASSUME_NONNULL_BEGIN
 		for (NSInteger i = selectedRangeStartPoint; i <= maximumCompletionSuffixEndPoint; i++) {
 			UniChar cc = [self.currentTextViewStringValue characterAtIndex:i];
 
-			if ([[NSCharacterSet whitespaceCharacterSet] characterIsMember:cc]
+			if ([[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:cc]
 				|| cc == '\x03a'
 				|| cc == '\x02c')
 			{

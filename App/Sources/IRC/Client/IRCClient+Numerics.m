@@ -1419,15 +1419,15 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(channelName != nil);
 
-	TDCChannelBanListSheet *listSheet = [windowController() windowFromWindowList:@"TDCChannelBanListSheet"];
+	IRCChannel *channel = [self findChannel:channelName];
 
-	if (listSheet == nil || listSheet.client != self || listSheet.entryType != entryType) {
+	if (channel == nil) {
 		return nil;
 	}
 
-	IRCChannel *channel = [self findChannel:channelName];
+	TDCChannelBanListSheet *listSheet = [windowController() windowFromWindowList:[TDCChannelBanListSheet windowListDescriptionForChannelId:channel.uniqueIdentifier entryType:entryType]];
 
-	if (channel == nil || listSheet.channel != channel) {
+	if (listSheet == nil || listSheet.client != self || listSheet.entryType != entryType || listSheet.channel != channel) {
 		return nil;
 	}
 

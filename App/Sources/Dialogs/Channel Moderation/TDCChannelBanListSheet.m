@@ -71,6 +71,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TDCChannelBanListSheet
 
++ (NSString *)windowListDescriptionForChannelId:(NSString *)channelId entryType:(TDCChannelBanListSheetEntryType)entryType
+{
+	NSParameterAssert(channelId != nil);
+
+	return [NSString stringWithFormat:@"TDCChannelBanListSheet -> %@ -> %lu", channelId, (unsigned long)entryType];
+}
+
 - (nullable instancetype)initWithEntryType:(TDCChannelBanListSheetEntryType)entryType inChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(channel != nil);

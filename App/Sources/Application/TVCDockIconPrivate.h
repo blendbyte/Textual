@@ -38,6 +38,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCDockIcon : NSObject
+/* The icon itself, without the counts the Dock shows on it */
++ (NSImage *)applicationIcon;
+
 + (void)updateDockIcon;
 
 + (void)resetCachedCount;

@@ -517,6 +517,23 @@ async def scenario_review_view(client):
 		pass
 
 
+async def scenario_review_input(client):
+	"""Input field review. #c with alice, bob and _bob_ (a nickname Markdown could
+	take apart), and #help and &help (one name, two prefixes) for the suggestion
+	list. The log shows what the client sends. Stays connected."""
+	me = client.nickname
+
+	await client.send(f":{SERVER} 005 {me} CHANTYPES=#& :are supported by this server")
+
+	for channel, members in (("#c", f"{me} @alice bob _bob_"), ("#help", f"{me} alice"), ("&help", f"{me} bob")):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{members}")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_review_chat(client):
 	"""Chat view review. In #c: two lines from alice (the second grouped in the Chat
 	display), her /me (keeps its name), bob's reply (a quote), a black-on-black spoiler,
@@ -3520,6 +3537,7 @@ SCENARIOS = {
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
+	"review-input": scenario_review_input,
 	"review-chat": scenario_review_chat,
 	"review-view": scenario_review_view,
 	"links": scenario_links,

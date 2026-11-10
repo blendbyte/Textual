@@ -37,6 +37,9 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "IRCChannelUser.h"
+#import "IRCUser.h"
+#import "IRCChannelMemberList.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 #import "NSStringHelper.h"
@@ -383,7 +386,16 @@ static BOOL _popOutsOpened = NO;
 
 	[self updateAppearance];
 
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	/* As the main window shows it: the trial over, nothing is usable */
+	if (TLOLicenseManagerTextualIsRegistered() == NO && TLOLicenseManagerIsTrialExpired()) {
+		[self.loadingScreen showTrialExpiredView];
+	} else {
+		[self.loadingScreen hide];
+	}
+#else
 	[self.loadingScreen hide];
+#endif
 
 	[self.contentSplitView restorePositions];
 
@@ -469,8 +481,18 @@ static BOOL _popOutsOpened = NO;
 	[self toggleFullScreen:nil];
 }
 
+- (void)inputTextFieldLostFocus
+{
+	[self.inputCompletion close];
+}
+
 - (void)themeVarietyChanged:(NSNotification *)notification
 {
+	/* The main window reloads every view, pop-outs' too: once is enough */
+	if (self.isPopOut) {
+		return;
+	}
+
 	[self reloadTheme];
 }
 
@@ -809,7 +831,7 @@ static BOOL _popOutsOpened = NO;
 	[self.inputTextField recalculateTextViewSize];
 
 	if (self.isPopOut) {
-		[self.class savePopOuts];
+		[self.class savePopOutsSoon];
 	} else {
 		[self saveWindowStateSoon];
 	}
@@ -818,7 +840,7 @@ static BOOL _popOutsOpened = NO;
 - (void)windowDidMove:(NSNotification *)notification
 {
 	if (self.isPopOut) {
-		[self.class savePopOuts];
+		[self.class savePopOutsSoon];
 	} else {
 		[self saveWindowStateSoon];
 	}
@@ -1093,7 +1115,20 @@ static BOOL _popOutsOpened = NO;
 	NSAttributedString *typedValue = stringValue;
 
 	if (applyMarkdown) {
-		stringValue = [TVCInputMarkdown attributedStringByApplyingMarkdown:stringValue];
+		/* Someone called _bob_ is addressed as _bob_ */
+		IRCChannel *channel = self.selectedChannel;
+
+		NSMutableArray<NSString *> *nicknames = [NSMutableArray array];
+
+		if (channel.isPrivateMessage) {
+			[nicknames addObject:channel.name];
+		} else {
+			for (IRCChannelUser *member in channel.memberList) {
+				[nicknames addObject:member.user.nickname];
+			}
+		}
+
+		stringValue = [TVCInputMarkdown attributedStringByApplyingMarkdown:stringValue protectingNicknames:nicknames];
 	}
 
 	/* A reply goes with a message, not with a command; /me is one */

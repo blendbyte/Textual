@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)maybeBringWindowForward:(NSString *)windowDescription;
 
-- (void)popMainWindowSheetIfExists;
+- (void)popSheetOfCurrentWindowIfExists;
 @end
 
 NS_ASSUME_NONNULL_END

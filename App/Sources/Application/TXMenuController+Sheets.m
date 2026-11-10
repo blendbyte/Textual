@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(c != nil);
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCChannelPropertiesSheet *sheet =
 	[[TDCChannelPropertiesSheet alloc] initWithChannel:c];
@@ -202,7 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCChannelInviteSheet *sheet =
 	[[TDCChannelInviteSheet alloc] initWithNicknames:nicknames onClient:u];
@@ -255,7 +255,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showWelcomeSheet:(nullable id)sender
 {
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	[TDCSetupAssistant addServersFromEmptyState];
 }
@@ -299,7 +299,7 @@ NS_ASSUME_NONNULL_BEGIN
 	appendLink(TXLocalizationNotNeeded(@"GitHub"), TXGitHubRepository);
 
 	[NSApp orderFrontStandardAboutPanelWithOptions:@{
-		NSAboutPanelOptionApplicationIcon : [NSApp applicationIconImage],
+		NSAboutPanelOptionApplicationIcon : [TVCDockIcon applicationIcon], // not the Dock's, with its badges
 		NSAboutPanelOptionCredits : credits
 	}];
 }
@@ -311,7 +311,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(client != nil);
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCServerPropertiesSheet *sheet = [[TDCServerPropertiesSheet alloc] initWithClient:client];
 
@@ -431,7 +431,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCNicknameColorSheet *sheet =
 	[[TDCNicknameColorSheet alloc] initWithNickname:nickname];
@@ -462,7 +462,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCChannelModifyTopicSheet *sheet =
 	[[TDCChannelModifyTopicSheet alloc] initWithChannel:c];
@@ -500,7 +500,7 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCChannelModifyModesSheet *sheet =
 	[[TDCChannelModifyModesSheet alloc] initWithChannel:c];
@@ -560,11 +560,12 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	IRCClient *u = self.selectedClient;
 
-	if (u == nil || u.isLoggedIn == NO) {
+	/* Also while registering: a refused nickname is when it's needed */
+	if (u == nil || u.isConnected == NO) {
 		return;
 	}
 
-	[windowController() popMainWindowSheetIfExists];
+	[windowController() popSheetOfCurrentWindowIfExists];
 
 	TDCServerChangeNicknameSheet *sheet =
 	[[TDCServerChangeNicknameSheet alloc] initWithClient:u];

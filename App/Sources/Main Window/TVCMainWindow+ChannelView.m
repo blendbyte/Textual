@@ -142,8 +142,12 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Create list of selected items and notify those newly selected items
 	 that they are now visible + part of a stacked view (a bouncer's heading,
 	 selected by row, isn't one) */
+	/* Nor one shown in a window of its own: its view stays there (a
+	 right-click or a row removed above it selected it here) */
+	BOOL isPopOut = self.isPopOut;
+
 	NSArray *selectedItems = [self.serverList.selectedObjects filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id item, NSDictionary *bindings) {
-		return [item isKindOfClass:[IRCTreeItem class]];
+		return ([item isKindOfClass:[IRCTreeItem class]] && (isPopOut || [TVCMainWindow popOutWindowForItem:item] == nil));
 	}]];
 
 	/* Update selected item even if group hasn't changed */
@@ -444,7 +448,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)restoreInputDraft:(nullable NSAttributedString *)draft
 {
-	[self.inputCompletion close];
+	/* Another channel's text: Esc in the last one doesn't count here */
+	[self.inputCompletion reset];
 
 	self.inputDraftBeingRestored = YES;
 
