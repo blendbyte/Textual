@@ -73,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Value of the Content-Length header
  */
-@property (readonly) unsigned long long contentLength;
+@property (readonly) unsigned long long contentLength; // 0 when the server didn't say
 @end
 
 #pragma mark -

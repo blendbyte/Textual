@@ -26,6 +26,12 @@
 		muted
 {{/videoMuteEnabled}}
 
+{{! Played: the address without the limit on how much may load }}
+{{^videoAutoplayEnabled}}
+		data-play-src="{{videoPlayURL}}"
+		onplay="_ICMInlineVideo.playStartedCallback()"
+{{/videoAutoplayEnabled}}
+
 		data-speed="{{videoPlaybackSpeed}}"
 		data-start="{{videoStartTime}}"
 		src="{{videoURL}}"

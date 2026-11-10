@@ -35,6 +35,8 @@
  *********************************************************************** */
 
 #import "TPCPreferences.h"
+#import "TPCPreferencesLocalPrivate.h"
+#import "ICLInlineContentLoaderPrivate.h"
 #import "ICLHelpers.h"
 #import "ICLMediaSchemeHandlerPrivate.h"
 #import "ICMPreviewCard.h"
@@ -69,6 +71,18 @@ NS_ASSUME_NONNULL_BEGIN
 	templateAttributes[@"uniqueIdentifier"] = payload.uniqueIdentifier;
 	templateAttributes[@"classAttribute"] = payload.classAttribute;
 	templateAttributes[@"targetURL"] = targetURL.absoluteString;
+
+	/* A service's card comes from its HTTPS API: an http:// link to it is
+	 shown as its https form (it was refused, after the API had been asked) */
+	if ([self.class serviceName] && [payload.urlToInline.scheme.lowercaseString isEqualToString:@"http"]) {
+		NSURLComponents *components = [NSURLComponents componentsWithURL:payload.urlToInline resolvingAgainstBaseURL:NO];
+
+		components.scheme = @"https";
+
+		if (components.URL) {
+			payload.urlToInline = components.URL;
+		}
+	}
 
 	switch (card.style) {
 		case ICMPreviewCardStyleVideo:
@@ -148,6 +162,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)_mediaAddressForImageURL:(nullable NSURL *)imageURL
 {
 	if (imageURL == nil || [imageURL.scheme.lowercaseString isEqualToString:@"https"] == NO) {
+		return nil;
+	}
+
+	/* A page's own picture (og:image) can be on any site: the site rules
+	 apply to it. A service's pictures come from its own hosts. */
+	if ([self.class serviceName] == nil && imageURL.host &&
+		[ICLInlineContentLoader host:imageURL.host isPreviewedWithDomains:[TPCPreferences inlineMediaDomains] mode:[TPCPreferences inlineMediaDomainRuleMode]] == NO)
+	{
 		return nil;
 	}
 

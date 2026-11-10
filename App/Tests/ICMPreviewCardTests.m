@@ -96,6 +96,17 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil(metadata[@"og:description"]);
 }
 
+/* A > inside a quoted value and a < that starts no tag are text */
+- (void)testPageMetadataWithAngleBrackets
+{
+	NSDictionary<NSString *, NSString *> *metadata = [ICLHelpers metadataInHTML:@"<html><head><title>I <3 New York</title><meta property=\"og:title\" content=\"Docs > Setup\"></head></html>"];
+
+	XCTAssertEqualObjects(metadata[@"title"], @"I <3 New York");
+	XCTAssertEqualObjects(metadata[@"og:title"], @"Docs > Setup");
+
+	XCTAssertEqualObjects([ICLHelpers plainTextFromHTMLFragment:@"made with <3 in <b>Berlin</b>"], @"made with <3 in Berlin");
+}
+
 /* A page's start is cut anywhere and comes in its own charset */
 - (void)testPageTextDecoding
 {

@@ -279,13 +279,6 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 	NSParameterAssert(payloadIn != nil);
 	NSParameterAssert(moduleClass != NULL);
 
-	/* A service turned off in Preferences */
-	NSString *serviceName = [moduleClass serviceName];
-
-	if (serviceName && [TPCPreferences inlineMediaServiceIsEnabled:serviceName] == NO) {
-		return NO;
-	}
-
 	/* Determine whether this module has an action for this URL. */
 	NSURL *url = payloadIn.url;
 
@@ -299,6 +292,15 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 
 	if (actionBlock == nil && action == NULL) {
 		return NO;
+	}
+
+	/* A service turned off in Preferences: its link is claimed and nothing
+	 happens, so the page card and the plain image and video previews don't
+	 contact the service instead */
+	NSString *serviceName = [moduleClass serviceName];
+
+	if (serviceName && [TPCPreferences inlineMediaServiceIsEnabled:serviceName] == NO) {
+		return YES;
 	}
 
 	/* Create module and call it */

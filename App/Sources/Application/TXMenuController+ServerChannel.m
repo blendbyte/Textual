@@ -37,6 +37,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "TLOKeychainPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelPrivate.h"
@@ -418,6 +419,14 @@ NS_ASSUME_NONNULL_BEGIN
 	config.connectionName = [config.connectionName stringByAppendingString:@"_"];
 
 	IRCClient *newClient = [worldController() createClientWithConfig:config reload:YES];
+
+	/* Its own upload destination's tokens too, under the copy's identifier:
+	 the address came along without them */
+	NSString *uploadSecrets = [TLOKeychain passwordOfKind:TLOKeychainItemKindUploadSecrets forIdentifier:u.config.uniqueIdentifier];
+
+	if (uploadSecrets.length > 0) {
+		(void)[TLOKeychain setPassword:uploadSecrets ofKind:TLOKeychainItemKindUploadSecrets forIdentifier:newClient.config.uniqueIdentifier];
+	}
 
 	if (newClient.config.sidebarItemExpanded) { // Only expand new client if old was expanded already.
 		[mainWindow() expandClient:newClient];

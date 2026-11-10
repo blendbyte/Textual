@@ -75,6 +75,10 @@ typedef NS_ENUM(NSInteger, ICLMediaFetchErrorCode) {
 @property (nonatomic, copy, nullable) void (^dataBlock)(NSData *data);
 @property (nonatomic, copy, nullable) void (^completionBlock)(NSError * _Nullable error);
 
+/* At most this much of the body (0: no limit), whatever its total length: a
+ video not played yet loads only what shows its first frame */
+@property (nonatomic, assign) unsigned long long receivedLengthLimit;
+
 - (void)start;
 - (void)cancel;
 
@@ -88,6 +92,7 @@ typedef NS_ENUM(NSInteger, ICLMediaFetchErrorCode) {
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, assign) ICLMediaType type;
 @property (nonatomic, assign) unsigned long long maximumLength;
+@property (nonatomic, assign) unsigned long long receivedLengthLimit; // per fetch; see ICLMediaFetch
 @property (nonatomic, copy, nullable) NSString *mediaKey; // what it is, for giving the same media the same address
 @end
 
@@ -97,6 +102,9 @@ typedef NS_ENUM(NSInteger, ICLMediaFetchErrorCode) {
 /* The address the chat view loads instead of url. Images and GIF-style
  clips use the image size limit; video you play has none (0). */
 - (NSURL *)URLForMediaAtURL:(NSURL *)url session:(NSURLSession *)session type:(ICLMediaType)type maximumLength:(unsigned long long)maximumLength;
+
+/* A video before it is played: each fetch stops after receivedLengthLimit bytes */
+- (NSURL *)URLForMediaAtURL:(NSURL *)url session:(NSURLSession *)session type:(ICLMediaType)type maximumLength:(unsigned long long)maximumLength receivedLengthLimit:(unsigned long long)receivedLengthLimit;
 
 /* nil for an address this handler didn't hand out (or has forgotten) */
 - (nullable ICLMediaSchemeEntry *)entryForMediaURL:(NSURL *)mediaURL;

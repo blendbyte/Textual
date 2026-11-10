@@ -116,8 +116,8 @@ NS_ASSUME_NONNULL_BEGIN
 						 BOOL safeToLoad = (error == nil);
 
 						 /* A clip that plays by itself loads at once: the image size limit applies */
-						 if (safeToLoad && self.videoAutoplayEnabled &&
-							 (unsigned long long)assessment.contentLength > [TPCPreferences inlineImagesMaxFilesize])
+						 if (safeToLoad && self.videoAutoplayEnabled && assessment.contentLength > 0 &&
+							 assessment.contentLength > [TPCPreferences inlineImagesMaxFilesize])
 						 {
 							 safeToLoad = NO;
 						 }
@@ -156,14 +156,29 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* WebKit loads it through Textual. A clip that plays by itself
-	 follows the image size limit; a video you start yourself has none. */
+	 follows the image size limit. A video you start yourself has none once
+	 you do; until then, what shows its first frame may load at most that
+	 much (a second address, which the page switches to on play). */
 	BOOL playsByItself = self.videoAutoplayEnabled;
 
-	NSURL *videoURL =
-	[[ICLMediaSchemeHandler sharedHandler] URLForMediaAtURL:payload.urlToInline
-													session:payload.session
-													   type:((playsByItself) ? ICLMediaTypeVideoGif : ICLMediaTypeVideo)
-											  maximumLength:((playsByItself) ? [TPCPreferences inlineImagesMaxFilesize] : 0)];
+	unsigned long long imageLimit = [TPCPreferences inlineImagesMaxFilesize];
+
+	ICLMediaSchemeHandler *mediaHandler = [ICLMediaSchemeHandler sharedHandler];
+
+	NSURL *videoURL = nil;
+
+	NSURL *playURL = nil;
+
+	if (playsByItself) {
+		videoURL = [mediaHandler URLForMediaAtURL:payload.urlToInline session:payload.session type:ICLMediaTypeVideoGif maximumLength:imageLimit];
+	} else {
+		videoURL = [mediaHandler URLForMediaAtURL:payload.urlToInline session:payload.session type:ICLMediaTypeVideo maximumLength:0 receivedLengthLimit:imageLimit];
+
+		playURL = [mediaHandler URLForMediaAtURL:payload.urlToInline session:payload.session type:ICLMediaTypeVideo maximumLength:0];
+	}
+
+	/* A class a style may use, set where the module's own finish sets it */
+	[self finalizePreflight];
 
 	NSDictionary *templateAttributes =
 	@{
@@ -177,7 +192,8 @@ NS_ASSUME_NONNULL_BEGIN
 		@"videoMuteEnabled" : @(self.videoMuteEnabled),
 		@"videoPlaybackSpeed" : @(playbackSpeed),
 		@"videoStartTime" : @(self.videoStartTime),
-		@"videoURL" : ((playsByItself) ? videoURL.absoluteString : [videoURL.absoluteString stringByAppendingString:@"#t=0.1"]) // its first frame shows until played
+		@"videoURL" : ((playsByItself) ? videoURL.absoluteString : [videoURL.absoluteString stringByAppendingString:@"#t=0.1"]), // its first frame shows until played
+		@"videoPlayURL" : (playURL.absoluteString ?: @"")
 	};
 
 	NSError *templateRenderError = nil;

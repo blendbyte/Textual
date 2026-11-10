@@ -316,6 +316,14 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 		return;
 	}
 
+	unsigned long long receivedLengthLimit = self.receivedLengthLimit;
+
+	if (receivedLengthLimit > 0 && self.receivedLength > receivedLengthLimit) {
+		[self _finishWithErrorCode:ICLMediaFetchErrorCodeTooLarge description:@"More than may load before it is played"];
+
+		return;
+	}
+
 	if (self.dataBlock) {
 		self.dataBlock(data);
 	}
@@ -388,12 +396,17 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 
 - (NSURL *)URLForMediaAtURL:(NSURL *)url session:(NSURLSession *)session type:(ICLMediaType)type maximumLength:(unsigned long long)maximumLength
 {
+	return [self URLForMediaAtURL:url session:session type:type maximumLength:maximumLength receivedLengthLimit:0];
+}
+
+- (NSURL *)URLForMediaAtURL:(NSURL *)url session:(NSURLSession *)session type:(ICLMediaType)type maximumLength:(unsigned long long)maximumLength receivedLengthLimit:(unsigned long long)receivedLengthLimit
+{
 	NSParameterAssert(url != nil);
 	NSParameterAssert(session != nil);
 
 	/* A line rendered again (a style reload, scrolling back) asks for the
 	 same media: it keeps its address, so lines on screen don't lose theirs */
-	NSString *mediaKey = [NSString stringWithFormat:@"%p %lu %llu %@", (__bridge void *)session, (unsigned long)type, maximumLength, url.absoluteString];
+	NSString *mediaKey = [NSString stringWithFormat:@"%p %lu %llu %llu %@", (__bridge void *)session, (unsigned long)type, maximumLength, receivedLengthLimit, url.absoluteString];
 
 	NSString *existingToken = self.entryTokensByMedia[mediaKey];
 
@@ -409,6 +422,7 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 	entry.session = session;
 	entry.type = type;
 	entry.maximumLength = maximumLength;
+	entry.receivedLengthLimit = receivedLengthLimit;
 
 	NSString *token = [NSUUID UUID].UUIDString;
 
@@ -491,6 +505,8 @@ NSErrorDomain const ICLMediaFetchErrorDomain = @"ICLMediaFetchErrorDomain";
 	NSString *rangeHeader = [urlSchemeTask.request valueForHTTPHeaderField:@"Range"];
 
 	ICLMediaFetch *fetch = [[ICLMediaFetch alloc] initWithURL:entry.url session:session type:entry.type maximumLength:entry.maximumLength rangeHeader:rangeHeader];
+
+	fetch.receivedLengthLimit = entry.receivedLengthLimit;
 
 	fetch.responseBlock = ^(NSInteger statusCode, NSDictionary<NSString *, NSString *> *headerFields) {
 		NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:requestURL statusCode:statusCode HTTPVersion:@"HTTP/1.1" headerFields:headerFields];

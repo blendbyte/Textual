@@ -93,6 +93,10 @@ typedef NS_ENUM(NSUInteger, TLOUploadDestinationBody) {
 /* The link in the answer, or nil */
 - (nullable NSURL *)linkFromResponse:(NSHTTPURLResponse *)response data:(NSData *)data;
 
+/* nil when the link template has a value the answer doesn't give
+ ({json:id} of an error, the file name), not a link with a piece missing */
+- (nullable NSURL *)linkFromResponse:(NSHTTPURLResponse *)response data:(NSData *)data fileName:(nullable NSString *)fileName;
+
 /* The server's own words on a failure, if the uploader says where they are */
 - (nullable NSString *)errorFromResponse:(NSHTTPURLResponse *)response data:(NSData *)data;
 

@@ -240,6 +240,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertEqualObjects([destination linkFromResponse:plainResponse data:[@"https://t.example.org/1\n" dataUsingEncoding:NSUTF8StringEncoding]].absoluteString, @"https://t.example.org/1");
 	XCTAssertNil([destination linkFromResponse:plainResponse data:[@"<html>error</html>" dataUsingEncoding:NSUTF8StringEncoding]]);
+
+	/* A template with a value the answer doesn't give is no link (it was the site's root) */
+	destination.linkTemplate = @"https://cdn.example.org/{json:id}";
+
+	XCTAssertNil([destination linkFromResponse:response data:json fileName:@"a.png"]);
+
+	destination.linkTemplate = @"https://cdn.example.org/{filename}";
+
+	XCTAssertEqualObjects([destination linkFromResponse:response data:json fileName:@"a.png"].absoluteString, @"https://cdn.example.org/a.png");
+
+	/* The pattern itself, as ShareX writes it now */
+	XCTAssertEqualObjects([TLOUploadDestination expandTemplate:@"{regex:\"url\": \"([^\"]+)\"|1}" response:response data:json regexes:@[] fileName:nil], @"https://files.example.org/u/abc.png");
 }
 
 /* A form: the fields, then the file, in the body written to the folder */

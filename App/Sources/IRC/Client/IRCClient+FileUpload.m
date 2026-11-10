@@ -356,8 +356,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		BOOL haveFolder = [RZFileManager() createDirectoryAtURL:folder withIntermediateDirectories:YES attributes:nil error:NULL];
 
-		if (isPicture && haveFolder) {
-			NSURL *copyURL = [self.class copyOfImageWithoutMetadataAtURL:uploadedURL inFolder:folder];
+		if (isPicture) {
+			/* Without a folder for the copy: only a picture that has nothing to remove */
+			NSURL *copyURL = ((haveFolder) ? [self.class copyOfImageWithoutMetadataAtURL:uploadedURL inFolder:folder] : nil);
 
 			if (copyURL) {
 				uploadedURL = copyURL;
@@ -578,7 +579,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSURL *link = nil;
 
 	if (self.destination) {
-		link = [self.destination linkFromResponse:response data:self.responseData];
+		link = [self.destination linkFromResponse:response data:self.responseData fileName:self.fileName];
 	} else {
 		link = [self.class linkFromLocation:[response valueForHTTPHeaderField:@"Location"] relativeToAddress:self.address];
 	}
@@ -624,7 +625,9 @@ NSString * const IRCClientFileUploadLoginDecisionPrefix = @"File Upload Login ->
 		return address;
 	}
 
-	if ([scheme isEqualToString:@"http"] && self.isSecured == NO) {
+	/* Plain HTTP only to this Mac, as for an address of your own: App
+	 Transport Security refuses it to any other host, so it isn't offered */
+	if ([scheme isEqualToString:@"http"] && self.isSecured == NO && [TLOUploadDestination addressIsAllowed:address]) {
 		return address;
 	}
 

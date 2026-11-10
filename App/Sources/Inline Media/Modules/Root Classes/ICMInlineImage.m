@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "TPCPreferences.h"
+#import "ICLInlineContentModulePrivate.h"
 #import "ICLHelpers.h"
 #import "ICLMediaAssessor.h"
 #import "ICMInlineImage.h"
@@ -150,6 +151,9 @@ NS_ASSUME_NONNULL_BEGIN
 													session:payload.session
 													   type:ICLMediaTypeImage
 											  maximumLength:[TPCPreferences inlineImagesMaxFilesize]];
+
+	/* A class a style may use, set where the module's own finish sets it */
+	[self finalizePreflight];
 
 	NSMutableDictionary *templateAttributes = [NSMutableDictionary dictionary];
 

@@ -151,6 +151,19 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 			break;
 		}
 
+		/* A tag starts with a letter, / or !: "I <3 New York" is text */
+		NSUInteger afterBracket = (scanner.scanLocation + 1);
+
+		unichar next = ((afterBracket < fragment.length) ? [fragment characterAtIndex:afterBracket] : 0);
+
+		if ([[NSCharacterSet letterCharacterSet] characterIsMember:next] == NO && next != '/' && next != '!') {
+			[text appendString:@"<"];
+
+			scanner.scanLocation = afterBracket;
+
+			continue;
+		}
+
 		NSString *tag = nil;
 
 		[scanner scanUpToString:@">" intoString:&tag];
@@ -328,7 +341,8 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 			NSRange titleEnd = [html rangeOfString:@"</title>" options:NSCaseInsensitiveSearch range:NSMakeRange(NSMaxRange(titleTagEnd), (html.length - NSMaxRange(titleTagEnd)))];
 
 			if (titleEnd.location != NSNotFound) {
-				NSString *title = [self plainTextFromHTMLFragment:[html substringWithRange:NSMakeRange(NSMaxRange(titleTagEnd), (titleEnd.location - NSMaxRange(titleTagEnd)))]];
+				/* No tags in a title: only its entities are decoded */
+				NSString *title = [self stringByDecodingHTMLEntities:[html substringWithRange:NSMakeRange(NSMaxRange(titleTagEnd), (titleEnd.location - NSMaxRange(titleTagEnd)))]].trim;
 
 				if (title.length > _maximumMetadataValueLength) {
 					title = [title substringToIndex:_maximumMetadataValueLength];
@@ -351,12 +365,34 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 			break;
 		}
 
-		NSUInteger tagSearchLength = MIN((NSUInteger)4096, (html.length - NSMaxRange(metaStart)));
+		/* The tag ends at the first > outside quotes ("Docs > Setup" is a value) */
+		NSUInteger tagSearchEnd = (NSMaxRange(metaStart) + MIN((NSUInteger)4096, (html.length - NSMaxRange(metaStart))));
 
-		NSRange metaEnd = [html rangeOfString:@">" options:0 range:NSMakeRange(NSMaxRange(metaStart), tagSearchLength)];
+		NSRange metaEnd = NSMakeRange(NSNotFound, 0);
 
+		unichar openQuote = 0;
+
+		for (NSUInteger position = NSMaxRange(metaStart); position < tagSearchEnd; position++) {
+			unichar character = [html characterAtIndex:position];
+
+			if (openQuote) {
+				if (character == openQuote) {
+					openQuote = 0;
+				}
+			} else if (character == '"' || character == '\'') {
+				openQuote = character;
+			} else if (character == '>') {
+				metaEnd = NSMakeRange(position, 1);
+
+				break;
+			}
+		}
+
+		/* Too long (or never closed): skipped, the ones after it still count */
 		if (metaEnd.location == NSNotFound) {
-			break;
+			searchFrom = NSMaxRange(metaStart);
+
+			continue;
 		}
 
 		searchFrom = NSMaxRange(metaEnd);

@@ -92,11 +92,47 @@ _ICMInlineVideo.clipVisibilityObserver = function()
 	return _ICMInlineVideo._clipVisibilityObserver;
 };
 
+/* Until it is played, a video loads only what shows its first frame: played,
+ it switches to the address that loads the rest */
+_ICMInlineVideo.playStartedCallback = function()
+{
+	var video = event.target;
+
+	_ICMInlineVideo._switchToPlayAddress(video, true);
+};
+
+_ICMInlineVideo._switchToPlayAddress = function(video, play)
+{
+	var playSource = video.dataset.playSrc;
+
+	if (!playSource) {
+		return false;
+	}
+
+	delete video.dataset.playSrc;
+
+	video.src = playSource;
+
+	if (play) {
+		video.play().catch(function() {});
+	} else {
+		video.preload = "none";
+	}
+
+	return true;
+};
+
 /* Refused by Textual (too large, wrong type, a local address) or unplayable:
  the empty player goes, the link stays */
 _ICMInlineVideo.loadFailedCallback = function()
 {
 	var video = event.target;
+
+	/* Its first frame needed more than may load before playing: it waits,
+	 loading nothing, until played */
+	if (_ICMInlineVideo._switchToPlayAddress(video, false)) {
+		return;
+	}
 
 	var media = video.closest(".inlineVideo");
 

@@ -153,20 +153,18 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 		[data appendData:dataIn];
 	};
 
-	__weak ICLImageViewer *weakSelf = self;
-
+	/* The viewer stays until the picture is saved, also when its window is
+	 closed first (it was released, and the picture silently not saved) */
 	fetch.completionBlock = ^(NSError * _Nullable error) {
-		ICLImageViewer *strongSelf = weakSelf;
-
-		strongSelf.saveFetch = nil;
+		self.saveFetch = nil;
 
 		if (error || data.length == 0) {
-			strongSelf.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sf]");
+			self.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sf]");
 
 			return;
 		}
 
-		[strongSelf _writeData:data contentType:contentType toFolder:downloadsURL];
+		[self _writeData:data contentType:contentType toFolder:downloadsURL];
 	};
 
 	self.saveFetch = fetch;

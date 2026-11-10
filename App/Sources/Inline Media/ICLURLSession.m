@@ -37,6 +37,8 @@
 #import <netdb.h>
 
 #import "IRCClient.h"
+#import "TPCPreferencesLocalPrivate.h"
+#import "ICLInlineContentLoaderPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCConnectionProxyPrivate.h"
 #import "ICLURLSessionPrivate.h"
@@ -497,6 +499,12 @@ static NSMapTable<NSURLSession *, NSURLSession *> *_mediaSessions = nil;
 
 	BOOL allowed = (host != nil && ICLAddressesOfHostAreAllowed(host, AI_NUMERICHOST, &numeric));
 
+	/* An onion name is for Tor alone (RFC 7686): asking the resolver about
+	 it would tell it which hidden service was linked */
+	if (host && ICLHostNameIsOnion(host)) {
+		host = nil;
+	}
+
 	if (host == nil || numeric || ICLHostNameIsLocal(host)) {
 		BOOL result = (numeric && allowed);
 
@@ -613,6 +621,26 @@ static NSMapTable<NSURLSession *, NSURLSession *> *_mediaSessions = nil;
 
 	if (redirectCount > _maximumRedirects || url == nil) {
 		LogToConsoleDebug("Refused redirect: too many redirects");
+
+		completionHandler(nil);
+
+		return;
+	}
+
+	/* Settings › Previews › Sites: a link to a site they allow can't lead to
+	 one they don't. A service's own address outside them (its API, its
+	 picture host) isn't held to them, nor where it leads. */
+	NSArray<NSString *> *domains = [TPCPreferences inlineMediaDomains];
+
+	TXInlineMediaDomainRuleMode mode = [TPCPreferences inlineMediaDomainRuleMode];
+
+	NSString *originalHost = task.originalRequest.URL.host;
+
+	if (originalHost && url.host &&
+		[ICLInlineContentLoader host:originalHost isPreviewedWithDomains:domains mode:mode] &&
+		[ICLInlineContentLoader host:url.host isPreviewedWithDomains:domains mode:mode] == NO)
+	{
+		LogToConsoleDebug("Refused redirect to a site that isn't previewed");
 
 		completionHandler(nil);
 

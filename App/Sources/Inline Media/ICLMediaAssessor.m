@@ -228,7 +228,9 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 	/* Read in content length */
 	long long contentLength = response.expectedContentLength;
 
-	if (contentLength <= 0) {
+	/* Unknown (-1, chunked) is fine: the fetch enforces the limit on the
+	 body. Nothing at all is not. */
+	if (contentLength == 0 || contentLength < -1) {
 		*error = [self _errorWithDescription:@"Content-Length header is improperly formatted" code:ICLMediaAssessorErrorCodeMalformedContentLength];
 
 		return nil;
@@ -250,7 +252,7 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 
 	/* Limit the size of images. Their dimensions are
 	 checked by the chat view once WebKit loads them. */
-	if (mediaType == ICLMediaTypeImage &&
+	if (mediaType == ICLMediaTypeImage && contentLength > 0 &&
 		(unsigned long long)contentLength > [TPCPreferences inlineImagesMaxFilesize])
 	{
 		*error = [self _errorWithDescription:@"Content-Length exceeds maximum allowed" code:ICLMediaAssessorErrorCodeContentLengthExceeded];
@@ -272,7 +274,7 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 		assessment.contentType = contentType;
 	}
 
-	assessment.contentLength = contentLength;
+	assessment.contentLength = ((contentLength > 0) ? (unsigned long long)contentLength : 0); // 0: not known
 
 	return [assessment copy];
 }

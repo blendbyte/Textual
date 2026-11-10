@@ -445,6 +445,16 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
+		/* Refused as it is (GET or PATCH, a plain-HTTP address): the menus can't
+		 show it, and Save would have quietly turned it into something else */
+		NSString *problem = destination.problem;
+
+		if (problem) {
+			[self showProblem:problem title:TXTLS(@"Prompts[upd-e1]", openPanel.URL.lastPathComponent)];
+
+			return;
+		}
+
 		[self showDestination:destination];
 	}];
 }

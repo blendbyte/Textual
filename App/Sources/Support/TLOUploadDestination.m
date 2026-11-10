@@ -323,10 +323,10 @@ static NSString * const _globalSecretsIdentifier = @"global";
 {
 	NSParameterAssert(identifier != nil);
 
+	/* As an empty password: when the tokens couldn't be read (the Keychain
+	 locked, a prompt refused), empty doesn't mean removed, and they stay */
 	if (self.headers.count == 0 && self.parameters.count == 0 && self.arguments.count == 0) {
-		[self.class removeSecretsWithIdentifier:identifier];
-
-		return YES;
+		return [TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindUploadSecrets forIdentifier:identifier];
 	}
 
 	NSDictionary *secrets = @{
@@ -470,6 +470,28 @@ static NSString * const _globalSecretsIdentifier = @"global";
 		}
 
 		components.queryItems = queryItems;
+
+		/* A + in a value (a token, a file name) is a plus, not a space: the
+		 address's own query is kept as it was */
+		NSMutableCharacterSet *allowedInValues = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+
+		[allowedInValues removeCharactersInString:@"+&="];
+
+		NSMutableArray<NSString *> *addedPairs = [NSMutableArray array];
+
+		for (NSString *key in [parameters.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+			[addedPairs addObject:[NSString stringWithFormat:@"%@=%@",
+								   [key stringByAddingPercentEncodingWithAllowedCharacters:allowedInValues],
+								   [parameters[key] stringByAddingPercentEncodingWithAllowedCharacters:allowedInValues]]];
+		}
+
+		NSURLComponents *original = [NSURLComponents componentsWithString:self.requestAddress];
+
+		NSString *originalQuery = original.percentEncodedQuery;
+
+		NSString *addedQuery = [addedPairs componentsJoinedByString:@"&"];
+
+		components.percentEncodedQuery = ((originalQuery.length > 0) ? [NSString stringWithFormat:@"%@&%@", originalQuery, addedQuery] : addedQuery);
 	}
 
 	NSURL *address = components.URL;
@@ -571,6 +593,11 @@ static NSString * const _globalSecretsIdentifier = @"global";
 
 - (nullable NSURL *)linkFromResponse:(NSHTTPURLResponse *)response data:(NSData *)data
 {
+	return [self linkFromResponse:response data:data fileName:nil];
+}
+
+- (nullable NSURL *)linkFromResponse:(NSHTTPURLResponse *)response data:(NSData *)data fileName:(nullable NSString *)fileName
+{
 	NSParameterAssert(response != nil);
 	NSParameterAssert(data != nil);
 
@@ -580,7 +607,14 @@ static NSString * const _globalSecretsIdentifier = @"global";
 	NSURL *baseURL = nil;
 
 	if (self.linkTemplate.length > 0) {
-		linkString = [self.class expandTemplate:self.linkTemplate response:response data:data regexes:self.regexes fileName:nil];
+		BOOL valueMissing = NO;
+
+		linkString = [self.class _expandTemplate:self.linkTemplate response:response data:data regexes:self.regexes fileName:fileName valueMissing:&valueMissing];
+
+		/* A link with a piece missing isn't the link */
+		if (valueMissing) {
+			return nil;
+		}
 	} else {
 		/* Without a template: Location, else the answer's text */
 		linkString = [response valueForHTTPHeaderField:@"Location"];
@@ -672,6 +706,41 @@ static NSString * const _globalSecretsIdentifier = @"global";
 
 + (NSString *)expandTemplate:(NSString *)template response:(nullable NSHTTPURLResponse *)response data:(nullable NSData *)data regexes:(NSArray<NSString *> *)regexes fileName:(nullable NSString *)fileName
 {
+	return [self _expandTemplate:template response:response data:data regexes:regexes fileName:fileName valueMissing:NULL];
+}
+
+/* An uploader's own pattern on the answer (up to 1 MB), on the main thread:
+ given up after a second, as a pattern that never ends would hang Textual */
++ (nullable NSTextCheckingResult *)_firstMatchOfPattern:(NSString *)pattern inText:(NSString *)text
+{
+	NSParameterAssert(pattern != nil);
+	NSParameterAssert(text != nil);
+
+	NSRegularExpression *expression = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:NULL];
+
+	if (expression == nil) {
+		return nil;
+	}
+
+	NSTimeInterval deadline = ([NSProcessInfo processInfo].systemUptime + 1.0);
+
+	__block NSTextCheckingResult *firstMatch = nil;
+
+	[expression enumerateMatchesInString:text options:NSMatchingReportProgress range:NSMakeRange(0, text.length) usingBlock:^(NSTextCheckingResult * _Nullable result, NSMatchingFlags flags, BOOL *stop) {
+		if (result) {
+			firstMatch = result;
+
+			*stop = YES;
+		} else if ([NSProcessInfo processInfo].systemUptime > deadline) {
+			*stop = YES;
+		}
+	}];
+
+	return firstMatch;
+}
+
++ (NSString *)_expandTemplate:(NSString *)template response:(nullable NSHTTPURLResponse *)response data:(nullable NSData *)data regexes:(NSArray<NSString *> *)regexes fileName:(nullable NSString *)fileName valueMissing:(nullable BOOL *)valueMissing
+{
 	NSParameterAssert(template != nil);
 	NSParameterAssert(regexes != nil);
 
@@ -714,24 +783,41 @@ static NSString * const _globalSecretsIdentifier = @"global";
 		}
 
 		if ([function isEqualToString:@"regex"] && argument && text) {
-			/* $regex:1|1$: the first pattern of the list, its first group (or a named one) */
+			/* $regex:1|1$: the first pattern of the list, its first group (or a
+			 named one). Or the pattern itself: {regex:pattern|group}. */
 			NSArray *parts = [argument componentsSeparatedByString:@"|"];
 
-			NSInteger index = [parts[0] integerValue] - 1;
+			NSCharacterSet *notDigits = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
 
-			if (index < 0 || index >= (NSInteger)regexes.count) {
-				return nil;
+			NSString *pattern = nil;
+
+			NSString *group = @"0";
+
+			if ([parts[0] length] > 0 && [parts[0] rangeOfCharacterFromSet:notDigits].location == NSNotFound) {
+				NSInteger index = [parts[0] integerValue] - 1;
+
+				if (index < 0 || index >= (NSInteger)regexes.count) {
+					return nil;
+				}
+
+				pattern = regexes[index];
+
+				if (parts.count > 1) {
+					group = parts[1];
+				}
+			} else if (parts.count > 1) {
+				pattern = [[parts subarrayWithRange:NSMakeRange(0, (parts.count - 1))] componentsJoinedByString:@"|"];
+
+				group = parts.lastObject;
+			} else {
+				pattern = argument;
 			}
 
-			NSRegularExpression *expression = [NSRegularExpression regularExpressionWithPattern:regexes[index] options:0 error:NULL];
-
-			NSTextCheckingResult *match = [expression firstMatchInString:text options:0 range:NSMakeRange(0, text.length)];
+			NSTextCheckingResult *match = [self _firstMatchOfPattern:pattern inText:text];
 
 			if (match == nil) {
 				return nil;
 			}
-
-			NSString *group = ((parts.count > 1) ? parts[1] : @"0");
 
 			NSRange range = NSMakeRange(NSNotFound, 0);
 
@@ -741,7 +827,8 @@ static NSString * const _globalSecretsIdentifier = @"global";
 				if (groupIndex < match.numberOfRanges) {
 					range = [match rangeAtIndex:groupIndex];
 				}
-			} else {
+			} else if ([pattern containsString:[NSString stringWithFormat:@"(?<%@>", group]]) {
+				/* Only a name the pattern has: asking for another raises */
 				range = [match rangeWithName:group];
 			}
 
@@ -773,6 +860,8 @@ static NSString * const _globalSecretsIdentifier = @"global";
 			[result appendString:[template substringWithRange:match.range]];
 		} else if (value) {
 			[result appendString:value];
+		} else if (valueMissing) {
+			*valueMissing = YES;
 		}
 
 		position = NSMaxRange(match.range);
