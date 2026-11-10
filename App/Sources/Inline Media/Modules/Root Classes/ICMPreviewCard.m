@@ -35,6 +35,7 @@
  *********************************************************************** */
 
 #import "TPCPreferences.h"
+#import "TLOLocalization.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "ICLInlineContentLoaderPrivate.h"
 #import "ICLHelpers.h"
@@ -69,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSMutableDictionary<NSString *, id> *templateAttributes = [NSMutableDictionary dictionary];
 
 	templateAttributes[@"uniqueIdentifier"] = payload.uniqueIdentifier;
+	templateAttributes[@"hideLabel"] = TXTLS(@"TVCMainWindow[icm-h1]");
 	templateAttributes[@"classAttribute"] = payload.classAttribute;
 	templateAttributes[@"targetURL"] = targetURL.absoluteString;
 

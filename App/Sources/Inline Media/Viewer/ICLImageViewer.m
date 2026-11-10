@@ -201,8 +201,11 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 		if ([data writeToURL:fileURL options:NSDataWritingWithoutOverwriting error:&writeError]) {
 			self.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sv]", candidate);
 
-			/* The Downloads stack in the Dock bounces */
+#if TEXTUAL_BUILT_FOR_APP_STORE_DISTRIBUTION == 0
+			/* The Downloads stack in the Dock bounces (a notification of the
+			 system's own, so not in the App Store build) */
 			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.DownloadFileFinished" object:fileURL.path];
+#endif
 
 			return;
 		}

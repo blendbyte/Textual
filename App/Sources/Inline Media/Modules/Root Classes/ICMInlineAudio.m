@@ -35,6 +35,7 @@
  *********************************************************************** */
 
 #import "ICLHelpers.h"
+#import "TLOLocalization.h"
 #import "ICLInlineContentModulePrivate.h"
 #import "ICLMediaAssessor.h"
 #import "ICLMediaAssessment.h"
@@ -118,6 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 	templateAttributes[@"fileName"] = fileName;
 	templateAttributes[@"host"] = url.host;
 	templateAttributes[@"uniqueIdentifier"] = payload.uniqueIdentifier;
+	templateAttributes[@"hideLabel"] = TXTLS(@"TVCMainWindow[icm-h1]");
 
 	NSError *templateRenderError = nil;
 

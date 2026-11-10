@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "TPCPreferences.h"
+#import "TLOLocalization.h"
 #import "ICLHelpers.h"
 #import "ICLInlineContentModulePrivate.h"
 #import "ICLMediaAssessor.h"
@@ -186,6 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 		@"classAttribute" : payload.classAttribute,
 		@"preferredMaximumWidth" : @([TPCPreferences inlineMediaMaxWidth]),
 		@"uniqueIdentifier" : payload.uniqueIdentifier,
+		@"hideLabel" : TXTLS(@"TVCMainWindow[icm-h1]"),
 		@"videoAutoplayEnabled" : @(self.videoAutoplayEnabled),
 		@"videoControlsEnabled" : @(self.videoControlsEnabled),
 		@"videoLoopEnabled" : @(self.videoLoopEnabled),

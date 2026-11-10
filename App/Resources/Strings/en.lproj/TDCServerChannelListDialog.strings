@@ -37,6 +37,7 @@
 
 "cl-title" = "Channels on %@";
 "cl-search" = "Search names and topics";
+"cl-clear" = "Clear Search";
 "cl-refresh" = "Refresh";
 
 "cl-loading" = "Loading… %@ channels so far";

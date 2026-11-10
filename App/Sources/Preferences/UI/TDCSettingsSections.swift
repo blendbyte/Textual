@@ -672,7 +672,7 @@ struct AdvancedSettings: View
 						}
 					}
 				} label: {
-					SettingLabel(title: SettingsText("set-adv-x"), help: SettingsText("set-adv-xh"))
+					SettingLabel(title: SettingsText("set-adv-x"), help: SettingsText((TDCSettingsBridge.licenseManagerBuiltIn) ? "set-adv-xh" : "set-adv-xhs"))
 				}
 			}
 		}

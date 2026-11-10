@@ -216,8 +216,21 @@ NS_ASSUME_NONNULL_BEGIN
 	exit(0);
 }
 
+/* Whether the trackpad scrolls "naturally": known from its scroll events (a
+ swipe doesn't say), instead of a default of the system's own */
+static BOOL _scrollDirectionInverted = YES;
+
++ (BOOL)scrollDirectionInverted
+{
+	return _scrollDirectionInverted;
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
+	if (event.type == NSEventTypeScrollWheel && event.hasPreciseScrollingDeltas) {
+		_scrollDirectionInverted = event.isDirectionInvertedFromDevice;
+	}
+
 	BOOL performedCustomEvent = [self performedCustomKeyboardEvent:event];
 
 	if (performedCustomEvent) {

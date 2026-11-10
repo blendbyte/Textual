@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "IRCChannel.h"
 #import "TXMasterController.h"
 #import "IRCAddressBookUserTracking.h"
 #import "IRCClient.h"
@@ -106,6 +107,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.menuActionResults = [TDCChannelSpotlightSearchResult searchResultsForActionsInMenu:NSApp.mainMenu];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(applicationAppearanceChanged:) name:TXApplicationAppearanceChangedNotification object:nil];
+
+	/* The focus stays in the search field: VoiceOver is told what is chosen */
+	[RZNotificationCenter() addObserver:self selector:@selector(searchResultSelectionChanged:) name:NSTableViewSelectionDidChangeNotification object:self.searchResultsTable];
 	[RZNotificationCenter() addObserver:self selector:@selector(channelListChanged:) name:IRCClientChannelListWasModifiedNotification object:nil];
 	[RZNotificationCenter() addObserver:self selector:@selector(clientListChanged:) name:IRCWorldClientListWasModifiedNotification object:nil];
 	[RZNotificationCenter() addObserver:self selector:@selector(mainWindowSelectionChanged:) name:TVCMainWindowSelectionChangedNotification object:nil];
@@ -273,6 +277,42 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return event;
+}
+
+- (void)searchResultSelectionChanged:(NSNotification *)notification
+{
+	NSInteger row = self.searchResultsTable.selectedRow;
+
+	NSArray *results = self.searchResultsController.arrangedObjects;
+
+	if (row < 0 || row >= (NSInteger)results.count) {
+		return;
+	}
+
+	TDCChannelSpotlightSearchResult *result = results[row];
+
+	NSString *title = nil;
+
+	NSMenuItem *menuItem = result.menuItem;
+
+	IRCChannel *channel = result.channel;
+
+	if (result.isMenuAction) {
+		title = ((result.menuPath.length > 0) ? [NSString stringWithFormat:@"%@, %@", menuItem.title, result.menuPath] : menuItem.title);
+	} else if (channel) {
+		title = [NSString stringWithFormat:@"%@, %@", channel.name, channel.associatedClient.networkNameAlt];
+	}
+
+	if (title.length == 0) {
+		return;
+	}
+
+	NSString *announcement = TXTLS(@"Accessibility[lst-p1]", title, (unsigned long)(row + 1), (unsigned long)results.count);
+
+	NSAccessibilityPostNotificationWithUserInfo(NSApp, NSAccessibilityAnnouncementRequestedNotification, @{
+		NSAccessibilityAnnouncementKey : announcement,
+		NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
+	});
 }
 
 - (nullable NSEvent *)handlePageUpDownEvent:(NSEvent *)event

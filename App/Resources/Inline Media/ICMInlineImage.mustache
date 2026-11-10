@@ -1,9 +1,9 @@
 
 <span class="inlineImage {{classAttribute}}" id="inlineMedia-{{uniqueIdentifier}}" style="display: none;">
-	<span class="closeButton" href="#" onclick="_ICMInlineImage.hideOnClick('{{uniqueIdentifier}}');">×</span>
+	<button type="button" class="closeButton" aria-label="{{hideLabel}}" onclick="_ICMInlineImage.hideOnClick('{{uniqueIdentifier}}');">×</button>
 
 	<a href="{{anchorLink}}" onclick="return _ICMInlineImage.imageClicked(event)">
-		<img src="{{imageURL}}" class="content" style="max-width: {{preferredMaximumWidth}}px;" data-maximum-width="{{maximumWidth}}" data-maximum-height="{{maximumHeight}}"{{#hoverText}} title="{{hoverText}}"{{/hoverText}} />
+		<img src="{{imageURL}}" alt="{{altText}}" class="content" style="max-width: {{preferredMaximumWidth}}px;" data-maximum-width="{{maximumWidth}}" data-maximum-height="{{maximumHeight}}"{{#hoverText}} title="{{hoverText}}"{{/hoverText}} />
 	</a>
 {{#caption}}
 	<span class="inlineImageCaption">{{caption}}</span>

@@ -705,6 +705,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[tableView scrollRowToVisible:0];
 
+	[self _announceRow:0];
+
 	/* Above the word being completed */
 	NSRect wordRect = [textView firstRectForCharacterRange:self.query.range actualRange:NULL];
 
@@ -921,7 +923,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[tableView scrollRowToVisible:row];
 
+	[self _announceRow:row];
+
 	return YES;
+}
+
+/* The focus stays in the input field: VoiceOver is told what is chosen */
+- (void)_announceRow:(NSInteger)row
+{
+	if (row < 0 || row >= (NSInteger)self.items.count) {
+		return;
+	}
+
+	TVCInputCompletionItem *item = self.items[row];
+
+	NSString *title = ((item.detail.length > 0) ? [NSString stringWithFormat:@"%@, %@", item.title, item.detail] : item.title);
+
+	NSString *announcement = TXTLS(@"Accessibility[lst-p1]", title, (unsigned long)(row + 1), (unsigned long)self.items.count);
+
+	NSAccessibilityPostNotificationWithUserInfo(NSApp, NSAccessibilityAnnouncementRequestedNotification, @{
+		NSAccessibilityAnnouncementKey : announcement,
+		NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
+	});
 }
 
 #pragma mark -

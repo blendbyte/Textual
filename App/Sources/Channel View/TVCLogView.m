@@ -145,9 +145,21 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+" TXWebsiteLi
 
 - (void)print
 {
-	// Printing is probably broken: <http://www.openradar.me/20217859>
+	/* WebKit's own print operation: NSView's print: on a WKWebView printed
+	 nothing useful. It runs as a sheet: run on its own, it doesn't work. */
+	WKWebView *webView = (WKWebView *)self.webView;
 
-	[self.webView print:nil];
+	NSWindow *window = webView.window;
+
+	if (window == nil) {
+		return;
+	}
+
+	NSPrintOperation *printOperation = [webView printOperationWithPrintInfo:[NSPrintInfo sharedPrintInfo]];
+
+	printOperation.view.frame = webView.bounds;
+
+	[printOperation runOperationModalForWindow:window delegate:nil didRunSelector:NULL contextInfo:NULL];
 }
 
 - (BOOL)keyDown:(NSEvent *)e inView:(NSView *)view

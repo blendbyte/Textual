@@ -48,6 +48,7 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @interface TDCSettingsBridge : NSObject
 /* Updates (Sparkle builds only): 0 download and install, 1 only tell me, 2 don't check */
 @property (class, readonly) BOOL updatesAvailable;
+@property (class, readonly) BOOL licenseManagerBuiltIn; // not in the App Store build
 @property (class) NSInteger updateMode;
 + (void)betaUpdatesChanged;
 

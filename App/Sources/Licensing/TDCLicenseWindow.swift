@@ -598,6 +598,18 @@ struct LicenseSeatsSection: View
 				.onTapGesture {
 					model.selectedSeatID = seat.activationID
 				}
+				/* By keyboard (Space) and for VoiceOver, a choice like a radio button */
+				.focusable()
+				.onKeyPress(.space) {
+					model.selectedSeatID = seat.activationID
+
+					return .handled
+				}
+				.accessibilityElement(children: .combine)
+				.accessibilityAddTraits((model.selectedSeatID == seat.activationID) ? [.isButton, .isSelected] : .isButton)
+				.accessibilityAction {
+					model.selectedSeatID = seat.activationID
+				}
 			}
 		}
 

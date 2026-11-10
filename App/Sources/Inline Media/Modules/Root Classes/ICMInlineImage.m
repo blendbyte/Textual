@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "TPCPreferences.h"
+#import "TLOLocalization.h"
 #import "ICLInlineContentModulePrivate.h"
 #import "ICLHelpers.h"
 #import "ICLMediaAssessor.h"
@@ -159,6 +160,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	templateAttributes[@"caption"] = self.caption.trim;
 	templateAttributes[@"hoverText"] = self.hoverText.trim;
+
+	/* For VoiceOver: what the picture says, else where it's from */
+	NSString *altText = (self.hoverText.trim ?: self.caption.trim);
+
+	if (altText.length == 0) {
+		altText = TXTLS(@"TVCMainWindow[icm-a1]", (payload.url.host ?: @""));
+	}
+
+	templateAttributes[@"altText"] = altText;
+	templateAttributes[@"hideLabel"] = TXTLS(@"TVCMainWindow[icm-h1]");
 
 	[templateAttributes addEntriesFromDictionary:
 	@{

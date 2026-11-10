@@ -37,6 +37,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "TXApplicationPrivate.h"
 #import "NSStringHelper.h"
 #import "IRCChannelPrivate.h"
 #import "IRCChannelMode.h"
@@ -328,7 +329,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	CGFloat x = event.deltaX;
 
-	BOOL invertedScrollingDirection = [RZUserDefaults() boolForKey:@"com.apple.swipescrolldirection"];
+	BOOL invertedScrollingDirection = [TXApplication scrollDirectionInverted];
 
 	if (invertedScrollingDirection) {
 		x = (x * (-1));
@@ -410,7 +411,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	CGFloat x = delta.x;
 
-	BOOL invertedScrollingDirection = [RZUserDefaults() boolForKey:@"com.apple.swipescrolldirection"];
+	BOOL invertedScrollingDirection = [TXApplication scrollDirectionInverted];
 
 	if (invertedScrollingDirection) {
 		x = (x * (-1));

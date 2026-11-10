@@ -1,5 +1,5 @@
 <span class="inlinePreviewCard {{classAttribute}}" id="inlineMedia-{{uniqueIdentifier}}" data-card-style="{{style}}"{{#dataAttributes}} data-{{name}}="{{value}}"{{/dataAttributes}}>
-	<span class="closeButton" onclick="_ICMPreviewCard.hideOnClick('{{uniqueIdentifier}}');">×</span>
+	<button type="button" class="closeButton" aria-label="{{hideLabel}}" onclick="_ICMPreviewCard.hideOnClick('{{uniqueIdentifier}}');">×</button>
 
 	<a class="previewCard" href="{{targetURL}}" data-card-style="{{style}}">
 {{#isVideo}}

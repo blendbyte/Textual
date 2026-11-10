@@ -125,6 +125,15 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 #pragma mark -
 #pragma mark Updates
 
++ (BOOL)licenseManagerBuiltIn
+{
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	return YES;
+#else
+	return NO;
+#endif
+}
+
 + (BOOL)updatesAvailable
 {
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
@@ -442,7 +451,11 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 
 	alert.alertStyle = NSAlertStyleCritical;
 	alert.messageText = TXTLS(@"TDCPreferencesController[set-adv-x1]");
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 	alert.informativeText = TXTLS(@"TDCPreferencesController[set-adv-x2]");
+#else
+	alert.informativeText = TXTLS(@"TDCPreferencesController[set-adv-x2s]"); // no licence in this build
+#endif
 
 	/* Cancel first, so Return doesn't erase anything */
 	[alert addButtonWithTitle:TXTLS(@"Prompts[qso-2g]")];

@@ -608,6 +608,8 @@ struct ChannelListSearchField: View
 						.foregroundStyle(.secondary)
 				}
 				.buttonStyle(.borderless)
+				.help(ChannelListText("cl-clear"))
+				.accessibilityLabel(ChannelListText("cl-clear"))
 			}
 		}
 		.padding(.horizontal, 7)

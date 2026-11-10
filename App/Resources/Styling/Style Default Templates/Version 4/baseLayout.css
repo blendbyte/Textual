@@ -279,6 +279,21 @@ body[data-selected="false"] #topicBar {
 	--mirc-foreground-color-15: initial;
 }
 
+/* Read by VoiceOver, not shown or copied: who said a grouped line, a mention */
+.spokenOnly {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+	-webkit-user-select: none !important;
+	user-select: none !important;
+}
+
 /* Spoilers (text in its own background colour) show on a click, not when
  the pointer passes over them. !important: hex colours are set with the
  style attribute, which this must overpower. */
@@ -604,6 +619,8 @@ div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note);
 }
 
 :where(.inlineImage, .inlineVideo, .inlineVideoService, .inlineHTML, .inlinePreviewCard) > :where(.closeButton) {
+	-webkit-appearance: none;
+	appearance: none;
 	position: absolute;
 	top: 6px;
 	right: 6px;

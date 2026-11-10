@@ -914,6 +914,13 @@ _MessageActions._hideToolbar = function() /* PRIVATE */
 		_MessageActions._toolbar.hidden = true;
 	}
 
+	/* Focus back on the message the choices were for */
+	var toolbar = _MessageActions._toolbar;
+
+	if (toolbar && toolbar.contains(document.activeElement) && _MessageActions._focusedLine && _MessageActions._focusedLine.isConnected) {
+		_MessageActions._focusedLine.focus({preventScroll: true});
+	}
+
 	_MessageActions._toolbarLine = null;
 
 	_MessageActions._choiceIndex = -1;
@@ -996,7 +1003,8 @@ _MessageActions._choosingReaction = false; /* PRIVATE */
 
 _MessageActions._focusableLines = function() /* PRIVATE */
 {
-	var lines = document.querySelectorAll("div.line.text");
+	/* And the summaries of collapsed events: Return opens them */
+	var lines = document.querySelectorAll("div.line.text, div.line.eventGroupSummary");
 
 	return Array.prototype.filter.call(lines, function(line) {
 		return (line.offsetParent !== null); // not hidden
@@ -1117,6 +1125,9 @@ _MessageActions._highlightChoice = function(index) /* PRIVATE */
 	}
 
 	_MessageActions._choiceIndex = index;
+
+	/* Focused, so VoiceOver says which one Return sends */
+	buttons[index].focus({preventScroll: true});
 };
 
 /* From the app: up, down, left, right, return, escape, delete, reply, react */
@@ -1166,11 +1177,45 @@ _MessageActions.keyboardCommand = function(command) /* PRIVATE */
 
 		appPrivate.leaveMessageFocus();
 	} else if (command === "return") {
+		/* Collapsed events open; a message not sent is sent again; else the
+		 first link, else the message a reply quotes */
+		if (line.classList.contains("eventGroupSummary")) {
+			line.click();
+
+			return;
+		}
+
+		var failedButtons = line.querySelectorAll(":scope > .failedNote button");
+
+		if (failedButtons.length > 1) {
+			failedButtons[0].click(); // Resend
+
+			return;
+		}
+
 		var link = line.querySelector(".innerMessage a[href], .message a[href]");
 
 		if (link) {
 			link.click();
+
+			return;
 		}
+
+		var quote = line.querySelector(":scope > .replyQuote");
+
+		if (quote) {
+			quote.click();
+		}
+	} else if (command === "delete" && line.querySelector(":scope > .failedNote")) {
+		/* A message not sent has no message ID: its own Delete */
+		var buttons = line.querySelectorAll(":scope > .failedNote button");
+
+		buttons[buttons.length - 1].click();
+	} else if (command === "hide") {
+		/* Its previews */
+		line.querySelectorAll(".closeButton").forEach(function(button) {
+			button.click();
+		});
 	} else {
 		_MessageActions._perform(line, command);
 	}

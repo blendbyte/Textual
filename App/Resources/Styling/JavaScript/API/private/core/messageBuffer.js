@@ -143,6 +143,25 @@ MessageBuffer.bufferElement = function() /* PUBLIC */
 	return _MessageBuffer._bufferElementReference;
 };
 
+_MessageBuffer._quietLiveRegionTimer = null; /* PRIVATE */
+
+_MessageBuffer.quietLiveRegion = function() /* PRIVATE */
+{
+	var buffer = MessageBuffer.bufferElement();
+
+	buffer.setAttribute("aria-live", "off");
+
+	if (_MessageBuffer._quietLiveRegionTimer) {
+		clearTimeout(_MessageBuffer._quietLiveRegionTimer);
+	}
+
+	_MessageBuffer._quietLiveRegionTimer = setTimeout(function() {
+		_MessageBuffer._quietLiveRegionTimer = null;
+
+		buffer.setAttribute("aria-live", "polite");
+	}, 250);
+};
+
 MessageBuffer.bufferElementPrepend = function(html, lineNumbers) /* PUBLIC */
 {
 	return _MessageBuffer.bufferElementInsert("afterbegin", html, lineNumbers);
@@ -175,6 +194,12 @@ _MessageBuffer.bufferElementInsert = function(placement, html, lineNumbers) /* P
 		if (typingIndicator) {
 			typingIndicator.remove();
 		}
+	}
+
+	/* Older lines aren't news: VoiceOver isn't told about them as it is
+	 about new ones (the live region is quiet while they go in) */
+	if (placement !== "beforeend") {
+		_MessageBuffer.quietLiveRegion();
 	}
 
 	buffer.insertAdjacentHTML(placement, html);

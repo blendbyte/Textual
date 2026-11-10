@@ -75,6 +75,8 @@
 			<string>TPCResourceManagerDocumentTypeImporter</string>
 		</dict>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Textual connects to IRC servers, bouncers and file transfers on your local network when you add one.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

@@ -77,7 +77,7 @@
 	</p>
 	{{/isGroupedWithPrevious}}
 
-	<p class="messageBody message">{{#isEncrypted}}{{> encryptedMessageLock}}{{/isEncrypted}}<span class="innerMessage">{{{formattedMessage}}}{{#inlineMediaEnabled}}<span class="inlineMediaContainer"></span>{{/inlineMediaEnabled}}</span>{{#isGroupedWithPrevious}}<span class="hoverTimestamp"{{^ isEmpty(localizedTimestamp) }} title="{{localizedTimestamp}}"{{/ isEmpty(localizedTimestamp) }}>{{formattedTimestamp}}</span>{{/isGroupedWithPrevious}}</p>
+	<p class="messageBody message">{{#spokenPrefix}}<span class="spokenOnly">{{spokenPrefix}} </span>{{/spokenPrefix}}{{#isEncrypted}}{{> encryptedMessageLock}}{{/isEncrypted}}<span class="innerMessage">{{{formattedMessage}}}{{#inlineMediaEnabled}}<span class="inlineMediaContainer"></span>{{/inlineMediaEnabled}}</span>{{#isGroupedWithPrevious}}<span class="hoverTimestamp"{{^ isEmpty(localizedTimestamp) }} title="{{localizedTimestamp}}"{{/ isEmpty(localizedTimestamp) }}>{{formattedTimestamp}}</span>{{/isGroupedWithPrevious}}</p>
 
 {{/groupedDisplayEnabled}}
 {{^groupedDisplayEnabled}}
@@ -113,7 +113,7 @@
 			</span>
 
 			<span class="innerMessage">
-				{{{formattedMessage}}}
+				{{#spokenPrefix}}<span class="spokenOnly">{{spokenPrefix}} </span>{{/spokenPrefix}}{{{formattedMessage}}}
 
 				{{#inlineMediaEnabled}}
 					<span class="inlineMediaContainer"></span>

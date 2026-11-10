@@ -3410,6 +3410,22 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	templateAttributes[@"isHighlight"] = @(highlighted);
 
+	/* For VoiceOver, not seen: who said a line grouped under the one above
+	 (the Chat display shows no name there), and that a line mentions you */
+	NSMutableArray<NSString *> *spokenParts = [NSMutableArray array];
+
+	if ([self groupedDisplayEnabled] && [self logLine:logLine isGroupedWithPreviousLine:previousLine highlighted:highlighted] && logLine.nickname.length > 0) {
+		[spokenParts addObject:[NSString stringWithFormat:@"%@, %@", logLine.nickname, (logLine.formattedTimestamp ?: @"")]];
+	}
+
+	if (highlighted) {
+		[spokenParts addObject:TXTLS(@"Accessibility[msg-m1]")];
+	}
+
+	if (spokenParts.count > 0) {
+		templateAttributes[@"spokenPrefix"] = [[spokenParts componentsJoinedByString:@", "] stringByAppendingString:@":"];
+	}
+
 	templateAttributes[@"isRemoteMessage"] = @(logLine.memberType == TVCLogLineMemberTypeNormal);
 
 	// ---- //

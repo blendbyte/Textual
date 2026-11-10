@@ -62,6 +62,12 @@
 "s5c-h4" = "1 Highlight";
 "s5c-h5" = "%lu Highlights";
 
+/* Read by VoiceOver before a message that mentions you */
+"msg-m1" = "Mentions you";
+
+/* VoiceOver: the suggestion chosen in a list, "#textual, 3 of 5" */
+"lst-p1" = "%1$@, %2$lu of %3$lu";
+
 
 "wbj-gr" = "Alert dialog %@";
 "l0k-c1" = "Secure Connection, Show Certificate";

@@ -572,6 +572,8 @@ NS_ASSUME_NONNULL_BEGIN
 				command = @"reply";
 			} else if ([character isEqualToString:@"e"]) {
 				command = @"react";
+			} else if ([character isEqualToString:@"h"]) {
+				command = @"hide"; // the message's previews
 			}
 
 			break;
