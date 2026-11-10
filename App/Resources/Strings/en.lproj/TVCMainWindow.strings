@@ -118,6 +118,8 @@
 "e7g-w1" = "%@ went away";
 "e7g-b1" = "%@ came back";
 "bot-l1" = "Bot";
+"bot-t1" = "Type:";
+"bot-t2" = "Bot";
 "rpl-l1" = "Replying to ";
 "rpl-c1" = "Cancel Reply";
 "rpl-b1" = "Reply";

@@ -45,6 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, weak) NSTextField *privilegesField;
 @property (readonly, weak) NSTextField *awayStatusField;
 @property (readonly) NSTextField *accountField; // a row added under the real name
+
+/* A row under the nickname, "Type: Bot", shown for bots only */
+@property (nonatomic, assign) BOOL showsBot;
 @end
 
 NS_ASSUME_NONNULL_END

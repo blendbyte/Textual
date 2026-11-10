@@ -49,49 +49,70 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readwrite) IBOutlet NSTextField *privilegesField;
 @property (nonatomic, weak, readwrite) IBOutlet NSTextField *awayStatusField;
 @property (nonatomic, strong, nullable) NSTextField *accountFieldStorage;
+@property (nonatomic, strong, nullable) NSGridRow *botRow;
 @end
 
 @implementation TVCMemberListUserInfoPopover
 
-/* Added in code, like the other rows: a label and a value in the grid */
+/* Added in code, like the other rows: a label and a value in the grid, under
+ the row of the field given */
+- (nullable NSGridRow *)_insertRowWithLabel:(NSString *)label value:(NSTextField *)valueField belowField:(NSTextField *)field
+{
+	NSGridView *grid = (NSGridView *)field.superview;
+
+	/* Looks like the other values */
+	valueField.font = field.font;
+	valueField.textColor = field.textColor;
+	valueField.lineBreakMode = NSLineBreakByTruncatingTail;
+
+	if ([grid isKindOfClass:[NSGridView class]] == NO) {
+		return nil;
+	}
+
+	NSInteger fieldRow = [grid indexOfRow:[grid cellForView:field].row];
+
+	NSTextField *fieldLabel = (NSTextField *)[grid cellAtColumnIndex:0 rowIndex:fieldRow].contentView;
+
+	NSTextField *labelField = [NSTextField labelWithString:label];
+
+	labelField.font = fieldLabel.font;
+	labelField.textColor = fieldLabel.textColor;
+	labelField.alignment = NSTextAlignmentRight;
+
+	valueField.accessibilityTitleUIElement = labelField;
+
+	return [grid insertRowAtIndex:(fieldRow + 1) withViews:@[labelField, valueField]];
+}
+
 - (NSTextField *)accountField
 {
 	if (self.accountFieldStorage) {
 		return self.accountFieldStorage;
 	}
 
-	NSTextField *realNameField = self.realNameField;
-
-	NSGridView *grid = (NSGridView *)realNameField.superview;
-
 	NSTextField *valueField = [NSTextField labelWithString:@""];
-
-	/* Looks like the other values */
-	valueField.font = realNameField.font;
-	valueField.textColor = realNameField.textColor;
-	valueField.lineBreakMode = NSLineBreakByTruncatingTail;
 
 	self.accountFieldStorage = valueField;
 
-	if ([grid isKindOfClass:[NSGridView class]] == NO) {
-		return valueField;
-	}
-
-	NSInteger realNameRow = [grid indexOfRow:[grid cellForView:realNameField].row];
-
-	NSTextField *realNameLabel = (NSTextField *)[grid cellAtColumnIndex:0 rowIndex:realNameRow].contentView;
-
-	NSTextField *labelField = [NSTextField labelWithString:TXTLS(@"TVCMainWindow[acc-l1]")];
-
-	labelField.font = realNameLabel.font;
-	labelField.textColor = realNameLabel.textColor;
-	labelField.alignment = NSTextAlignmentRight;
-
-	valueField.accessibilityTitleUIElement = labelField;
-
-	[grid insertRowAtIndex:(realNameRow + 1) withViews:@[labelField, valueField]];
+	(void)[self _insertRowWithLabel:TXTLS(@"TVCMainWindow[acc-l1]") value:valueField belowField:self.realNameField];
 
 	return valueField;
+}
+
+- (void)setShowsBot:(BOOL)showsBot
+{
+	if (showsBot && self.botRow == nil) {
+		NSTextField *valueField = [NSTextField labelWithString:TXTLS(@"TVCMainWindow[bot-t2]")];
+
+		self.botRow = [self _insertRowWithLabel:TXTLS(@"TVCMainWindow[bot-t1]") value:valueField belowField:self.nicknameField];
+	}
+
+	self.botRow.hidden = (showsBot == NO);
+}
+
+- (BOOL)showsBot
+{
+	return (self.botRow != nil && self.botRow.hidden == NO);
 }
 
 - (void)mouseDown:(NSEvent *)event

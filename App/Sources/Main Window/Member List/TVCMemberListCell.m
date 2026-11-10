@@ -492,6 +492,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	userInfoPopover.nicknameField.stringValue = cellItem.user.nickname;
 
+	userInfoPopover.showsBot = cellItem.user.isBot;
+
 	/* =============================================== */
 
 	NSString *hostmaskUsername = cellItem.user.username;
