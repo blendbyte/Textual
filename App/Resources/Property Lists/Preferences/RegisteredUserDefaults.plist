@@ -22,6 +22,8 @@
 	<integer>2</integer>
 	<key>AutomaticallyAddScrollbackMarker</key>
 	<true/>
+	<key>AwayAfterInactivityMinutes</key>
+	<integer>0</integer>
 	<key>AutomaticallyDetectHighlightSpam</key>
 	<true/>
 	<key>AutomaticallyDisconnectForSleepMode</key>

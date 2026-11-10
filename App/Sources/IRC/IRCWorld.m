@@ -51,6 +51,8 @@
 #import "IRCBouncerAccountPrivate.h"
 #import "IRCClientConfigPrivate.h"
 #import "IRCClientPrivate.h"
+#import "IRCClientInternal.h"
+#import "TLOLocalization.h"
 #import "IRCChannelPrivate.h"
 #import "IRCServer.h"
 #import "IRCTreeItemPrivate.h"
@@ -83,6 +85,8 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 @property (nonatomic, assign) BOOL savePeriodicallyScheduled;
 @property (nonatomic, copy) NSDate *lastDateHasChangedDate;
 @property (nonatomic, strong, nullable) NSTimer *midnightTimer;
+@property (nonatomic, strong, nullable) NSTimer *inactivityTimer;
+@property (nonatomic, strong) NSHashTable<IRCClient *> *clientsAwayFromInactivity;
 @property (nonatomic, strong, nullable) NSMapTable<IRCClient *, NSArray *> *bouncerLinkingKeysCache;
 @end
 
@@ -162,6 +166,8 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 - (void)setupOtherServices
 {
 	[self setupMidnightTimer];
+
+	[self setupInactivityTimer];
 
 	[RZNotificationCenter() addObserver:self selector:@selector(dateChanged:) name:NSSystemClockDidChangeNotification object:nil];
 
@@ -917,6 +923,68 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 	for (IRCClient *u in self.clientList) {
 		[u toggleAwayStatus:NO];
 	}
+}
+
+#pragma mark -
+#pragma mark Away After Inactivity
+
+/* Settings › General: away after the chosen time without keyboard, mouse or
+ trackpad input, back at the next input. Only servers that weren't away
+ already are set away, and only those are brought back. */
+- (void)setupInactivityTimer
+{
+	self.clientsAwayFromInactivity = [NSHashTable weakObjectsHashTable];
+
+	NSTimer *timer = [NSTimer timerWithTimeInterval:5.0 target:self selector:@selector(inactivityTimerFired:) userInfo:nil repeats:YES];
+
+	timer.tolerance = 2.0;
+
+	[[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+
+	self.inactivityTimer = timer;
+}
+
+- (void)inactivityTimerFired:(NSTimer *)timer
+{
+	NSUInteger minutes = [TPCPreferences awayAfterInactivityMinutes];
+
+	if (minutes > 0) {
+		CFTimeInterval idleTime = CGEventSourceSecondsSinceLastEventType(kCGEventSourceStateCombinedSessionState, kCGAnyInputEventType);
+
+		if (idleTime >= (minutes * 60.0)) {
+			for (IRCClient *u in self.clientList) {
+				/* Away already, by hand or still asked for */
+				if (u.isLoggedIn == NO || u.userIsAway || u.awayMessageToRestore != nil || [self.clientsAwayFromInactivity containsObject:u]) {
+					continue;
+				}
+
+				[u toggleAwayStatus:YES];
+
+				[self.clientsAwayFromInactivity addObject:u];
+			}
+
+			return;
+		}
+	}
+
+	/* Back (or the setting was turned off): unless the away was changed by
+	 hand meanwhile (/back clears it, /away sets another message) */
+	NSString *inactivityMessage = TXTLS(@"IRC[xog-in]");
+
+	for (IRCClient *u in self.clientsAwayFromInactivity.allObjects) {
+		if ([u.awayMessageToRestore isEqualToString:inactivityMessage] == NO) {
+			continue;
+		}
+
+		if (u.isLoggedIn) {
+			[u toggleAwayStatus:NO];
+		} else {
+			/* Not set away again after a reconnect */
+			u.awayMessageToRestore = nil;
+		}
+	}
+
+	[self.clientsAwayFromInactivity removeAllObjects];
 }
 
 - (void)noteReachabilityChanged:(BOOL)reachable

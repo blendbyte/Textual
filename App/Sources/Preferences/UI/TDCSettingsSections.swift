@@ -78,6 +78,14 @@ struct GeneralSettings: View
 				SettingToggle(title: SettingsText("set-gen-s"), help: SettingsText("set-gen-sh"),
 							  isOn: store.bool("SetAwayOnScreenSleep"))
 
+				Picker(selection: store.integer("AwayAfterInactivityMinutes")) {
+					ForEach([0, 5, 10, 15, 30, 60], id: \.self) { minutes in
+						Text(SettingsText("set-gen-i\(minutes)")).tag(minutes)
+					}
+				} label: {
+					SettingLabel(title: SettingsText("set-gen-i"), help: SettingsText("set-gen-ih"))
+				}
+
 				SettingToggle(title: SettingsText("set-gen-l"), help: SettingsText("set-gen-lh"),
 							  isOn: store.bool("OpenClickedLinksInBackgroundBrowser"))
 			}

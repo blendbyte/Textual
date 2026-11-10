@@ -246,6 +246,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandGline) : NSStringFromSelector(@selector(_handleLocalCommandGline:)),
 			@(IRCLocalCommandGoto) : NSStringFromSelector(@selector(_handleLocalCommandGoto:)),
 			@(IRCLocalCommandGzline) : NSStringFromSelector(@selector(_handleLocalCommandGline:)),
+			@(IRCLocalCommandHelp) : NSStringFromSelector(@selector(_handleLocalCommandHelp:)),
 			@(IRCLocalCommandHalfop) : NSStringFromSelector(@selector(_handleLocalCommandOp:)),
 			@(IRCLocalCommandHop) : NSStringFromSelector(@selector(_handleLocalCommandCycle:)),
 			@(IRCLocalCommandIgnore) : NSStringFromSelector(@selector(_handleLocalCommandIgnore:)),
@@ -287,6 +288,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandRaw) : NSStringFromSelector(@selector(_handleLocalCommandRaw:)),
 			@(IRCLocalCommandRecv) : NSStringFromSelector(@selector(_handleLocalCommandRecv:)),
 			@(IRCLocalCommandRejoin) : NSStringFromSelector(@selector(_handleLocalCommandCycle:)),
+			@(IRCLocalCommandReconnect) : NSStringFromSelector(@selector(_handleLocalCommandReconnect:)),
 			@(IRCLocalCommandRemove) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
 			@(IRCLocalCommandServer) : NSStringFromSelector(@selector(_handleLocalCommandServer:)),
 			@(IRCLocalCommandSetcolor) : NSStringFromSelector(@selector(_handleLocalCommandSetcolor:)),
@@ -1802,6 +1804,98 @@ static NSUInteger _aliasDepth = 0;
 	}
 	
 	[self sendLine:stringIn.string];
+}
+
+/* HELP: Textual's own description of a command, otherwise the server's help */
+- (void)_handleLocalCommandHelp:(IRCLocalCommandContext *)context
+{
+	NSString *name = context.stringIn.tokenAsString;
+
+	if ([name hasPrefix:@"/"]) {
+		name = [name substringFromIndex:1];
+	}
+
+	name = name.lowercaseString;
+
+	if (name.length == 0) {
+		[self printDebugInformation:TXTLS(@"IRC[hlp-n1]")];
+
+		if (self.isLoggedIn) {
+			[self send:@"HELP", nil];
+		}
+
+		return;
+	}
+
+	if ([IRCCommandIndex indexOfLocalCommand:name] != NSNotFound) {
+		NSString *syntax = [IRCCommandIndex syntaxForLocalCommand:name];
+
+		NSString *usage = [@"/" stringByAppendingString:name];
+
+		if (syntax.length > name.length) {
+			usage = [usage stringByAppendingString:[syntax substringFromIndex:name.length]];
+		}
+
+		NSString *descriptionKey = [NSString stringWithFormat:@"IRC[cmd-%@]", name];
+
+		NSString *description = TXTLS(descriptionKey);
+
+		/* A missing string comes back as its key */
+		if (description.length == 0 || [description isEqualToString:descriptionKey] || [description hasPrefix:@"cmd-"]) {
+			[self printDebugInformation:TXTLS(@"IRC[hlp-c2]", usage)];
+		} else {
+			[self printDebugInformation:TXTLS(@"IRC[hlp-c1]", usage, description)];
+		}
+
+		return;
+	}
+
+	NSString *aliasCommands = [IRCAlias commandsForAlias:name];
+
+	if (aliasCommands) {
+		[self printDebugInformation:TXTLS(@"IRC[hlp-a1]", name, aliasCommands)];
+
+		return;
+	}
+
+	if ([sharedPluginManager().supportedUserInputCommands containsObject:name]) {
+		[self printDebugInformation:TXTLS(@"IRC[hlp-p1]", name)];
+
+		return;
+	}
+
+	if (self.isLoggedIn == NO) {
+		[self printDebugInformation:TXTLS(@"IRC[hlp-u1]", name)];
+
+		return;
+	}
+
+	[self send:@"HELP", name, nil];
+}
+
+/* RECONNECT: quit (with the message, if any) and connect again; when not
+ connected, connect now instead of waiting for a scheduled reconnect */
+- (void)_handleLocalCommandReconnect:(IRCLocalCommandContext *)context
+{
+	NSString *comment = context.stringIn.string;
+
+	if (self.isConnecting || self.isConnected) {
+		[self afterDisconnectPerform:^(IRCClient *client) {
+			[client connect];
+		}];
+
+		if (comment.length > 0) {
+			[self quitWithComment:comment];
+		} else {
+			[self quit];
+		}
+
+		return;
+	}
+
+	[self cancelReconnect];
+
+	[self connect];
 }
 
 /* QUIT */

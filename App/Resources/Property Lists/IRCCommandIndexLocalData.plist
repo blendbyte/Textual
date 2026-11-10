@@ -286,6 +286,15 @@
 		<key>arguments</key>
 		<string>[channel] &lt;nickname&gt;</string>
 	</dict>
+	<key>help</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5127</integer>
+		<key>arguments</key>
+		<string>[command]</string>
+	</dict>
 	<key>hop</key>
 	<dict>
 		<key>developerModeOnly</key>
@@ -327,7 +336,7 @@
 		<key>indexValue</key>
 		<integer>5031</integer>
 		<key>arguments</key>
-		<string>&lt;channel[,channel]]&gt; [key[,key]]</string>
+		<string>&lt;channel[,channel]&gt; [key[,key]]</string>
 	</dict>
 	<key>join</key>
 	<dict>
@@ -336,7 +345,7 @@
 		<key>indexValue</key>
 		<integer>5032</integer>
 		<key>arguments</key>
-		<string>&lt;channel[,channel]]&gt; [key[,key]]</string>
+		<string>&lt;channel[,channel]&gt; [key[,key]]</string>
 	</dict>
 	<key>join_random</key>
 	<dict>
@@ -456,7 +465,7 @@
 		<key>indexValue</key>
 		<integer>5043</integer>
 		<key>arguments</key>
-		<string>&lt;target[,target]]&gt; &lt;message&gt;</string>
+		<string>&lt;target[,target]&gt; &lt;message&gt;</string>
 	</dict>
 	<key>mute</key>
 	<dict>
@@ -515,7 +524,7 @@
 		<key>indexValue</key>
 		<integer>5050</integer>
 		<key>arguments</key>
-		<string>&lt;target[,target]]&gt; &lt;message&gt;</string>
+		<string>&lt;target[,target]&gt; &lt;message&gt;</string>
 	</dict>
 	<key>notifybubble</key>
 	<dict>
@@ -661,6 +670,15 @@
 		<key>arguments</key>
 		<string>[account] &lt;email or *&gt; &lt;password&gt;</string>
 	</dict>
+	<key>reconnect</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5128</integer>
+		<key>arguments</key>
+		<string>[message]</string>
+	</dict>
 	<key>rejoin</key>
 	<dict>
 		<key>developerModeOnly</key>
@@ -720,7 +738,7 @@
 		<key>indexValue</key>
 		<integer>5064</integer>
 		<key>arguments</key>
-		<string>&lt;target[,target]]&gt; &lt;message&gt;</string>
+		<string>&lt;target[,target]&gt; &lt;message&gt;</string>
 	</dict>
 	<key>smsg</key>
 	<dict>
@@ -729,7 +747,7 @@
 		<key>indexValue</key>
 		<integer>5065</integer>
 		<key>arguments</key>
-		<string>&lt;target[,target]]&gt; &lt;message&gt;</string>
+		<string>&lt;target[,target]&gt; &lt;message&gt;</string>
 	</dict>
 	<key>sslcontext</key>
 	<dict>

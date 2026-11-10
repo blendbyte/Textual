@@ -182,6 +182,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"SetAwayOnScreenSleep"];
 }
 
++ (NSUInteger)awayAfterInactivityMinutes
+{
+	return [RZUserDefaults() unsignedIntegerForKey:@"AwayAfterInactivityMinutes"];
+}
+
 + (BOOL)disconnectOnSleep
 {
 	return [RZUserDefaults() boolForKey:@"AutomaticallyDisconnectForSleepMode"];

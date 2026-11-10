@@ -389,6 +389,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-goto" = "Switch to the channel or private message that matches";
 "cmd-gzline" = "Ban an address from the network (GZ:Line)";
 "cmd-halfop" = "Give half-operator status (+h)";
+"cmd-help" = "Show what a command does";
 "cmd-hop" = "Leave and rejoin this channel";
 "cmd-ignore" = "Ignore someone";
 "cmd-invite" = "Invite someone to a channel";
@@ -432,6 +433,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-raw" = "Send a raw line to the server";
 "cmd-recv" = "Act as if the server sent a line (for testing)";
 "cmd-register" = "Create an account on this network";
+"cmd-reconnect" = "Disconnect from this server and connect again";
 "cmd-rejoin" = "Leave and rejoin this channel";
 "cmd-remove" = "Remove someone from the channel (if the server allows)";
 "cmd-server" = "Connect to another server";
@@ -533,3 +535,11 @@ The identifier for a timer can be found using “/timer list”";
 "mlc-c" = "Send as Text";
 "mlc-r" = "Run as Commands";
 "stn-n1" = "This server hasn’t said it supports changing your real name while connected, so no confirmation will arrive.";
+
+/* /help */
+"hlp-c1" = "\002%1$@\002 — %2$@";
+"hlp-c2" = "\002%@\002";
+"hlp-a1" = "\002/%1$@\002 is your alias for: %2$@";
+"hlp-p1" = "\002/%@\002 comes from an extension.";
+"hlp-n1" = "Type /help and a command, such as /help join, to see what it does. Typing / lists Textual’s commands.";
+"hlp-u1" = "Textual has no command /%@. Once connected, /help asks the server about it.";

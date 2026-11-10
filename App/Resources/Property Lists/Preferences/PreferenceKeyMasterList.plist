@@ -26,6 +26,8 @@
 	<integer>0</integer>
 	<key>AutomaticallyDisconnectForSleepMode</key>
 	<integer>0</integer>
+	<key>AwayAfterInactivityMinutes</key>
+	<integer>0</integer>
 	<key>AutomaticallyDetectHighlightSpam</key>
 	<integer>0</integer>
 	<key>AutomaticallyFilterUnicodeTextSpam</key>

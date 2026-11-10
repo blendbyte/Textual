@@ -127,7 +127,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-l-extensions" = "Extensions and scripts add commands and features.";
 "set-l-advanced" = "For style makers and special cases.";
 
-"set-k-general" = "updates beta quit sleep awake away display links browser background close window cmd-w copy select";
+"set-k-general" = "updates beta quit sleep awake away idle inactive inactivity display links browser background close window cmd-w copy select";
 "set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface spacing compact roomy automatic system";
 "set-k-messages" = "time timestamp format nickname names colors colored mode symbol date bot bots robot marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming topic kicks";
 "set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing width chat window keyboard emoji";
@@ -156,6 +156,14 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-gen-ah" = "The display can still turn off.";
 "set-gen-s" = "Set me away when the display sleeps";
 "set-gen-sh" = "And back when it wakes up.";
+"set-gen-i" = "Set me away when I’m inactive";
+"set-gen-ih" = "After this long without using the keyboard, mouse or trackpad. Back as soon as you do.";
+"set-gen-i0" = "Never";
+"set-gen-i5" = "After 5 minutes";
+"set-gen-i10" = "After 10 minutes";
+"set-gen-i15" = "After 15 minutes";
+"set-gen-i30" = "After 30 minutes";
+"set-gen-i60" = "After 1 hour";
 "set-gen-l" = "Open links in the background";
 "set-gen-lh" = "The browser opens them without coming to the front.";
 "set-gen-h2" = "Keyboard and mouse";
