@@ -92,10 +92,6 @@ FOUNDATION_EXPORT NSURL * _Nullable ICLResourceURL(NSString *name, NSString *ext
 + (void)requestPageMetadataFromURL:(NSURL *)url session:(NSURLSession *)session responseBlock:(nullable BOOL (^)(NSHTTPURLResponse *response))responseBlock completionBlock:(void (^)(NSDictionary<NSString *, NSString *> * _Nullable metadata, NSURL * _Nullable pageURL))completionBlock;
 @end
 
-@interface ICLHelpers (Errors)
-@property (copy, readonly, class) NSError *genericValidationFailedError;
-@end
-
 @interface NSString (ICLHelpers)
 /* Given "youtube.com" as input, returns if string is
  equal to "youtube.com" or has suffix ".youtube.com" */

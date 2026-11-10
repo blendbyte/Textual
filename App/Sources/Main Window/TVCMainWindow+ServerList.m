@@ -1365,11 +1365,6 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 	return YES;
 }
 
-- (void)outlineViewItemWillCollapse:(NSNotification *)notification
-{
-
-}
-
 - (BOOL)selectionShouldChangeInOutlineView:(NSOutlineView *)outlineView
 {
 	TVCServerList *serverList = (id)outlineView;

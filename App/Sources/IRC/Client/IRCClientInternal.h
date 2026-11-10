@@ -485,7 +485,6 @@ NS_ASSUME_NONNULL_BEGIN
  for the console); otherwise fallback */
 - (nullable IRCChannel *)channelForReplyWithFallback:(nullable IRCChannel *)fallback;
 @property (readonly, nullable) IRCChannel *selectedChannelForReplies; // fallback: the selected channel of this server
-@property (readonly) BOOL processingLabeledReply;
 
 /* Processing the answer to this command, typed by the user (WHO, ISON, …):
  printed in its window instead of "Hidden Responses" or taken as our own polling */

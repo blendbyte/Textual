@@ -130,10 +130,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(dic != nil);
 
-	NSMutableDictionary<NSString *, id> *defaultsMutable = [self->_defaults mutableCopy];
-
-	[defaultsMutable addEntriesFromDictionary:dic];
-
 	[dic assignUnsignedIntegerTo:&self->_entryType forKey:@"entryType"];
 
 	IRCAddressBookEntryType entryType = self->_entryType;

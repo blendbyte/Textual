@@ -47,7 +47,6 @@ TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerDeactivatedLicenseNotif
 TEXTUAL_EXTERN NSNotificationName const TDCLicenseManagerTrialExpiredNotification;
 
 @interface TDCLicenseManagerDialog : TDCWindowBase
-- (void)activateLicenseKey:(NSString *)licenseKey;
 - (void)activateLicenseKey:(NSString *)licenseKey silently:(BOOL)silently;
 
 - (NSString *)timeRemainingInTrialFormattedMessage;

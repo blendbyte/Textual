@@ -120,12 +120,12 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 + (void)setScrollbackVisibleLimit:(NSUInteger)scrollbackVisibleLimit;
 
 
-@property (class) BOOL inputMarkdownEnabled;
+@property (class, readonly) BOOL inputMarkdownEnabled;
 
 @property (class, readonly) TXInputFieldPlacement inputFieldPlacement;
 
 /* Muted channels and networks still notify highlights */
-@property (class) BOOL highlightsNotifyWhenMuted;
+@property (class, readonly) BOOL highlightsNotifyWhenMuted;
 
 /* "Automatically ignore highlight spam": a message naming this many people in the channel or more */
 @property (readonly, class) NSUInteger massHighlightThreshold;
@@ -140,9 +140,9 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 + (void)setInlineMediaWebPageCards:(BOOL)inlineMediaWebPageCards;
 
-@property (class) BOOL inlineMediaAudio;
+@property (class, readonly) BOOL inlineMediaAudio;
 
-@property (class) TXInlineMediaDomainRuleMode inlineMediaDomainRuleMode;
+@property (class, readonly) TXInlineMediaDomainRuleMode inlineMediaDomainRuleMode;
 @property (class, copy) NSArray<NSString *> *inlineMediaDomains; // normalized: "example.com"
 
 /* "https://www.Example.com/x" → "www.example.com", "*.example.com" → "example.com"; nil if not a domain */

@@ -172,10 +172,12 @@ NSString * const CS_UnicodeReplacementCharacter = @"�";
 	return [self substringFromIndex:(anIndex + 1)];
 }
 
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 - (NSString *)substringBeforeIndex:(NSUInteger)anIndex
 {
-	return [self substringFromIndex:(anIndex - 1)];
+	return [self substringToIndex:anIndex];
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 - (NSString *)substringAtIndex:(NSInteger)atIndex toLength:(NSInteger)toLength
 {
@@ -1234,14 +1236,6 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 @implementation NSString (CSStringPercentEncodingHelper)
 
-- (nullable NSString *)percentEncodedStringWithAllowedCharacters:(NSString *)allowedCharacters
-{
-	NSCharacterSet *characterSet =
-	[NSCharacterSet characterSetWithCharactersInString:allowedCharacters];
-
-	return [self stringByAddingPercentEncodingWithAllowedCharacters:characterSet];
-}
-
 - (nullable NSString *)percentDecodedString
 {
 	return self.stringByRemovingPercentEncoding;
@@ -1405,12 +1399,14 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 	return [self attributedSubstringFromRange:range];
 }
 
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 - (NSAttributedString *)attributedSubstringToIndex:(NSUInteger)to
 {
-	NSRange range = NSMakeRange(0, (self.length - to));
+	NSRange range = NSMakeRange(0, to);
 
 	return [self attributedSubstringFromRange:range];
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 - (NSRange)range
 {

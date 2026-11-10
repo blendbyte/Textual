@@ -39,7 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wvoid-pointer-to-int-cast"
 
-+ (id)valueWithPrimitive:(void *)value withType:(const char *)valueType
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
++ (nullable id)valueWithPrimitive:(void *)value withType:(const char *)valueType
 {
 	/* See runtime.h header in Objective-C for return types. */
 	switch (*valueType) {
@@ -102,9 +103,11 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 		}
 	}
-	
-	return [NSValue valueWithBytes:value objCType:valueType];
+
+	/* Any other type: value is not a pointer to read from */
+	return nil;
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 #pragma clang diagnostic pop
 

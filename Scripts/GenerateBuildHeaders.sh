@@ -23,10 +23,6 @@ echo "
 #define TXBundleBuildScheme							@\"${TEXTUAL_BUILD_SCHEME_TOKEN}\"
 " > _BuildConfig.h
 
-if [ -z "$CODE_SIGN_IDENTITY" ]; then
-echo "#define TXBundleBuiltWithoutCodeSigning		1" >> _BuildConfig.h
-fi
-
 if cmp -s "BuildConfig.h" "_BuildConfig.h"; then
 	echo "BuildConfig.h hasn't changed (version ${MARKETING_VERSION}, build ${CURRENT_PROJECT_VERSION})."
 

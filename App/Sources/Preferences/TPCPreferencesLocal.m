@@ -430,19 +430,9 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"Notifications -> Highlights When Muted"];
 }
 
-+ (void)setHighlightsNotifyWhenMuted:(BOOL)highlightsNotifyWhenMuted
-{
-	[RZUserDefaults() setBool:highlightsNotifyWhenMuted forKey:@"Notifications -> Highlights When Muted"];
-}
-
 + (BOOL)inputMarkdownEnabled
 {
 	return [RZUserDefaults() boolForKey:TPCPreferencesInputMarkdownDefaultsKey];
-}
-
-+ (void)setInputMarkdownEnabled:(BOOL)inputMarkdownEnabled
-{
-	[RZUserDefaults() setBool:inputMarkdownEnabled forKey:TPCPreferencesInputMarkdownDefaultsKey];
 }
 
 + (BOOL)inputCompletionEnabledForKind:(NSUInteger)kind
@@ -504,19 +494,9 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"InlineMediaAudio"];
 }
 
-+ (void)setInlineMediaAudio:(BOOL)inlineMediaAudio
-{
-	[RZUserDefaults() setBool:inlineMediaAudio forKey:@"InlineMediaAudio"];
-}
-
 + (TXInlineMediaDomainRuleMode)inlineMediaDomainRuleMode
 {
 	return (TXInlineMediaDomainRuleMode)[RZUserDefaults() unsignedIntegerForKey:@"InlineMediaDomainRuleMode"];
-}
-
-+ (void)setInlineMediaDomainRuleMode:(TXInlineMediaDomainRuleMode)inlineMediaDomainRuleMode
-{
-	[RZUserDefaults() setUnsignedInteger:inlineMediaDomainRuleMode forKey:@"InlineMediaDomainRuleMode"];
 }
 
 + (NSArray<NSString *> *)inlineMediaDomains
@@ -1675,12 +1655,6 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 	}
 
 	if ([RZUserDefaults() boolForKey:_defaultsKey]) {
-		return;
-	}
-
-	BOOL clientListMigrated = [RZUserDefaults() boolForKey:_defaultsKey];
-
-	if (clientListMigrated) {
 		return;
 	}
 

@@ -1409,34 +1409,6 @@ typedef NS_ENUM(NSUInteger, HLSHistoricLogFetchDirection)
 		   withCompletionBlock:completionBlock];
 }
 
-/* The lines between two unique identifiers, without those two */
-- (void)fetchEntriesForItem:(IRCTreeItem *)item
-	  afterUniqueIdentifier:(NSString *)uniqueIdAfter
-	 beforeUniqueIdentifier:(NSString *)uniqueIdBefore
-				 fetchLimit:(NSUInteger)fetchLimit
-		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock
-{
-	NSParameterAssert(uniqueIdAfter != nil);
-	NSParameterAssert(uniqueIdBefore != nil);
-
-	[self _fetchEntriesForItem:item
-			 uniqueIdentifiers:@[uniqueIdAfter, uniqueIdBefore]
-					fetchLimit:fetchLimit
-				   limitToDate:nil
-				   newestFirst:NO
-					rangeBlock:^NSRange(NSArray<NSNumber *> *entryIdentifiers) {
-						NSInteger lowest = (entryIdentifiers[0].integerValue + 1);
-						NSInteger highest = (entryIdentifiers[1].integerValue - 1);
-
-						if (highest < lowest) {
-							return NSMakeRange(NSNotFound, 0);
-						}
-
-						return NSMakeRange(lowest, (highest - lowest + 1));
-					}
-		   withCompletionBlock:completionBlock];
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

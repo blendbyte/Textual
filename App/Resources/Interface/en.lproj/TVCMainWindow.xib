@@ -1834,7 +1834,7 @@
                         <font key="font" metaFont="systemBold" size="12"/>
                     </buttonCell>
                     <connections>
-                        <action selector="titlebarAccessoryViewLockButtonClicked:" target="21" id="a6q-QT-SVd"/>
+                        <action selector="presentCertificateTrustInformation:" target="21" id="a6q-QT-SVd"/>
                         <outlet property="lockButtonLeftMarginConstraint" destination="qts-vn-Wxx" id="cye-ff-geo"/>
                         <outlet property="lockButtonRightMarginConstraint" destination="Ref-Vz-BjG" id="wYT-1a-NLy"/>
                         <outlet property="mainWindowRef" destination="21" id="IBC-I6-WlA"/>

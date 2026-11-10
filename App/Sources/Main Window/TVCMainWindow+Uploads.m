@@ -322,7 +322,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.uploadButtonBesideConstraint.active = YES;
 	}
 
-	[self.inputTextField recalculateTextViewSizeForced];
+	[self.inputTextField recalculateTextViewSize];
 }
 
 - (void)updateUploadBar

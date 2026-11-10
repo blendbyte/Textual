@@ -4384,10 +4384,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				DEFINES_MODULE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(PROJECT_DIR)/Classes/Headers/**\"",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.tests;
 				PRODUCT_MODULE_NAME = TextualTests;
@@ -4406,10 +4403,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				DEFINES_MODULE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(PROJECT_DIR)/Classes/Headers/**\"",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.tests;
 				PRODUCT_MODULE_NAME = TextualTests;
@@ -4428,10 +4422,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				DEFINES_MODULE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(PROJECT_DIR)/Classes/Headers/**\"",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.textualapp.app.tests;
 				PRODUCT_MODULE_NAME = TextualTests;

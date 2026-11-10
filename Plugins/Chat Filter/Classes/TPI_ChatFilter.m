@@ -88,15 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self initWithDictionary:@{}];
 }
 
-- (nullable instancetype)initWithContentsOfPath:(NSString *)path
-{
-	NSParameterAssert(path != nil);
-
-	NSURL *url = [NSURL fileURLWithPath:path];
-
-	return [self initWithContentsOfURL:url];
-}
-
 - (nullable instancetype)initWithContentsOfURL:(NSURL *)url
 {
 	NSParameterAssert(url != nil);
@@ -308,15 +299,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (__kindof XRPortablePropertyDict *)mutableClass
 {
 	return [TPI_ChatFilterMutable self];
-}
-
-- (BOOL)writeToPath:(NSString *)path
-{
-	NSParameterAssert(path != nil);
-
-	NSURL *url = [NSURL fileURLWithPath:path];
-
-	return [self writeToURL:url];
 }
 
 - (BOOL)writeToURL:(NSURL *)url

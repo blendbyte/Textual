@@ -77,8 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 	self.tnewNicknameTextField.stringValueIsInvalidOnEmpty = YES;
 	self.tnewNicknameTextField.stringValueUsesOnlyFirstToken = YES;
 
-	self.tnewNicknameTextField.textDidChangeCallback = self;
-
 	/* Weak: the sheet owns the field that keeps this block, so the sheet
 	 (and its client) leaked */
 	__weak typeof(self) weakSelf = self;

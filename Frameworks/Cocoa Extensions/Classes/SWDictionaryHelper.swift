@@ -30,6 +30,7 @@
 *
 *********************************************************************** */
 
+@available(*, deprecated, message: "Unused; will be removed in a future version")
 public extension Dictionary where Value == AnyObject
 {
 	func bool(for key: Key) -> Bool

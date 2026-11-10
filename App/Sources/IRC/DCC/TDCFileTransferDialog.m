@@ -729,22 +729,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)enumerateFileTransfers:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop))enumerationBlock
 {
-	[self _enumerateFileTransfers:enumerationBlock limitScope:NO limitScopeToSenders:NO];
+	[self _enumerateFileTransfers:enumerationBlock receiversOnly:NO];
 }
 
 - (void)enumerateFileTransferReceivers:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop))enumerationBlock
 {
-	[self _enumerateFileTransfers:enumerationBlock limitScope:YES limitScopeToSenders:NO];
+	[self _enumerateFileTransfers:enumerationBlock receiversOnly:YES];
 }
 
-- (void)_enumerateFileTransfers:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop))enumerationBlock limitScope:(BOOL)limitScope limitScopeToSenders:(BOOL)limitScopeToSenders
+- (void)_enumerateFileTransfers:(void (NS_NOESCAPE ^)(TDCFileTransferDialogTransferController *fileTransfer, BOOL *stop))enumerationBlock receiversOnly:(BOOL)receiversOnly
 {
 	NSParameterAssert(enumerationBlock != nil);
 
 	NSArray<TDCFileTransferDialogTransferController *> *fileTransfers = [self.fileTransfersPrivate copy];
 
 	for (TDCFileTransferDialogTransferController *fileTransfer in fileTransfers) {
-		if (limitScope && limitScopeToSenders != fileTransfer.isSender) {
+		if (receiversOnly && fileTransfer.isSender) {
 			continue;
 		}
 

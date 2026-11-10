@@ -67,28 +67,9 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 	return nil;
 }
 
-+ (instancetype)assessorForAddress:(NSString *)address session:(NSURLSession *)session completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
-{
-	return [self assessorForAddress:address session:session withType:ICLMediaTypeUnknown completionBlock:completionBlock];
-}
-
 + (instancetype)assessorForURL:(NSURL *)url session:(NSURLSession *)session completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
 {
 	return [self assessorForURL:url session:session withType:ICLMediaTypeUnknown completionBlock:completionBlock];
-}
-
-+ (instancetype)assessorForAddress:(NSString *)address session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
-{
-	NSParameterAssert(address != nil);
-
-	/* An address that isn't a URL fails when the assessment is resumed */
-	NSURL *url = [NSURL URLWithString:address];
-
-	if (url == nil) {
-		url = [NSURL URLWithString:@"invalid:"];
-	}
-
-	return [self assessorForURL:url session:session withType:type completionBlock:completionBlock];
 }
 
 + (instancetype)assessorForURL:(NSURL *)url session:(NSURLSession *)session withType:(ICLMediaType)type completionBlock:(ICLMediaAssessorCompletionBlock)completionBlock
@@ -127,11 +108,6 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 	self.started = YES;
 
 	[ICLURLSession checkURL:self.url session:self.session completionBlock:^(BOOL allowed) {
-		/* -suspend was called */
-		if (self.completionBlock == nil) {
-			return;
-		}
-
 		if (allowed == NO) {
 			[self _finishWithError:[self _errorWithDescription:@"Address is on the local network, unresolvable or not HTTPS" code:ICLMediaAssessorErrorCodeAddressNotAllowed]];
 
@@ -148,15 +124,6 @@ NSString * const ICLMediaAssessorErrorDomain = @"ICLMediaAssessorErrorDomain";
 
 		[task resume];
 	}];
-}
-
-- (void)suspend
-{
-	self.completionBlock = nil;
-
-	[self.task cancel];
-
-	self.task = nil;
 }
 
 #pragma mark -

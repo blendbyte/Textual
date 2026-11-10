@@ -74,21 +74,6 @@ NSString * const IRCAddressBookUserTrackingRemovedAllTrackedUsersNotification = 
 	self.trackedUsersInt = [NSMutableDictionary dictionary];
 }
 
-- (void)addTrackedUser:(NSString *)nickname
-{
-	NSParameterAssert(nickname != nil);
-
-	@synchronized (self.trackedUsersInt) {
-		NSString *trackingNickname = [self.trackedUsersInt keyIgnoringCase:nickname];
-
-		if (trackingNickname != nil) {
-			return;
-		}
-
-		[self _addTrackedUser:nickname];
-	}
-}
-
 - (void)_addTrackedUser:(NSString *)nickname
 {
 	NSParameterAssert(nickname != nil);
@@ -99,21 +84,6 @@ NSString * const IRCAddressBookUserTrackingRemovedAllTrackedUsersNotification = 
 		[RZNotificationCenter() postNotificationName:IRCAddressBookUserTrackingAddedTrackedUserNotification
 											  object:self
 											userInfo:@{@"nickname" : nickname}];
-	}
-}
-
-- (void)removeTrackedUser:(NSString *)nickname
-{
-	NSParameterAssert(nickname != nil);
-
-	@synchronized (self.trackedUsersInt) {
-		NSString *trackingNickname = [self.trackedUsersInt keyIgnoringCase:nickname];
-
-		if (trackingNickname == nil) {
-			return;
-		}
-
-		[self _removeTrackedUser:trackingNickname];
 	}
 }
 

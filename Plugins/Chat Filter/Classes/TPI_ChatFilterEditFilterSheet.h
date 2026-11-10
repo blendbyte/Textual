@@ -41,18 +41,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, TPI_ChatFilterActionTokenTag) {
-	TPI_ChatFilterActionTokenTagChannelName = 1,
-	TPI_ChatFilterActionTokenTagLocalNickname = 2,
-	TPI_ChatFilterActionTokenTagNetworkName = 3,
-	TPI_ChatFilterActionTokenOriginalMessage = 4,
-	TPI_ChatFilterActionTokenTagSenderNickname = 5,
-	TPI_ChatFilterActionTokenTagSenderAddress = 6,
-	TPI_ChatFilterActionTokenTagSenderUsername = 7,
-	TPI_ChatFilterActionTokenTagSenderHostmask = 8,
-	TPI_ChatFilterActionTokenTagServerAddress = 9
-};
-
 @protocol TPI_ChatFilterEditFilterSheetDelegate;
 
 @interface TPI_ChatFilterEditFilterSheet : TDCSheetBase

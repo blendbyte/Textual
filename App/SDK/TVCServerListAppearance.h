@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Server Cell
 
-@property (readonly) BOOL serverRowEmphasized;
+@property (readonly) BOOL serverRowEmphasized TEXTUAL_DEPRECATED("The selection in this list is never in the accent colour; this is always NO");
 @property (readonly) CGFloat serverLabelLeftMargin;
 @property (readonly, copy, nullable) NSColor *serverTextColorActiveWindow;
 @property (readonly, copy, nullable) NSColor *serverTextColorInactiveWindow;
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Cell
 
-@property (readonly) BOOL channelRowEmphasized;
+@property (readonly) BOOL channelRowEmphasized TEXTUAL_DEPRECATED("The selection in this list is never in the accent colour; this is always NO");
 @property (readonly, copy, nullable) NSColor *channelTextColorActiveWindow;
 @property (readonly, copy, nullable) NSColor *channelTextColorInactiveWindow;
 @property (readonly, copy, nullable) NSColor *channelDisabledTextColorActiveWindow;

@@ -46,8 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 @protected
 	NSURL *_urlToInline;
-	unsigned long long _contentLength;
-	NSSize _contentSize;
 	NSArray<NSURL *> *_styleResources;
 	NSArray<NSURL *> *_scriptResources;
 	NSString *_html;
@@ -141,10 +139,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)populateDefaultsPostflight
 {
-	if (self.initializedAsCopy == NO) {
-		self->_contentSize = NSZeroSize;
-	}
-
 	SetVariableIfNil(self->_urlToInline, self->_url);
 	SetVariableIfNil(self->_styleResources, @[]);
 	SetVariableIfNil(self->_scriptResources, @[]);
@@ -166,9 +160,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)copyAsMutable:(BOOL)mutableCopy uniquing:(BOOL)uniquing
 {
 	ICLPayload *object = [self allocForCopyAsMutable:mutableCopy];
-
-	object->_contentLength = self->_contentLength;
-	object->_contentSize = self->_contentSize;
 
 	object->_styleResources = self->_styleResources;
 	object->_scriptResources = self->_scriptResources;
@@ -241,11 +232,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)address
 {
 	return self->_url.absoluteString;
-}
-
-- (NSString *)addressToInline
-{
-	return self->_urlToInline.absoluteString;
 }
 
 #pragma mark -
@@ -330,13 +316,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSMutableDictionary *dic = [NSMutableDictionary dictionary];
 
-	[dic setUnsignedInteger:self->_contentLength forKey:@"contentLength"];
-
-	[dic setObject:@{
-		@"width" : @(self->_contentSize.width),
-		@"height" : @(self->_contentSize.height)
-	} forKey:@"contentSize"];
-
 	[dic maybeSetObject:[self _copyResourcesToTemporaryLocation:self->_styleResources]
 				 forKey:@"styleResources"];
 
@@ -375,8 +354,6 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation ICLPayloadMutable
 
 @dynamic urlToInline;
-@dynamic contentLength;
-@dynamic contentSize;
 @dynamic styleResources;
 @dynamic scriptResources;
 @dynamic html;
@@ -409,18 +386,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	if (self->_urlToInline != urlToInline) {
 		self->_urlToInline = [urlToInline copy];
 	}
-}
-
-- (void)setContentLength:(unsigned long long)contentLength
-{
-	if (self->_contentLength != contentLength) {
-		self->_contentLength = contentLength;
-	}
-}
-
-- (void)setContentSize:(NSSize)contentSize
-{
-	self->_contentSize = contentSize;
 }
 
 - (void)setStyleResources:(NSArray<NSURL *> *)styleResources

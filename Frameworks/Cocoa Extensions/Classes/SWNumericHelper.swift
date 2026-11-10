@@ -30,6 +30,7 @@
 *
 *********************************************************************** */
 
+@available(*, deprecated, message: "Unused; will be removed in a future version")
 public extension Int
 {
 	@inlinable
@@ -39,6 +40,7 @@ public extension Int
 	}
 }
 
+@available(*, deprecated, message: "Unused; will be removed in a future version")
 public extension Numeric
 {
 	@inlinable

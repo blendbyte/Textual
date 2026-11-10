@@ -114,16 +114,21 @@ NS_ASSUME_NONNULL_BEGIN
 	self.textViewPlaceholderTextColor = [self colorInGroup:textView withKey:@"placeholderTextColor"];
 	self.textViewBackgroundColorActiveWindow = [self colorInGroup:textView withKey:@"backgroundColor" forActiveWindow:YES];
 	self.textViewBackgroundColorInactiveWindow = [self colorInGroup:textView withKey:@"backgroundColor" forActiveWindow:NO];
+	/* Deprecated values, still read for plugins */
+TEXTUAL_IGNORE_DEPRECATION_BEGIN
 	self.textViewOutlineColorActiveWindow = [self colorInGroup:textView withKey:@"outlineColor" forActiveWindow:YES];
 	self.textViewOutlineColorInactiveWindow = [self colorInGroup:textView withKey:@"outlineColor" forActiveWindow:NO];
 	self.textViewInsideShadowColorActiveWindow = [self colorInGroup:textView withKey:@"insideShadowColor" forActiveWindow:YES];
 	self.textViewInsideShadowColorInactiveWindow = [self colorInGroup:textView withKey:@"insideShadowColor" forActiveWindow:NO];
 	self.textViewInsideGradientActiveWindow = [self gradientInGroup:textView withKey:@"insideGradient" forActiveWindow:YES];
 	self.textViewInsideGradientInactiveWindow = [self gradientInGroup:textView withKey:@"insideGradient" forActiveWindow:NO];
+TEXTUAL_IGNORE_DEPRECATION_END
 	self.textViewOutsidePrimaryShadowColorActiveWindow = [self colorInGroup:textView withKey:@"outsidePrimaryShadowColor" forActiveWindow:YES];
 	self.textViewOutsidePrimaryShadowColorInactiveWindow = [self colorInGroup:textView withKey:@"outsidePrimaryShadowColor" forActiveWindow:NO];
+TEXTUAL_IGNORE_DEPRECATION_BEGIN
 	self.textViewOutsideSecondaryShadowColorActiveWindow = [self colorInGroup:textView withKey:@"outsideSecondaryShadowColor" forActiveWindow:YES];
 	self.textViewOutsideSecondaryShadowColorInactiveWindow = [self colorInGroup:textView withKey:@"outsideSecondaryShadowColor" forActiveWindow:NO];
+TEXTUAL_IGNORE_DEPRECATION_END
 	self.textViewFont = [self fontInGroup:textView withKey:@"font"];
 	self.textViewFontLarge = [self fontInGroup:textView withKey:@"fontLarge"];
 	self.textViewFontExtraLarge = [self fontInGroup:textView withKey:@"fontExtraLarge"];
@@ -131,8 +136,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *backgroundView = properties[@"Background View"];
 
+TEXTUAL_IGNORE_DEPRECATION_BEGIN
 	self.backgroundViewBackgroundColor = [self colorInGroup:backgroundView withKey:@"backgroundColor"];
 	self.backgroundViewDividerColor = [self colorInGroup:backgroundView withKey:@"dividerColor"];
+TEXTUAL_IGNORE_DEPRECATION_END
 	self.backgroundViewContentBorderPadding = [self measurementInGroup:backgroundView withKey:@"contentBorderPadding"];
 
 	[self flushAppearanceProperties];

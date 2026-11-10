@@ -215,18 +215,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Action Block
 
-+ (ICLInlineContentModuleActionBlock)actionBlockForForURL:(NSURL *)url
-{
-	return [self actionBlockForForURL:url bypassVideoCheck:NO];
-}
-
-+ (ICLInlineContentModuleActionBlock)actionBlockForForURL:(NSURL *)url bypassVideoCheck:(BOOL)bypassVideoCheck
-{
-	NSParameterAssert(url != nil);
-
-	return [self actionBlockForAddress:url.absoluteString bypassVideoCheck:bypassVideoCheck];
-}
-
 + (ICLInlineContentModuleActionBlock)actionBlockForAddress:(NSString *)address
 {
 	return [self actionBlockForAddress:address bypassVideoCheck:NO];

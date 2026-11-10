@@ -78,8 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TDCServerPropertiesSecurityPane : TDCServerPropertiesPane
-/* For what its servers asked about secure connections */
-@property (nonatomic, weak, nullable) TDCServerPropertiesServerPane *serverPane;
 @end
 
 @interface TDCServerPropertiesProxyPane : TDCServerPropertiesPane

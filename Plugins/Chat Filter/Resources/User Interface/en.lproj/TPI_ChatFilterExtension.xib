@@ -8,11 +8,8 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TPI_ChatFilterExtension">
             <connections>
-                <outlet property="filterAddButton" destination="un4-9j-DSX" id="3et-fU-PBu"/>
                 <outlet property="filterAddMenu" destination="hfa-1J-jSi" id="UPi-cO-5S5"/>
                 <outlet property="filterArrayController" destination="gVm-uR-B4M" id="Cp9-Xf-cPv"/>
-                <outlet property="filterEditButton" destination="1aY-QC-Kzo" id="PC2-Ob-yAg"/>
-                <outlet property="filterRemoveButton" destination="p1g-v9-KVk" id="Gu2-Tk-deg"/>
                 <outlet property="filterTable" destination="xhh-gD-9rb" id="FUO-oz-IOi"/>
                 <outlet property="preferencesPaneView" destination="Age-ET-si9" id="YNH-Ug-slO"/>
             </connections>

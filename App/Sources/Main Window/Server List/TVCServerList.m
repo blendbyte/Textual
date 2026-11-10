@@ -168,20 +168,6 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 	}
 }
 
-- (void)refreshDrawingForRows:(NSIndexSet *)rowIndexes
-{
-	[self refreshDrawingForRows:rowIndexes skipOcclusionCheck:NO];
-}
-
-- (void)refreshDrawingForRows:(NSIndexSet *)rowIndexes skipOcclusionCheck:(BOOL)skipOcclusionCheck
-{
-	NSParameterAssert(rowIndexes != nil);
-
-	[rowIndexes enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-		[self refreshDrawingForRow:index skipOcclusionCheck:skipOcclusionCheck];
-	}];
-}
-
 - (void)refreshDrawingForRow:(NSInteger)rowIndex
 {
 	[self refreshDrawingForRow:rowIndex skipOcclusionCheck:NO];
@@ -228,32 +214,6 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 	NSInteger rowIndex = [self rowForItem:cellItem];
 
 	[self refreshMessageCountForRow:rowIndex skipOcclusionCheck:skipOcclusionCheck];
-}
-
-- (void)refreshAllUnreadMessageCountBadges
-{
-	[self refreshAllUnreadMessageCountBadges:NO];
-}
-
-- (void)refreshAllUnreadMessageCountBadges:(BOOL)skipOcclusionCheck
-{
-	for (NSUInteger i = 0; i < self.numberOfRows; i++) {
-		[self refreshMessageCountForRow:i skipOcclusionCheck:skipOcclusionCheck];
-	}
-}
-
-- (void)refreshMessageCountForRows:(NSIndexSet *)rowIndexes
-{
-	[self refreshMessageCountForRows:rowIndexes skipOcclusionCheck:NO];
-}
-
-- (void)refreshMessageCountForRows:(NSIndexSet *)rowIndexes skipOcclusionCheck:(BOOL)skipOcclusionCheck
-{
-	NSParameterAssert(rowIndexes != nil);
-
-	[rowIndexes enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-		[self refreshMessageCountForRow:index skipOcclusionCheck:skipOcclusionCheck];
-	}];
 }
 
 - (void)refreshMessageCountForRow:(NSInteger)rowIndex

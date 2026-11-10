@@ -236,7 +236,7 @@ NS_ASSUME_NONNULL_BEGIN
 		IRCChannelUser *oldMember = [member.user userAssociatedWithChannel:channel];
 
 		if (oldMember != nil) {
-			[self replaceMember:oldMember withMember:member];
+			[self replaceMember:oldMember withMember:member resort:YES replaceInAllChannels:NO];
 
 			return;
 		}
@@ -328,7 +328,7 @@ NS_ASSUME_NONNULL_BEGIN
 		 member = [member copy];
 	}
 
-	[self replaceMember:member withMember:member resort:YES];
+	[self replaceMember:member withMember:member resort:YES replaceInAllChannels:NO];
 }
 
 - (void)_replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort
@@ -379,16 +379,6 @@ NS_ASSUME_NONNULL_BEGIN
 			[observer memberListMovedRowAtIndex:oldIndex toIndex:newIndex];
 		}
 	}];
-}
-
-- (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2
-{
-	[self replaceMember:member1 withMember:member2 resort:YES replaceInAllChannels:NO];
-}
-
-- (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort
-{
-	[self replaceMember:member1 withMember:member2 resort:YES replaceInAllChannels:NO];
 }
 
 - (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort replaceInAllChannels:(BOOL)replaceInAllChannels
@@ -655,87 +645,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 #pragma mark Clipboard
-
-- (NSData *)pasteboardDataForMembers:(NSArray<IRCChannelUser *> *)members
-{
-	NSParameterAssert(members != nil);
-
-	NSString *channelId = self.channel.uniqueIdentifier;
-
-	NSMutableArray<NSString *> *nicknames = [NSMutableArray arrayWithCapacity:members.count];
-
-	for (IRCChannelUser *member in members) {
-		[nicknames addObject:member.user.nickname];
-	}
-
-	NSDictionary *pasteboardDictionary = @{
-	   @"channelId" : channelId,
-	   @"nicknames" : nicknames
-	};
-
-	NSData *pasteboardData = [NSKeyedArchiver archivedDataWithRootObject:pasteboardDictionary requiringSecureCoding:YES error:NULL];
-
-	return (pasteboardData ?: [NSData data]);
-}
-
-+ (BOOL)readNicknamesFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<NSString *> *nicknames))callbackBlock
-{
-	NSParameterAssert(pasteboardData != nil);
-	NSParameterAssert(callbackBlock != nil);
-
-	NSSet *allowedClasses = [NSSet setWithObjects:[NSDictionary class], [NSArray class], [NSString class], nil];
-
-	NSDictionary *pasteboardDictionary = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses fromData:pasteboardData error:NULL];
-
-	if ([pasteboardDictionary isKindOfClass:[NSDictionary class]] == NO) {
-		return NO;
-	}
-
-	NSString *channelId = pasteboardDictionary[@"channelId"];
-
-	if ([channelId isKindOfClass:[NSString class]] == NO) {
-		return NO;
-	}
-
-	IRCChannel *channel = (IRCChannel *)[worldController() findItemWithId:channelId];
-
-	if (channel == nil) {
-		return NO;
-	}
-
-	NSArray *nicknames = pasteboardDictionary[@"nicknames"];
-
-	if ([nicknames isKindOfClass:[NSArray class]] == NO) {
-		return NO;
-	}
-
-	callbackBlock(channel, nicknames);
-
-	return YES;
-}
-
-+ (BOOL)readMembersFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<IRCChannelUser *> *members))callbackBlock
-{
-	NSParameterAssert(pasteboardData != nil);
-	NSParameterAssert(callbackBlock != nil);
-
-	return
-	[self readNicknamesFromPasteboardData:pasteboardData withBlock:^(IRCChannel *channel, NSArray<NSString *> *nicknames) {
-		NSMutableArray *members = [NSMutableArray arrayWithCapacity:nicknames.count];
-
-		for (NSString *nickname in nicknames) {
-			IRCChannelUser *member = [channel findMember:nickname];
-
-			if (member == nil) {
-				continue;
-			}
-
-			[members addObject:member];
-		}
-
-		callbackBlock(channel, [members copy]);
-	}];
-}
 
 #pragma mark -
 #pragma mark Search

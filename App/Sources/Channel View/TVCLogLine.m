@@ -309,11 +309,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return sessionIdentifier;
 }
 
-- (BOOL)fromCurrentSession
-{
-	return (self.sessionIdentifier == [self.class currentSessionIdentifier]);
-}
-
 + (nullable NSString *)stringForLineType:(TVCLogLineType)type
 {
 #define _dv(lineType, returnValue)			case (lineType): { return (returnValue); break; }

@@ -380,7 +380,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[self updateAllFontSizesToMatchTheDefaultFont];
 	}
 
-	[self recalculateTextViewSizeForced];
+	[self recalculateTextViewSize];
 }
 
 - (CGFloat)defaultLineHeight
@@ -389,16 +389,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)recalculateTextViewSize
-{
-	[self recalculateTextViewSizeForced:NO];
-}
-
-- (void)recalculateTextViewSizeForced
-{
-	[self recalculateTextViewSizeForced:YES];
-}
-
-- (void)recalculateTextViewSizeForced:(BOOL)forceRecalculate
 {
 	TVCMainWindowTextViewAppearance *appearance = self.userInterfaceObjects;
 

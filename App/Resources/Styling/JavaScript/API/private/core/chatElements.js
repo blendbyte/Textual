@@ -168,11 +168,6 @@ _ChatElements._join = function(dateElement, sessionElement) /* PRIVATE */
 	_ChatElements._renderDate(dateElement);
 };
 
-_ChatElements._isSeparator = function(element) /* PRIVATE */
-{
-	return (element.classList.contains("date_indicator") || element.classList.contains("session_indicator"));
-};
-
 _ChatElements.tidy = function() /* PRIVATE */
 {
 	_ChatElements._tidyScheduled = false;

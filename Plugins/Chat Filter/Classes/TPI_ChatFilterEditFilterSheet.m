@@ -161,7 +161,6 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 
 	[self updateEnabledStateOfSenderMatch];
 	[self updateEnabledStateOfFilterEvents];
-	[self updateEnableStateOfFilterActionTokenField];
 	[self updateEnabledStateOfComponentsConstrainedByFilterEvents];
 	[self updateFilterLimitedToMatrix];
 	[self updateVisibilityOfLimitedToTableHostView];
@@ -581,11 +580,6 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	return nil;
 }
 
-- (void)performFilterActionTokenCompletion
-{
-
-}
-
 - (NSString *)stringValueForTokenField:(NSTokenField *)tokenField
 {
 	return [tokenField.objectValue componentsJoinedByString:@""];
@@ -776,11 +770,6 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	}
 }
 
-- (void)updateEnableStateOfFilterActionTokenField
-{
-
-}
-
 - (void)updateEnabledStateOfFilterEvents
 {
 	BOOL enabled = (self.filter.filterLimitedToValue != TPI_ChatFilterLimitToValuePrivateMessages);
@@ -866,8 +855,6 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 
 - (void)filterIgnoreContentCheckChanged:(nullable id)sender
 {
-	[self updateEnableStateOfFilterActionTokenField];
-
 	[self toggleOkButton];
 }
 

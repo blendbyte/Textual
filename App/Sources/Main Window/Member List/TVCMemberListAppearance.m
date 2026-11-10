@@ -59,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Member Cell
 
-@property (nonatomic, assign, readwrite) BOOL cellRowEmphasized;
 @property (nonatomic, copy, nullable, readwrite) NSColor *cellTextColorActiveWindow;
 @property (nonatomic, copy, nullable, readwrite) NSColor *cellTextColorInactiveWindow;
 @property (nonatomic, copy, nullable, readwrite) NSColor *cellAwayTextColorActiveWindow;
@@ -132,7 +131,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *memberCell = properties[@"Member Cell"];
 
-	self.cellRowEmphasized = [memberCell boolForKey:@"rowEmphasized"];
 	self.cellTextColorActiveWindow = [self colorInGroup:memberCell withKey:@"normalTextColor" forActiveWindow:YES];
 	self.cellTextColorInactiveWindow = [self colorInGroup:memberCell withKey:@"normalTextColor" forActiveWindow:NO];
 	self.cellAwayTextColorActiveWindow = [self colorInGroup:memberCell withKey:@"awayTextColor" forActiveWindow:YES];

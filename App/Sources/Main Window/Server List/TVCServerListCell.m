@@ -55,11 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TVCServerListCellDrawingContext : NSObject
 @property (nonatomic, assign) BOOL isActive;
 @property (nonatomic, assign) BOOL isGroupItem;
-@property (nonatomic, assign) BOOL isInverted;
 @property (nonatomic, assign) BOOL isSelected;
 @property (nonatomic, assign) BOOL isSelectedFrontmost;
 @property (nonatomic, assign) BOOL isWindowActive;
-@property (nonatomic, assign) BOOL isEmphasized; // the row's selection is in the accent colour
 @end
 
 @implementation TVCServerListCell
@@ -216,7 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
 		self.imageView.image = icon;
 
 		if (isSelected) {
-			self.imageView.contentTintColor = ((drawingContext.isEmphasized) ? appearance.channelSelectedTextColorActiveWindow : appearance.channelSelectedTextColorInactiveWindow);
+			self.imageView.contentTintColor = appearance.channelSelectedTextColorInactiveWindow;
 		} else if (isActive) {
 			self.imageView.contentTintColor = [NSColor secondaryLabelColor];
 		} else {
@@ -291,11 +289,8 @@ NS_ASSUME_NONNULL_BEGIN
 		} // isSelected
 
 		if (isSelected) {
-			if (drawingContext.isEmphasized) {
-				controlColor = appearance.serverSelectedTextColorActiveWindow;
-			} else {
-				controlColor = appearance.serverSelectedTextColorInactiveWindow;
-			} // isWindowActive
+			/* The selection is never in the accent colour (TVCServerListRowCell) */
+			controlColor = appearance.serverSelectedTextColorInactiveWindow;
 		} else if (isActive) {
 			if (isWindowActive) {
 				controlColor = appearance.serverTextColorActiveWindow;
@@ -319,11 +314,7 @@ NS_ASSUME_NONNULL_BEGIN
 		} // isSelected
 
 		if (isSelected) {
-			if (drawingContext.isEmphasized) {
-				controlColor = appearance.channelSelectedTextColorActiveWindow;
-			} else {
-				controlColor = appearance.channelSelectedTextColorInactiveWindow;
-			} // isWindowActive
+			controlColor = appearance.channelSelectedTextColorInactiveWindow;
 		} else if (isActive) {
 			/* A mention shows in its count (red), not in the name */
 			if (isWindowActive) {
@@ -570,8 +561,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	TVCServerList *serverList = self.serverList;
 
-	TVCServerListAppearance *appearance = self.userInterfaceObjects;
-
 	IRCTreeItem *cellItem = self.cellItem;
 
 	NSInteger rowIndex = [serverList rowForItem:cellItem];
@@ -582,11 +571,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	drawingContext.isActive = cellItem.isActive;
 	drawingContext.isGroupItem = self.isGroupItem;
-	drawingContext.isInverted = appearance.isDarkAppearance;
 	drawingContext.isSelected = [serverList isRowSelected:rowIndex];
 	drawingContext.isSelectedFrontmost = [mainWindow isItemSelected:cellItem];
 	drawingContext.isWindowActive = mainWindow.isActiveForDrawing;
-	drawingContext.isEmphasized = ([self.superview isKindOfClass:[NSTableRowView class]] && ((NSTableRowView *)self.superview).isEmphasized);
 
 	return drawingContext;
 }

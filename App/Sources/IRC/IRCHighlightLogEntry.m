@@ -64,33 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return [logLine renderedBodyForTranscriptLogInChannel:channel];
 }
 
-- (NSString *)timeLoggedFormatted
-{
-	TVCLogLine *logLine = self.lineLogged;
-
-	NSTimeInterval timeInterval = logLine.receivedAt.timeIntervalSinceNow;
-
-	NSString *formattedTimeInterval = TXHumanReadableTimeInterval(timeInterval, YES, 0);
-
-	return TXTLS(@"BasicLanguage[4um-w4]", formattedTimeInterval);
-}
-
 - (nullable IRCChannel *)channel
 {
 	IRCChannel *channel = [worldController() findChannelWithId:self.channelId onClientWithId:self.clientId];
 
 	return channel;
-}
-
-- (NSString *)channelName
-{
-	IRCChannel *channel = self.channel;
-
-	if (channel) {
-		return channel.name;
-	}
-
-	return TXTLS(@"BasicLanguage[vbl-xi]");
 }
 
 - (NSString *)formattedMessage

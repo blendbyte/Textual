@@ -33,7 +33,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSValue (CSValueHelper)
-+ (id)valueWithPrimitive:(void *)value withType:(const char *)valueType;
++ (nullable id)valueWithPrimitive:(void *)value withType:(const char *)valueType COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 @end
 
 NS_ASSUME_NONNULL_END

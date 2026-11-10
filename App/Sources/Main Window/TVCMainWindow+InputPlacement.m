@@ -698,7 +698,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Its width changed: the lines wrap anew */
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
-		[self.inputTextField recalculateTextViewSizeForced];
+		[self.inputTextField recalculateTextViewSize];
 	});
 }
 

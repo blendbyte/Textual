@@ -184,11 +184,6 @@ static NSUInteger IRCTimedCommandLastIdentifier = 0;
 	return self.timer.currentIteration;
 }
 
-- (NSTimeInterval)startTime
-{
-	return self.timer.startTime;
-}
-
 - (NSTimeInterval)timeRemaining
 {
 	return self.timer.timeRemaining;

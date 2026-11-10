@@ -492,7 +492,7 @@ enum
 - (IBAction)onNextHighlight:(nullable id)sender;
 - (IBAction)onPreviousHighlight:(nullable id)sender;
 
-- (IBAction)centerMainWindow:(nullable id)sender;
+- (IBAction)centerMainWindow:(nullable id)sender TEXTUAL_DEPRECATED("Unused; will be removed in a future version");
 - (IBAction)resetMainWindowFrame:(nullable id)sender;
 - (IBAction)showMainWindow:(nullable id)sender;
 

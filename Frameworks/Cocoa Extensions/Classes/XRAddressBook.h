@@ -33,8 +33,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface XRAddressBook : NSObject
-+ (nullable NSString *)myName;
-+ (nullable NSString *)myEmailAddress;
++ (nullable NSString *)myName COCOA_EXTENSIONS_DEPRECATED("Unused, and can't read Contacts in a sandboxed app; will be removed in a future version");
++ (nullable NSString *)myEmailAddress COCOA_EXTENSIONS_DEPRECATED("Unused, and can't read Contacts in a sandboxed app; will be removed in a future version");
 @end
 
 NS_ASSUME_NONNULL_END

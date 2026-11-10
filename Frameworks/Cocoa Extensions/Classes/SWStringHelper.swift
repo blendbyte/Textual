@@ -32,6 +32,7 @@
 
 public extension String
 {
+	@available(*, deprecated, message: "Unused; will be removed in a future version")
 	func substring(with nsrange: NSRange) -> Substring?
 	{
 		guard let range = Range(nsrange, in: self) else {

@@ -113,10 +113,6 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 }
 
-- (void)performInitialization
-{
-
-}
 
 - (BOOL)populateWithDecoder:(NSCoder *)coder
 {

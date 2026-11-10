@@ -59,7 +59,6 @@ enum : unsigned long long {
 };
 
 /* A bouncer's list of networks changed (object: the IRCClient; see bouncerNetworks) */
-TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 
 @interface IRCClient ()
 /* Once, after the next registration: added with nowhere to go yet */
@@ -79,7 +78,6 @@ TEXTUAL_EXTERN NSString * const IRCClientBouncerNetworksDidChangeNotification;
 - (NSDictionary<NSString *, id> *)configurationDictionary;
 
 - (void)addChannel:(IRCChannel *)channel;
-- (void)addChannel:(IRCChannel *)channel atPosition:(NSUInteger)position;
 
 /* Window → Sort Channel List's order: channels before private messages, by name */
 + (NSComparisonResult)compareChannel:(IRCChannel *)channel1 toChannel:(IRCChannel *)channel2;

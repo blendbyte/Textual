@@ -320,9 +320,6 @@ final class ServerPropertiesSecurityPane: TDCServerPropertiesPane, ObservableObj
 	@Published var validatesCertificate = true
 	@Published var cipherSuites = RCMCipherSuiteCollection.default
 
-	/* The servers, for what they asked about secure connections */
-	@objc weak var serverPane: ServerPropertiesServerPane?
-
 	static let cipherSuiteChoices: [RCMCipherSuiteCollection] = [.default, .mozilla2017, .mozilla2015, .none]
 
 	static func title(of cipherSuites: RCMCipherSuiteCollection) -> String
@@ -601,8 +598,6 @@ final class ServerPropertiesUploadsPane: TDCServerPropertiesPane, ObservableObje
 {
 	@Published private(set) var mode = IRCClientUploadDestinationMode.default
 	@Published private(set) var ownDestination: TLOUploadDestination?
-
-	static let modeChoices: [IRCClientUploadDestinationMode] = [.default, .off, .own]
 
 	var modeBinding: Binding<IRCClientUploadDestinationMode>
 	{

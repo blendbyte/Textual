@@ -91,11 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Cell Information
 
-- (BOOL)wantsEmphasis
-{
-	return self.userInterfaceObjects.cellRowEmphasized;
-}
-
 /* Grey like the server list's selection, also while this list has the
  keyboard focus */
 - (BOOL)isEmphasized

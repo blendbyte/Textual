@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TPCThemeVariety : NSObject
 @property (nonatomic, copy) NSURL *url;
-@property (nonatomic, weak) TPCTheme *theme;
 @property (nonatomic, assign) BOOL isGlobalVariety;
 @property (nonatomic, assign) TPCThemeAppearanceType appearance;
 @property (nonatomic, copy, nullable) NSURL *cssFile;

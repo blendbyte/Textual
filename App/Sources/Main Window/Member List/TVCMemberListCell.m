@@ -51,10 +51,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMemberListCellDrawingContext : NSObject
-@property (nonatomic, assign) BOOL isInverted;
 @property (nonatomic, assign) BOOL isSelected;
 @property (nonatomic, assign) BOOL isWindowActive;
-@property (nonatomic, assign) BOOL isEmphasized; // the row's selection is in the accent colour
 @end
 
 @implementation TVCMemberListCell
@@ -253,11 +251,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSColor *controlColor = nil;
 
 	if (isSelected) {
-		if (drawingContext.isEmphasized) {
-			controlColor = appearance.cellSelectedTextColorActiveWindow;
-		} else {
-			controlColor = appearance.cellSelectedTextColorInactiveWindow;
-		} // isWindowActive
+		/* The selection is never in the accent colour (TVCMemberListRowCell) */
+		controlColor = appearance.cellSelectedTextColorInactiveWindow;
 	} else if (cellItem.user.isAway) {
 		if (isWindowActive) {
 			controlColor = appearance.cellAwayTextColorActiveWindow;
@@ -656,16 +651,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSInteger rowIndex = [memberList rowForView:self];
 
-	TVCMemberListAppearance *appearance = self.userInterfaceObjects;
-
 	TVCMemberListCellDrawingContext *drawingContext = [TVCMemberListCellDrawingContext new];
 
 	TVCMainWindow *mainWindow = self.mainWindow;
 
-	drawingContext.isInverted = appearance.isDarkAppearance;
 	drawingContext.isSelected = [memberList isRowSelected:rowIndex];
 	drawingContext.isWindowActive = mainWindow.isActiveForDrawing;
-	drawingContext.isEmphasized = ([self.superview isKindOfClass:[NSTableRowView class]] && ((NSTableRowView *)self.superview).isEmphasized);
 
 	return drawingContext;
 }

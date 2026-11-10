@@ -601,16 +601,6 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	[self.memberInfo resortMember:member];
 }
 
-- (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2
-{
-	[self.memberInfo replaceMember:member1 withMember:member2];
-}
-
-- (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort
-{
-	[self.memberInfo replaceMember:member1 withMember:member2 resort:resort];
-}
-
 - (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort replaceInAllChannels:(BOOL)replaceInAllChannels
 {
 	[self.memberInfo replaceMember:member1 withMember:member2 resort:resort replaceInAllChannels:replaceInAllChannels];
@@ -634,21 +624,6 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 - (nullable NSArray<IRCChannelUser *> *)memberList
 {
 	return self.memberInfo.memberList;
-}
-
-- (NSData *)pasteboardDataForMembers:(NSArray<IRCChannelUser *> *)members
-{
-	return [self.memberInfo pasteboardDataForMembers:members];
-}
-
-+ (BOOL)readNicknamesFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<NSString *> *nicknames))callbackBlock
-{
-	return [IRCChannelMemberList readNicknamesFromPasteboardData:pasteboardData withBlock:callbackBlock];
-}
-
-+ (BOOL)readMembersFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<IRCChannelUser *> *members))callbackBlock
-{
-	return [IRCChannelMemberList readMembersFromPasteboardData:pasteboardData withBlock:callbackBlock];
 }
 
 - (BOOL)memberExists:(NSString *)nickname

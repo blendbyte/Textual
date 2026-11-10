@@ -63,16 +63,6 @@ public class Logging
 	{
 		_LogStackTraceOfTypeSwiftShim(type, subsystem);
 	}
-
-	///
-	/// Subsystem used by Cocoa Extensions
-	///
-	internal static var frameworkSubsystem: Logger? =
-	{
-		let subsystem = _CSFrameworkInternalLogSubsystem()
-
-		return Logger(subsystem!)
-	}()
 }
 
 ///

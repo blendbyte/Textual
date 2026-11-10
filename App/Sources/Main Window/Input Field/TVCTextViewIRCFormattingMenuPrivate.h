@@ -39,8 +39,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define TVCTextViewIRCFormattingMenuFormatterMenuTag			53037
-
 @class TVCMainWindow, TVCTextViewWithIRCFormatter;
 
 @interface TVCTextViewIRCFormattingMenu : NSObject

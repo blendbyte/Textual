@@ -441,13 +441,6 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	[self activateLicenseKey:argumentLicenseKey silently:YES];
 }
 
-- (void)activateLicenseKey:(NSString *)licenseKey
-{
-	NSParameterAssert(licenseKey != nil);
-
-	[self activateLicenseKey:licenseKey silently:NO];
-}
-
 - (void)activateLicenseKey:(NSString *)licenseKey silently:(BOOL)silently
 {
 	NSParameterAssert(licenseKey != nil);

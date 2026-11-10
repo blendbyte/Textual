@@ -53,7 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeItemFromList:(id)object;
 
 - (void)refreshAllDrawings;
-- (void)refreshAllUnreadMessageCountBadges;
 
 - (void)refreshMessageCountForItem:(IRCTreeItem *)cellItem;
 - (void)refreshMessageCountForRow:(NSInteger)rowIndex;

@@ -234,25 +234,6 @@ final class SettingsModel: ObservableObject
 		titleScrolledAway = false
 	}
 
-	/// The title the toolbar shows once the page's own is out of sight
-	var pageTitle: String
-	{
-		switch path.last {
-			case .styles:
-				return SettingsText("set-app-h1")
-			case .events:
-				return SettingsText("set-mes-ep")
-			case let .notificationEvent(event):
-				return TDCSettingsBridge.title(forNotificationEvent: event)
-			case .previewServices:
-				return SettingsText("set-pre-v")
-			case let .pluginPane(_, title):
-				return title
-			case nil:
-				return (selection?.title ?? "")
-		}
-	}
-
 	var pageTitleInToolbar: Bool
 	{
 		/* An addon's page has no big title of its own */

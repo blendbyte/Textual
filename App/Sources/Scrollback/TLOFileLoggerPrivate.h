@@ -60,8 +60,6 @@ TEXTUAL_EXTERN NSString * const TLOFileLoggerISOStandardClockFormat;
 - (void)reopenIfNeeded;
 - (void)close;
 
-- (void)reset; // does nothing if file isn't open
-
 - (void)writeLogLine:(TVCLogLine *)logLine;
 - (void)writePlainText:(NSString *)string;
 
@@ -79,9 +77,6 @@ TEXTUAL_EXTERN NSString * const TLOFileLoggerISOStandardClockFormat;
  Unless a specific reason is needed to access this property,
  it may be better to use -writePath instead. */
 @property (readonly, copy, nullable) NSString *filePath;
-
-/* The last path component (file name) of file path */
-@property (readonly, copy, nullable) NSString *fileName;
 
 /* Write path is the path to the folder in which log files
  for the channel or client are written to. */

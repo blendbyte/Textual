@@ -21,7 +21,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DATA="${TEXTUAL_DEV_DATA:-${HOME}/Library/Application Support/Textual Development}"
 
 BUNDLE_ID="com.textualapp.app.dev"
-GROUP_ID="FANJ7JNLP5.com.textualapp.app.dev"
 
 ERGO_VERSION="2.19.1"
 ERGO_SHA256_ARM64="1bd97a0917036061e2dcdfc29149c2e252e3bc856282e0956afa2aaaa54dd787"

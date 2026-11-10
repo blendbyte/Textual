@@ -45,7 +45,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString * const IRCClientBouncerNetworksDidChangeNotification = @"IRCClientBouncerNetworksDidChangeNotification";
 
 @implementation IRCClient (Bouncer)
 
@@ -283,8 +282,6 @@ static NSTimeInterval const IRCClientZNCNetworkListTimeout = 30.0;
 - (void)bouncerNetworksChanged
 {
 	LogToConsoleInfo("Bouncer networks: %lu", (unsigned long)self.bouncerNetworksReceived.networks.count);
-
-	[RZNotificationCenter() postNotificationName:IRCClientBouncerNetworksDidChangeNotification object:self];
 
 	IRCBouncerAccount *account = self.bouncerAccount;
 

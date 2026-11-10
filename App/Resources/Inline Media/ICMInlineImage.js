@@ -45,8 +45,6 @@ _ICMInlineImagePrototype.prototype = Object.create(InlineMediaPrototype.prototyp
 _ICMInlineImagePrototype.prototype.constructor = _ICMInlineImagePrototype;
 _ICMInlineImagePrototype.prototype.superClass = _ICMInlineImagePrototypeParent.prototype;
 
-var _ICMInlineImage = new _ICMInlineImagePrototype();
-
 /* A click opens the image viewer window; ⌘-click opens the link in the
  browser, and the end of a resize drag does neither */
 _ICMInlineImagePrototype.prototype.imageClicked = function(event)

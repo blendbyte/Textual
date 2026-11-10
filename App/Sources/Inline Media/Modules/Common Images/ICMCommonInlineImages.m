@@ -80,7 +80,6 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	NSString *urlScheme = url.scheme;
 	NSString *urlQuery = url.query.percentEncodedURLQuery;
 
 	NSString *urlPathCombined = urlPath;
@@ -132,16 +131,6 @@ NS_ASSUME_NONNULL_BEGIN
 		if (photoId) {
 			return [@"https://docs.google.com/uc?id=" stringByAppendingString:photoId];
 		}
-	}
-	else if ([urlHost isDomainOrSubdomain:@"i.4cdn.org"])
-	{
-		if ([urlPath hasSuffix:@".webm"] == NO) {
-			return nil;
-		}
-
-		NSString *filenameWithoutExtension = urlPath.stringByDeletingPathExtension;
-
-		return [NSString stringWithFormat:@"%@://%@%@s.jpg", urlScheme, urlHost, filenameWithoutExtension];
 	}
 	else if ([urlHost isDomainOrSubdomain:@"speedtest.net"])
 	{

@@ -98,31 +98,6 @@ NSURL * _Nullable ICLResourceURL(NSString *name, NSString *extension)
 @end
 
 #pragma mark -
-#pragma mark Errors
-
-@implementation ICLHelpers (Errors)
-
-+ (NSError *)genericValidationFailedError
-{
-	static NSError *error = nil;
-
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		error =
-		[NSError errorWithDomain:ICLInlineContentErrorDomain
-							code:1003
-						userInfo:@{
-			NSLocalizedDescriptionKey : @"Validation failed"
-		}];
-	});
-
-	return error;
-}
-
-@end
-
-#pragma mark -
 #pragma mark HTML
 
 /* Pages are read up to this length */

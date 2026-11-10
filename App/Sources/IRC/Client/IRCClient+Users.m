@@ -208,8 +208,7 @@ NS_ASSUME_NONNULL_BEGIN
 			 matchingEntry.ignorePrivateMessageHighlights == NO &&
 			 matchingEntry.ignorePrivateMessages == NO &&
 			 matchingEntry.ignorePublicMessageHighlights == NO &&
-			 matchingEntry.ignorePublicMessages == NO &&
-			 matchingEntry.ignoreMessagesContainingMatch == NO);
+			 matchingEntry.ignorePublicMessages == NO);
 
 			if (onlyInlineMedia) {
 				[ignoreList removeObjectAtIndex:index];

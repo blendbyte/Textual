@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 	return card;
 }
 
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 + (nullable NSString *)myName
 {
 	NSArray *keys = @[CNContactGivenNameKey, CNContactFamilyNameKey];
@@ -81,7 +82,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	return [NSString stringWithFormat:@"%@ %@", givenName, familyName];
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 + (nullable NSString *)myEmailAddress
 {
 	NSArray *keys = @[CNContactEmailAddressesKey];
@@ -102,6 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	return email;
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 @end
 

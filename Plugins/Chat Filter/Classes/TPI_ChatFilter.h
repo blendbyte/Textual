@@ -93,10 +93,8 @@ typedef NS_OPTIONS(NSUInteger, TPI_ChatFilterEventType) {
 - (BOOL)isEventTypeEnabled:(TPI_ChatFilterEventType)eventType;
 - (BOOL)isCommandEnabled:(NSString *)command;
 
-- (nullable instancetype)initWithContentsOfPath:(NSString *)path;
 - (nullable instancetype)initWithContentsOfURL:(NSURL *)url;
 
-- (BOOL)writeToPath:(NSString *)path;
 - (BOOL)writeToURL:(NSURL *)url;
 @end
 

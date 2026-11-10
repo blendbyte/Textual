@@ -73,31 +73,13 @@ TEXTUAL_EXTERN NSString * const TXNotificationHighlightLogStandardMessageFormat;
 
 - (void)dismissNotificationsForChannel:(nullable IRCChannel *)channel onClient:(IRCClient *)client;
 
-/* These methods schedule notifications with the UserNotification.framework.
- Nothing more. -notify:title:description:userInfo: is the proper entry point
- for sending notifications related to IRC. These entry points are conveniences
- for sending unrelated notifications such as from the license manager or addons. */
-- (void)scheduleNotificationWithTitle:(NSString *)title
-							  message:(NSString *)message
-							 onClient:(IRCClient *)client;
-
-- (void)scheduleNotificationWithTitle:(NSString *)title
-							  message:(NSString *)message
-						   forChannel:(IRCChannel *)channel;
-
+/* Schedules a notification with the UserNotification framework, nothing
+ more. -notify:title:description:userInfo: is the entry point for IRC
+ events; this one is for other notices (the /notifybubble command). */
 - (void)scheduleNotificationWithTitle:(NSString *)title
 							  message:(NSString *)message
 						   forChannel:(nullable IRCChannel *)channel
 							 onClient:(IRCClient *)client;
-
-- (void)scheduleNotificationWithTitle:(NSString *)title
-							  message:(NSString *)message
-							 userInfo:(nullable NSDictionary<NSString *, id> *)userInfo;
-
-- (void)scheduleNotificationWithTitle:(NSString *)title
-							  message:(NSString *)message
-							 userInfo:(nullable NSDictionary<NSString *, id> *)userInfo
-					 threadIdentifier:(NSString *)threadIdentifier;
 @end
 
 NS_ASSUME_NONNULL_END

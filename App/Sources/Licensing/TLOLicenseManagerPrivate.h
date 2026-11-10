@@ -75,7 +75,6 @@ TEXTUAL_EXTERN void TLOLicenseManagerSetSigningKeyForTesting(NSString *signingKe
 
 TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerSaveActivation(id signedAnswer, NSString *licenseKey);
 TEXTUAL_EXTERN TLOLicenseManagerActionResult TLOLicenseManagerDeleteActivation(void);
-TEXTUAL_EXTERN BOOL TLOLicenseManagerActivationFileExists(void);
 
 /* The license key of an activation file made for another Mac (copied, or
  brought over by Migration Assistant), to activate this one with */

@@ -58,8 +58,6 @@ NS_ASSUME_NONNULL_BEGIN
  at top and IRCop status changes. That change requires the user to be resorted in every channel
  they are in. Knowing which channels they are in is easy because of IRCUserRelations, but the
  actual process of finding where to sort them at is very expensive. */
-- (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2;
-- (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort;
 - (void)replaceMember:(IRCChannelUser *)member1 withMember:(IRCChannelUser *)member2 resort:(BOOL)resort replaceInAllChannels:(BOOL)replaceInAllChannels;
 
 - (void)changeMember:(NSString *)nickname mode:(NSString *)mode value:(BOOL)value;
@@ -67,10 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resortMember:(IRCChannelUser *)member;
 
 - (void)clearMembers;
-
-- (NSData *)pasteboardDataForMembers:(NSArray<IRCChannelUser *> *)members;
-+ (BOOL)readNicknamesFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<NSString *> *nicknames))callbackBlock;
-+ (BOOL)readMembersFromPasteboardData:(NSData *)pasteboardData withBlock:(void (NS_NOESCAPE ^)(IRCChannel *channel, NSArray<IRCChannelUser *> *members))callbackBlock;
 @end
 
 @interface IRCChannelMemberList () <IRCChannelMemberListPrivatePrototype>

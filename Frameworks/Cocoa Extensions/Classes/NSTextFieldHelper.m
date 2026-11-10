@@ -32,16 +32,19 @@
 
 @implementation NSTextField (CSTextFieldHelper)
 
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 - (NSString *)trimmedStringValue
 {
 	NSString *value = super.stringValue;
 
 	return value.trim;
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_BEGIN
 - (NSString *)trimmedFirstTokenStringValue
 {
-	NSString *value = self.trimmedStringValue;
+	NSString *value = super.stringValue.trim;
 
 	NSInteger spacePosition = [value stringPosition:@" "];
 
@@ -51,6 +54,7 @@
 
 	return value;
 }
+COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 
 @end
 

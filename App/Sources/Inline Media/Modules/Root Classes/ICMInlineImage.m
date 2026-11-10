@@ -199,18 +199,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Action Block
 
-+ (ICLInlineContentModuleActionBlock)actionBlockURL:(NSURL *)url
-{
-	return [self actionBlockURL:url bypassImageCheck:NO];
-}
-
-+ (ICLInlineContentModuleActionBlock)actionBlockURL:(NSURL *)url bypassImageCheck:(BOOL)bypassImageCheck
-{
-	NSParameterAssert(url != nil);
-
-	return [self actionBlockForAddress:url.absoluteString bypassImageCheck:bypassImageCheck];
-}
-
 + (ICLInlineContentModuleActionBlock)actionBlockForAddress:(NSString *)address
 {
 	return [self actionBlockForAddress:address bypassImageCheck:NO];
@@ -225,46 +213,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[moduleTyped performActionForAddress:address bypassImageCheck:bypassImageCheck];
 	} copy];
-}
-
-#pragma mark -
-#pragma mark Utilities
-
-+ (NSArray<NSString *> *)validImageContentTypes
-{
-	static NSArray<NSString *> *cachedValue = nil;
-
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		cachedValue =
-		@[@"image/gif",
-		  @"image/jpeg",
-		  @"image/png",
-		  @"image/svg+xml",
-		  @"image/tiff",
-		  @"image/x-ms-bmp"];
-	});
-
-	return cachedValue;
-}
-
-+ (NSArray<NSString *> *)validVideoContentTypes
-{
-	static NSArray<NSString *> *cachedValue = nil;
-
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken, ^{
-		cachedValue =
-		@[@"video/3gpp",
-		  @"video/3gpp2",
-		  @"video/mp4",
-		  @"video/quicktime",
-		  @"video/x-m4v"];
-	});
-
-	return cachedValue;
 }
 
 @end

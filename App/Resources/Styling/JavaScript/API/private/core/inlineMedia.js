@@ -303,19 +303,6 @@ InlineMediaPrototype.prototype.entrypoint = function(payload, insertHTMLCallback
 	insertHTMLCallback(payload.html);
 };
 
-InlineMediaPrototype.prototype.indexOfMedia = function(mediaId)
-{
-	var anchor = document.getInlineMediaAnchorById(mediaId);
-
-	if (!anchor) {
-		console.error("Failed to find inline media anchor that matches ID: " + mediaId);
-
-		return undefined;
-	}
-	
-	return this.indexOfMediaAnchor(anchor);
-};
-
 InlineMediaPrototype.prototype.indexOfMediaAnchor = function(anchor)
 {
 	/* In the message: formatting puts a link inside elements of its own */

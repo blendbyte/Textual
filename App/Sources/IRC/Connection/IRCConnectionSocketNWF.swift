@@ -454,15 +454,13 @@ final class ConnectionSocketNWF: ConnectionSocket, ConnectionSocketProtocol
 
 	fileprivate func onSecured()
 	{
-		/* We call onSecured() regardless of other preconditions then
-		 only mark ourselves as secured if we have protocol information. */
+		/* Called regardless of other preconditions: only reported
+		 with protocol information */
 		guard  let protocolType = tlsNegotiatedProtocol,
 			   let cipherSuite 	= tlsNegotiatedCipherSuite else
 		{
 			return
 		}
-
-		secured = true
 
 		delegate?.connection(self, securedWith: protocolType, cipherSuite: cipherSuite)
 	}

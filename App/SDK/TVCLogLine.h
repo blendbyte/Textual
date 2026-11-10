@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class IRCChannel;
 
-TEXTUAL_EXTERN NSString * const TVCLogLineUndefinedNicknameFormat;
+TEXTUAL_EXTERN NSString * const TVCLogLineUndefinedNicknameFormat TEXTUAL_DEPRECATED("Unused; will be removed in a future version");
 TEXTUAL_EXTERN NSString * const TVCLogLineActionNicknameFormat;
 TEXTUAL_EXTERN NSString * const TVCLogLineNoticeNicknameFormat;
 

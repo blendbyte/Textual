@@ -1247,23 +1247,6 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	[menuController() populateNavigationChannelList];
 }
 
-- (void)addChannel:(IRCChannel *)channel atPosition:(NSUInteger)position
-{
-	NSParameterAssert(channel != nil);
-
-	@synchronized(self.channelListPrivate) {
-		if ([self.channelListPrivate containsObject:channel]) {
-			return;
-		}
-
-		[self.channelListPrivate insertObject:channel atIndex:position];
-
-		self.channelMap = nil;
-
-		[self updateStoredChannelList];
-	}
-}
-
 - (void)removeChannel:(IRCChannel *)channel
 {
 	NSParameterAssert(channel != nil);

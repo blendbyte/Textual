@@ -59,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite) TDCChannelSpotlightAppearance *userInterfaceObjects;
 @property (nonatomic, weak) IBOutlet NSVisualEffectView *visualEffectView;
 @property (nonatomic, weak) IBOutlet NSTextField *noResultsLabel;
-@property (nonatomic, weak) IBOutlet NSLayoutConstraint *noResultsLabelLeadingConstraint;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *searchResultsViewHeightConstraint;
 @property (nonatomic, weak) IBOutlet NSTextField *searchField;
 @property (nonatomic, weak) IBOutlet NSTableView *searchResultsTable;
@@ -124,8 +123,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self applicationAppearanceChanged];
 
-	[self.noResultsLabelLeadingConstraint archiveConstant];
-
 	[self.searchResultsViewHeightConstraint archiveConstant];
 
 	[self updatePredicate];
@@ -188,8 +185,6 @@ NS_ASSUME_NONNULL_BEGIN
 	if (searchString.length == 0) {
 		self.noResultsLabel.stringValue = @"";
 
-		[self.noResultsLabelLeadingConstraint zeroOutConstant];
-
 		[self.searchResultsViewHeightConstraint zeroOutConstant];
 
 		return;
@@ -198,16 +193,12 @@ NS_ASSUME_NONNULL_BEGIN
 	if (self.searchResultsCount == 0) {
 		self.noResultsLabel.stringValue = TXTLS(@"TDCChannelSpotlightController[tyv-p6]");
 
-		[self.noResultsLabelLeadingConstraint restoreArchivedConstant];
-
 		[self.searchResultsViewHeightConstraint zeroOutConstant];
 
 		return;
 	}
 
 	self.noResultsLabel.stringValue = @"";
-
-	[self.noResultsLabelLeadingConstraint zeroOutConstant];
 
 	[self.searchResultsViewHeightConstraint restoreArchivedConstant];
 

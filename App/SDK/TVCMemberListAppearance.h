@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Member Cell
 
-@property (readonly) BOOL cellRowEmphasized;
+@property (readonly) BOOL cellRowEmphasized TEXTUAL_DEPRECATED("The selection in this list is never in the accent colour; this is always NO");
 @property (readonly, copy, nullable) NSColor *cellTextColorActiveWindow;
 @property (readonly, copy, nullable) NSColor *cellTextColorInactiveWindow;
 @property (readonly, copy, nullable) NSColor *cellAwayTextColorActiveWindow;

@@ -113,10 +113,8 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 		}
 	}
 
-	/* The window for the panels, and what to do once access was refused or it's all done */
+	/* The window for the panels */
 	weak var window: NSWindow?
-	var showStage: (() -> Void)?
-	var finished: (() -> Void)?
 
 	private var importer: TPCLegacyImport?
 	private var groupURL: URL?

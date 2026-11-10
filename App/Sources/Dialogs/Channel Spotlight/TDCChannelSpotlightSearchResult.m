@@ -98,21 +98,6 @@ NS_ASSUME_NONNULL_BEGIN
 	self.distance = @(0.0);
 }
 
-- (NSComparisonResult)compare:(TDCChannelSpotlightSearchResult *)other
-{
-	double localDistance = self.distance.doubleValue;
-
-	double remoteDistance = other.distance.doubleValue;
-
-	if (localDistance > remoteDistance) {
-		return NSOrderedAscending;
-	} else if (localDistance < remoteDistance) {
-		return NSOrderedDescending;
-	}
-
-	return NSOrderedSame;
-}
-
 - (void)recalculateDistanceWith:(NSString *)searchString
 {
 	NSParameterAssert(searchString != nil);

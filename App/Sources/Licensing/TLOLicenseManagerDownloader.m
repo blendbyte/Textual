@@ -73,7 +73,6 @@ NSUInteger const TLOLicenseManagerDownloaderRequestStatusCodeServiceIsBusy = 200
 typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseManagerDownloaderRequestType requestType, NSURLResponse * _Nullable response, NSData * _Nullable data);
 
 @interface TLOLicenseManagerDownloaderConnection : NSObject
-@property (nonatomic, weak) TLOLicenseManagerDownloader *delegate; // To be set by caller
 @property (nonatomic, assign) TLOLicenseManagerDownloaderRequestType requestType; // To be set by caller
 @property (nonatomic, copy) NSDictionary<NSString *, id> *requestContextInfo; // Information set by caller such as license key or e-mail address
 @property (nonatomic, strong, nullable) NSURLSessionTask *sessionTask;
@@ -93,11 +92,6 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 #pragma mark -
 #pragma mark Public Interface
-
-- (void)activateLicense:(NSString *)licenseKey
-{
-	[self activateLicense:licenseKey replacingActivation:nil];
-}
 
 - (void)activateLicense:(NSString *)licenseKey replacingActivation:(nullable NSString *)activationID
 {
@@ -176,8 +170,6 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 	TLOLicenseManagerDownloaderConnection *connectionObject = [TLOLicenseManagerDownloaderConnection new];
 
-	connectionObject.delegate = self;
-
 	connectionObject.requestContextInfo = requestContext;
 
 	connectionObject.requestType = requestType;
@@ -203,21 +195,6 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 	}];
 
 	self.activeConnection = connectionObject;
-}
-
-- (void)cancelRequest
-{
-	if (self.activeConnection == nil) {
-		return;
-	}
-
-	[self.activeConnection cancelRequest];
-
-	self.activeConnection = nil;
-
-	self.actionBlock = nil;
-	self.errorBlock = nil;
-	self.completionBlock = nil;
 }
 
 - (void)processResponse:(nullable NSURLResponse *)response forRequestType:(TLOLicenseManagerDownloaderRequestType)requestType contents:(nullable NSData *)responseContents
@@ -507,11 +484,6 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 	connectionRequest.HTTPBody = requestBodyData;
 
 	return YES;
-}
-
-- (void)dealloc
-{
-	self.delegate = nil;
 }
 
 - (void)cancelRequest

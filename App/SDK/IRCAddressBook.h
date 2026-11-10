@@ -74,7 +74,7 @@ typedef NS_ENUM(NSUInteger, IRCAddressBookUserTrackingStatus) {
 @property (readonly) BOOL ignorePublicMessages;
 @property (readonly) BOOL ignoreFileTransferRequests;
 @property (readonly) BOOL ignoreInlineMedia;
-@property (readonly) BOOL ignoreMessagesContainingMatch;
+@property (readonly) BOOL ignoreMessagesContainingMatch TEXTUAL_DEPRECATED("Never set; always NO");
 @property (readonly) BOOL trackUserActivity;
 
 /* When IRCAddressBookEntryTypeMixed is mixed, this array holds

@@ -37,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Swizzling
 
-/* Swizzle functions take strings to make it difficult for Apple to find private APIs */
 void XRExchangeInstanceMethod(NSString *className, NSString *originalMethod, NSString *replacementMethod)
 {
 	NSCParameterAssert(className != nil);

@@ -49,12 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TPI_ChatFilterExtension () <NSTableViewDataSource, NSTableViewDelegate>
 @property (nonatomic, strong) IBOutlet NSView *preferencesPaneView;
 @property (nonatomic, strong) IBOutlet NSMenu *filterAddMenu;
-@property (nonatomic, weak) IBOutlet NSButton *filterAddButton;
-@property (nonatomic, weak) IBOutlet NSButton *filterRemoveButton;
-@property (nonatomic, weak) IBOutlet NSButton *filterEditButton;
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *filterTable;
 @property (nonatomic, strong, readwrite) IBOutlet NSArrayController *filterArrayController;
-@property (nonatomic, assign) BOOL atleastOneFilterExists;
 @property (nonatomic, assign) NSInteger activeChatFilterIndex;
 @property (nonatomic, strong, nullable) TPI_ChatFilterEditFilterSheet *activeChatFilterEditSheet;
 @property (nonatomic, strong, nullable) TPI_ChatFilterLogic *filterLogicController;
@@ -112,8 +108,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[self.filterArrayController addObject:filter];
 	}
-
-	[self reloadFilterCount];
 }
 
 - (void)saveFilters
@@ -133,15 +127,6 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The change is told at once (or not at all, when nothing changed: then
 	 the flag stayed and the next change from elsewhere was ignored) */
 	self.savingFilters = NO;
-
-	[self reloadFilterCount];
-}
-
-- (void)reloadFilterCount
-{
-	NSArray *arrangedObjects = self.filterArrayController.arrangedObjects;
-
-	self.atleastOneFilterExists = (arrangedObjects.count > 0);
 }
 
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString *, id> *)change context:(nullable void *)context
@@ -166,8 +151,6 @@ NS_ASSUME_NONNULL_BEGIN
 	});
 
 	self.activeChatFilterIndex = (-1);
-
-	self.atleastOneFilterExists = NO;
 
 	self.filterLogicController = [[TPI_ChatFilterLogic alloc] initWithParentObject:self];
 

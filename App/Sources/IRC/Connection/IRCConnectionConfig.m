@@ -117,7 +117,7 @@ uint16_t const IRCConnectionDefaultProxyPort = 1080;
 	[aCoder encodeUnsignedInteger:self->_floodControlMaximumMessages forKey:@"floodControlMaximumMessages"];
 	[aCoder maybeEncodeObject:self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
 	[aCoder maybeEncodeObject:self->_proxyAddress forKey:@"proxyAddress"];
-	[aCoder maybeEncodeObject:self->_proxyPassword forKey:@"proxyPassword"];
+	/* The proxy password is never written into an archive */
 	[aCoder encodeUnsignedShort:self->_proxyPort forKey:@"proxyPort"];
 	[aCoder encodeUnsignedInteger:self->_proxyType forKey:@"proxyType"];
 	[aCoder maybeEncodeObject:self->_proxyUsername forKey:@"proxyUsername"];

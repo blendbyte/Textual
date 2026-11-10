@@ -51,15 +51,12 @@ TEXTUAL_EXTERN NSUInteger const TLOLicenseManagerDownloaderRequestStatusCodeGene
 TEXTUAL_EXTERN NSUInteger const TLOLicenseManagerDownloaderRequestStatusCodeServiceIsBusy;
 
 typedef BOOL (^TLOLicenseManagerDownloaderActionBlock)(NSUInteger statusCode, id _Nullable statusContext);
-typedef BOOL (^TLOLicenseManagerDownloaderErrorBlock)(NSUInteger statusCode, id _Nullable statusContext);
 typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful, NSUInteger statusCode, id _Nullable statusContext);
 
 @interface TLOLicenseManagerDownloader : NSObject
 @property (nonatomic, copy, nullable) TLOLicenseManagerDownloaderActionBlock actionBlock;
 @property (nonatomic, copy, nullable) TLOLicenseManagerDownloaderActionBlock errorBlock;
 @property (nonatomic, copy, nullable) TLOLicenseManagerDownloaderCompletionBlock completionBlock;
-
-- (void)activateLicense:(NSString *)licenseKey;
 
 /* With both seats taken, frees the given seat for this Mac */
 - (void)activateLicense:(NSString *)licenseKey replacingActivation:(nullable NSString *)activationID;
@@ -80,7 +77,6 @@ typedef void (^TLOLicenseManagerDownloaderCompletionBlock)(BOOL resultSuccessful
 - (void)checkUpgradeEligibilityWithProof:(NSDictionary<NSString *, NSString *> *)proof;
 - (void)redeemUpgradeWithProof:(NSDictionary<NSString *, NSString *> *)proof;
 
-- (void)cancelRequest;
 @end
 
 NS_ASSUME_NONNULL_END

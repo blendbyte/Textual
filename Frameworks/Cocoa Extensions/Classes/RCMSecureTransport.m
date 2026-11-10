@@ -651,21 +651,6 @@ COCOA_EXTENSIONS_IGNORE_DEPRECATION_END
 	return [self isBadCertificateErrorCode:error.code];
 }
 
-+ (BOOL)isNonFatalErrorCode:(NSInteger)errorCode
-{
-	switch (errorCode) {
-		case errSSLPeerAuthCompleted:
-		case errSSLClientCertRequested:
-		case errSSLClientHelloReceived:
-		{
-			return YES;
-		}
-		default:
-		{
-			return NO;
-		}
-	}
-}
 
 + (BOOL)isBadCertificateErrorCode:(NSInteger)errorCode
 {

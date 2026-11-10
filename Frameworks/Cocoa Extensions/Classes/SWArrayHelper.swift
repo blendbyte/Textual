@@ -30,6 +30,7 @@
 *
 *********************************************************************** */
 
+@available(*, deprecated, message: "Unused; will be removed in a future version")
 public extension Array where Element == AnyObject
 {
 	func bool(at index: Int) -> Bool

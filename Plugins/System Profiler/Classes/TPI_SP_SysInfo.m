@@ -40,7 +40,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define _localVolumeBaseDirectory		@"/Volumes"
 
 @interface TPI_SP_SysInfo : NSObject
 + (nullable NSString *)modelIdentifier;

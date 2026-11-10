@@ -42,11 +42,6 @@ Sulaco = {
 		return ((line) ? line.dataset.lineType : null);
 	},
 
-	getMessage: function (line)
-	{
-		return ((line) ? line.querySelector('.message').textContent.trim() : null);
-	},
-
 	getSenderElement: function (line)
 	{
 		return ((line) ? line.querySelector('.sender') : null);

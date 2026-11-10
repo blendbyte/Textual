@@ -82,7 +82,7 @@ typedef NS_OPTIONS(NSUInteger, CSStringType)
 + (NSDictionary<NSString *, NSNumber *> *)supportedStringEncodingsWithTitle:(BOOL)favorUTF8;
 
 - (NSString *)substringAfterIndex:(NSUInteger)anIndex;
-- (NSString *)substringBeforeIndex:(NSUInteger)anIndex;
+- (NSString *)substringBeforeIndex:(NSUInteger)anIndex COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 /* -substringAtIndex:toLength: uses individual arguments as signed
  integers to allow negative values when creating substring. */
@@ -254,7 +254,7 @@ typedef NS_OPTIONS(NSUInteger, CSStringType)
 + (NSAttributedString *)attributedStringWithString:(NSString *)string attributes:(NSDictionary<NSString *, id> *)stringAttributes;
 
 - (NSAttributedString *)attributedSubstringFromIndex:(NSUInteger)from;
-- (NSAttributedString *)attributedSubstringToIndex:(NSUInteger)to;
+- (NSAttributedString *)attributedSubstringToIndex:(NSUInteger)to COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 @property (readonly, copy) NSArray<NSAttributedString *> *splitIntoLines;
 

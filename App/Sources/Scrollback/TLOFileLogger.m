@@ -245,19 +245,6 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 			   }];
 }
 
-- (void)reset
-{
-	if (self.fileHandle == nil) {
-		return;
-	}
-
-	[self cancelPerformRequestsWithSelector:@selector(flush)];
-
-	self.pendingData = nil;
-
-	[self.fileHandle truncateFileAtOffset:0];
-}
-
 - (void)close
 {
 	if (self.fileHandle == nil) {
@@ -483,11 +470,6 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 - (nullable NSString *)writePath
 {
 	return self.filePath.stringByDeletingLastPathComponent;
-}
-
-- (nullable NSString *)fileName
-{
-	return self.filePath.lastPathComponent;
 }
 
 + (nullable NSString *)writePathForItem:(IRCTreeItem *)item

@@ -267,11 +267,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (BOOL)processingLabeledReply
-{
-	return (self.labeledReplyRequest != nil);
-}
-
 - (BOOL)processingLabeledReplyToCommand:(NSString *)command
 {
 	NSParameterAssert(command != nil);

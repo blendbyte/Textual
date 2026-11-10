@@ -64,13 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-- (NSArray<IRCChannel *> *)relatedChannels
-{
-	@synchronized (self.relationsPrivate) {
-		return self.relationsPrivate.allKeys;
-	}
-}
-
 - (NSArray<IRCChannelUser *> *)relatedUsers
 {
 	@synchronized (self.relationsPrivate) {

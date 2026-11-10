@@ -12,7 +12,6 @@ var Equinox = {
 };
 
 /* Set the default statuses for everything tracked in the roomState */
-var mappedSelectedUsers = [];
 var rs                  = { // room state
   channelJoined: false,
   colorNicknames: true,      // false when nickname colours are turned off in Preferences
@@ -398,7 +397,7 @@ Textual.viewInitiated = function () {
   'use strict';
 
   /* When the view is loaded, create a hidden history div which we display if there is scrollback */
-  var body = document.getElementById('body'), div = document.createElement('div');
+  var div = document.createElement('div');
   div.id = 'scrolling_history';
   document.getElementsByTagName('body')[0].appendChild(div);
   rs.history = div;

@@ -53,13 +53,11 @@ class ConnectionSocket: NSObject
 
 	var connecting = false
 	var connected = false
-	var connectedWithClientSideCertificate = false
 	var disconnecting = false
 	var disconnected: Bool
 	{
 		return (connecting == false && connected == false)
 	}
-	var secured = false
 	var sending = false
 	var EOFReceived = false
 
@@ -82,9 +80,7 @@ class ConnectionSocket: NSObject
 	{
 		connecting = false
 		connected = false
-		connectedWithClientSideCertificate = false
 		disconnecting = false
-		secured = false
 
 		sending = false
 
@@ -159,15 +155,6 @@ extension ConnectionError
 	}
 
 	static let lineTooLong = ConnectionError(otherError: "The server sent more than 64 KiB without a line break")
-
-	init? (tlsError error: Error)
-	{
-		if (RCMSecureTransport.isTLSError(error) == false) {
-			return nil
-		}
-
-		self.init(tlsError: error.code)
-	}
 
 	/// init(tlsError:) returns .unableToSecure("Unknown") for out of range error codes
 	init (tlsError errorCode: Int)

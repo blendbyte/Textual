@@ -118,12 +118,6 @@ NS_ASSUME_NONNULL_BEGIN
 				limitToDate:(nullable NSDate *)limitToDate
 		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
 
-- (void)fetchEntriesForItem:(IRCTreeItem *)item
-	  afterUniqueIdentifier:(NSString *)uniqueIdAfter
-	 beforeUniqueIdentifier:(NSString *)uniqueIdBefore
-				 fetchLimit:(NSUInteger)fetchLimit // 0 == up to the internal cap
-		withCompletionBlock:(void (^)(NSArray<TVCLogLine *> *entries))completionBlock;
-
 /* The view's lines with entry identifiers in the range, oldest or newest first */
 /* Whether opening the store failed because it is damaged or can't be
  migrated, not for a passing reason such as a full disk */

@@ -106,13 +106,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Loading Screen
 
-- (void)setLoadingScreenProgressViewReason:(NSString *)progressReason
-{
-	NSParameterAssert(progressReason != nil);
-
-	[self.loadingScreen setProgressViewReason:progressReason];
-}
-
 - (BOOL)reloadLoadingScreen
 {
 	/* This method returns YES (success) if the loading screen is dismissed
@@ -161,8 +154,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateAccessoryViewLockButton
 {
 	IRCClient *u = self.selectedClient;
-
-	self.titlebarAccessoryViewLockButton.action = @selector(presentCertificateTrustInformation:);
 
 	[self.titlebarAccessoryViewLockButton positionImageOverContent];
 

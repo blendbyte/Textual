@@ -127,7 +127,7 @@ COCOA_EXTENSIONS_EXTERN void XRPerformDelayedBlockOnQueue(dispatch_queue_t queue
 #pragma mark -
 #pragma mark Swizzling
 
-COCOA_EXTENSIONS_EXTERN void XRExchangeInstanceMethod(NSString *className, NSString *originalMethod, NSString *replacementMethod);
-COCOA_EXTENSIONS_EXTERN void XRExchangeClassMethod(NSString *className, NSString *originalMethod, NSString *replacementMethod);
+COCOA_EXTENSIONS_EXTERN void XRExchangeInstanceMethod(NSString *className, NSString *originalMethod, NSString *replacementMethod) COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+COCOA_EXTENSIONS_EXTERN void XRExchangeClassMethod(NSString *className, NSString *originalMethod, NSString *replacementMethod) COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 
 NS_ASSUME_NONNULL_END

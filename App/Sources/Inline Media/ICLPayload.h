@@ -69,11 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, readonly) NSURL *urlToInline;
 
 /**
- String value of the -urlToInline property.
- */
-@property (copy, readonly) NSString *addressToInline;
-
-/**
  The unique identifier associated with this payload.
  */
 @property (copy, readonly) NSString *uniqueIdentifier;
@@ -98,16 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
  Position of payload in relation to others with same line number.
  */
 @property (readonly) NSUInteger index;
-
-/**
- The length of the content. This value is optional.
- */
-@property (readonly) unsigned long long contentLength;
-
-/**
- The size of the content. This value is optional.
- */
-@property (readonly) NSSize contentSize;
 
 /**
  A collection of paths for .css files that need to be loaded to allow the
@@ -237,8 +222,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ICLPayloadMutable : ICLPayload
 @property (nonatomic, copy, readwrite) NSURL *urlToInline;
-@property (nonatomic, assign, readwrite) unsigned long long contentLength;
-@property (nonatomic, assign, readwrite) NSSize contentSize;
 @property (nonatomic, copy, readwrite) NSArray<NSURL *> *styleResources;
 @property (nonatomic, copy, readwrite) NSArray<NSURL *> *scriptResources;
 @property (nonatomic, copy, readwrite) NSString *html;

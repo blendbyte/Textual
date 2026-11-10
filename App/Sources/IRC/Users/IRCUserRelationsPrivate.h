@@ -43,7 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 /* IRCUserRelations is a class used by IRCUser to store which
  IRCChannelUser object is associated with a particular channel. */
 @interface IRCUserRelations : NSObject
-@property (readonly, copy) NSArray<IRCChannel *> *relatedChannels;
 @property (readonly, copy) NSArray<IRCChannelUser *> *relatedUsers;
 @property (readonly, copy) NSDictionary<IRCChannel *, IRCChannelUser *> *relations;
 

@@ -44,10 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IRCAddressBookUserTrackingStatus)_statusOfUser:(NSString *)nickname;
 
-- (void)addTrackedUser:(NSString *)nickname;
 - (void)_addTrackedUser:(NSString *)nickname;
 
-- (void)removeTrackedUser:(NSString *)nickname;
 - (void)_removeTrackedUser:(NSString *)nickname;
 
 - (void)clearTrackedUsers;

@@ -33,8 +33,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSTextField (CSTextFieldHelper)
-@property (readonly, copy) NSString *trimmedStringValue;
-@property (readonly, copy) NSString *trimmedFirstTokenStringValue;
+@property (readonly, copy) NSString *trimmedStringValue COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
+@property (readonly, copy) NSString *trimmedFirstTokenStringValue COCOA_EXTENSIONS_DEPRECATED("Unused; will be removed in a future version");
 @end
 
 @interface NSTextView (CSTextViewHelper)

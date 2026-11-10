@@ -109,8 +109,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	TDCServerPropertiesSecurityPane *securityPane = [TDCServerPropertiesSecurityPane new];
 
-	securityPane.serverPane = serverPane;
-
 	TDCServerPropertiesFallbackServersPane *fallbackServersPane = [TDCServerPropertiesFallbackServersPane new];
 
 	fallbackServersPane.serverPane = serverPane;

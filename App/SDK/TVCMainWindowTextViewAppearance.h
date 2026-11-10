@@ -49,16 +49,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nullable) NSColor *textViewPlaceholderTextColor;
 @property (readonly, copy, nullable) NSColor *textViewBackgroundColorActiveWindow;
 @property (readonly, copy, nullable) NSColor *textViewBackgroundColorInactiveWindow;
-@property (readonly, copy, nullable) NSColor *textViewOutlineColorActiveWindow;
-@property (readonly, copy, nullable) NSColor *textViewOutlineColorInactiveWindow;
-@property (readonly, copy, nullable) NSColor *textViewInsideShadowColorActiveWindow;
-@property (readonly, copy, nullable) NSColor *textViewInsideShadowColorInactiveWindow;
-@property (readonly, copy, nullable) NSGradient *textViewInsideGradientActiveWindow;
-@property (readonly, copy, nullable) NSGradient *textViewInsideGradientInactiveWindow;
+@property (readonly, copy, nullable) NSColor *textViewOutlineColorActiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSColor *textViewOutlineColorInactiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSColor *textViewInsideShadowColorActiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSColor *textViewInsideShadowColorInactiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSGradient *textViewInsideGradientActiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSGradient *textViewInsideGradientInactiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
 @property (readonly, copy, nullable) NSColor *textViewOutsidePrimaryShadowColorActiveWindow;
 @property (readonly, copy, nullable) NSColor *textViewOutsidePrimaryShadowColorInactiveWindow;
-@property (readonly, copy, nullable) NSColor *textViewOutsideSecondaryShadowColorActiveWindow;
-@property (readonly, copy, nullable) NSColor *textViewOutsideSecondaryShadowColorInactiveWindow;
+@property (readonly, copy, nullable) NSColor *textViewOutsideSecondaryShadowColorActiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSColor *textViewOutsideSecondaryShadowColorInactiveWindow TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
 @property (readonly, copy, nullable) NSFont *textViewFont;
 @property (readonly, copy, nullable) NSFont *textViewFontLarge;
 @property (readonly, copy, nullable) NSFont *textViewFontExtraLarge;
@@ -71,8 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Background View
 
-@property (readonly, copy, nullable) NSColor *backgroundViewBackgroundColor;
-@property (readonly, copy, nullable) NSColor *backgroundViewDividerColor;
+@property (readonly, copy, nullable) NSColor *backgroundViewBackgroundColor TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
+@property (readonly, copy, nullable) NSColor *backgroundViewDividerColor TEXTUAL_DEPRECATED("The input field doesn't draw this; will be removed in a future version");
 @property (readonly) CGFloat backgroundViewContentBorderPadding;
 @end
 

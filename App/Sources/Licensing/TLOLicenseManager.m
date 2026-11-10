@@ -482,13 +482,6 @@ TLOLicenseManagerActionResult TLOLicenseManagerDeleteActivation(void)
 	return TLOLicenseManagerActionResultSuccess;
 }
 
-BOOL TLOLicenseManagerActivationFileExists(void)
-{
-	NSURL *activationFilePath = TLOLicenseManagerActivationFilePath();
-
-	return (activationFilePath != nil && [RZFileManager() fileExistsAtURL:activationFilePath]);
-}
-
 NSString * _Nullable TLOLicenseManagerActivationFileLicenseKey(void)
 {
 	NSURL *activationFilePath = TLOLicenseManagerActivationFilePath();

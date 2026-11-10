@@ -59,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Server Cell
 
-@property (nonatomic, assign, readwrite) BOOL serverRowEmphasized;
 @property (nonatomic, copy, nullable, readwrite) NSColor *serverTextColorActiveWindow;
 @property (nonatomic, copy, nullable, readwrite) NSColor *serverTextColorInactiveWindow;
 @property (nonatomic, copy, nullable, readwrite) NSColor *serverDisabledTextColorActiveWindow;
@@ -72,7 +71,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel Cell
 
-@property (nonatomic, assign, readwrite) BOOL channelRowEmphasized;
 @property (nonatomic, assign, readwrite) CGFloat serverLabelLeftMargin;
 @property (nonatomic, copy, nullable, readwrite) NSColor *channelTextColorActiveWindow;
 @property (nonatomic, copy, nullable, readwrite) NSColor *channelTextColorInactiveWindow;
@@ -154,7 +152,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *serverCell = properties[@"Server Cell"];
 
-	self.serverRowEmphasized = [serverCell boolForKey:@"rowEmphasized"];
 	self.serverLabelLeftMargin = [serverCell floatForKey:@"labelLeftMargin"];
 	self.serverTextColorActiveWindow = [self colorInGroup:serverCell withKey:@"normalTextColor" forActiveWindow:YES];
 	self.serverTextColorInactiveWindow = [self colorInGroup:serverCell withKey:@"normalTextColor" forActiveWindow:NO];
@@ -167,7 +164,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDictionary *channelCell = properties[@"Channel Cell"];
 
-	self.channelRowEmphasized = [channelCell boolForKey:@"rowEmphasized"];
 	self.channelTextColorActiveWindow = [self colorInGroup:channelCell withKey:@"normalTextColor" forActiveWindow:YES];
 	self.channelTextColorInactiveWindow = [self colorInGroup:channelCell withKey:@"normalTextColor" forActiveWindow:NO];
 	self.channelDisabledTextColorActiveWindow = [self colorInGroup:channelCell withKey:@"disabledTextColor" forActiveWindow:YES];

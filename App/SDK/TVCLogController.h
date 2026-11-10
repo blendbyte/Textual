@@ -66,8 +66,8 @@ TEXTUAL_EXTERN NSNotificationName const TVCLogControllerViewFinishedLoadingNotif
 
 @property (readonly, copy) NSString *uniqueIdentifier;
 
-- (void)moveToTop;
-- (void)moveToBottom;
+- (void)moveToTop TEXTUAL_DEPRECATED("Unused; will be removed in a future version");
+- (void)moveToBottom TEXTUAL_DEPRECATED("Unused; will be removed in a future version");
 
 - (void)jumpToCurrentSession;
 - (void)jumpToPresent;

@@ -66,9 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (ICLInlineContentModuleActionBlock)actionBlockForAddress:(NSString *)address; // bypassVideoCheck = NO
 + (ICLInlineContentModuleActionBlock)actionBlockForAddress:(NSString *)address bypassVideoCheck:(BOOL)bypassVideoCheck;
 
-+ (ICLInlineContentModuleActionBlock)actionBlockForForURL:(NSURL *)url; // bypassVideoCheck = NO
-+ (ICLInlineContentModuleActionBlock)actionBlockForForURL:(NSURL *)url bypassVideoCheck:(BOOL)bypassVideoCheck;
-
 - (void)notifyUnsafeToLoadVideo;
 @end
 

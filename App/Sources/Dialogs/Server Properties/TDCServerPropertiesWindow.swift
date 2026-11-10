@@ -158,8 +158,6 @@ final class ServerPropertiesWindowModel: ObservableObject
 	let save: () -> Void
 	let cancel: () -> Void
 
-	weak var window: NSWindow?
-
 	init(panes: [TDCServerPropertiesPane], serverPane: ServerPropertiesServerPane, save: @escaping () -> Void, cancel: @escaping () -> Void)
 	{
 		var panesBySelection: [UInt: TDCServerPropertiesPane] = [:]
@@ -197,8 +195,6 @@ final class ServerPropertiesWindow: NSObject
 		window.title = ServerPropertiesText("spp-title")
 
 		window.contentViewController = NSHostingController(rootView: ServerPropertiesRootView().environmentObject(model))
-
-		model.window = window
 
 		super.init()
 	}

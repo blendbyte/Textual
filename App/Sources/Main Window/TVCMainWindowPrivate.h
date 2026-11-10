@@ -70,7 +70,6 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 - (nullable TVCMainWindowTitlebarAccessoryViewController *)titlebarAccessoryViewController;
 - (TVCMainWindowTitlebarAccessoryViewLockButton *)titlebarAccessoryViewLockButton;
 - (TVCTextViewIRCFormattingMenu *)formattingMenu;
-- (TXMenuControllerMainWindowProxy *)mainMenuProxy;
 
 - (BOOL)reloadingTheme;
 

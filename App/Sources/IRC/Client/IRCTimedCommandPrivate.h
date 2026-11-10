@@ -48,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, copy) NSString *command;
 
-@property (readonly) NSTimeInterval startTime;
 @property (readonly) NSTimeInterval timeRemaining;
 
 @property (readonly) NSTimeInterval timerInterval;

@@ -407,19 +407,6 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 		[self refreshDrawingForRow:i skipOcclusionCheck:skipOcclusionCheck];
 	}
 }
-- (void)refreshDrawingForRows:(NSIndexSet *)rowIndexes
-{
-	[self refreshDrawingForRows:rowIndexes skipOcclusionCheck:NO];
-}
-
-- (void)refreshDrawingForRows:(NSIndexSet *)rowIndexes skipOcclusionCheck:(BOOL)skipOcclusionCheck
-{
-	NSParameterAssert(rowIndexes != nil);
-
-	[rowIndexes enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-		[self refreshDrawingForRow:index skipOcclusionCheck:skipOcclusionCheck];
-	}];
-}
 
 - (void)refreshDrawingForRow:(NSInteger)rowIndex
 {

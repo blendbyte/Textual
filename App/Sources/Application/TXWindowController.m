@@ -75,11 +75,6 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-+ (NSString *)windowDescriptionForWindow:(id)window
-{
-	return [self windowDescriptionForWindow:window inRelationTo:nil];
-}
-
 + (NSString *)windowDescriptionForWindow:(id)window inRelationTo:(nullable id)relatedObject
 {
 	NSParameterAssert(window != nil);
@@ -114,50 +109,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 	@synchronized(self.windowObjects) {
 		self.windowObjects[windowDescription] = window;
-	}
-}
-
-- (void)removeWindowFromWindowList:(id)window
-{
-	[self removeWindowFromWindowList:window inRelationTo:nil];
-}
-
-- (void)removeWindowFromWindowList:(id)window inRelationTo:(nullable id)relatedObject
-{
-	NSParameterAssert(window != nil);
-
-	if ([window isKindOfClass:[NSArray class]]) {
-		for (id object in window) {
-			[self removeWindowFromWindowList:object inRelationTo:relatedObject];
-		}
-
-		return; // Do not continue...
-	}
-
-	BOOL windowWasString = NO;
-
-	NSString *windowDescription = nil;
-
-	if ([window isKindOfClass:[NSString class]]) {
-		windowWasString = YES;
-
-		windowDescription = window;
-	} else {
-		windowDescription = [self.class windowDescriptionForWindow:window inRelationTo:relatedObject];
-	}
-
-	if (windowDescription == nil) {
-		return; // Cannot continue...
-	}
-
-	@synchronized(self.windowObjects) {
-		if (self.windowObjects[windowDescription] == nil && windowWasString == NO) {
-			windowDescription = [self.windowObjects firstKeyForObject:window];
-		}
-
-		if (windowDescription) {
-			[self.windowObjects removeObjectForKey:windowDescription];
-		}
 	}
 }
 
