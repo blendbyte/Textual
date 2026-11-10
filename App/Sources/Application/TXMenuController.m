@@ -1472,6 +1472,45 @@ NS_ASSUME_NONNULL_BEGIN
 #undef _setHidden
 }
 
+/* Whether your own status in the channel lets you use a member menu item
+ (the usual server rules; the server still decides). An IRC operator may
+ override channel rights, so for one everything stays available. */
+- (BOOL)_ownStatusAllowsUserControlsItem:(NSUInteger)tag onClient:(IRCClient *)client inChannel:(IRCChannel *)channel
+{
+	if (client.userIsIRCop) {
+		return YES;
+	}
+
+	IRCUserRank ranks = [channel findMember:client.userNickname].ranks;
+
+	if (ranks & IRCUserRankIRCopByMode) {
+		return YES;
+	}
+
+	BOOL isOwnerOrAdmin = ((ranks & (IRCUserRankChannelOwner | IRCUserRankSuperOperator)) != 0);
+	BOOL isOperator = (isOwnerOrAdmin || (ranks & IRCUserRankNormalOperator) != 0);
+	BOOL isHalfOperator = (isOperator || (ranks & IRCUserRankHalfOperator) != 0);
+
+	switch (tag) {
+		case MTUserControlsGiveOwner:
+		case MTUserControlsTakeOwner:
+		{
+			return isOwnerOrAdmin;
+		}
+		case MTUserControlsGiveOp:
+		case MTUserControlsTakeOp:
+		case MTUserControlsGiveHalfop:
+		case MTUserControlsTakeHalfop:
+		{
+			return isOperator;
+		}
+		default: // voice, ban, kick
+		{
+			return isHalfOperator;
+		}
+	}
+}
+
 /* The member menu (member list and nicknames in the chat view) */
 - (BOOL)_validateUserControlsMenuItem:(NSMenuItem *)menuItem
 {
@@ -1580,7 +1619,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			menuItem.title = TXTLS(@"TVCMainWindow[bac-t1]", account);
 
-			return (u.isLoggedIn && c.isActive);
+			return (u.isLoggedIn && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
 		}
 
 		case MTUserControlsInviteTo: // "Invite To…"
@@ -1623,7 +1662,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTUserControlsTakeHalfop: // "Take Halfop (-h)"
 		case MTUserControlsTakeVoice: // "Take Voice (-v)"
 		{
-			return (u.isLoggedIn && c.isActive);
+			return (u.isLoggedIn && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
 		}
 
 		case MTUserControlsAllModesGiven: // "All Modes Given"
@@ -1646,7 +1685,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[menuItem.menu itemWithTag:MTUserControlsBanAndKickSeparator].hidden = (isChannel == NO);
 
-			return (u.isLoggedIn && isChannel && c.isActive);
+			return (u.isLoggedIn && isChannel && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
 		}
 
 		case MTUserControlsIRCOperatorMenu: // "IRC Operator"

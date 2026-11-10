@@ -544,12 +544,13 @@ async def scenario_review_plugins(client):
 async def scenario_review_input(client):
 	"""Input field review. #c with alice, bob and _bob_ (a nickname Markdown could
 	take apart), and #help and &help (one name, two prefixes) for the suggestion
-	list. The log shows what the client sends. Stays connected."""
+	list. #op, where the client is op (member menu: mode items enabled; in #c
+	they are disabled). The log shows what the client sends. Stays connected."""
 	me = client.nickname
 
 	await client.send(f":{SERVER} 005 {me} CHANTYPES=#& :are supported by this server")
 
-	for channel, members in (("#c", f"{me} @alice bob _bob_"), ("#help", f"{me} alice"), ("&help", f"{me} bob")):
+	for channel, members in (("#c", f"{me} @alice bob _bob_"), ("#help", f"{me} alice"), ("&help", f"{me} bob"), ("#op", f"@{me} carol +dave")):
 		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
 		await client.send(f":{SERVER} 353 {me} = {channel} :{members}")
 		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
