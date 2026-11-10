@@ -422,13 +422,11 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 	/* A callback still running on the plugin queue ends before the plugin is
 	 told it goes. Not without limit: a callback waiting for the main thread
 	 would wait forever. */
-	dispatch_semaphore_t queueDrained = dispatch_semaphore_create(0);
+	dispatch_block_t queueDrained = dispatch_block_create(0, ^{});
 
-	dispatch_async([THOPluginDispatcher dispatchQueue], ^{
-		dispatch_semaphore_signal(queueDrained);
-	});
+	dispatch_async([THOPluginDispatcher dispatchQueue], queueDrained);
 
-	(void)dispatch_semaphore_wait(queueDrained, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
+	(void)dispatch_block_wait(queueDrained, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
 
 	for (THOPluginItem *plugin in loadedPlugins) {
 		[plugin unloadBundle];
