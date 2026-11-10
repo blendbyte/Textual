@@ -221,6 +221,46 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertLessThan(self.archive.fileSize, (oldSize / 4));
 }
 
+/* The text index holds each message once: also in an archive made when a
+ trigger filled the index, and when a line is archived twice */
+- (void)testIndexHoldsEachMessageOnce
+{
+	NSDate *time = [NSDate dateWithTimeIntervalSince1970:1700000000];
+
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"written before" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:time]];
+
+	XCTAssertEqual(self.allBodies.count, 1);
+
+	[self.archive prepareForApplicationTermination];
+
+	sqlite3 *database = NULL;
+
+	XCTAssertEqual(sqlite3_open_v2(self.databaseURL.fileSystemRepresentation, &database, SQLITE_OPEN_READWRITE, NULL), SQLITE_OK);
+
+	XCTAssertEqual(sqlite3_exec(database, "CREATE TRIGGER messages_inserted AFTER INSERT ON messages BEGIN "
+								"INSERT INTO messages_text (rowid, body) VALUES (new.id, new.body); END;", NULL, NULL, NULL), SQLITE_OK);
+
+	sqlite3_close_v2(database);
+
+	self.archive = [[TLOMessageArchive alloc] initWithURL:self.databaseURL];
+
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"written after" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:time]];
+	[self archive:[self lineOfType:TVCLogLineTypePrivateMessage body:@"written after" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:time]];
+
+	NSArray *expected = @[@"written after"];
+
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT m.body FROM messages_text JOIN messages m ON m.id = messages_text.rowid WHERE messages_text MATCH 'after'"], expected);
+
+	XCTAssertEqual(self.allBodies.count, 2);
+
+	/* With rank 1 it compares the index with the messages themselves */
+	XCTAssertEqual(sqlite3_open_v2(self.databaseURL.fileSystemRepresentation, &database, SQLITE_OPEN_READWRITE, NULL), SQLITE_OK);
+
+	XCTAssertEqual(sqlite3_exec(database, "INSERT INTO messages_text (messages_text, rank) VALUES ('integrity-check', 1);", NULL, NULL, NULL), SQLITE_OK);
+
+	sqlite3_close_v2(database);
+}
+
 /* The text index finds any part of a word, three characters or more,
  without IRC formatting */
 - (void)testIndexFindsPartsOfWords

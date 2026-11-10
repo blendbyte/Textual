@@ -44,19 +44,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable NSRegularExpression *)regularExpressionWithPattern:(NSString *)pattern caseless:(BOOL)caseless
 {
-	static NSCache<NSString *, id> *cache = nil;
+	/* One for each case setting, so a look-up needs no key made for it: this
+	 runs for every highlight keyword of every line */
+	static NSCache<NSString *, id> *caches[2];
 
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
-		cache = [NSCache new];
+		for (NSUInteger index = 0; index < 2; index++) {
+			caches[index] = [NSCache new];
 
-		cache.countLimit = 500;
+			caches[index].countLimit = 500;
+		}
 	});
 
-	NSString *cacheKey = [NSString stringWithFormat:@"%d:%@", caseless, pattern];
+	NSCache<NSString *, id> *cache = caches[((caseless) ? 1 : 0)];
 
-	id cachedValue = [cache objectForKey:cacheKey];
+	id cachedValue = [cache objectForKey:pattern];
 
 	if (cachedValue == nil) {
 		NSRegularExpressionOptions options = ((caseless) ? NSRegularExpressionCaseInsensitive : 0);
@@ -67,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 			cachedValue = [NSNull null]; // Invalid patterns are remembered too
 		}
 
-		[cache setObject:cachedValue forKey:cacheKey];
+		[cache setObject:cachedValue forKey:pattern];
 	}
 
 	if (cachedValue == [NSNull null]) {
@@ -115,7 +119,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	__block BOOL timedOut = NO;
 
-	/* NSMatchingReportProgress calls the block periodically during a long search */
+	__block NSUInteger progressCalls = 0;
+
+	/* NSMatchingReportProgress calls the block repeatedly during a search:
+	 the clock is read only every 16th time */
 	[regex enumerateMatchesInString:haystack options:NSMatchingReportProgress range:searchRange usingBlock:^(NSTextCheckingResult * _Nullable result, NSMatchingFlags flags, BOOL *stop) {
 		if (result) {
 			[results addObject:result];
@@ -127,7 +134,9 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 		}
 
-		if ([NSProcessInfo processInfo].systemUptime > deadline) {
+		progressCalls += 1;
+
+		if ((progressCalls % 16) == 0 && [NSProcessInfo processInfo].systemUptime > deadline) {
 			timedOut = YES;
 
 			*stop = YES;

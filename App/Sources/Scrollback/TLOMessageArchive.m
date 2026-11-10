@@ -75,6 +75,12 @@ NS_ASSUME_NONNULL_BEGIN
 /* Scrollback lines read per step of the import */
 #define _importBatchSize			500
 
+/* Pages the write-ahead file may reach before it's copied into the database:
+ SQLite's default, and a limit for importing text logs (400 MB). Each copy waits
+ for the disk, and a page changed many times between two copies is written once. */
+#define _checkpointPages			1000
+#define _importCheckpointPages		100000
+
 /* In the database's meta table once the scrollback was imported */
 #define _scrollbackImportedKey		@"scrollback_imported"
 
@@ -199,6 +205,8 @@ NS_ASSUME_NONNULL_BEGIN
 /* The properties below are only used on -queue */
 @property (nonatomic, assign, nullable) sqlite3 *database; // NULL if it failed to open
 @property (nonatomic, assign, nullable) sqlite3_stmt *insertStatement;
+@property (nonatomic, assign, nullable) sqlite3_stmt *indexStatement;
+@property (nonatomic, assign) BOOL indexFailed; // in this transaction
 @property (nonatomic, strong) NSMutableArray<TLOMessageArchiveRow *> *pendingRows;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *viewKeys; // writer's queue: view id to key
 @property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *viewKeyNames; // and the names it was stored with
@@ -370,11 +378,30 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 
 	self.insertStatement = insertStatement;
 
+	sqlite3_stmt *indexStatement = NULL;
+
+	result = sqlite3_prepare_v2(database, "INSERT INTO messages_text (rowid, body) VALUES (?, ?)", -1, &indexStatement, NULL);
+
+	if (result != SQLITE_OK) {
+		LogToConsoleError("Failed to prepare the message archive: %{public}s", sqlite3_errmsg(database));
+
+		if (damaged) {
+			*damaged = [self.class _errorMeansDamage:result];
+		}
+
+		[self _closeDatabase];
+
+		return NO;
+	}
+
+	self.indexStatement = indexStatement;
+
 	return YES;
 }
 
-/* The text index has its own table, filled and emptied by triggers. Trigram
- tokens find any part of a word in any script, three characters or more. */
+/* The text index has its own table, filled as rows go in (_insertRow:) and
+ emptied by a trigger. Trigram tokens find any part of a word in any script,
+ three characters or more. */
 - (BOOL)_prepareSchema
 {
 	if ([self _discardOlderSchema] == NO) {
@@ -415,9 +442,9 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 		 Lines from text logs have no line id: the query has to repeat the condition. */
 		"CREATE INDEX IF NOT EXISTS messages_view_line ON messages (view_key, line_id) WHERE line_id <> '';"
 		"CREATE VIRTUAL TABLE IF NOT EXISTS messages_text USING fts5 (body, content = 'messages', content_rowid = 'id', tokenize = 'trigram');"
-		"CREATE TRIGGER IF NOT EXISTS messages_inserted AFTER INSERT ON messages BEGIN "
-			"INSERT INTO messages_text (rowid, body) VALUES (new.id, new.body); "
-		"END;"
+		/* Archives from before _insertRow: filled the index: left in place,
+		 this would index every new row twice */
+		"DROP TRIGGER IF EXISTS messages_inserted;"
 		"CREATE TRIGGER IF NOT EXISTS messages_deleted AFTER DELETE ON messages BEGIN "
 			"INSERT INTO messages_text (messages_text, rowid, body) VALUES ('delete', old.id, old.body); "
 		"END;"
@@ -522,6 +549,14 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 
 		self.insertStatement = NULL;
 	}
+
+	if (self.indexStatement) {
+		sqlite3_finalize(self.indexStatement);
+
+		self.indexStatement = NULL;
+	}
+
+	self.indexFailed = NO;
 
 	if (self.database) {
 		sqlite3_close_v2(self.database);
@@ -706,11 +741,34 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 		(void)[self _insertRow:row];
 	}
 
-	if ([self _execute:"COMMIT;"] == NO) {
+	(void)[self _endInsertingRows];
+
+	[self _postHighlightsNotificationForRows:rows];
+}
+
+/* On the queue: ends the transaction of the rows inserted, NO if they aren't
+ kept. A message missing from the text index damages the index when it's
+ deleted, so one that couldn't be indexed takes its batch with it. */
+- (BOOL)_endInsertingRows
+{
+	BOOL kept = NO;
+
+	if (self.indexFailed) {
+		self.indexFailed = NO;
+
+		/* SQLite may have rolled back already (a full disk) */
+		if (sqlite3_get_autocommit(self.database) == 0) {
+			(void)[self _execute:"ROLLBACK;"];
+		}
+	} else {
+		kept = [self _execute:"COMMIT;"];
+	}
+
+	if (kept == NO) {
 		[self _forgetViewKeys];
 	}
 
-	[self _postHighlightsNotificationForRows:rows];
+	return kept;
 }
 
 /* On the queue, in a transaction: the view's key, 0 on failure. Its names
@@ -770,7 +828,7 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 {
 	sqlite3_stmt *statement = self.insertStatement;
 
-	if (statement == NULL) {
+	if (statement == NULL || self.indexFailed) {
 		return NO;
 	}
 
@@ -815,7 +873,31 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 	sqlite3_reset(statement);
 	sqlite3_clear_bindings(statement);
 
+	if (inserted) {
+		[self _indexRow:row withId:sqlite3_last_insert_rowid(self.database)];
+	}
+
 	return inserted;
+}
+
+/* On the queue, in a transaction. Not with a trigger: an insert that fires one
+ runs in a savepoint, and the text index writes itself to disk at each savepoint.
+ As a statement of its own, it's written once per transaction. */
+- (void)_indexRow:(TLOMessageArchiveRow *)row withId:(sqlite3_int64)rowId
+{
+	sqlite3_stmt *statement = self.indexStatement;
+
+	sqlite3_bind_int64(statement, 1, rowId);
+	sqlite3_bind_text(statement, 2, row.body.UTF8String, -1, SQLITE_TRANSIENT);
+
+	if (sqlite3_step(statement) != SQLITE_DONE) {
+		LogToConsoleError("Failed to index a message: %{public}s", sqlite3_errmsg(self.database));
+
+		self.indexFailed = YES;
+	}
+
+	sqlite3_reset(statement);
+	sqlite3_clear_bindings(statement);
 }
 
 - (void)_postHighlightsNotificationForRows:(NSArray<TLOMessageArchiveRow *> *)rows
@@ -1578,6 +1660,12 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 
 		LogToConsoleInfo("Importing %{public}lu text logs into the message archive", files.count);
 
+		dispatch_sync(self.queue, ^{
+			if (self.database && self.closed == NO) {
+				sqlite3_wal_autocheckpoint(self.database, _importCheckpointPages);
+			}
+		});
+
 		/* "<server folder>/<view type>/<view name>" → its target, or NSNull */
 		NSMutableDictionary<NSString *, id> *targets = [NSMutableDictionary dictionary];
 
@@ -1616,6 +1704,8 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 		/* The write-ahead file keeps the size it grew to otherwise */
 		dispatch_sync(self.queue, ^{
 			if (self.database && self.closed == NO) {
+				sqlite3_wal_autocheckpoint(self.database, _checkpointPages);
+
 				sqlite3_wal_checkpoint_v2(self.database, NULL, SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
 			}
 		});
@@ -2053,8 +2143,8 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 		}
 	}
 
-	if ([self _execute:"COMMIT;"] == NO) {
-		[self _forgetViewKeys];
+	if ([self _endInsertingRows] == NO) {
+		[insertedRows removeAllObjects];
 	}
 
 	sqlite3_finalize(existsStatement);
