@@ -189,6 +189,8 @@ final class ServerPropertiesChannelsPane: TDCServerPropertiesPane, ObservableObj
 		/* With the server, for its name and what its network allows */
 		let sheet = TDCChannelPropertiesSheet(config: config, on: propertiesSheet?.client)
 
+		sheet.takenChannelNames = allConfigs.filter { $0.uniqueIdentifier != config?.uniqueIdentifier }.map { $0.channelName }
+
 		sheet.window = window
 
 		sheet.delegate = self

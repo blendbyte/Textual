@@ -127,6 +127,8 @@
 "lw-e5" = "The licensing server is busy. Please try again in a few minutes.";
 "lw-e6" = "Textual couldn’t reach the licensing server. Please check your internet connection and try again.";
 "lw-e7" = "Textual couldn’t reach the licensing server, so this Mac is still activated. Please try again in a moment.";
+"lw-e8" = "The license was activated, but Textual couldn’t save it on this Mac. Make sure your disk has free space, then try again. If it keeps happening, please contact support.";
+"lw-e9" = "The licensing server answered, but Textual couldn’t verify the answer. Please try again, or contact support if it keeps happening.";
 "lw-x0" = "Your trial has ended";
 "lw-x1" = "Thank you for trying Textual 8! To keep using it, activate your license key or buy Textual 8.";
 "lw-x2" = "Activate License Key…";

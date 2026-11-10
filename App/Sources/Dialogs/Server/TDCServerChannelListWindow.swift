@@ -748,5 +748,22 @@ struct ChannelListDetailView: View
 		.frame(maxWidth: .infinity, minHeight: 58, alignment: .topLeading)
 		.padding(.horizontal, 14)
 		.padding(.vertical, 10)
+		/* A link in a topic: confirmed as in the chat (an email address, another
+		 app's scheme), and Textual's own schemes open here */
+		.environment(\.openURL, OpenURLAction { (url) in
+			guard OpenLink.confirmOpeningUntrusted(url: url) else {
+				return .handled
+			}
+
+			let scheme = (url.scheme?.lowercased() ?? "")
+
+			if (scheme == "irc" || scheme == "ircs" || scheme == "textual") {
+				IRCExtras.parseIRCProtocolURI(url.absoluteString)
+			} else {
+				OpenLink.open(url: url)
+			}
+
+			return .handled
+		})
 	}
 }

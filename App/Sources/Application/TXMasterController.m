@@ -93,6 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite) IBOutlet TVCMainWindow *mainWindow;
 @property (nonatomic, weak, readwrite) IBOutlet TXMenuController *menuController;
 @property (nonatomic, assign) NSUInteger applicationLaunchRemainder;
+@property (nonatomic, assign) BOOL urlEventsReady;
+@property (nonatomic, strong, nullable) NSMutableArray<NSAppleEventDescriptor *> *pendingURLEvents;
 
 #if TEXTUAL_BUILT_WITH_SPARKLE_ENABLED == 1
 @property (nonatomic, strong, readwrite) SPUStandardUpdaterController *updateController;
@@ -221,7 +223,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[RZNotificationCenter() addObserver:self selector:@selector(pluginsFinishedLoading:) name:THOPluginManagerFinishedLoadingPluginsNotification object:nil];
 
-	[RZAppleEventManager() setEventHandler:self andSelector:@selector(handleURLEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+	/* Links that came before (the one that launched Textual, while setup ran) */
+	self.urlEventsReady = YES;
+
+	NSArray<NSAppleEventDescriptor *> *pendingURLEvents = self.pendingURLEvents;
+
+	self.pendingURLEvents = nil;
+
+	for (NSAppleEventDescriptor *event in pendingURLEvents) {
+		[self handleURLEvent:event withReplyEvent:[NSAppleEventDescriptor nullDescriptor]];
+	}
 
 	[NSColorPanel setPickerMask:(NSColorPanelRGBModeMask | NSColorPanelGrayModeMask | NSColorPanelColorListModeMask | NSColorPanelWheelModeMask | NSColorPanelCrayonModeMask)];
 
@@ -340,6 +351,10 @@ NS_ASSUME_NONNULL_BEGIN
 	 for us which we can just do here. */
 	LogToConsoleDebug("Preparing notification controller singeton: %@",
 			sharedNotificationController().description);
+
+	/* Before launching finishes: the link that launches Textual arrives
+	 then, and setup can run before the rest is ready (kept until it is) */
+	[RZAppleEventManager() setEventHandler:self andSelector:@selector(handleURLEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 
 - (void)applicationDidFinishLaunching
@@ -632,6 +647,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)handleURLEvent:(NSAppleEventDescriptor *)event
 		withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
+	if (self.urlEventsReady == NO) {
+		if (self.pendingURLEvents == nil) {
+			self.pendingURLEvents = [NSMutableArray array];
+		}
+
+		[self.pendingURLEvents addObject:[event copy]];
+
+		return;
+	}
+
 	NSAppleEventDescriptor *description = [event descriptorAtIndex:1];
 
 	NSString *stringValue = description.stringValue;

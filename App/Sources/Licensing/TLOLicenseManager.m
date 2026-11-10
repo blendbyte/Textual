@@ -82,6 +82,14 @@ BOOL TLOLicenseManagerWriteSignedAnswerToURL(NSDictionary<NSString *, id> *signe
 NSDictionary<NSString *, id> * _Nullable TLOLicenseManagerActivationPayload(void);
 NSDictionary<NSString *, id> * _Nullable TLOLicenseManagerTrialPayload(void);
 NSDate * _Nullable TLOLicenseManagerLocalTrialStartDate(void);
+NSDate * _Nullable TLOLicenseManagerKeychainTrialStartDate(void);
+void TLOLicenseManagerSaveKeychainTrialStartDate(NSDate *date);
+
+/* A second record of the first launch, in the Keychain: deleting the file
+ alone doesn't start the trial again. The earlier of the two counts. */
+static NSString * const TLOLicenseManagerTrialStartKeychainName = @"Textual (Trial Start)";
+static NSString * const TLOLicenseManagerTrialStartKeychainKind = @"application password";
+static NSString * const TLOLicenseManagerTrialStartKeychainService = @"textual.trial-start";
 
 #pragma mark -
 #pragma mark Setup
@@ -112,6 +120,12 @@ void TLOLicenseManagerSetup(void)
 				[RZFileManager() removeItemAtURL:fileURLs[i] error:NULL];
 			}
 		}
+
+		(void)[XRKeychain deleteKeychainItemReturningStatus:TLOLicenseManagerTrialStartKeychainName
+											   withItemKind:TLOLicenseManagerTrialStartKeychainKind
+												forUsername:nil
+												serviceName:TLOLicenseManagerTrialStartKeychainService
+												  fromCloud:NO];
 
 		for (NSString *defaultsKey in [RZUserDefaults() dictionaryRepresentation].allKeys) {
 			if ([defaultsKey hasPrefix:@"License Manager -> "]) {
@@ -690,6 +704,36 @@ NSURL * _Nullable TLOLicenseManagerLocalTrialFilePath(void)
 	return [[TPCPathInfo applicationSupportURL] URLByAppendingPathComponent:@"Textual_Trial_Information_v2.plist"];
 }
 
+NSDate * _Nullable TLOLicenseManagerKeychainTrialStartDate(void)
+{
+	NSString *value = [XRKeychain getPasswordFromKeychainItem:TLOLicenseManagerTrialStartKeychainName
+												 withItemKind:TLOLicenseManagerTrialStartKeychainKind
+												  forUsername:nil
+												  serviceName:TLOLicenseManagerTrialStartKeychainService
+													fromCloud:NO
+										   returnedStatusCode:NULL];
+
+	NSTimeInterval seconds = value.doubleValue;
+
+	return ((seconds > 0) ? [NSDate dateWithTimeIntervalSince1970:seconds] : nil);
+}
+
+void TLOLicenseManagerSaveKeychainTrialStartDate(NSDate *date)
+{
+	NSString *value = [NSString stringWithFormat:@"%.0f", date.timeIntervalSince1970];
+
+	OSStatus status = [XRKeychain modifyOrAddKeychainItemReturningStatus:TLOLicenseManagerTrialStartKeychainName
+															withItemKind:TLOLicenseManagerTrialStartKeychainKind
+															 forUsername:nil
+														 withNewPassword:value
+															 serviceName:TLOLicenseManagerTrialStartKeychainService
+																forCloud:NO];
+
+	if (status != errSecSuccess) {
+		LogToConsoleError("Unable to keep the trial start in the Keychain: %{public}d", (int)status);
+	}
+}
+
 NSDate * _Nullable TLOLicenseManagerLocalTrialStartDate(void)
 {
 	/* Until the server answers, the trial counts from this Mac's first launch */
@@ -700,7 +744,10 @@ NSDate * _Nullable TLOLicenseManagerLocalTrialStartDate(void)
 	}
 
 	if ([RZFileManager() fileExistsAtURL:localTrialFilePath] == NO) {
-		NSDictionary *trialInformation = @{@"trialPeriodStartDate" : [NSDate date]};
+		/* The file gone, the Keychain still knows when it began */
+		NSDate *startDate = (TLOLicenseManagerKeychainTrialStartDate() ?: [NSDate date]);
+
+		NSDictionary *trialInformation = @{@"trialPeriodStartDate" : startDate};
 
 		NSData *trialInformationData = [NSPropertyListSerialization dataWithPropertyList:trialInformation format:NSPropertyListBinaryFormat_v1_0 options:0 error:NULL];
 
@@ -739,6 +786,15 @@ NSDate * _Nullable TLOLicenseManagerLocalTrialStartDate(void)
 
 	if ([trialPeriodStartDate isKindOfClass:[NSDate class]] == NO) {
 		return nil;
+	}
+
+	/* The earlier record counts; the Keychain gets one if it has none */
+	NSDate *keychainStartDate = TLOLicenseManagerKeychainTrialStartDate();
+
+	if (keychainStartDate == nil) {
+		TLOLicenseManagerSaveKeychainTrialStartDate(trialPeriodStartDate);
+	} else if ([keychainStartDate compare:trialPeriodStartDate] == NSOrderedAscending) {
+		trialPeriodStartDate = keychainStartDate;
 	}
 
 	cachedStartDate = trialPeriodStartDate;

@@ -724,8 +724,19 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 	BOOL isPrivateMessageAction = [actionIdentifier isEqualToString:TXNotificationActionIdentifierPrivateMessageReply];
 	BOOL isLicenseManagerAction = NO;
 
+	/* The notification itself clicked (not a button): a file transfer's
+	 opens File Transfers, without starting anything */
+	BOOL isDefaultAction = [actionIdentifier isEqualToString:UNNotificationDefaultActionIdentifier];
+
+	BOOL isFileTransferClick = (isDefaultAction && [context boolForKey:@"isFileTransferNotification"]);
+
 #if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
 	if ([actionIdentifier isEqualToString:TXNotificationActionIdentifierLicenseManagerMoreInfo]) {
+		isLicenseManagerAction = YES;
+	}
+
+	/* A licence one: Manage License, as its button does */
+	if (isDefaultAction && [response.notification.request.content.categoryIdentifier isEqualToString:TXNotificationCategoryIdentifierLicenseManager]) {
 		isLicenseManagerAction = YES;
 	}
 #endif
@@ -733,6 +744,7 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 	BOOL activateApp 	= (isPrivateMessageAction == NO);
 	BOOL keyMainWindow 	= (isPrivateMessageAction == NO &&
 						   isFileTransferAction == NO &&
+						   isFileTransferClick == NO &&
 						   isLicenseManagerAction == NO);
 
 	if (activateApp) {
@@ -753,9 +765,14 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 	else
 #endif
 
+	if (isFileTransferClick)
+	{
+		[[TXSharedApplication sharedFileTransferDialog] show:YES restorePosition:NO];
+	}
+
 	/* Handle file transfer notifications allowing the user to start a
 	 file transfer directly through the notification's action button. */
-	if (isFileTransferAction)
+	else if (isFileTransferAction)
 	{
 		[[TXSharedApplication sharedFileTransferDialog] show:YES restorePosition:NO];
 

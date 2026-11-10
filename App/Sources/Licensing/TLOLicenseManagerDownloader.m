@@ -356,6 +356,10 @@ typedef void (^TLOLicenseManagerDownloaderConnectionCompletionBlock)(TLOLicenseM
 
 			return performCompletionBlock(YES);
 		}
+
+		/* Anything else in a 200 (a status that isn't 0): an error, so the
+		 window stops waiting and the next attempt isn't refused */
+		return presentError();
 	}
 	else // TLOLicenseManagerDownloaderRequestStatusCodeSuccess
 	{

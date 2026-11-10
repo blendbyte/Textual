@@ -36,6 +36,7 @@
  *********************************************************************** */
 
 #import "NSStringHelper.h"
+#import "TVCMainWindowPrivate.h"
 #import "TXGlobalModels.h"
 #import "TXMasterController.h"
 #import "TXMenuController.h"
@@ -221,6 +222,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	 checks again each time the calendar day changes. */
 	[RZNotificationCenter() addObserver:self selector:@selector(calendarDayChanged:) name:NSCalendarDayChangedNotification object:nil];
 
+	[[NSWorkspace sharedWorkspace].notificationCenter addObserver:self selector:@selector(computerDidWake:) name:NSWorkspaceDidWakeNotification object:nil];
+
 	[self toggleTrialTimer];
 
 	[self requestTrialFromServer];
@@ -396,7 +399,26 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	if (TLOLicenseManagerTextualIsRegistered() == NO && TLOLicenseManagerIsTrialExpired()) {
 		[RZNotificationCenter() postNotificationName:TDCLicenseManagerTrialExpiredNotification object:self];
+	} else {
+		/* The server's answer can bring a trial back that read as over here:
+		 the windows showing "trial ended" go back to the chat */
+		for (TVCMainWindow *window in TVCMainWindow.windows) {
+			[window reloadLoadingScreen];
+		}
 	}
+}
+
+/* The timer doesn't count while the Mac sleeps: ended meanwhile, it ends now */
+- (void)checkTrialExpiry
+{
+	if (self.trialTimer && TLOLicenseManagerTextualIsRegistered() == NO && TLOLicenseManagerIsTrialExpired()) {
+		[self onTrialTimer];
+	}
+}
+
+- (void)computerDidWake:(NSNotification *)notification
+{
+	[self checkTrialExpiry];
 }
 
 #pragma mark -
@@ -484,13 +506,20 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 
 	__block BOOL errorShown = NO;
 
+	/* Saving the answer: not reached (-1), or why it failed */
+	__block NSInteger saveResult = -1;
+
 	TLOLicenseManagerDownloader *licenseManagerDownloader = [TLOLicenseManagerDownloader new];
 
 	/* A Mac moving to another key frees its seat on the old one afterwards */
 	NSString *previousActivationID = TLOLicenseManagerActivationID();
 
 	licenseManagerDownloader.actionBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
-		return (TLOLicenseManagerSaveActivation(statusContext, cleanedLicenseKey) == TLOLicenseManagerActionResultSuccess);
+		TLOLicenseManagerActionResult result = TLOLicenseManagerSaveActivation(statusContext, cleanedLicenseKey);
+
+		saveResult = result;
+
+		return (result == TLOLicenseManagerActionResultSuccess);
 	};
 
 	licenseManagerDownloader.errorBlock = ^BOOL(NSUInteger statusCode, id _Nullable statusContext) {
@@ -544,6 +573,19 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 				}
 
 				BOOL offersSupport = NO;
+
+				/* The server answered, but the answer couldn't be kept: not a connection problem */
+				if (statusCode == 0 && saveResult == TLOLicenseManagerActionResultCannotWrite) {
+					strongSelf.model.keyError = TXTLS(@"TLOLicenseManager[lw-e8]");
+					strongSelf.model.keyErrorOffersSupport = YES;
+
+					break;
+				} else if (statusCode == 0 && saveResult > TLOLicenseManagerActionResultSuccess) {
+					strongSelf.model.keyError = TXTLS(@"TLOLicenseManager[lw-e9]");
+					strongSelf.model.keyErrorOffersSupport = YES;
+
+					break;
+				}
 
 				strongSelf.model.keyError = [strongSelf activationErrorForStatusCode:statusCode statusContext:statusContext offersSupport:&offersSupport];
 				strongSelf.model.keyErrorOffersSupport = offersSupport;
@@ -1328,8 +1370,12 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 			return;
 		}
 
-		/* The new key is licensed now; activating it shows it in the window */
+		/* The new key is licensed now. It goes in the key field first: if
+		 activating it fails (or waits for one running), it can be tried again,
+		 and it isn't only in a variable that is gone after this */
 		[strongSelf clearOffer];
+
+		strongSelf.model.keyText = redeemedLicenseKey;
 
 		[strongSelf attemptToActivateLicenseKey:redeemedLicenseKey];
 	};
@@ -1427,12 +1473,20 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 - (void)deactivateThisMac
 {
 	/* The server frees this Mac's seat first; the license stays when it can't be reached */
+	/* Not while an activation or deactivation is on its way: its answer would
+	 go to a downloader that is gone */
+	if (self.operationInProgress) {
+		return;
+	}
+
 	TDCLicenseWindowModel *model = self.model;
 
 	model.deactivateError = nil;
 	model.keyError = nil;
 
 	model.busy = TDCLicenseWindowBusyDeactivating;
+
+	self.operationInProgress = YES;
 
 	__weak TDCLicenseManagerDialog *weakSelf = self;
 
@@ -1451,6 +1505,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 		TDCLicenseManagerDialog *strongSelf = weakSelf;
 
 		strongSelf.licenseManagerDownloader = nil;
+
+		strongSelf.operationInProgress = NO;
 
 		strongSelf.model.busy = TDCLicenseWindowBusyNone;
 
@@ -1532,6 +1588,8 @@ NSString * const TDCLicenseManagerTrialExpiredNotification = @"TDCLicenseManager
 	/* Not posted on the main thread */
 	XRPerformBlockAsynchronouslyOnMainQueue(^{
 		[self scheduleTimeRemainingInTrialNotification];
+
+		[self checkTrialExpiry];
 
 		[self updateSelectedPane];
 

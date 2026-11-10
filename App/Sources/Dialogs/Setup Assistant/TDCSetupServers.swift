@@ -119,6 +119,10 @@ struct SetupPendingBouncer
 	let account: IRCBouncerAccount
 	let networks: [IRCBouncerNetwork]
 	let connect: Bool
+
+	/* In a rerun: each network linked as chosen in the sheet ("Add as new"
+	 is no link). nil: decided when everything is created. */
+	var linkedClients: [String: IRCClient]? = nil
 }
 
 final class SetupServersModel: ObservableObject
@@ -461,8 +465,12 @@ final class SetupServersModel: ObservableObject
 		if let account = accounts[server.id], account.enabled {
 			let login = account.name.trimmingCharacters(in: .whitespacesAndNewlines)
 
+			/* Left blank: the account is the nickname, as on most networks (the
+			 username's own default, "textual", was sent as the account) */
 			if (login.isEmpty == false) {
 				config.username = login
+			} else if (config.nickname.isEmpty == false) {
+				config.username = config.nickname
 			}
 
 			if (account.password.isEmpty == false) {
@@ -480,12 +488,24 @@ final class SetupServersModel: ObservableObject
 		checkedIDs = Set(picked.map(\.id))
 	}
 
+	/* The servers there are already (a rerun, after an import): by address */
+	var existingHosts: Set<String> = []
+
+	func isAlreadyAdded(_ network: AtlasNetwork) -> Bool
+	{
+		existingHosts.contains(SetupServer(network: network).host.lowercased())
+	}
+
 	/// Once the main window exists. Bouncers logged in when they were added.
 	func createEverything(onlyChecked: Bool)
 	{
 		var selectsServer = true
 
 		for server in picked where (onlyChecked == false || checkedIDs.contains(server.id)) {
+			/* Already there: not a second copy of it */
+			if (existingHosts.contains(server.host.lowercased())) {
+				continue
+			}
 			let config = configuration(for: server)
 
 			/* No channel to go to: what's there to browse is the next best thing */
@@ -495,7 +515,7 @@ final class SetupServersModel: ObservableObject
 		}
 
 		for bouncer in bouncers {
-			TDCSettingsBridge.addBouncer(with: bouncer.account, networks: bouncer.networks, connect: bouncer.connect)
+			TDCSettingsBridge.addBouncer(with: bouncer.account, networks: bouncer.networks, linkedClients: bouncer.linkedClients, connect: bouncer.connect)
 		}
 
 		picked = []
@@ -1324,10 +1344,13 @@ struct SetupNetworksStep: View
 
 	private func row(_ network: AtlasNetwork) -> some View
 	{
-		HStack(spacing: 8) {
-			SetupTick(ticked: model.isPicked(network.id), label: network.name) {
+		let alreadyAdded = model.isAlreadyAdded(network)
+
+		return HStack(spacing: 8) {
+			SetupTick(ticked: (alreadyAdded || model.isPicked(network.id)), label: network.name) {
 				model.toggle(SetupServer(network: network))
 			}
+			.disabled(alreadyAdded)
 
 			VStack(alignment: .leading, spacing: 1) {
 				Text(verbatim: network.name)
@@ -1340,6 +1363,12 @@ struct SetupNetworksStep: View
 			}
 
 			Spacer(minLength: 4)
+
+			if (alreadyAdded) {
+				Text(SetupText("sa-sv-have"))
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
 
 			if let users = network.users {
 				Text(verbatim: setupPeople(users))
@@ -1426,7 +1455,7 @@ struct SetupYourNameStep: View
 
 			if (account.wrappedValue.enabled) {
 				HStack(spacing: 8) {
-					TextField(SetupText("sa-sy-acct-n"), text: account.name)
+					TextField(SetupText("sa-sy-acct-n"), text: account.name, prompt: Text(verbatim: (model.nickname.isEmpty ? SetupText("sa-sy-acct-n") : model.nickname)))
 						.textFieldStyle(.roundedBorder)
 
 					SecureField(SetupText("sa-sy-acct-p"), text: account.password)

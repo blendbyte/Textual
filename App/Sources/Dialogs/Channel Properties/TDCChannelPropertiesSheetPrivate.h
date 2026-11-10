@@ -56,6 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithConfig:(nullable IRCChannelConfig *)config onClient:(nullable IRCClient *)client NS_DESIGNATED_INITIALIZER;
 
 - (void)start;
+
+/* Names a new channel can't have: those already in the server's list */
+@property (nonatomic, copy) NSArray<NSString *> *takenChannelNames;
 @end
 
 @protocol TDCChannelPropertiesSheetDelegate <NSObject>

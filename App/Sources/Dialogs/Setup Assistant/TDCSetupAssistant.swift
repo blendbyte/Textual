@@ -193,6 +193,10 @@ final class SetupModel: ObservableObject
 
 		let model = SetupServersModel()
 
+		/* "I Know What I Want": a network's own first channel, not one for an
+		 interest that was never chosen */
+		model.isNewcomer = helpsChoose
+
 		serversModel = model
 
 		/* Which steps are left depends on what's picked */
@@ -213,6 +217,8 @@ final class SetupModel: ObservableObject
 			if let nickname = saved.first?["nickname"] as? String, nickname.isEmpty == false {
 				model.nickname = nickname
 			}
+
+			model.existingHosts = Set(saved.compactMap { ($0["address"] as? String)?.lowercased() })
 
 			model.isNewcomer = false
 		}
@@ -255,6 +261,8 @@ final class SetupModel: ObservableObject
 		self.newToIRC = newToIRC
 
 		helpsChoose = newToIRC
+
+		serversModel?.isNewcomer = newToIRC
 
 		/* For the empty state, if they skip choosing a network */
 		TPCPreferencesUserDefaults.shared().set(newToIRC, forKey: Self.newToIRCKey)
@@ -469,12 +477,16 @@ final class SetupModel: ObservableObject
 
 		let sheet = AddBouncerSheet(existingClient: { (network, account) in
 			(hasWorld ? TDCSettingsBridge.existingServer(for: network, of: account) : nil)
-		}, add: { [weak self] (account, networks, _, connect) in
-			servers.addBouncer(SetupPendingBouncer(account: account, networks: networks, connect: connect))
+		}, add: { [weak self] (account, networks, linkedClients, connect) in
+			servers.addBouncer(SetupPendingBouncer(account: account, networks: networks, connect: connect, linkedClients: (hasWorld ? linkedClients : nil)))
 
 			self?.bouncerAdded()
-		}, addAsServer: { (address, port, secured) in
+		}, addAsServer: { [weak self] (address, port, secured) in
 			servers.addTyped(SetupServer(host: address, port: port, tls: secured))
+
+			/* On from here, as for a bouncer: Continue on Interests went to the
+			 suggestions, which left it out */
+			self?.bouncerAdded()
 		})
 
 		sheet.hostingOfferURL = TDCSettingsBridge.bouncerHostingOfferURL()
@@ -823,6 +835,13 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 			return
 		}
 
+		/* Keep Everything went past Privacy, the step that explains the archive */
+		if (model.path == .upgrade && SetupModel.shouldExplainArchive) {
+			SetupModel.noteArchiveExplained()
+
+			TDCAlert.modalAlert(withMessage: ImportText("arc-i1"), title: ImportText("arc-i2"), defaultButton: ImportText("oxy-im"), alternateButton: nil)
+		}
+
 		Self.markCompleted()
 
 		stop()
@@ -830,6 +849,11 @@ final class SetupAssistant: NSObject, NSWindowDelegate
 
 	private func finishClosedEarly()
 	{
+		/* Before the settings steps (How IRC Works): a new install is on Chat
+		 all the same, as those steps would have set it */
+		if (model.path == .newInstall && model.lookModel == nil) {
+			TDCSettingsBridge.setMessageGroupingStyle(1, in: nil)
+		}
 		if (model.path == .upgrade && SetupModel.shouldExplainArchive) {
 			SetupModel.noteArchiveExplained()
 

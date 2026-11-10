@@ -135,6 +135,16 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	return nil;
 }
 
+- (NSArray<NSString *> *)takenChannelNames
+{
+	return self.windowContent.takenNames;
+}
+
+- (void)setTakenChannelNames:(NSArray<NSString *> *)takenChannelNames
+{
+	self.windowContent.takenNames = takenChannelNames;
+}
+
 - (void)prepareInitialState
 {
 	__weak TDCChannelPropertiesSheet *weakSelf = self;

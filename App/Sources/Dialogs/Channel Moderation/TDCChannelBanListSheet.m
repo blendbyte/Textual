@@ -139,6 +139,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.pendingEntries = nil;
 
+	/* The count shown follows (an empty answer adds nothing that would tell it) */
+	[self willChangeValueForKey:@"entryCount"];
+	[self didChangeValueForKey:@"entryCount"];
+
 	self.entryTableController.content = nil;
 }
 

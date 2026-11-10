@@ -56,7 +56,8 @@
 "cp-nameh" = "Starts with # on most networks.";
 "cp-key" = "Key";
 "cp-keyh" = "Only if the channel needs a password to join.";
-"cp-key-e1" = "A key can’t contain spaces.";
+"cp-key-e1" = "A key can’t contain spaces or commas.";
+"cp-name-e2" = "This channel is already in the list.";
 "cp-key-n1" = "%1$@ allows keys of up to %2$lu characters: a longer one may be cut off.";
 "cp-label" = "Label";
 "cp-labelh" = "Shown in the channel list instead of the name.";

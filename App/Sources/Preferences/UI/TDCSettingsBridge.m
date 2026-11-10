@@ -35,6 +35,7 @@
  *********************************************************************** */
 
 #import "IRCChannel.h"
+#import "IRCServer.h"
 #import "TLOLocalization.h"
 
 #import "NSObjectHelperPrivate.h"
@@ -193,17 +194,27 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 
 + (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks connect:(BOOL)connect
 {
+	[self addBouncerWithAccount:account networks:networks linkedClients:nil connect:connect];
+}
+
++ (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks linkedClients:(nullable NSDictionary<NSString *, IRCClient *> *)chosenLinks connect:(BOOL)connect
+{
 	NSParameterAssert(account != nil);
 	NSParameterAssert(networks != nil);
 
-	/* A network that already has a server keeps it: chosen again, it isn't added twice */
+	/* As chosen in the sheet ("Add as new" is no link); or else a network
+	 that already has a server keeps it: chosen again, it isn't added twice */
 	NSMutableDictionary<NSString *, IRCClient *> *linkedClients = [NSMutableDictionary dictionary];
 
-	for (IRCBouncerNetwork *network in networks) {
-		IRCClient *client = [self existingServerForNetwork:network ofAccount:account];
+	if (chosenLinks) {
+		[linkedClients addEntriesFromDictionary:chosenLinks];
+	} else {
+		for (IRCBouncerNetwork *network in networks) {
+			IRCClient *client = [self existingServerForNetwork:network ofAccount:account];
 
-		if (client) {
-			linkedClients[network.networkIdentifier] = client;
+			if (client) {
+				linkedClients[network.networkIdentifier] = client;
+			}
 		}
 	}
 
@@ -230,7 +241,8 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 		[summaries addObject:@{
 			@"name" : config.connectionName,
 			@"channels" : @(config.channelList.count),
-			@"nickname" : config.nickname
+			@"nickname" : config.nickname,
+			@"address" : (config.serverList.firstObject.serverAddress ?: @"")
 		}];
 	}
 
@@ -702,7 +714,20 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 
 + (void)openAddonsFolder
 {
-	[RZWorkspace() openURL:[TPCPathInfo applicationSupportURL]];
+	NSURL *folderURL = [TPCPathInfo customExtensionsURL];
+
+	if (folderURL) {
+		[RZWorkspace() openURL:folderURL];
+	}
+}
+
++ (void)openScriptsFolder
+{
+	NSURL *folderURL = [TPCPathInfo customScriptsURL];
+
+	if (folderURL) {
+		[RZWorkspace() openURL:folderURL];
+	}
 }
 
 + (NSArray<NSString *> *)pluginPaneTitles

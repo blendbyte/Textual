@@ -75,6 +75,8 @@ final class SetupLookModel: ObservableObject
 	private let importedFontName: String?
 	private let importedFontSize: Double
 	private let importedGroupingStyle: Int
+	private let importedAppearance: Any?
+	private let importedSpacing: Any?
 	private let importedNicknameFormat: Any?
 	private let importedTimestampFormat: Any?
 
@@ -101,6 +103,8 @@ final class SetupLookModel: ObservableObject
 		importedFontName = defaults.string(forKey: Self.fontNameKey)
 		importedFontSize = defaults.double(forKey: Self.fontSizeKey)
 		importedGroupingStyle = TDCSettingsBridge.messageGroupingStyle()
+		importedAppearance = defaults.object(forKey: "Appearance")
+		importedSpacing = defaults.object(forKey: Self.spacingKey)
 		importedNicknameFormat = defaults.object(forKey: Self.nicknameFormatKey)
 		importedTimestampFormat = defaults.object(forKey: Self.timestampFormatKey)
 
@@ -207,6 +211,12 @@ final class SetupLookModel: ObservableObject
 
 		defaults.set(importedNicknameFormat, forKey: Self.nicknameFormatKey)
 		defaults.set(importedTimestampFormat, forKey: Self.timestampFormatKey)
+
+		/* Changed on the look step: back as they were too */
+		defaults.set(importedAppearance, forKey: "Appearance")
+		defaults.set(importedSpacing, forKey: Self.spacingKey)
+
+		TDCSettingsBridge.preferencesChanged(forKeys: [Self.spacingKey, "Appearance"])
 
 		display = ((importedGroupingStyle == 1) ? .chat : .classic)
 	}

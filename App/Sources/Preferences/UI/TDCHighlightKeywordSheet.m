@@ -70,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<IRCTreeItem *> *places; // each server, then its channels
 @property (nonatomic, strong) NSMutableSet<NSString *> *selectedPlaces;
 @property (nonatomic, copy) NSArray<NSString *> *unknownPlaces; // deleted servers or channels: kept as they were
+@property (nonatomic, strong, nullable) NSButton *removedPlacesCheckbox; // whether they stay
 @property (nonatomic, copy, nullable) void (^completionHandler)(NSDictionary<NSString *, id> * _Nullable entry);
 @end
 
@@ -110,10 +111,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSMutableArray<NSString *> *placeNames = [NSMutableArray array];
 
+	NSUInteger removedPlaces = 0;
+
 	for (NSString *placeId in [self _stringsForKey:IRCHighlightKeywordLimitedToKey inEntry:entry]) {
 		IRCTreeItem *item = [worldController() findItemWithId:placeId];
 
 		if (item == nil) {
+			removedPlaces += 1;
+
 			continue;
 		}
 
@@ -126,6 +131,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	if (placeNames.count > 0) {
 		[parts addObject:[placeNames componentsJoinedByString:@", "]];
+	} else if (removedPlaces > 0) {
+		/* It doesn't match anywhere: not a word without a limit */
+		[parts addObject:TXTLS(@"TDCPreferencesController[hkw-m3]")];
 	}
 
 	NSArray *nicknames = [self _stringsForKey:IRCHighlightKeywordNicknamesKey inEntry:entry];
@@ -257,6 +265,27 @@ NS_ASSUME_NONNULL_BEGIN
 	[placesScrollView.widthAnchor constraintEqualToConstant:300].active = YES;
 	[placesScrollView.heightAnchor constraintEqualToConstant:110].active = YES;
 
+	/* Channels it was limited to that were removed since: shown, and can be let go */
+	NSView *placesView = placesScrollView;
+
+	if (self.unknownPlaces.count > 0) {
+		NSString *countString = [NSNumberFormatter localizedStringFromNumber:@(self.unknownPlaces.count) numberStyle:NSNumberFormatterDecimalStyle];
+
+		NSButton *removedPlacesCheckbox = [NSButton checkboxWithTitle:TXTLS(@"TDCPreferencesController[hkw-r1]", countString) target:self action:@selector(onToggledRemovedPlaces:)];
+
+		removedPlacesCheckbox.state = NSControlStateValueOn;
+
+		self.removedPlacesCheckbox = removedPlacesCheckbox;
+
+		NSStackView *placesStack = [NSStackView stackViewWithViews:@[placesScrollView, removedPlacesCheckbox]];
+
+		placesStack.orientation = NSUserInterfaceLayoutOrientationVertical;
+		placesStack.alignment = NSLayoutAttributeLeading;
+		placesStack.spacing = 6;
+
+		placesView = placesStack;
+	}
+
 	/* Who */
 	NSArray *nicknames = [self.class _stringsForKey:IRCHighlightKeywordNicknamesKey inEntry:entry];
 
@@ -286,7 +315,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-t1]")], keywordField]];
 	[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-p1]")], placesPopup]];
-	[rows addObject:@[[NSGridCell emptyContentView], placesScrollView]];
+	[rows addObject:@[[NSGridCell emptyContentView], placesView]];
 	[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-f1]")], peoplePopup]];
 	[rows addObject:@[[NSGridCell emptyContentView], peopleField]];
 
@@ -439,8 +468,16 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	BOOL enabled = (self.keywordField.stringValue.trim.length > 0);
 
-	if (self.placesPopup.indexOfSelectedItem == _placesOnlyThese && self.selectedPlaces.count == 0) {
-		enabled = NO;
+	if (self.placesPopup.indexOfSelectedItem == _placesOnlyThese) {
+		NSMutableSet<NSString *> *chosenPlaces = [self.selectedPlaces mutableCopy];
+
+		if ([self _keepsRemovedPlaces] == NO) {
+			[chosenPlaces minusSet:[NSSet setWithArray:self.unknownPlaces]];
+		}
+
+		if (chosenPlaces.count == 0) {
+			enabled = NO;
+		}
 	}
 
 	if (self.peoplePopup.indexOfSelectedItem == _peopleOnlyThese && [self _nicknamesInField].count == 0) {
@@ -451,6 +488,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)controlTextDidChange:(NSNotification *)notification
+{
+	[self updateSaveButton];
+}
+
+- (BOOL)_keepsRemovedPlaces
+{
+	return (self.removedPlacesCheckbox == nil || self.removedPlacesCheckbox.state == NSControlStateValueOn);
+}
+
+- (void)onToggledRemovedPlaces:(id)sender
 {
 	[self updateSaveButton];
 }
@@ -534,7 +581,9 @@ NS_ASSUME_NONNULL_BEGIN
 			[limitedTo addObject:placeId];
 		}
 
-		[limitedTo addObjectsFromArray:self.unknownPlaces];
+		if ([self _keepsRemovedPlaces]) {
+			[limitedTo addObjectsFromArray:self.unknownPlaces];
+		}
 
 		if (limitedTo.count > 0) {
 			entry[IRCHighlightKeywordLimitedToKey] = [limitedTo copy];

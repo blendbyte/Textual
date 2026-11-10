@@ -901,6 +901,22 @@ final class SettingsStore: ObservableObject
 				set: { self.store($0, forKey: key) })
 	}
 
+	/// Empty means the default: a cleared field doesn't store "" over it
+	/// (a server made without its sheet then had no nickname at all)
+	func stringRemovedWhenEmpty(_ key: String) -> Binding<String>
+	{
+		Binding(get: { (self.defaults.string(forKey: key) ?? "") },
+				set: { (value) in
+					if (value.trimmingCharacters(in: .whitespaces).isEmpty) {
+						self.objectWillChange.send()
+
+						self.defaults.removeObject(forKey: key)
+					} else {
+						self.store(value, forKey: key)
+					}
+				})
+	}
+
 	/// A setting kept somewhere else than one preference key
 	func value<Value>(get: @escaping () -> Value, set: @escaping (Value) -> Void) -> Binding<Value>
 	{

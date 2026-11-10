@@ -341,17 +341,11 @@ typedef NS_ENUM(NSUInteger, TVCAlertLaunchedAs) {
 {
 	NSMutableArray *buttons = [[NSMutableArray alloc] initWithCapacity:3];
 
-	if (self.firstButton.hidden == NO) {
-		[buttons addObject:self.firstButton];
-	}
-
-	if (self.secondButton.hidden == NO) {
-		[buttons addObject:self.secondButton];
-	}
-
-	/* This listed the second button twice and never the third */
-	if (self.thirdButton.hidden == NO) {
-		[buttons addObject:self.thirdButton];
+	/* A button not used is gone after layout (its outlet nil): left out */
+	for (NSButton *button in @[(self.firstButton ?: (id)[NSNull null]), (self.secondButton ?: (id)[NSNull null]), (self.thirdButton ?: (id)[NSNull null])]) {
+		if ([button isKindOfClass:[NSButton class]] && button.hidden == NO) {
+			[buttons addObject:button];
+		}
 	}
 
 	return [buttons copy];

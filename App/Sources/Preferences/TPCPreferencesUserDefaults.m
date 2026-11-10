@@ -171,10 +171,8 @@ NSString * const TPCPreferencesUserDefaultsDidChangeNotification = @"TPCPreferen
 	[self setObject:@(value) forKey:defaultName];
 }
 
-- (void)setURL:(nullable NSURL *)value forKey:(NSString *)defaultName
-{
-	[self setObject:value forKey:defaultName];
-}
+/* Not -setURL:forKey: as -setObject:: an NSURL isn't a property-list value,
+ so it raised. NSUserDefaults' own encodes it, then goes through -setObject:. */
 
 - (void)removeObjectForKey:(NSString *)defaultName
 {

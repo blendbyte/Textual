@@ -223,10 +223,10 @@ struct ServersSettings: View
 			}
 
 			Section {
-				TextField(SettingsText("set-srv-i1"), text: store.string("DefaultIdentity -> Nickname"), prompt: Text(SettingsText("set-optional")))
+				TextField(SettingsText("set-srv-i1"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Nickname"), prompt: Text(SettingsText("set-optional")))
 				TextField(SettingsText("set-srv-i2"), text: store.string("DefaultIdentity -> AwayNickname"), prompt: Text(SettingsText("set-optional")))
-				TextField(SettingsText("set-srv-i3"), text: store.string("DefaultIdentity -> Username"), prompt: Text(SettingsText("set-optional")))
-				TextField(SettingsText("set-srv-i4"), text: store.string("DefaultIdentity -> Realname"), prompt: Text(SettingsText("set-optional")))
+				TextField(SettingsText("set-srv-i3"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Username"), prompt: Text(SettingsText("set-optional")))
+				TextField(SettingsText("set-srv-i4"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Realname"), prompt: Text(SettingsText("set-optional")))
 			} header: {
 				Text(SettingsText("set-srv-h1"))
 			} footer: {
@@ -585,10 +585,18 @@ struct ExtensionsSettings: View
 
 				LabeledContent {
 					Button(SettingsText("set-ext-o")) {
-						TDCSettingsBridge.openAddonsFolder()
+						TDCSettingsBridge.openScriptsFolder()
 					}
 				} label: {
 					SettingLabel(title: SettingsText("set-ext-f"), help: SettingsText("set-ext-fh"))
+				}
+
+				LabeledContent {
+					Button(SettingsText("set-ext-o")) {
+						TDCSettingsBridge.openAddonsFolder()
+					}
+				} label: {
+					SettingLabel(title: SettingsText("set-ext-fa"), help: SettingsText("set-ext-fah"))
 				}
 			} header: {
 				Text(SettingsText("set-ext-h2"))

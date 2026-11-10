@@ -226,6 +226,13 @@ NS_ASSUME_NONNULL_BEGIN
 		return event;
 	}
 
+	/* An input method composing gets Return, Escape and the arrows */
+	NSText *fieldEditor = self.searchField.currentEditor;
+
+	if ([fieldEditor isKindOfClass:[NSTextView class]] && ((NSTextView *)fieldEditor).hasMarkedText) {
+		return event;
+	}
+
 	switch (event.keyCode) {
 		case 18 ... 23: // 0-9 (top row)
 		case 25 ... 26:
@@ -234,7 +241,8 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			NSUInteger keyboardKeys = (event.modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask);
 
-			keyboardKeys &= ~NSEventModifierFlagNumericPad;
+			/* Caps Lock and fn don't change what ⌘1 means */
+			keyboardKeys &= ~(NSEventModifierFlagNumericPad | NSEventModifierFlagCapsLock | NSEventModifierFlagFunction);
 
 			if (keyboardKeys == NSEventModifierFlagCommand) {
 				return [self handleCommandNumberEvent:event];

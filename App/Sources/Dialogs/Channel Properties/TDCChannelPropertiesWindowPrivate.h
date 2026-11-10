@@ -54,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Into the configuration; NO while something can't be saved (shown under it) */
 - (BOOL)applyChanges;
+
+/* Names a new channel can't have (already in the list) */
+@property (nonatomic, copy) NSArray<NSString *> *takenNames;
 @end
 
 NS_ASSUME_NONNULL_END

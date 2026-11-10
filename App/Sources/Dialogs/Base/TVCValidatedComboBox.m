@@ -269,7 +269,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performValidation
 {
+	/* As -value will read it: trimmed or its first word */
 	NSString *stringToValidate = self.stringValue;
+
+	if (self.stringValueUsesOnlyFirstToken) {
+		stringToValidate = stringToValidate.trimAndGetFirstToken;
+	} else if (self.stringValueIsTrimmed) {
+		stringToValidate = stringToValidate.trim;
+	}
 
 	NSString *errorDescription = nil;
 

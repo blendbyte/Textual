@@ -313,6 +313,7 @@ struct SettingsFormatField: View
 	let text: Binding<String>
 
 	@State private var draft = ""
+	@State private var loaded = "" // what it showed; a preset chosen meanwhile isn't undone
 	@FocusState private var focused: Bool
 
 	var body: some View
@@ -334,19 +335,24 @@ struct SettingsFormatField: View
 		}
 		.onAppear {
 			draft = text.wrappedValue
+			loaded = text.wrappedValue
 		}
 		.onDisappear(perform: save)
 	}
 
+	/* Only what was typed here, and only over what it showed: choosing a
+	 preset removes the field, and its old draft was written back over it */
 	private func save()
 	{
 		let format = draft.trimmingCharacters(in: .whitespaces)
 
-		if (format.isEmpty || format == text.wrappedValue) {
+		if (format.isEmpty || format == text.wrappedValue || draft == loaded || text.wrappedValue != loaded) {
 			return
 		}
 
 		text.wrappedValue = format
+
+		loaded = format
 	}
 }
 

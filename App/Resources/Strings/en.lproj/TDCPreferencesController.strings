@@ -73,6 +73,8 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "hkw-s2" = "Highlight sound";
 "hkw-m1" = "♪ %@";
 "hkw-m2" = "from %@";
+"hkw-m3" = "only in removed channels";
+"hkw-r1" = "Also the removed channels it was limited to (%@)";
 
 "evt-k0" = "Joins:";
 "evt-k1" = "Parts:";
@@ -126,15 +128,15 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-l-advanced" = "For style makers and special cases.";
 
 "set-k-general" = "updates beta quit sleep awake away display links browser background close window cmd-w copy select";
-"set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface";
-"set-k-messages" = "time timestamp format nickname names colors colored mode symbol date marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming";
-"set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing width chat window keyboard";
+"set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface spacing compact roomy";
+"set-k-messages" = "time timestamp format nickname names colors colored mode symbol date marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming topic kicks";
+"set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing width chat window keyboard emoji";
 "set-k-notifications" = "alerts sounds dock badge bounce speak speech muted banner";
 "set-k-highlights" = "highlight words keywords mentions nickname exclude regular expression regex mass";
-"set-k-previews" = "inline media images videos cards youtube links sites";
-"set-k-history" = "archive scrollback keep messages delete import text logs transcripts restore behavior";
+"set-k-previews" = "inline media images videos cards youtube links sites audio";
+"set-k-history" = "archive scrollback keep messages delete import text logs transcripts restore behavior private queries";
 "set-k-lists" = "server list member list user list channels sort sorted alphabetical order name double-click connect disconnect colors badges staff operators navigation";
-"set-k-files" = "downloads uploads dcc file transfers paste dpaste ports address";
+"set-k-files" = "downloads uploads dcc file transfers paste dpaste ports address passive reverse";
 "set-k-servers" = "nickname username real name identity invite kick rejoin join delay flood control who away ctcp";
 "set-k-commands" = "aliases msg notices amsg away nick clearall kick ban operator kill gline shun command scope";
 "set-k-extensions" = "addons plugins scripts applescript";
@@ -286,8 +288,10 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-ext-h2" = "Commands from addons and scripts";
 "set-ext-n" = "No addons or scripts installed.";
 "set-ext-o" = "Open Folder";
-"set-ext-f" = "Addons and scripts folder";
+"set-ext-f" = "Scripts folder";
 "set-ext-fh" = "Put AppleScripts or other scripts here to use them as commands.";
+"set-ext-fa" = "Addons folder";
+"set-ext-fah" = "Put addons (.bundle) here. They load the next time Textual starts.";
 
 "set-adv-h1" = "Styles";
 "set-adv-c" = "Custom CSS";

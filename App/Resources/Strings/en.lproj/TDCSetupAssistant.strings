@@ -274,6 +274,7 @@
 "sa-sv-add" = "Add Another Network…";
 "sa-sv-now" = "Added now";
 "sa-sv-line-1" = "%@ · 1 channel";
+"sa-sv-have" = "Already added";
 "sa-sv-line" = "%@ · %ld channels";
 
 "sa-b-skip" = "Skip for Now";

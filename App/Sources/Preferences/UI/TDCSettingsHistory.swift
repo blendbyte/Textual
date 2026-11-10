@@ -91,6 +91,18 @@ struct HistorySettings: View
 
 		busy = true
 
+		/* The count shown may be from before messages were kept (the page was
+		 opened on an empty archive): read again, or nothing would be asked */
+		TDCSettingsBridge.messageArchiveSize { (count, size) in
+			messageCount = count
+			fileSize = size
+
+			changeKeepPeriod(to: keepPeriod, in: window, messageCount: count)
+		}
+	}
+
+	private func changeKeepPeriod(to keepPeriod: Int, in window: NSWindow, messageCount: Int)
+	{
 		TDCSettingsBridge.changeMessageArchiveKeepPeriod(keepPeriod, messageCount: messageCount, in: window) {
 			busy = false
 

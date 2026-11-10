@@ -102,6 +102,9 @@ final class ChannelPropertiesModel: ObservableObject
 
 	@Published private(set) var archivedCount = 0
 
+	/* Channels already in the list, for a new one */
+	var takenNames: [String] = []
+
 	let errors = ServerPropertiesFieldErrors()
 
 	static let events: [TXNotificationType] = [.highlight, .channelMessage, .channelNotice, .userJoined, .userParted]
@@ -245,6 +248,11 @@ final class ChannelPropertiesModel: ObservableObject
 			return LocalizedKey("BasicLanguage[fo8-1h]")
 		}
 
+		/* One the server's list already has: said here, before Save closes the sheet */
+		if (takenNames.contains(where: { $0.caseInsensitiveCompare(value) == .orderedSame })) {
+			return ChannelPropertiesText("cp-name-e2")
+		}
+
 		let isChannelName: Bool
 
 		if let client = client {
@@ -261,7 +269,8 @@ final class ChannelPropertiesModel: ObservableObject
 	{
 		let value = key.trimmingCharacters(in: .whitespacesAndNewlines)
 
-		if (value.rangeOfCharacter(from: .whitespacesAndNewlines) != nil) {
+		/* Nor a comma: keys of several channels are joined with commas */
+		if (value.rangeOfCharacter(from: .whitespacesAndNewlines) != nil || value.contains(",")) {
 			return ChannelPropertiesText("cp-key-e1")
 		}
 
@@ -544,6 +553,12 @@ final class ChannelPropertiesWindow: NSObject
 	@objc func applyChanges() -> Bool
 	{
 		model.apply()
+	}
+
+	@objc var takenNames: [String]
+	{
+		get { model.takenNames }
+		set { model.takenNames = newValue }
 	}
 }
 

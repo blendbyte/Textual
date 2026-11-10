@@ -292,8 +292,9 @@ final class ImportModel: NSObject, ObservableObject, NSOpenSavePanelDelegate
 
 	private func use(groupURL url: URL)
 	{
-		/* Granted again: the access to the folder chosen before ends */
-		if let previousURL = groupURL, previousURL != url {
+		/* Granted again: the access to the folder chosen before ends, also when
+		 it is the same folder (the panel allows no other), or each grant stays */
+		if let previousURL = groupURL {
 			previousURL.stopAccessingSecurityScopedResource()
 		}
 
@@ -1017,10 +1018,15 @@ enum ImportRemoval
 
 		var response = alert.runModal()
 
-		if (response == .alertThirdButtonReturn) {
-			saveKeys(of: importer, groupURL: groupURL)
-
-			alert.buttons.last?.isHidden = true
+		/* The button goes once the keys are saved: cancelled or failed, it stays */
+		while (response == .alertThirdButtonReturn) {
+			if let saved = saveKeys(of: importer, groupURL: groupURL) {
+				if (saved) {
+					alert.buttons.last?.isHidden = true
+				} else {
+					TDCAlert.modalAlert(withMessage: ImportText("x5g-e2"), title: ImportText("x5g-e1"), defaultButton: ImportText("oxy-im"), alternateButton: nil)
+				}
+			}
 
 			response = alert.runModal()
 		}
@@ -1068,7 +1074,8 @@ enum ImportRemoval
 		return url
 	}
 
-	private static func saveKeys(of importer: TPCLegacyImport, groupURL: URL)
+	/// nil when cancelled
+	private static func saveKeys(of importer: TPCLegacyImport, groupURL: URL) -> Bool?
 	{
 		let panel = NSOpenPanel()
 
@@ -1078,9 +1085,11 @@ enum ImportRemoval
 		panel.message = ImportText("mqc-bj")
 		panel.prompt = ImportText("iud-uj")
 
-		if panel.runModal() == .OK, let url = panel.url {
-			_ = importer.saveEncryptionComponents(toFolderURL: url, groupURL: groupURL)
+		guard panel.runModal() == .OK, let url = panel.url else {
+			return nil
 		}
+
+		return importer.saveEncryptionComponents(toFolderURL: url, groupURL: groupURL)
 	}
 }
 

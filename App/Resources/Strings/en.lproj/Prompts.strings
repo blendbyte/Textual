@@ -245,6 +245,8 @@ Information encrypted using: %2$@";
 "3jr-s5" = "Your license could not be imported. Use “Manage License…” to enter your license key.";
 "3po-7m" = "Textual 8 has no OTR encryption. Keep a copy of your keys in case you need them.";
 "x5g-hy" = "Save Keys…";
+"x5g-e1" = "The keys weren’t saved";
+"x5g-e2" = "Textual couldn’t copy your OTR keys there. Choose another folder, for example one that doesn’t already have a copy.";
 "fk1-ci" = "Your AppleScripts from %@ weren’t copied. Move them to the scripts folder of Textual 8.";
 "gt5-wm" = "Show Scripts";
 "2zf-mn" = "Choose your transcript folder again in Settings.";

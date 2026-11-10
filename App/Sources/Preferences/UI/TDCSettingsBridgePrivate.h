@@ -55,6 +55,7 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 + (void)addServerWithConfig:(IRCClientConfig *)config browsesChannels:(BOOL)browsesChannels selects:(BOOL)selects;
 + (nullable IRCClient *)existingServerForNetwork:(IRCBouncerNetwork *)network ofAccount:(IRCBouncerAccount *)account NS_SWIFT_NAME(existingServer(for:of:));
 + (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks connect:(BOOL)connect;
++ (void)addBouncerWithAccount:(IRCBouncerAccount *)account networks:(NSArray<IRCBouncerNetwork *> *)networks linkedClients:(nullable NSDictionary<NSString *, IRCClient *> *)linkedClients connect:(BOOL)connect;
 
 /* The servers in the saved settings, before there is a world: name, channels (a count), nickname */
 + (NSArray<NSDictionary<NSString *, id> *> *)savedServerSummaries;
@@ -121,7 +122,8 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 
 /* Extensions */
 @property (class, readonly, copy) NSArray<NSString *> *addonCommands;
-+ (void)openAddonsFolder;
++ (void)openAddonsFolder; // Extensions: addons (.bundle)
++ (void)openScriptsFolder; // scripts that become commands
 @property (class, readonly, copy) NSArray<NSString *> *pluginPaneTitles;
 + (nullable NSView *)pluginPaneViewAtIndex:(NSUInteger)index;
 
