@@ -66,8 +66,6 @@
 	<false/>
 	<key>DisplayDockBadges</key>
 	<true/>
-	<key>DisplayEventInLogView -&gt; Bot Mark</key>
-	<true/>
 	<key>DisplayEventInLogView -&gt; Date Changes</key>
 	<true/>
 	<key>DisplayEventInLogView -&gt; Inline Media</key>

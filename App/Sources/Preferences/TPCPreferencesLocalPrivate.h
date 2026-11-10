@@ -123,9 +123,6 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 /* Away after this long without keyboard, mouse or trackpad input (0: never) */
 @property (class, readonly) NSUInteger awayAfterInactivityMinutes;
 
-/* The robot after a bot's name in the chat (the member list always has it) */
-@property (class, readonly) BOOL showBotMark;
-
 @property (class, readonly) BOOL inputMarkdownEnabled;
 
 @property (class, readonly) TXInputFieldPlacement inputFieldPlacement;

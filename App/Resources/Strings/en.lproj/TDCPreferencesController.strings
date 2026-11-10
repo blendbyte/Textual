@@ -129,7 +129,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 
 "set-k-general" = "updates beta quit sleep awake away idle inactive inactivity display links browser background close window cmd-w copy select";
 "set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface spacing compact roomy automatic system";
-"set-k-messages" = "time timestamp format nickname names colors colored mode symbol date bot bots robot marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming topic kicks";
+"set-k-messages" = "time timestamp format nickname names colors colored mode symbol date marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming topic kicks";
 "set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing width chat window keyboard emoji";
 "set-k-notifications" = "alerts sounds dock badge bounce speak speech muted banner";
 "set-k-highlights" = "highlight words keywords mentions nickname exclude regular expression regex mass";
@@ -401,8 +401,6 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-mes-shc" = "Needs colored nicknames: names in messages are only marked while they’re on.";
 "set-mes-d" = "Show when the day changes";
 "set-mes-dh" = "A line with the date between two days.";
-"set-mes-b" = "Mark bots in messages";
-"set-mes-bh" = "A small robot after a bot’s name. The member list always shows it.";
 "set-mes-m" = "Mark where I stopped reading";
 "set-mes-mh" = "A line shows what came in since you last looked at the channel.";
 "set-mes-h2" = "Joins, leaves and other events";

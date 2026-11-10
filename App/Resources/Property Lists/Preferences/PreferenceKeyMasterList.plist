@@ -78,8 +78,6 @@
 	<integer>0</integer>
 	<key>DisplayDockBadges</key>
 	<integer>0</integer>
-	<key>DisplayEventInLogView -&gt; Bot Mark</key>
-	<integer>0</integer>
 	<key>DisplayEventInLogView -&gt; Date Changes</key>
 	<integer>0</integer>
 	<key>DisplayEventInLogView -&gt; Inline Media</key>

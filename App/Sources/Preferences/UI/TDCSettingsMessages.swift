@@ -267,9 +267,6 @@ struct MessagesSettings: View
 				SettingToggle(title: SettingsText("set-mes-d"), help: SettingsText("set-mes-dh"),
 							  isOn: store.bool("DisplayEventInLogView -> Date Changes"))
 
-				SettingToggle(title: SettingsText("set-mes-b"), help: SettingsText("set-mes-bh"),
-							  isOn: store.bool("DisplayEventInLogView -> Bot Mark"))
-
 				SettingToggle(title: SettingsText("set-mes-m"), help: SettingsText("set-mes-mh"),
 							  isOn: store.bool("AutomaticallyAddScrollbackMarker"))
 			}

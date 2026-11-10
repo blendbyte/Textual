@@ -117,7 +117,7 @@
 "e7g-n1" = "%@ changed nickname";
 "e7g-w1" = "%@ went away";
 "e7g-b1" = "%@ came back";
-"bot-l1" = "bot";
+"bot-l1" = "Bot";
 "rpl-l1" = "Replying to ";
 "rpl-c1" = "Cancel Reply";
 "rpl-b1" = "Reply";

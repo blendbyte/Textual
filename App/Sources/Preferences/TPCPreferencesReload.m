@@ -81,7 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
 		[keys containsObject:@"DisableRemoteNicknameColorHashing"] ||
 		[keys containsObject:@"RemoveIRCTextFormatting"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Date Changes"] ||
-		[keys containsObject:@"DisplayEventInLogView -> Bot Mark"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Inline Media"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Join, Part, Quit Display"] ||
 		[keys containsObject:@"DisplayEventInLogView -> Message Grouping Style"] ||
