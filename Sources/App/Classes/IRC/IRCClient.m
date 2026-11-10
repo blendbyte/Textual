@@ -207,6 +207,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 @property (nonatomic, assign) NSUInteger CTCPReplyCount;
 @property (nonatomic, assign) NSTimeInterval CTCPReplyCountStarted;
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSNumber *> *CTCPReplyCountBySender;
+@property (nonatomic, strong, nullable) NSMutableArray<NSArray *> *recentSentPrivateText; // Pairs of key and NSDate, oldest first
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageReceived;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageServerTime;
 @property (nonatomic, assign, readwrite) ClientIRCv3SupportedCapability capabilities;
@@ -2960,6 +2961,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 					sendMessage = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, sendMessage, 0x01];
 				}
 
+				[self rememberSentText:encodedString toTarget:channel.name command:commandToSend];
+
 				[self send:commandToSend, channel.name, sendMessage, nil];
 			};
 
@@ -5014,6 +5017,8 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 							sendMessage = [NSString stringWithFormat:@"%cACTION %@%c", 0x01, sendMessage, 0x01];
 						}
 
+						[self rememberSentText:encodedString toTarget:destinationName command:commandToSend];
+
 						[self send:commandToSend, destinationName, sendMessage, nil];
 					};
 
@@ -5700,6 +5705,7 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	self.CTCPReplyCount = 0;
 	self.CTCPReplyCountStarted = 0;
 	self.CTCPReplyCountBySender = nil;
+	self.recentSentPrivateText = nil;
 
 	self.userIsAway = NO;
 	self.userIsIRCop = NO;
@@ -6410,6 +6416,66 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
+/* A bouncer can hand us a copy of a line we sent even though we did not ask for
+ echoes. The line was printed when it was sent, so the copy is dropped. Each sent
+ line accounts for one copy and is forgotten after a few seconds, which leaves
+ lines sent from the bouncer's other clients alone. */
+- (NSString *)keyForSentText:(NSString *)text toTarget:(NSString *)target command:(NSString *)command
+{
+	return [NSString stringWithFormat:@"%@ %@ %@", command, target.lowercaseString, text];
+}
+
+- (void)removeExpiredSentText
+{
+	while (self.recentSentPrivateText.count > 0) {
+		NSDate *sentAt = self.recentSentPrivateText.firstObject[1];
+
+		if (sentAt.timeIntervalSinceNow > (-10.0)) {
+			break;
+		}
+
+		[self.recentSentPrivateText removeObjectAtIndex:0];
+	}
+}
+
+- (void)rememberSentText:(NSString *)text toTarget:(NSString *)target command:(NSString *)command
+{
+	/* A line sent to ourselves comes back as a normal delivery */
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] ||
+		[self stringIsChannelName:target] ||
+		[self nicknameIsMyself:target])
+	{
+		return;
+	}
+
+	[self removeExpiredSentText];
+
+	if (self.recentSentPrivateText == nil) {
+		self.recentSentPrivateText = [NSMutableArray array];
+	}
+
+	[self.recentSentPrivateText addObject:@[[self keyForSentText:text toTarget:target command:command], [NSDate date]]];
+}
+
+- (BOOL)forgetSentText:(NSString *)text toTarget:(NSString *)target command:(NSString *)command
+{
+	[self removeExpiredSentText];
+
+	NSString *key = [self keyForSentText:text toTarget:target command:command];
+
+	NSUInteger index = [self.recentSentPrivateText indexOfObjectPassingTest:^BOOL(NSArray *entry, NSUInteger entryIndex, BOOL *stop) {
+		return [entry[0] isEqualToString:key];
+	}];
+
+	if (index == NSNotFound) {
+		return NO;
+	}
+
+	[self.recentSentPrivateText removeObjectAtIndex:index];
+
+	return YES;
+}
+
 - (void)receiveText:(IRCMessage *)m lineType:(TVCLogLineType)lineType text:(NSString *)text
 {
 	NSParameterAssert(m != nil);
@@ -6492,6 +6558,11 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	/* Private message (from user) */
 	else if (m.senderIsServer == NO) {
 		if (ignoreInfo.ignorePrivateMessages) {
+			return;
+		}
+
+		/* A copy of a line we already printed when sending it */
+		if ([self messageIsFromMyself:m] && [self forgetSentText:text toTarget:target command:m.command]) {
 			return;
 		}
 
@@ -6648,16 +6719,16 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	BOOL isPlainText = (lineType != TVCLogLineTypeNotice);
 
-	/* If the self-message CAP is not enabled, we still check if we are on a ZNC
-	 based connections because older versions of ZNC combined with the privmsg
-	 module need the correct behavior which the self-message CAP evolved into. */
-	BOOL isSelfMessage = NO;
+	/* A line from our own nickname to someone else can only be our own, whichever
+	 CAPs are enabled: a bouncer also relays what its other clients send. A line
+	 we sent to ourselves is a normal delivery unless the connection echoes. */
+	BOOL isSelfMessage = [self nicknameIsMyself:sender];
 
-	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] ||
-		[self isCapabilityEnabled:ClientIRCv3SupportedCapabilityZNCSelfMessage] ||
-		self.isConnectedToZNC)
-	{
-		isSelfMessage = [self nicknameIsMyself:sender];
+	if (isSelfMessage && [self nicknameIsMyself:target]) {
+		isSelfMessage =
+		([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityEchoMessage] ||
+		 [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityZNCSelfMessage] ||
+		 self.isConnectedToZNC);
 	}
 
 	/* The echo of a line we sent */
