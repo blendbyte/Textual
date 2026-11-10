@@ -481,6 +481,11 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 {
 	[RZNotificationCenter() removeObserver:self];
 
+	/* They hold this sheet (TPILocalizedString names self): without this,
+	 each sheet stayed with its window for the session */
+	self.filterForwardToDestinationTextField.validationBlock = nil;
+	self.filterEventNumericTextField.validationBlock = nil;
+
 	id delegate = self.delegate;
 
 	if ([delegate respondsToSelector:@selector(chatFilterEditFilterSheetWillClose:)]) {

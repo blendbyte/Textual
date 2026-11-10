@@ -14,13 +14,15 @@ set -euo pipefail
 #   5. the DMG (MakeDMG.sh, dmgbuild), showing the website's current terms
 #      (FetchTerms.sh), signed, notarized and stapled
 #   6. release.json, the handover for the website's appcast generator
-#   7. commits the build number and tags the release (locally; push yourself)
+#   7. commits the build number (locally; push yourself), with --tag also a tag
 #
-#   Scripts/release/Release.sh [--beta] [--license-manager on|off] [--test]
+#   Scripts/release/Release.sh [--beta] [--license-manager on|off] [--tag] [--test]
 #
 #   --beta              the update is offered only to "Enable beta updates"
 #   --license-manager   build with or without the licence manager (default:
 #                       as configured in Configurations/)
+#   --tag               also tag the release v<version>-<build> (Textual 8 keeps
+#                       no tags until its public release)
 #   --test              a trial run: no new build number, no notarization, no
 #                       commit, and a dirty working tree is allowed
 #
@@ -46,13 +48,15 @@ ATLAS_FEED_FILE="${ROOT}/App/Resources/Property Lists/IRCAtlasOnboarding.json"
 channel=""
 licenseManager=""
 testRun=0
+tagRelease=0
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--beta) channel="beta" ;;
 		--license-manager) shift; licenseManager="${1:-}" ;;
 		--test) testRun=1 ;;
-		*) echo "Usage: $0 [--beta] [--license-manager on|off] [--test]" >&2; exit 2 ;;
+		--tag) tagRelease=1 ;;
+		*) echo "Usage: $0 [--beta] [--license-manager on|off] [--tag] [--test]" >&2; exit 2 ;;
 	esac
 
 	shift
@@ -302,6 +306,18 @@ if [ "${testRun}" = 0 ]; then
 	xcrun stapler staple "${dmg}" > /dev/null || fail "Stapling the disk image failed"
 fi
 
+# Build number first: release.json names the commit that has it (and the
+# feed shipped), not the one before
+
+if [ "${testRun}" = 0 ]; then
+	step "Committing build ${build}"
+
+	git -C "${ROOT}" commit -q -m "Build ${build} (${version}${channel:+ ${channel}})" -- "${VERSION_FILE}" "${ATLAS_FEED_FILE}" || fail "Committing build ${build} failed"
+
+	# Committed: a failure from here on keeps it (cleanUp would put the file back)
+	released=1
+fi
+
 # Handover for the website's appcast generator
 
 step "Writing release.json"
@@ -333,17 +349,16 @@ EOF
 
 plutil -convert xml1 -o /dev/null "${output}/release.json" || fail "release.json is not valid JSON"
 
-# Build number and tag
-
 if [ "${testRun}" = 0 ]; then
-	released=1
+	if [ "${tagRelease}" = 1 ]; then
+		step "Tagging v${version}-${build}"
 
-	step "Committing build ${build} and tagging v${version}-${build}"
+		git -C "${ROOT}" tag "v${version}-${build}"
 
-	git -C "${ROOT}" commit -q -m "Build ${build} (${version}${channel:+ ${channel}})" -- "${VERSION_FILE}" "${ATLAS_FEED_FILE}"
-	git -C "${ROOT}" tag "v${version}-${build}"
-
-	echo "Push when the release is published: git push && git push origin v${version}-${build}"
+		echo "Push when the release is published: git push && git push origin v${version}-${build}"
+	else
+		echo "Push when the release is published: git push"
+	fi
 fi
 
 step "Done"

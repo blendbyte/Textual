@@ -259,7 +259,7 @@ static NSCharacterSet *s_startCharacterSet = nil;
 /* For an address without a scheme: its host ends in a real top-level domain */
 + (BOOL)_hasRecognizedTopLevelDomain:(NSString *)url
 {
-	NSRange hostEnd = [url rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@":/?"]];
+	NSRange hostEnd = [url rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@":/?#"]];
 
 	NSString *host = ((hostEnd.location == NSNotFound) ? url : [url substringToIndex:hostEnd.location]).lowercaseString;
 

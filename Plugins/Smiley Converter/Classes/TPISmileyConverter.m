@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* Lower-cased smiley -> emoji. Replaced as a whole (atomic): lines are
  rendered on another queue while preferences change the table. */
 @property (atomic, copy, nullable) NSDictionary<NSString *, NSString *> *conversionTable;
+@property (atomic, copy, nullable) NSDictionary<NSString *, NSString *> *exactConversionTable; // :O and :o differ
 @property (nonatomic, strong) IBOutlet NSView *preferencesPane;
 
 - (IBAction)preferenceChanged:(nullable id)sender;
@@ -111,6 +112,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 
 	self.conversionTable = lowercaseTable;
+
+	self.exactConversionTable = conversionTable;
 }
 
 - (void)destroyConversionTable
@@ -143,8 +146,11 @@ NS_ASSUME_NONNULL_BEGIN
 		return newMessage;
 	}
 
+	/* Also from someone whose highlights are ignored */
 	if (lineType == TVCLogLineTypeAction ||
-		lineType == TVCLogLineTypePrivateMessage)
+		lineType == TVCLogLineTypeActionNoHighlight ||
+		lineType == TVCLogLineTypePrivateMessage ||
+		lineType == TVCLogLineTypePrivateMessageNoHighlight)
 	{
 		return [self convertStringToEmoji:newMessage];
 	}
@@ -161,6 +167,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSDictionary<NSString *, NSString *> *conversionTable = self.conversionTable;
 
+	NSDictionary<NSString *, NSString *> *exactConversionTable = self.exactConversionTable;
+
 	if (conversionTable.count == 0 || string.length == 0) {
 		return string;
 	}
@@ -170,7 +178,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSMutableArray<NSString *> *convertedWords = nil;
 
 	for (NSUInteger index = 0; index < words.count; index++) {
-		NSString *emoji = conversionTable[words[index].lowercaseString];
+		/* As typed first: the table gives :O and :o different emoji */
+		NSString *emoji = (exactConversionTable[words[index]] ?: conversionTable[words[index].lowercaseString]);
 
 		if (emoji == nil) {
 			continue;

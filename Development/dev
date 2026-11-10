@@ -263,7 +263,11 @@ soju_build() {
 # ZNC without Perl, Python, Tcl, translations or Argon2, OpenSSL built in:
 # only system libraries, for macOS 14 and later
 znc_build() {
-	[ -x "${BOUNCER_DIR}/znc/bin/znc" ] && return
+	# Its modules are found by the path it was built for: built for another
+	# account (TEXTUAL_VM_HOME), it is built again
+	if [ -x "${BOUNCER_DIR}/znc/bin/znc" ] && [ "$(cat "${BOUNCER_DIR}/znc/.prefix" 2> /dev/null)" = "${ZNC_VM_PREFIX}" ]; then
+		return
+	fi
 
 	command -v cmake > /dev/null || die "ZNC needs CMake (brew install cmake)"
 
@@ -294,6 +298,7 @@ znc_build() {
 	rm -rf "${BOUNCER_DIR}/znc"
 	mkdir -p "${BOUNCER_DIR}"
 	mv "${work}/stage${ZNC_VM_PREFIX}" "${BOUNCER_DIR}/znc"
+	echo "${ZNC_VM_PREFIX}" > "${BOUNCER_DIR}/znc/.prefix"
 	rm -rf "${work}"
 }
 

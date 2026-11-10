@@ -199,6 +199,11 @@ def result(passed, message):
 	print(f"RESULT: {'PASS' if passed else 'FAIL'}: {message}", flush=True)
 
 
+def check(message):
+	"""What the server can't tell: to be checked by looking at the client."""
+	print(f"CHECK: {message}", flush=True)
+
+
 # MARK: - Scenarios
 
 async def scenario_idle(client):
@@ -512,6 +517,25 @@ async def scenario_review_view(client):
 	await client.send(":alice!a@friend.test PRIVMSG #v :" + "a" * 40 + "b")
 	await client.send(":alice!a@friend.test PRIVMSG #v :copy me: &lt;b&gt;")
 	await client.send(":alice!a@friend.test PRIVMSG #v :the last line, after the hidden ones")
+
+	while await client.collect(3600):
+		pass
+
+
+async def scenario_review_plugins(client):
+	"""Plugins review. #p: alice sends :O and :o (Smiley Converter on: two
+	different emoji) and links with a fragment straight after the host. Type
+	/sysinfo there: the log shows what the client sends. Stays connected."""
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #p")
+	await client.send(f":{SERVER} 353 {me} = #p :{me} @alice")
+	await client.send(f":{SERVER} 366 {me} #p :End of /NAMES list.")
+	await client.collect(1)
+
+	await client.send(":alice!a@alice.test PRIVMSG #p :wow :O")
+	await client.send(":alice!a@alice.test PRIVMSG #p :hm :o")
+	await client.send(":alice!a@alice.test PRIVMSG #p :See https://example.com#section and example.com#top")
 
 	while await client.collect(3600):
 		pass
@@ -1309,7 +1333,7 @@ async def scenario_fin(client):
 
 	await client.send("ERROR :Closing Link: scripted test server is closing the connection")
 
-	result(True, "sent 5 lines and an ERROR, then closed; check #fin shows all of them and the server shows as disconnected")
+	check("sent 5 lines and an ERROR, then closed; check #fin shows all of them and the server shows as disconnected")
 
 
 async def scenario_znc_disconnect(client):
@@ -1504,7 +1528,7 @@ async def scenario_protocol_fixes(client):
 
 	await client.collect(75)
 
-	result(True, "sent; check #pf (4 users, friend3b, both batch lines, the stuck line after ~60 s) and the console (operator message twice)")
+	check("sent; check #pf (4 users, friend3b, both batch lines, the stuck line after ~60 s) and the console (operator message twice)")
 
 
 async def scenario_ison_split(client):
@@ -1567,7 +1591,7 @@ async def scenario_casemapping(client):
 
 	await client.collect(30)
 
-	result(True, "sent; #cm must list 2 users (Textual Dev and NICK{B})")
+	check("sent; #cm must list 2 users (Textual Dev and NICK{B})")
 
 
 async def scenario_channel_lookup(client):
@@ -1606,7 +1630,7 @@ async def scenario_channel_lookup(client):
 
 	await client.collect(30)
 
-	result(True, "sent; check #Chan[1] and the Robert query")
+	check("sent; check #Chan[1] and the Robert query")
 
 
 async def scenario_standard_replies(client):
@@ -1630,7 +1654,7 @@ async def scenario_standard_replies(client):
 
 	await client.collect(30)
 
-	result(True, "sent; check #sr and the console")
+	check("sent; check #sr and the console")
 
 
 async def scenario_sts(client):
@@ -3537,6 +3561,7 @@ SCENARIOS = {
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
+	"review-plugins": scenario_review_plugins,
 	"review-input": scenario_review_input,
 	"review-chat": scenario_review_chat,
 	"review-view": scenario_review_view,

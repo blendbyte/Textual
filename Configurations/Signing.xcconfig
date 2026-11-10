@@ -2,7 +2,7 @@
 //
 // Builds are signed with Blendbyte's Apple Development certificate;
 // release archives are exported with Developer ID
-// (Packaging/ExportArchiveConfiguration.plist).
+// (the export options are written by Scripts/release/Release.sh).
 //
 // To build without Blendbyte's certificates, create
 // Configurations/Signing.local.xcconfig (ignored by git), e.g.:

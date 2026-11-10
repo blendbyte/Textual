@@ -130,6 +130,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[RZUserDefaults() setObject:[filterConfigurations copy] forKey:_filterListUserDefaultsKey];
 
+	/* The change is told at once (or not at all, when nothing changed: then
+	 the flag stayed and the next change from elsewhere was ignored) */
+	self.savingFilters = NO;
+
 	[self reloadFilterCount];
 }
 
@@ -144,8 +148,6 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if ([keyPath isEqualToString:_filterListUserDefaultsKey]) {
 		if (self.savingFilters) {
-			self.savingFilters = NO;
-
 			return;
 		}
 

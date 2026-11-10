@@ -55,7 +55,7 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 @interface THOPluginManager ()
 @property (nonatomic, assign, readwrite) BOOL pluginsLoaded;
-@property (nonatomic, copy, readwrite, nullable) NSArray<THOPluginItem *> *loadedPlugins;
+@property (atomic, copy, readwrite, nullable) NSArray<THOPluginItem *> *loadedPlugins; // read on the plugin queue
 @property (nonatomic, copy, nullable) NSArray<NSBundle *> *obsoleteBundles;
 @property (nonatomic, copy, nullable) NSArray<NSBundle *> *unsupportedBundles;
 @property (nonatomic, assign) THOPluginItemSupportedFeature supportedFeatures;
@@ -243,7 +243,13 @@ NSString * const THOPluginManagerFinishedLoadingPluginsNotification = @"THOPlugi
 
 		BOOL pluginLoaded = [plugin loadBundle:bundle];
 
+		/* Its code didn't load: said, as for an addon made for an older Textual
+		 (right after the user agreed to load it, nothing said why it was gone) */
 		if (pluginLoaded == NO) {
+			if ([bundle.bundleIdentifier hasPrefix:@"com.codeux."] == NO) {
+				[obsoleteBundles addObject:bundle];
+			}
+
 			continue;
 		}
 
@@ -407,7 +413,24 @@ static NSString * const _thirdPartyPluginDecisionsDefaultsKey = @"THOPluginManag
 
 - (void)_unloadPlugins
 {
-	for (THOPluginItem *plugin in self.loadedPlugins) {
+	NSArray<THOPluginItem *> *loadedPlugins = self.loadedPlugins;
+
+	for (THOPluginItem *plugin in loadedPlugins) {
+		[plugin prepareForUnloading];
+	}
+
+	/* A callback still running on the plugin queue ends before the plugin is
+	 told it goes. Not without limit: a callback waiting for the main thread
+	 would wait forever. */
+	dispatch_semaphore_t queueDrained = dispatch_semaphore_create(0);
+
+	dispatch_async([THOPluginDispatcher dispatchQueue], ^{
+		dispatch_semaphore_signal(queueDrained);
+	});
+
+	(void)dispatch_semaphore_wait(queueDrained, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)));
+
+	for (THOPluginItem *plugin in loadedPlugins) {
 		[plugin unloadBundle];
 	}
 

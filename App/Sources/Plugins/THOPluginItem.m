@@ -77,10 +77,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)_loadBundle:(NSBundle *)bundle
 {
+	/* Its code first: built without arm64, or linking what Textual no longer has */
+	NSError *loadError = nil;
+
+	if ([bundle loadAndReturnError:&loadError] == NO) {
+		LogToConsoleError("Plugin '%{public}@' could not be loaded: %{public}@",
+			bundle.bundleIdentifier, loadError.localizedDescription);
+
+		return NO;
+	}
+
 	/* Initialize the principal class */
 	Class principalClass = bundle.principalClass;
 
 	if (principalClass == nil) {
+		LogToConsoleError("Plugin '%{public}@' has no principal class to load", bundle.bundleIdentifier);
+
 		return NO;
 	}
 
@@ -218,6 +230,12 @@ NS_ASSUME_NONNULL_BEGIN
 	self.primaryClass = primaryClass;
 
 	return YES;
+}
+
+- (void)prepareForUnloading
+{
+	/* No more calls from the plugin queue from here on */
+	self.unloading = YES;
 }
 
 - (void)unloadBundle

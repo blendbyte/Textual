@@ -48,8 +48,8 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterLimitToValue) {
 
 typedef NS_ENUM(NSUInteger, TPI_ChatFilterAgeComparator) {
 	TPI_ChatFilterAgeComparatorNone				= 0,
-	TPI_ChatFilterAgeComparatorLessThan			= 1, // Filter only executes if age of user is < limit
-	TPI_ChatFilterAgeComparatorGreaterThan		= 2 // Filter only executes if age of user is >= limit
+	TPI_ChatFilterAgeComparatorLessThan			= 1, // Filter does not apply if age of user is < limit
+	TPI_ChatFilterAgeComparatorGreaterThan		= 2 // Filter does not apply if age of user is >= limit
 };
 
 typedef NS_OPTIONS(NSUInteger, TPI_ChatFilterEventType) {

@@ -129,7 +129,9 @@ extern NSString * const THOPluginProtocolCompatibilityMinimumVersion;
  * @param lineType The line type of the message
  *
  *    Possible values: `TVCLogLineTypePrivateMessage`, `TVCLogLineTypeAction`,
- *           `TVCLogLineTypeNotice`
+ *           `TVCLogLineTypeNotice`, and `TVCLogLineTypePrivateMessageNoHighlight`
+ *           and `TVCLogLineTypeActionNoHighlight` for someone whose highlights
+ *           are ignored
  * @param client The client the message was received on
  * @param receivedAt The date & time of the message. Depending on whether a custom
  *    value was specified using the server-time IRCv3 capability, this `NSDate`
@@ -230,6 +232,9 @@ extern NSString * const THOPluginProtocolCompatibilityMinimumVersion;
  * @warning Under no circumstances should you insert HTML at this point. Doing so will result 
  *  in undefined behavior.
  *
+ * @warning This method is invoked on a background queue, not the main thread, and can run
+ *  on two queues at once. Don't touch AppKit or WebKit here.
+ *
  * @param newMessage An unedited copy of the message being rendered
  * @param viewController The view responsible for the event
  * @param lineType The line type of `newMessage`
@@ -271,6 +276,9 @@ extern NSString * const THOPluginProtocolCompatibilityMinimumVersion;
 /**
  * @brief Method invoked when a subscribed user input command requires processing.
  *
+ * @warning This method is invoked on a background dispatch queue, not the main thread.
+ *  Do anything with AppKit, WebKit or the selection on the main thread.
+ *
  * @param client The client responsible for the event
  * @param commandString The name of the command
  * @param messageString Data that follows `commandString`
@@ -285,6 +293,8 @@ extern NSString * const THOPluginProtocolCompatibilityMinimumVersion;
  *  -userInputCommandInvokedOnClient:commandString:messageString: when a plugin
  *  implements it. The selected channel may have changed by the time the plugin
  *  runs, so reply to `channel` rather than the selection.
+ *
+ * @warning This method is invoked on a background dispatch queue, not the main thread.
  *
  * @param client The client responsible for the event
  * @param channel The channel or query the command was entered in; nil for the
@@ -306,6 +316,8 @@ extern NSString * const THOPluginProtocolCompatibilityMinimumVersion;
 
 /**
  * @brief Method invoked when a subscribed server input command requires processing.
+ *
+ * @warning This method is invoked on a background dispatch queue, not the main thread.
  *
  * @param inputObject An instance of THOPluginDidReceiveServerInputConcreteObject
  * @param client The client responsible for the event

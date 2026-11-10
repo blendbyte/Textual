@@ -58,6 +58,15 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([text substringWithRange:[links.firstObject range]], @"https://www.textualapp.com/docs");
 }
 
+/* A fragment straight after the host, with or without a scheme */
+- (void)testLinkWithFragmentAfterHost
+{
+	NSArray *links = [TLOLinkParser locateLinksInString:@"See https://example.com#section and example.com#top"];
+
+	XCTAssertEqual(links.count, 2);
+	XCTAssertEqualObjects([links.firstObject stringValue], @"https://example.com#section");
+}
+
 - (void)testIRCLink
 {
 	NSArray *links = [TLOLinkParser locateLinksInString:@"Join us at irc://irc.libera.chat/#textual today"];

@@ -37,6 +37,7 @@
 #import <XCTest/XCTest.h>
 
 #import "IRCCommandIndex.h"
+#import "IRCCommandIndexPrivate.h"
 #import "TVCInputCompletionPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -139,6 +140,13 @@ NS_ASSUME_NONNULL_BEGIN
 /* The list shows what a command does */
 - (void)testEveryCommandHasADescription
 {
+	/* The hosted app skips the startup that fills the index: filled here, so
+	 the test doesn't depend on another one running first */
+	[IRCCommandIndex populateCommandIndex];
+	[IRCCommandIndex invalidateCaches];
+
+	XCTAssertGreaterThan([IRCCommandIndex localCommandList].count, 0);
+
 	for (NSString *command in [IRCCommandIndex localCommandList]) {
 		XCTAssertNotNil([TVCInputCompletion descriptionForCommand:command], @"%@", command);
 	}

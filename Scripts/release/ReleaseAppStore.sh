@@ -73,12 +73,14 @@ fi
 
 build=$(sed -n 's/^CURRENT_PROJECT_VERSION = //p' "${VERSION_FILE}")
 version=$(sed -n 's/^MARKETING_VERSION = //p' "${VERSION_FILE}")
-tag="v${version}-${build}"
+# The release is the commit Release.sh made ("Build <build> (…)"): Textual 8
+# keeps no tags until its public release
+releaseCommit=$(git log -1 --format=%H --grep="^Build ${build} (" HEAD)
+
+[ -n "${releaseCommit}" ] || fail "There is no commit for build ${build}; run Release.sh first"
 
 # Later changes to the release scripts themselves don't matter
-git rev-parse -q --verify "refs/tags/${tag}" > /dev/null || fail "There is no tag ${tag}; run Release.sh first"
-
-git diff --quiet "${tag}" HEAD -- . ':(exclude)Scripts/release' || fail "HEAD differs from the release ${tag}"
+git diff --quiet "${releaseCommit}" HEAD -- . ':(exclude)Scripts/release' || fail "HEAD differs from build ${build} ($(git rev-parse --short "${releaseCommit}"))"
 
 output="${TEXTUAL_RELEASE_DIR:-${HOME}/Textual Releases}/${version} (${build})/App Store"
 

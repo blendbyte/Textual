@@ -81,7 +81,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLIconFile</key>
-			<string>application</string>
+			<string>applicationIcon</string>
 			<key>CFBundleURLName</key>
 			<string>Internet Relay Chat</string>
 			<key>CFBundleURLSchemes</key>

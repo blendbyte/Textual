@@ -502,7 +502,7 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT body FROM messages WHERE is_self = 1"], own);
 	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT body FROM messages WHERE is_highlight = 1"], highlights);
 	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE time = %.0f", time.timeIntervalSince1970]]), first);
-	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE time = %.0f", [day dateByAddingTimeInterval:((10 * 60 * 60) + (7 * 60))].timeIntervalSince1970]]), older);
+	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE time = %.0f", [calendar dateBySettingHour:10 minute:7 second:0 ofDate:day options:0].timeIntervalSince1970]]), older); // wall-clock 10:07, as the importer sets it (a clock-change day has 23 or 25 hours)
 
 	XCTAssertEqual(importLogs(), 0);
 

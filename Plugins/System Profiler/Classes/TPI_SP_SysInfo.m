@@ -245,11 +245,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	BOOL showCPUModel = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> CPU Model"] == NO);
 
-#if TARGET_CPU_ARM64
-	BOOL showGPUModel = NO;
-#elif TARGET_CPU_X86_64
+	/* Apple silicon too: its graphics come from IOAccelerator */
 	BOOL showGPUModel = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> GPU Model"] == NO);
-#endif
 
 #if TPI_SP_SendsUptimeAndDiskSpace
 	BOOL showDiskInfo = ([RZUserDefaults() boolForKey:@"System Profiler Extension -> Feature Disabled -> Disk Information"] == NO);

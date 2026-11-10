@@ -95,7 +95,10 @@ NS_ASSUME_NONNULL_BEGIN
 	 know that there is a filter that will need it. */
 	TPI_ChatFilterLimitToValue filterLimitedToValue = filter.filterLimitedToValue;
 
-	if (filterLimitedToValue != TPI_ChatFilterLimitToValueNoLimit || filter.filterIgnoreOperators) {
+	/* No destination: a private notice with no query open (it goes to the
+	 console). Only a limit to channels or to private messages can't apply to it;
+	 "ignore operators" has no channel to look in and doesn't stop it. */
+	if (filterLimitedToValue == TPI_ChatFilterLimitToValueChannels || filterLimitedToValue == TPI_ChatFilterLimitToValuePrivateMessages) {
 		if (textDestination == nil && textAuthor.isServer == NO) {
 			LogToConsoleDebugWithSubsystem(THOPluginLoggingSubsystem(),
 				"textDestination == nil — Returning input instead of continuing with filter");

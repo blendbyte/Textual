@@ -65,6 +65,7 @@ typedef NS_OPTIONS(NSUInteger, THOPluginItemSupportedFeature) {
 @property (readonly, nullable) NSView *pluginPreferencesPaneView;
 
 - (BOOL)loadBundle:(NSBundle *)bundle;
+- (void)prepareForUnloading; // no more calls from the plugin queue
 - (void)unloadBundle;
 
 /* Every call into a plugin goes through here. A plugin that throws an

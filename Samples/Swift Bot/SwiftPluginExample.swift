@@ -79,17 +79,19 @@ class TPI_SwiftPluginExample: NSObject, THOPluginProtocol
 	@objc
 	let subscribedUserInputCommands = ["datetime"]
 
-	@objc
-	func userInputCommandInvoked(on client: IRCClient, command commandString: String, messageString: String)
+	/* With the channel the command was typed in: this runs on the plugin
+	 queue, where the selection may have moved on (and isn't to be read) */
+	@objc(userInputCommandInvokedOnClient:inChannel:commandString:messageString:)
+	func userInputCommandInvoked(on client: IRCClient, in channel: IRCChannel?, command commandString: String, messageString: String)
 	{
-		guard let selectedChannel = masterController().mainWindow.selectedChannel else {
+		guard let channel = channel else {
 			return
 		}
 
 		let formattedString = ("The current time is: \(formattedDateTimeString())")
 
 		performBlock(onMainThread: {
-			client.sendPrivmsg(formattedString, to: selectedChannel)
+			client.sendPrivmsg(formattedString, to: channel)
 		})
 	}
 
