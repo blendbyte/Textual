@@ -675,7 +675,7 @@
 		<key>indexValue</key>
 		<integer>5061</integer>
 		<key>arguments</key>
-		<string>[target]</string>
+		<string>[channel] &lt;nickname&gt; [reason]</string>
 	</dict>
 	<key>server</key>
 	<dict>

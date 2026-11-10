@@ -174,7 +174,7 @@
 				PRODUCT_NAME = SwiftPluginExample;
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftPluginExample-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
@@ -194,7 +194,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftPluginExample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				WRAPPER_EXTENSION = bundle;
 			};
 			name = Release;
@@ -202,6 +202,7 @@
 		1DEB911F08733D790010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -239,6 +240,7 @@
 		1DEB912008733D790010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;

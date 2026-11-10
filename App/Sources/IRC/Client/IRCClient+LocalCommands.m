@@ -234,6 +234,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandConn) : NSStringFromSelector(@selector(_handleLocalCommandConn:)),
 			@(IRCLocalCommandCtcp) : NSStringFromSelector(@selector(_handleLocalCommandCtcp:)),
 			@(IRCLocalCommandCtcpreply) : NSStringFromSelector(@selector(_handleLocalCommandCtcp:)),
+			@(IRCLocalCommandDcc) : NSStringFromSelector(@selector(_handleLocalCommandDcc:)),
 			@(IRCLocalCommandCycle) : NSStringFromSelector(@selector(_handleLocalCommandCycle:)),
 			@(IRCLocalCommandDebug) : NSStringFromSelector(@selector(_handleLocalCommandEcho:)),
 			@(IRCLocalCommandDefaults) : NSStringFromSelector(@selector(_handleLocalCommandDefaults:)),
@@ -286,7 +287,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandRaw) : NSStringFromSelector(@selector(_handleLocalCommandRaw:)),
 			@(IRCLocalCommandRecv) : NSStringFromSelector(@selector(_handleLocalCommandRecv:)),
 			@(IRCLocalCommandRejoin) : NSStringFromSelector(@selector(_handleLocalCommandCycle:)),
-			@(IRCLocalCommandRemove) : NSStringFromSelector(@selector(_handleLocalCommandClose:)),
+			@(IRCLocalCommandRemove) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
 			@(IRCLocalCommandServer) : NSStringFromSelector(@selector(_handleLocalCommandServer:)),
 			@(IRCLocalCommandSetcolor) : NSStringFromSelector(@selector(_handleLocalCommandSetcolor:)),
 			@(IRCLocalCommandSetqueryname) : NSStringFromSelector(@selector(_handleLocalCommandSetqueryname:)),
@@ -638,7 +639,7 @@ static NSUInteger _aliasDepth = 0;
 	}
 }
 
-/* CLOSE / REMOVE */
+/* CLOSE */
 - (void)_handleLocalCommandClose:(IRCLocalCommandContext *)context
 {
 	NSMutableAttributedString *stringIn = context.stringIn;
@@ -663,6 +664,12 @@ static NSUInteger _aliasDepth = 0;
 	}
 	
 	[worldController() destroyChannel:channel];
+}
+
+/* DCC */
+- (void)_handleLocalCommandDcc:(IRCLocalCommandContext *)context
+{
+	[[self fileTransferController] show:YES restorePosition:YES];
 }
 
 /* CONN */
@@ -1429,6 +1436,17 @@ static NSUInteger _aliasDepth = 0;
 		}
 
 		[self send:@"KICK", targetChannelName, nickname, reason, nil];
+	}
+
+	/* REMOVE: a forced part, on servers that have it (InspIRCd and others) */
+	if (commandNumeric == IRCLocalCommandRemove) {
+		NSString *reason = stringIn.string;
+
+		if (reason.length == 0) {
+			[self send:@"REMOVE", targetChannelName, nickname, nil];
+		} else {
+			[self send:@"REMOVE", targetChannelName, nickname, reason, nil];
+		}
 	}
 }
 

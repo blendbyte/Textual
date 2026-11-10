@@ -985,13 +985,13 @@
                                         <action selector="insertForegroundColorCharIntoTextBox:" target="j7v-mc-UwU" id="RB4-Kq-ziy"/>
                                     </connections>
                                 </menuItem>
-                                <menuItem title=" Grey" offStateImage="FormattingColor_14" tag="14" id="r0U-BE-Nuu">
+                                <menuItem title=" Gray" offStateImage="FormattingColor_14" tag="14" id="r0U-BE-Nuu">
                                     <modifierMask key="keyEquivalentModifierMask"/>
                                     <connections>
                                         <action selector="insertForegroundColorCharIntoTextBox:" target="j7v-mc-UwU" id="mKr-yg-A0i"/>
                                     </connections>
                                 </menuItem>
-                                <menuItem title=" Light Grey (Silver)" offStateImage="FormattingColor_15" tag="15" id="uI2-y4-Mub">
+                                <menuItem title=" Light Gray (Silver)" offStateImage="FormattingColor_15" tag="15" id="uI2-y4-Mub">
                                     <modifierMask key="keyEquivalentModifierMask"/>
                                     <connections>
                                         <action selector="insertForegroundColorCharIntoTextBox:" target="j7v-mc-UwU" id="WrN-Zd-u4L"/>
@@ -1450,13 +1450,13 @@
                                         <action selector="insertBackgroundColorCharIntoTextBox:" target="j7v-mc-UwU" id="v77-3W-2X3"/>
                                     </connections>
                                 </menuItem>
-                                <menuItem title=" Grey" offStateImage="FormattingColor_14" tag="14" id="Qjv-cy-whN">
+                                <menuItem title=" Gray" offStateImage="FormattingColor_14" tag="14" id="Qjv-cy-whN">
                                     <modifierMask key="keyEquivalentModifierMask"/>
                                     <connections>
                                         <action selector="insertBackgroundColorCharIntoTextBox:" target="j7v-mc-UwU" id="yEd-hH-HRp"/>
                                     </connections>
                                 </menuItem>
-                                <menuItem title=" Light Grey (Silver)" offStateImage="FormattingColor_15" tag="15" id="glT-A8-2O4">
+                                <menuItem title=" Light Gray (Silver)" offStateImage="FormattingColor_15" tag="15" id="glT-A8-2O4">
                                     <modifierMask key="keyEquivalentModifierMask"/>
                                     <connections>
                                         <action selector="insertBackgroundColorCharIntoTextBox:" target="j7v-mc-UwU" id="9Ot-er-ugQ"/>

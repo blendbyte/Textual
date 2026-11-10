@@ -439,8 +439,14 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* The alert below says the link connects and joins: once the user
+	 has agreed to it there, a new connection connects as well */
+	BOOL confirmedInAlert = NO;
+
 	if (existingClient != nil) {
 		BOOL mergeConnection = NO;
+
+		confirmedInAlert = YES;
 
 		if (channelListCount > 1) {
 			NSString *channelListFormatted = [channelList componentsJoinedByString:@", "];
@@ -528,7 +534,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[worldController() save];
 
-		if (connectWhenCreated) {
+		if (connectWhenCreated || confirmedInAlert) {
 			[client connect];
 		}
 

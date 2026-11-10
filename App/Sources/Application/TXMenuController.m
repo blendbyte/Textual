@@ -575,7 +575,7 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
-		case MTMainMenuQuery: // "Query"
+		case MTMainMenuQuery: // "Private Message"
 		{
 			[self showMainMenuItem:menuItem withSubmenu:self.mainMenuQueryMenu];
 
@@ -691,7 +691,7 @@ NS_ASSUME_NONNULL_BEGIN
 					} else if (c.isPrivateMessage) {
 						menuItem.title = TXTLS(@"BasicLanguage[hri-l0]");
 					} else if (c.isUtility) {
-						menuItem.title = TXTLS(@"BasicLanguage[hri-l0]");
+						menuItem.title = TXTLS(@"BasicLanguage[1f6-bg]");
 					}
 
 					break;

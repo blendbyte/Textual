@@ -594,7 +594,7 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Appearance" id="Apr-01-mnu">
                                     <items>
-                                        <menuItem title="System" tag="8050000" id="Apr-10-itm">
+                                        <menuItem title="Automatic" tag="8050000" id="Apr-10-itm">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="changeMainWindowAppearance:" target="267" id="Apr-20-act"/>
@@ -751,8 +751,8 @@ CA
                         <action selector="emptyAction:" target="267" id="Agc-rV-LPJ"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Query" tag="7" id="d6g-it-Teq">
-                    <menu key="submenu" title="Query" id="hfh-O1-XP3">
+                <menuItem title="Private Message" tag="7" id="d6g-it-Teq">
+                    <menu key="submenu" title="Private Message" id="hfh-O1-XP3">
                         <connections>
                             <outlet property="delegate" destination="267" id="m25-SC-w3J"/>
                         </connections>
@@ -1244,9 +1244,9 @@ CA
             </connections>
             <point key="canvasLocation" x="74" y="-168"/>
         </menu>
-        <menu title="Query" id="6uP-Kf-gUN" userLabel="Main Menu Query Menu">
+        <menu title="Private Message" id="6uP-Kf-gUN" userLabel="Main Menu Query Menu">
             <items>
-                <menuItem title="Close Query" tag="1800" id="VZM-IN-6jc">
+                <menuItem title="Close Private Message" tag="1800" id="VZM-IN-6jc">
                     <string key="keyEquivalent" base64-UTF8="YES">
 CA
 </string>
@@ -1263,7 +1263,7 @@ CA
                         <action selector="openChannelLogs:" target="267" id="Fgb-hr-F9e"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Mute Conversation" tag="1803" id="mTq-s3-c2m">
+                <menuItem title="Mute Private Message" tag="1803" id="mTq-s3-c2m">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="toggleMute:" target="267" id="mTq-a3-e7z"/>

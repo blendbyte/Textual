@@ -43,10 +43,10 @@
 "sup-q2" = "A link from outside Textual wants to connect you to irc.libera.chat and join #textual.";
 "sup-b1" = "Connect";
 "c7s-dq" = "OK";
-"w8p-a1" = "Load the plugin “%@”?";
-"w8p-a2" = "A plugin was added to Textual’s Extensions folder:\n%@\n\nPlugins can do anything Textual can, including reading your messages and passwords. Only load plugins from developers you trust.\n\nIf you don’t load it, Textual asks again next time; remove it from the Extensions folder to stop that.";
-"w8p-a3" = "This plugin changed since you allowed it:\n%@\n\nPlugins can do anything Textual can, including reading your messages and passwords. Only load plugins from developers you trust.";
-"w8p-a4" = "Load Plugin";
+"w8p-a1" = "Load the extension “%@”?";
+"w8p-a2" = "An extension was added to Textual’s Extensions folder:\n%@\n\nExtensions can do anything Textual can, including reading your messages and passwords. Only load extensions from developers you trust.\n\nIf you don’t load it, Textual asks again next time; remove it from the Extensions folder to stop that.";
+"w8p-a3" = "This extension changed since you allowed it:\n%@\n\nExtensions can do anything Textual can, including reading your messages and passwords. Only load extensions from developers you trust.";
+"w8p-a4" = "Load Extension";
 "w8p-a5" = "Don’t Load";
 "k3y-t1" = "Textual couldn’t save the %@ in the Keychain";
 "k3y-m1" = "%1$@ (error %2$d)\n\nIt is used until Textual quits, but won’t be remembered after that. Check the Textual items in Keychain Access, then enter it again.";
@@ -81,15 +81,15 @@
 "0kz-wd" = "Do you want to delete the selection?";
 "etl-ss" = "There is no undo and all data related to this server, except for logs, will be erased.";
 
-"3l6-3z" = "You have clicked a link that will connect you to “%1$@“ and join the channel %2$@";
-"mx1-qz" = "The connection named “%1$@“ is already configured to connect to this server address.
+"3l6-3z" = "You have clicked a link that will connect you to “%1$@” and join the channel %2$@";
+"mx1-qz" = "The connection named “%1$@” is already configured to connect to this server address.
 
 Do you want to add this channel to that connection or would you rather create a new connection?";
 "sl5-rf" = "Use Existing Connection";
 "xca-5h" = "Create New Connection";
 
-"pnc-ew" = "You have clicked a link that will connect you to “%1$@“ and join the channels: %2$@";
-"a9z-9f" = "The connection named “%1$@“ is already configured to connect to this server address.
+"pnc-ew" = "You have clicked a link that will connect you to “%1$@” and join the channels: %2$@";
+"a9z-9f" = "The connection named “%1$@” is already configured to connect to this server address.
 
 Do you want to add these channels to that connection or would you rather create a new connection?";
 "0hh-sl" = "Use Existing Connection";
@@ -101,10 +101,10 @@ Do you want to add these channels to that connection or would you rather create 
 "u5x-b5" = "Blowfish encryption and the Wiki-style Link Parser are no longer part of Textual, so this extension can’t be installed.";
 "u5x-b3" = "Move to Trash";
 "u5x-b4" = "Keep";
-"af6-45" = "The version of Textual that you are using is no longer compatible with these addons: %@";
-"45a-df" = "Please contact the developer of each addon to receive information on updating.
+"af6-45" = "The version of Textual that you are using is no longer compatible with these extensions: %@";
+"45a-df" = "Please contact the developer of each extension to receive information on updating.
 
-If you are the developer of one of these addons: In the Info.plist file of your project, set the value of the property “MinimumTextualVersion” to “%@“, then rebuild to check for any errors.";
+If you are the developer of one of these extensions: In the Info.plist file of your project, set the value of the property “MinimumTextualVersion” to “%@”, then rebuild to check for any errors.";
 "324-5d" = "Remind Me Next Launch";
 "0ik-o9" = "View Files";
 
@@ -133,11 +133,11 @@ If you are the developer of one of these addons: In the Info.plist file of your 
 "c4z-2b" = "Choose Different Style";
 
 "1fm-up" = "This action will save a copy of your configuration to a location of your choice";
-"syp-al" = "Please note that the following items cannot be exported: custom addons, file transfer download location, log location, and passwords.";
+"syp-al" = "Please note that the following items cannot be exported: your own extensions, file transfer download location, log location, and passwords.";
 "vun-f0" = "Save File";
 
 "itb-3x" = "This action will overwrite your configuration with the contents of a file you choose";
-"jsh-1a" = "Please note that the following items cannot be imported: custom addons, file transfer download location, log location, and passwords.";
+"jsh-1a" = "Please note that the following items cannot be imported: your own extensions, file transfer download location, log location, and passwords.";
 "502-6h" = "Choose File";
 
 "6hx-ni" = "Save";
@@ -164,8 +164,8 @@ Create this folder if it does not exist.";
 "b7o-v4" = "Textual can’t open the folder for your text files: it was moved, renamed or deleted.";
 "atn-1c" = "Choose the folder again in Settings › History › Text files.";
 
-"d22-76" = "A query named “%@“ already exists. Do you want to delete this query?";
-"61s-jc" = "There is no undo and all data related to this query, except for logs, will be erased.";
+"d22-76" = "A private message with “%@” already exists. Do you want to delete it?";
+"61s-jc" = "There is no undo and all data related to this private message, except for logs, will be erased.";
 
 "bi7-ah" = "Logging has been disabled because there is not enough space on your Mac";
 "v9e-jy" = "Logging will resume when there is free space available.";
@@ -173,9 +173,9 @@ Create this folder if it does not exist.";
 "m8b-58" = "Textual can’t verify the identity of the server “%@”";
 "85z-qw" = "The certificate for this server is invalid. You might be connecting to a server that is pretending to be “%@”, which could put your confidential information at risk. Would you like to connect to the server anyway?";
 
-"sfx-xx" = "Textual is using an encrypted connection to “%@“";
-"ihy-mz" = "Encryption with a digital certificate keeps information private as it’s sent to or from the server “%1$@“";
-"iun-45" = "Encryption with a digital certificate keeps information private as it’s sent to or from the server “%1$@“
+"sfx-xx" = "Textual is using an encrypted connection to “%@”";
+"ihy-mz" = "Encryption with a digital certificate keeps information private as it’s sent to or from the server “%1$@”";
+"iun-45" = "Encryption with a digital certificate keeps information private as it’s sent to or from the server “%1$@”
 
 Information encrypted using: %2$@";
 

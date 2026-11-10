@@ -37,10 +37,10 @@
 
 "jq1-6r" = "Chat Filter";
 
-"yla-he" = "Performing action defined by the filter “%1$@“ against the user “%2$@“";
-"jcm-xj" = "Performing action defined by the filter “%1$@“ against the user “%2$@“ in the channel “%3$@“";
+"yla-he" = "Performing action defined by the filter “%1$@” against the user “%2$@”";
+"jcm-xj" = "Performing action defined by the filter “%1$@” against the user “%2$@” in the channel “%3$@”";
 
-"dka-bx" = "Filter “%@“";
+"dka-bx" = "Filter “%@”";
 
 "c0k-xj" = "Are you sure that you want to delete this filter?";
 "dj6-fn" = "There is no undo and all data related to this filter will be erased.";

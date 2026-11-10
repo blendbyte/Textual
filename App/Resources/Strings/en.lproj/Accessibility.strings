@@ -55,7 +55,7 @@
 "75f-og" = "Channel %@, Channel Joined";
 "edc-7o" = "Channel %@, Channel Not Joined";
 
-"9sn-xp" = "Query with User %@";
+"9sn-xp" = "Private message with %@";
 "s5c-e1" = "Could Not Join";
 "s5c-u2" = "1 Unread Message";
 "s5c-u3" = "%lu Unread Messages";

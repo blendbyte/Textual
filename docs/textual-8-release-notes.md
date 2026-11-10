@@ -45,7 +45,7 @@ Textual 8 keeps a searchable archive of your conversations and adds replies, rea
 - Server › Add Bouncer… checks the login step by step and lists the bouncer's networks to add.
 - View › Group Servers by Bouncer puts each bouncer's networks under a heading you can fold, drag, connect or disconnect.
 - Edit Bouncer… changes the address or login for all its networks, and can log in with a certificate instead of keeping your password.
-- Textual tells you when networks are added to or removed from your bouncer. It never changes anything on the bouncer.
+- Textual tells you when networks are added to or removed from your bouncer. It never adds or removes networks there; certificate login sets up one certificate on the bouncer, and only when you choose it.
 
 ## IRCv3
 
@@ -78,7 +78,7 @@ These depend on the network. Where a network doesn't pass on replies or reaction
 
 - A unified title bar: the server list's and member list's color runs up into it, for everyone.
 - ⌘D finds menu commands as well as channels.
-- The Channel List and File Transfers windows are rebuilt and say in plain words what they're doing.
+- The Browse Channels and File Transfers windows are rebuilt and say in plain words what they're doing.
 - VoiceOver reads more of both lists.
 
 ## Settings

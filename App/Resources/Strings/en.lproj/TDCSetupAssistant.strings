@@ -79,7 +79,7 @@
 "sa-l-classic-d" = "A time and name on every line. Fits more on screen.";
 "sa-l-classic-only" = "This style only has the Classic display: a name on every line.";
 "sa-l-ap-t" = "Appearance";
-"sa-l-ap-d" = "Like the Mac follows your Mac, switching at night if it’s set to.";
+"sa-l-ap-d" = "Automatic follows your Mac, switching at night if it’s set to.";
 "sa-l-size-t" = "Text size";
 "sa-l-size-d" = "The size of messages in the chat.";
 "sa-l-s12" = "Small";
@@ -103,10 +103,10 @@
 "sa-c-ev-t" = "Joins, parts and quits";
 "sa-c-ev-d" = "People entering and leaving a channel";
 "sa-c-ev0" = "Show";
-"sa-c-ev1" = "Collapse";
+"sa-c-ev1" = "Combine";
 "sa-c-ev2" = "Hide";
 "sa-c-ev-x1" = "On IRC, people connect and disconnect all day, and each one is normally announced. In a busy channel these lines can outnumber the conversation.";
-"sa-c-ev-x2" = "Collapse folds them into one quiet line you can open. Hide removes them, so you won’t see who just left. Show gives each its own line.";
+"sa-c-ev-x2" = "Combine folds them into one quiet line you can open. Hide removes them, so you won’t see who just left. Show gives each its own line.";
 "sa-c-ev-sample" = "1 joined, 2 left ›";
 "sa-c-sug-t" = "Suggestions while typing";
 "sa-c-sug-d" = "A small list as you type a name or command";
@@ -128,11 +128,11 @@
 "sa-c-inp0" = "Whole window";
 "sa-c-inp1" = "Chat only";
 "sa-c-inp-x1" = "Whole window runs the message field across the bottom, for long lines. Chat only keeps it under the conversation, so the server and member lists reach the bottom of the window.";
-"sa-c-arr-t" = "Two channels at once";
-"sa-c-arr-d" = "Select two in the list to see both";
+"sa-c-arr-t" = "Several channels at once";
+"sa-c-arr-d" = "Select more than one in the list to see them together";
 "sa-c-arr0" = "Stacked";
 "sa-c-arr1" = "Side by side";
-"sa-c-arr-x1" = "Select two channels in the server list and Textual shows them together. This decides how they’re arranged. Most people never need it, so the default is fine.";
+"sa-c-arr-x1" = "Select several channels in the server list and Textual shows them together. This decides how they’re arranged. Most people never need it, so the default is fine.";
 
 "sa-p-title" = "What Textual fetches and keeps";
 "sa-p-lead" = "Most of Textual stays between you and the network. These are the choices where something else is involved.";

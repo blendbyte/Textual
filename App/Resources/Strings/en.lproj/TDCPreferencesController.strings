@@ -124,22 +124,22 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-l-files" = "Downloads, uploads and sending files directly.";
 "set-l-servers" = "Defaults for new servers, and how Textual joins channels.";
 "set-l-commands" = "Your own commands, and how commands behave.";
-"set-l-extensions" = "Addons and scripts add commands and features.";
+"set-l-extensions" = "Extensions and scripts add commands and features.";
 "set-l-advanced" = "For style makers and special cases.";
 
 "set-k-general" = "updates beta quit sleep awake away display links browser background close window cmd-w copy select";
-"set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface spacing compact roomy";
+"set-k-appearance" = "light dark mode style theme font size chat classic display translucent sidebar layout side by side stacked right-to-left rtl interface spacing compact roomy automatic system";
 "set-k-messages" = "time timestamp format nickname names colors colored mode symbol date marker unread read joins parts quits events collapse formatting zalgo motd welcome incoming topic kicks";
 "set-k-typing" = "input field suggestions completion tab markdown spelling grammar autocorrect text size history action typing width chat window keyboard emoji";
 "set-k-notifications" = "alerts sounds dock badge bounce speak speech muted banner";
 "set-k-highlights" = "highlight words keywords mentions nickname exclude regular expression regex mass";
 "set-k-previews" = "inline media images videos cards youtube links sites audio";
-"set-k-history" = "archive scrollback keep messages delete import text logs transcripts restore behavior private queries";
+"set-k-history" = "archive scrollback keep messages delete import text logs transcripts restore behavior private messages queries";
 "set-k-lists" = "server list member list user list channels sort sorted alphabetical order name double-click connect disconnect colors badges staff operators navigation";
 "set-k-files" = "downloads uploads dcc file transfers paste dpaste ports address passive reverse";
 "set-k-servers" = "nickname username real name identity invite kick rejoin join delay flood control who away ctcp";
 "set-k-commands" = "aliases msg notices amsg away nick clearall kick ban operator kill gline shun command scope";
-"set-k-extensions" = "addons plugins scripts applescript";
+"set-k-extensions" = "extensions addons plugins scripts applescript";
 "set-k-advanced" = "css custom style reload lines memory hidden developer mode web inspector warnings don’t ask again reset troubleshooting";
 
 "set-gen-u" = "Updates";
@@ -232,7 +232,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-cmd-aa" = "Add Alias";
 "set-cmd-ah" = "Type /name to run what is written next to it, on any server. $1 to $9 are the words typed after the name, $1- is everything from the first word on; $nick is your nickname, $channel the current channel, $server the server. Separate several commands with ; (\\; for a semicolon).";
 "set-cmd-h2" = "Commands";
-"set-cmd-m" = "/msg switches to the conversation";
+"set-cmd-m" = "/msg switches to the private message";
 "set-cmd-mh" = "After “/msg alice hi”, the private message with alice is selected.";
 "set-cmd-n" = "Notices go to";
 "set-cmd-n0" = "The server console";
@@ -284,14 +284,14 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-fil-v" = "Passive transfers";
 "set-fil-vh" = "The other side waits for the connection instead, for when your router blocks incoming ones.";
 
-"set-ext-h1" = "Addon settings";
-"set-ext-h2" = "Commands from addons and scripts";
-"set-ext-n" = "No addons or scripts installed.";
+"set-ext-h1" = "Extension settings";
+"set-ext-h2" = "Commands from extensions and scripts";
+"set-ext-n" = "No extensions or scripts installed.";
 "set-ext-o" = "Open Folder";
 "set-ext-f" = "Scripts folder";
 "set-ext-fh" = "Put AppleScripts or other scripts here to use them as commands.";
-"set-ext-fa" = "Addons folder";
-"set-ext-fah" = "Put addons (.bundle) here. They load the next time Textual starts.";
+"set-ext-fa" = "Extensions folder";
+"set-ext-fah" = "Put extensions (.bundle) here. They load the next time Textual starts.";
 
 "set-adv-h1" = "Styles";
 "set-adv-c" = "Custom CSS";
@@ -311,16 +311,16 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-adv-wd" = "Done: they show again.";
 "set-adv-we" = "Show Again";
 "set-adv-x" = "Reset Textual";
-"set-adv-xh" = "Starts again like the first time, with the setup. Your licence, saved passwords, your own styles and addons, and text log files are kept.";
-"set-adv-xhs" = "Starts again like the first time, with the setup. Saved passwords, your own styles and addons, and text log files are kept.";
+"set-adv-xh" = "Starts again like the first time, with the setup. Your license, saved passwords, your own styles and extensions, and text log files are kept.";
+"set-adv-xhs" = "Starts again like the first time, with the setup. Saved passwords, your own styles and extensions, and text log files are kept.";
 "set-adv-xb" = "Reset…";
 "set-adv-x1" = "Reset Textual and start over?";
-"set-adv-x2" = "Your servers, settings, message archive and scrollback are deleted, and Textual starts again with the setup, as the first time. Your licence, saved passwords, your own styles and addons, and text log files are kept.\n\nThis can’t be undone.";
-"set-adv-x2s" = "Your servers, settings, message archive and scrollback are deleted, and Textual starts again with the setup, as the first time. Saved passwords, your own styles and addons, and text log files are kept.\n\nThis can’t be undone.";
+"set-adv-x2" = "Your servers, settings, message archive and scrollback are deleted, and Textual starts again with the setup, as the first time. Your license, saved passwords, your own styles and extensions, and text log files are kept.\n\nThis can’t be undone.";
+"set-adv-x2s" = "Your servers, settings, message archive and scrollback are deleted, and Textual starts again with the setup, as the first time. Saved passwords, your own styles and extensions, and text log files are kept.\n\nThis can’t be undone.";
 "set-adv-x3" = "Reset and Restart";
 
 /* Settings › Appearance */
-"set-app-a0" = "Like the Mac";
+"set-app-a0" = "Automatic";
 "set-app-a1" = "Light";
 "set-app-a2" = "Dark";
 "set-app-h1" = "Style";
@@ -333,7 +333,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-app-cf" = "font";
 "set-sam-1" = "Good morning, everyone";
 "set-sam-2" = "A second line right after the first";
-"set-sam-3" = "Morning! Different names get different colours";
+"set-sam-3" = "Morning! Different names get different colors";
 "set-sam-4" = "This line mentions you and stands out";
 "set-sam-5" = "waves at the channel";
 "set-sam-6" = "A notice to the channel";
@@ -371,7 +371,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-sty-Lumen" = "New in Textual 8. Calm and roomy, light and dark.";
 "set-sty-Simplified" = "Textual 7’s default. Light and dark.";
 "set-sty-Tomorrow" = "Soft colors, light and dark.";
-"set-sty-Equinox" = "Grey, with gentle highlights.";
+"set-sty-Equinox" = "Gray, with gentle highlights.";
 "set-sty-Sapientia" = "Warm, with a colon after names.";
 "set-sty-Total Sublime" = "Dark, like a code editor.";
 "set-sty-Astria" = "Bright colors on black.";

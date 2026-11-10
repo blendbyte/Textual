@@ -36,7 +36,7 @@
  *********************************************************************** */
 
 /* Script errors */
-"d3c-9b" = "The command \002%@\002 is defined by a plugin and a script. Ignoring command because of inability to determine priority.";
+"d3c-9b" = "The command \002%@\002 is defined by an extension and a script. Ignoring command because of inability to determine priority.";
 
 "ax0-mt" = "Script Execution Failure: %@";
 "2mc-h0" = "Script Execution Failure (%1$@: %2$@): %3$@";
@@ -163,22 +163,22 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 
 /* /timer/ command */
 "jj9-94" = "Invalid Syntax. Type “/timer help” for more information.";
-"327-pv" = "Timer interval must be a whole number that is grater than zero (0). Type “/timer help” for more information.";
-"eud-kc" = "Timer repeat count must be a whole number that is grater than or equal to zero (0). Type “/timer help” for more information.";
-"p6l-o4" = "Timer identifier is not properly formatted. Type “/timer list“ for a list of timers.";
-"vzu-xh" = "Timer with identifier “%@“ does not exist. Type “/timer list“ for a list of timers.";
-"ax6-n9" = "Timer with identifier “%@“ is already stopped";
-"hs0-up" = "Timer with identifier “%@“ stopped";
-"dgp-d4" = "Timer with identifier “%@“ can’t be restarted. Add a new timer.";
-"qb7-mi" = "Timer with identifier “%@“ restarted";
-"p7s-is" = "Timer with identifier “%@“ removed";
+"327-pv" = "Timer interval must be a whole number that is greater than zero (0). Type “/timer help” for more information.";
+"eud-kc" = "Timer repeat count must be a whole number that is greater than or equal to zero (0). Type “/timer help” for more information.";
+"p6l-o4" = "Timer identifier is not properly formatted. Type “/timer list” for a list of timers.";
+"vzu-xh" = "Timer with identifier “%@” does not exist. Type “/timer list” for a list of timers.";
+"ax6-n9" = "Timer with identifier “%@” is already stopped";
+"hs0-up" = "Timer with identifier “%@” stopped";
+"dgp-d4" = "Timer with identifier “%@” can’t be restarted. Add a new timer.";
+"qb7-mi" = "Timer with identifier “%@” restarted";
+"p7s-is" = "Timer with identifier “%@” removed";
 "808-bs" = "All timers removed";
 "pqk-5k" = "There are no timers";
 "q1m-1e" = "There are %ld timers:";
 "6ts-oi" = "There is %ld timer:";
 
-"4n6-2x" = "\002ID:\002 %1$@ • \002Status:\002 %2$@ • \002Interval:\002 %3$@ • \002Next Fire:\002 %4$@ • \002Command:\002 “%5$@“";
-"uw0-v2" = "\002ID:\002 %1$@ • \002Status:\002 %2$@ • \002Interval:\002 %3$@ • \002Next Fire:\002 %4$@ • \002Repeat:\002 Yes • \002Repeat Limit:\002 %5$@ • \002Iteration:\002 %6$ld • \002Command:\002 “%7$@“";
+"4n6-2x" = "\002ID:\002 %1$@ • \002Status:\002 %2$@ • \002Interval:\002 %3$@ • \002Next Fire:\002 %4$@ • \002Command:\002 “%5$@”";
+"uw0-v2" = "\002ID:\002 %1$@ • \002Status:\002 %2$@ • \002Interval:\002 %3$@ • \002Next Fire:\002 %4$@ • \002Repeat:\002 Yes • \002Repeat Limit:\002 %5$@ • \002Iteration:\002 %6$ld • \002Command:\002 “%7$@”";
 "bhz-9e" = "Active";
 "ww4-sn" = "Stopped";
 "o26-ae" = "No Limit";
@@ -186,11 +186,11 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 "xkq-rt" = "The timer command can be used to perform a command after a specific amount of time and optionally repeat it.
 
 To learn more, type:
-	“/timer help <topic>“
+	“/timer help <topic>”
 
 Available topics: ADD, REMOVE, LIST, STOP, RESTART";
 
-"6r0-il" = "“/timer <seconds> <repeat> <command>“
+"6r0-il" = "“/timer <seconds> <repeat> <command>”
 
 \002<seconds>\002 is the interval of the timer.
 The interval must be a \002whole number that is greater than zero (0)\002.
@@ -202,23 +202,23 @@ The interval must be a \002whole number that is greater than zero (0)\002.
 
 \002<command>\002 is the command to perform when the timer fires.
 \002Example:\002 “msg #textual-testing Hey everyone!”
-\002Scope:\002 The channel or query that is selected when a timer is added is used as the target for commands that do not take a channel name as an argument.
+\002Scope:\002 The channel or private message that is selected when a timer is added is used as the target for commands that do not take a channel name as an argument.
 
 \002Example #1:\002 “/timer 10 1 <command>” — perform command one time, after ten seconds.
 \002Example #2:\002 “/timer 10 20 <command>” — perform command twenty times, once every ten seconds.
 \002Example #3:\002 “/timer 10 0 <command>” — perform command every ten seconds until the heat death of the universe.";
 
-"x1n-ve" = "“/timer list“
+"x1n-ve" = "“/timer list”
 
 List timers";
 
-"bx2-n1" = "“/timer stop <identifier>“
+"bx2-n1" = "“/timer stop <identifier>”
 
 Stop the timer assigned to \002<identifier>\002.
 
 The identifier for a timer can be found using “/timer list”";
 
-"r27-tv" = "“/timer restart <identifier>“
+"r27-tv" = "“/timer restart <identifier>”
 
 Restart the timer assigned to \002<identifier>\002.
 
@@ -228,7 +228,7 @@ When restarting a timer, the iteration count is reset
 which means a timer that is setup to repeat X number
 of times will start over from the beginning.";
 
-"i2d-x5" = "“/timer remove <identifier>“
+"i2d-x5" = "“/timer remove <identifier>”
 
 Remove the timer assigned to \002<identifier>\002.
 
@@ -240,7 +240,7 @@ The identifier for a timer can be found using “/timer list”";
 
 /* /setcolor/ command */
 "026-qv" = "This command needs colored nicknames: turn on \002Colored nicknames\002 in \002Settings › Messages\002.";
-"8dy-6f" = "Cannot set color for “%@“ because that does not appear to be a valid nickname.";
+"8dy-6f" = "Cannot set color for “%@” because that does not appear to be a valid nickname.";
 
 /* /tage/ command */
 "v9x-18" = "\002Time Since First Commit:\002 %@";
@@ -257,11 +257,11 @@ The identifier for a timer can be found using “/timer list”";
 "w05-ph" = "\0034\002Please take notice:\002\003 The preference labeled “Prefer IPv4”, which you had enabled, no longer exists. \002IPv6 has been disabled for this connection\002 to offer you similar behavior. See the \002Network Socket\002 section of \002Server Properties\002 to change which protocols are enabled (IPv4 and/or IPv6).";
 
 /* Common command errors */
-"atq-93" = "Invalid syntax: “%@“";
-"pxa-ox" = "Cannot find channel named “%@“";
+"atq-93" = "Invalid syntax: “%@”";
+"pxa-ox" = "Cannot find channel named “%@”";
 "zef-q9" = "One or more arguments are not properly formatted for this command.";
 "g01-qn" = "This command can only be used with a channel.";
-"m6o-z1" = "This command can only be used with a query.";
+"m6o-z1" = "This command can only be used in a private message.";
 "sxf-qx" = "This command cannot be used within this window.";
 "z2r-sd" = "Messages cannot be sent to this window.";
 
@@ -314,8 +314,8 @@ The identifier for a timer can be found using “/timer list”";
 "fxw-5s" = "%1$@ is now known as \002%2$@\002";
 "rr6-yo" = "You’re now known as \002%@\002";
 "53b-dm" = "\002%1$@\002 (%2$@@%3$@) left IRC";
-"8bk-mx" = "\002%1$@\002 left the query by disconnecting from IRC";
-"q0q-ch" = "\002%1$@\002 joined the query by connecting to IRC";
+"8bk-mx" = "\002%1$@\002 disconnected from IRC";
+"q0q-ch" = "\002%1$@\002 connected to IRC";
 "ipj-34" = "%@, your user modes are \002%@\002";
 "wk4-rv" = "Inviting %1$@ to join %2$@";
 "qw4-t3" = "%1$@!%2$@@%3$@ invited you to join %4$@";
@@ -331,7 +331,7 @@ The identifier for a timer can be found using “/timer list”";
 "ty9-1a" = "%@ is typing";
 "ty9-2b" = "%1$@ and %2$@ are typing";
 "ty9-3c" = "%lu people are typing";
-"sc7-v1" = "The server could not prove it knows your password (%@ signature mismatch); authentication was cancelled";
+"sc7-v1" = "The server could not prove it knows your password (%@ signature mismatch); authentication was canceled";
 "sc7-v2" = "The server reported a successful login without proving it knows your password (%@); Textual disconnected";
 "c1h-fq" = "%1$@ is away (%2$@)";
 "6bh-br" = "You are now an IRC Operator on %@";
@@ -353,7 +353,7 @@ The identifier for a timer can be found using “/timer list”";
 "3oa-mv" = "%1$@ is connected from %2$@ (%3$@)";
 "3oa-m4" = "%1$@ is connected from %2$@";
 "x69-rz" = "%1$@ was connected from %2$@ (%3$@)";
-"js3-9v" = "Cannot use nickname “%@“ — Trying another…";
+"js3-9v" = "Cannot use nickname “%@” — Trying another…";
 
 /* One-line descriptions in the completion list after "/" */
 "cmd-alias" = "Make your own command, or list yours";
@@ -376,7 +376,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-ctcp" = "Send a client-to-client request";
 "cmd-ctcpreply" = "Answer a client-to-client request";
 "cmd-cycle" = "Leave and rejoin this channel";
-"cmd-dcc" = "File transfers";
+"cmd-dcc" = "Open the File Transfers window";
 "cmd-debug" = "Print a message in this view only";
 "cmd-defaults" = "Turn a hidden setting on or off";
 "cmd-dehalfop" = "Take half-operator status (-h)";
@@ -404,7 +404,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-leave" = "Leave this channel";
 "cmd-list" = "List the server’s channels";
 "cmd-locops" = "Send a message to this server’s operators";
-"cmd-m" = "Send a message to someone";
+"cmd-m" = "Show or change modes";
 "cmd-me" = "Send an action (“* you waves”)";
 "cmd-mode" = "Show or change modes";
 "cmd-monitor" = "Show whom you follow online and offline";
@@ -435,7 +435,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-rejoin" = "Leave and rejoin this channel";
 "cmd-remove" = "Remove someone from the channel (if the server allows)";
 "cmd-server" = "Connect to another server";
-"cmd-setcolor" = "Choose the colour of a nickname";
+"cmd-setcolor" = "Choose the color of a nickname";
 "cmd-setname" = "Change your real name while connected";
 "cmd-setqueryname" = "Rename this private message";
 "cmd-shun" = "Silence someone on the network (shun)";
@@ -525,8 +525,8 @@ The identifier for a timer can be found using “/timer list”";
 "tmr-g1" = "A timer’s channel no longer exists, so its command “%@” was not run and the timer was removed.";
 "dc-r1" = "Refused a connection for “%1$@” from %2$@: that isn’t the address %3$@ is connected from.";
 "dc-e1" = "“%@” is empty, so it wasn’t sent.";
-"qry-l1" = "More than %lu people started a private conversation within a minute. Messages from new nicknames go to this console for the rest of the minute.";
-"qry-l2" = "This server has more than %lu channels and private conversations. Private messages from new nicknames now go to this console.";
+"qry-l1" = "More than %lu new people sent you private messages within a minute. Messages from new nicknames go to this console for the rest of the minute.";
+"qry-l2" = "This server has more than %lu channels and private messages. Private messages from new nicknames now go to this console.";
 "sp-n1" = "This connection doesn’t use TLS, so the login password is sent unencrypted.";
 "mlc-t" = "Run these lines as commands?";
 "mlc-b" = "Some of these lines start with “/”, so they would run as commands.";

@@ -108,7 +108,7 @@ Development/dev reset                # delete Textual Dev's data
 |---|---|---|
 | `TX` | Application core | `TXMasterController`, `TXMenuController`, `TXSharedApplication` |
 | `TVC` | Views and their controllers | `TVCMainWindow`, `TVCLogController`, `TVCServerList` |
-| `TDC` | Dialogs and sheets | `TDCServerPropertiesSheet`, `TDCPreferencesController`, `TDCAlert` |
+| `TDC` | Dialogs and sheets | `TDCServerPropertiesSheet`, `TDCSettingsWindowController`, `TDCAlert` |
 | `TPC` | Preferences, themes, paths and resources | `TPCPreferences`, `TPCTheme`, `TPCPathInfo` |
 | `TLO` | Services used across the app | `TLONotificationController`, `TLOLicenseManager`, `TLOFileLogger` |
 | `THO` | Plugin architecture | `THOPluginManager`, `THOPluginDispatcher`, `THOPluginProtocol` |

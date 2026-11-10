@@ -200,12 +200,14 @@
 		1DEB911F08733D790010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Debug;
 		};
 		1DEB912008733D790010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Release;
 		};

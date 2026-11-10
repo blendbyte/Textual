@@ -162,7 +162,7 @@ NSString * const TXSystemAppearanceChangedNotification = @"TXSystemAppearanceCha
 
 	TXPreferredAppearance preferredAppearance = [TPCPreferences appearance];
 
-	/* Like the Mac: the app's own appearance goes first, as the Mac's is read
+	/* Automatic: the app's own appearance goes first, as the Mac's is read
 	 through it (it was set to Light or Dark below) */
 	if (preferredAppearance == TXPreferredAppearanceInherited && NSApp.appearance != nil) {
 		NSApp.appearance = nil;
