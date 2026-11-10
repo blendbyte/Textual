@@ -2771,6 +2771,30 @@ async def scenario_query_info(client):
 		pass
 
 
+async def scenario_query_scroll(client):
+	"""A private message longer than the window, with the bar of shared channels:
+	alice (in #one with you) sends 60 lines. Selecting the query, or going back to
+	it from #one, shows its last line at the bottom. Stays connected."""
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #one")
+	await client.send(f":{SERVER} 353 {me} = #one :{me} @alice dave")
+	await client.send(f":{SERVER} 366 {me} #one :End of /NAMES list.")
+
+	await client.collect(2)
+
+	for number in range(60):
+		await client.send(f":alice!a@alice.test PRIVMSG {me} :query line {number}")
+
+	await client.send(f":alice!a@alice.test PRIVMSG {me} :the last line")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_media(client):
 	"""Real links for inline media (turn previews on; the VM needs internet):
 	#media gets a JPEG, a PNG, a WebP, an image behind a redirect, a plain-HTTP
@@ -3565,6 +3589,7 @@ SCENARIOS = {
 	"review-plugins": scenario_review_plugins,
 	"review-input": scenario_review_input,
 	"review-chat": scenario_review_chat,
+	"query-scroll": scenario_query_scroll,
 	"review-view": scenario_review_view,
 	"links": scenario_links,
 	"nickserv-spoof": scenario_nickserv_spoof,
@@ -3614,7 +3639,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-chat", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-chat", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

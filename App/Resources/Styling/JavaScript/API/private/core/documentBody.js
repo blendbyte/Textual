@@ -174,7 +174,18 @@ _Textual._queryInfoBarResized = function() /* PRIVATE */
 
 	var height = topicBar.offsetHeight;
 
-	documentBody.style.maxHeight = ((height > 0) ? ("calc(100% - " + height + "px)") : "");
+	var maxHeight = ((height > 0) ? ("calc(100% - " + height + "px)") : "");
+
+	if (documentBody.style.maxHeight === maxHeight) {
+		return;
+	}
+
+	documentBody.style.maxHeight = maxHeight;
+
+	/* The chat loses (or gets back) room at its top while its bottom stays put,
+	 and there's no scroll event for it: a view that was at the bottom would
+	 have its last lines under the bar, more of them the taller the bar is */
+	TextualScroller.restoreScrolledToBottom();
 };
 
 Textual.setTopicBarVisible = function(isVisible) /* PUBLIC */
