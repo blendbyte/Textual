@@ -95,8 +95,6 @@ static NSString * const IRCStrictTransportSecurityTestsSuite = @"IRCStrictTransp
 	XCTAssertEqual([self.policies portForHost:@"irc.example.net" atDate:[received dateByAddingTimeInterval:59]], 6697);
 
 	XCTAssertEqual([self.policies portForHost:@"irc.example.net" atDate:[received dateByAddingTimeInterval:61]], 0);
-
-	XCTAssertEqual([self.policies portForHost:@"irc.example.net" atDate:received], 0, @"An expired policy is removed");
 }
 
 /* The countdown runs from when a connection closes, also when the session outlasted the policy */
@@ -105,6 +103,9 @@ static NSString * const IRCStrictTransportSecurityTestsSuite = @"IRCStrictTransp
 	NSDate *received = [NSDate dateWithTimeIntervalSince1970:1000000];
 
 	[self.policies storePolicyForHost:@"irc.example.net" port:6697 duration:60 atDate:received];
+
+	/* Looked up during the session (/sts does): expired, but not forgotten */
+	XCTAssertEqual([self.policies portForHost:@"irc.example.net" atDate:[received dateByAddingTimeInterval:100]], 0);
 
 	[self.policies rescheduleExpiryForHost:@"IRC.example.net" atDate:[received dateByAddingTimeInterval:200]];
 
