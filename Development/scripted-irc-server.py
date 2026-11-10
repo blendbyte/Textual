@@ -517,6 +517,49 @@ async def scenario_review_view(client):
 		pass
 
 
+async def scenario_review_chat(client):
+	"""Chat view review. In #c: two lines from alice (the second grouped in the Chat
+	display), her /me (keeps its name), bob's reply (a quote), a black-on-black spoiler,
+	black-on-yellow text, carl away and back, joins for a collapsed run, 150 people
+	reacting to alice's first line (100 names are kept), and 40 lines to scroll
+	through. Stays connected."""
+	if not await client.register_with_capabilities("message-tags away-notify"):
+		return
+
+	me = client.nickname
+	run = format(int(time.time()) % 0xfffff, "x")
+
+	await client.send(f":{me}!user@client.textual.test JOIN #c")
+	await client.send(f":{SERVER} 353 {me} = #c :{me} @alice +bob carl dave")
+	await client.send(f":{SERVER} 366 {me} #c :End of /NAMES list.")
+	await client.collect(2)
+
+	await client.send(f"@msgid=a1{run} :alice!a@alice.test PRIVMSG #c :the first line of alice")
+	await client.send(f"@msgid=a2{run} :alice!a@alice.test PRIVMSG #c :the second line of alice")
+	await client.send(f":alice!a@alice.test PRIVMSG #c :\x01ACTION waves\x01")
+	await client.send(f"@msgid=b1{run};+reply=a1{run} :bob!b@bob.test PRIVMSG #c :an answer with a quote above it")
+	await client.send(":bob!b@bob.test PRIVMSG #c :spoiler: \x031,1secret words\x03 end")
+	await client.send(":bob!b@bob.test PRIVMSG #c :art: \x031,8black on yellow\x03 end")
+	await client.send(":carl!c@carl.test AWAY :lunch")
+	await client.send(":carl!c@carl.test AWAY")
+
+	for number in range(4):
+		await client.send(f":joiner{number}!j@joiner.test JOIN #c")
+
+	await client.collect(1)
+
+	for number in range(150):
+		await client.send(f"@+draft/react=👍;+reply=a1{run} :fan{number}!f@fan.test TAGMSG #c")
+
+	await client.collect(1)
+
+	for number in range(40):
+		await client.send(f":dave!d@dave.test PRIVMSG #c :filler line {number}")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_ctcp_flood(client):
 	"""20 CTCP VERSION queries from one host and one to a channel: at most 2 replies
 	to that host, none to the channel, and another host still gets an answer."""
@@ -3477,6 +3520,7 @@ SCENARIOS = {
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
+	"review-chat": scenario_review_chat,
 	"review-view": scenario_review_view,
 	"links": scenario_links,
 	"nickserv-spoof": scenario_nickserv_spoof,
@@ -3526,7 +3570,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-chat", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

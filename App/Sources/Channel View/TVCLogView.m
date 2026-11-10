@@ -186,6 +186,13 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+" TXWebsiteLi
 	return YES;
 }
 
+/* The previous document's callbacks are for a page that is going */
+- (void)cancelDocumentCallbacks
+{
+	[self cancelPerformRequestsWithSelector:@selector(informDelegateWebViewFinishedLoading)];
+	[self cancelPerformRequestsWithSelector:@selector(layoutWatchdogFired)];
+}
+
 - (void)informDelegateWebViewFinishedLoading
 {
 	[self.viewController logViewWebViewFinishedLoading];
@@ -295,9 +302,7 @@ NSString * const TVCLogViewCommonUserAgentString = @"Textual/1.0 (+" TXWebsiteLi
 
 	self.layingOutView = YES;
 
-	/* The previous document's callbacks are for a page that is going */
-	[self cancelPerformRequestsWithSelector:@selector(informDelegateWebViewFinishedLoading)];
-	[self cancelPerformRequestsWithSelector:@selector(layoutWatchdogFired)];
+	[self cancelDocumentCallbacks];
 
 	/* The style may have changed */
 	[self.webViewBacking applyThemeBackgroundColor];

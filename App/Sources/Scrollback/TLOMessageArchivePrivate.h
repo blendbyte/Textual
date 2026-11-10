@@ -40,6 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* A search counts its results up to this many */
 static NSUInteger const TLOMessageArchiveSearchCountLimit = 1000;
 
+/* The newest row seen in Mentions: row numbers start again with a new archive */
+TEXTUAL_EXTERN NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey;
+
 @class IRCTreeItem, TVCLogLine;
 
 #define sharedMessageArchive()			[TLOMessageArchive sharedArchive]
@@ -232,7 +235,9 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 		 limit:(NSUInteger)limit
 completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler;
 
-- (void)interruptSearch;
+/* A new search makes the one it replaces pointless (its answer is dropped).
+ Only that one: other windows have searches of their own. */
+- (void)interruptSearchOfQuery:(nullable TLOMessageArchiveQuery *)query;
 
 /* Counted up to one more than TLOMessageArchiveSearchCountLimit */
 - (void)countResultsOfSearch:(TLOMessageArchiveQuery *)query completionHandler:(void (^)(NSUInteger count))completionHandler;

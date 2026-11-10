@@ -845,7 +845,7 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	NSString *sql = nil;
 
 	if ([column isEqualToString:@"view_name"]) {
-		sql = @"SELECT view_name, max((SELECT max(time) FROM messages WHERE view_key = views.id)) AS newest FROM views WHERE view_name != '' GROUP BY view_name ORDER BY newest DESC LIMIT ?";
+		sql = @"SELECT view_name, max((SELECT max(time) FROM messages WHERE view_key = views.id)) AS newest FROM views WHERE view_name != '' GROUP BY view_name HAVING newest IS NOT NULL ORDER BY newest DESC LIMIT ?";
 	} else {
 		sql = [NSString stringWithFormat:@"SELECT %1$@ FROM messages WHERE %1$@ IS NOT NULL AND %1$@ != '' GROUP BY %1$@ ORDER BY max(time) DESC LIMIT ?", column];
 	}

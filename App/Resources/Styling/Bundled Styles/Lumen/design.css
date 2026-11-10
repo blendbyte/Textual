@@ -543,31 +543,9 @@ body[data-display="chat"] div.line:is([data-line-type="join"], [data-line-type="
 	display: inline;
 }
 
-/* mIRC colours: the variety's palette is for text on the chat's own background.
-Text with a colour of its own behind it (ASCII art, mostly) keeps the standard
-colours it was drawn with: initial makes baseLayout.css fall back to them. */
-.effect[data-background-color] {
-	--mirc-foreground-color-0: initial;
-	--mirc-foreground-color-1: initial;
-	--mirc-foreground-color-2: initial;
-	--mirc-foreground-color-3: initial;
-	--mirc-foreground-color-4: initial;
-	--mirc-foreground-color-5: initial;
-	--mirc-foreground-color-6: initial;
-	--mirc-foreground-color-7: initial;
-	--mirc-foreground-color-8: initial;
-	--mirc-foreground-color-9: initial;
-	--mirc-foreground-color-10: initial;
-	--mirc-foreground-color-11: initial;
-	--mirc-foreground-color-12: initial;
-	--mirc-foreground-color-13: initial;
-	--mirc-foreground-color-14: initial;
-	--mirc-foreground-color-15: initial;
-}
-
 /* Monospace runs (IRCv3 formatting, and <tt> from baseLayout.css) */
 
-tt {
+div.line tt {
 	font-family: var(--font-mono) !important;
 	padding: 0 0.25em;
 	border-radius: 3px;

@@ -51,6 +51,7 @@
 #import "TXMasterController.h"
 #import "IRCClientConfig.h"
 #import "TPCPreferencesLocalPrivate.h"
+#import "TPCPreferencesUserDefaults.h"
 #import "TVCLogLine.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOFileLoggerPrivate.h"
@@ -76,6 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* In the database's meta table once the scrollback was imported */
 #define _scrollbackImportedKey		@"scrollback_imported"
+
+/* The later lines of a message in a text log */
+#define _textLogContinuationPrefix	@"    "
 
 @interface TLOMessageArchiveView ()
 @property (readwrite, copy) NSString *viewId;
@@ -210,7 +214,9 @@ NS_ASSUME_NONNULL_BEGIN
  writer, the writer doesn't wait for them) */
 @property (nonatomic, strong) dispatch_queue_t searchQueue;
 @property (nonatomic, assign, nullable) sqlite3 *searchDatabase;
-@property (nonatomic, assign) BOOL searchIsInterruptible;
+@property (nonatomic, assign, nullable) const void *runningSearchQuery; // the query searched for; guarded by searchQueue
+@property (atomic, assign) BOOL searchClosing;
+@property (nonatomic, assign) NSUInteger scrollbackImportGeneration; // on the queue
 @property (nonatomic, assign) BOOL searchClosed;
 @end
 
@@ -224,6 +230,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessageArchiveDidArchiveHighlightsNotification";
+
+NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> Last Seen Row";
 
 @implementation TLOMessageArchive
 
@@ -444,6 +452,9 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		"DROP TABLE IF EXISTS meta;"];
 
 	if (discarded) {
+		/* Row numbers start again */
+		[RZUserDefaults() removeObjectForKey:TLOMessageArchiveMentionsLastSeenDefaultsKey];
+
 		/* Not vital: the space is used again by new messages if this fails */
 		(void)[self _execute:"VACUUM;"];
 		(void)[self _execute:"PRAGMA wal_checkpoint(TRUNCATE);"];
@@ -839,15 +850,22 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 		LogToConsoleInfo("Importing the scrollback of %{public}lu views into the message archive", views.count);
 
-		[self _importScrollbackOfViews:views atIndex:0 matchType:matchType importedCount:0];
+		[self _importScrollbackOfViews:views atIndex:0 matchType:matchType importedCount:0 generation:self.scrollbackImportGeneration];
 	});
+}
+
+/* On the queue: quitting, the archive was deleted, or it was turned off. The
+ import isn't marked as done, so it can start again when the archive comes back. */
+- (BOOL)_scrollbackImportEnded:(NSUInteger)generation
+{
+	return (self.closed || generation != self.scrollbackImportGeneration || self.keepDaysValue == TPCMessageArchiveKeepPeriodOff);
 }
 
 /* One view after the other, a batch at a time: the scrollback's queue and
  this one take other work in between */
-- (void)_importScrollbackOfViews:(NSArray<TLOMessageArchiveView *> *)views atIndex:(NSUInteger)index matchType:(TXNicknameHighlightMatchType)matchType importedCount:(NSUInteger)importedCount
+- (void)_importScrollbackOfViews:(NSArray<TLOMessageArchiveView *> *)views atIndex:(NSUInteger)index matchType:(TXNicknameHighlightMatchType)matchType importedCount:(NSUInteger)importedCount generation:(NSUInteger)generation
 {
-	if (self.closed) {
+	if ([self _scrollbackImportEnded:generation]) {
 		return;
 	}
 
@@ -864,7 +882,7 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	IRCTreeItem *item = view.item;
 
 	if (item == nil) {
-		[self _importScrollbackOfViews:views atIndex:(index + 1) matchType:matchType importedCount:importedCount];
+		[self _importScrollbackOfViews:views atIndex:(index + 1) matchType:matchType importedCount:importedCount generation:generation];
 
 		return;
 	}
@@ -896,14 +914,16 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		}
 
 		dispatch_async(self.queue, ^{
-			if (self.closed) {
+			if ([self _scrollbackImportEnded:generation]) {
 				return;
 			}
 
-			if (rows.count > 0) {
-				[self _insertRows:rows];
+			NSArray *newRows = [self _rowsNotImportedFromTextLogs:rows];
 
-				viewImportedCount += rows.count;
+			if (newRows.count > 0) {
+				[self _insertRows:newRows];
+
+				viewImportedCount += newRows.count;
 			}
 
 			if (next) {
@@ -912,9 +932,51 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 				return;
 			}
 
-			[self _importScrollbackOfViews:views atIndex:(index + 1) matchType:matchType importedCount:viewImportedCount];
+			[self _importScrollbackOfViews:views atIndex:(index + 1) matchType:matchType importedCount:viewImportedCount generation:generation];
 		});
 	}];
+}
+
+/* On the queue. A text log has times to the second and no line numbers, so
+ its lines aren't found by the duplicate key of a line from the scrollback */
+- (NSArray<TLOMessageArchiveRow *> *)_rowsNotImportedFromTextLogs:(NSArray<TLOMessageArchiveRow *> *)rows
+{
+	if (rows.count == 0 || self.database == NULL) {
+		return rows;
+	}
+
+	sqlite3_stmt *statement = NULL;
+
+	if (sqlite3_prepare_v2(self.database, "SELECT 1 FROM messages WHERE view_key = (SELECT id FROM views WHERE view_id = ?) AND time >= ? AND time < ? AND line_id = '' AND nickname IS ? AND body = ? LIMIT 1", -1, &statement, NULL) != SQLITE_OK) {
+		LogToConsoleError("Failed to prepare importing the scrollback: %{public}s", sqlite3_errmsg(self.database));
+
+		return rows;
+	}
+
+	NSMutableArray<TLOMessageArchiveRow *> *newRows = [NSMutableArray arrayWithCapacity:rows.count];
+
+	for (TLOMessageArchiveRow *row in rows) {
+		NSTimeInterval second = floor(row.time);
+
+		sqlite3_bind_text(statement, 1, row.viewId.UTF8String, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_double(statement, 2, second);
+		sqlite3_bind_double(statement, 3, (second + 1.0));
+		sqlite3_bind_text(statement, 4, row.nickname.UTF8String, -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(statement, 5, row.body.UTF8String, -1, SQLITE_TRANSIENT);
+
+		BOOL exists = (sqlite3_step(statement) == SQLITE_ROW);
+
+		sqlite3_reset(statement);
+		sqlite3_clear_bindings(statement);
+
+		if (exists == NO) {
+			[newRows addObject:row];
+		}
+	}
+
+	sqlite3_finalize(statement);
+
+	return [newRows copy];
 }
 
 + (BOOL)logLineIsHighlight:(TVCLogLine *)logLine body:(NSString *)body matchType:(NSUInteger)matchType
@@ -1086,10 +1148,11 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	});
 }
 
-/* On the queue, in steps: each step is its own transaction */
+/* On the queue, a step at a time: each is its own transaction, and what waits
+ for the queue (new lines, quitting) goes in between */
 - (void)_removeMessagesOlderThan:(NSTimeInterval)time
 {
-	if (self.database == NULL) {
+	if (self.closed || self.database == NULL) {
 		return;
 	}
 
@@ -1101,26 +1164,24 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 		return;
 	}
 
-	while (YES) {
-		sqlite3_bind_double(statement, 1, time);
-		sqlite3_bind_int(statement, 2, _removeBatchSize);
+	sqlite3_bind_double(statement, 1, time);
+	sqlite3_bind_int(statement, 2, _removeBatchSize);
 
-		int result = sqlite3_step(statement);
+	int result = sqlite3_step(statement);
 
-		sqlite3_reset(statement);
-
-		if (result != SQLITE_DONE) {
-			LogToConsoleError("Failed to remove old messages: %{public}s", sqlite3_errmsg(self.database));
-
-			break;
-		}
-
-		if (sqlite3_changes(self.database) < _removeBatchSize) {
-			break;
-		}
+	if (result != SQLITE_DONE) {
+		LogToConsoleError("Failed to remove old messages: %{public}s", sqlite3_errmsg(self.database));
 	}
 
+	BOOL moreToRemove = (result == SQLITE_DONE && sqlite3_changes(self.database) >= _removeBatchSize);
+
 	sqlite3_finalize(statement);
+
+	if (moreToRemove) {
+		dispatch_async(self.queue, ^{
+			[self _removeMessagesOlderThan:time];
+		});
+	}
 }
 
 /* At launch (a minute in, not to slow it down) and once a day */
@@ -1141,10 +1202,10 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	self.removeTimer = timer;
 }
 
-- (void)_runStatement:(const char *)sql withStrings:(NSArray<NSString *> *)strings
+- (BOOL)_runStatement:(const char *)sql withStrings:(NSArray<NSString *> *)strings
 {
 	if (self.database == NULL) {
-		return;
+		return NO;
 	}
 
 	sqlite3_stmt *statement = NULL;
@@ -1152,18 +1213,22 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 	if (sqlite3_prepare_v2(self.database, sql, -1, &statement, NULL) != SQLITE_OK) {
 		LogToConsoleError("Message archive: %{public}s", sqlite3_errmsg(self.database));
 
-		return;
+		return NO;
 	}
 
 	[strings enumerateObjectsUsingBlock:^(NSString *string, NSUInteger index, BOOL *stop) {
 		sqlite3_bind_text(statement, (int)(index + 1), string.UTF8String, -1, SQLITE_TRANSIENT);
 	}];
 
-	if (sqlite3_step(statement) != SQLITE_DONE) {
+	BOOL succeeded = (sqlite3_step(statement) == SQLITE_DONE);
+
+	if (succeeded == NO) {
 		LogToConsoleError("Message archive: %{public}s", sqlite3_errmsg(self.database));
 	}
 
 	sqlite3_finalize(statement);
+
+	return succeeded;
 }
 
 #pragma mark -
@@ -1254,11 +1319,17 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 			[self.pendingRows removeAllObjects];
 
+			/* An import still running stops: it would refill the new database */
+			self.scrollbackImportGeneration += 1;
+
 			[self _closeDatabase];
 
 			[self _deleteDatabaseFiles];
 
 			[self _openDatabase];
+
+			/* Row numbers start again */
+			[RZUserDefaults() removeObjectForKey:TLOMessageArchiveMentionsLastSeenDefaultsKey];
 
 			if (importScrollbackAgain == NO) {
 				[self _setMetaValue:@"1" forKey:_scrollbackImportedKey];
@@ -1368,9 +1439,16 @@ NSString * const TLOMessageArchiveDidArchiveHighlightsNotification = @"TLOMessag
 
 	for (NSString *earlierViewKey in earlierViewKeys) {
 		/* The same message twice (in both conversations) is kept once */
-		[self _runStatement:"UPDATE OR IGNORE messages SET view_key = ? WHERE view_key = ?" withStrings:@[viewKeyString, earlierViewKey]];
-		[self _runStatement:"DELETE FROM messages WHERE view_key = ?" withStrings:@[earlierViewKey]];
-		[self _runStatement:"DELETE FROM views WHERE id = ?" withStrings:@[earlierViewKey]];
+		BOOL merged = ([self _runStatement:"UPDATE OR IGNORE messages SET view_key = ? WHERE view_key = ?" withStrings:@[viewKeyString, earlierViewKey]] &&
+					   [self _runStatement:"DELETE FROM messages WHERE view_key = ?" withStrings:@[earlierViewKey]] &&
+					   [self _runStatement:"DELETE FROM views WHERE id = ?" withStrings:@[earlierViewKey]]);
+
+		/* What wasn't moved must not be deleted */
+		if (merged == NO) {
+			(void)[self _execute:"ROLLBACK;"];
+
+			return;
+		}
 	}
 
 	if ([self _execute:"COMMIT;"] == NO) {
@@ -1664,22 +1742,17 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 
 	TLOMessageArchiveViewType viewType = TLOMessageArchiveViewTypeConsole;
 
-	if ([parentFolder isEqualToString:TLOFileLoggerConsoleDirectoryName]) {
-		serverFolder = components[(componentCount - 3)];
-	} else if (componentCount >= 4) {
-		NSString *typeFolder = components[(componentCount - 3)];
+	/* The kind of folder comes first: someone can be called Console */
+	NSString *typeFolder = ((componentCount >= 4) ? components[(componentCount - 3)] : nil);
 
-		if ([typeFolder isEqualToString:TLOFileLoggerChannelDirectoryName]) {
-			viewType = TLOMessageArchiveViewTypeChannel;
-		} else if ([typeFolder isEqualToString:TLOFileLoggerPrivateMessageDirectoryName]) {
-			viewType = TLOMessageArchiveViewTypeQuery;
-		} else {
-			return 0;
-		}
+	if ([typeFolder isEqualToString:TLOFileLoggerChannelDirectoryName] || [typeFolder isEqualToString:TLOFileLoggerPrivateMessageDirectoryName]) {
+		viewType = (([typeFolder isEqualToString:TLOFileLoggerChannelDirectoryName]) ? TLOMessageArchiveViewTypeChannel : TLOMessageArchiveViewTypeQuery);
 
 		viewName = parentFolder;
 
 		serverFolder = components[(componentCount - 4)];
+	} else if ([parentFolder isEqualToString:TLOFileLoggerConsoleDirectoryName]) {
+		serverFolder = components[(componentCount - 3)];
 	} else {
 		return 0;
 	}
@@ -1714,14 +1787,29 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 
 	NSMutableArray<TLOMessageArchiveRow *> *rows = [NSMutableArray array];
 
-	[contents enumerateLinesUsingBlock:^(NSString *line, BOOL *stop) {
-		TLOMessageArchiveRow *row = [self.class _rowForTextLogLine:line day:day target:target];
+	__block TLOMessageArchiveRow *previousRow = nil;
 
-		if (row == nil || row.time < oldestTime) {
+	[contents enumerateLinesUsingBlock:^(NSString *line, BOOL *stop) {
+		/* The next line of a message with several */
+		if ([line hasPrefix:_textLogContinuationPrefix]) {
+			if (previousRow) {
+				[self.class _appendTextLogLine:[line substringFromIndex:_textLogContinuationPrefix.length] toRow:previousRow target:target];
+			}
+
 			return;
 		}
 
-		[rows addObject:row];
+		TLOMessageArchiveRow *row = [self.class _rowForTextLogLine:line day:day target:target];
+
+		if (row && row.time < oldestTime) {
+			row = nil;
+		}
+
+		previousRow = row;
+
+		if (row) {
+			[rows addObject:row];
+		}
 	}];
 
 	__block NSUInteger importedCount = 0;
@@ -1735,6 +1823,21 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	}
 
 	return importedCount;
+}
+
++ (void)_appendTextLogLine:(NSString *)text toRow:(TLOMessageArchiveRow *)row target:(TLOMessageArchiveTextLogTarget *)target
+{
+	NSString *body = [row.body stringByAppendingFormat:@"\n%@", text];
+
+	row.body = body;
+
+	row.hasLink = ([TLOLinkParser locateLinksInString:body].count > 0);
+
+	row.dedupeKey = [self _dedupeKeyOfString:[NSString stringWithFormat:@"l:%lld:%@:%@", (long long)row.time, row.nickname, body]];
+
+	if (row.isHighlight == NO && row.isSelf == NO && row.lineType != TVCLogLineTypeNotice) {
+		row.isHighlight = [self _body:body matchesKeywords:target.highlightKeywords excludeKeywords:target.excludeKeywords matchType:target.matchType];
+	}
 }
 
 /* A line of a text log as TLOFileLogger writes it, or nil for other lines
@@ -2089,6 +2192,10 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 /* On the search queue: opened when first needed */
 - (nullable sqlite3 *)_openSearchDatabase
 {
+	if (self.searchClosing) {
+		return NULL;
+	}
+
 	if (self.searchDatabase || self.searchClosed) {
 		return self.searchDatabase;
 	}
@@ -2119,19 +2226,22 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	return database;
 }
 
-/* The queue is serial: while this is set, what it runs is a search's own query */
-- (void)_setSearchIsInterruptible:(BOOL)interruptible
+/* The queue is serial: while this is set, what it runs is that search's own query */
+- (void)_setRunningSearchQuery:(nullable const void *)query
 {
 	@synchronized (self.searchQueue) {
-		self.searchIsInterruptible = interruptible;
+		self.runningSearchQuery = query;
 	}
 }
 
-/* A new search makes the one running pointless; its answer is dropped anyway */
-- (void)interruptSearch
+- (void)interruptSearchOfQuery:(nullable TLOMessageArchiveQuery *)query
 {
+	if (query == nil) {
+		return;
+	}
+
 	@synchronized (self.searchQueue) {
-		if (self.searchIsInterruptible && self.searchDatabase) {
+		if (self.runningSearchQuery == (__bridge const void *)query && self.searchDatabase) {
 			sqlite3_interrupt(self.searchDatabase);
 		}
 	}
@@ -2145,6 +2255,8 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	NSParameterAssert(query != nil);
 	NSParameterAssert(completionHandler != nil);
 
+	const void *originalQuery = (__bridge const void *)query;
+
 	query = [query copy];
 
 	dispatch_async(self.searchQueue, ^{
@@ -2153,11 +2265,11 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 		sqlite3 *database = ((query.empty) ? NULL : [self _openSearchDatabase]);
 
 		if (database) {
-			[self _setSearchIsInterruptible:YES];
+			[self _setRunningSearchQuery:originalQuery];
 
 			page = [query _pageWithOffset:offset limit:limit inDatabase:database];
 
-			[self _setSearchIsInterruptible:NO];
+			[self _setRunningSearchQuery:NULL];
 		} else {
 			page = [TLOMessageArchiveSearchPage new];
 		}
@@ -2173,6 +2285,8 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	NSParameterAssert(query != nil);
 	NSParameterAssert(completionHandler != nil);
 
+	const void *originalQuery = (__bridge const void *)query;
+
 	query = [query copy];
 
 	dispatch_async(self.searchQueue, ^{
@@ -2181,11 +2295,11 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 		sqlite3 *database = ((query.empty) ? NULL : [self _openSearchDatabase]);
 
 		if (database) {
-			[self _setSearchIsInterruptible:YES];
+			[self _setRunningSearchQuery:originalQuery];
 
 			count = [query _countInDatabase:database];
 
-			[self _setSearchIsInterruptible:NO];
+			[self _setRunningSearchQuery:NULL];
 		}
 
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -2279,6 +2393,15 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 - (void)prepareForApplicationTermination
 {
 	self.textLogImportCancelled = YES;
+
+	/* The main thread waits for what follows: no more searches, and not the one running */
+	self.searchClosing = YES;
+
+	@synchronized (self.searchQueue) {
+		if (self.runningSearchQuery && self.searchDatabase) {
+			sqlite3_interrupt(self.searchDatabase);
+		}
+	}
 
 	dispatch_sync(self.searchQueue, ^{
 		@synchronized (self.searchQueue) {

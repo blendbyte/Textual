@@ -233,7 +233,10 @@ _MessageBuffer.setBufferLimit = function(limit) /* PRIVATE */
 		_MessageBuffer._bufferSizeHardLimit = _MessageBuffer._bufferSizeHardLimitDefault;
 	} else {
 		_MessageBuffer._bufferSizeSoftLimit = limit;
-		_MessageBuffer._bufferSizeHardLimit = limit;
+
+		/* Room for what is loaded while scrolling: trimming it to a very low
+		 limit would remove the line the view is anchored to */
+		_MessageBuffer._bufferSizeHardLimit = Math.max(limit, (_MessageBuffer._loadMessagesBatchSize * 2));
 	}
 };
 
@@ -481,7 +484,7 @@ _MessageBuffer.loadMessagesDuringScroll = function(before) /* PRIVATE */
 	}
 
 	/* There is nothing in either buffer */
-	if (line === null) {
+	if (!line) {
 		console.log("No line to load from");
 
 		return;

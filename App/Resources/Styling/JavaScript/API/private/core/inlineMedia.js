@@ -318,7 +318,10 @@ InlineMediaPrototype.prototype.indexOfMedia = function(mediaId)
 
 InlineMediaPrototype.prototype.indexOfMediaAnchor = function(anchor)
 {
-	var allAnchors = anchor.parentElement.getElementsByTagName("a");
+	/* In the message: formatting puts a link inside elements of its own */
+	var message = (anchor.closest(".innerMessage, .message") || anchor.parentElement);
+
+	var allAnchors = message.querySelectorAll("a[data-ilm-anchor]");
 
 	var index = Array.prototype.indexOf.call(allAnchors, anchor);
 

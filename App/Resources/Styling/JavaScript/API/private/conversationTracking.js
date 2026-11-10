@@ -73,12 +73,22 @@ ConversationTracking.nicknameSingleClickEventCallback = function(senderElement)
 
 	/* Set, not flip, so every line ends in the same state */
 	for (var i = 0; i < plainTextLines.length; i++) {
-		var lineSender = plainTextLines[i].querySelector(".sender");
-
-		if (lineSender && lineSender.dataset.nickname === nickname) {
-			ConversationTracking.toggleSelectionStatusForSenderElement(lineSender, tracked);
+		if (ConversationTracking.nicknameOfLine(plainTextLines[i]) === nickname) {
+			plainTextLines[i].classList.toggle("selectedUser", tracked);
 		}
 	}
+};
+
+/* A grouped line of the Chat display shows no name: it has data-sender instead */
+ConversationTracking.nicknameOfLine = function(lineElement)
+{
+	if (lineElement.dataset.sender) {
+		return lineElement.dataset.sender;
+	}
+
+	var senderElement = lineElement.querySelector(".sender[data-nickname]");
+
+	return ((senderElement) ? senderElement.dataset.nickname : null);
 };
 
 ConversationTracking.updateNicknameWithNewMessage = function(lineElement)
@@ -97,19 +107,15 @@ ConversationTracking.updateNicknameWithNewMessage = function(lineElement)
 		return;
 	}
 
-	var senderElement = lineElement.querySelector(".sender");
+	var nickname = ConversationTracking.nicknameOfLine(lineElement);
 
-	if (senderElement) {
-		/* Is this a tracked nickname? */
-		var nickname = senderElement.dataset.nickname;
-
-		if (ConversationTracking.isNicknameTracked(nickname) === false) {
-			return;
-		}
-
-		/* Toggle status on for new message */
-		ConversationTracking.toggleSelectionStatusForSenderElement(senderElement, true);
+	/* Is this a tracked nickname? */
+	if (nickname === null || ConversationTracking.isNicknameTracked(nickname) === false) {
+		return;
 	}
+
+	/* Toggle status on for new message */
+	lineElement.classList.toggle("selectedUser", true);
 };
 
 /* selected: true or false to set the state, leave out to flip it */

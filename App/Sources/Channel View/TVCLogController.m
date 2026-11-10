@@ -244,6 +244,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	[self cancelDeferredDocumentLoad];
 
+	[self.backingView cancelDocumentCallbacks];
+
 	[self.backingView stopLoading]; // allow view to teardown
 	self.backingView = nil;
 
@@ -418,6 +420,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	LogToConsoleError("Loading the document of %{public}@ again (%{public}lu of 3)", self.description, self.stuckDocumentReloadCount);
 
 	/* Otherwise the next document would skip setting itself up */
+	[self.backingView cancelDocumentCallbacks];
+
 	self.loaded = NO;
 
 	self.historyLoaded = NO;
@@ -778,7 +782,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)removeTypingIndicator
 {
-	[self _evaluateFunction:@"_Textual.typingIndicatorRemove" withArguments:nil];
+	/* Through the queue, as showing it is: a late show would otherwise stay */
+	[self evaluateFunction:@"_Textual.typingIndicatorRemove" withArguments:nil];
 }
 
 #pragma mark -
@@ -859,6 +864,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	TVCLogLine *previousLine = nil;
 
+	/* Older than the highlights recorded while they were printed */
+	NSUInteger highlightIndex = 0;
+
 	for (TVCLogLine *logLine in oldLines) {
 		/* Render result info HTML */
 		NSDictionary<NSString *, id> *resultInfo = nil;
@@ -897,7 +905,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		if (highlighted) {
 			@synchronized(self.highlightedLineNumbers) {
 				if ([self.highlightedLineNumbers containsObject:lineNumber] == NO) {
-					[self.highlightedLineNumbers addObject:lineNumber];
+					[self.highlightedLineNumbers insertObject:lineNumber atIndex:highlightIndex];
+
+					highlightIndex += 1;
 				}
 			}
 		}
@@ -920,7 +930,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	}
 
-	if (self.historyLoaded) {
+	if (self.historyLoaded || self.reloadingHistory) {
 		return;
 	}
 
@@ -966,6 +976,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	self.reloadingHistory = YES;
 
+	/* The operation finishes when the fetch starts, so cancelling it doesn't
+	 reach the fetch: a clear raises historyGeneration instead */
+	NSUInteger historyGeneration = self.historyGeneration;
+
 	void (^reloadBlock)(NSArray *) = ^(NSArray<TVCLogLine *> *objects) {
 		TVCLogLine *lastLine = objects.lastObject;
 
@@ -984,6 +998,17 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			self.sessionStartDate = [NSDate date];
 		}
 
+		/* A reload cleared it, and this goes up to the last line there was */
+		NSString *lastLineNumber = lastLine.uniqueIdentifier;
+
+		if (lastLineNumber) {
+			XRPerformBlockAsynchronouslyOnMainQueue(^{
+				if (self.historyGeneration == historyGeneration && self.newestLineNumber == nil) {
+					self.newestLineNumber = lastLineNumber;
+				}
+			});
+		}
+
 		[self reloadOldLines:objects isReload:(firstTimeLoadingHistory == NO)];
 
 		self.reloadingHistory = NO;
@@ -993,10 +1018,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 		[self notifyViewFinishedLoadingHistory];
 	};
-
-	/* The operation finishes when the fetch starts, so cancelling it doesn't
-	 reach the fetch: a clear raises historyGeneration instead */
-	NSUInteger historyGeneration = self.historyGeneration;
 
 	/* A reopened query is a new view: first its earlier conversations with
 	 this nickname are made its own, and with no scrollback they are what's shown */
@@ -1062,11 +1083,6 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	if (self.reloadingTheme) {
 		return;
 	}
-
-	/* Even if the user has never loaded their history, we force this
-	 flag to YES when reloading theme. We do not want history to be
-	 displayed as historic when playing it back after a reload. */
-	self.historyLoadedForFirstTime = YES;
 
 	self.reloadingTheme = YES;
 	self.pendingThemeReload = YES;
@@ -1184,8 +1200,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 {
 	NSParameterAssert(lineNumber != nil);
 
-	/* No line (a message imported from a text log): the page would never answer */
-	if (lineNumber.length == 0) {
+	/* No line (a message imported from a text log), or no document yet: the
+	 page would never answer */
+	if (lineNumber.length == 0 || self.loaded == NO) {
 		if (completionHandler) {
 			completionHandler(NO);
 		}
@@ -1224,6 +1241,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	if (self.loaded == NO && self.documentLoadStartedAt > 0 &&
 		([NSDate timeIntervalSince1970] - self.documentLoadStartedAt) > 3.0)
 	{
+		/* Also one given up on in the background: someone is looking at it now */
+		self.stuckDocumentReloadCount = 0;
+
 		[self reloadStuckDocument];
 	}
 
@@ -1633,6 +1653,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	self.newestLineNumber = nil;
 
 	self.lastLine = nil;
+
+	/* A queued document would otherwise be taken for finished by this one's callback */
+	[self.backingView cancelDocumentCallbacks];
 
 	self.loaded = NO;
 
@@ -2326,7 +2349,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		THOPluginDidPostNewMessageConcreteObject *pluginObject = resultInfo[@"pluginConcreteObject"];
 
 		/* Kept even when a clear drops it from the view */
-		if (archiveView) {
+		/* Not when it was deleted while it waited to be drawn */
+		if (archiveView && [self logLineWithPendingChanges:logLine].isRedacted == NO) {
 			NSArray *listOfLinks = resultInfo[TVCLogRendererResultsListOfLinksInBodyAttribute];
 
 			[sharedMessageArchive() archiveLogLine:logLine highlighted:highlighted hasLink:(listOfLinks.count > 0) inView:archiveView];
@@ -2595,10 +2619,9 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 {
+	/* Not actions: they read as a sentence starting with the name */
 	return (lineType == TVCLogLineTypePrivateMessage ||
-			lineType == TVCLogLineTypePrivateMessageNoHighlight ||
-			lineType == TVCLogLineTypeAction ||
-			lineType == TVCLogLineTypeActionNoHighlight);
+			lineType == TVCLogLineTypePrivateMessageNoHighlight);
 }
 
 /* A date line where the day differs from the line drawn above it. The first
@@ -2654,6 +2677,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 #define _messageReferenceLimit		2000
 #define _unreferencedReactionLimit	200 // msgids with reactions whose message wasn't seen
 #define _reactionsPerMessageLimit	50
+#define _reactionNicknamesLimit		100
 #define _messageReferenceExcerptLength		120
 
 /* The messages shown in this view by ID, for showing what a reply answers */
@@ -2670,7 +2694,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	NSString *excerpt = logLine.messageBody.stripIRCEffects.trim;
 
 	if (excerpt.length > _messageReferenceExcerptLength) {
-		excerpt = [[excerpt substringToIndex:_messageReferenceExcerptLength] stringByAppendingString:@"…"];
+		excerpt = [[excerpt substringToIndex:[excerpt rangeOfComposedCharacterSequenceAtIndex:_messageReferenceExcerptLength].location] stringByAppendingString:@"…"];
 	}
 
 	NSDictionary *reference = @{
@@ -2680,13 +2704,23 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		@"receivedAt" : logLine.receivedAt
 	};
 
+	NSArray *mergedReactions = nil;
+
 	@synchronized (self.messageReferences) {
 		NSDictionary *existing = self.messageReferences[msgid];
 
 		if (existing == nil) {
 			[self.messageReferenceOrder addObject:msgid];
 
+			/* Reactions came before the line: those saved with it count too */
+			if ([self.unreferencedReactionOrder containsObject:msgid] && logLine.reactions.count > 0) {
+				mergedReactions = [self mergeSavedReactionsOfLine:logLine];
+			}
+
 			[self.unreferencedReactionOrder removeObject:msgid];
+		} else if ([existing[@"deleted"] boolValue]) {
+			/* Drawn after its deletion: quotes keep saying that it was deleted */
+			return;
 		} else if ([existing[@"receivedAt"] compare:logLine.receivedAt] == NSOrderedDescending) {
 			/* Older history loaded later (scrolling up) doesn't take the place
 			 of the newer message with the same ID */
@@ -2704,6 +2738,77 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			[self.messageReferenceOrder removeObjectAtIndex:0];
 		}
 	}
+
+	if (mergedReactions) {
+		NSString *lineNumber = logLine.uniqueIdentifier;
+
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[self updateSavedLineWithNumber:lineNumber usingBlock:^TVCLogLine *(TVCLogLine *savedLine) {
+				TVCLogLineMutable *changedLine = [savedLine mutableCopy];
+
+				changedLine.reactions = mergedReactions;
+
+				return [changedLine copy];
+			}];
+		});
+	}
+}
+
+/* With messageReferences locked: the reactions saved with the line join those
+ received before it was drawn. Returns all of them, to save. */
+- (NSArray<NSDictionary *> *)mergeSavedReactionsOfLine:(TVCLogLine *)logLine
+{
+	NSMutableArray<NSMutableDictionary *> *reactions = self.messageReactions[logLine.msgid];
+
+	if (reactions == nil) {
+		reactions = [NSMutableArray array];
+
+		self.messageReactions[logLine.msgid] = reactions;
+	}
+
+	for (NSDictionary *saved in logLine.reactions) {
+		NSString *emoji = saved[@"emoji"];
+
+		NSArray<NSString *> *nicknames = saved[@"nicknames"];
+
+		if ([emoji isKindOfClass:[NSString class]] == NO || [nicknames isKindOfClass:[NSArray class]] == NO) {
+			continue;
+		}
+
+		NSMutableDictionary *entry = nil;
+
+		for (NSMutableDictionary *candidate in reactions) {
+			if ([candidate[@"emoji"] isEqualToString:emoji]) {
+				entry = candidate;
+
+				break;
+			}
+		}
+
+		if (entry == nil) {
+			if (reactions.count >= _reactionsPerMessageLimit) {
+				continue;
+			}
+
+			entry = [@{@"emoji" : emoji, @"nicknames" : [NSMutableArray array]} mutableCopy];
+
+			[reactions addObject:entry];
+		}
+
+		NSMutableArray<NSString *> *entryNicknames = entry[@"nicknames"];
+
+		for (NSString *nickname in nicknames) {
+			if (entryNicknames.count >= _reactionNicknamesLimit) {
+				break;
+			}
+
+			if ([nickname isKindOfClass:[NSString class]] && [entryNicknames containsObjectIgnoringCase:nickname] == NO) {
+				[entryNicknames addObject:nickname];
+			}
+		}
+	}
+
+	return [self.class reactionsSnapshot:reactions];
 }
 
 - (nullable NSDictionary *)messageReferenceForMsgid:(NSString *)msgid
@@ -2745,6 +2850,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			NSMutableDictionary *changedReference = [reference mutableCopy];
 
 			changedReference[@"excerpt"] = note;
+
+			changedReference[@"deleted"] = @YES;
 
 			self.messageReferences[msgid] = [changedReference copy];
 		}
@@ -2917,6 +3024,14 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 				nicknames = entry[@"nicknames"];
 			} else if (index != NSNotFound) {
+				return;
+			}
+
+			/* More names than anyone reads. One's own always counts: it's
+			 what shows the reaction as ours and lets it be taken back */
+			NSString *localNickname = self.associatedClient.userNickname;
+
+			if (nicknames.count >= _reactionNicknamesLimit && (localNickname == nil || [nickname caseInsensitiveCompare:localNickname] != NSOrderedSame)) {
 				return;
 			}
 
@@ -3586,6 +3701,10 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 - (void)logViewWebViewFinishedLoading
 {
+	if (self.terminating) {
+		return;
+	}
+
 	if (self.loaded == NO) {
 		self.loaded = YES;
 	} else {

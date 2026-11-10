@@ -408,6 +408,14 @@ _ChatElements._scheduleMidnight = function() /* PRIVATE */
 	}, (midnight - now));
 };
 
+/* From the app: a page timer doesn't count the time the Mac sleeps */
+_ChatElements.dateChanged = function() /* PRIVATE */
+{
+	_ChatElements.tidy();
+
+	_ChatElements._scheduleMidnight();
+};
+
 /* ************************************************** */
 /*                  Floating labels                   */
 /* ************************************************** */

@@ -254,14 +254,14 @@ Textual.messageAddedToView = function (line, fromBuffer) {
 
   // if it's a private message, colorize the nick and then track the state and fade away the nicks if needed
   if (message.dataset.lineType === 'privmsg' || message.dataset.lineType === 'action') {
-    sender = message.getElementsByClassName('sender')[0];
-    if (rs.colorNicknames && sender.dataset.overrideColor !== 'true') {
+    sender = message.getElementsByClassName('sender')[0]; // a grouped line of the Chat display has none
+    if (sender && rs.colorNicknames && sender.dataset.overrideColor !== 'true') {
       new NickColorGenerator(message); // colorized the nick
     }
 
     // Delete (ie, make foreground and background color identical) the previous line's nick, if it was set to be deleted
     // (the previous line may have been removed since: trimmed, or replaced by a jump to an older line)
-    if (rs.nick.delete === true) {
+    if (sender && rs.nick.delete === true) {
       elem = document.getElementById(rs.nick.id);
       if (elem) {
         elem.getElementsByClassName('sender')[0].className += ' f';
@@ -269,18 +269,22 @@ Textual.messageAddedToView = function (line, fromBuffer) {
     }
 
     // Track the nicks that submit messages, so that we can space out everything
-    if ((rs.nick.nick === sender.textContent) && (rs.nick.count < Equinox.fadeNicksFreq)
-      && (message.dataset.lineType !== 'action') && (Equinox.fadeNicks === true)) {
-      rs.nick.delete = true;
-      rs.nick.count += 1;
-    } else {
-      rs.nick.nick = sender.textContent;
-      rs.nick.count  = 1;
-      rs.nick.delete = false;
-    }
+    // (Classic display only: the fade is made for its nickname column)
+    if (sender) {
+      if ((rs.nick.nick === sender.textContent) && (rs.nick.count < Equinox.fadeNicksFreq)
+        && (message.dataset.lineType !== 'action') && (Equinox.fadeNicks === true)
+        && (document.body.dataset.display !== 'chat')) {
+        rs.nick.delete = true;
+        rs.nick.count += 1;
+      } else {
+        rs.nick.nick = sender.textContent;
+        rs.nick.count  = 1;
+        rs.nick.delete = false;
+      }
 
-    // Track the previous message's id
-    rs.nick.id = message.getAttribute('id');
+      // Track the previous message's id
+      rs.nick.id = message.getAttribute('id');
+    }
 
     // Copy the message into the hidden history
     clone = message.cloneNode(true);
@@ -291,7 +295,7 @@ Textual.messageAddedToView = function (line, fromBuffer) {
     }
 
     // Colorize it as well
-    if (rs.colorNicknames && sender.dataset.overrideColor !== 'true') {
+    if (sender && rs.colorNicknames && sender.dataset.overrideColor !== 'true') {
       new NickColorGenerator(clone); // colorized the nick
     }
 

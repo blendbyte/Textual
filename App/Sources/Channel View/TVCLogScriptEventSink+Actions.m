@@ -189,7 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *title = arguments[3];
 
 	if (title.length > 200) {
-		title = [title substringToIndex:200];
+		title = [title substringToIndex:[title rangeOfComposedCharacterSequenceAtIndex:200].location];
 	}
 
 	[ICLYouTubePlayer playVideo:videoIdentifier startTime:startTime title:title linkURL:linkURL client:context.associatedClient];

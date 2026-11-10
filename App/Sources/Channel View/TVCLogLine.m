@@ -450,7 +450,9 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		[s appendString:@" "];
 	}
 
-	[s appendString:self.messageBody];
+	/* Later lines of a message are indented, so none of them can pass for a
+	 line of its own (Import Text Logs joins them again) */
+	[s appendString:[[self.messageBody componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] componentsJoinedByString:@"\n    "]];
 
 	return s.stripIRCEffects;
 }

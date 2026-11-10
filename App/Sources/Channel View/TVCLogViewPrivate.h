@@ -52,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithViewController:(TVCLogController *)viewController NS_DESIGNATED_INITIALIZER;
 
 - (void)informDelegateWebViewClosedUnexpectedly;
+- (void)cancelDocumentCallbacks;
+
 - (void)informDelegateWebViewFinishedLoading;
 - (void)informDelegateWebViewFailedLoading;
 

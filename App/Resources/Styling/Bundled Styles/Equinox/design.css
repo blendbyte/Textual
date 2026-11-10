@@ -154,6 +154,16 @@ a:hover {
   border-color: #64a5ff;
 }
 
+/* The floating date label: #body is only as tall as the window here, so a
+ sticky label would scroll away with it. Below the topic bar: #body's z-index
+ keeps it under that. */
+#chatElementFloats {
+  position: fixed;
+  top: 2.4em;
+  left: 0;
+  right: 0;
+}
+
 /* Topic Bar */
 #topicBar {
   top: 0;
@@ -385,7 +395,10 @@ body div.line[data-line-type=nick],
 body div.line[data-line-type=topic],
 body div.line[data-line-type=kill],
 body div.line[data-line-type=kick],
-body div.line[data-line-type=website] {
+body div.line[data-line-type=website],
+body div.line[data-line-type=away],
+body div.line[data-line-type=back],
+body div.line[data-line-type=event-group] {
   font-size: 85%;
   min-height: var(--spacing-event-line);
   padding-left: 145px;
@@ -419,6 +432,30 @@ body[dir=ltr] div[data-line-type=quit] .message:before {
   color: #e00;
   margin-left:3px;
   margin-right: 5px;
+}
+
+body[dir=ltr] div[data-line-type=away] .message:before {
+  content: "○";
+  margin-left: 3px;
+  margin-right: 5px;
+}
+
+body[dir=ltr] div[data-line-type=back] .message:before {
+  content: "●";
+  margin-left: 3px;
+  margin-right: 5px;
+}
+
+body[dir=rtl] div[data-line-type=away] .message:before {
+  content: "○";
+  margin-left: 5px;
+  margin-right: 3px;
+}
+
+body[dir=rtl] div[data-line-type=back] .message:before {
+  content: "●";
+  margin-left: 5px;
+  margin-right: 3px;
 }
 
 body[dir=ltr] div[data-line-type=nick] .message:before {

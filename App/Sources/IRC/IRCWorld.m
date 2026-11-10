@@ -997,6 +997,8 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 	if (fireNotification) {
 		[RZNotificationCenter() postNotificationName:IRCWorldDateHasChangedNotification object:nil userInfo:nil];
 
+		[self evaluateFunctionOnAllViews:@"_ChatElements.dateChanged" arguments:nil onQueue:NO];
+
 		[self evaluateFunctionOnAllViews:@"Textual.dateChanged"
 							   arguments:@[@(currentDayComponents.year),
 										   @(currentDayComponents.month),

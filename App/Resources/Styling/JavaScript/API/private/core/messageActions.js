@@ -254,9 +254,7 @@ _MessageActions._excerptOfLine = function(line) /* PRIVATE */
 
 _MessageActions._senderOfLine = function(line) /* PRIVATE */
 {
-	var sender = line.querySelector(".sender[data-nickname]");
-
-	return ((sender) ? sender.dataset.nickname : "");
+	return (ConversationTracking.nicknameOfLine(line) || "");
 };
 
 /* alice the message… (or "an earlier message" until it is found), after the
@@ -610,6 +608,8 @@ _MessageActions.reactToLine = function(line, emoji) /* PRIVATE */
 
 _MessageActions._showReactionChoices = function(line) /* PRIVATE */
 {
+	_MessageActions._choosingReaction = true;
+
 	var buttons = _MessageActions._quickReactions.map(function(emoji) {
 		return {label: emoji, className: "reactionChoice", action: function(target) {
 			_MessageActions.reactToLine(target, emoji);
@@ -890,6 +890,13 @@ _MessageActions._fillToolbar = function(line, buttons) /* PRIVATE */
 
 	toolbar.hidden = false;
 
+	_MessageActions._placeToolbar(line);
+};
+
+_MessageActions._placeToolbar = function(line) /* PRIVATE */
+{
+	var toolbar = _MessageActions._toolbar;
+
 	/* Over the line's top right corner, inside the window */
 	var lineRect = line.getBoundingClientRect();
 
@@ -910,6 +917,31 @@ _MessageActions._hideToolbar = function() /* PRIVATE */
 	_MessageActions._toolbarLine = null;
 
 	_MessageActions._choiceIndex = -1;
+
+	_MessageActions._choosingReaction = false;
+};
+
+/* Scrolling closes the toolbar, but not while a reaction is being chosen (a
+ new line scrolls the chat): it stays on its line until that leaves the view */
+_MessageActions._scrolled = function() /* PRIVATE */
+{
+	var line = _MessageActions._toolbarLine;
+
+	if (_MessageActions._choosingReaction === false || !line || !line.isConnected) {
+		_MessageActions._hideToolbar();
+
+		return;
+	}
+
+	var lineRect = line.getBoundingClientRect();
+
+	if (lineRect.bottom <= 0 || lineRect.top >= document.documentElement.clientHeight) {
+		_MessageActions._hideToolbar();
+
+		return;
+	}
+
+	_MessageActions._placeToolbar(line);
 };
 
 _MessageActions._mouseOver = function(event) /* PRIVATE */
@@ -960,6 +992,7 @@ _MessageActions.replyToLine = function(line) /* PRIVATE */
 
 _MessageActions._focusedLine = null; /* PRIVATE */
 _MessageActions._choiceIndex = -1; /* PRIVATE */
+_MessageActions._choosingReaction = false; /* PRIVATE */
 
 _MessageActions._focusableLines = function() /* PRIVATE */
 {
@@ -1168,7 +1201,8 @@ _MessageActions._contextMenu = function(event) /* PRIVATE */
 	var actions = ((line) ? _MessageActions._actionsForLine(line) : []);
 
 	if (actions.length === 0) {
-		appPrivate.setMessageMenu([]);
+		/* One empty value: the bridge refuses an empty list, which left the last menu in place */
+		appPrivate.setMessageMenu([""]);
 
 		return;
 	}
@@ -1185,5 +1219,5 @@ document.addEventListener("mouseout", function(event) {
 		_MessageActions._hideToolbar();
 	}
 }, false);
-document.addEventListener("scroll", _MessageActions._hideToolbar, true);
+document.addEventListener("scroll", _MessageActions._scrolled, true);
 window.addEventListener("blur", _MessageActions._hideToolbar, false);

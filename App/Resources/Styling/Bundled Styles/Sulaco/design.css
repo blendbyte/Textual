@@ -62,7 +62,8 @@ body[data-selected="true"][data-view-type="channel"] #body {
 }
 
 .message {
-	width: 100%;
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .sender,
@@ -89,7 +90,14 @@ body[data-selected="true"][data-view-type="channel"] #body {
 
 div.line {
 	display: flex;
-	flex-flow: row;
+	flex-flow: row wrap;
+}
+
+/* A reply's quote and a failed send's note take a row of their own */
+.replyQuote,
+.failedNote {
+	flex: 0 0 100%;
+	box-sizing: border-box;
 }
 
 div.line[data-member-type="myself"] .message {
@@ -112,6 +120,30 @@ body[data-view-type="channel"] .event .message {
 
 .event .message:before {
 	content: '» ';
+}
+
+/* The summary of a collapsed run: the arrow, in the columns of other lines */
+.eventGroupSummary .message:before {
+	content: "\25B8";
+}
+
+.eventGroupSummary:before {
+	content: "";
+	flex-shrink: 0;
+	width: 10em;
+	padding: 4px 8px 3px;
+	background: #333;
+}
+
+div.line.eventGroupSummary p {
+	flex: 1 1 0;
+	min-width: 0;
+	margin: 0;
+	text-indent: 0;
+}
+
+.eventGroupSummary .message {
+	display: block;
 }
 
 body[data-view-type="server"] .event .message {

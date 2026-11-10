@@ -257,6 +257,28 @@ body[data-selected="false"] #topicBar {
 	display: none;
 }
 
+/* A style's palette is for text on the chat's own background. Text with a
+ colour of its own behind it (ASCII art, spoilers) keeps the standard colours
+ it was drawn with: initial makes the rules above fall back to them. */
+.effect[data-background-color] {
+	--mirc-foreground-color-0: initial;
+	--mirc-foreground-color-1: initial;
+	--mirc-foreground-color-2: initial;
+	--mirc-foreground-color-3: initial;
+	--mirc-foreground-color-4: initial;
+	--mirc-foreground-color-5: initial;
+	--mirc-foreground-color-6: initial;
+	--mirc-foreground-color-7: initial;
+	--mirc-foreground-color-8: initial;
+	--mirc-foreground-color-9: initial;
+	--mirc-foreground-color-10: initial;
+	--mirc-foreground-color-11: initial;
+	--mirc-foreground-color-12: initial;
+	--mirc-foreground-color-13: initial;
+	--mirc-foreground-color-14: initial;
+	--mirc-foreground-color-15: initial;
+}
+
 /* Spoilers (text in its own background colour) show on a click, not when
  the pointer passes over them. !important: hex colours are set with the
  style attribute, which this must overpower. */

@@ -55,7 +55,8 @@ var InlineImageLiveResize = (function () {
 	 using preventDefault we halt the default actions taken by the browser, the user can use the shift
 	 key to override InlineImageLiveResize behavior. */
 	InlineImageLiveResize.onMouseDown = function (e) {
-		if (window.event.shiftKey === false) {
+		/* Left button only: the context menu can swallow the button's release */
+		if (e.button === 0 && e.ctrlKey === false && window.event.shiftKey === false) {
 			InlineImageLiveResize.dragElement = e.target;
 
 			InlineImageLiveResize.previousX = e.clientX;
@@ -63,13 +64,6 @@ var InlineImageLiveResize = (function () {
 
 			InlineImageLiveResize.startX = e.clientX;
 			InlineImageLiveResize.startY = e.clientY;
-
-			var computedSize = window.getComputedStyle(e.target, null);
-
-			InlineImageLiveResize.dragElement.style.height = computedSize.getPropertyValue("height");
-			InlineImageLiveResize.dragElement.style.width = computedSize.getPropertyValue("width");
-
-			InlineImageLiveResize.dragElement.style.maxWidth = null;
 
 			e.preventDefault();
 		}
@@ -91,6 +85,14 @@ var InlineImageLiveResize = (function () {
 			}
 
 			InlineImageLiveResize.previousMouseActionWasForResizing = true;
+
+			/* Fixed only now: after a plain click the picture still scales with the window */
+			var computedSize = window.getComputedStyle(InlineImageLiveResize.dragElement, null);
+
+			InlineImageLiveResize.dragElement.style.height = computedSize.getPropertyValue("height");
+			InlineImageLiveResize.dragElement.style.width = computedSize.getPropertyValue("width");
+
+			InlineImageLiveResize.dragElement.style.maxWidth = null;
 		}
 
 		/* Sizes need a unit: the page is in standards mode, which ignores bare numbers */
@@ -124,6 +126,13 @@ var InlineImageLiveResize = (function () {
 	 amount of resize calculations done to 60fps. */
 	InlineImageLiveResize.onMouseMove = function (e) {
 		if (InlineImageLiveResize.dragElement) {
+			/* The button was released where this page couldn't see it */
+			if (e.buttons === 0) {
+				InlineImageLiveResize.onMouseUp(e);
+
+				return;
+			}
+
 			requestAnimationFrame(function () {
 				InlineImageLiveResize.updateImage(e.clientX, e.clientY);
 			});

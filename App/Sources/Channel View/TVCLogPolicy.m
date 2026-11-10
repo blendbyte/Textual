@@ -77,6 +77,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSMutableArray<NSMenuItem *> *menuItems = [NSMutableArray array];
 
+	/* For this click only, also when it landed on a link or a name in the message */
+	NSArray<NSString *> *messageMenu = self.messageMenu;
+
+	self.messageMenu = nil;
+
 	if (self.anchorURL)
 	{
 		NSMenu *urlMenu = menuController().channelViewURLMenu;
@@ -149,10 +154,6 @@ NS_ASSUME_NONNULL_BEGIN
 	else
 	{
 		/* On a message: Reply, React…, Delete… first */
-		NSArray<NSString *> *messageMenu = self.messageMenu;
-
-		self.messageMenu = nil;
-
 		if (messageMenu.count > 1 && viewController) {
 			NSString *lineNumber = messageMenu.firstObject;
 
@@ -322,7 +323,10 @@ NS_ASSUME_NONNULL_BEGIN
 		return NO;
 	}
 
-	return [url.URLByStandardizingPath.path hasPrefix:[stylePath stringByAppendingString:@"/"]];
+	NSString *path = url.URLByStandardizingPath.path;
+
+	/* The folder itself: a document loaded from memory has it as its address */
+	return ([path isEqualToString:stylePath] || [path hasPrefix:[stylePath stringByAppendingString:@"/"]]);
 }
 
 - (NSMenu *)webView2:(WKWebView *)webView logView:(TVCLogView *)logView contextMenuWithDefaultMenu:(NSMenu *)defaultMenu

@@ -40,6 +40,7 @@
 
 #import "TPCPreferencesLocal.h"
 #import "TVCLogLine.h"
+#import "TVCLogLinePrivate.h"
 #import "TLOMessageArchivePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -464,6 +465,70 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(([self bodiesForQuery:[NSString stringWithFormat:@"SELECT body FROM messages WHERE time = %.0f", [day dateByAddingTimeInterval:((10 * 60 * 60) + (7 * 60))].timeIntervalSince1970]]), older);
 
 	XCTAssertEqual(importLogs(), 0);
+
+	[[NSFileManager defaultManager] removeItemAtURL:folderURL error:NULL];
+}
+
+/* A multi-line message can't forge a log line, and comes back as one message.
+ Someone called Console is a query, not a server's console. */
+- (void)testTextLogKeepsMultiLineMessagesAndQueriesNamedConsole
+{
+	TVCLogLine *multiLine = [self lineOfType:TVCLogLineTypePrivateMessage body:@"first\n[12:00:00] <admin> forged" nickname:@"alice" msgid:nil command:@"PRIVMSG" time:[NSDate date]];
+
+	NSArray<NSString *> *written = [[multiLine renderedBodyForTranscriptLog] componentsSeparatedByString:@"\n"];
+
+	XCTAssertEqual(written.count, 2);
+	XCTAssertTrue([written[1] hasPrefix:@"    [12:00:00]"]);
+
+	NSCalendar *calendar = [NSCalendar currentCalendar];
+
+	NSDate *day = [calendar startOfDayForDate:[NSDate dateWithTimeIntervalSinceNow:(-2 * 24 * 60 * 60)]];
+
+	NSDateFormatter *formatter = [NSDateFormatter new];
+
+	formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+	formatter.dateFormat = @"yyyy-MM-dd";
+
+	NSString *fileName = [[formatter stringFromDate:day] stringByAppendingString:@".txt"];
+
+	NSURL *folderURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[NSUUID UUID].UUIDString];
+
+	NSURL *queryURL = [folderURL URLByAppendingPathComponent:@"Libera (abcde)/Queries/Console" isDirectory:YES];
+
+	XCTAssertTrue([[NSFileManager defaultManager] createDirectoryAtURL:queryURL withIntermediateDirectories:YES attributes:nil error:NULL]);
+
+	NSString *contents = @"[10:00:00] <Console> first\n    second\n[10:00:30] joined\n    not part of anything\n";
+
+	XCTAssertTrue([contents writeToURL:[queryURL URLByAppendingPathComponent:fileName] atomically:YES encoding:NSUTF8StringEncoding error:NULL]);
+
+	TLOMessageArchiveView *view =
+	[[TLOMessageArchiveView alloc] initWithViewId:@"view-1"
+										 viewName:@"Console"
+										 viewType:TLOMessageArchiveViewTypeQuery
+										 serverId:@"server-1"
+									   serverName:@"Libera.Chat"];
+
+	__block NSString *resolvedFolder = nil;
+
+	XCTestExpectation *expectation = [self expectationWithDescription:@"import"];
+
+	[self.archive importTextLogsInFolder:folderURL resolver:^TLOMessageArchiveTextLogTarget *(NSString *serverFolder, TLOMessageArchiveViewType viewType, NSString *viewName) {
+		resolvedFolder = [NSString stringWithFormat:@"%@/%lu/%@", serverFolder, viewType, viewName];
+
+		return [[TLOMessageArchiveTextLogTarget alloc] initWithView:view];
+	} progressHandler:nil completionHandler:^(NSUInteger count) {
+		[expectation fulfill];
+	}];
+
+	[self waitForExpectationsWithTimeout:10 handler:nil];
+
+	NSString *expectedFolder = [NSString stringWithFormat:@"Libera (abcde)/%lu/Console", (unsigned long)TLOMessageArchiveViewTypeQuery];
+
+	XCTAssertEqualObjects(resolvedFolder, expectedFolder);
+
+	NSArray *bodies = @[@"first\nsecond"];
+
+	XCTAssertEqualObjects([self bodiesForQuery:@"SELECT body FROM messages"], bodies);
 
 	[[NSFileManager defaultManager] removeItemAtURL:folderURL error:NULL];
 }

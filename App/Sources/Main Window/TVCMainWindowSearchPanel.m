@@ -837,7 +837,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.generation += 1;
 
-	[sharedMessageArchive() interruptSearch];
+	[sharedMessageArchive() interruptSearchOfQuery:self.query];
 
 	self.contextMessages = nil;
 	self.contextResult = nil;
@@ -1649,7 +1649,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Mentions
 
-static NSString * const _mentionsLastSeenDefaultsKey = @"Mentions -> Last Seen Row";
 
 @interface TVCMentionsWindowController ()
 @property (nonatomic, strong) TVCMainWindowSearchPanel *panel;
@@ -1708,7 +1707,7 @@ static NSString * const _mentionsLastSeenDefaultsKey = @"Mentions -> Last Seen R
 
 	/* Those since it was last closed are new */
 	if (window.visible == NO) {
-		self.panel.markedNewAfterRowId = [RZUserDefaults() integerForKey:_mentionsLastSeenDefaultsKey];
+		self.panel.markedNewAfterRowId = [RZUserDefaults() integerForKey:TLOMessageArchiveMentionsLastSeenDefaultsKey];
 
 		[self.panel search];
 	}
@@ -1721,12 +1720,12 @@ static NSString * const _mentionsLastSeenDefaultsKey = @"Mentions -> Last Seen R
 /* What was shown has been seen */
 - (void)windowWillClose:(NSNotification *)notification
 {
-	NSInteger lastSeen = [RZUserDefaults() integerForKey:_mentionsLastSeenDefaultsKey];
+	NSInteger lastSeen = [RZUserDefaults() integerForKey:TLOMessageArchiveMentionsLastSeenDefaultsKey];
 
 	NSInteger newest = (NSInteger)self.panel.newestResultRowId;
 
 	if (newest > lastSeen) {
-		[RZUserDefaults() setInteger:newest forKey:_mentionsLastSeenDefaultsKey];
+		[RZUserDefaults() setInteger:newest forKey:TLOMessageArchiveMentionsLastSeenDefaultsKey];
 	}
 }
 
