@@ -459,7 +459,9 @@ body[data-appearance="dark"] {
 }
 
 /* Floating labels at the top of the chat: the date of what is shown while
- scrolling, and loading earlier messages. They float, so nothing moves */
+ scrolling, and loading earlier messages. They float, so nothing moves.
+ Hidden ones take no room either: where the chat is a box as tall as its
+ lines, one 8px down made a single line scroll and cut off its top */
 :where(#chatElementFloats) {
 	position: sticky;
 	top: 0;
@@ -485,10 +487,22 @@ body[data-appearance="dark"] {
 	opacity: 0;
 	transform: translateX(-50%);
 	transition: opacity 0.2s ease;
+	transition-property: opacity, display;
+	transition-behavior: allow-discrete; /* display waits for the fade */
+}
+
+:where(#chatElementFloats .chatElementFloat:not([data-shown="true"])) {
+	display: none;
 }
 
 :where(#chatElementFloats .chatElementFloat[data-shown="true"]) {
 	opacity: 1;
+}
+
+@starting-style {
+	:where(#chatElementFloats .chatElementFloat[data-shown="true"]) {
+		opacity: 0;
+	}
 }
 
 :where(#chatElementFloats .chatElementSpinner) {

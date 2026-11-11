@@ -149,6 +149,17 @@ _EventGroups.isHiddenLine = function(element) /* PRIVATE */
 	return (_EventGroups._isLine(element) && _EventGroups.display[element.getAttribute("data-line-type")] === "hide");
 };
 
+/* Takes a line of the view: a line that isn't hidden or folded away, or a
+ summary. The scrollback limit counts these, not the lines behind them. */
+_EventGroups.isShownLine = function(element) /* PRIVATE */
+{
+	if (_EventGroups._isLine(element)) {
+		return (element.style.display !== "none" && _EventGroups.isHiddenLine(element) === false);
+	}
+
+	return Boolean(element && element.classList && element.classList.contains("eventGroupSummary"));
+};
+
 _EventGroups.isCollapsibleLine = function(element) /* PRIVATE */
 {
 	if (_EventGroups._isLine(element) === false || _EventGroups.isHiddenLine(element)) {

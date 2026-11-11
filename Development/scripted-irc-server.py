@@ -2669,6 +2669,49 @@ async def scenario_styles(client):
 		pass
 
 
+async def scenario_busy_events(client):
+	"""A busy channel that only has joins and quits: #busy gets five messages,
+	then 600 joins and quits, which fold into one summary line. The messages
+	must stay in the view, and after a restart its history must load until they
+	show (or 1,000 lines are in). Say "more" for another 600, "msg" for a
+	message. Runs until stopped."""
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+	channel = "#busy"
+	counter = [0]
+
+	async def events(count):
+		for _ in range(count // 2):
+			counter[0] += 1
+			nick = f"guest{counter[0]:04d}"
+			await client.send(f":{nick}!g@guest.test JOIN {channel}")
+			await client.send(f":{nick}!g@guest.test QUIT :Quit: bye")
+
+	await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+	await client.send(f":{SERVER} 353 {me} = {channel} :{me} alice")
+	await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	for number in range(1, 6):
+		await client.send(f":alice!a@alice.test PRIVMSG {channel} :message {number} before the events")
+
+	await events(600)
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() != "PRIVMSG":
+				continue
+			if rest.endswith(" :more"):
+				await events(600)
+			elif rest.endswith(" :msg"):
+				await client.send(f":alice!a@alice.test PRIVMSG {channel} :a message after the events")
+		seen = len(client.received)
+
+
 async def scenario_collapse(client):
 	"""Joins, parts, quits and nickname changes for checking how runs of them collapse:
 	#collapse gets a few minutes of lines first (two runs, a single join, a kick between
@@ -3624,6 +3667,7 @@ SCENARIOS = {
 	"many-200": scenario_many_channels,
 	"backlog": scenario_backlog,
 	"scrollback-hole": scenario_scrollback_hole,
+	"busy-events": scenario_busy_events,
 	"small-fixes": scenario_small_fixes,
 	"chathistory-time": scenario_chathistory_time,
 	"event-playback": scenario_event_playback,
@@ -3639,7 +3683,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-chat", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-chat", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

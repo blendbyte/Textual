@@ -191,6 +191,8 @@ _Textual.viewFinishedLoadingHistory = function() /* PRIVATE */
 	Textual.finishedLoadingHistory = true;
 
 	Textual.viewFinishedLoadingHistory();
+
+	_MessageBuffer.loadMessagesToFillView();
 };
 
 /* An error in a style's handler skips only that line, not the rest of the batch */

@@ -211,13 +211,15 @@ _MessageBuffer.bufferElementInsert = function(placement, html, lineNumbers) /* P
 	if (lineNumbers) {
 		_MessageBuffer._bufferCurrentSize += lineNumbers.length;
 
-		_MessageBuffer.resizeBufferIfNeeded();
-
 		try {
 			_Textual.messageAddedToView(lineNumbers, false);
 		} catch (error) {
-			console.error(error);			
+			console.error(error);
 		}
+
+		/* After the new lines joined their groups: the limit counts what is
+		 shown, and a burst comes in one batch */
+		_MessageBuffer.resizeBufferIfNeeded();
 	}
 
 	return true;
@@ -243,8 +245,8 @@ _MessageBuffer._adjustCurrentBufferSize = function(byHowMuch)
 
 	if (newSize < 0) {
 		newSize = 0;
-	} else if (newSize > _MessageBuffer._bufferSizeHardLimit) {
-		newSize = _MessageBuffer._bufferSizeHardLimit;
+	} else if (newSize > _MessageBuffer._bufferSizeKeptLimit()) {
+		newSize = _MessageBuffer._bufferSizeKeptLimit();
 	}
 
 	_MessageBuffer._bufferCurrentSize = newSize;
@@ -291,10 +293,57 @@ _MessageBuffer.resizeBufferIfNeeded = function() /* PRIVATE */
 	_MessageBuffer.enforceHardLimit(removeFromTop);
 };
 
-/* Given number of lines added: enforce limit and remove from top or bottom. */
+/* Given number of lines added: enforce limit and remove from top or bottom.
+ Only lines the view shows count: joins and quits folded into a summary (one
+ line) or hidden by the Events setting take no room, and a busy channel's would
+ otherwise push every message out and leave the summary alone in the view.
+ No more than _bufferSizeKeptLimit() lines are kept in all. */
 _MessageBuffer.enforceSoftLimit = function(fromTop) /* PRIVATE */
 {
-	_MessageBuffer.enforceLimit(_MessageBuffer._bufferSizeSoftLimit, fromTop);
+	if (_MessageBuffer._bufferCurrentSize <= _MessageBuffer._bufferSizeSoftLimit) {
+		return;
+	}
+
+	var buffer = MessageBuffer.bufferElement();
+
+	var shownCount = 0;
+
+	for (var child = buffer.firstElementChild; child !== null; child = child.nextElementSibling) {
+		if (_EventGroups.isShownLine(child)) {
+			shownCount += 1;
+		}
+	}
+
+	var keptCount = _MessageBuffer._bufferCurrentSize;
+
+	var keptLimit = _MessageBuffer._bufferSizeKeptLimit();
+
+	var numberToRemove = 0;
+
+	for (var child = ((fromTop) ? buffer.firstElementChild : buffer.lastElementChild);
+		 child !== null && (shownCount > _MessageBuffer._bufferSizeSoftLimit || keptCount > keptLimit);
+		 child = ((fromTop) ? child.nextElementSibling : child.previousElementSibling))
+	{
+		if (_EventGroups.isShownLine(child)) {
+			shownCount -= 1;
+		}
+
+		if (child.id && child.id.indexOf("line-") === 0) {
+			keptCount -= 1;
+
+			numberToRemove += 1;
+		}
+	}
+
+	if (numberToRemove > 0) {
+		_MessageBuffer.resizeBuffer(numberToRemove, fromTop);
+	}
+};
+
+/* Lines kept in all, shown or not (enforceSoftLimit) */
+_MessageBuffer._bufferSizeKeptLimit = function() /* PRIVATE */
+{
+	return Math.max(_MessageBuffer._bufferSizeHardLimit, _MessageBuffer._bufferSizeHardLimitDefault);
 };
 
 _MessageBuffer.enforceHardLimit = function(fromTop) /* PRIVATE */
@@ -432,15 +481,9 @@ _MessageBuffer.scheduleHardLimitResize = function() /* PRIVATE */
 	setTimeout(function() {
 		console.log("Buffer hard limit resize timer fired");
 
-		var numberToRemove = (_MessageBuffer._bufferCurrentSize - _MessageBuffer._bufferSizeSoftLimit);
-
-		if (numberToRemove <= 0) {
-			return;
-		}
-
-		_MessageBuffer.resizeBuffer(numberToRemove, true);
-
 		_MessageBuffer._bufferHardLimitResizeTimer = null;
+
+		_MessageBuffer.enforceSoftLimit(true);
 	}, 5000);
 
 	console.log("Buffer hard limit resize timer started");
@@ -450,8 +493,9 @@ _MessageBuffer.scheduleHardLimitResize = function() /* PRIVATE */
 /*                  Load Messages                     */
 /* ************************************************** */
 
-/* This function picks the best line to load old messages next to. */
-_MessageBuffer.loadMessagesDuringScroll = function(before) /* PRIVATE */
+/* This function picks the best line to load old messages next to.
+ toFillView: loaded only because the lines don't fill the view (loadMessagesToFillView) */
+_MessageBuffer.loadMessagesDuringScroll = function(before, toFillView) /* PRIVATE */
 {
 	/* _MessageBuffer._loadMessages() is only called during scroll events by
 	the user. We keep track of a request is already active then so that we
@@ -528,7 +572,8 @@ _MessageBuffer.loadMessagesDuringScroll = function(before) /* PRIVATE */
 		{
 			"before" : before,
 			"line" : line,
-			"lineNumberContents" : lineNumberContents
+			"lineNumberContents" : lineNumberContents,
+			"toFillView" : (toFillView === true)
 		}
 	);
 };
@@ -587,6 +632,8 @@ _MessageBuffer.loadMessagesDuringScrollWithPayloadPostflight = function(requestP
 	var renderedMessagesCount = renderedMessages.length;
 
 	console.log("Request to load messages for " + line.id + " returned " + renderedMessagesCount + " results");
+
+	var wasScrolledToBottom = TextualScroller.isScrolledToBottom();
 
 	if (renderedMessagesCount > 0) {
 		/* Array which will house every line number that was loaded. 
@@ -659,10 +706,15 @@ _MessageBuffer.loadMessagesDuringScrollWithPayloadPostflight = function(requestP
 			console.error(error);			
 		}
 
-		/* Scroll line into view (its group's summary while that is closed) */
+		/* Scroll line into view (its group's summary while that is closed).
+		 Lines that fill the view go above what is shown, which stays put. */
 		var visibleLine = _EventGroups.visibleElementForLine(line);
 
-		if (before) {
+		if (requestPayload.toFillView) {
+			if (wasScrolledToBottom) {
+				TextualScroller.scrollToBottom();
+			}
+		} else if (before) {
 			visibleLine.scrollIntoViewAlignTop();
 		} else {
 			visibleLine.scrollIntoViewAlignBottom();
@@ -681,6 +733,38 @@ _MessageBuffer.loadMessagesDuringScrollWithPayloadPostflight = function(requestP
 	}
 
 	_MessageActions.updateJumpToPresent();
+
+	if (before) {
+		_MessageBuffer.loadMessagesToFillView();
+	}
+};
+
+/* Older lines load when the view is scrolled to its top, which it can't be
+ while its lines don't fill it (a busy channel's joins and quits fold into one
+ summary line): then they load until there is half a view to scroll up to, the
+ scrollback has no more, or the next batch would go over the hard limit, where
+ loading older lines removes the newest. */
+_MessageBuffer.loadMessagesToFillView = function() /* PRIVATE */
+{
+	if (Textual.finishedLoadingHistory === false || _MessageBuffer._bufferTopIsComplete) {
+		return;
+	}
+
+	if ((_MessageBuffer._bufferCurrentSize + _MessageBuffer._loadMessagesBatchSize) > _MessageBuffer._bufferSizeHardLimit) {
+		return;
+	}
+
+	var scrolledElement = _TextualScroller._scrolledElement;
+
+	if (!scrolledElement) {
+		return;
+	}
+
+	if ((scrolledElement.scrollHeight - scrolledElement.clientHeight) >= (window.innerHeight / 2)) {
+		return;
+	}
+
+	_MessageBuffer.loadMessagesDuringScroll(true, true);
 };
 
 _MessageBuffer.loadMessagesWithJump = function(lineNumber, callbackFunction) /* PRIVATE */
@@ -965,3 +1049,22 @@ MessageBuffer.jumpToLine = function(lineNumber, callbackFunction) /* PUBLIC */
 /* Bind to events */
 document.addEventListener("scrolledUpward", _MessageBuffer._documentScrolledUpwardCallback, false);
 document.addEventListener("scrolledDownward", _MessageBuffer._documentScrolledDownwardCallback, false);
+
+/* A view its lines don't fill can't scroll, so it gets no scroll events:
+ scrolling up there loads older lines too */
+_MessageBuffer._wheelScrolled = function(event) /* PRIVATE */
+{
+	if (event.deltaY >= 0) {
+		return;
+	}
+
+	var scrolledElement = _TextualScroller._scrolledElement;
+
+	if (!scrolledElement || scrolledElement.scrollHeight > scrolledElement.clientHeight) {
+		return;
+	}
+
+	_MessageBuffer.loadMessagesDuringScroll(true);
+};
+
+window.addEventListener("wheel", _MessageBuffer._wheelScrolled, {"passive" : true});
