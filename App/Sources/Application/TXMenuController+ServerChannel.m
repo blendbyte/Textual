@@ -460,37 +460,97 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Channel
 
-- (void)joinChannel:(nullable id)sender
+/* Join, Leave and Close act on every channel or private message selected
+ (servers among them are left out); the menu's other items on the focused one */
+- (NSArray<IRCChannel *> *)selectedChannels
 {
-	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
-	if (u == nil || c == nil || u.isLoggedIn == NO || c.isChannel == NO || c.isActive) {
-		return;
+	if (c == nil) {
+		return @[];
 	}
 
-	[u joinChannel:c];
+	NSArray<IRCTreeItem *> *selectedItems = TVCMainWindow.currentWindow.selectedItems;
 
-	[mainWindow() select:c];
+	/* The selection changed while the menu was open */
+	if ([selectedItems containsObject:c] == NO) {
+		return @[c];
+	}
+
+	NSMutableArray<IRCChannel *> *channels = [NSMutableArray arrayWithCapacity:selectedItems.count];
+
+	for (IRCTreeItem *item in selectedItems) {
+		if (item.isClient == NO) {
+			[channels addObject:(IRCChannel *)item];
+		}
+	}
+
+	return [channels copy];
 }
 
+- (NSArray<IRCChannel *> *)channelsToJoin
+{
+	return [self.selectedChannels filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(IRCChannel *c, NSDictionary *bindings) {
+		return (c.isChannel && c.isActive == NO && c.associatedClient.isLoggedIn);
+	}]];
+}
+
+- (NSArray<IRCChannel *> *)channelsToLeave
+{
+	return [self.selectedChannels filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(IRCChannel *c, NSDictionary *bindings) {
+		return (c.isChannel && c.isActive && c.associatedClient.isLoggedIn);
+	}]];
+}
+
+- (NSArray<IRCChannel *> *)channelsToDelete
+{
+	return [self.selectedChannels filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(IRCChannel *c, NSDictionary *bindings) {
+		return c.isChannel;
+	}]];
+}
+
+- (NSArray<IRCChannel *> *)privateMessagesToClose
+{
+	return [self.selectedChannels filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(IRCChannel *c, NSDictionary *bindings) {
+		return (c.isChannel == NO);
+	}]];
+}
+
+- (void)joinChannel:(nullable id)sender
+{
+	NSArray<IRCChannel *> *channels = self.channelsToJoin;
+
+	for (IRCChannel *c in channels) {
+		[c.associatedClient joinChannel:c];
+	}
+
+	/* Several stay selected as they are */
+	if (channels.count == 1) {
+		[mainWindow() select:channels.firstObject];
+	}
+}
+
+/* Close Private Message too: the focused item's kind decides, as it decides
+ the menu shown */
 - (void)leaveChannel:(nullable id)sender
 {
-	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
-	/* Second boxed in condition is because this is used for queries too */
-	if (u == nil || c == nil || (c.isChannel && (u.isLoggedIn == NO || c.isActive == NO))) {
+	if (c == nil) {
 		return;
 	}
 
 	if (c.isChannel) {
-		[u partChannel:c];
+		for (IRCChannel *channel in self.channelsToLeave) {
+			[channel.associatedClient partChannel:channel];
+		}
 
 		return;
 	}
 
-	[worldController() destroyChannel:c];
+	for (IRCChannel *query in self.privateMessagesToClose) {
+		[worldController() destroyChannel:query];
+	}
 }
 
 - (void)addChannel:(nullable id)sender
@@ -523,20 +583,34 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	if (c.isChannel) {
-		BOOL result = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[516-ms]")
-												title:TXTLS(@"Prompts[i8o-7z]")
-										defaultButton:TXTLS(@"Prompts[mvh-ms]")
-									  alternateButton:TXTLS(@"Prompts[99q-gg]")
-									   suppressionKey:@"delete_channel"
-									  suppressionText:nil];
+	/* Its shortcut is Close Private Message's: a private message goes alone */
+	if (c.isChannel == NO) {
+		[worldController() destroyChannel:c];
 
-		if (result == NO) {
-			return;
-		}
+		[worldController() save];
+
+		return;
 	}
 
-	[worldController() destroyChannel:c];
+	/* Every selected channel, after one question */
+	NSArray<IRCChannel *> *channels = self.channelsToDelete;
+
+	NSUInteger count = channels.count;
+
+	BOOL result = [TDCAlert modalAlertWithMessage:((count > 1) ? TXTLS(@"Prompts[dl2-cm]") : TXTLS(@"Prompts[516-ms]"))
+											title:((count > 1) ? TXTLS(@"Prompts[dl2-ct]", count) : TXTLS(@"Prompts[i8o-7z]"))
+									defaultButton:TXTLS(@"Prompts[mvh-ms]")
+								  alternateButton:TXTLS(@"Prompts[99q-gg]")
+								   suppressionKey:@"delete_channel"
+								  suppressionText:nil];
+
+	if (result == NO) {
+		return;
+	}
+
+	for (IRCChannel *channel in channels) {
+		[worldController() destroyChannel:channel];
+	}
 
 	[worldController() save];
 }

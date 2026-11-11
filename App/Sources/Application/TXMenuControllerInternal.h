@@ -80,6 +80,10 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TXMenuController (ServerChannelInternal)
+@property (readonly, copy) NSArray<IRCChannel *> *channelsToJoin;
+@property (readonly, copy) NSArray<IRCChannel *> *channelsToLeave;
+@property (readonly, copy) NSArray<IRCChannel *> *channelsToDelete;
+@property (readonly, copy) NSArray<IRCChannel *> *privateMessagesToClose;
 @end
 
 @interface TXMenuController (MembersInternal)

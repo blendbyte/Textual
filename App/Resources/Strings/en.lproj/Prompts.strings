@@ -77,6 +77,8 @@
 
 "i8o-7z" = "Do you want to delete the selection?";
 "516-ms" = "There is no undo and all data related to this channel, except for logs, will be erased.";
+"dl2-ct" = "Do you want to delete these %lu channels?";
+"dl2-cm" = "There is no undo and all data related to these channels, except for logs, will be erased.";
 
 "0kz-wd" = "Do you want to delete the selection?";
 "etl-ss" = "There is no undo and all data related to this server, except for logs, will be erased.";

@@ -942,16 +942,25 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
+		/* With several selected, every one it applies to, counted in the title */
 		case MTMMChannelJoinChannel: // "Join Channel"
 		{
-			menuItem.hidden = (u.isLoggedIn == NO || c.isActive);
+			NSUInteger count = self.channelsToJoin.count;
+
+			menuItem.title = ((count > 1) ? TXTLS(@"BasicLanguage[jn2-ch]", count) : TXTLS(@"BasicLanguage[jn1-ch]"));
+
+			menuItem.hidden = (count == 0);
 
 			return YES;
 		}
 
 		case MTMMChannelLeaveChannel: // "Leave Channel"
 		{
-			menuItem.hidden = (u.isLoggedIn == NO || c.isActive == NO);
+			NSUInteger count = self.channelsToLeave.count;
+
+			menuItem.title = ((count > 1) ? TXTLS(@"BasicLanguage[lv2-ch]", count) : TXTLS(@"BasicLanguage[5td-3f]"));
+
+			menuItem.hidden = (count == 0);
 
 			NSMenuItem *joinChannel = [menuItem.menu itemWithTag:MTMMChannelJoinChannel];
 
@@ -963,6 +972,15 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTMMChannelAddChannel: // "Add Channel…"
 		{
 			return (u != nil);
+		}
+
+		case MTMMChannelDeleteChannel: // "Delete Channel…"
+		{
+			NSUInteger count = self.channelsToDelete.count;
+
+			menuItem.title = ((count > 1) ? TXTLS(@"BasicLanguage[dl2-ch]", count) : TXTLS(@"BasicLanguage[dl1-ch]"));
+
+			return YES;
 		}
 
 		case MTMMChannelViewLogs: // "Show Logs in Finder"
@@ -1024,6 +1042,15 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *c = TVCMainWindow.currentWindow.selectedChannel;
 
 	switch (tag) {
+		case MTMMQueryCloseQuery: // "Close Private Message"
+		{
+			NSUInteger count = self.privateMessagesToClose.count;
+
+			menuItem.title = ((count > 1) ? TXTLS(@"BasicLanguage[cl2-pm]", count) : TXTLS(@"BasicLanguage[hri-l0]"));
+
+			return YES;
+		}
+
 		case MTMMQueryQueryLogs: // "Show Logs in Finder"
 		{
 			/* Query menu is used for utility windows too so we

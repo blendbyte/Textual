@@ -46,6 +46,12 @@
 "1f6-bg" = "Close Window";
 "w3a-je" = "Disconnect from %@";
 "5td-3f" = "Leave Channel";
+"lv2-ch" = "Leave %lu Channels";
+"jn2-ch" = "Join %lu Channels";
+"cl2-pm" = "Close %lu Private Messages";
+"jn1-ch" = "Join Channel";
+"dl2-ch" = "Delete %lu Channels…";
+"dl1-ch" = "Delete Channel…";
 "x97-ro" = "Quit %@";
 
 "6cw-ni" = "Copy Log as HTML";

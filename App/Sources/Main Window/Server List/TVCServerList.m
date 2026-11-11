@@ -340,8 +340,12 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 		return nil;
 	}
 
+	/* A row of several selected keeps them selected and becomes the focused
+	 one, as a click on it does: the menu acts on them all */
 	if (rowBeneathMouse >= 0) {
-		if (rowBeneathMouse != self.selectedRow || self.numberOfSelectedRows > 1) {
+		if ([self isRowSelected:rowBeneathMouse] && self.numberOfSelectedRows > 1) {
+			[self.mainWindow selectItemInSelectedItems:itemBeneathMouse];
+		} else if (rowBeneathMouse != self.selectedRow || self.numberOfSelectedRows > 1) {
 			[self selectItemAtIndex:rowBeneathMouse];
 		}
 	} else {
