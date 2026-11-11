@@ -88,7 +88,7 @@
 "cp-hil" = "Treat mentions as highlights";
 "cp-hilh" = "Turn off where your name comes up a lot: messages that mention you are then ordinary ones.";
 "cp-evt" = "Joins, leaves and other events";
-"cp-evth" = "Also nickname changes, away, kicks and mode changes. Combine puts a run of them in one line.";
+"cp-evth" = "Also nickname changes, kicks and mode changes. Combine puts a run of them in one line. Kinds hidden in Settings stay hidden.";
 "cp-evt-s" = "Show";
 "cp-evt-c" = "Combine";
 "cp-evt-h" = "Hide";

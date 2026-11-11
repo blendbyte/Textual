@@ -222,27 +222,22 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	}
 }
 
-/* The channel's choice covers the events its old "Show joins, leaves and
- other events" did. Show and Collapse bring back kinds hidden in Settings and
- keep dimmed ones dimmed; Hide hides them all. Topic changes follow Settings. */
+/* Settings decide which kinds of events show: the channel's Show and Collapse
+ keep those hidden there hidden (Collapse is about how they look, not which),
+ and its Hide hides the events its old "Show joins, leaves and other events"
+ covered. Topic changes follow Settings. */
 - (NSDictionary<NSString *, NSString *> *)eventDisplayByLineType
 {
 	NSDictionary<NSString *, NSString *> *global = [TPCPreferences eventDisplayByLineType];
 
-	IRCChannelEventDisplay eventDisplay = self.config.eventDisplay;
-
-	if (eventDisplay == IRCChannelEventDisplayGlobal) {
+	if (self.config.eventDisplay != IRCChannelEventDisplayHide) {
 		return global;
 	}
 
 	NSMutableDictionary<NSString *, NSString *> *display = [global mutableCopy];
 
 	for (NSString *lineType in @[@"join", @"part", @"quit", @"nick", @"away", @"back", @"kick", @"mode"]) {
-		if (eventDisplay == IRCChannelEventDisplayHide) {
-			display[lineType] = @"hide";
-		} else if ([display[lineType] isEqualToString:@"hide"]) {
-			display[lineType] = @"show";
-		}
+		display[lineType] = @"hide";
 	}
 
 	return [display copy];
