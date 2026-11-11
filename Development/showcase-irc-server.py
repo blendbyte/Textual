@@ -6,10 +6,12 @@
 # private message, a picture and a link, then a few live messages a minute.
 # The people and what they say are invented.
 #
-# Usage: showcase-irc-server.py [--nick alex] [--still] [--listen <address>]...
+# Usage: showcase-irc-server.py [--nick alex] [--still] [--clock HH:MM:SS] [--listen <address>]...
 #        Libera.Chat on 127.0.0.1:6690, OFTC on 127.0.0.1:6691, hackint on
 #        127.0.0.1:6692 (plain). --still sends no new messages after the
 #        history (someone keeps typing), so shots taken a while apart match.
+#        --clock ends the history at that local time today (yesterday if it
+#        is still to come), so every shot shows the same times.
 #        --listen adds an address to 127.0.0.1, such as a VM's local-network
 #        address for a Mac taking the screenshots.
 
@@ -22,6 +24,8 @@ import random
 NICK = "alex"
 
 STILL = False
+
+CLOCK = None  # --clock: the local time of day the history ends at
 
 # Unsplash licence (free to use, no attribution needed), served by Lorem Picsum
 PHOTO = "https://fastly.picsum.photos/id/1015/1600/1067.jpg?hmac=KcEKhxeliVc8ubKOh05esbmHkJYvmfGYwn6iVZi7OTU"
@@ -106,14 +110,45 @@ NETWORKS = {
 			},
 			"#textual": {
 				"topic": "Textual, the IRC client for macOS · https://www.textualapp.com · Textual 8 betas: see GitHub",
-				"members": {"vesper": "@", "ines": "", "kai^": "", "plutil": "", "hana": ""},
-				"away": {"hana"},
+				"members": {"vesper": "@", "ines": "", "kai^": "", "plutil": "", "hana": "", "alice": "", "noor": ""},
+				"away": set(),
+				# Bursts seconds apart; ("*pause", minutes) between them
 				"history": [
+					("ines", "is there a way to get the member list on the left side?"),
+					("vesper", "ines: not yet, it's on the list for after 8.0"),
+					("kai^", "+1 for that one"),
+					("ines", "ok, no rush"),
+					("*pause", 15),
+					("hana", "tip for the beta: Edit → Find → Search Everywhere finds old messages on every network, not just in the channel you're in, great when you can't remember where someone posted a link"),
+					("kai^", "oh nice, i've been scrolling back through days of history in each channel by hand like an animal, that would have saved me a lot of time last week when i lost a link someone posted"),
+					("hana", "and from:nick narrows it down to one person"),
+					("kai^", "even better"),
+					("*pause", 10),
+					("hana", "does 8 still pick up my old scripts folder?"),
+					("vesper", "hana: yes, same folder, nothing to move"),
+					("hana", "perfect, thanks"),
+					("*pause", 12),
 					("kai^", "is the old timestamp format still in 8? can't find it"),
-					("ines", "Settings → Style → Timestamp, it moved"),
+					("ines", "kai^: Settings → Messages, it moved there"),
+					("kai^", "found it, thx"),
+					("*pause", 9),
+					("vesper", "8.0 beta 3 is out, lumen is the default style now", "beta"),
+					("plutil", "nice, updating"),
+					("*pause", 6),
+					("plutil", "/msg NickServ IDENTIFY plutil correct-horse-battery", "oops"),
+					("*redact", "oops"),
+					("plutil", "wrong window 🤦 changing it now"),
+					("ines", "happens to the best of us"),
+					("*pause", 7),
+					("noor", ["scrollback still jumps for me on beta 3:", "1. scroll up a few pages in a busy channel",
+							  "2. switch to another channel and back", "3. it's at the bottom again"], "bug"),
+					("vesper", "noor: thanks, i can reproduce it. the fix is in for beta 4", None, "bug"),
+					("noor", "great, ty"),
 				],
 				"live": [],
 				"crowd": 41,
+				"typing": "alice",
+				"reactions": [("beta", "👍", ["ines", "kai^"]), ("beta", "🎉", ["plutil"])],
 			},
 			"#photography": {
 				"topic": "Photography · gear, edits, critique · share your shots",
@@ -225,6 +260,10 @@ MORE_CHANNELS = {
 			("chloe", "https://github.com/blendbyte/Textual/pull/558"),
 			("maya", "oh that's a good reference, thx"),
 			("ines", "the 16px one still reads, nice"),
+			("*pause", 9),
+			("ines", "mocking up a video player, what's everyone's go-to test clip?"),
+			("maya", "big buck bunny, always https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+			("ines", "ha, of course"),
 		], [("ines", "SF Symbols has a new set of variable icons, worth a look")], crowd=24, away=("ola",)),
 		"#astronomy": channel("Astronomy · clear skies! · share your night shots", {"elif": "@"}, [
 			("elif", "Jupiter is really bright this week, look east after sunset"),
@@ -312,7 +351,7 @@ for port, network in NETWORKS.items():
 		chan.setdefault("reactions", [])
 
 CAPABILITIES = ["server-time", "message-tags", "multi-prefix", "echo-message", "away-notify", "account-notify",
-				"extended-join", "account-tag", "batch", "draft/multiline=max-bytes=4096,max-lines=24"]
+				"extended-join", "account-tag", "batch", "draft/multiline=max-bytes=4096,max-lines=24", "draft/message-redaction"]
 
 # Not logged in to an account: the member list marks them (account markers)
 NOT_LOGGED_IN = {"ava", "lucas", "emma_k", "yuki", "sam", "ines", "kai", "tobi", "mila", "bram", "ola", "nate",
@@ -381,6 +420,12 @@ class Session:
 
 	async def join_all(self):
 		now = datetime.datetime.now(datetime.timezone.utc)
+		if CLOCK:
+			local = now.astimezone()
+			ends = datetime.datetime.combine(local.date(), CLOCK, local.tzinfo)
+			if ends > local:
+				ends -= datetime.timedelta(days=1)
+			now = ends.astimezone(datetime.timezone.utc)
 		for name, channel in self.config["channels"].items():
 			if "extended-join" in self.caps:
 				await self.send(f":{host(self.nick)} JOIN {name} {self.nick} :Alex")
@@ -402,6 +447,8 @@ class Session:
 		history = channel["history"]
 		earlier = channel.get("yesterday", 0)
 		start = now - datetime.timedelta(minutes=(len(history) - earlier) * 3 + 5)
+		# The same seconds every run, so shots taken apart match
+		jitter = random.Random(name + " seconds")
 		# With pauses: messages a few seconds apart, the same spacing every run
 		bursts = None
 		if any(entry[0] == "*pause" for entry in history):
@@ -417,7 +464,7 @@ class Session:
 		# The night before, up to a few minutes before midnight (local time)
 		midnight = now.astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
 		evening = (min(start, midnight) - datetime.timedelta(minutes=earlier * 4 + 6)).astimezone(datetime.timezone.utc)
-		labels = {}
+		labels, senders = {}, {}
 		for index, entry in enumerate(history):
 			sender, text = entry[0], entry[1]
 			if sender == "*pause":
@@ -426,18 +473,24 @@ class Session:
 			reply_to = entry[3] if len(entry) > 3 else None
 			msgid = f"m{next(msgids)}"
 			if label:
-				labels[label] = msgid
+				labels[label], senders[label] = msgid, sender
 			if index < earlier:
-				when = evening + datetime.timedelta(minutes=index * 4, seconds=random.randint(0, 50))
+				when = evening + datetime.timedelta(minutes=index * 4, seconds=jitter.randint(0, 50))
 			elif bursts is not None:
 				when = start + datetime.timedelta(seconds=bursts[index])
 			else:
-				when = start + datetime.timedelta(minutes=(index - earlier) * 3, seconds=random.randint(0, 50))
+				when = start + datetime.timedelta(minutes=(index - earlier) * 3, seconds=jitter.randint(0, 50))
+			# ("*redact", label): its sender deletes that message
+			if sender == "*redact":
+				if "draft/message-redaction" in self.caps:
+					who = senders[text]
+					await self.send(f"{self.tags(self.sender_tags(who), when)}:{host(who)} REDACT {name} {labels[text]}")
+				continue
 			if sender.startswith("*"):
 				await self.event(name, sender[1:], text, when)
 				continue
 			if isinstance(text, list):
-				await self.multiline(name, sender, text, when)
+				await self.multiline(name, sender, text, when, msgid)
 				continue
 			extra = [f"msgid={msgid}"] + self.sender_tags(sender)
 			if reply_to and reply_to in labels:
@@ -463,14 +516,14 @@ class Session:
 		elif kind == "quit":
 			await self.send(f"{tags}:{host(nick)} QUIT :Quit: Leaving")
 
-	async def multiline(self, name, sender, lines, when):
+	async def multiline(self, name, sender, lines, when, msgid=None):
 		if "draft/multiline" not in self.caps or "batch" not in self.caps:
 			for line in lines:
 				if line:
 					await self.send(f"{self.tags(self.sender_tags(sender), when)}:{host(sender)} PRIVMSG {name} :{line}")
 			return
 		reference = f"ml{next(msgids)}"
-		extra = [f"msgid=m{next(msgids)}"] + self.sender_tags(sender)
+		extra = [f"msgid={msgid or f'm{next(msgids)}'}"] + self.sender_tags(sender)
 		await self.send(f"{self.tags(extra, when)}:{host(sender)} BATCH +{reference} draft/multiline {name}")
 		for line in lines:
 			await self.send(f"@batch={reference} :{host(sender)} PRIVMSG {name} :{line}")
@@ -559,11 +612,13 @@ async def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--nick", default=NICK)
 	parser.add_argument("--still", action="store_true")
+	parser.add_argument("--clock", type=datetime.time.fromisoformat)
 	parser.add_argument("--listen", action="append", default=[])
 	arguments = parser.parse_args()
 
-	global STILL
+	global STILL, CLOCK
 	STILL = arguments.still
+	CLOCK = arguments.clock
 
 	async def handler_for(port):
 		async def handle(reader, writer):
