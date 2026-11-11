@@ -247,15 +247,19 @@ MORE_CHANNELS = {
 			("sofia", "thanks, that's the one i was looking for"),
 			("omar", "consuming and borrowing only clicked for me after reading that one"),
 		], [("ravi", "anyone tried typed throws in a real project yet?")], crowd=38, away=("tess", "piotr")),
-		"#design": channel("Design: UI, type, colour · critique welcome", {"chloe": "@", "maya": "", "alice": ""}, [
+		# hal and gwen_ are only here: a nick change shows in every channel its person is in
+		"#design": channel("Design: UI, type, colour · critique welcome", {"chloe": "@", "maya": "", "alice": "", "hal": "", "gwen_": ""}, [
 			("ines", "morning! anyone have a favourite tool for colour palettes?"),
 			("maya", "plain grid of swatches in a sketch file, every time"),
 			("ola", "same, and check contrast in both appearances right away"),
 			("alice", "this one's good for that https://webaim.org/resources/contrastchecker/"),
 			("ines", "oh nice, bookmarked"),
 			("*pause", 14),
+			("*join", "hal"),
 			("maya", "anyone redone a mac app icon for the big sur style yet?"),
+			("*part", "pablo"),
 			("maya", "the rounded rect grid is stricter than i expected"),
+			("*nick", ("gwen_", "gwen")),
 			("chloe", "textual did, the PR has every size from 16 to 1024"),
 			("chloe", "https://github.com/blendbyte/Textual/pull/558"),
 			("maya", "oh that's a good reference, thx"),
@@ -504,6 +508,11 @@ class Session:
 				await self.send(f"{self.tags(extra, now - datetime.timedelta(minutes=1))}:{host(person)} TAGMSG {name}")
 
 	async def event(self, name, kind, nick, when):
+		# ("*nick", (old, new)): the person changes their nickname
+		if kind == "nick":
+			old, new = nick
+			await self.send(f"{self.tags(self.sender_tags(old), when)}:{host(old)} NICK {new}")
+			return
 		tags = self.tags(self.sender_tags(nick), when)
 		if kind == "join":
 			if "extended-join" in self.caps:
@@ -558,7 +567,8 @@ class Session:
 			await self.numeric("315", f"{target} :End of /WHO list.")
 			return
 		gone = {entry[1] for entry in channel["history"] if entry[0] in ("*part", "*quit")}
-		people = [(self.nick, "", False)] + [(nick, prefix, nick in channel["away"]) for nick, prefix in channel["members"].items()
+		renamed = dict(entry[1] for entry in channel["history"] if entry[0] == "*nick")
+		people = [(self.nick, "", False)] + [(renamed.get(nick, nick), prefix, nick in channel["away"]) for nick, prefix in channel["members"].items()
 											   if nick not in gone]
 		for nick, prefix, away in people:
 			flags = ("G" if away else "H") + ("B" if nick in BOTS else "") + prefix
