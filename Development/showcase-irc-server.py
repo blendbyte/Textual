@@ -57,7 +57,7 @@ NETWORKS = {
 					("sofia", "nvm found it. force unwrap in the menu code 🙈"),
 					("theo_", "the classic"),
 					("kenji", "night all"),
-					("priya", "anyone else getting xcode stuck on \"indexing\" forever on a fresh clone"),
+					("priya", "anyone else getting xcode stuck on \"indexing\" forever on a fresh clone? cleaned the build folder, restarted xcode, rebooted, still sitting there after 20 min"),
 					("theo_", "nuke DerivedData and give it a minute"),
 					("theo_", "settles after the first build here"),
 					("priya", "yep that did it, ty"),
@@ -186,28 +186,45 @@ def channel(topic, staff, history, live=(), reactions=(), crowd=0, away=()):
 MORE_CHANNELS = {
 	6690: {
 		"#swift": channel("Swift · the language, packages and tools · swift.org", {"felix": "@", "sofia": "+", "omar": "+"}, [
-			("sofia", "is there a nice way to make a result builder for menus?"),
-			("felix", "yes, look at how ViewBuilder does buildEither, it's surprisingly small"),
+			("tess", "anyone using swift-testing for the non-ui stuff yet?"),
+			("piotr", "moved a whole package over last month"),
+			("piotr", "parameterized tests alone were worth it"),
+			("tess", "did it run fine next to the old XCTest ones?"),
+			("piotr", "yep, same target even"),
+			("tess", "great, trying it tomorrow"),
+			("*pause", 14),
+			("omar", "turned on default main actor isolation for the app target yesterday and about half of my concurrency warnings just disappeared, no other code changes"),
+			("felix", "it does a lot of the work for ui code"),
+			("omar", "keeping the packages strict though"),
+			("sofia", "same here"),
+			("*pause", 9),
 			("ravi", "macros are great but the compile times hurt a bit"),
 			("felix", "keep them in their own package, helps a lot"),
-			("alice", "the proposal that explains the new ownership rules: https://github.com/swiftlang/swift-evolution"),
-			("sofia", "thanks, that's the one I was looking for"),
+			("ravi", "they are, it's building swift-syntax that takes forever"),
+			("omar", "yeah, clean builds are the worst part"),
+			("*pause", 12),
+			("sofia", "is there a nice way to make a result builder for menus?"),
+			("felix", "yes, look at how ViewBuilder does buildIf and buildEither, it's surprisingly little code once you see the whole thing in one file"),
+			("sofia", "oh that's way less code than i expected"),
+			("*pause", 7),
+			("sofia", "where are the ~Copyable rules written up? the book barely covers them"),
+			("alice", "sofia: SE-0390, long but clear https://github.com/swiftlang/swift-evolution/blob/main/proposals/0390-noncopyable-structs-and-enums.md"),
+			("sofia", "thanks, that's the one i was looking for"),
+			("omar", "consuming and borrowing only clicked for me after reading that one"),
 		], [("ravi", "anyone tried typed throws in a real project yet?")], crowd=38, away=("tess", "piotr")),
 		"#design": channel("Design: UI, type, colour · critique welcome", {"chloe": "@", "maya": "", "alice": ""}, [
 			("ines", "morning! anyone have a favourite tool for colour palettes?"),
-			("maya", "I keep coming back to a plain grid of swatches in a sketch file"),
-			("ola", "same, and checking contrast in both appearances right away"),
-			("alice", "this contrast checker is great for that: https://webaim.org/resources/contrastchecker/"),
+			("maya", "plain grid of swatches in a sketch file, every time"),
+			("ola", "same, and check contrast in both appearances right away"),
+			("alice", "this one's good for that https://webaim.org/resources/contrastchecker/"),
 			("ines", "oh nice, bookmarked"),
-			("chloe", "small update: the new onboarding screens are in review"),
-			("maya", "can't wait to see them"),
-			("ola", "are you doing the illustrations yourself?"),
-			("chloe", "yes, simple shapes, two colours each"),
-			("chloe", "does this icon read well at 16 pt?"),
-			("maya", "the inner shape gets lost, try a thicker stroke"),
-			("ines", "+1, and a touch more contrast on the dark variant"),
-			("chloe", "the new app icon PR finally got merged 🎉 https://github.com/blendbyte/Textual/pull/558"),
-			("maya", "and for the weekend, still the best open movie: https://www.youtube.com/watch?v=aqz-KE-bpKQ"),
+			("*pause", 14),
+			("maya", "anyone redone a mac app icon for the big sur style yet?"),
+			("maya", "the rounded rect grid is stricter than i expected"),
+			("chloe", "textual did, the PR has every size from 16 to 1024"),
+			("chloe", "https://github.com/blendbyte/Textual/pull/558"),
+			("maya", "oh that's a good reference, thx"),
+			("ines", "the 16px one still reads, nice"),
 		], [("ines", "SF Symbols has a new set of variable icons, worth a look")], crowd=24, away=("ola",)),
 		"#astronomy": channel("Astronomy · clear skies! · share your night shots", {"elif": "@"}, [
 			("elif", "Jupiter is really bright this week, look east after sunset"),
@@ -247,9 +264,13 @@ MORE_CHANNELS = {
 			("raj", "an N100 with 32 GB, runs all my containers"),
 			("tobi", "nice, how's the idle draw?"),
 			("raj", "about 7 W"),
+			("*pause", 9),
+			("noah", "what's everyone doing for offsite backups these days"),
+			("alice", "restic to a storage box, nightly from a systemd timer"),
+			("alice", "docs are really good: https://restic.readthedocs.io/"),
+			("noah", "ty, trying it this weekend"),
+			("*pause", 6),
 			("tobi", "alex: you had the same box, right? what idle draw do you get?"),
-			("alice", "wrote up my backup setup, restic and a tiny script: https://github.com/restic/restic"),
-			("tobi", "bookmarked, thanks"),
 		], [("tobi", "backups first, then the fun stuff")], crowd=27, away=("vera",)),
 		"#books": channel("Books · what are you reading? · no spoilers without warning", {"iris": "@"}, [
 			("iris", "finished Piranesi last night, what a book"),
@@ -381,7 +402,6 @@ class Session:
 		history = channel["history"]
 		earlier = channel.get("yesterday", 0)
 		start = now - datetime.timedelta(minutes=(len(history) - earlier) * 3 + 5)
-		evening = now - datetime.timedelta(days=1, hours=2)
 		# With pauses: messages a few seconds apart, the same spacing every run
 		bursts = None
 		if any(entry[0] == "*pause" for entry in history):
@@ -394,6 +414,9 @@ class Session:
 					elapsed += pace.choice((3, 6, 9, 14, 22, 35, 50))
 					bursts[index] = elapsed
 			start = now - datetime.timedelta(seconds=elapsed + 100)
+		# The night before, up to a few minutes before midnight (local time)
+		midnight = now.astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
+		evening = (min(start, midnight) - datetime.timedelta(minutes=earlier * 4 + 6)).astimezone(datetime.timezone.utc)
 		labels = {}
 		for index, entry in enumerate(history):
 			sender, text = entry[0], entry[1]
