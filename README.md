@@ -8,8 +8,6 @@
 > [!IMPORTANT]
 > **Textual is under new maintainership.** For most of its life, Textual had a single full-time maintainer, who has since moved on to other ventures. We've now taken over maintainership, and active development continues here.
 >
-> Development picks up from [Textwerk](https://github.com/bashgeek/Textwerk), a community fork of Textual that has now been retired. Many of the features and fixes made in Textwerk will carry over to Textual 8.
->
 > To everyone who has contributed to Textual in any form, whether a suggestion, bug report, pull request, financial support, or something else: thank you. Textual exists because of you, and we're glad to keep it going.
 
 <img src="App/Resources/Assets.xcassets/Application/applicationIcon.appiconset/icon_128x128@2x.png" alt="Textual icon" width="128" height="128">
