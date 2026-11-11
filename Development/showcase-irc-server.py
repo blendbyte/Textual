@@ -34,58 +34,86 @@ NETWORKS = {
 		"channels": {
 			"#macdev": {
 				"topic": "Mac and iOS development · SwiftUI, AppKit, Xcode · be kind, paste long code to a pastebin",
-				"members": {"mira": "@", "kenji": "@", "theo": "+", "alice": "+", "priya": "", "jonas": "", "nadia": "", "lucas": "",
-							"sofia": "", "ben": "", "ava": "", "omar": "", "lena": "", "felix": "", "chloe": "", "raj": "", "emma_k": "",
-							"sam": "", "yuki": "", "noah": "", "iris": "", "hugo": "", "maya": "", "leo": "", "zoe": "", "arjun": "",
-							"elif": "", "heidi": "", "pia": "", "rami": ""},
-				"away": {"lena", "noah", "hugo", "zoe"},
+				# The whole list (70 with alex): who joins and quits below is in it too
+				"members": {"mira": "@", "kenji": "@", "nullptr": "@", "alice": "+", "theo_": "+", "priya": "+", "felix": "+",
+							"RelBot": "+", "mdlog": "+",
+							"nadia": "", "jonas": "", "sofia": "", "omar": "", "lucas": "", "ben": "", "yuki": "", "arjun": "",
+							"elif": "", "raj": "", "maya": "", "iris": "", "leo": "", "ines": "", "tess": "", "marek": "", "hana": "",
+							"chloe": "", "sam__": "", "hugo_": "", "wren_": "", "rosa_": "", "lars__": "", "tobi|work": "",
+							"ravi|work": "", "ilse|work": "", "dani|away": "", "petra|away": "", "kai^": "", "^ash": "", "gus^": "",
+							"zoe92": "", "jt88": "", "mk2": "", "ola7": "", "t0m": "", "sv3n": "", "ByteHerder": "", "LateCommit": "",
+							"MossyRock": "", "KernelPanda": "", "kqueue": "", "mkdir": "", "dyld": "", "plutil": "", "kevent": "",
+							"jules[m]": "", "hannah-k[m]": "", "Guest48213": "", "emma_k": "", "fynn": "",
+							"vik": "", "dag": "", "bo": "", "pk": "", "ndrw": "", "cwebb": "", "jkl": "", "xvi": "", "irina__": "", "lowpass": ""},
+				"complete": True,
+				"away": {"hugo_", "dani|away", "petra|away", "tess", "lars__", "MossyRock", "sv3n", "yuki", "elif", "hana",
+						 "bo", "dag", "cwebb", "jkl", "t0m", "rosa_", "kai^", "hannah-k[m]"},
 				# The first ones are from yesterday evening: a day line above today's
 				"yesterday": 5,
+				# Bursts seconds apart; ("*pause", minutes) between them
 				"history": [
 					("sofia", "anyone around to look at a crash log?"),
-					("felix", "sure, paste it to a gist"),
-					("sofia", "never mind, found it: a force unwrap in the menu code 🙈"),
-					("theo", "the classic"),
-					("kenji", "heading off, good night everyone"),
-					("priya", "is anyone else seeing Xcode index forever on a fresh clone?"),
-					("theo", "delete DerivedData and give it a minute, mine settles after the first build"),
-					("priya", "that did it, thanks"),
-					("heidi", "📦 swift-format 601.0.0 was released · https://github.com/swiftlang/swift-format/releases"),
-					("*join", "ivy"), ("*join", "nate"), ("*part", "pia"), ("*join", "olli"), ("*quit", "rami"),
-					("jonas", "SwiftUI question: what do you use for a sidebar that remembers its width?"),
-					("kenji", ["here's roughly what I use:", "", "@SceneStorage(\"sidebarWidth\") private var width = 220.0", "",
-							   "NavigationSplitView {", "    Sidebar().frame(minWidth: width)", "} detail: {", "    Detail()", "}"]),
-					("jonas", "nice, I'll try that"),
-					("alice", "the long version is in the docs, worth a read: https://www.swift.org/getting-started/"),
-					("sofia", "Swift 6 strict concurrency finally clicked for me this week"),
-					("sofia", "the trick was moving all the UI state into one @MainActor model"),
-					("felix", "same, once you treat actors as little islands it gets much easier"),
-					("ben", "anyone using the new Observation macros with AppKit views?"),
-					("kenji", "yes, withObservationTracking around the update method, works fine"),
-					("mira", "alex: did the build with the crash fix help on your side?", "mention"),
-					("omar", "Instruments' new hangs view saved me an afternoon today"),
-					("nadia", "just shipped our first Mac app to TestFlight 🎉", "launch"),
+					("felix", "sure, gist it"),
+					("sofia", "nvm found it. force unwrap in the menu code 🙈"),
+					("theo_", "the classic"),
+					("kenji", "night all"),
+					("priya", "anyone else getting xcode stuck on \"indexing\" forever on a fresh clone"),
+					("theo_", "nuke DerivedData and give it a minute"),
+					("theo_", "settles after the first build here"),
+					("priya", "yep that did it, ty"),
+					("*pause", 11),
+					("RelBot", "📦 swift-format 601.0.0 released · https://github.com/swiftlang/swift-format/releases"),
+					("*pause", 8),
+					("jonas", "swiftui q: how do you get a sidebar to remember its width?"),
+					("jonas", "NavigationSplitView forgets it every launch"),
+					("kenji", "SceneStorage, roughly:"),
+					("kenji", "@SceneStorage(\"sidebarWidth\") private var width = 220.0"),
+					("kenji", "NavigationSplitView {"),
+					("kenji", "    Sidebar().frame(minWidth: width)"),
+					("mira", "kenji: topic 👆"),
+					("kenji", "yeah yeah, sorry"),
+					("kenji", "https://gist.github.com/310e941eb13c22750d0308c2dd7815ac"),
+					("jonas", "perfect, thx"),
+					("*pause", 6),
+					("sofia", "swift 6 strict concurrency finally clicked for me this week"),
+					("sofia", "moved all the ui state into one @MainActor model and the warnings just went away"),
+					("nadia", "just shipped our first mac app to testflight 🎉", "launch"),
+					("felix", "sofia: yeah once you treat actors as little islands it gets easy"),
+					("dyld", "meanwhile i'm at 312 Sendable warnings 🙃"),
+					("alice", "dyld: the getting started guide has a decent concurrency section now https://www.swift.org/getting-started/"),
 					("alice", "congrats!! what does it do?", None, "launch"),
-					("nadia", "a tiny menu bar app that keeps an eye on build times"),
-					("nadia", "it tells you when a build suddenly gets slower than usual"),
-					("lucas", "@nadia send the link, I want it"),
-					("chloe", "how do you all name your feature flags?"),
-					("raj", "verbs: enablesFoo, showsBar. reads nicely in code"),
-					("theo", "+1, and keep them in one place so they're easy to remove later"),
+					("nadia", "tiny menu bar app that watches your build times"),
+					("nadia", "pings you when a build is suddenly way slower than usual"),
+					("nadia", "caught a 40% regresion from one macro last week"),
+					("nadia", "s/regresion/regression/"),
+					("lucas", "nadia: link? want it"),
+					("nadia", "lucas: https://cdn.imgpile.com/f/PhmxPYA.webp"),
+					("nadia", "testflight link's still stuck in beta review, will post it when it clears"),
+					("*pause", 5),
+					("*join", "mkdir"), ("*join", "jules[m]"), ("*quit", "zoe92"), ("*join", "Guest48213"),
+					("*pause", 3),
+					("mira", "alex: did the build with the crash fix help on your side?", "mention"),
+					("*pause", 4),
+					("omar", "instruments' new hangs view saved me an afternoon today"),
+					("nullptr", "same, found a sync file read on the main thread in like 5 min"),
 				],
 				"live": [
-					("priya", "did anyone try the new Xcode beta on a big project yet?"),
+					("priya", "anyone tried the new xcode beta on a big project yet?"),
 					("kenji", "builds feel a bit faster here, previews too"),
-					("emma_k", "what's the cleanest way to show a sheet from an NSWindow in SwiftUI?"),
-					("felix", "an NSHostingController as the sheet's content works well"),
-					("yuki", "TIL you can option-click a symbol for its quick help"),
-					("sam", "coffee break, back in 10"),
-					("jonas", "the sidebar width trick works, thanks kenji"),
-					("arjun", "anyone going to the meetup next week?"),
 				],
 				"typing": "alice",
-				"crowd": 64,
-				"reactions": [("launch", "👍", ["kenji", "lucas"]), ("launch", "🎉", ["sofia"]), ("mention", "👀", ["theo"])],
+				"reactions": [("launch", "👍", ["kenji", "lucas"]), ("launch", "🎉", ["sofia"]), ("mention", "👀", ["theo_"])],
+			},
+			"#textual": {
+				"topic": "Textual, the IRC client for macOS · https://www.textualapp.com · Textual 8 betas: see GitHub",
+				"members": {"vesper": "@", "ines": "", "kai^": "", "plutil": "", "hana": ""},
+				"away": {"hana"},
+				"history": [
+					("kai^", "is the old timestamp format still in 8? can't find it"),
+					("ines", "Settings → Style → Timestamp, it moved"),
+				],
+				"live": [],
+				"crowd": 41,
 			},
 			"#photography": {
 				"topic": "Photography · gear, edits, critique · share your shots",
@@ -198,18 +226,28 @@ MORE_CHANNELS = {
 			("kira", "the scope and the supply shared a bad power strip"),
 			("joel", "the cheapest strips are always the culprit"),
 		], [("joel", "new soldering tip arrived, the fine one")], crowd=22),
+		"#hackint": channel("hackint · https://hackint.org · be excellent to each other", {"nox": "@"}, [
+			("fiete", "the tor address changed? my bouncer can't connect since yesterday"),
+			("nox", "no, but one onion server is down for maintenance, try the other one"),
+			("fiete", "that was it, thanks"),
+		], crowd=34),
 		"#retro": channel("Retro computing · old machines, new tricks", {"otto": "@"}, [
 			("otto", "got a 1989 laptop booting again, new caps and a CF card"),
 			("linh", "pictures or it didn't happen!"),
 		], [("linh", "anyone have spare floppy drive belts?")], crowd=15),
 	},
 	6691: {
+		"#oftc": channel("OFTC support · https://www.oftc.net/ · ask your question and stay around, staff answer when they can", {"tjf": "@"}, [
+			("rook_", "is there a way to get a cloak for a project?"),
+			("tjf", "yes, have the project lead mail us, details are on the website"),
+		], crowd=58, away=("tjf",)),
 		"#homelab": channel("Homelab · servers, networks, blinkenlights", {"noah": "@", "raj": "+"}, [
 			("raj", "moved everything to a tiny fanless box, power bill thanks me"),
 			("noah", "which one?"),
 			("raj", "an N100 with 32 GB, runs all my containers"),
 			("tobi", "nice, how's the idle draw?"),
 			("raj", "about 7 W"),
+			("tobi", "alex: you had the same box, right? what idle draw do you get?"),
 			("alice", "wrote up my backup setup, restic and a tiny script: https://github.com/restic/restic"),
 			("tobi", "bookmarked, thanks"),
 		], [("tobi", "backups first, then the fun stuff")], crowd=27, away=("vera",)),
@@ -230,7 +268,8 @@ CROWD = ["ravi", "tess", "piotr", "ines", "ola", "kai", "nora", "bram", "tobi", 
 		 "cleo", "dev", "eva", "finn", "gabi", "henk", "ivy", "jana", "karl", "luca", "mona", "nate", "olli", "pia", "rami",
 		 "sol", "tim", "uma", "vito", "wim", "yoel", "zara", "ada", "bo", "cyra", "dag", "esme", "fynn", "gwen", "hal", "ida"]
 
-NETWORKS[6692] = {"network": "hackint", "server": "irc.hackint.org", "channels": {}, "query": None}
+NETWORKS[6692] = {"network": "hackint", "server": "irc.hackint.org", "icon": "https://www.ircatlas.org/images/networks/hackint.webp",
+				  "channels": {}, "query": None}
 
 for port, extra in MORE_CHANNELS.items():
 	NETWORKS[port]["channels"].update(extra)
@@ -239,6 +278,8 @@ for port, extra in MORE_CHANNELS.items():
 for port, network in NETWORKS.items():
 	for number, (name, chan) in enumerate(network["channels"].items()):
 		wanted = chan.get("crowd") or len(chan["members"]) + 12
+		if chan.get("complete"):
+			wanted = 0
 		pool = CROWD[number * 7:] + CROWD[:number * 7]
 		for nick in pool:
 			if len(chan["members"]) >= wanted + len([n for n in chan["members"] if chan["members"][n]]):
@@ -253,10 +294,11 @@ CAPABILITIES = ["server-time", "message-tags", "multi-prefix", "echo-message", "
 				"extended-join", "account-tag", "batch", "draft/multiline=max-bytes=4096,max-lines=24"]
 
 # Not logged in to an account: the member list marks them (account markers)
-NOT_LOGGED_IN = {"ava", "lucas", "emma_k", "yuki", "sam", "ines", "kai", "tobi", "mila", "bram", "ola", "nate"}
+NOT_LOGGED_IN = {"ava", "lucas", "emma_k", "yuki", "sam", "ines", "kai", "tobi", "mila", "bram", "ola", "nate",
+				 "Guest48213", "jt88", "kevent", "xvi"}
 NOT_LOGGED_IN.update(CROWD[3::5])
 
-BOTS = {"heidi"}
+BOTS = {"RelBot", "mdlog"}
 
 msgids = itertools.count(1000)
 
@@ -340,9 +382,23 @@ class Session:
 		earlier = channel.get("yesterday", 0)
 		start = now - datetime.timedelta(minutes=(len(history) - earlier) * 3 + 5)
 		evening = now - datetime.timedelta(days=1, hours=2)
+		# With pauses: messages a few seconds apart, the same spacing every run
+		bursts = None
+		if any(entry[0] == "*pause" for entry in history):
+			pace = random.Random(name)
+			bursts, elapsed = {}, 0
+			for index, entry in enumerate(history[earlier:], earlier):
+				if entry[0] == "*pause":
+					elapsed += entry[1] * 60 + pace.randint(0, 40)
+				else:
+					elapsed += pace.choice((3, 6, 9, 14, 22, 35, 50))
+					bursts[index] = elapsed
+			start = now - datetime.timedelta(seconds=elapsed + 100)
 		labels = {}
 		for index, entry in enumerate(history):
 			sender, text = entry[0], entry[1]
+			if sender == "*pause":
+				continue
 			label = entry[2] if len(entry) > 2 else None
 			reply_to = entry[3] if len(entry) > 3 else None
 			msgid = f"m{next(msgids)}"
@@ -350,6 +406,8 @@ class Session:
 				labels[label] = msgid
 			if index < earlier:
 				when = evening + datetime.timedelta(minutes=index * 4, seconds=random.randint(0, 50))
+			elif bursts is not None:
+				when = start + datetime.timedelta(seconds=bursts[index])
 			else:
 				when = start + datetime.timedelta(minutes=(index - earlier) * 3, seconds=random.randint(0, 50))
 			if sender.startswith("*"):
@@ -423,8 +481,9 @@ class Session:
 		if channel is None:
 			await self.numeric("315", f"{target} :End of /WHO list.")
 			return
+		gone = {entry[1] for entry in channel["history"] if entry[0] in ("*part", "*quit")}
 		people = [(self.nick, "", False)] + [(nick, prefix, nick in channel["away"]) for nick, prefix in channel["members"].items()
-											   if nick not in ("pia", "rami")]
+											   if nick not in gone]
 		for nick, prefix, away in people:
 			flags = ("G" if away else "H") + ("B" if nick in BOTS else "") + prefix
 			if whox:
