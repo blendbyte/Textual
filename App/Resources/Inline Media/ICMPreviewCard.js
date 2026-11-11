@@ -74,3 +74,13 @@ _ICMPreviewCard.playClicked = function(event)
 
 	return false;
 };
+
+/* A page's picture fills the card's narrow column and is cropped to it. A
+ wide one (a social card such as GitHub's, a site's banner) would lose its
+ sides, so it is shown whole instead, centred in the column. */
+_ICMPreviewCard.pageImageLoaded = function(image)
+{
+	if (image.naturalWidth > (image.naturalHeight * 1.3)) {
+		image.parentNode.dataset.wide = "true";
+	}
+};

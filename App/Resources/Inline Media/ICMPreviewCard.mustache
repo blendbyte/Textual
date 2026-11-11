@@ -26,7 +26,7 @@
 		</span>
 {{/isPost}}
 {{#isPage}}
-		{{#imageURL}}<span class="previewCardPageImage"><img src="{{imageURL}}" alt="" onerror="this.parentNode.remove()"></span>{{/imageURL}}
+		{{#imageURL}}<span class="previewCardPageImage"><img src="{{imageURL}}" alt="" onload="_ICMPreviewCard.pageImageLoaded(this)" onerror="this.parentNode.remove()"></span>{{/imageURL}}
 		<span class="previewCardBody">
 			{{#title}}<span class="previewCardTitle">{{title}}</span>{{/title}}
 			{{#text}}<span class="previewCardText">{{text}}</span>{{/text}}

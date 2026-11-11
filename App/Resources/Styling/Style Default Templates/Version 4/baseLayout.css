@@ -900,6 +900,21 @@ div.line[data-command="NOTE" i] { --textual-standard-reply: var(--textual-note);
 	object-fit: cover;
 }
 
+/* A wide picture whole, not cropped (_ICMPreviewCard.pageImageLoaded) */
+:where(.inlinePreviewCard .previewCardPageImage[data-wide]) {
+	display: flex;
+	align-items: center;
+	width: auto;
+	padding-left: 10px;
+}
+
+:where(.inlinePreviewCard .previewCardPageImage[data-wide] img) {
+	height: auto;
+	min-height: 0;
+	object-fit: contain;
+	border-radius: 4px;
+}
+
 :where(.inlinePreviewCard .previewCard[data-card-style="page"] .previewCardText) {
 	-webkit-line-clamp: 2;
 }
