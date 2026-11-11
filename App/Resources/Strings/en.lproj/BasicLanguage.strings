@@ -104,3 +104,6 @@
 "app-v2" = "Hide Server List";
 "app-v3" = "Show Member List";
 "app-v4" = "Hide Member List";
+
+/* A Debug build, after the build number in the About window: "Version 8.0 (300011, Development)" */
+"abt-c1" = "Development";

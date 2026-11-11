@@ -305,10 +305,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 	appendLink(TXLocalizationNotNeeded(@"GitHub"), TXGitHubRepository);
 
-	[NSApp orderFrontStandardAboutPanelWithOptions:@{
+	NSMutableDictionary *options = [@{
 		NSAboutPanelOptionApplicationIcon : [TVCDockIcon applicationIcon], // not the Dock's, with its badges
 		NSAboutPanelOptionCredits : credits
-	}];
+	} mutableCopy];
+
+	/* Builds other than the regular download say where they came from,
+	 so support can tell from a screenshot: "Version 8.0 (300011, App Store)" */
+	NSString *channel = [self aboutWindowDistributionChannel];
+
+	if (channel != nil) {
+		NSString *buildNumber = [NSBundle mainBundle].infoDictionary[@"CFBundleVersion"];
+
+		options[NSAboutPanelOptionVersion] = [NSString stringWithFormat:TXLocalizationNotNeeded(@"%@, %@"), buildNumber, channel];
+	}
+
+	[NSApp orderFrontStandardAboutPanelWithOptions:options];
+}
+
+- (nullable NSString *)aboutWindowDistributionChannel
+{
+#ifdef DEBUG
+	return TXTLS(@"BasicLanguage[abt-c1]");
+#elif TEXTUAL_BUILT_FOR_APP_STORE_DISTRIBUTION == 1
+	/* The App Store and TestFlight get the same build; only TestFlight's
+	 copy comes with a sandbox receipt */
+	if ([[NSBundle mainBundle].appStoreReceiptURL.lastPathComponent isEqualToString:@"sandboxReceipt"]) {
+		return TXLocalizationNotNeeded(@"TestFlight");
+	}
+
+	return TXLocalizationNotNeeded(@"App Store");
+#else
+	return nil;
+#endif
 }
 
 #pragma mark -
