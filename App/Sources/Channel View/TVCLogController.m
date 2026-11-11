@@ -2677,6 +2677,9 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	NSString *excerpt = logLine.messageBody.stripIRCEffects.trim;
 
+	/* One line: the lines of a multiline message joined by spaces */
+	excerpt = [excerpt stringByReplacingOccurrencesOfString:@"\\s+" withString:@" " options:NSRegularExpressionSearch range:excerpt.range];
+
 	if (excerpt.length > _messageReferenceExcerptLength) {
 		excerpt = [[excerpt substringToIndex:[excerpt rangeOfComposedCharacterSequenceAtIndex:_messageReferenceExcerptLength].location] stringByAppendingString:@"…"];
 	}
