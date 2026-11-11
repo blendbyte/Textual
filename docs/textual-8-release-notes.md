@@ -18,7 +18,7 @@ Textual 8 keeps a searchable archive of your conversations and adds replies, rea
 ## Chat view
 
 - Choose Chat or Classic, and Compact, Standard or Roomy spacing, in Settings › Appearance.
-- Joins, parts and quits in a row collapse into one line, and each kind of event can be shown, dimmed or hidden. A netsplit is one line per channel.
+- Joins, parts and quits in a row combine into one line, and each kind of event can be shown, dimmed or hidden. A netsplit is one line per channel.
 - A message the server refuses stays visible, dimmed, with "Not sent:", the reason, and Resend and Delete.
 - ⌥↑ moves into the messages for keyboard use: R replies, E reacts, Delete deletes.
 - You can see who is typing. Others can see you type too, unless you turn off "Let others see when I'm typing" in Settings › Typing.

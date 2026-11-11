@@ -46,7 +46,7 @@
 #import "TVCLogControllerPrivate.h"
 #import "TDCSharedProtocolDefinitionsPrivate.h"
 #import "TDCSheetBase.h"
-#import "TPCPreferencesLocal.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TLOFileLoggerPrivate.h"
 #import "TLOInputHistoryPrivate.h"
 #import "TLOLocalization.h"
@@ -208,6 +208,44 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 		default:
 			return [TPCPreferences removeAllFormatting];
 	}
+}
+
+- (BOOL)collapsesEvents
+{
+	switch (self.config.eventDisplay) {
+		case IRCChannelEventDisplayShow:
+			return NO;
+		case IRCChannelEventDisplayCollapse:
+			return YES;
+		default:
+			return [TPCPreferences collapseEvents];
+	}
+}
+
+/* The channel's choice covers the events its old "Show joins, leaves and
+ other events" did. Show and Collapse bring back kinds hidden in Settings and
+ keep dimmed ones dimmed; Hide hides them all. Topic changes follow Settings. */
+- (NSDictionary<NSString *, NSString *> *)eventDisplayByLineType
+{
+	NSDictionary<NSString *, NSString *> *global = [TPCPreferences eventDisplayByLineType];
+
+	IRCChannelEventDisplay eventDisplay = self.config.eventDisplay;
+
+	if (eventDisplay == IRCChannelEventDisplayGlobal) {
+		return global;
+	}
+
+	NSMutableDictionary<NSString *, NSString *> *display = [global mutableCopy];
+
+	for (NSString *lineType in @[@"join", @"part", @"quit", @"nick", @"away", @"back", @"kick", @"mode"]) {
+		if (eventDisplay == IRCChannelEventDisplayHide) {
+			display[lineType] = @"hide";
+		} else if ([display[lineType] isEqualToString:@"hide"]) {
+			display[lineType] = @"show";
+		}
+	}
+
+	return [display copy];
 }
 
 - (BOOL)isPrivateMessageForZNCUser

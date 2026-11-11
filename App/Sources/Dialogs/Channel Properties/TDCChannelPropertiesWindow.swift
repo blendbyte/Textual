@@ -92,7 +92,7 @@ final class ChannelPropertiesModel: ObservableObject
 	@Published var previews = ChannelPropertiesPreviews.asInSettings
 	@Published var formatting = IRCChannelFormatting.global
 	@Published var mentionsAreHighlights = true
-	@Published var showsEvents = true
+	@Published var events = IRCChannelEventDisplay.global
 	@Published var keepsInArchive = true
 	@Published var topic = ""
 	@Published var modes = ""
@@ -151,7 +151,8 @@ final class ChannelPropertiesModel: ObservableObject
 		formatting = config.formatting
 
 		mentionsAreHighlights = (config.ignoreHighlights == false)
-		showsEvents = (config.ignoreGeneralEventMessages == false)
+		/* Turned off by a plugin, which stops printing them: Hide, and saved as Hide */
+		events = ((config.eventDisplay == .global && config.ignoreGeneralEventMessages) ? .hide : config.eventDisplay)
 		keepsInArchive = (config.excludedFromArchive == false)
 
 		topic = (config.defaultTopic ?? "")
@@ -199,7 +200,8 @@ final class ChannelPropertiesModel: ObservableObject
 		config.formatting = formatting
 
 		config.ignoreHighlights = (mentionsAreHighlights == false)
-		config.ignoreGeneralEventMessages = (showsEvents == false)
+		config.eventDisplay = events
+		config.ignoreGeneralEventMessages = false
 		config.excludedFromArchive = (keepsInArchive == false)
 
 		config.defaultTopic = topic.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -322,6 +324,15 @@ final class ChannelPropertiesModel: ObservableObject
 	var formattingDefault: String
 	{
 		ChannelPropertiesText((TPCPreferences.removeAllFormatting()) ? "fmt-p2" : "fmt-p3")
+	}
+
+	var eventsDefault: String
+	{
+		switch TPCPreferences.generalEventDisplay() {
+			case .collapse: return ChannelPropertiesText("cp-evt-c")
+			case .hide: return ChannelPropertiesText("cp-evt-h")
+			default: return ChannelPropertiesText("cp-evt-s")
+		}
 	}
 
 	// MARK: Alerts
@@ -726,7 +737,17 @@ struct ChannelPropertiesView: View
 
 			SettingToggle(title: ChannelPropertiesText("cp-hil"), help: ChannelPropertiesText("cp-hilh"), isOn: $model.mentionsAreHighlights)
 
-			SettingToggle(title: ChannelPropertiesText("cp-evt"), help: ChannelPropertiesText("cp-evth"), isOn: $model.showsEvents)
+			Picker(selection: $model.events) {
+				Text(ChannelPropertiesText("cp-same", model.eventsDefault)).tag(IRCChannelEventDisplay.global)
+
+				Divider()
+
+				Text(ChannelPropertiesText("cp-evt-s")).tag(IRCChannelEventDisplay.show)
+				Text(ChannelPropertiesText("cp-evt-c")).tag(IRCChannelEventDisplay.collapse)
+				Text(ChannelPropertiesText("cp-evt-h")).tag(IRCChannelEventDisplay.hide)
+			} label: {
+				SettingLabel(title: ChannelPropertiesText("cp-evt"), help: ChannelPropertiesText("cp-evth"))
+			}
 		}
 	}
 

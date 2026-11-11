@@ -47,7 +47,7 @@
 #import "IRCUser.h"
 #import "IRCWorldPrivate.h"
 #import "TVCBasicTableView.h"
-#import "TVCLogController.h"
+#import "TVCLogControllerPrivate.h"
 #import "TVCLogViewPrivate.h"
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMemberList.h"
@@ -144,7 +144,14 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	BOOL sameEventDisplay = (c.config.eventDisplay == config.eventDisplay);
+
 	[c updateConfig:config];
+
+	/* Events already in the chat are shown, collapsed or hidden the new way */
+	if (sameEventDisplay == NO) {
+		[c.viewController reloadTheme];
+	}
 
 	/* The label, the unread count and the Dock's count follow the new settings */
 	[mainWindow() reloadTreeItem:c];

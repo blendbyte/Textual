@@ -87,8 +87,11 @@
 "cp-fmth" = "Colors, bold and other styles people use in their messages.";
 "cp-hil" = "Treat mentions as highlights";
 "cp-hilh" = "Turn off where your name comes up a lot: messages that mention you are then ordinary ones.";
-"cp-evt" = "Show joins, leaves and other events";
-"cp-evth" = "Also nickname changes, away, kicks and mode changes. Yours always show.";
+"cp-evt" = "Joins, leaves and other events";
+"cp-evth" = "Also nickname changes, away, kicks and mode changes. Combine puts a run of them in one line.";
+"cp-evt-s" = "Show";
+"cp-evt-c" = "Combine";
+"cp-evt-h" = "Hide";
 "cp-arc-t" = "Message archive";
 "cp-arc-h" = "Kept for searching and for history.";
 "cp-arc-off" = "The message archive is off in Settings › History.";

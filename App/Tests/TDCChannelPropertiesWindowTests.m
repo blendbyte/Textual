@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 	config.inlineMediaDisabled = YES;
 	config.formatting = IRCChannelFormattingRemove;
 	config.ignoreHighlights = YES;
-	config.ignoreGeneralEventMessages = YES;
+	config.eventDisplay = IRCChannelEventDisplayCollapse;
 	config.excludedFromArchive = YES;
 	config.defaultTopic = @"Welcome";
 	config.defaultModes = @"+nt";
@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertFalse(config.inlineMediaEnabled);
 	XCTAssertEqual(config.formatting, IRCChannelFormattingRemove);
 	XCTAssertTrue(config.ignoreHighlights);
-	XCTAssertTrue(config.ignoreGeneralEventMessages);
+	XCTAssertEqual(config.eventDisplay, IRCChannelEventDisplayCollapse);
 	XCTAssertTrue(config.excludedFromArchive);
 	XCTAssertEqualObjects(config.defaultTopic, original.defaultTopic);
 	XCTAssertEqualObjects(config.defaultModes, original.defaultModes);
@@ -108,6 +108,25 @@ NS_ASSUME_NONNULL_BEGIN
 	TDCChannelPropertiesWindow *window = [self windowForConfig:config];
 
 	XCTAssertFalse([window applyChanges]);
+}
+
+/* A channel saved with "Show joins, leaves and other events" off, from
+ before Show, Collapse and Hide, opens with Hide and prints its events again */
+- (void)testEventsTurnedOffBeforeOpenAsHidden
+{
+	IRCChannelConfig *saved = [[IRCChannelConfig alloc] initWithDictionary:@{@"channelName" : @"#textual", @"ignoreGeneralEventMessages" : @(YES)}];
+
+	XCTAssertEqual(saved.eventDisplay, IRCChannelEventDisplayHide);
+	XCTAssertFalse(saved.ignoreGeneralEventMessages);
+
+	/* Chosen since: kept as it is */
+	IRCChannelConfig *chosen = [[IRCChannelConfig alloc] initWithDictionary:@{@"channelName" : @"#textual", @"eventDisplay" : @(IRCChannelEventDisplayShow)}];
+
+	XCTAssertEqual(chosen.eventDisplay, IRCChannelEventDisplayShow);
+
+	IRCChannelConfig *reloaded = [[IRCChannelConfig alloc] initWithDictionary:saved.dictionaryValue];
+
+	XCTAssertEqual(reloaded.eventDisplay, IRCChannelEventDisplayHide);
 }
 
 @end

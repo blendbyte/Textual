@@ -3750,8 +3750,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"reloadingTheme" : @(self.pendingThemeReload),
 			  @"textSizeMultiplier" : @(textSizeMultiplier),
 			  @"scrollbackLimit" : @(scrollbackLimit),
-			  @"collapseGeneralEvents" : @([TPCPreferences collapseEvents]),
-			  @"eventDisplay" : [TPCPreferences eventDisplayByLineType],
+			  @"collapseGeneralEvents" : @((channel) ? channel.collapsesEvents : [TPCPreferences collapseEvents]),
+			  @"eventDisplay" : ((channel) ? channel.eventDisplayByLineType : [TPCPreferences eventDisplayByLineType]),
 			  @"messageActions" : self.messageActionsAvailability,
 			  @"chatElementStrings" : @{
 				  @"today" : TXFormatDate([NSDate date], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),

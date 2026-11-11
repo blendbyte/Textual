@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 	  @"channelType" : @(IRCChannelTypeChannel),
 	  @"excludedFromArchive" : @(NO),
 	  @"formatting" : @(IRCChannelFormattingGlobal),
+	  @"eventDisplay" : @(IRCChannelEventDisplayGlobal),
 	  @"ignoreGeneralEventMessages"	: @(NO),
 	  @"ignoreHighlights" : @(NO),
 	  @"inlineMediaEnabled" : @(NO),
@@ -137,6 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Load the newest set of keys */
 	[defaultsMutable assignBoolTo:&self->_autoJoin forKey:@"autoJoin"];
+	[defaultsMutable assignUnsignedIntegerTo:&self->_eventDisplay forKey:@"eventDisplay"];
 	[defaultsMutable assignBoolTo:&self->_ignoreGeneralEventMessages forKey:@"ignoreGeneralEventMessages"];
 	[defaultsMutable assignBoolTo:&self->_ignoreHighlights forKey:@"ignoreHighlights"];
 	[defaultsMutable assignBoolTo:&self->_inlineMediaDisabled forKey:@"inlineMediaDisabled"];
@@ -162,6 +164,19 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_ignoreGeneralEventMessages forKey:@"ignoreJPQActivity"];
 	[defaultsMutable assignBoolTo:&self->_pushNotifications forKey:@"enableNotifications"];
 	[defaultsMutable assignBoolTo:&self->_showTreeBadgeCount forKey:@"enableTreeBadgeCountDrawing"];
+
+	/* "Show joins, leaves and other events" turned off, from before the
+	 choice of Show, Collapse and Hide: hidden in the view, so they come back
+	 when the channel shows them again, instead of never being printed */
+	if (dic[@"eventDisplay"] == nil && self->_ignoreGeneralEventMessages) {
+		self->_eventDisplay = IRCChannelEventDisplayHide;
+
+		self->_ignoreGeneralEventMessages = NO;
+	}
+
+	if (self->_eventDisplay > IRCChannelEventDisplayHide) {
+		self->_eventDisplay = IRCChannelEventDisplayGlobal;
+	}
 
 	/* Migrate inline media */
 	/* Old behavior was to store a single property named "ignoreInlineMedia"
@@ -214,6 +229,8 @@ NS_ASSUME_NONNULL_BEGIN
 		[dic maybeSetObject:self.notifications forKey:@"notifications"];
 
 		[dic setBool:self.autoJoin forKey:@"autoJoin"];
+
+		[dic setUnsignedInteger:self.eventDisplay forKey:@"eventDisplay"];
 
 		[dic setBool:self.ignoreGeneralEventMessages forKey:@"ignoreGeneralEventMessages"];
 		[dic setBool:self.ignoreHighlights forKey:@"ignoreHighlights"];
@@ -460,6 +477,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic type;
 @dynamic formatting;
+@dynamic eventDisplay;
 @dynamic excludedFromArchive;
 @dynamic autoJoin;
 @dynamic channelName;
@@ -496,6 +514,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_formatting != formatting) {
 		self->_formatting = formatting;
+	}
+}
+
+- (void)setEventDisplay:(IRCChannelEventDisplay)eventDisplay
+{
+	if (self->_eventDisplay != eventDisplay) {
+		self->_eventDisplay = eventDisplay;
 	}
 }
 
