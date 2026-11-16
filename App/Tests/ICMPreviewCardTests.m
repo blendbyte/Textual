@@ -151,7 +151,14 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(card.title, @"Example Domain");
 	XCTAssertNil(card.text);
 	XCTAssertNil(card.imageURL);
-	XCTAssertEqualObjects(card.details, @[@"Example"]);
+	XCTAssertEqualObjects(card.details, @[@"Example · example.com"]);
+
+	/* The page can claim any name: the link's real host is always there */
+	NSURL *lookalikeURL = [NSURL URLWithString:@"https://login-github.example/session"];
+
+	card = [ICMWebPage cardForPageMetadata:@{@"og:title" : @"Sign in to GitHub", @"og:site_name" : @"github.com"} atURL:lookalikeURL linkURL:lookalikeURL];
+
+	XCTAssertEqualObjects(card.details, @[@"github.com · login-github.example"]);
 
 	/* No title: no card */
 	card = [ICMWebPage cardForPageMetadata:@{@"og:description" : @"Text", @"og:image" : @"https://example.com/a.jpg"} atURL:pageURL linkURL:linkURL];

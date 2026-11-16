@@ -125,6 +125,12 @@ final class ConnectionProxy: NSObject
 	@objc(identifierForClientConfig:)
 	static func identifier(for config: IRCClientConfig) -> String?
 	{
+		/* Chosen but with no address: its own session, which gets the
+		 unreachable proxy below, not the shared one that goes out directly */
+		if (ProxySettings.addressIsMissing(type: config.proxyType, address: config.proxyAddress, port: config.proxyPort)) {
+			return "missing\u{1F}" + String(config.proxyType.rawValue)
+		}
+
 		guard ProxySettings(clientConfig: config) != nil else {
 			return nil
 		}

@@ -136,21 +136,46 @@ NS_ASSUME_NONNULL_BEGIN
 		card.imageURL = [NSURL URLWithString:image relativeToURL:pageURL].absoluteURL;
 	}
 
+	/* Always the link's real host (where a click goes), as the page can claim
+	 any og:site_name ("github.com" on a lookalike); the name only beside it */
+	NSString *host = [self.class shownHostOfURL:linkURL];
+
 	NSString *siteName = metadata[@"og:site_name"].trim;
 
-	if (siteName.length == 0) {
-		siteName = pageURL.host.lowercaseString;
-
-		if ([siteName hasPrefix:@"www."]) {
-			siteName = [siteName substringFromIndex:4];
-		}
-	}
-
-	if (siteName) {
-		card.details = @[siteName];
+	if (host && siteName.length > 0 && [siteName isEqualToStringIgnoringCase:host] == NO) {
+		card.details = @[[NSString stringWithFormat:@"%@ · %@", siteName, host]];
+	} else if (host) {
+		card.details = @[host];
 	}
 
 	return card;
+}
+
+/* Lowercase, without "www.", and in its ASCII (IDNA) form when it has other
+ characters: a lookalike in another script shows as xn--… */
++ (nullable NSString *)shownHostOfURL:(NSURL *)url
+{
+	NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:YES];
+
+	NSString *host = components.host.lowercaseString;
+
+	if (host.length == 0) {
+		return nil;
+	}
+
+	if ([host canBeConvertedToEncoding:NSASCIIStringEncoding] == NO) {
+		NSString *encodedHost = components.encodedHost.lowercaseString;
+
+		if (encodedHost.length > 0) {
+			host = encodedHost;
+		}
+	}
+
+	if ([host hasPrefix:@"www."]) {
+		host = [host substringFromIndex:4];
+	}
+
+	return host;
 }
 
 #pragma mark -

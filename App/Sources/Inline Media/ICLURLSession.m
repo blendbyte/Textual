@@ -37,6 +37,7 @@
 #import <netdb.h>
 
 #import "IRCClient.h"
+#import "TVCLogView.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "ICLInlineContentLoaderPrivate.h"
 #import "IRCClientConfig.h"
@@ -266,6 +267,10 @@ static NSMapTable<NSURLSession *, NSURLSession *> *_mediaSessions = nil;
 	config.HTTPCookieStorage = nil;
 
 	config.URLCredentialStorage = nil;
+
+	/* The documented link preview agent: CFNetwork's own names Textual's
+	 build and the Mac's Darwin version to every site linked */
+	config.HTTPAdditionalHeaders = @{@"User-Agent" : TVCLogViewCommonUserAgentString};
 
 	config.timeoutIntervalForRequest = _requestTimeout;
 	config.timeoutIntervalForResource = _requestTimeout;
