@@ -356,9 +356,12 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* Cleared: no key, rather than an empty one */
+	/* Cleared: no key, rather than an empty one. Not when the key couldn't be
+	 read this session: the field was empty because of that, not cleared. */
 	if (self->_secretKey.length == 0) {
-		[self destroySecretKeyKeychainItem];
+		if ([TLOKeychain setPassword:@"" ofKind:TLOKeychainItemKindChannelKey forIdentifier:self.uniqueIdentifier]) {
+			self->_secretKey = nil;
+		}
 
 		return;
 	}
