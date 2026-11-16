@@ -1539,6 +1539,23 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+- (BOOL)_selectionIsOnlyYourself:(NSMenuItem *)menuItem onClient:(IRCClient *)client
+{
+	NSArray<NSString *> *nicknames = [self selectedMembersNicknames:menuItem];
+
+	if (nicknames.count == 0) {
+		return NO;
+	}
+
+	for (NSString *nickname in nicknames) {
+		if ([client nicknameIsMyself:nickname] == NO) {
+			return NO;
+		}
+	}
+
+	return YES;
+}
+
 /* The member menu (member list and nicknames in the chat view) */
 - (BOOL)_validateUserControlsMenuItem:(NSMenuItem *)menuItem
 {
@@ -1718,7 +1735,22 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTUserControlsTakeHalfop: // "Take Halfop (-h)"
 		case MTUserControlsTakeVoice: // "Take Voice (-v)"
 		{
-			return (u.isLoggedIn && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
+			if (u.isLoggedIn == NO || c.isActive == NO) {
+				return NO;
+			}
+
+			/* Your own voice or half-op: most servers let you drop it yourself */
+			if ((tag == MTUserControlsTakeVoice || tag == MTUserControlsTakeHalfop) && [self _selectionIsOnlyYourself:menuItem onClient:u]) {
+				IRCUserRank ownRanks = [c findMember:u.userNickname].ranks;
+
+				IRCUserRank rank = ((tag == MTUserControlsTakeVoice) ? IRCUserRankVoiced : IRCUserRankHalfOperator);
+
+				if (ownRanks & rank) {
+					return YES;
+				}
+			}
+
+			return [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c];
 		}
 
 		case MTUserControlsAllModesGiven: // "All Modes Given"

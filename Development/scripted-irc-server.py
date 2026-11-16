@@ -377,6 +377,30 @@ async def scenario_review_limits(client):
 		pass
 
 
+async def scenario_review_voice(client):
+	"""In #voice you have only +v, alice has +o: right-click your own nickname,
+	Take Voice must be enabled (Give Voice for alice stays greyed). A MODE
+	from you is applied as the server would allow it."""
+	if not await client.register_with_capabilities("multi-prefix"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #voice")
+	await client.send(f":{SERVER} 353 {me} = #voice :+{me} @alice")
+	await client.send(f":{SERVER} 366 {me} #voice :End of /NAMES list.")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() == "MODE" and rest.startswith("#voice "):
+				await client.send(f":{me}!user@client.textual.test MODE {rest}")
+				result(True, f"MODE sent: {rest}")
+		seen = len(client.received)
+
+
 async def scenario_review_clock(client):
 	"""A server clock three minutes behind (server-time on every line, the
 	welcome too): alice's CTCP VERSION must be answered, not taken for
@@ -3710,6 +3734,7 @@ SCENARIOS = {
 	"review-dcc-send": scenario_review_dcc_send,
 	"review-held-batches": scenario_review_held_batches,
 	"review-clock": scenario_review_clock,
+	"review-voice": scenario_review_voice,
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
@@ -3767,7 +3792,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-voice", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 
