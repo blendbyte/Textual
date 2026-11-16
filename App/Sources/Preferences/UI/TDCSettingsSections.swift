@@ -214,6 +214,51 @@ struct ListsSettings: View
 
 // MARK: - Servers
 
+/* Nickname, Username, Real name: empty while typing, the default again once
+ left empty (Return or leaving the field). Stored on every change, the empty
+ field refilled with the default at once and the next letters went after it. */
+private struct DefaultIdentityField: View
+{
+	let title: String
+	let text: Binding<String> // removes the stored value when set to ""
+
+	@State private var draft = ""
+	@FocusState private var focused: Bool
+
+	var body: some View
+	{
+		TextField(title, text: $draft, prompt: Text(SettingsText("set-optional")))
+			.focused($focused)
+			.onSubmit(commit)
+			.onChange(of: focused) { _, isFocused in
+				if (isFocused == false) {
+					commit()
+				}
+			}
+			.onChange(of: draft) { _, value in
+				/* Not the default shown again: that stays unstored */
+				if (value.trimmingCharacters(in: .whitespaces).isEmpty == false && value != text.wrappedValue) {
+					text.wrappedValue = value
+				}
+			}
+			.onAppear {
+				draft = text.wrappedValue
+			}
+			.onDisappear(perform: commit)
+	}
+
+	private func commit()
+	{
+		guard draft.trimmingCharacters(in: .whitespaces).isEmpty else {
+			return
+		}
+
+		text.wrappedValue = ""
+
+		draft = text.wrappedValue
+	}
+}
+
 struct ServersSettings: View
 {
 	@ObservedObject private var store = SettingsStore.shared
@@ -231,10 +276,10 @@ struct ServersSettings: View
 			}
 
 			Section {
-				TextField(SettingsText("set-srv-i1"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Nickname"), prompt: Text(SettingsText("set-optional")))
+				DefaultIdentityField(title: SettingsText("set-srv-i1"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Nickname"))
 				TextField(SettingsText("set-srv-i2"), text: store.string("DefaultIdentity -> AwayNickname"), prompt: Text(SettingsText("set-optional")))
-				TextField(SettingsText("set-srv-i3"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Username"), prompt: Text(SettingsText("set-optional")))
-				TextField(SettingsText("set-srv-i4"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Realname"), prompt: Text(SettingsText("set-optional")))
+				DefaultIdentityField(title: SettingsText("set-srv-i3"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Username"))
+				DefaultIdentityField(title: SettingsText("set-srv-i4"), text: store.stringRemovedWhenEmpty("DefaultIdentity -> Realname"))
 			} header: {
 				Text(SettingsText("set-srv-h1"))
 			} footer: {
