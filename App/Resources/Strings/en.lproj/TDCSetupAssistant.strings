@@ -244,6 +244,7 @@
 "sa-sy-lead" = "Your nickname is how you appear in every channel. You can change it any time.";
 "sa-sy-nick-t" = "Nickname";
 "sa-sy-nick-d" = "Letters, numbers and a few symbols, no spaces.";
+"sa-sy-nick-p" = "e.g. nightowl";
 "sa-sy-real-t" = "Real name";
 "sa-sy-real-d" = "Optional, and public. Most people leave it empty.";
 "sa-sy-real-p" = "Optional";

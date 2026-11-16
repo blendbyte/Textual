@@ -166,10 +166,8 @@ final class SetupServersModel: ObservableObject
 
 	init()
 	{
-		let preferred = NSUserName()
-
-		nickname = (preferred.isHostmaskNickname ? preferred : TPCPreferences.defaultNickname())
-
+		/* Empty: the Mac's account name (often a real name) is not suggested,
+		 and Continue waits for one typed in */
 		feedObserver = AtlasFeedStore.shared.objectWillChange.sink { [weak self] in
 			self?.objectWillChange.send()
 		}
@@ -1416,7 +1414,7 @@ struct SetupYourNameStep: View
 			HStack(alignment: .top, spacing: 12) {
 				SetupGroup {
 					SetupControlRow(divider: false, title: SetupText("sa-sy-nick-t"), text: SetupText("sa-sy-nick-d")) {
-						TextField("", text: $model.nickname)
+						TextField(SetupText("sa-sy-nick-p"), text: $model.nickname)
 							.textFieldStyle(.roundedBorder)
 							.frame(width: 130)
 							.labelsHidden()
