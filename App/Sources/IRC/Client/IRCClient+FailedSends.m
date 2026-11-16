@@ -112,6 +112,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	outgoing.label = self.capturedLabel;
 
+	outgoing.lastLineQueued = self.queuedLineCount;
+
 	self.capturingLabel = wasCapturing;
 	self.capturedLabel = previousLabel;
 
@@ -126,7 +128,12 @@ NS_ASSUME_NONNULL_BEGIN
 	NSDate *now = [NSDate date];
 
 	NSIndexSet *expired = [self.outgoingMessages indexesOfObjectsPassingTest:^BOOL(IRCClientOutgoingMessage *outgoing, NSUInteger index, BOOL *stop) {
-		NSTimeInterval age = [now timeIntervalSinceDate:outgoing.sentAt];
+		/* Still in the send queue: the server hasn't seen it yet */
+		if (outgoing.writtenAt == nil) {
+			return ([now timeIntervalSinceDate:outgoing.sentAt] > _outgoingMessageUnwrittenTimeout);
+		}
+
+		NSTimeInterval age = [now timeIntervalSinceDate:outgoing.writtenAt];
 
 		return (age > ((outgoing.label) ? _outgoingMessageTimeout : _outgoingMessageErrorWindow));
 	}];
@@ -134,9 +141,49 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.outgoingMessages removeObjectsAtIndexes:expired];
 }
 
+/* The connection wrote a line: messages whose lines have all gone out
+ start their time to be answered (flood control can hold them seconds) */
+- (void)noteLineWritten:(NSString *)line
+{
+	NSParameterAssert(line != nil);
+
+	if ([line hasPrefix:@"PONG"]) {
+		return;
+	}
+
+	if (self.writtenLineCount < self.queuedLineCount) {
+		self.writtenLineCount += 1;
+	}
+
+	NSUInteger written = self.writtenLineCount;
+
+	NSDate *now = nil;
+
+	for (IRCClientOutgoingMessage *outgoing in self.outgoingMessages) {
+		if (outgoing.writtenAt != nil || outgoing.lastLineQueued > written) {
+			continue;
+		}
+
+		if (now == nil) {
+			now = [NSDate date];
+		}
+
+		outgoing.writtenAt = now;
+	}
+}
+
+/* Lines dropped from the send queue are never written */
+- (void)noteSendQueueCleared
+{
+	self.writtenLineCount = self.queuedLineCount;
+}
+
 - (void)removeOutgoingMessages
 {
 	[self.outgoingMessages removeAllObjects];
+
+	self.queuedLineCount = 0;
+	self.writtenLineCount = 0;
 
 	self.lastEchoedBatch = nil;
 }
@@ -275,7 +322,12 @@ NS_ASSUME_NONNULL_BEGIN
 	outgoing.failedReason = reason.trim;
 
 	if (outgoing.printedLocally) {
-		[channel.viewController markLine:outgoing.lineNumber asSendFailed:outgoing.failedReason];
+		/* The line shows the dots of a password: Delete, no Resend */
+		NSString *shownText = [IRCClient textHidingPasswordInServiceCommand:outgoing.text toTarget:outgoing.target];
+
+		BOOL canResend = ([IRCClient textEndsInHiddenPassword:shownText] == NO);
+
+		[channel.viewController markLine:outgoing.lineNumber asSendFailed:outgoing.failedReason canResend:canResend];
 
 		return YES;
 	}

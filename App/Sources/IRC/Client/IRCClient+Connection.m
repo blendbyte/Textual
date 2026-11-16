@@ -169,6 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.userIsAway = NO;
 	self.awayRestoredBeforeRegistration = NO;
+	self.serverClockOffset = 0;
 	self.userIsIRCop = NO;
 
 	self.isConnectedToZNC = NO;
@@ -591,6 +592,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self processIncomingMessageAttributes:message];
 
+	[self noteServerClockOfMessage:message];
+
 	[self processAccountTagInMessage:message];
 
 	[self processBotTagInMessage:message];
@@ -794,6 +797,8 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self rawDataLogOutgoingTraffic:data];
+
+	[self noteLineWritten:data];
 }
 
 @end

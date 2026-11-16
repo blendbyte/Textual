@@ -76,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define _labeledRequestTimeout		300 // a labeled command whose reply never came is forgotten after this many seconds
 #define _outgoingMessageTimeout		60 // a message sent with a label whose answer never came is forgotten after this many seconds
 #define _outgoingMessageErrorWindow	5 // without labels, an error about a message's target counts this many seconds after it
+#define _outgoingMessageUnwrittenTimeout	600 // a message still waiting in the send queue (flood control) is forgotten after this many seconds
 #define _isonLineMaximumLength		400 // bytes of nicknames per ISON line (lines are limited to 512)
 
 #define _CTCPReplyLimit				5 // replies per _CTCPReplyLimitInterval
@@ -104,6 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *replyToMsgid;
 @property (nonatomic, weak, nullable) IRCChannel *channel;
 @property (nonatomic, copy) NSDate *sentAt;
+@property (nonatomic, copy, nullable) NSDate *writtenAt; // its last line left the send queue: the timeouts count from here
+@property (nonatomic, assign) NSUInteger lastLineQueued; // queuedLineCount after its lines were queued
 @property (nonatomic, copy, nullable) NSString *label; // labeled-response: its answer is matched exactly
 @property (nonatomic, assign) BOOL printedLocally; // shown at once (no echo-message)
 @property (nonatomic, copy, nullable) NSString *lineNumber; // that line
@@ -156,6 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *preAwayUserNickname;
 @property (nonatomic, copy, nullable) NSString *awayMessageToRestore; // set by us; sent again after a reconnect
 @property (nonatomic, assign) BOOL awayRestoredBeforeRegistration; // draft/pre-away
+@property (nonatomic, assign) NSTimeInterval serverClockOffset; // server time minus the Mac's, from live 001, PING and PONG
 @property (nonatomic, assign, readwrite) NSUInteger logFileSessionCount;
 
 // Properties private
@@ -171,6 +175,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL capturingLabel; // the first label given while set goes into capturedLabel
 @property (nonatomic, copy, nullable) NSString *capturedLabel;
 @property (nonatomic, strong) NSMutableArray<IRCClientOutgoingMessage *> *outgoingMessages; // oldest first
+@property (nonatomic, assign) NSUInteger queuedLineCount; // lines given to the connection (PONG aside, which skips the queue)
+@property (nonatomic, assign) NSUInteger writtenLineCount; // of those, lines it wrote
 @property (nonatomic, strong, nullable) IRCClientOutgoingMessage *printingOutgoingMessage; // print: takes its reply, failure and line number
 @property (nonatomic, weak, nullable) IRCMessageBatchMessage *lastEchoedBatch;
 @property (nonatomic, assign) NSUInteger multilineMaxBytes; // draft/multiline limits from the CAP value
@@ -427,6 +433,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)chatHistoryBatchWillBeProcessed:(IRCMessageBatchMessage *)batchMessage;
 - (BOOL)shouldIgnoreJoinOfChannel:(NSString *)channelName;
 - (BOOL)messageIsReplay:(IRCMessage *)m; // history or playback, by batch or by an old server time
+- (void)noteServerClockOfMessage:(IRCMessage *)m;
 - (void)receiveStandardReply:(IRCMessage *)m;
 + (NSString *)textHidingPasswordInServiceCommand:(NSString *)text toTarget:(NSString *)target;
 - (BOOL)awayMessageGivesNoReason:(NSString *)message; // draft/pre-away: "*"
@@ -468,6 +475,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)outgoingMessageAnsweredWithLabel:(NSString *)label; // echo or ACK: taken
 - (void)removeOutgoingMessages;
+- (void)noteLineWritten:(NSString *)line;
+- (void)noteSendQueueCleared;
 @end
 
 @interface IRCClient (LabeledResponseInternal)

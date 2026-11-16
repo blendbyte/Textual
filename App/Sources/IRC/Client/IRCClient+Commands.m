@@ -548,6 +548,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.socket clearSendQueue];
 
+	[self noteSendQueueCleared];
+
 	/* If -isLoggedIn is NO, then the connection does not need 
 	 to be closed gracefully because the user hasn't even joined
 	 a channel yet, so who are we doing it for? */

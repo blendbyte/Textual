@@ -85,7 +85,7 @@ class Client:
 
 		return True
 
-	async def register_with_capabilities(self, capabilities, server_name=SERVER):
+	async def register_with_capabilities(self, capabilities, server_name=SERVER, welcome_prefix=""):
 		"""Register like a CAP 302 server that offers capabilities (one LS line)
 		and acknowledges whatever the client requests."""
 		seen = set()
@@ -125,11 +125,11 @@ class Client:
 			elif command == "NICK":
 				self.nickname = rest.lstrip(":")
 
-		await self.welcome()
+		await self.welcome(welcome_prefix)
 
 		return True
 
-	async def welcome(self):
+	async def welcome(self, prefix=""):
 		for line in [
 			f":{SERVER} 001 {self.nickname} :Welcome to the scripted test server",
 			f":{SERVER} 002 {self.nickname} :Your host is {SERVER}",
@@ -138,7 +138,7 @@ class Client:
 			f":{SERVER} 005 {self.nickname} CHANTYPES=# PREFIX=(ov)@+ NETWORK=TextualScripted {self.isupport_extra}".rstrip() + " :are supported by this server",
 			f":{SERVER} 422 {self.nickname} :MOTD File is missing",
 		]:
-			await self.send(line)
+			await self.send(prefix + line)
 
 	async def collect(self, seconds):
 		"""Answer PINGs and JOINs and record what the client sends for a while."""
@@ -374,6 +374,44 @@ async def scenario_review_limits(client):
 	result(await client.is_alive("long"), "client alive after a batch of 25,000 lines")
 
 	while await client.collect(3600):
+		pass
+
+
+async def scenario_review_clock(client):
+	"""A server clock three minutes behind (server-time on every line, the
+	welcome too): alice's CTCP VERSION must be answered, not taken for
+	replayed history. In #clock alice reacts to her message with a family
+	emoji (joined by U+200D) and the flag of England (tag characters)."""
+	import datetime
+
+	def stamp(msgid=None):
+		moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(seconds=180)
+		tags = "time=" + moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+		if msgid:
+			tags += f";msgid={msgid}"
+		return f"@{tags} "
+
+	if not await client.register_with_capabilities("message-tags server-time", welcome_prefix=stamp()):
+		return
+
+	me = client.nickname
+
+	await client.send(stamp() + f":{me}!user@client.textual.test JOIN #clock")
+	await client.send(stamp() + f":{SERVER} 353 {me} = #clock :{me} alice")
+	await client.send(stamp() + f":{SERVER} 366 {me} #clock :End of /NAMES list.")
+	await client.collect(2)
+	await client.send(stamp("k1") + ":alice!a@alice.test PRIVMSG #clock :Our server's clock is three minutes slow")
+	await client.send(stamp()[:-1] + ";+draft/react=\U0001F468\u200D\U0001F469\u200D\U0001F467;+draft/reply=k1 :alice!a@alice.test TAGMSG #clock")
+	await client.send(stamp()[:-1] + ";+draft/react=\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F;+draft/reply=k1 :alice!a@alice.test TAGMSG #clock")
+	await client.send(stamp() + ":alice!a@alice.test PRIVMSG " + me + " :\x01VERSION\x01")
+
+	await client.collect(5)
+
+	answered = client.sent(lambda line: "NOTICE alice" in line and "VERSION" in line)
+	result(bool(answered), "CTCP VERSION answered with a server clock 180 s behind" if answered else "CTCP VERSION not answered (taken for history)")
+	check("#clock: alice's message has a family and an England flag reaction")
+
+	while await client.collect(5):
 		pass
 
 
@@ -3671,6 +3709,7 @@ SCENARIOS = {
 	"review-receive": scenario_review_receive,
 	"review-dcc-send": scenario_review_dcc_send,
 	"review-held-batches": scenario_review_held_batches,
+	"review-clock": scenario_review_clock,
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
@@ -3728,7 +3767,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

@@ -696,7 +696,7 @@ _MessageActions.deleteMessage = function(msgid, note) /* PRIVATE */
 /* ************************************************** */
 
 /* From the app: the server refused our message */
-_MessageActions.markFailed = function(lineNumber, reason) /* PRIVATE */
+_MessageActions.markFailed = function(lineNumber, reason, canResend) /* PRIVATE */
 {
 	var line = document.getElementByLineNumber(lineNumber);
 
@@ -707,6 +707,8 @@ _MessageActions.markFailed = function(lineNumber, reason) /* PRIVATE */
 	var atBottom = TextualScroller.isScrolledToBottom();
 
 	line.classList.add("failed");
+
+	line.classList.toggle("noResend", (canResend === false));
 
 	line.dataset.sendFailed = reason;
 

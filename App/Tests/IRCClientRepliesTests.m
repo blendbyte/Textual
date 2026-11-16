@@ -102,6 +102,19 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertNil([IRCClient validatedReaction:@"two\nlines"]);
 	XCTAssertNil([IRCClient validatedReaction:[@"" stringByPaddingToLength:65 withString:@"x" startingAtIndex:0]]);
 
+	/* Emoji joined by U+200D, and a flag made of tag characters */
+	NSString *family = @"\U0001F468\u200D\U0001F469\u200D\U0001F467";
+	NSString *england = @"\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F";
+
+	XCTAssertEqualObjects([IRCClient validatedReaction:family], family);
+	XCTAssertEqualObjects([IRCClient validatedReaction:england], england);
+	XCTAssertEqualObjects([IRCClient validatedReaction:@"\U0001F1E9\U0001F1EA"], @"\U0001F1E9\U0001F1EA");
+
+	/* Control characters and text direction marks are not */
+	XCTAssertNil([IRCClient validatedReaction:@"a\ab"]);
+	XCTAssertNil([IRCClient validatedReaction:@"\u202E\U0001F44D"]);
+	XCTAssertNil([IRCClient validatedReaction:@"\u2067\U0001F44D"]);
+
 	IRCClient *client = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
 
 	[client enableCapability:ClientIRCv3SupportedCapabilityMessageTags];

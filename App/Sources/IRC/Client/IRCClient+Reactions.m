@@ -78,9 +78,17 @@ NS_ASSUME_NONNULL_BEGIN
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken, ^{
+		/* Control characters, line breaks and text direction marks.
+		 Other format characters stay: emoji use the zero width joiner
+		 (U+200D) and tag characters (U+E0020–E007F, the flags of England,
+		 Scotland and Wales). */
 		NSMutableCharacterSet *characters = [NSMutableCharacterSet newlineCharacterSet];
 
-		[characters formUnionWithCharacterSet:[NSCharacterSet controlCharacterSet]];
+		[characters addCharactersInRange:NSMakeRange(0x00, 0x20)];
+		[characters addCharactersInRange:NSMakeRange(0x7F, 0x21)];
+		[characters addCharactersInRange:NSMakeRange(0x200E, 0x02)];
+		[characters addCharactersInRange:NSMakeRange(0x202A, 0x05)];
+		[characters addCharactersInRange:NSMakeRange(0x2066, 0x04)];
 
 		invalidCharacters = [characters copy];
 	});

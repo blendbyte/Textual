@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performMessageMenuCommand:(NSMenuItem *)sender; // Reply, React…, Delete… in the context menu
 
 /* Failed sends: our message the server refused */
-- (void)markLine:(NSString *)lineNumber asSendFailed:(NSString *)reason;
+- (void)markLine:(NSString *)lineNumber asSendFailed:(NSString *)reason canResend:(BOOL)canResend; // NO: only the dots of a password are left
 - (void)removeLineWithNumber:(NSString *)lineNumber;
 - (void)performFailedSendAction:(NSString *)action onLine:(NSString *)lineNumber; // "resend" or "delete"
 

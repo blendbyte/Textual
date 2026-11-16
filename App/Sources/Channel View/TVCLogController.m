@@ -3189,12 +3189,12 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 #pragma mark -
 #pragma mark Failed Sends
 
-- (void)markLine:(NSString *)lineNumber asSendFailed:(NSString *)reason
+- (void)markLine:(NSString *)lineNumber asSendFailed:(NSString *)reason canResend:(BOOL)canResend
 {
 	NSParameterAssert(lineNumber != nil);
 	NSParameterAssert(reason != nil);
 
-	[self evaluateFunction:@"_MessageActions.markFailed" withArguments:@[lineNumber, reason]];
+	[self evaluateFunction:@"_MessageActions.markFailed" withArguments:@[lineNumber, reason, @(canResend)]];
 
 	[self updateSavedLineWithNumber:lineNumber usingBlock:^TVCLogLine *(TVCLogLine *logLine) {
 		TVCLogLineMutable *changedLine = [logLine mutableCopy];

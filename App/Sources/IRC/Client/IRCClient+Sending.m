@@ -129,6 +129,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.socket sendLine:string];
 
+	/* Counted to know when it leaves the send queue; PONG skips the queue */
+	if ([string hasPrefix:@"PONG"] == NO) {
+		self.queuedLineCount += 1;
+	}
+
 	worldController().bandwidthOut += string.length;
 
 	worldController().messagesSent += 1;

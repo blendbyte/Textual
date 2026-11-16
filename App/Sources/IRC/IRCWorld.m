@@ -973,18 +973,24 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 
 	for (IRCClient *u in self.clientsAwayFromInactivity.allObjects) {
 		if ([u.awayMessageToRestore isEqualToString:inactivityMessage] == NO) {
+			[self.clientsAwayFromInactivity removeObject:u];
+
 			continue;
 		}
 
 		if (u.isLoggedIn) {
 			[u toggleAwayStatus:NO];
+		} else if (u.isConnected && u.awayRestoredBeforeRegistration) {
+			/* Set away again during registration (draft/pre-away):
+			 back with the first tick after it ends */
+			continue;
 		} else {
 			/* Not set away again after a reconnect */
 			u.awayMessageToRestore = nil;
 		}
-	}
 
-	[self.clientsAwayFromInactivity removeAllObjects];
+		[self.clientsAwayFromInactivity removeObject:u];
+	}
 }
 
 - (void)noteReachabilityChanged:(BOOL)reachable

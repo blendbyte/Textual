@@ -92,7 +92,27 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 		}
 	}
 
-	return (m.isHistoric && m.receivedAt.timeIntervalSinceNow < -120.0);
+	/* Two minutes by the server's clock, which may be off from the Mac's */
+	return (m.isHistoric && (m.receivedAt.timeIntervalSinceNow - self.serverClockOffset) < -120.0);
+}
+
+/* The welcome and PING, PONG are never replayed: their server time,
+ against the Mac's clock, says how far off the server's clock is */
+- (void)noteServerClockOfMessage:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if (m.isHistoric == NO || m.parentBatchMessage != nil) {
+		return;
+	}
+
+	NSUInteger command = [IRCCommandIndex indexOfRemoteCommand:m.command];
+
+	if (m.commandNumeric != 1 && command != IRCRemoteCommandPing && command != IRCRemoteCommandPong) {
+		return;
+	}
+
+	self.serverClockOffset = m.receivedAt.timeIntervalSinceNow;
 }
 
 - (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel
