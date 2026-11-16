@@ -42,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TXMasterController ()
 @property (nonatomic, assign) NSUInteger terminatingClientCount;
 
+/* "Trial ended" was shown at launch, so servers didn't connect then: they
+ do once the main window goes back to the chat (trial back, licence activated) */
+@property (nonatomic, assign) BOOL launchAutoConnectHeldBack;
+
 - (void)applicationWakeStepOne;
 - (void)applicationWakeStepTwo;
 

@@ -366,6 +366,11 @@ NS_ASSUME_NONNULL_BEGIN
 	if ([self.mainWindow reloadLoadingScreen]) {
 		[self.world autoConnectAfterWakeup:NO];
 	}
+#if TEXTUAL_BUILT_WITH_LICENSE_MANAGER == 1
+	else if (TLOLicenseManagerTextualIsRegistered() == NO && TLOLicenseManagerIsTrialExpired()) {
+		self.launchAutoConnectHeldBack = YES;
+	}
+#endif
 
 	[self.mainWindow maybeToggleFullscreenAfterLaunch];
 }

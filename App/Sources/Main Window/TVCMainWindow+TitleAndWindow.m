@@ -136,6 +136,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.loadingScreen hideAnimated];
 
+	/* Connecting at launch waited for "trial ended" to go */
+	TXMasterController *master = masterController();
+
+	if (master.launchAutoConnectHeldBack && self == mainWindow()) {
+		master.launchAutoConnectHeldBack = NO;
+
+		[worldController() autoConnectAfterWakeup:NO];
+	}
+
 	return YES;
 }
 
