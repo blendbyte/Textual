@@ -75,6 +75,7 @@
 "ab-e-login" = "The bouncer refused the login. Check the username and password; for ZNC use your ZNC login, not the network’s.";
 "ab-e-nbnc" = "%@ is an IRC server, but not ZNC or soju. Add it as a normal server instead?";
 "ab-e-clsd" = "The bouncer ended the connection.";
+"ab-e-proxy" = "This bouncer’s servers use different proxies, so Textual doesn’t connect to it from here. Connect one of its networks instead.";
 "ab-e-said" = "It said: “%@”";
 "ab-e-det" = "Details: %@";
 "ab-b-back" = "Back";

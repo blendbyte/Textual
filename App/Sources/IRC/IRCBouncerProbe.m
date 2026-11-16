@@ -38,6 +38,9 @@
 #import "NSStringHelper.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
+#import "TXMasterController.h"
+#import "IRCClient.h"
+#import "IRCWorldPrivate.h"
 #import "IRCClientConfig.h"
 #import "IRCConnectionConfig.h"
 #import "IRCConnectionTransportPrivate.h"
@@ -125,6 +128,24 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 	/* As a new server would connect */
 	IRCClientConfig *defaults = [IRCClientConfig new];
 
+	/* Through the proxy its servers use, as they connect: never directly
+	 from this Mac's address when they go through Tor or a proxy */
+	IRCClientConfig *proxySource = defaults;
+
+	NSArray<IRCClient *> *linkedClients = [worldController() clientsOfBouncerAccount:account];
+
+	if (linkedClients.count > 0) {
+		proxySource = linkedClients.firstObject.config;
+
+		for (IRCClient *client in linkedClients) {
+			if ([self.class config:client.config hasSameProxyAs:proxySource] == NO) {
+				[self failWithError:IRCBouncerProbeErrorProxiesDiffer detail:TXTLS(@"TDCAddBouncerSheet[ab-e-proxy]")];
+
+				return;
+			}
+		}
+	}
+
 	IRCConnectionConfigMutable *socketConfig = [IRCConnectionConfigMutable new];
 
 	socketConfig.serverAddress = account.serverAddress;
@@ -138,7 +159,17 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 	socketConfig.cipherSuites = defaults.cipherSuites;
 
-	socketConfig.proxyType = defaults.proxyType;
+	socketConfig.proxyType = proxySource.proxyType;
+
+	if (socketConfig.proxyType == IRCConnectionProxyTypeSocks5 ||
+		socketConfig.proxyType == IRCConnectionProxyTypeHTTP ||
+		socketConfig.proxyType == IRCConnectionProxyTypeHTTPS)
+	{
+		socketConfig.proxyPort = proxySource.proxyPort;
+		socketConfig.proxyAddress = proxySource.proxyAddress;
+		socketConfig.proxyPassword = proxySource.proxyPassword;
+		socketConfig.proxyUsername = proxySource.proxyUsername;
+	}
 
 	socketConfig.floodControlDelayInterval = defaults.floodControlDelayTimerInterval;
 	socketConfig.floodControlMaximumMessages = defaults.floodControlMaximumMessages;
@@ -148,6 +179,24 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 	[self.transport open];
 
 	[self restartTimeout];
+}
+
++ (BOOL)config:(IRCClientConfig *)config1 hasSameProxyAs:(IRCClientConfig *)config2
+{
+	if (config1.proxyType != config2.proxyType) {
+		return NO;
+	}
+
+	if (config1.proxyType != IRCConnectionProxyTypeSocks5 &&
+		config1.proxyType != IRCConnectionProxyTypeHTTP &&
+		config1.proxyType != IRCConnectionProxyTypeHTTPS)
+	{
+		return YES;
+	}
+
+	return (config1.proxyPort == config2.proxyPort &&
+			[(config1.proxyAddress ?: @"") isEqualToString:(config2.proxyAddress ?: @"")] &&
+			[(config1.proxyUsername ?: @"") isEqualToString:(config2.proxyUsername ?: @"")]);
 }
 
 - (void)cancel

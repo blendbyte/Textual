@@ -353,6 +353,8 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 				return AddBouncerText("ab-e-login")
 			case .notABouncer:
 				return AddBouncerText("ab-e-nbnc", address)
+			case .proxiesDiffer:
+				return AddBouncerText("ab-e-proxy")
 			default:
 				return AddBouncerText("ab-e-clsd")
 		}
@@ -377,7 +379,7 @@ final class EditBouncerModel: NSObject, ObservableObject, IRCBouncerProbeDelegat
 		if (finishedProbe.error != IRCBouncerProbeError.none) {
 			var text = AddBouncerText("eb-c-fail", account.displayName) + " " + reason(of: finishedProbe, for: updated)
 
-			if let detail = finishedProbe.errorDetail, detail.isEmpty == false {
+			if finishedProbe.error != .proxiesDiffer, let detail = finishedProbe.errorDetail, detail.isEmpty == false {
 				text += "\n\n" + AddBouncerText(((finishedProbe.error == .cannotConnect) ? "ab-e-det" : "ab-e-said"), detail)
 			}
 

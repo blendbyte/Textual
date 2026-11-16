@@ -50,7 +50,8 @@ typedef NS_ENUM(NSUInteger, IRCBouncerProbeError) {
 	IRCBouncerProbeErrorTimedOut,
 	IRCBouncerProbeErrorWrongLogin, // errorDetail: the bouncer's words
 	IRCBouncerProbeErrorNotABouncer, // an IRC server, but neither soju nor ZNC
-	IRCBouncerProbeErrorClosed // the bouncer ended the connection; errorDetail: its words
+	IRCBouncerProbeErrorClosed, // the bouncer ended the connection; errorDetail: its words
+	IRCBouncerProbeErrorProxiesDiffer // the bouncer's servers use different proxies: not connected; errorDetail says so
 };
 
 /* A certificate login (the account has a client certificate) */
