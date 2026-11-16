@@ -101,6 +101,7 @@
 "9r4-cq" = "%@";
 "cqq-ci" = "%@";
 "wik-wq" = "%1$@ (%2$@)";
+"wik-wl" = "%1$@ (%2$@), offered from %3$@ on this Mac or your network. Open File Transfers to accept it.";
 "97r-0l" = "User with nickname “%1$@” is available";
 "rif-9r" = "User with nickname “%1$@” is no longer available";
 "xk2-1l" = "User with nickname “%1$@” is now available";

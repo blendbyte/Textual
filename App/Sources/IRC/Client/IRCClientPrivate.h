@@ -221,6 +221,7 @@ enum : unsigned long long {
 @end
 
 @interface IRCClient (ReceiveCommandsPrivate)
+- (BOOL)CTCPReplyIsWithinLimitForSender:(nullable NSString *)senderAddress; // also for console notes about file offers
 - (id)queuedBatchMessageWithToken:(NSString *)batchToken;
 
 + (nullable NSString *)knownNickServHostForServerAddress:(nullable NSString *)serverAddress;

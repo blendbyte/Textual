@@ -123,6 +123,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSString *description = nil;
 
+	NSString *localOfferAddress = nil;
+
 	NSString *filesize = [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile];
 
 	switch (type) {
@@ -152,7 +154,15 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 		case TXNotificationTypeFileTransferReceiveRequested:
 		{
-			description = TXTLS(@"Notifications[wik-wq]", filename, filesize);
+			/* From this Mac or the local network: the address is said, and only
+			 the row in File Transfers starts it (the notification has no Accept) */
+			localOfferAddress = [[self fileTransferController] fileTransferWithUniqueIdentifier:identifier].nonPublicOfferAddress;
+
+			if (localOfferAddress) {
+				description = TXTLS(@"Notifications[wik-wl]", filename, filesize, localOfferAddress);
+			} else {
+				description = TXTLS(@"Notifications[wik-wq]", filename, filesize);
+			}
 
 			break;
 		}
@@ -165,7 +175,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSDictionary *info = @{
 	   @"isFileTransferNotification" : @(YES),
 	   @"fileTransferUniqueIdentifier" : identifier,
-	   @"fileTransferNotificationType" : @(type)
+	   @"fileTransferNotificationType" : @(type),
+	   @"fileTransferStartsInWindow" : @(localOfferAddress != nil)
 	};
 
 	[self notifyEvent:type lineType:TVCLogLineTypeUndefined target:nil nickname:nickname text:description userInfo:info];
@@ -338,6 +349,7 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 
 				[self receivedDCCSend:sender
+						senderAddress:m.senderAddress
 							 filename:filename
 							  address:hostAddress
 								 port:hostPortInt
@@ -367,6 +379,7 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			/* Treat as normal DCC request */
 			[self receivedDCCSend:sender
+					senderAddress:m.senderAddress
 						 filename:filename
 						  address:hostAddress
 							 port:hostPort.integerValue
@@ -409,9 +422,11 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	// Report an error
+	// Report an error, within the CTCP limit: a flood of bad offers doesn't fill the console
 present_error:
-	[self print:TXTLS(@"IRC[y3w-la]", sender) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+	if ([self CTCPReplyIsWithinLimitForSender:m.senderAddress]) {
+		[self print:TXTLS(@"IRC[y3w-la]", sender) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+	}
 }
 
 /* File transfers connect directly: no proxy applies to them.
@@ -428,7 +443,7 @@ present_error:
 	return (self.config.proxyType == IRCConnectionProxyTypeTor);
 }
 
-- (void)receivedDCCSend:(NSString *)nickname filename:(NSString *)filename address:(NSString *)address port:(uint16_t)port filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
+- (void)receivedDCCSend:(NSString *)nickname senderAddress:(nullable NSString *)senderAddress filename:(NSString *)filename address:(NSString *)address port:(uint16_t)port filesize:(uint64_t)totalFilesize token:(nullable NSString *)transferToken
 {
 	NSParameterAssert(nickname != nil);
 	NSParameterAssert(filename != nil);
@@ -439,12 +454,16 @@ present_error:
 		return;
 	}
 
-	NSString *message = TXTLS(@"IRC[snf-45]", nickname, filename, [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile]);
-
-	[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
-
+	/* Ignored offers leave no trace; the others are noted within the CTCP
+	 limit, so a stream of offers doesn't fill the console */
 	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyIgnore) {
 		return;
+	}
+
+	if ([self CTCPReplyIsWithinLimitForSender:senderAddress]) {
+		NSString *message = TXTLS(@"IRC[snf-45]", nickname, filename, [NSByteCountFormatter stringFromByteCount:(long long)totalFilesize countStyle:NSByteCountFormatterCountStyleFile]);
+
+		[self print:message by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
 	}
 
 	if (self.fileTransfersRefusedByProxy) {
@@ -456,7 +475,20 @@ present_error:
 	NSString *addedRequest = [[self fileTransferController] addReceiverForClient:self nickname:nickname address:address port:port filename:filename filesize:totalFilesize token:transferToken];
 
 	if (addedRequest == nil) {
-		[self print:TXTLS(@"IRC[f7t-lm]", nickname, filename) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+		/* Once an hour per person: past the limit, every further offer would say it */
+		if (self.DCCOfferRefusalNotedAt == nil) {
+			self.DCCOfferRefusalNotedAt = [NSMutableDictionary dictionary];
+		}
+
+		NSString *refusalKey = nickname.lowercaseString;
+
+		NSDate *notedAt = self.DCCOfferRefusalNotedAt[refusalKey];
+
+		if (notedAt == nil || notedAt.timeIntervalSinceNow < -3600.0) {
+			self.DCCOfferRefusalNotedAt[refusalKey] = [NSDate date];
+
+			[self print:TXTLS(@"IRC[f7t-lm]", nickname, filename) by:nil inChannel:nil asType:TVCLogLineTypeDCCFileTransfer command:TVCLogLineDefaultCommandValue];
+		}
 
 		return;
 	}

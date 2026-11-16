@@ -59,6 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* Refuse more than this many unfinished incoming transfers at a time. */
 #define _addReceiverHardLimit			120
 #define _unansweredOffersPerPersonLimit 10
+#define _unansweredOffersPerClientLimit 30 // so offers from one server, or one person changing nickname, leave room for the rest
+#define _unaskedDownloadsPerPersonLimit 2 // "Download it" starts at most this many at once from one person
+#define _unaskedDownloadSpareSpace 1000000000ULL // and only with this much space left after the file
 #define _unansweredOfferLifetime 3600.0 // seconds
 
 @interface TDCFileTransferDialog () <NSWindowDelegate>
@@ -210,16 +213,46 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 }
 
-/* Offers nobody has accepted or refused; with a filename, only that very offer */
-- (NSArray<TDCFileTransferDialogTransferController *> *)unansweredOffersFromClient:(IRCClient *)client nickname:(NSString *)nickname filename:(nullable NSString *)filename filesize:(uint64_t)totalFilesize
+/* Offers nobody has accepted or refused; with a filename, only that very
+ offer; without a nickname, everyone's on that connection */
+- (NSArray<TDCFileTransferDialogTransferController *> *)unansweredOffersFromClient:(IRCClient *)client nickname:(nullable NSString *)nickname filename:(nullable NSString *)filename filesize:(uint64_t)totalFilesize
 {
 	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *fileTransfer) {
-		if (fileTransfer.isSender || fileTransfer.path != nil || fileTransfer.isStopped == NO || [fileTransfer isWithClient:client peer:nickname] == NO) {
+		if (fileTransfer.isSender || fileTransfer.path != nil || fileTransfer.isStopped == NO) {
+			return NO;
+		}
+
+		if ((nickname == nil && fileTransfer.client != client) || (nickname && [fileTransfer isWithClient:client peer:nickname] == NO)) {
 			return NO;
 		}
 
 		return (filename == nil || ([fileTransfer.filename isEqualToString:filename] && fileTransfer.totalFilesize == totalFilesize));
 	}];
+}
+
+/* Downloads "Download it" started from this person that are still running */
+- (NSUInteger)unaskedDownloadsFromClient:(IRCClient *)client nickname:(NSString *)nickname
+{
+	return [self fileTransfersMatchingCondition:^BOOL(TDCFileTransferDialogTransferController *fileTransfer) {
+		return (fileTransfer.isSender == NO &&
+				fileTransfer.openedUnasked &&
+				fileTransfer.isStopped == NO &&
+				[fileTransfer isWithClient:client peer:nickname]);
+	}].count;
+}
+
++ (BOOL)fileOfSize:(uint64_t)totalFilesize fitsAtPath:(NSString *)path
+{
+	NSParameterAssert(path != nil);
+
+	NSNumber *availableCapacity = nil;
+
+	if ([[NSURL fileURLWithPath:path] getResourceValue:&availableCapacity forKey:NSURLVolumeAvailableCapacityForImportantUsageKey error:NULL] == NO || availableCapacity == nil) {
+		return NO;
+	}
+
+	return (availableCapacity.unsignedLongLongValue > totalFilesize &&
+			(availableCapacity.unsignedLongLongValue - totalFilesize) >= _unaskedDownloadSpareSpace);
 }
 
 - (BOOL)hasUnansweredOfferFromClient:(IRCClient *)client nickname:(NSString *)nickname filename:(NSString *)filename filesize:(uint64_t)totalFilesize
@@ -266,6 +299,13 @@ NS_ASSUME_NONNULL_BEGIN
 		return nil;
 	}
 
+	/* Nor one connection: nickname changes would get round the limit above */
+	if ([self unansweredOffersFromClient:client nickname:nil filename:nil filesize:0].count >= _unansweredOffersPerClientLimit) {
+		LogToConsoleError("Max unanswered offers from one connection exceeded");
+
+		return nil;
+	}
+
 	TDCFileTransferDialogTransferController *controller = [TDCFileTransferDialogTransferController receiverForClient:client nickname:nickname address:hostAddress port:hostPort filename:filename filesize:totalFilesize token:transferToken];
 
 	if (controller == nil) {
@@ -299,7 +339,15 @@ NS_ASSUME_NONNULL_BEGIN
 			savePath = [TPCPathInfo userDownloads];
 		}
 
-		[controller openWithPath:savePath];
+		/* Unasked, a few at a time from one person and only when the file
+		 fits; otherwise it waits for a click like any other offer */
+		if ([self unaskedDownloadsFromClient:client nickname:nickname] < _unaskedDownloadsPerPersonLimit &&
+			[self.class fileOfSize:totalFilesize fitsAtPath:savePath])
+		{
+			controller.openedUnasked = YES;
+
+			[controller openWithPath:savePath];
+		}
 	}
 
 	return controller.uniqueIdentifier;

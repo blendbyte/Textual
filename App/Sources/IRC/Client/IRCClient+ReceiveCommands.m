@@ -1069,6 +1069,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Process DCC requests elsewhere: a file offer or a reply to one isn't
+	 a question Textual answers, so "Answer CTCP requests" doesn't apply;
+	 the file transfer setting and the address book do */
+	if ([command isEqualToString:@"DCC"]) {
+		[self receivedDCCQuery:m text:textMutable ignoreInfo:ignoreInfo];
+
+		return;
+	}
+
 	/* Ignore query if the user has configured Textual to do so */
 	if ([TPCPreferences replyToCTCPRequests] == NO) {
 		/* The note about it obeys the same limit as replies: a flood of
@@ -1076,13 +1085,6 @@ NS_ASSUME_NONNULL_BEGIN
 		if ([self CTCPReplyIsWithinLimitForSender:m.senderAddress]) {
 			[self printDebugInformationToConsole:TXTLS(@"IRC[bg3-h2]", command, sender)];
 		}
-
-		return;
-	}
-
-	/* Process DCC requests elsewhere */
-	if ([command isEqualToString:@"DCC"]) {
-		[self receivedDCCQuery:m text:textMutable ignoreInfo:ignoreInfo];
 
 		return;
 	}

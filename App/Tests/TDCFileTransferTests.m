@@ -154,11 +154,11 @@ NS_ASSUME_NONNULL_BEGIN
 /* An offer can name any address: only one out on the internet connects unasked */
 - (void)testOnlyPublicAddressesCountAsPublic
 {
-	for (NSString *address in @[@"0.0.0.0", @"127.0.0.1", @"10.1.2.3", @"100.64.0.1", @"169.254.1.1", @"172.16.0.1", @"192.168.1.1", @"224.0.0.1", @"::1", @"fe80::1", @"fd00::1", @"::ffff:127.0.0.1", @"evil.example"]) {
+	for (NSString *address in @[@"0.0.0.0", @"127.0.0.1", @"10.1.2.3", @"100.64.0.1", @"169.254.1.1", @"172.16.0.1", @"192.168.1.1", @"224.0.0.1", @"::1", @"fe80::1", @"fd00::1", @"::ffff:127.0.0.1", @"::ffff:7f00:1", @"::ffff:c0a8:101", @"::7f00:1", @"64:ff9b::a00:1", @"evil.example"]) {
 		XCTAssertFalse([TDCFileTransferDialogTransferController addressIsPublic:address], @"%@", address);
 	}
 
-	for (NSString *address in @[@"8.8.8.8", @"172.32.0.1", @"2001:4860:4860::8888"]) {
+	for (NSString *address in @[@"8.8.8.8", @"172.32.0.1", @"2001:4860:4860::8888", @"::ffff:808:808"]) {
 		XCTAssertTrue([TDCFileTransferDialogTransferController addressIsPublic:address], @"%@", address);
 	}
 }

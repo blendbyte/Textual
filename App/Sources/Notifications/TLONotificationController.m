@@ -385,7 +385,10 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 	NSString *categoryIdentifier = nil;
 
 	if (eventType == TXNotificationTypeFileTransferReceiveRequested) {
-		categoryIdentifier = TXNotificationCategoryIdentifierFileTransfer;
+		/* An offer from this Mac or the local network has no Accept button */
+		if ([eventContext boolForKey:@"fileTransferStartsInWindow"] == NO) {
+			categoryIdentifier = TXNotificationCategoryIdentifierFileTransfer;
+		}
 	} else if (eventType == TXNotificationTypeNewPrivateMessage ||
 			   eventType == TXNotificationTypePrivateMessage)
 	{
@@ -731,6 +734,11 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 		TDCFileTransferDialogTransferStatus transferStatus = fileTransfer.transferStatus;
 
 		if (transferStatus != TDCFileTransferDialogTransferStatusStopped) {
+			return;
+		}
+
+		/* Only the row, which shows the address, starts one from this Mac or the local network */
+		if (fileTransfer.nonPublicOfferAddress) {
 			return;
 		}
 

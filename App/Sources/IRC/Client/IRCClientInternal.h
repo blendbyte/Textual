@@ -141,6 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger CTCPReplyCount;
 @property (nonatomic, assign) NSTimeInterval CTCPReplyCountStarted;
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSNumber *> *CTCPReplyCountBySender;
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSDate *> *DCCOfferRefusalNotedAt; // by nickname: "too many offers" is said once an hour
 @property (nonatomic, assign, readwrite) BOOL serverHasNickServ;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageReceived;
 @property (nonatomic, assign, readwrite) NSTimeInterval lastMessageServerTime;

@@ -72,6 +72,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* Not started, stopped, complete or failed */
 @property (readonly) BOOL isStopped;
 
+/* Started by "Download it", without a click: a disk filled by it gets its space back */
+@property (atomic, assign) BOOL openedUnasked;
+
 - (BOOL)isWithClient:(IRCClient *)client peer:(NSString *)nickname;
 
 /* A file name offered by a peer, safe to create in the download folder */

@@ -116,9 +116,9 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 @property (atomic, copy, readwrite, nullable) NSString *errorMessageDescription; // atomic (with the two above): the window reads them on main
 @property (atomic, copy, readwrite, nullable) NSString *path;
 @property (atomic, copy, readwrite) NSString *filename; // atomic: its queue picks a free name while the window reads it
-@property (nonatomic, copy, readwrite) NSString *hostAddress;
-@property (nonatomic, copy, readwrite) NSString *peerNickname;
-@property (nonatomic, copy, readwrite, nullable) NSString *transferToken;
+@property (atomic, copy, readwrite) NSString *hostAddress; // atomic, as filename: changed on main, read on the transfer's queue
+@property (atomic, copy, readwrite) NSString *peerNickname;
+@property (atomic, copy, readwrite, nullable) NSString *transferToken;
 @property (nonatomic, copy, readwrite) NSString *uniqueIdentifier;
 @property (nonatomic, assign, readwrite) uint16_t hostPort;
 @property (atomic, strong, nullable) NSFileHandle *fileHandle; // atomic: cleared on main by a close while the transfer's queue uses it
@@ -134,6 +134,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 @property (nonatomic, assign) BOOL allDataWritten; // sender: on the transfer's queue
 @property (nonatomic, strong, nullable) NSMutableData *acknowledgementRemainder;
 @property (nonatomic, assign) uint32_t lastAcknowledgement;
+@property (nonatomic, assign) BOOL acknowledgementReceived; // sender: the receiver acknowledges at all
+@property (nonatomic, assign) NSTimeInterval lastAcknowledgementAt; // sender: system uptime of the last one that moved on
 @property (nonatomic, assign) BOOL acknowledgementInFlight; // receiver: at most one is written at a time
 @property (nonatomic, assign) BOOL acknowledgementWaiting;
 @property (nonatomic, strong, nullable) id transferProgressHandler; // Used to prevent system sleep
@@ -270,7 +272,16 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 - (void)failWithNoSpaceLeftOnDevice
 {
+	/* A download nobody asked for doesn't keep the disk full */
+	NSString *partialPath = ((self.openedUnasked && self.isSender == NO) ? self.filePath : nil);
+
 	[self closeWithLocalizedError:@"TDCFileTransferDialog[79f-s0]"];
+
+	if (partialPath) {
+		[RZFileManager() removeItemAtPath:partialPath error:NULL];
+
+		[self.class forgetPartialDownloadAtPath:partialPath];
+	}
 }
 
 - (void)closeWithLocalizedError:(NSString *)errorLocalization
@@ -1216,8 +1227,17 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		return;
 	}
 
-	/* Everything was written and the receiver hung up: it has the file */
+	/* Everything was written and the receiver hung up: it has the file,
+	 unless its acknowledgements say it got less */
 	if (self.isSender && self.allDataWritten) {
+		if (self.acknowledgementReceived && self.lastAcknowledgement != (uint32_t)(self.totalFilesize & 0xFFFFFFFF)) {
+			NSString *received = [NSByteCountFormatter stringFromByteCount:(long long)self.lastAcknowledgement countStyle:NSByteCountFormatterCountStyleFile];
+
+			[self closeWithLocalizedError:@"TDCFileTransferDialog[snd-s1]" description:received];
+
+			return;
+		}
+
 		[self finishSending];
 
 		return;
@@ -1347,7 +1367,15 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	if (wholeBytes > 0) {
 		const unsigned char *bytes = ((const unsigned char *)buffer.bytes + (wholeBytes - 4));
 
-		self.lastAcknowledgement = (((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) | (uint32_t)bytes[3]);
+		uint32_t acknowledgement = (((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) | (uint32_t)bytes[3]);
+
+		if (self.acknowledgementReceived == NO || acknowledgement != self.lastAcknowledgement) {
+			self.lastAcknowledgementAt = [NSProcessInfo processInfo].systemUptime;
+		}
+
+		self.acknowledgementReceived = YES;
+
+		self.lastAcknowledgement = acknowledgement;
 
 		[buffer replaceBytesInRange:NSMakeRange(0, wholeBytes) withBytes:NULL length:0];
 	}
@@ -1381,6 +1409,14 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		return;
 	}
 
+	[self finishSendingWhenAcknowledgementsStop];
+}
+
+/* For receivers that never acknowledge, or stop: 30 seconds without one
+ that moves on. While they keep coming (a slow line with large network
+ buffers), the receiver is still getting the file. */
+- (void)finishSendingWhenAcknowledgementsStop
+{
 	dispatch_queue_t dispatchQueue = self.serverDispatchQueue;
 
 	if (dispatchQueue == nil) {
@@ -1391,11 +1427,18 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	__weak TDCFileTransferDialogTransferController *weakSelf = self;
 
-	/* For receivers that never acknowledge */
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), dispatchQueue, ^{
 		TDCFileTransferDialogTransferController *strongSelf = weakSelf;
 
 		if (strongSelf == nil || strongSelf.peerResponseTimeoutGeneration != generation) {
+			return;
+		}
+
+		if (strongSelf.acknowledgementReceived &&
+			([NSProcessInfo processInfo].systemUptime - strongSelf.lastAcknowledgementAt) < 30.0)
+		{
+			[strongSelf finishSendingWhenAcknowledgementsStop];
+
 			return;
 		}
 
@@ -1595,6 +1638,17 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 	if (inet_pton(AF_INET6, value.UTF8String, &v6) == 1) {
 		const uint8_t *b = v6.s6_addr;
+
+		/* An IPv4 address inside IPv6 (::ffff:7f00:1 is 127.0.0.1, as are
+		 ::7f00:1 and the NAT64 64:ff9b::7f00:1) is judged as that address */
+		BOOL isNAT64 = (b[0] == 0x00 && b[1] == 0x64 && b[2] == 0xFF && b[3] == 0x9B &&
+						b[4] == 0 && b[5] == 0 && b[6] == 0 && b[7] == 0 && b[8] == 0 && b[9] == 0 && b[10] == 0 && b[11] == 0);
+
+		if (IN6_IS_ADDR_V4MAPPED(&v6) || IN6_IS_ADDR_V4COMPAT(&v6) || isNAT64) {
+			NSString *embedded = [NSString stringWithFormat:@"%u.%u.%u.%u", b[12], b[13], b[14], b[15]];
+
+			return [self addressIsPublic:embedded];
+		}
 
 		return (IN6_IS_ADDR_UNSPECIFIED(&v6) == NO && IN6_IS_ADDR_LOOPBACK(&v6) == NO &&
 				(b[0] == 0xFE && (b[1] & 0xC0) == 0x80) == NO &&
@@ -1861,6 +1915,10 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	self.allDataWritten = NO;
 	self.acknowledgementRemainder = nil;
 	self.lastAcknowledgement = 0;
+
+	self.acknowledgementReceived = NO;
+
+	self.lastAcknowledgementAt = 0;
 	self.acknowledgementInFlight = NO;
 	self.acknowledgementWaiting = NO;
 

@@ -45,6 +45,7 @@
 "79f-s0" = "The disk is full";
 "05g-c8" = "Couldn’t write the file";
 "s79-3a" = "Lost the connection to %1$@: %2$@";
+"snd-s1" = "%1$@ hung up after receiving %2$@";
 "dr5-tq" = "%@ didn’t answer in time";
 
 "dcm-w7" = "Select the folder in which this file will be saved";
