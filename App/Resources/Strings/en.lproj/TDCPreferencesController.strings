@@ -638,6 +638,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-his-i5" = "No new messages found.";
 "set-his-i6" = "Looking for text logs…";
 "set-his-i7" = "Stop";
+"set-his-ib" = "Files with characters that weren’t UTF-8, read with � in their place: %lu.";
 "set-his-i8" = "Stopping…";
 "set-his-i9" = "Stopped. Added %@ messages.";
 "set-his-ia" = "Stopped. No new messages were added.";

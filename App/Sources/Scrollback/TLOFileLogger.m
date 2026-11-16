@@ -36,6 +36,8 @@
  *
  *********************************************************************** */
 
+#include <fcntl.h>
+
 #import "NSObjectHelperPrivate.h"
 #import "TXGlobalModels.h"
 #import "TDCAlert.h"
@@ -339,15 +341,18 @@ static NSUInteger _numberOfOpenFileHandles = 0;
 		}
 	}
 
-	NSFileHandle *fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:filePath];
+	/* Appending: every write lands at the end, also when another logger
+	 (Textual 7 in the same folder, a channel whose name maps to the same
+	 file) wrote there since this one opened it */
+	int descriptor = open(filePath.fileSystemRepresentation, (O_WRONLY | O_APPEND | O_CLOEXEC));
 
-	if (fileHandle == nil) {
+	if (descriptor < 0) {
 		LogToConsoleError("Failed to open file handle at path '%{public}@'", filePath.standardizedTildePath);
 
 		return;
 	}
 
-	[fileHandle seekToEndOfFile];
+	NSFileHandle *fileHandle = [[NSFileHandle alloc] initWithFileDescriptor:descriptor closeOnDealloc:YES];
 
 	self.fileHandle = fileHandle;
 

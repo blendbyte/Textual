@@ -264,7 +264,7 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 
 /* For suggestions while typing from: and in:: who wrote and the
  channels and queries written in, most recent first, up to limit each */
-- (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames))completionHandler;
+- (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> * _Nullable nicknames, NSArray<NSString *> * _Nullable viewNames))completionHandler; // nil when a search or quitting stopped it
 
 /* A result in its conversation (for results older than the
  scrollback): up to count messages before it and after it, oldest first */
@@ -296,6 +296,9 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
  notices (not joins and the like) within the keep period, each kept once, also
  when it is in the archive already from the scrollback. Handlers on the main
  queue. */
+/* Files of the last import read with � for characters that weren't UTF-8 */
+@property (readonly) NSUInteger textLogImportRepairedFileCount;
+
 - (void)importTextLogsInFolder:(NSURL *)folderURL
 			   progressHandler:(nullable void (^)(NSUInteger filesDone, NSUInteger fileCount))progressHandler
 			 completionHandler:(void (^)(NSUInteger importedCount))completionHandler;

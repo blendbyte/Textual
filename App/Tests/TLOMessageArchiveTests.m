@@ -509,6 +509,62 @@ NS_ASSUME_NONNULL_BEGIN
 	[[NSFileManager defaultManager] removeItemAtURL:folderURL error:NULL];
 }
 
+/* One byte that isn't UTF-8 (a write cut short, another program) doesn't
+ cost the whole day: the file is read with a replacement, and counted */
+- (void)testImportsTextLogWithBrokenUTF8
+{
+	NSCalendar *calendar = [NSCalendar currentCalendar];
+
+	NSDate *day = [calendar startOfDayForDate:[NSDate dateWithTimeIntervalSinceNow:(-2 * 24 * 60 * 60)]];
+
+	NSDateFormatter *formatter = [NSDateFormatter new];
+
+	formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+	formatter.dateFormat = @"yyyy-MM-dd";
+
+	NSString *fileName = [[formatter stringFromDate:day] stringByAppendingString:@".txt"];
+
+	NSURL *folderURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[NSUUID UUID].UUIDString];
+
+	NSURL *channelURL = [folderURL URLByAppendingPathComponent:@"Libera (abcde)/Channels/#textual" isDirectory:YES];
+
+	XCTAssertTrue([[NSFileManager defaultManager] createDirectoryAtURL:channelURL withIntermediateDirectories:YES attributes:nil error:NULL]);
+
+	const char bytes[] = "[10:00:00] <bob> caf\xE9 au lait\n[10:01:00] <alice> still here\n";
+
+	NSData *data = [NSData dataWithBytes:bytes length:(sizeof(bytes) - 1)];
+
+	XCTAssertTrue([data writeToURL:[channelURL URLByAppendingPathComponent:fileName] atomically:YES]);
+
+	TLOMessageArchiveView *view =
+	[[TLOMessageArchiveView alloc] initWithViewId:@"view-1"
+										 viewName:@"#textual"
+										 viewType:TLOMessageArchiveViewTypeChannel
+										 serverId:@"server-1"
+									   serverName:@"Libera.Chat"];
+
+	TLOMessageArchiveTextLogResolver resolver = ^TLOMessageArchiveTextLogTarget *(NSString *serverFolder, TLOMessageArchiveViewType viewType, NSString *viewName) {
+		return [[TLOMessageArchiveTextLogTarget alloc] initWithView:view];
+	};
+
+	XCTestExpectation *expectation = [self expectationWithDescription:@"import"];
+
+	__block NSUInteger importedCount = 0;
+
+	[self.archive importTextLogsInFolder:folderURL resolver:resolver progressHandler:nil completionHandler:^(NSUInteger count) {
+		importedCount = count;
+
+		[expectation fulfill];
+	}];
+
+	[self waitForExpectationsWithTimeout:10 handler:nil];
+
+	XCTAssertEqual(importedCount, 2);
+	XCTAssertEqual(self.archive.textLogImportRepairedFileCount, 1);
+
+	[[NSFileManager defaultManager] removeItemAtURL:folderURL error:NULL];
+}
+
 /* A multi-line message can't forge a log line, and comes back as one message.
  Someone called Console is a query, not a server's console. */
 - (void)testTextLogKeepsMultiLineMessagesAndQueriesNamedConsole

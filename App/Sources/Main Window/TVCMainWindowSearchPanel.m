@@ -563,6 +563,13 @@ NS_ASSUME_NONNULL_BEGIN
 	self.archivedNamesRequested = YES;
 
 	[sharedMessageArchive() namesWithLimit:1000 completionHandler:^(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames) {
+		/* A search stopped it: asked again with the next from: or in: */
+		if (nicknames == nil || viewNames == nil) {
+			self.archivedNamesRequested = NO;
+
+			return;
+		}
+
 		self.archivedNicknames = nicknames;
 		self.archivedViewNames = viewNames;
 	}];

@@ -1589,6 +1589,12 @@ static void (^_textLogImportObserver)(NSString *status, double fraction, BOOL ru
 				status = TXTLS(@"TDCPreferencesController[set-his-i4]", countString);
 			}
 
+			NSUInteger repairedFileCount = sharedMessageArchive().textLogImportRepairedFileCount;
+
+			if (repairedFileCount > 0) {
+				status = [status stringByAppendingFormat:@" %@", TXTLS(@"TDCPreferencesController[set-his-ib]", (unsigned long)repairedFileCount)];
+			}
+
 			_textLogImportCancelling = NO;
 
 			[self _setTextLogImportStatus:status fraction:-1 running:NO];

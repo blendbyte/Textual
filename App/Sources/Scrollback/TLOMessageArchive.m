@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define _schemaVersion				3
 #define _schemaVersionString		"3"
+#define _firstReleasedSchemaVersion	3 // older ones are from test builds; from this one on, archives are converted, never dropped
 
 /* Waiting lines are written two seconds after the first, or at once when
  this many wait (a reconnect replaying history) */
@@ -217,6 +218,7 @@ NS_ASSUME_NONNULL_BEGIN
 /* Read on the queue, set on any thread */
 @property (atomic, assign) NSInteger keepDaysValue;
 @property (atomic, assign) BOOL textLogImportCancelled;
+@property (atomic, assign, readwrite) NSUInteger textLogImportRepairedFileCount;
 
 /* Search reads on a connection of its own (WAL: readers don't wait for the
  writer, the writer doesn't wait for them) */
@@ -233,7 +235,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (TLOMessageArchiveSearchPage *)_pageWithOffset:(NSUInteger)offset limit:(NSUInteger)limit inDatabase:(sqlite3 *)database;
 - (NSUInteger)_countInDatabase:(sqlite3 *)database;
 + (NSArray<TLOMessageArchiveResult *> *)_messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count inDatabase:(sqlite3 *)database;
-+ (NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database;
++ (nullable NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database; // nil when interrupted
 + (NSArray<TLOMessageArchiveResult *> *)_messagesInView:(NSString *)viewId rowId:(int64_t)rowId before:(NSUInteger)before after:(NSUInteger)after scrollbackLineId:(nullable NSString *)scrollbackLineId scrollbackTime:(NSTimeInterval)scrollbackTime anchorIndex:(NSUInteger *)anchorIndex inDatabase:(sqlite3 *)database;
 @end
 
@@ -448,25 +450,55 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 		"CREATE TRIGGER IF NOT EXISTS messages_deleted AFTER DELETE ON messages BEGIN "
 			"INSERT INTO messages_text (messages_text, rowid, body) VALUES ('delete', old.id, old.body); "
 		"END;"
-		"CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);"
-		"PRAGMA user_version = " _schemaVersionString ";"];
+		"CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);"] &&
+		[self _stampSchemaVersion];
 }
 
-/* Archives of test builds are not converted: they start again. Dropping
- tables keeps the file's size, so it is compacted (almost nothing to copy). */
-- (BOOL)_discardOlderSchema
+- (int)_storedSchemaVersion
 {
 	sqlite3_stmt *statement = NULL;
 
 	if (sqlite3_prepare_v2(self.database, "PRAGMA user_version", -1, &statement, NULL) != SQLITE_OK) {
-		return NO;
+		return -1;
 	}
 
 	int version = ((sqlite3_step(statement) == SQLITE_ROW) ? sqlite3_column_int(statement, 0) : 0);
 
 	sqlite3_finalize(statement);
 
-	if (version == 0 || version >= _schemaVersion) {
+	return version;
+}
+
+/* Raised, never lowered: an archive from a newer Textual keeps its number,
+ so going back to this version and forward again doesn't make it look old */
+- (BOOL)_stampSchemaVersion
+{
+	int version = [self _storedSchemaVersion];
+
+	if (version < 0) {
+		return NO;
+	}
+
+	if (version >= _schemaVersion) {
+		return YES;
+	}
+
+	return [self _execute:"PRAGMA user_version = " _schemaVersionString ";"];
+}
+
+/* Archives of test builds (before _firstReleasedSchemaVersion) are not
+ converted: they start again. Dropping tables keeps the file's size, so it
+ is compacted (almost nothing to copy). A released archive older than this
+ version is converted here once the schema changes; a newer one is used as it is. */
+- (BOOL)_discardOlderSchema
+{
+	int version = [self _storedSchemaVersion];
+
+	if (version < 0) {
+		return NO;
+	}
+
+	if (version == 0 || version >= _firstReleasedSchemaVersion) {
 		return YES;
 	}
 
@@ -1514,6 +1546,8 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 	if (viewKey == 0) {
 		(void)[self _execute:"ROLLBACK;"];
 
+		[self _forgetViewKeys];
+
 		return;
 	}
 
@@ -1525,9 +1559,12 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 					   [self _runStatement:"DELETE FROM messages WHERE view_key = ?" withStrings:@[earlierViewKey]] &&
 					   [self _runStatement:"DELETE FROM views WHERE id = ?" withStrings:@[earlierViewKey]]);
 
-		/* What wasn't moved must not be deleted */
+		/* What wasn't moved must not be deleted; the view row made above is
+		 gone with the rollback, so its cached key must go too */
 		if (merged == NO) {
 			(void)[self _execute:"ROLLBACK;"];
+
+			[self _forgetViewKeys];
 
 			return;
 		}
@@ -1649,6 +1686,8 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 
 	self.textLogImportCancelled = NO;
 
+	self.textLogImportRepairedFileCount = 0;
+
 	dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
 		NSUInteger importedCount = 0;
 
@@ -1768,11 +1807,28 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 	components.day = day;
 
 	/* Logs are named by the Gregorian calendar, whatever the user's is */
-	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+	NSCalendar *calendar = [self _textLogCalendar];
 
 	calendar.timeZone = [NSTimeZone localTimeZone];
 
 	return [calendar dateFromComponents:components];
+}
+
+/* One per thread, made once: setting one up for each of millions of lines
+ was a large part of an import's time */
++ (NSCalendar *)_textLogCalendar
+{
+	NSMutableDictionary *threadDictionary = [NSThread currentThread].threadDictionary;
+
+	NSCalendar *calendar = threadDictionary[@"TLOMessageArchiveTextLogCalendar"];
+
+	if (calendar == nil) {
+		calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+
+		threadDictionary[@"TLOMessageArchiveTextLogCalendar"] = calendar;
+	}
+
+	return calendar;
 }
 
 /* The digits at a place in a string as a number, or -1 */
@@ -1869,7 +1925,7 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 		return 0;
 	}
 
-	NSString *contents = [NSString stringWithContentsOfURL:file encoding:NSUTF8StringEncoding error:NULL];
+	NSString *contents = [self _contentsOfTextLogFile:file];
 
 	if (contents == nil) {
 		return 0;
@@ -1938,6 +1994,45 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	[2026-10-17T14:03:21+0200] -bob- a notice
 
  Older logs may have only the time ([14:03:21]): on the file's day. */
+/* UTF-8, as Textual writes them. A file with a broken character (a write
+ cut short, another program) is read anyway, with � in its place: the day
+ isn't left out because of one byte. Counted for the summary. */
+- (nullable NSString *)_contentsOfTextLogFile:(NSURL *)file
+{
+	NSData *data = [NSData dataWithContentsOfURL:file options:NSDataReadingMappedIfSafe error:NULL];
+
+	if (data == nil) {
+		return nil;
+	}
+
+	NSString *contents = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+
+	if (contents) {
+		return contents;
+	}
+
+	contents = nil;
+
+	BOOL lossy = NO;
+
+	(void)[NSString stringEncodingForData:data
+						  encodingOptions:@{
+							  NSStringEncodingDetectionSuggestedEncodingsKey : @[@(NSUTF8StringEncoding)],
+							  NSStringEncodingDetectionUseOnlySuggestedEncodingsKey : @YES,
+							  NSStringEncodingDetectionAllowLossyKey : @YES
+						  }
+						  convertedString:&contents
+					  usedLossyConversion:&lossy];
+
+	if (contents) {
+		self.textLogImportRepairedFileCount += 1;
+
+		LogToConsoleInfo("Text log with characters that aren't UTF-8, read with replacements: %{public}@", file.lastPathComponent);
+	}
+
+	return contents;
+}
+
 + (nullable TLOMessageArchiveRow *)_rowForTextLogLine:(NSString *)line day:(NSDate *)day target:(TLOMessageArchiveTextLogTarget *)target
 {
 	if ([line hasPrefix:@"["] == NO) {
@@ -2041,7 +2136,7 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 /* "2026-10-17T14:03:21+0200" (also +02:00), or "14:03:21" on the day */
 + (nullable NSDate *)_dateOfTextLogTimestamp:(NSString *)timestamp day:(NSDate *)day
 {
-	NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+	NSCalendar *calendar = [self _textLogCalendar];
 
 	if (timestamp.length == 8) {
 		NSInteger hour = _numberInString(timestamp, 0, 2);
@@ -2349,6 +2444,8 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 
 	query = [query copy];
 
+	[self _interruptNamesQuery];
+
 	dispatch_async(self.searchQueue, ^{
 		TLOMessageArchiveSearchPage *page = nil;
 
@@ -2378,6 +2475,8 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	const void *originalQuery = (__bridge const void *)query;
 
 	query = [query copy];
+
+	[self _interruptNamesQuery];
 
 	dispatch_async(self.searchQueue, ^{
 		NSUInteger count = 0;
@@ -2409,6 +2508,8 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	NSParameterAssert(viewId != nil);
 	NSParameterAssert(completionHandler != nil);
 
+	[self _interruptNamesQuery];
+
 	dispatch_async(self.searchQueue, ^{
 		NSArray *messages = @[];
 
@@ -2424,7 +2525,12 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	});
 }
 
-- (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> *nicknames, NSArray<NSString *> *viewNames))completionHandler
+/* What the search queue runs while it reads names, so it can be stopped */
+static const char _namesQuery = 0;
+
+/* A read of the whole archive: a search, a scroll into the archive or
+ quitting doesn't wait for it, it stops (nil names), to be asked again */
+- (void)namesWithLimit:(NSUInteger)limit completionHandler:(void (^)(NSArray<NSString *> * _Nullable nicknames, NSArray<NSString *> * _Nullable viewNames))completionHandler
 {
 	NSParameterAssert(completionHandler != nil);
 
@@ -2435,8 +2541,20 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 		sqlite3 *database = [self _openSearchDatabase];
 
 		if (database) {
+			[self _setRunningSearchQuery:&_namesQuery];
+
 			nicknames = [TLOMessageArchiveQuery _namesInColumn:@"nickname" limit:limit inDatabase:database];
-			viewNames = [TLOMessageArchiveQuery _namesInColumn:@"view_name" limit:limit inDatabase:database];
+
+			if (nicknames) {
+				viewNames = [TLOMessageArchiveQuery _namesInColumn:@"view_name" limit:limit inDatabase:database];
+			}
+
+			[self _setRunningSearchQuery:NULL];
+
+			if (nicknames == nil || viewNames == nil) {
+				nicknames = nil;
+				viewNames = nil;
+			}
 		}
 
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -2445,10 +2563,21 @@ completionHandler:(void (^)(TLOMessageArchiveSearchPage *page))completionHandler
 	});
 }
 
+- (void)_interruptNamesQuery
+{
+	@synchronized (self.searchQueue) {
+		if (self.runningSearchQuery == &_namesQuery && self.searchDatabase) {
+			sqlite3_interrupt(self.searchDatabase);
+		}
+	}
+}
+
 - (void)messagesAround:(TLOMessageArchiveResult *)result count:(NSUInteger)count completionHandler:(void (^)(NSArray<TLOMessageArchiveResult *> *messages))completionHandler
 {
 	NSParameterAssert(result != nil);
 	NSParameterAssert(completionHandler != nil);
+
+	[self _interruptNamesQuery];
 
 	dispatch_async(self.searchQueue, ^{
 		NSArray *messages = @[];

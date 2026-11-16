@@ -839,8 +839,8 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	return [messages copy];
 }
 
-/* The most recent first */
-+ (NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database
+/* The most recent first; nil when it was interrupted */
++ (nullable NSArray<NSString *> *)_namesInColumn:(NSString *)column limit:(NSUInteger)limit inDatabase:(sqlite3 *)database
 {
 	NSString *sql = nil;
 
@@ -858,7 +858,9 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 
 	NSMutableArray<NSString *> *names = [NSMutableArray array];
 
-	while (sqlite3_step(statement) == SQLITE_ROW) {
+	int stepResult = SQLITE_DONE;
+
+	while ((stepResult = sqlite3_step(statement)) == SQLITE_ROW) {
 		NSString *name = TLOMessageArchiveColumnString(statement, 0);
 
 		if (name) {
@@ -867,6 +869,10 @@ static NSString * _Nullable TLOMessageArchiveColumnString(sqlite3_stmt *statemen
 	}
 
 	sqlite3_finalize(statement);
+
+	if (stepResult == SQLITE_INTERRUPT) {
+		return nil;
+	}
 
 	return [names copy];
 }

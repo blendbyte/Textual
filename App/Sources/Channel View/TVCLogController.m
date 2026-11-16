@@ -2450,6 +2450,10 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		[self.unsavedLogLines removeAllObjects];
 	}
 
+	/* Only the print block archives a line: these never reach it, also
+	 when a clear drops them, which the archive keeps */
+	[self archiveUnprintedLogLines:logLines];
+
 	if (save == NO) {
 		for (TVCLogLine *logLine in logLines) {
 			(void)[self logLineApplyingPendingChanges:logLine];
@@ -2460,6 +2464,44 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	for (TVCLogLine *logLine in logLines) {
 		[sharedHistoricLog() writeNewEntryWithLogLine:[self logLineApplyingPendingChanges:logLine] forItem:self.associatedItem];
+	}
+}
+
+/* As the print block does: on the main thread, before the archive closes at quit */
+- (void)archiveUnprintedLogLines:(NSArray<TVCLogLine *> *)logLines
+{
+	if (logLines.count == 0 || [NSThread isMainThread] == NO) {
+		return;
+	}
+
+	IRCTreeItem *item = self.associatedItem;
+
+	if (item == nil || [TLOMessageArchive keepsMessagesOfItem:item] == NO) {
+		return;
+	}
+
+	TLOMessageArchiveView *view = [TLOMessageArchiveView viewForItem:item];
+
+	TXNicknameHighlightMatchType matchType = [TPCPreferences highlightMatchingMethod];
+
+	for (TVCLogLine *logLine in logLines) {
+		if ([TLOMessageArchive archivesLineType:logLine.lineType] == NO) {
+			continue;
+		}
+
+		TVCLogLine *changedLine = [self logLineWithPendingChanges:logLine];
+
+		if (changedLine.isRedacted) {
+			continue;
+		}
+
+		NSString *body = changedLine.messageBody.stripIRCEffects;
+
+		BOOL highlighted = [TLOMessageArchive logLineIsHighlight:changedLine body:body matchType:matchType];
+
+		BOOL hasLink = ([TLOLinkParser locateLinksInString:body].count > 0);
+
+		[sharedMessageArchive() archiveLogLine:changedLine highlighted:highlighted hasLink:hasLink inView:view];
 	}
 }
 
