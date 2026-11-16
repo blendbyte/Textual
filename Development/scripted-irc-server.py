@@ -809,9 +809,10 @@ async def scenario_review_dcc(client):
 
 
 async def scenario_review_dcc_send(client):
-	"""(DCC) Who may take a file: alice is seen from 8.8.8.8, and a connection from
-	here is refused. Run "Development/dev send alice ~/Downloads/textual-dev-send2.bin"
-	when asked, twice. After the first, alice is seen from 127.0.0.1 and gets the file."""
+	"""(DCC) Who may take a file: alice is seen from 8.8.8.8 but connects from here
+	(as from IPv4 for an IPv6 host, or through a bouncer). Run
+	"Development/dev send alice ~/Downloads/textual-dev-send2.bin" when asked. The
+	first connection gets the file, with a note in the console; a second gets nothing."""
 	name = "textual-dev-send2.bin"
 	remove_downloads(name)
 
@@ -848,21 +849,9 @@ async def scenario_review_dcc_send(client):
 
 		return None
 
-	print("WAITING: send 1", flush=True)
+	print("WAITING: send", flush=True)
 	port = await wait_for_offer()
 	result(port is not None, "the offer went out")
-
-	reader, writer = await asyncio.open_connection("127.0.0.1", port)
-	refused = await asyncio.wait_for(reader.read(1024), 5)
-	writer.close()
-	result(refused == b"", "a connection from another address than alice's gets nothing")
-
-	await client.send(":alice!a@8.8.8.8 QUIT :moving")
-	await client.send(":alice!a@127.0.0.1 JOIN #d")
-	await client.collect(1)
-
-	print("WAITING: send 2", flush=True)
-	port = await wait_for_offer()
 
 	reader, writer = await asyncio.open_connection("127.0.0.1", port)
 	received = bytearray()
@@ -877,7 +866,16 @@ async def scenario_review_dcc_send(client):
 		writer.write(struct.pack(">I", len(received)))
 		await writer.drain()
 
-	result(bytes(received) == data, "the file reaches a connection from alice's address")
+	result(bytes(received) == data, "the file reaches a connection from another address than alice's")
+
+	try:
+		second_reader, second_writer = await asyncio.open_connection("127.0.0.1", port)
+		second = await asyncio.wait_for(second_reader.read(1024), 5)
+		second_writer.close()
+	except (ConnectionError, OSError):
+		second = b""
+
+	result(second == b"", "a second connection gets nothing")
 	await client.collect(2)
 	writer.close()
 

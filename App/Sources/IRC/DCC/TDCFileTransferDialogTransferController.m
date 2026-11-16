@@ -130,7 +130,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 @property (atomic, strong, nullable) GCDAsyncSocket *listeningServerConnectedClient;
 @property (atomic, strong, nullable) GCDAsyncSocket *connectionToRemoteServer;
 @property (atomic, copy, nullable) NSString *expectedPeerAddress; // the peer's IRC address, when that's a real IP
-@property (atomic, assign) BOOL refusedConnectionNoted;
 @property (atomic, copy, nullable) NSString *emptyDownloadPath; // created here, and nothing written to it yet
 @property (nonatomic, assign) BOOL allDataWritten; // sender: on the transfer's queue
 @property (nonatomic, strong, nullable) NSMutableData *acknowledgementRemainder;
@@ -660,7 +659,6 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	});
 
 	self.expectedPeerAddress = ((peerAddress.isIPAddress) ? peerAddress : nil);
-	self.refusedConnectionNoted = NO;
 
 	if (self.isSender) {
 		if (self.isReversed) {
@@ -1135,13 +1133,13 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 		return;
 	}
 
-	/* Not before the offer is out, and only from the peer's address when
-	 that is known. The listener stays open for the real one. */
+	/* Not before the offer is out, and only the first one. Any address may
+	 connect: the port is only in the offer, and the peer's connection often
+	 comes from another address than its IRC host (IPv4 for an IPv6 host,
+	 IPv6 privacy addresses, a bouncer, a LAN) */
 	TDCFileTransferDialogTransferStatus status = self.transferStatus;
 
-	if ((status != TDCFileTransferDialogTransferStatusIsListeningAsSender && status != TDCFileTransferDialogTransferStatusIsListeningAsReceiver) ||
-		[self connectionIsFromPeer:newSocket.connectedHost] == NO)
-	{
+	if (status != TDCFileTransferDialogTransferStatusIsListeningAsSender && status != TDCFileTransferDialogTransferStatusIsListeningAsReceiver) {
 		[newSocket disconnect];
 
 		return;
@@ -1154,6 +1152,8 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 
 		return;
 	}
+
+	[self noteConnectionFromOtherAddress:newSocket.connectedHost];
 
 	if (self.isReversed) {
 		self.transferStatus = TDCFileTransferDialogTransferStatusReceiving;
@@ -1624,32 +1624,27 @@ static NSString * _Nullable _identityOfFileAtPath(NSString *path)
 	return [value1 isEqualToString:value2];
 }
 
-- (BOOL)connectionIsFromPeer:(nullable NSString *)connectedHost
+/* Said in the console, so a stranger who got the port can be told apart */
+- (void)noteConnectionFromOtherAddress:(nullable NSString *)connectedHost
 {
 	NSString *expectedPeerAddress = self.expectedPeerAddress;
 
 	/* A cloak, a hostname or nobody known: nothing to compare with */
 	if (expectedPeerAddress == nil) {
-		return YES;
+		return;
 	}
 
 	if (connectedHost && [self.class address:connectedHost isSameAddressAs:expectedPeerAddress]) {
-		return YES;
+		return;
 	}
 
-	if (self.refusedConnectionNoted == NO) {
-		self.refusedConnectionNoted = YES;
+	IRCClient *client = self.client;
 
-		IRCClient *client = self.client;
+	NSString *message = TXTLS(@"IRC[dc-r1]", self.filename, (connectedHost ?: @"?"), self.peerNickname);
 
-		NSString *message = TXTLS(@"IRC[dc-r1]", self.filename, (connectedHost ?: @"?"), self.peerNickname);
-
-		XRPerformBlockAsynchronouslyOnMainQueue(^{
-			[client printDebugInformationToConsole:message];
-		});
-	}
-
-	return NO;
+	XRPerformBlockAsynchronouslyOnMainQueue(^{
+		[client printDebugInformationToConsole:message];
+	});
 }
 
 - (nullable NSString *)nonPublicOfferAddress

@@ -525,7 +525,7 @@ The identifier for a timer can be found using “/timer list”";
 "dc-p2" = "Connect directly?";
 "ch-l1" = "This server added more than %lu channels. Any more are being ignored.";
 "tmr-g1" = "A timer’s channel no longer exists, so its command “%@” was not run and the timer was removed.";
-"dc-r1" = "Refused a connection for “%1$@” from %2$@: that isn’t the address %3$@ is connected from.";
+"dc-r1" = "The transfer of “%1$@” connected from %2$@, not from the address %3$@ uses on IRC.";
 "dc-e1" = "“%@” is empty, so it wasn’t sent.";
 "qry-l1" = "More than %lu new people sent you private messages within a minute. Messages from new nicknames go to this console for the rest of the minute.";
 "qry-l2" = "This server has more than %lu channels and private messages. Private messages from new nicknames now go to this console.";
