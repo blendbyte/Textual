@@ -592,17 +592,27 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	/* Every selected channel, after one question */
+	/* Every selected channel, after one question. Several always ask, by
+	 name: "Don't ask again" was ticked for one at a time */
 	NSArray<IRCChannel *> *channels = self.channelsToDelete;
 
 	NSUInteger count = channels.count;
 
-	BOOL result = [TDCAlert modalAlertWithMessage:((count > 1) ? TXTLS(@"Prompts[dl2-cm]") : TXTLS(@"Prompts[516-ms]"))
-											title:((count > 1) ? TXTLS(@"Prompts[dl2-ct]", count) : TXTLS(@"Prompts[i8o-7z]"))
-									defaultButton:TXTLS(@"Prompts[mvh-ms]")
-								  alternateButton:TXTLS(@"Prompts[99q-gg]")
-								   suppressionKey:@"delete_channel"
-								  suppressionText:nil];
+	BOOL result = NO;
+
+	if (count > 1) {
+		result = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[dl2-cm]", [self namesOfChannels:channels])
+										   title:TXTLS(@"Prompts[dl2-ct]", count)
+								   defaultButton:TXTLS(@"Prompts[mvh-ms]")
+								 alternateButton:TXTLS(@"Prompts[99q-gg]")];
+	} else {
+		result = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[516-ms]")
+										   title:TXTLS(@"Prompts[i8o-7z]")
+								   defaultButton:TXTLS(@"Prompts[mvh-ms]")
+								 alternateButton:TXTLS(@"Prompts[99q-gg]")
+								  suppressionKey:@"delete_channel"
+								 suppressionText:nil];
+	}
 
 	if (result == NO) {
 		return;
@@ -613,6 +623,46 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[worldController() save];
+}
+
+/* "#a, #b", or with their servers when there are several: "#a, #b (Libera); #c (OFTC)" */
+- (NSString *)namesOfChannels:(NSArray<IRCChannel *> *)channels
+{
+	NSMutableArray<IRCClient *> *clients = [NSMutableArray array];
+
+	NSMutableDictionary<NSValue *, NSMutableArray<NSString *> *> *namesByClient = [NSMutableDictionary dictionary];
+
+	for (IRCChannel *channel in channels) {
+		IRCClient *client = channel.associatedClient;
+
+		NSValue *key = [NSValue valueWithNonretainedObject:client];
+
+		NSMutableArray *names = namesByClient[key];
+
+		if (names == nil) {
+			names = [NSMutableArray array];
+
+			namesByClient[key] = names;
+
+			[clients addObject:client];
+		}
+
+		[names addObject:channel.name];
+	}
+
+	if (clients.count == 1) {
+		return [namesByClient.allValues.firstObject componentsJoinedByString:@", "];
+	}
+
+	NSMutableArray<NSString *> *groups = [NSMutableArray arrayWithCapacity:clients.count];
+
+	for (IRCClient *client in clients) {
+		NSString *names = [namesByClient[[NSValue valueWithNonretainedObject:client]] componentsJoinedByString:@", "];
+
+		[groups addObject:[NSString stringWithFormat:@"%@ (%@)", names, client.name]];
+	}
+
+	return [groups componentsJoinedByString:@"; "];
 }
 
 - (void)copyUniqueIdentifier:(nullable id)sender
