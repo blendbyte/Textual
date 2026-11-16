@@ -328,12 +328,7 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef DEBUG
 	return TXTLS(@"BasicLanguage[abt-c1]");
 #elif TEXTUAL_BUILT_FOR_APP_STORE_DISTRIBUTION == 1
-	/* The App Store and TestFlight get the same build; only TestFlight's
-	 copy comes with a sandbox receipt */
-	if ([[NSBundle mainBundle].appStoreReceiptURL.lastPathComponent isEqualToString:@"sandboxReceipt"]) {
-		return TXLocalizationNotNeeded(@"TestFlight");
-	}
-
+	/* TestFlight gets the same build and says so too */
 	return TXLocalizationNotNeeded(@"App Store");
 #else
 	return nil;
