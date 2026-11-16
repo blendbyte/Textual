@@ -65,6 +65,11 @@ NS_ASSUME_NONNULL_BEGIN
 	self.ignoreEntryHostmaskTextField.stringValueUsesOnlyFirstToken = YES;
 
 	self.ignoreEntryHostmaskTextField.validationBlock = ^NSString *(NSString *currentValue) {
+		/* $a:account follows a services account */
+		if (currentValue.length > 3 && [currentValue.lowercaseString hasPrefix:@"$a:"]) {
+			return nil;
+		}
+
 		NSString *valueWithoutWildcard = [currentValue stringByReplacingOccurrencesOfString:@"*" withString:@"-"];
 
 		if (valueWithoutWildcard.isHostmask == NO) {

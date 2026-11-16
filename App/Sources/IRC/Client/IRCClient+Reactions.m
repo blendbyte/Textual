@@ -193,6 +193,33 @@ NS_ASSUME_NONNULL_BEGIN
 	[self send:@"REDACT", channel.name, msgid, nil];
 }
 
+/* By the ignore that hides their messages there: in a channel the public
+ one, to us the private one */
+- (BOOL)tagmsgIsFromIgnoredSender:(IRCMessage *)m
+{
+	NSParameterAssert(m != nil);
+
+	if (m.senderIsServer || m.senderHostmask.length == 0 || m.paramsCount == 0) {
+		return NO;
+	}
+
+	if ([self nicknameIsMyself:m.senderNickname]) {
+		return NO;
+	}
+
+	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+
+	if (ignoreInfo == nil) {
+		return NO;
+	}
+
+	if ([self stringIsChannelName:[m paramAt:0]]) {
+		return ignoreInfo.ignorePublicMessages;
+	}
+
+	return ignoreInfo.ignorePrivateMessages;
+}
+
 - (BOOL)receiveReactionTagmsg:(IRCMessage *)m
 {
 	NSParameterAssert(m != nil);

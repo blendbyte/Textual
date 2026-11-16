@@ -1134,6 +1134,13 @@ static NSUInteger _aliasDepth = 0;
 
 	NSString *nickname = stringIn.tokenAsString;
 
+	/* /ignore $a:account: by services account */
+	if (nickname.length > 3 && [nickname.lowercaseString hasPrefix:@"$a:"]) {
+		[self ignoreAccount:[nickname substringFromIndex:3] ignore:isIgnoreCommand];
+
+		return;
+	}
+
 	IRCUser *member = [self findUser:nickname];
 
 	if (member == nil) {
@@ -1211,6 +1218,55 @@ static NSUInteger _aliasDepth = 0;
 	
 	/* All of it: the entry (*!*@host) also covers others on that host whose
 	 lines were already looked up, and their cached answer is now wrong */
+	[self clearAddressBookCache];
+}
+
+- (void)ignoreAccount:(NSString *)account ignore:(BOOL)ignore
+{
+	NSParameterAssert(account != nil);
+
+	NSMutableArray *ignoreList = [self.config.ignoreList mutableCopy];
+
+	IRCAddressBookEntry *existing = nil;
+
+	for (IRCAddressBookEntry *entry in ignoreList) {
+		if ([entry checkAccountMatch:account]) {
+			existing = entry;
+
+			break;
+		}
+	}
+
+	NSString *mask = [@"$a:" stringByAppendingString:account];
+
+	if (ignore) {
+		if (existing) {
+			[self printDebugInformation:TXTLS(@"IRC[5ix-zn]", account)];
+
+			return;
+		}
+
+		[ignoreList addObject:[IRCAddressBookEntry newIgnoreEntryForHostmask:mask]];
+
+		[self printDebugInformation:TXTLS(@"IRC[ret-20]", account, mask)];
+	} else {
+		if (existing == nil) {
+			[self printDebugInformation:TXTLS(@"IRC[wu0-jp]", account)];
+
+			return;
+		}
+
+		[ignoreList removeObjectIdenticalTo:existing];
+
+		[self printDebugInformation:TXTLS(@"IRC[jzg-g8]", account, existing.hostmask)];
+	}
+
+	IRCClientConfigMutable *mutableClientConfig = [self.config mutableCopy];
+
+	mutableClientConfig.ignoreList = ignoreList;
+
+	self.config = mutableClientConfig;
+
 	[self clearAddressBookCache];
 }
 

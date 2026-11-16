@@ -1307,6 +1307,12 @@ CA
                         <action selector="memberAddIgnore:" target="267" id="drP-cu-7wg"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Ignore Account" tag="1629" id="iAc-u7-x4k">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="memberAddAccountIgnore:" target="267" id="iAc-a9-c2m"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Modify Ignore" tag="1601" id="cg4-kn-WKm">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>

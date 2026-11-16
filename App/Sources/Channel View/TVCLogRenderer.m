@@ -334,21 +334,29 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 	}
 
 	if (self->_lineType != TVCLogLineTypeAction			&&
+		self->_lineType != TVCLogLineTypeActionNoHighlight	&&
 		self->_lineType != TVCLogLineTypeCTCP			&&
 		self->_lineType != TVCLogLineTypeCTCPQuery		&&
 		self->_lineType != TVCLogLineTypeCTCPReply		&&
 		self->_lineType != TVCLogLineTypeDCCFileTransfer	&&
+		self->_lineType != TVCLogLineTypeKick			&&
 		self->_lineType != TVCLogLineTypeNotice			&&
+		self->_lineType != TVCLogLineTypePart			&&
 		self->_lineType != TVCLogLineTypePrivateMessage	&&
+		self->_lineType != TVCLogLineTypePrivateMessageNoHighlight	&&
+		self->_lineType != TVCLogLineTypeQuit			&&
 		self->_lineType != TVCLogLineTypeTopic)
 	{
 		return;
 	}
 
+	/* Combining marks of any block piled on one letter: the first three
+	 stay (as real scripts stack them: Vietnamese, Thai, Hebrew points),
+	 the rest go, so the text can't spill over the lines around it */
 	self->_body =
 	[XRRegularExpression string:self->_body
-				replacedByRegex:@"([\\p{InCombining_Diacritical_Marks}]{3,})"
-					 withString:CS_UnicodeReplacementCharacter];
+				replacedByRegex:@"([\\p{Mn}\\p{Me}]{3})[\\p{Mn}\\p{Me}]+"
+					 withString:@"$1"];
 }
 
 - (void)buildListOfLinksInBody

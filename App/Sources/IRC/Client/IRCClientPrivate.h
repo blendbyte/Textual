@@ -228,6 +228,10 @@ enum : unsigned long long {
 + (nullable NSString *)knownNickServHostForServerAddress:(nullable NSString *)serverAddress;
 @end
 
+@interface IRCClient (ReactionsIgnore)
+- (BOOL)tagmsgIsFromIgnoredSender:(IRCMessage *)m;
+@end
+
 @interface IRCClient (CapabilitiesPrivate)
 + (BOOL)usernameIsDefaultIdent:(NSString *)username; // the ident new servers get, never an account name
 

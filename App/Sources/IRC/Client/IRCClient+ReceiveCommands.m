@@ -611,7 +611,17 @@ NS_ASSUME_NONNULL_BEGIN
 				if (isHighlight) {
 					postEvent = [self notifyHighlightText:text lineType:lineType target:query nickname:sender keyword:context.highlightKeyword];
 				} else {
-					if (newPrivateMessage) {
+					if (newPrivateMessage && self.newQueryCountInLimitPeriod > IRCClientNewQueriesBeforeSummary) {
+						/* Many new people at once: one notification, without a sound or the Dock bouncing */
+						if (self.newQuerySummaryPosted == NO && self.config.muted == NO && sharedNotificationController().areNotificationsDisabled == NO) {
+							self.newQuerySummaryPosted = YES;
+
+							[sharedNotificationController() scheduleNotificationWithTitle:TXTLS(@"IRC[qry-s1]")
+																				  message:TXTLS(@"IRC[qry-s2]", self.networkNameAlt)
+																			   forChannel:nil
+																				 onClient:self];
+						}
+					} else if (newPrivateMessage) {
 						postEvent = [self notifyPrintedText:TXNotificationTypeNewPrivateMessage lineType:lineType target:query nickname:sender text:text];
 					} else {
 						postEvent = [self notifyPrintedText:TXNotificationTypePrivateMessage lineType:lineType target:query nickname:sender text:text];
@@ -707,7 +717,30 @@ NS_ASSUME_NONNULL_BEGIN
 			self.newQueryLimitPeriodStart = now;
 			self.newQueryCountInLimitPeriod = 0;
 			self.newQueryLimitNoted = NO;
+			self.newQuerySummaryPosted = NO;
 		}
+
+		/* Rotating nicknames would otherwise open a chat view each, up to
+		 the overall limit: those you haven't written in count */
+		NSUInteger unansweredQueries = 0;
+
+		for (IRCChannel *channel in self.channelList) {
+			if (channel.isPrivateMessage && channel.openedByOthers && channel.localUserWroteHere == NO) {
+				unansweredQueries += 1;
+			}
+		}
+
+		if (unansweredQueries >= IRCClientMaximumUnansweredQueries) {
+			if (self.unansweredQueryLimitNoted == NO) {
+				self.unansweredQueryLimitNoted = YES;
+
+				[self printDebugInformationToConsole:TXTLS(@"IRC[qry-l3]", (unsigned long)IRCClientMaximumUnansweredQueries)];
+			}
+
+			return nil;
+		}
+
+		self.unansweredQueryLimitNoted = NO;
 
 		if (self.newQueryCountInLimitPeriod >= IRCClientMaximumNewQueriesPerMinute) {
 			if (self.newQueryLimitNoted == NO) {
@@ -720,6 +753,12 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		self.newQueryCountInLimitPeriod += 1;
+
+		IRCChannel *query = [worldController() createPrivateMessage:name onClient:self];
+
+		query.openedByOthers = YES;
+
+		return query;
 	}
 
 	return [worldController() createPrivateMessage:name onClient:self];

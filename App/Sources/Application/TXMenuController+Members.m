@@ -192,6 +192,33 @@ NS_ASSUME_NONNULL_BEGIN
 	[u sendCommand:command completeTarget:YES target:c.name];
 }
 
+/* Follows the services account, whatever nickname or host they use next */
+- (void)memberAddAccountIgnore:(nullable id)sender
+{
+	IRCClient *u = self.selectedClient;
+	IRCChannel *c = self.selectedChannel;
+
+	if (u == nil || c == nil) {
+		return;
+	}
+
+	NSArray *nicknames = [self selectedMembersNicknames:sender];
+
+	if (nicknames.count != 1) {
+		return;
+	}
+
+	NSString *account = [u findUser:nicknames[0]].account;
+
+	[self deselectMembers:sender];
+
+	if (account.length == 0) {
+		return;
+	}
+
+	[u sendCommand:[NSString stringWithFormat:@"ignore $a:%@", account] completeTarget:YES target:c.name];
+}
+
 - (void)memberRemoveIgnore:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;

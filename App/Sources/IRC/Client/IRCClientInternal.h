@@ -67,6 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define _batchNestingLimit			8 // a batch inside this many open batches is not opened
 #define IRCClientMaximumChannelCount	1000 // channels and queries of a server created by what it sends
 #define IRCClientMaximumNewQueriesPerMinute	100 // private conversations other people can open within a minute
+#define IRCClientMaximumUnansweredQueries	50 // open private conversations others started that you haven't written in
+#define IRCClientNewQueriesBeforeSummary	3 // more new ones within a minute get one notification together, without a sound
 #define _batchEntryLimit			20000 // lines held in one batch; later ones are handled as they arrive
 #define _heldBatchLineLimit			50000 // lines held in all open batches together, the same way
 #define _openBatchLimit				1000 // batches open at once; more are not opened
@@ -242,6 +244,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval newQueryLimitPeriodStart;
 @property (nonatomic, assign) NSUInteger newQueryCountInLimitPeriod;
 @property (nonatomic, assign) BOOL newQueryLimitNoted;
+@property (nonatomic, assign) BOOL newQuerySummaryPosted; // in this minute
+@property (nonatomic, assign) BOOL unansweredQueryLimitNoted;
 @property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate
 @property (nonatomic, assign) IRCISupportInfoCaseMapping channelMapCaseMapping;

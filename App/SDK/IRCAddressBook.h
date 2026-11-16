@@ -87,6 +87,12 @@ typedef NS_ENUM(NSUInteger, IRCAddressBookUserTrackingStatus) {
 + (instancetype)newUserTrackingEntry;
 
 - (BOOL)checkMatch:(NSString *)hostmask;
+
+/* An ignore written as $a:account (as an extban) follows the services
+ account, whatever the nickname or host; such an entry matches no hostmask */
+@property (readonly, copy, nullable) NSString *ignoredAccount;
+
+- (BOOL)checkAccountMatch:(nullable NSString *)account;
 @end
 
 #pragma mark -

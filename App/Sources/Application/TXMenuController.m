@@ -37,6 +37,7 @@
  *********************************************************************** */
 
 #import "NSObjectHelperPrivate.h"
+#import "IRCAddressBook.h"
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelPrivate.h"
@@ -1605,6 +1606,34 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTUserControlsModifyIgnore: // "Modify Ignore"
 		case MTUserControlsRemoveIgnore: // "Remove Ignore"
 		{
+			return YES;
+		}
+
+		case MTUserControlsIgnoreAccount: // "Ignore Account …"
+		{
+			/* Where the account is known and not ignored already */
+			NSArray<NSString *> *nicknames = [self selectedMembersNicknames:menuItem];
+
+			NSString *account = ((nicknames.count == 1) ? [u findUser:nicknames[0]].account : nil);
+
+			BOOL ignored = NO;
+
+			for (IRCAddressBookEntry *entry in u.config.ignoreList) {
+				if ([entry checkAccountMatch:account]) {
+					ignored = YES;
+
+					break;
+				}
+			}
+
+			menuItem.hidden = (c.isUtility || account.length == 0 || ignored);
+
+			if (menuItem.hidden) {
+				return NO;
+			}
+
+			menuItem.title = TXTLS(@"TVCMainWindow[nmi-ia]", account);
+
 			return YES;
 		}
 

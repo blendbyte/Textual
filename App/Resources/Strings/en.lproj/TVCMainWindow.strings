@@ -164,6 +164,7 @@
 
 /* Nickname menu: previews of this person's links (a checkmark when turned off) */
 "nmi-dp" = "Don’t Preview Links from %@";
+"nmi-ia" = "Ignore Account “%@”";
 
 /* Suggestions while typing (the completion list) */
 "icp-mc" = "%lu members";

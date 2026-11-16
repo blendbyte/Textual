@@ -186,7 +186,12 @@ NS_ASSUME_NONNULL_BEGIN
 	/* R3.16: the mask must match the whole hostmask ("bob!*@*" matched
 	 "jimbob!…"), * and ? are the only wildcards (? was a regular expression
 	 quantifier, . and + matched other characters) */
-	if (self.entryType == IRCAddressBookEntryTypeIgnore)
+	if (self.ignoredAccount)
+	{
+		/* Matched by account, never by hostmask */
+		hostmask = @"(?!)";
+	}
+	else if (self.entryType == IRCAddressBookEntryTypeIgnore)
 	{
 		hostmask = [self.class regularExpressionForMask:hostmask];
 	}
@@ -255,6 +260,32 @@ NS_ASSUME_NONNULL_BEGIN
 	hostmask = hostmask.nicknameFromHostmask;
 
 	self->_trackingNickname = [hostmask copy];
+}
+
+- (nullable NSString *)ignoredAccount
+{
+	if (self.entryType != IRCAddressBookEntryTypeIgnore) {
+		return nil;
+	}
+
+	NSString *hostmask = self.hostmask;
+
+	if (hostmask.length <= 3 || [hostmask.lowercaseString hasPrefix:@"$a:"] == NO) {
+		return nil;
+	}
+
+	return [hostmask substringFromIndex:3];
+}
+
+- (BOOL)checkAccountMatch:(nullable NSString *)account
+{
+	if (account.length == 0) {
+		return NO;
+	}
+
+	NSString *ignoredAccount = self.ignoredAccount;
+
+	return (ignoredAccount && [ignoredAccount isEqualToStringIgnoringCase:account]);
 }
 
 - (BOOL)checkMatch:(NSString *)hostmask

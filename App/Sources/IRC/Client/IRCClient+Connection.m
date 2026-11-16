@@ -727,6 +727,11 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 			case IRCRemoteCommandTagmsg: // Command: TAGMSG (reactions, typing notifications)
 			{
+				/* Someone ignored can't react to messages or show as typing */
+				if ([self tagmsgIsFromIgnoredSender:message]) {
+					break;
+				}
+
 				if ([self receiveReactionTagmsg:message]) {
 					break;
 				}

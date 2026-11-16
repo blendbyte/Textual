@@ -35,6 +35,7 @@
  *
  *********************************************************************** */
 
+#import "IRCUser.h"
 #import "IRCClient.h"
 #import "IRCClientConfig.h"
 #import "IRCAddressBook.h"
@@ -108,7 +109,21 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(hostmask != nil);
 
-	IRCAddressBookEntry *cachedEntry = [self.cachedMatchesInt objectForKey:hostmask];
+	/* The services account, when known, for entries written as $a:account;
+	 part of the key, so logging in or out finds the right answer */
+	NSString *account = nil;
+
+	IRCClient *client = self.client;
+
+	NSUInteger nicknameEnd = [hostmask rangeOfString:@"!"].location;
+
+	if (nicknameEnd != NSNotFound && nicknameEnd > 0) {
+		account = [client findUser:[hostmask substringToIndex:nicknameEnd]].account;
+	}
+
+	NSString *cacheKey = ((account.length > 0) ? [NSString stringWithFormat:@"%@\n%@", hostmask, account] : hostmask);
+
+	IRCAddressBookEntry *cachedEntry = [self.cachedMatchesInt objectForKey:cacheKey];
 	
 	if (cachedEntry) {
 		/* We reset the cache when new items are added to the client
@@ -129,8 +144,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSMutableArray <IRCAddressBookEntry *> *matchedEntries = nil;
 
-	for (IRCAddressBookEntry *entry in self.client.config.ignoreList) {
-		if ([entry checkMatch:hostmask] == NO) {
+	for (IRCAddressBookEntry *entry in client.config.ignoreList) {
+		if ([entry checkMatch:hostmask] == NO && [entry checkAccountMatch:account] == NO) {
 			continue;
 		}
 		
@@ -175,9 +190,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Cache entry */
 	if (matchedEntry) {
-		[self.cachedMatchesInt setObject:matchedEntry forKey:hostmask];
+		[self.cachedMatchesInt setObject:matchedEntry forKey:cacheKey];
 	} else {
-		[self.cachedMatchesInt setObject:[NSNull null] forKey:hostmask];
+		[self.cachedMatchesInt setObject:[NSNull null] forKey:cacheKey];
 	}
 	
 	return matchedEntry;
