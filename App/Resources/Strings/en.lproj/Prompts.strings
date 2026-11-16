@@ -307,7 +307,7 @@ Information encrypted using: %2$@";
 "d7f-o2" = "Connect to the server to send files to %@.";
 "d7f-u1" = "Upload “%@”?";
 "d7f-u2" = "Upload %lu files?";
-"d7f-u3" = "Files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
+"d7f-u3" = "Files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures, not from videos.";
 "d7f-u4" = "Upload";
 "d7f-u5" = "Send by DCC";
 "d7f-i3" = "Pasted Picture %@.png";

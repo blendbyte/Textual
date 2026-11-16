@@ -178,7 +178,7 @@
 "upl-l1" = "Uploading “%1$@” to %2$@";
 "upl-l2" = "(%1$lu of %2$lu)";
 "upl-p1" = "Upload";
-"upl-p2" = "The files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures.";
+"upl-p2" = "The files go to %@, and their links are put in the input field. Anyone with a link can open the file. Location and camera details are removed from pictures, not from videos.";
 "upl-e1" = "Couldn’t upload “%@”";
 "upl-e2" = "Couldn’t send the text as a link. It’s back in the input field.";
 "upl-s1" = "Uploads aren’t set up";
