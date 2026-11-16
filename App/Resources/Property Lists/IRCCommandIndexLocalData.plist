@@ -679,6 +679,15 @@
 		<key>arguments</key>
 		<string>[message]</string>
 	</dict>
+	<key>redact</key>
+	<dict>
+		<key>developerModeOnly</key>
+		<false/>
+		<key>indexValue</key>
+		<integer>5129</integer>
+		<key>arguments</key>
+		<string>&lt;msgid&gt; [reason]</string>
+	</dict>
 	<key>rejoin</key>
 	<dict>
 		<key>developerModeOnly</key>

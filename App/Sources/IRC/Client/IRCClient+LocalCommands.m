@@ -287,6 +287,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandQuote) : NSStringFromSelector(@selector(_handleLocalCommandRaw:)),
 			@(IRCLocalCommandRaw) : NSStringFromSelector(@selector(_handleLocalCommandRaw:)),
 			@(IRCLocalCommandRecv) : NSStringFromSelector(@selector(_handleLocalCommandRecv:)),
+			@(IRCLocalCommandRedact) : NSStringFromSelector(@selector(_handleLocalCommandRedact:)),
 			@(IRCLocalCommandRejoin) : NSStringFromSelector(@selector(_handleLocalCommandCycle:)),
 			@(IRCLocalCommandReconnect) : NSStringFromSelector(@selector(_handleLocalCommandReconnect:)),
 			@(IRCLocalCommandRemove) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
@@ -2029,6 +2030,42 @@ static NSUInteger _aliasDepth = 0;
 }
 
 /* SETQUERYNAME */
+/* REDACT any message, as the spec asks clients to allow: the server decides
+ (the menu offers Delete only where it is likely to work) */
+- (void)_handleLocalCommandRedact:(IRCLocalCommandContext *)context
+{
+	NSMutableAttributedString *stringIn = context.stringIn;
+	IRCChannel *targetChannel = context.targetChannel;
+
+	if (targetChannel == nil || targetChannel.isUtility) {
+		[self printDebugInformation:TXTLS(@"IRC[rdc-e1]")];
+
+		return;
+	}
+
+	if (self.canDeleteMessages == NO) {
+		[self printDebugInformation:TXTLS(@"IRC[rdc-e2]")];
+
+		return;
+	}
+
+	NSString *msgid = [IRCMessage validatedMessageIdentifier:stringIn.getTokenAsString];
+
+	if (msgid == nil) {
+		[self printInvalidSyntaxMessageForCommand:context.command];
+
+		return;
+	}
+
+	NSString *reason = stringIn.string.trim;
+
+	if (reason.length > 0) {
+		[self send:@"REDACT", targetChannel.name, msgid, reason, nil];
+	} else {
+		[self send:@"REDACT", targetChannel.name, msgid, nil];
+	}
+}
+
 - (void)_handleLocalCommandSetqueryname:(IRCLocalCommandContext *)context
 {
 	NSMutableAttributedString *stringIn = context.stringIn;

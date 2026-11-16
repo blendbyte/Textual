@@ -2159,6 +2159,9 @@ NS_ASSUME_NONNULL_BEGIN
 					break;
 				} else if (modeCharacter == 'o' && modeIsSet == NO) {
 					self.userIsIRCop = NO;
+
+					/* Delete on others' messages goes with it */
+					[self updateMessageActionsInViews];
 				}
 			}
 		}

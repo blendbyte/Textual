@@ -181,6 +181,8 @@ Certificates must meet the following criteria:
 "spp-acc-warn" = "Remind me while joining waits";
 "spp-acc-warnh" = "Says so in the console, and how to join anyway.";
 "spp-acc-nothing" = "There’s nothing to log in with yet: enter your password, or add a login key or certificate under More.";
+"spp-acc-req" = "Disconnect if logging in fails";
+"spp-acc-reqh" = "Instead of connecting without your account (SASL): no channels joined before your cloak, nothing sent as a guest. Textual doesn’t reconnect by itself then.";
 "spp-acc-key" = "Login key";
 "spp-acc-keyh" = "Logs in with a key instead of the password (SASL ECDSA), tried first. Give the network its public key first.";
 "spp-acc-key-menu" = "Manage";

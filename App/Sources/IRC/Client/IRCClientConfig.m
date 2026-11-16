@@ -75,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 	defaults[@"muted"] = @(NO);
 	defaults[@"autoSleepModeDisconnect"] = @(YES);
 	defaults[@"autojoinWaitsForNickServ"] = @(NO);
+	defaults[@"saslRequired"] = @(NO);
 	defaults[@"cachedLastServerTimeCapabilityReceivedAtTimestamp"] = @(0);
 	defaults[@"cipherSuites"] = @(RCMCipherSuiteCollectionDefault);
 	defaults[@"connectionName"] = TXTLS(@"BasicLanguage[vfu-c0]");
@@ -264,6 +265,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_muted forKey:@"muted"];
 	[defaultsMutable assignBoolTo:&self->_autoSleepModeDisconnect forKey:@"autoSleepModeDisconnect"];
 	[defaultsMutable assignBoolTo:&self->_autojoinWaitsForNickServ forKey:@"autojoinWaitsForNickServ"];
+	[defaultsMutable assignBoolTo:&self->_saslRequired forKey:@"saslRequired"];
 	[defaultsMutable assignBoolTo:&self->_hideAutojoinDelayedWarnings forKey:@"hideAutojoinDelayedWarnings"];
 	[defaultsMutable assignBoolTo:&self->_performDisconnectOnPongTimer forKey:@"performDisconnectOnPongTimer"];
 	[defaultsMutable assignBoolTo:&self->_performDisconnectOnReachabilityChange forKey:@"performDisconnectOnReachabilityChange"];
@@ -756,6 +758,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic setBool:self.muted forKey:@"muted"];
 	[dic setBool:self.autoSleepModeDisconnect forKey:@"autoSleepModeDisconnect"];
 	[dic setBool:self.autojoinWaitsForNickServ forKey:@"autojoinWaitsForNickServ"];
+	[dic setBool:self.saslRequired forKey:@"saslRequired"];
 	[dic setBool:self.hideAutojoinDelayedWarnings forKey:@"hideAutojoinDelayedWarnings"];
 	[dic setBool:self.performDisconnectOnPongTimer forKey:@"performDisconnectOnPongTimer"];
 	[dic setBool:self.performDisconnectOnReachabilityChange forKey:@"performDisconnectOnReachabilityChange"];
@@ -1047,6 +1050,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic muted;
 @dynamic autoSleepModeDisconnect;
 @dynamic autojoinWaitsForNickServ;
+@dynamic saslRequired;
 @dynamic awayNickname;
 @dynamic nickServHost;
 @dynamic saslAccountName;
@@ -1133,6 +1137,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_autoSleepModeDisconnect != autoSleepModeDisconnect) {
 		self->_autoSleepModeDisconnect = autoSleepModeDisconnect;
+	}
+}
+
+- (void)setSaslRequired:(BOOL)saslRequired
+{
+	if (self->_saslRequired != saslRequired) {
+		self->_saslRequired = saslRequired;
 	}
 }
 

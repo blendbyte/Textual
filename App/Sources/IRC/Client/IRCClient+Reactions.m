@@ -175,6 +175,17 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* The msgid of a reaction (a TAGMSG): it is taken back */
+	NSDictionary *reaction = [self.reactionsByMsgid objectForKey:msgid];
+
+	if (reaction) {
+		[self.reactionsByMsgid removeObjectForKey:msgid];
+
+		[channel.viewController setReaction:reaction[@"emoji"] byNickname:reaction[@"nickname"] onMessage:reaction[@"msgid"] added:NO];
+
+		return;
+	}
+
 	[channel.viewController deleteMessage:msgid byNickname:m.senderNickname reason:reason];
 }
 
@@ -248,6 +259,19 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[channel.viewController setReaction:((added) ?: removed) byNickname:sender onMessage:msgid added:(added != nil)];
+
+	/* Remembered for this session, for a REDACT naming the reaction itself */
+	NSString *reactionMsgid = m.msgid;
+
+	if (added && reactionMsgid) {
+		if (self.reactionsByMsgid == nil) {
+			self.reactionsByMsgid = [NSCache new];
+
+			self.reactionsByMsgid.countLimit = 2000;
+		}
+
+		[self.reactionsByMsgid setObject:@{@"emoji" : added, @"nickname" : sender, @"msgid" : msgid} forKey:reactionMsgid];
+	}
 
 	return YES;
 }

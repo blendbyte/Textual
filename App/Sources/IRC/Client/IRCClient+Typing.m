@@ -186,7 +186,8 @@ static NSTimeInterval const IRCClientTypingPausedExpiryInterval = 30.0;
 
 	NSAssertReturn([m paramsCount] > 0);
 
-	NSString *state = m.messageTags[@"+typing"];
+	/* Also the draft name of before 2020 */
+	NSString *state = (m.messageTags[@"+typing"] ?: m.messageTags[@"+draft/typing"]);
 
 	if (state == nil || m.isPrintOnlyMessage) {
 		return;

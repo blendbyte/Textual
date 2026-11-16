@@ -538,6 +538,16 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 {
 	/* A soju network is chosen after logging in, before registration ends */
 	if ([subcommand isEqualToString:@"END"]) {
+		/* "Disconnect if logging in fails": not logged in now, so the
+		 connection ends before registering, and doesn't come back by itself */
+		if (self.config.saslRequired && self.isAuthenticatedWithSASL == NO && self.bouncerAccount == nil) {
+			[self printDebugInformationToConsole:TXTLS(@"IRC[sas-r1]")];
+
+			[self quit];
+
+			return;
+		}
+
 		[self bindBouncerNetworkBeforeRegistration];
 	}
 

@@ -149,7 +149,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *command = nil;
 
 	if ((self.successfulConnects > 1 || (self.successfulConnects == 1 && self.config.zncOnlyPlaybackLatest)) && self.lastMessageServerTime > 0) {
-		command = [NSString stringWithFormat:@"play * %.0f", self.lastMessageServerTime];
+		/* To the millisecond: a whole second lost or repeated the lines of the second around it */
+		command = [NSString stringWithFormat:@"play * %.3f", self.lastMessageServerTime];
 	} else {
 		command = @"play * 0";
 	}

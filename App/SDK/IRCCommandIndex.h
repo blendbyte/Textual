@@ -116,6 +116,7 @@ typedef NS_ENUM(NSUInteger, IRCLocalCommand) {
 	IRCLocalCommandRaw = 5059,
 	IRCLocalCommandReconnect = 5128,
 	IRCLocalCommandRecv = 5087,
+	IRCLocalCommandRedact = 5129,
 	IRCLocalCommandRegister = 5124,
 	IRCLocalCommandRejoin = 5060,
 	IRCLocalCommandRemove = 5061,

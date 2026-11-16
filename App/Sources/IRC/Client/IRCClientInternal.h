@@ -245,6 +245,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger newQueryCountInLimitPeriod;
 @property (nonatomic, assign) BOOL newQueryLimitNoted;
 @property (nonatomic, assign) BOOL newQuerySummaryPosted; // in this minute
+@property (nonatomic, strong, nullable) NSCache<NSString *, NSDictionary *> *reactionsByMsgid; // a reaction's own msgid → what it was, so a REDACT of it takes it back
 @property (nonatomic, assign) BOOL unansweredQueryLimitNoted;
 @property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, IRCChannel *> *channelMap; // folded name → channel; nil until needed, guarded by channelListPrivate

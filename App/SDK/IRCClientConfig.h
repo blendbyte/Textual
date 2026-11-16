@@ -58,6 +58,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (readonly) BOOL autoReconnect;
 @property (readonly) BOOL autoSleepModeDisconnect;
 @property (readonly) BOOL autojoinWaitsForNickServ;
+@property (readonly) BOOL saslRequired; // disconnect instead of registering when the SASL login fails or isn't offered
 @property (readonly) BOOL muted; // the whole network: no notifications or sounds (highlights depend on a preference)
 @property (readonly) BOOL hideAutojoinDelayedWarnings;
 @property (readonly) BOOL hideNetworkUnavailabilityNotices; // no longer used
@@ -126,6 +127,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (nonatomic, assign, readwrite) BOOL autoReconnect;
 @property (nonatomic, assign, readwrite) BOOL autoSleepModeDisconnect;
 @property (nonatomic, assign, readwrite) BOOL autojoinWaitsForNickServ;
+@property (nonatomic, assign, readwrite) BOOL saslRequired;
 @property (nonatomic, assign, readwrite) BOOL muted;
 @property (nonatomic, assign, readwrite) BOOL hideAutojoinDelayedWarnings;
 @property (nonatomic, assign, readwrite) BOOL hideNetworkUnavailabilityNotices; // no longer used

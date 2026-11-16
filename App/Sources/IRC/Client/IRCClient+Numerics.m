@@ -179,6 +179,16 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(m != nil);
 
+	/* "Disconnect if logging in fails", on a server without capability
+	 negotiation (no CAP END was sent): registered without logging in */
+	if (self.config.saslRequired && self.isAuthenticatedWithSASL == NO && self.bouncerAccount == nil) {
+		[self printDebugInformationToConsole:TXTLS(@"IRC[sas-r1]")];
+
+		[self quit];
+
+		return;
+	}
+
 	/* Manage timers */
 	[self startPongTimer];
 
@@ -528,6 +538,9 @@ NS_ASSUME_NONNULL_BEGIN
 		{
 			if (self.userIsIRCop == NO) {
 				self.userIsIRCop = YES;
+
+				/* Delete on others' messages, everywhere */
+				[self updateMessageActionsInViews];
 			} else {
 				break;
 			}

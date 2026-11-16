@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _autoReconnect;
 	BOOL _autoSleepModeDisconnect;
 	BOOL _autojoinWaitsForNickServ;
+	BOOL _saslRequired;
 	BOOL _muted;
 	BOOL _connectionPrefersIPv4;
 	BOOL _hideAutojoinDelayedWarnings;

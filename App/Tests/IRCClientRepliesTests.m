@@ -62,6 +62,11 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCMessage *broken = [[IRCMessage alloc] initWithLine:@"@+reply=a\\sb :alice!a@a.test PRIVMSG #c :yes" onClient:client];
 
 	XCTAssertNil(broken.replyToMsgid);
+
+	/* The draft name of before 2026-02, from software not updated yet */
+	IRCMessage *draftReply = [[IRCMessage alloc] initWithLine:@"@msgid=m3;+draft/reply=m1 :bob!b@b.test PRIVMSG #c :also" onClient:client];
+
+	XCTAssertEqualObjects(draftReply.replyToMsgid, @"m1");
 }
 
 /* Replies need message-tags and a server that doesn't deny +reply */

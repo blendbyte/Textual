@@ -813,10 +813,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	BOOL canDelete = (inConversation && client.canDeleteMessages);
 
-	/* Others' messages: an operator's to try (the server decides; decided 2026-10-16) */
+	/* Others' messages: an operator's to try (the server decides; decided
+	 2026-10-16), and an IRC operator's anywhere (review 2026-11-15) */
 	BOOL canDeleteOthers = NO;
 
-	if (canDelete && channel.isChannel) {
+	if (canDelete && client.userIsIRCop) {
+		canDeleteOthers = YES;
+	} else if (canDelete && channel.isChannel) {
 		IRCChannelUser *member = [channel findMember:client.userNickname];
 
 		canDeleteOthers = (member.op || member.halfOp);

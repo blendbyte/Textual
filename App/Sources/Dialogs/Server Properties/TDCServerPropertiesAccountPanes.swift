@@ -358,6 +358,7 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 	@Published var nickServHost = ""
 	@Published private(set) var knownNickServHost: String?
 	@Published var waitsForLogin = false
+	@Published var requiresLogin = false
 	@Published var warnsAboutChannels = true
 
 	/* The configuration's values until saved: nil leaves the Keychain as it is, empty removes the key */
@@ -391,6 +392,8 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 
 		waitsForLogin = config.autojoinWaitsForNickServ
 
+		requiresLogin = config.saslRequired
+
 		warnsAboutChannels = (config.hideAutojoinDelayedWarnings == false)
 
 		loginKeyValue = config.saslECDSAKey
@@ -411,6 +414,8 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 		config.nickServHost = ((host.isEmpty == false) ? host : nil)
 
 		config.autojoinWaitsForNickServ = waitsForLogin
+
+		config.saslRequired = requiresLogin
 
 		config.hideAutojoinDelayedWarnings = (warnsAboutChannels == false)
 
@@ -684,6 +689,10 @@ struct AccountPage: View
 
 			if (showsMore) {
 				Section {
+					SettingToggle(title: ServerPropertiesText("spp-acc-req"), help: ServerPropertiesText("spp-acc-reqh"), isOn: $pane.requiresLogin)
+				}
+
+				Section {
 					LoginKeyRows(pane: pane)
 				}
 
@@ -703,7 +712,7 @@ struct AccountPage: View
 		.formStyle(.grouped)
 		.onAppear {
 			/* Something is set in there: show it */
-			if (pane.loginKey != nil || pane.certificateReference != nil || pane.nickServHost.isEmpty == false) {
+			if (pane.loginKey != nil || pane.certificateReference != nil || pane.nickServHost.isEmpty == false || pane.requiresLogin) {
 				showsMore = true
 			}
 		}

@@ -384,7 +384,27 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 
 	channel.chatHistoryRequestLimit = 0;
 
-	if (limit == 0 || batchMessage.queuedEntriesCount < limit) {
+	if (limit == 0) {
+		return;
+	}
+
+	/* The server says there is nothing older */
+	if (batchMessage.openingMessage.messageTags[@"draft/chathistory-end"] != nil) {
+		return;
+	}
+
+	/* Lines sent only as context don't count towards the limit */
+	NSUInteger messageCount = 0;
+
+	for (id entry in batchMessage.queuedEntries) {
+		if ([entry isKindOfClass:[IRCMessage class]] && ((IRCMessage *)entry).messageTags[@"draft/chathistory-context"] != nil) {
+			continue;
+		}
+
+		messageCount += 1;
+	}
+
+	if (messageCount < limit) {
 		return;
 	}
 

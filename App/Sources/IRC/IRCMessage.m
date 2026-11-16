@@ -237,7 +237,8 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 - (nullable NSString *)replyToMsgid
 {
-	return [IRCMessage validatedMessageIdentifier:self.messageTags[@"+reply"]];
+	/* The draft name until 2026-02, which software not updated yet still sends */
+	return [IRCMessage validatedMessageIdentifier:(self.messageTags[@"+reply"] ?: self.messageTags[@"+draft/reply"])];
 }
 
 + (nullable NSString *)validatedMessageIdentifier:(nullable id)identifier
