@@ -864,6 +864,30 @@ NS_ASSUME_NONNULL_BEGIN
 	[self close];
 }
 
+/* The word typed is the item already, but for the space a pick adds */
+- (BOOL)_choosingRowChangesNothing:(NSInteger)row
+{
+	TVCInputCompletionQuery *query = self.query;
+
+	if (query == nil || row < 0 || row >= (NSInteger)self.items.count) {
+		return NO;
+	}
+
+	NSString *string = self.window.inputTextField.string;
+
+	if (NSMaxRange(query.range) > string.length) {
+		return NO;
+	}
+
+	NSString *replacement = [TVCInputCompletion replacementForItem:self.items[row] query:query inString:string nicknameSuffix:[TPCPreferences tabCompletionSuffix]];
+
+	if ([replacement hasSuffix:@" "]) {
+		replacement = [replacement substringToIndex:(replacement.length - 1)];
+	}
+
+	return [[string substringWithRange:query.range] isEqualToString:replacement];
+}
+
 - (BOOL)handleKeyEvent:(NSEvent *)event
 {
 	if (self.visible == NO) {
@@ -900,9 +924,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
-		case TXKeyTabCode:
 		case TXKeyReturnCode:
 		case TXKeyEnterCode:
+		{
+			/* "/part #x4" typed out: Return sends it */
+			if ([self _choosingRowChangesNothing:MAX(row, 0)]) {
+				[self close];
+
+				return NO;
+			}
+
+			[self _chooseItemAtRow:MAX(row, 0)];
+
+			return YES;
+		}
+		case TXKeyTabCode:
 		{
 			[self _chooseItemAtRow:MAX(row, 0)];
 
