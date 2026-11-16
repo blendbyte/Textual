@@ -78,6 +78,7 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 
 /* Sorted; drops those expired at date */
 - (NSArray<NSString *> *)typingNicknamesAtDate:(NSDate *)date;
+@property (nonatomic, assign) BOOL localUserWroteHere; // a private message: previews load once you wrote in it (or share a channel)
 @property (nonatomic, assign) BOOL channelModesReceived;
 @property (nonatomic, assign) BOOL channelNamesReceived;
 @property (nonatomic, assign, readwrite) BOOL errorOnLastJoinAttempt;

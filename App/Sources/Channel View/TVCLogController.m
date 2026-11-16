@@ -509,6 +509,19 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 			([TPCPreferences showInlineMedia] == NO	&& config.inlineMediaEnabled));
 }
 
+- (BOOL)previewsWaitForReplyFromNickname:(NSString *)nickname
+{
+	NSParameterAssert(nickname != nil);
+
+	IRCChannel *channel = self.associatedChannel;
+
+	if (channel.isPrivateMessage == NO || channel.localUserWroteHere) {
+		return NO;
+	}
+
+	return ([self.associatedClient channelsSharedWithNickname:nickname].count == 0);
+}
+
 - (BOOL)viewIsSelected
 {
 	return (self.attachedWindow.selectedViewController == self);
@@ -2291,6 +2304,21 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	if (senderNickname.length > 0 && logLine.memberType != TVCLogLineMemberTypeLocalUser && [NSThread isMainThread]) {
 		ignoreInlineMedia = [self.associatedClient ignoresInlineMediaFromNickname:senderNickname];
+
+		/* A private message from a stranger: a link to their own server would
+		 tell them this Mac's address. Previews load once you wrote there, or
+		 while you share a channel with them. */
+		if (ignoreInlineMedia == NO && [self previewsWaitForReplyFromNickname:senderNickname]) {
+			ignoreInlineMedia = YES;
+		}
+	}
+
+	if (logLine.memberType == TVCLogLineMemberTypeLocalUser && [NSThread isMainThread]) {
+		IRCChannel *channel = self.associatedChannel;
+
+		if (channel.isPrivateMessage) {
+			channel.localUserWroteHere = YES;
+		}
 	}
 
 	/* Where it was said, for the message archive, read here and not
