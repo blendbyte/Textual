@@ -1209,14 +1209,9 @@ static NSUInteger _aliasDepth = 0;
 
 	self.config = mutableClientConfig;
 	
-	/* Clear cache */
-	/* If we have a host, then it's easy to clear only that.
-	 If we don't have a host, then we have to clear everything. */
-	if (hostmask) {
-		[self clearAddressBookCacheForHostmask:hostmask];
-	} else {
-		[self clearAddressBookCache];
-	}
+	/* All of it: the entry (*!*@host) also covers others on that host whose
+	 lines were already looked up, and their cached answer is now wrong */
+	[self clearAddressBookCache];
 }
 
 /* INVITE */
