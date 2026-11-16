@@ -194,6 +194,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"YouTube");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"ytimg.com", @"youtube-nocookie.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

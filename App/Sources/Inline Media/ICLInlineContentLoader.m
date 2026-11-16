@@ -170,6 +170,15 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 		return;
 	}
 
+	/* A service turned off: none of its hosts is contacted, also for links
+	 its own module doesn't preview (pictures, profiles), which the page card
+	 and the plain image and video previews would otherwise fetch */
+	NSString *serviceName = [self.class serviceOfHost:urlHost];
+
+	if (serviceName && [TPCPreferences inlineMediaServiceIsEnabled:serviceName] == NO) {
+		return;
+	}
+
 	urlComponents.scheme = urlScheme;
 	urlComponents.host = urlHost;
 
@@ -221,6 +230,40 @@ NSString * const ICLInlineContentErrorDomain = @"ICLInlineContentErrorDomain";
 	NSString *encodedHost = components.encodedHost;
 
 	return ((encodedHost.length > 0) ? encodedHost.lowercaseString : host);
+}
+
++ (nullable NSString *)serviceOfHost:(NSString *)host
+{
+	NSParameterAssert(host != nil);
+
+	host = host.lowercaseString;
+
+	for (Class moduleClass in [ICPCoreMedia modules]) {
+		NSString *serviceName = [moduleClass serviceName];
+
+		if (serviceName == nil) {
+			continue;
+		}
+
+		NSMutableArray<NSString *> *serviceHosts = [NSMutableArray array];
+
+		[serviceHosts addObjectsFromArray:([moduleClass domains] ?: @[])];
+		[serviceHosts addObjectsFromArray:([moduleClass serviceHosts] ?: @[])];
+
+		for (NSString *serviceHost in serviceHosts) {
+			NSString *domain = serviceHost.lowercaseString;
+
+			if ([domain hasPrefix:@"*."]) {
+				domain = [domain substringFromIndex:2];
+			}
+
+			if ([host isEqualToString:domain] || [host hasSuffix:[@"." stringByAppendingString:domain]]) {
+				return serviceName;
+			}
+		}
+	}
+
+	return nil;
 }
 
 + (BOOL)host:(NSString *)host isPreviewedWithDomains:(NSArray<NSString *> *)domains mode:(TXInlineMediaDomainRuleMode)mode

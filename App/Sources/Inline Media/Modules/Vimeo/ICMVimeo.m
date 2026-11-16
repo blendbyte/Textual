@@ -153,6 +153,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Vimeo");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"vimeocdn.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

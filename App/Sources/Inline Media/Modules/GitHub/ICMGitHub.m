@@ -287,6 +287,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"GitHub");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"githubusercontent.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

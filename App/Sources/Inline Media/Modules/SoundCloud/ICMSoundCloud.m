@@ -122,6 +122,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"SoundCloud");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"sndcdn.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

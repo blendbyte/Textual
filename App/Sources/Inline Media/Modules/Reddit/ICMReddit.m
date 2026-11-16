@@ -128,6 +128,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Reddit");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"redditmedia.com", @"redditstatic.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

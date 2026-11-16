@@ -123,6 +123,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Wikipedia");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"wikimedia.org"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

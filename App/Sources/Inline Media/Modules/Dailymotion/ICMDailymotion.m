@@ -168,6 +168,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Dailymotion");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"dmcdn.net", @"dai.ly"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

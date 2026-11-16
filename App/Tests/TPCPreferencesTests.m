@@ -218,6 +218,21 @@ NS_ASSUME_NONNULL_BEGIN
 	[TPCPreferences setInlineMediaWebPageCards:savedWebPageCards];
 }
 
+/* A service turned off covers all of its hosts, not just the links its own
+ module previews: Imgur's pictures, X profiles and pictures, YouTube's thumbnails */
+- (void)testInlineMediaServiceOfHost
+{
+	XCTAssertEqualObjects([ICLInlineContentLoader serviceOfHost:@"i.imgur.com"], @"Imgur");
+	XCTAssertEqualObjects([ICLInlineContentLoader serviceOfHost:@"imgur.com"], @"Imgur");
+	XCTAssertEqualObjects([ICLInlineContentLoader serviceOfHost:@"x.com"], @"X");
+	XCTAssertEqualObjects([ICLInlineContentLoader serviceOfHost:@"pbs.twimg.com"], @"X");
+	XCTAssertEqualObjects([ICLInlineContentLoader serviceOfHost:@"i.ytimg.com"], @"YouTube");
+	XCTAssertEqualObjects([ICLInlineContentLoader serviceOfHost:@"en.wikipedia.org"], @"Wikipedia");
+
+	XCTAssertNil([ICLInlineContentLoader serviceOfHost:@"example.com"]);
+	XCTAssertNil([ICLInlineContentLoader serviceOfHost:@"notx.com"]);
+}
+
 /* Preferences → Inline Media → Rules: a site covers its subdomains, not
  lookalikes; typed or pasted sites become plain domains */
 - (void)testInlineMediaDomainRules

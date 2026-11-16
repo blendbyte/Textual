@@ -125,6 +125,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Imgur");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"imgur.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -116,6 +116,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Spotify");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"spotify.com", @"scdn.co"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

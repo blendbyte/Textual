@@ -130,6 +130,13 @@ typedef void (^ICLInlineContentModuleActionBlock)(ICLInlineContentModule *module
 @property (readonly, class, copy, nullable) NSString *serviceName;
 
 /**
+ The service's own picture and video hosts ("ytimg.com"), beyond -domains:
+ with the service turned off, no link to them or to -domains (or any of
+ their subdomains) is previewed by any module. nil by default.
+ */
+@property (readonly, class, copy, nullable) NSArray<NSString *> *serviceHosts;
+
+/**
  Whether the module only handles addresses written with their scheme
  ("https://example.com"), not ones the link scanner completed ("see
  example.com"). Default NO.

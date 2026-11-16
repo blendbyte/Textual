@@ -97,6 +97,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return TXLocalizationNotNeeded(@"Bandcamp");
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return @[@"bandcamp.com", @"bcbits.com"];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

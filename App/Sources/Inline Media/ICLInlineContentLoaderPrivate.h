@@ -51,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Preferences → Inline Media → Rules: a listed domain includes its subdomains
  (domains as +[TPCPreferences normalizedInlineMediaDomain:] makes them) */
+/* The service (Preferences → Inline Media → Services) a host belongs to:
+ one of its module's domains, its picture and video hosts, or a subdomain of either */
++ (nullable NSString *)serviceOfHost:(NSString *)host;
+
 + (BOOL)host:(NSString *)host isPreviewedWithDomains:(NSArray<NSString *> *)domains mode:(TXInlineMediaDomainRuleMode)mode;
 
 - (void)processURL:(NSURL *)url

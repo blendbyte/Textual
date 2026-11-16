@@ -166,6 +166,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return nil;
 }
 
++ (nullable NSArray<NSString *> *)serviceHosts
+{
+	return nil;
+}
+
 + (BOOL)requiresAddressWithScheme
 {
 	return NO;
