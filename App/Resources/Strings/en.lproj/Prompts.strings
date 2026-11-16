@@ -141,6 +141,14 @@ If you are the developer of one of these extensions: In the Info.plist file of y
 "itb-3x" = "This action will overwrite your configuration with the contents of a file you choose";
 "jsh-1a" = "Please note that the following items cannot be imported: your own extensions, file transfer download location, log location, and passwords.";
 "502-6h" = "Choose File";
+"imp-c1" = "This file also contains commands that run by themselves";
+"imp-c2" = "Aliases, chat filter actions and commands run when connected can send what you receive or type to someone else. Import them only if you know where the file comes from.\n\n%@";
+"imp-c3" = "Leave Them Out";
+"imp-c4" = "Import Them Too";
+"imp-c5" = "Alias /%1$@: %2$@";
+"imp-c6" = "Chat filter “%1$@”: %2$@";
+"imp-c7" = "%1$@, when connected: %2$@";
+"imp-c8" = "…and %lu more";
 
 "6hx-ni" = "Save";
 "0bj-ic" = "To install this script, save it inside the folder:

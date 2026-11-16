@@ -153,6 +153,22 @@ NS_ASSUME_NONNULL_BEGIN
 	/* Only what export writes, with values of the expected type */
 	propertyList = [self importableContentsOfDictionary:propertyList];
 
+	/* Aliases, chat filter actions and commands run when connected act by
+	 themselves: a shared file could forward messages or typed passwords.
+	 Shown word for word; left out unless the user wants them. */
+	NSArray<NSString *> *automaticCommands = [self automaticCommandsInContents:propertyList];
+
+	if (automaticCommands.count > 0) {
+		BOOL leaveOut = [TDCAlert modalAlertWithMessage:TXTLS(@"Prompts[imp-c2]", [self listOfAutomaticCommands:automaticCommands])
+												  title:TXTLS(@"Prompts[imp-c1]")
+										  defaultButton:TXTLS(@"Prompts[imp-c3]")
+										alternateButton:TXTLS(@"Prompts[imp-c4]")];
+
+		if (leaveOut) {
+			propertyList = [self contentsWithoutAutomaticCommands:propertyList];
+		}
+	}
+
 	/* The loading screen is a generic way to show something during import */
 	[mainWindowLoadingScreen() showProgressViewWithReason:TXTLS(@"TVCMainWindow[5g1-i9]")];
 
@@ -222,6 +238,170 @@ NS_ASSUME_NONNULL_BEGIN
 	}];
 
 	return [importableContents copy];
+}
+
+#pragma mark -
+#pragma mark Commands That Run by Themselves
+
+static NSString * const _importAliasesKey = @"Input -> Aliases";
+static NSString * const _importChatFiltersKey = @"Textual Chat Filter Extension -> Filters";
+
+/* One line per alias, chat filter action and server's commands when connected */
++ (NSArray<NSString *> *)automaticCommandsInContents:(NSDictionary<NSString *, id> *)contents
+{
+	NSParameterAssert(contents != nil);
+
+	NSMutableArray<NSString *> *lines = [NSMutableArray array];
+
+	id aliases = contents[_importAliasesKey];
+
+	if ([aliases isKindOfClass:[NSDictionary class]]) {
+		for (id name in [[aliases allKeys] sortedArrayUsingSelector:@selector(description)]) {
+			id commands = aliases[name];
+
+			if ([name isKindOfClass:[NSString class]] && [commands isKindOfClass:[NSString class]]) {
+				[lines addObject:TXTLS(@"Prompts[imp-c5]", name, commands)];
+			}
+		}
+	}
+
+	id filters = contents[_importChatFiltersKey];
+
+	if ([filters isKindOfClass:[NSArray class]]) {
+		for (id filter in filters) {
+			if ([filter isKindOfClass:[NSDictionary class]] == NO) {
+				continue;
+			}
+
+			id action = filter[@"filterAction"];
+
+			if ([action isKindOfClass:[NSString class]] == NO || [action length] == 0) {
+				continue;
+			}
+
+			id title = filter[@"filterTitle"];
+
+			[lines addObject:TXTLS(@"Prompts[imp-c6]", (([title isKindOfClass:[NSString class]]) ? title : @""), action)];
+		}
+	}
+
+	id clients = contents[IRCWorldClientListDefaultsKey];
+
+	if ([clients isKindOfClass:[NSArray class]]) {
+		for (id client in clients) {
+			if ([client isKindOfClass:[NSDictionary class]] == NO) {
+				continue;
+			}
+
+			NSString *commands = [self loginCommandsOfClientDictionary:client];
+
+			if (commands.length == 0) {
+				continue;
+			}
+
+			id name = client[@"connectionName"];
+
+			[lines addObject:TXTLS(@"Prompts[imp-c7]", (([name isKindOfClass:[NSString class]]) ? name : @""), commands)];
+		}
+	}
+
+	return [lines copy];
+}
+
++ (nullable NSString *)loginCommandsOfClientDictionary:(NSDictionary *)client
+{
+	id commands = client[@"onConnectCommands"];
+
+	if ([commands isKindOfClass:[NSArray class]] == NO) {
+		return nil;
+	}
+
+	NSMutableArray<NSString *> *strings = [NSMutableArray array];
+
+	for (id command in commands) {
+		if ([command isKindOfClass:[NSString class]] && [command length] > 0) {
+			[strings addObject:command];
+		}
+	}
+
+	return [strings componentsJoinedByString:@"; "];
+}
+
+/* At most 30 lines in the alert */
++ (NSString *)listOfAutomaticCommands:(NSArray<NSString *> *)lines
+{
+	NSUInteger shown = MIN(lines.count, (NSUInteger)30);
+
+	NSString *list = [[lines subarrayWithRange:NSMakeRange(0, shown)] componentsJoinedByString:@"\n"];
+
+	if (lines.count > shown) {
+		list = [list stringByAppendingFormat:@"\n%@", TXTLS(@"Prompts[imp-c8]", (unsigned long)(lines.count - shown))];
+	}
+
+	return list;
+}
+
+/* The user's own aliases stay; imported filters lose their action; servers
+ keep their own commands when connected, and new ones get none */
++ (NSDictionary<NSString *, id> *)contentsWithoutAutomaticCommands:(NSDictionary<NSString *, id> *)contents
+{
+	NSParameterAssert(contents != nil);
+
+	NSMutableDictionary<NSString *, id> *contentsOut = [contents mutableCopy];
+
+	[contentsOut removeObjectForKey:_importAliasesKey];
+
+	id filters = contents[_importChatFiltersKey];
+
+	if ([filters isKindOfClass:[NSArray class]]) {
+		NSMutableArray *filtersOut = [NSMutableArray arrayWithCapacity:[filters count]];
+
+		for (id filter in filters) {
+			if ([filter isKindOfClass:[NSDictionary class]] == NO) {
+				continue;
+			}
+
+			NSMutableDictionary *filterOut = [filter mutableCopy];
+
+			[filterOut removeObjectForKey:@"filterAction"];
+
+			[filtersOut addObject:[filterOut copy]];
+		}
+
+		contentsOut[_importChatFiltersKey] = [filtersOut copy];
+	}
+
+	id clients = contents[IRCWorldClientListDefaultsKey];
+
+	if ([clients isKindOfClass:[NSArray class]]) {
+		NSMutableArray *clientsOut = [NSMutableArray arrayWithCapacity:[clients count]];
+
+		for (id client in clients) {
+			if ([client isKindOfClass:[NSDictionary class]] == NO) {
+				continue;
+			}
+
+			NSMutableDictionary *clientOut = [client mutableCopy];
+
+			[clientOut removeObjectForKey:@"onConnectCommands"];
+
+			id identifier = client[@"uniqueIdentifier"];
+
+			IRCClient *existingClient = (([identifier isKindOfClass:[NSString class]]) ? [worldController() findClientWithId:identifier] : nil);
+
+			NSArray *existingCommands = existingClient.config.loginCommands;
+
+			if (existingCommands.count > 0) {
+				clientOut[@"onConnectCommands"] = existingCommands;
+			}
+
+			[clientsOut addObject:[clientOut copy]];
+		}
+
+		contentsOut[IRCWorldClientListDefaultsKey] = [clientsOut copy];
+	}
+
+	return [contentsOut copy];
 }
 
 + (BOOL)object:(id)object isOfSameTypeAs:(id)otherObject

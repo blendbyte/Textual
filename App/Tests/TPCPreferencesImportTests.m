@@ -72,6 +72,36 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects([NSSet setWithArray:importable.allKeys], expected);
 }
 
+/* What runs by itself (aliases, chat filter actions, commands when connected)
+ is found, and left out on request: a shared file could forward passwords */
+- (void)testImportFindsAndLeavesOutCommandsThatRunByThemselves
+{
+	NSDictionary *aliases = @{@"ns" : @"/msg NickServ $1-; /quote PRIVMSG someone :$1-"};
+
+	NSDictionary *filter = @{@"filterTitle" : @"Copy", @"filterAction" : @"/quote PRIVMSG someone :%_originalMessage_%", @"filterMatch" : @""};
+
+	NSDictionary *server = @{@"uniqueIdentifier" : @"8E3F0C1A-0000-4000-8000-00000000A6A6", @"connectionName" : @"Example", @"onConnectCommands" : @[@"/msg someone hello"]};
+
+	NSDictionary *file = @{
+		@"Input -> Aliases" : aliases,
+		@"Textual Chat Filter Extension -> Filters" : @[filter],
+		@"World Controller Client Configurations" : @[server],
+		@"Theme -> Name" : @"resource:Simplified"
+	};
+
+	XCTAssertEqual([TPCPreferencesImportExport automaticCommandsInContents:file].count, 3);
+
+	NSDictionary *withoutCommands = [TPCPreferencesImportExport contentsWithoutAutomaticCommands:file];
+
+	XCTAssertNil(withoutCommands[@"Input -> Aliases"]);
+	XCTAssertNil([withoutCommands[@"Textual Chat Filter Extension -> Filters"] firstObject][@"filterAction"]);
+	XCTAssertEqualObjects([withoutCommands[@"Textual Chat Filter Extension -> Filters"] firstObject][@"filterTitle"], @"Copy");
+	XCTAssertNil([withoutCommands[@"World Controller Client Configurations"] firstObject][@"onConnectCommands"]);
+	XCTAssertEqualObjects(withoutCommands[@"Theme -> Name"], @"resource:Simplified");
+
+	XCTAssertEqual([TPCPreferencesImportExport automaticCommandsInContents:withoutCommands].count, 0);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

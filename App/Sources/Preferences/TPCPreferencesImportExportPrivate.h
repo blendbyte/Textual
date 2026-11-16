@@ -47,6 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 /* The part of a settings file that may be imported */
 + (NSDictionary<NSString *, id> *)importableContentsOfDictionary:(NSDictionary *)aDict;
 + (void)importClientConfiguration:(NSDictionary<NSString *, id> *)config;
+
+/* Aliases, chat filter actions and servers' commands when connected: shown
+ before import, and left out unless the user wants them */
++ (NSArray<NSString *> *)automaticCommandsInContents:(NSDictionary<NSString *, id> *)contents;
++ (NSDictionary<NSString *, id> *)contentsWithoutAutomaticCommands:(NSDictionary<NSString *, id> *)contents;
 @end
 
 NS_ASSUME_NONNULL_END
