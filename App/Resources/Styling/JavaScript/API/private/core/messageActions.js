@@ -239,7 +239,8 @@ _MessageActions._excerptOfLine = function(line) /* PRIVATE */
 	/* The text alone: not the reactions after it or a preview card */
 	var copy = message.cloneNode(true);
 
-	copy.querySelectorAll(".reactions, .replyQuote, .inlineMediaContainer").forEach(function(element) {
+	/* .spokenOnly: "Mentions you:" and the like are for VoiceOver, not the quote */
+	copy.querySelectorAll(".reactions, .replyQuote, .inlineMediaContainer, .spokenOnly").forEach(function(element) {
 		element.remove();
 	});
 

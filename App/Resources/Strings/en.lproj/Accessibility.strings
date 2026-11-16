@@ -64,6 +64,7 @@
 
 /* Read by VoiceOver before a message that mentions you */
 "msg-m1" = "Mentions you";
+"msg-b1" = "Bot";
 
 /* VoiceOver: the suggestion chosen in a list, "#textual, 3 of 5" */
 "lst-p1" = "%1$@, %2$lu of %3$lu";

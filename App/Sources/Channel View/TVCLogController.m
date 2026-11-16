@@ -3485,6 +3485,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		[spokenParts addObject:[NSString stringWithFormat:@"%@, %@", logLine.nickname, (logLine.formattedTimestamp ?: @"")]];
 	}
 
+	/* The name only shows it as a tooltip (title), which VoiceOver may not read */
+	if (logLine.senderIsBot) {
+		[spokenParts addObject:TXTLS(@"Accessibility[msg-b1]")];
+	}
+
 	if (highlighted) {
 		[spokenParts addObject:TXTLS(@"Accessibility[msg-m1]")];
 	}

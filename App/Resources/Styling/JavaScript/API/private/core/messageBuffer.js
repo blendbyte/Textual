@@ -659,6 +659,9 @@ _MessageBuffer.loadMessagesDuringScrollWithPayloadPostflight = function(requestP
 		/* Append HTML */
 		var htmlString = html.join("");
 
+		/* Older or newer lines loaded while scrolling aren't new: not announced */
+		_MessageBuffer.quietLiveRegion();
+
 		if (before) {
 			line.prepareForMutation();
 
@@ -897,6 +900,9 @@ _MessageBuffer.loadMessagesWithJumpPostflight = function(requestPayload) /* PRIV
 			var htmlString = html.join("");
 
 			var buffer = MessageBuffer.bufferElement();
+
+			/* The page jumped to isn't new either */
+			_MessageBuffer.quietLiveRegion();
 
 			buffer.insertAdjacentHTML('afterbegin', htmlString);
 

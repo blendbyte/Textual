@@ -335,6 +335,7 @@ struct CommandsSettings: View
 						}
 						.buttonStyle(.plain)
 						.help(SettingsText("set-cmd-ar"))
+						.accessibilityLabel(SettingsText("set-cmd-ar"))
 					}
 				}
 

@@ -65,7 +65,7 @@
 			{{/ isEmpty(nicknameColorStyle) }}
 		{{/nicknameColorHashingEnabled}}>{{formattedNickname}}</span>
 
-	<span class="message">{{{formattedMessage}}}
+	<span class="message">{{#spokenPrefix}}<span class="spokenOnly">{{spokenPrefix}} </span>{{/spokenPrefix}}{{{formattedMessage}}}
 
 		{{#inlineMediaEnabled}}
 			<span class="inlineMediaContainer"></span>

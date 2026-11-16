@@ -279,6 +279,26 @@ body[data-selected="false"] #topicBar {
 	--mirc-foreground-color-15: initial;
 }
 
+/* A mention shows by a shape too, not only by colour (which some can't
+ tell apart): a bar at the start of the line, in the colour of its text,
+ above whatever the style paints there. Zero specificity (:where), so a
+ style can draw its own. */
+:where(div.line[data-highlight="true"]) {
+	position: relative;
+}
+
+:where(div.line[data-highlight="true"])::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	inset-inline-start: 0;
+	width: 3px;
+	background-color: currentColor;
+	pointer-events: none;
+	z-index: 1;
+}
+
 /* Read by VoiceOver, not shown or copied: who said a grouped line, a mention */
 .spokenOnly {
 	position: absolute !important;

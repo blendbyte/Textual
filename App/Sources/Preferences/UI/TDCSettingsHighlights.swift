@@ -175,6 +175,7 @@ struct HighlightKeywordTags: View
 					}
 					.buttonStyle(.plain)
 					.help(SettingsText("set-hil-r"))
+					.accessibilityLabel(SettingsText("set-hil-r"))
 				}
 				.padding(.leading, 9)
 				.padding(.trailing, 5)
