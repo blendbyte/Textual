@@ -399,13 +399,27 @@ final class SetupServersModel: ObservableObject
 		bouncers.append(bouncer)
 	}
 
-	func addTyped(_ server: SetupServer)
+	/// NO for an address a server already has: that one isn't added twice,
+	/// and the list or an alert says so (it was shown as added, then left out)
+	@discardableResult
+	func addTyped(_ server: SetupServer) -> Bool
 	{
+		if (hasServer(at: server.host)) {
+			return false
+		}
+
 		if (isPicked(server.id) == false) {
 			picked.append(server)
 		}
 
 		search = ""
+
+		return true
+	}
+
+	func hasServer(at host: String) -> Bool
+	{
+		existingHosts.contains(host.lowercased())
 	}
 
 	// MARK: Your name
@@ -488,7 +502,7 @@ final class SetupServersModel: ObservableObject
 
 	func isAlreadyAdded(_ network: AtlasNetwork) -> Bool
 	{
-		existingHosts.contains(SetupServer(network: network).host.lowercased())
+		hasServer(at: SetupServer(network: network).host)
 	}
 
 	/// Once the main window exists. Bouncers logged in when they were added.
@@ -497,8 +511,9 @@ final class SetupServersModel: ObservableObject
 		var selectsServer = true
 
 		for server in picked where (onlyChecked == false || checkedIDs.contains(server.id)) {
-			/* Already there: not a second copy of it */
-			if (existingHosts.contains(server.host.lowercased())) {
+			/* A network from the list that's already there: not a second copy of it
+			 (a typed address that's there already isn't picked in the first place) */
+			if (server.network != nil && hasServer(at: server.host)) {
 				continue
 			}
 			let config = configuration(for: server)
@@ -1297,18 +1312,20 @@ struct SetupNetworksStep: View
 
 	private func typedRow(_ server: SetupServer) -> some View
 	{
-		Button {
+		let alreadyAdded = model.hasServer(at: server.host)
+
+		return Button {
 			model.addTyped(server)
 		} label: {
 			HStack(spacing: 8) {
-				Image(systemName: "plus.circle.fill")
-					.foregroundStyle(Color.accentColor)
+				Image(systemName: (alreadyAdded ? "checkmark.circle.fill" : "plus.circle.fill"))
+					.foregroundStyle(alreadyAdded ? Color.secondary : Color.accentColor)
 					.accessibilityHidden(true)
 
 				VStack(alignment: .leading, spacing: 1) {
-					Text(SetupText("sa-sl-typed", server.host))
+					Text(SetupText((alreadyAdded ? "sa-sl-typed-have" : "sa-sl-typed"), server.host))
 
-					Text(SetupText("sa-sl-typed-d"))
+					Text(SetupText(alreadyAdded ? "sa-sl-typed-have-d" : "sa-sl-typed-d"))
 						.font(.callout)
 						.foregroundStyle(.secondary)
 				}
@@ -1320,6 +1337,7 @@ struct SetupNetworksStep: View
 			.contentShape(Rectangle())
 		}
 		.buttonStyle(.plain)
+		.disabled(alreadyAdded)
 	}
 
 	private func addressRow(_ server: SetupServer) -> some View

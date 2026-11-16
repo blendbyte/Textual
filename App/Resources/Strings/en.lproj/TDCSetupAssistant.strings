@@ -208,6 +208,8 @@
 "sa-sl-nothing" = "Nothing by that name. Paste a server address to use it directly.";
 "sa-sl-typed" = "Connect to %@";
 "sa-sl-typed-d" = "Textual tests the address and whether it’s encrypted.";
+"sa-sl-typed-have" = "You already have a server at %@";
+"sa-sl-typed-have-d" = "It isn’t added a second time. For another connection with other settings, use Server › Duplicate Server after setup.";
 "sa-sl-secure" = "Encrypted";
 "sa-sl-plain" = "Not encrypted";
 "sa-sl-cert" = "Certificate problem";

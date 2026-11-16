@@ -298,7 +298,10 @@ final class SetupModel: ObservableObject
 	{
 		/* An address typed and not yet added is what Continue means */
 		if (step == .networks), let servers = serversModel, let typed = servers.typedServer {
-			servers.addTyped(typed)
+			/* A server has that address already: the list says so, nothing moves on */
+			if (servers.addTyped(typed) == false) {
+				return
+			}
 		}
 
 		/* Everything picked answers first, or says why not */
@@ -482,7 +485,11 @@ final class SetupModel: ObservableObject
 
 			self?.bouncerAdded()
 		}, addAsServer: { [weak self] (address, port, secured) in
-			servers.addTyped(SetupServer(host: address, port: port, tls: secured))
+			if (servers.addTyped(SetupServer(host: address, port: port, tls: secured)) == false) {
+				TDCAlert.modalAlert(withMessage: SetupText("sa-sl-typed-have-d"), title: SetupText("sa-sl-typed-have", address), defaultButton: ImportText("oxy-im"), alternateButton: nil)
+
+				return
+			}
 
 			/* On from here, as for a bouncer: Continue on Interests went to the
 			 suggestions, which left it out */
