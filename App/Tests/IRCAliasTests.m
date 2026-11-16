@@ -37,6 +37,7 @@
 #import <XCTest/XCTest.h>
 
 #import "IRCAliasPrivate.h"
+#import "TPCPreferencesUserDefaults.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -94,6 +95,26 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertTrue([IRCAlias isValidAliasName:@"op-2_x"]);
 	XCTAssertFalse([IRCAlias isValidAliasName:@"op me"]);
 	XCTAssertFalse([IRCAlias isValidAliasName:@""]);
+}
+
+/* An imported file can hold anything: only text names and commands with a valid name are aliases */
+- (void)testOnlyValidAliasesAreRead
+{
+	id saved = [RZUserDefaults() objectForKey:@"Input -> Aliases"];
+
+	NSDictionary *stored = @{@"ok" : @"/me waves", @"num" : @5, @"bad name" : @"/x", @"list" : @[@"/y"]};
+
+	[RZUserDefaults() setObject:stored forKey:@"Input -> Aliases"];
+
+	NSDictionary *expected = @{@"ok" : @"/me waves"};
+
+	XCTAssertEqualObjects(IRCAlias.aliases, expected);
+
+	if (saved) {
+		[RZUserDefaults() setObject:saved forKey:@"Input -> Aliases"];
+	} else {
+		[RZUserDefaults() removeObjectForKey:@"Input -> Aliases"];
+	}
 }
 
 @end

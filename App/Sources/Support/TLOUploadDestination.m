@@ -346,6 +346,33 @@ static NSString * const _globalSecretsIdentifier = @"global";
 	return [TLOKeychain setPassword:string ofKind:TLOKeychainItemKindUploadSecrets forIdentifier:identifier];
 }
 
+/* Tokens are for the host they were made for: a destination that now
+ points elsewhere (an imported settings file) must not send them there */
++ (void)removeSecretsWithIdentifier:(NSString *)identifier unlessPropertyList:(nullable NSDictionary *)oldPropertyList hasSameHostAs:(nullable NSDictionary *)newPropertyList
+{
+	NSParameterAssert(identifier != nil);
+
+	NSString *(^hostOf)(NSDictionary *) = ^NSString *(NSDictionary *propertyList) {
+		id address = (([propertyList isKindOfClass:[NSDictionary class]]) ? propertyList[@"requestAddress"] : nil);
+
+		return (([address isKindOfClass:[NSString class]]) ? [NSURL URLWithString:address].host.lowercaseString : nil);
+	};
+
+	NSString *oldHost = hostOf(oldPropertyList);
+	NSString *newHost = hostOf(newPropertyList);
+
+	if (oldHost && newHost && [oldHost isEqualToString:newHost]) {
+		return;
+	}
+
+	[self removeSecretsWithIdentifier:identifier];
+}
+
++ (void)removeGlobalSecretsUnlessPropertyListHasSameHost:(nullable NSDictionary *)newPropertyList
+{
+	[self removeSecretsWithIdentifier:_globalSecretsIdentifier unlessPropertyList:[RZUserDefaults() dictionaryForKey:_globalDestinationKey] hasSameHostAs:newPropertyList];
+}
+
 + (void)removeSecretsWithIdentifier:(NSString *)identifier
 {
 	NSParameterAssert(identifier != nil);

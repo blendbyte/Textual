@@ -73,6 +73,10 @@ typedef NS_ENUM(NSUInteger, TLOUploadDestinationBody) {
 - (BOOL)saveSecretsWithIdentifier:(NSString *)identifier;
 + (void)removeSecretsWithIdentifier:(NSString *)identifier;
 
+/* For an import: the tokens stay only when the new destination has the old one's host */
++ (void)removeSecretsWithIdentifier:(NSString *)identifier unlessPropertyList:(nullable NSDictionary *)oldPropertyList hasSameHostAs:(nullable NSDictionary *)newPropertyList;
++ (void)removeGlobalSecretsUnlessPropertyListHasSameHost:(nullable NSDictionary *)newPropertyList;
+
 /* The one in Preferences (nil: none); setting it saves its tokens */
 @property (class, nonatomic, copy, nullable) TLOUploadDestination *globalDestination;
 

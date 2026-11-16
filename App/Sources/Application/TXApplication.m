@@ -36,6 +36,12 @@
  *********************************************************************** */
 
 #import "TDCAlert.h"
+#import "TXMasterController.h"
+#import "HLSHistoricLogManagerPrivate.h"
+#import "TLOMessageArchivePrivate.h"
+#import "IRCChannelPrivate.h"
+#import "IRCClientPrivate.h"
+#import "IRCWorld.h"
 #import "TLOLocalization.h"
 #import "TPCApplicationInfo.h"
 #import "TXApplicationPrivate.h"
@@ -88,6 +94,14 @@ NS_ASSUME_NONNULL_BEGIN
 		});
 	}];
 
+	/* Kept data isn't lost with the quick exit: the session's messages still
+	 waiting for the archive, the text logs' last lines and the scrollback
+	 (an import's staged copy replaces it at the next launch). Not the server
+	 list, which the import replaces. */
+	if (eraseData == NO) {
+		[self saveDataBeforeRestart];
+	}
+
 	/* Not in the completion handler: that only runs once the new copy has
 	 launched, and the new copy waits for this one to quit first */
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -95,8 +109,37 @@ NS_ASSUME_NONNULL_BEGIN
 			return;
 		}
 
-		exit(0);
+		[self exitWhenScrollbackIsSaved:20];
 	});
+}
+
++ (void)saveDataBeforeRestart
+{
+	for (IRCClient *client in worldController().clientList) {
+		[client closeLogFile];
+
+		for (IRCChannel *channel in client.channelList) {
+			[channel closeLogFile];
+		}
+	}
+
+	[sharedHistoricLog() saveData];
+
+	[sharedMessageArchive() prepareForApplicationTermination];
+}
+
+/* A few seconds at most for the scrollback being written */
++ (void)exitWhenScrollbackIsSaved:(NSUInteger)attemptsLeft
+{
+	if (sharedHistoricLog().isSaving && attemptsLeft > 0) {
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			[self exitWhenScrollbackIsSaved:(attemptsLeft - 1)];
+		});
+
+		return;
+	}
+
+	exit(0);
 }
 
 + (void)eraseDataForFreshStart

@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation IRCAlias
 
+/* Only names and commands that are text, and names that are valid: an
+ imported file can hold anything, and Settings › Aliases trapped on a number */
 + (NSDictionary<NSString *, NSString *> *)aliases
 {
 	NSDictionary *aliases = [RZUserDefaults() dictionaryForKey:_aliasesDefaultsKey];
@@ -52,7 +54,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return @{};
 	}
 
-	return aliases;
+	NSMutableDictionary<NSString *, NSString *> *validAliases = [NSMutableDictionary dictionaryWithCapacity:aliases.count];
+
+	[aliases enumerateKeysAndObjectsUsingBlock:^(id name, id commands, BOOL *stop) {
+		if ([name isKindOfClass:[NSString class]] && [commands isKindOfClass:[NSString class]] && [self isValidAliasName:name]) {
+			validAliases[name] = commands;
+		}
+	}];
+
+	return [validAliases copy];
 }
 
 + (nullable NSString *)commandsForAlias:(NSString *)name

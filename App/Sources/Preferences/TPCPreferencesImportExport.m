@@ -40,6 +40,7 @@
 #import "IRCWorldPrivate.h"
 #import "TXMasterController.h"
 #import "TDCAlert.h"
+#import "TLOUploadDestinationPrivate.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesReload.h"
@@ -513,6 +514,13 @@ static NSString * const _importChatFiltersKey = @"Textual Chat Filter Extension 
 			[self importClientConfiguration:object];
 		}];
 	}
+	else if ([key isEqualToString:@"Uploads -> Destination"])
+	{
+		/* Saved tokens don't go to a host they weren't made for */
+		[TLOUploadDestination removeGlobalSecretsUnlessPropertyListHasSameHost:object];
+
+		[RZUserDefaults() _migrateObject:object forKey:key];
+	}
 	else if ([key isEqualToString:IRCWorldBouncerAccountsDefaultsKey])
 	{
 		if ([object isKindOfClass:[NSArray class]] == NO) {
@@ -537,6 +545,11 @@ static NSString * const _importChatFiltersKey = @"Textual Chat Filter Extension 
 	IRCClientConfig *clientConfig = [[IRCClientConfig alloc] initWithDictionary:config];
 
 	IRCClient *client = [worldController() findClientWithId:clientConfig.uniqueIdentifier];
+
+	/* The server's own upload tokens, the same way */
+	if (client) {
+		[TLOUploadDestination removeSecretsWithIdentifier:client.config.uniqueIdentifier unlessPropertyList:client.config.uploadDestination hasSameHostAs:clientConfig.uploadDestination];
+	}
 
 	if (client) {
 		[client updateConfig:clientConfig];
