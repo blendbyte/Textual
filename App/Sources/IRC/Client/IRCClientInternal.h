@@ -68,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define IRCClientMaximumChannelCount	1000 // channels and queries of a server created by what it sends
 #define IRCClientMaximumNewQueriesPerMinute	100 // private conversations other people can open within a minute
 #define _batchEntryLimit			20000 // lines held in one batch; later ones are handled as they arrive
+#define _heldBatchLineLimit			50000 // lines held in all open batches together, the same way
 #define _openBatchLimit				1000 // batches open at once; more are not opened
 #define _cachedHighlightsLimit		100 // newest highlights kept in cachedHighlights (for plugins)
 #define _labeledRequestTimeout		300 // a labeled command whose reply never came is forgotten after this many seconds
@@ -158,6 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL configurationIsStale;
 @property (nonatomic, strong, nullable) IRCConnection *socket;
 @property (nonatomic, strong) IRCMessageBatchMessageContainer *batchMessages;
+@property (nonatomic, assign) NSUInteger heldBatchLineCount; // lines waiting in open batches, for _heldBatchLineLimit
 @property (nonatomic, strong) NSMutableDictionary<NSString *, IRCClientLabeledRequest *> *labeledRequests; // label → request
 @property (nonatomic, assign) NSUInteger labeledRequestCount;
 @property (nonatomic, assign) NSUInteger labelingDepth; // > 0 while a typed command runs

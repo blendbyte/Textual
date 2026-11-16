@@ -377,6 +377,52 @@ async def scenario_review_limits(client):
 		pass
 
 
+async def scenario_review_held_batches(client):
+	"""(BATCH) Lines held in all open batches together are limited: three open
+	batches hold 50,000 lines, then a CTCP VERSION in one of them must be
+	answered at once instead of waiting until the batches close or flush."""
+	if not await client.register_with_capabilities("batch message-tags server-time"):
+		return
+
+	me = client.nickname
+
+	lines = []
+
+	for token, count in (("a", 17000), ("b", 17000), ("c", 16000)):
+		lines.append(f":{SERVER} BATCH +{token} example.com/held")
+		lines += [f"@batch={token} :{SERVER} PONG {SERVER} :held {index}" for index in range(count)]
+
+	log(">>", f"<three open batches holding {len(lines) - 3} lines>")
+	client.writer.write(("\r\n".join(lines) + "\r\n").encode())
+	await client.writer.drain()
+
+	await client.collect(3)
+
+	started = time.monotonic()
+	await client.send(f"@batch=c :probe!p@probe.test PRIVMSG {me} :\x01VERSION\x01")
+
+	answered = False
+
+	while not answered and (remaining := 10 - (time.monotonic() - started)) > 0:
+		count = len(client.received)
+
+		if not await client.collect(min(remaining, 0.5)):
+			break
+
+		answered = any("NOTICE probe" in line and "VERSION" in line for line in client.received[count:])
+
+	result(answered, f"a line past 50,000 held ones is handled at once ({time.monotonic() - started:.1f} s)")
+
+	for token in ("a", "b", "c"):
+		await client.send(f":{SERVER} BATCH -{token}")
+
+	await client.collect(5)
+	result(await client.is_alive("held"), "client alive after the batches closed")
+
+	while await client.collect(3600):
+		pass
+
+
 async def scenario_review_mentions(client):
 	"""Full-review fixes: Mentions keeps its place. In #mentions alice names
 	you 40 times, then once every 5 seconds. Open Mentions (Control-5),
@@ -3624,6 +3670,7 @@ SCENARIOS = {
 	"review-irc": scenario_review_irc,
 	"review-receive": scenario_review_receive,
 	"review-dcc-send": scenario_review_dcc_send,
+	"review-held-batches": scenario_review_held_batches,
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,
@@ -3681,7 +3728,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-chat", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

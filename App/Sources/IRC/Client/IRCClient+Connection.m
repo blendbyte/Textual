@@ -124,6 +124,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self.batchMessages dequeueEntries];
 
+	self.heldBatchLineCount = 0;
+
 	[self removeLabeledRequests];
 
 	[self removeOutgoingMessages];

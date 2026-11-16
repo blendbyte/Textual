@@ -2896,10 +2896,16 @@ NS_ASSUME_NONNULL_BEGIN
 	if (batchToken) {
 		IRCMessageBatchMessage *thisBatchMessage = [self.batchMessages queuedEntryWithBatchToken:batchToken];
 
-		/* Past the limit, lines are handled as they arrive instead of being
-		 held: no real batch is this long */
-		if (thisBatchMessage.batchIsOpen && thisBatchMessage.queuedEntriesCount < _batchEntryLimit) {
+		/* Past the limits, lines are handled as they arrive instead of being
+		 held: no real batch is this long, and many open batches together
+		 would otherwise hold millions of lines until they are flushed */
+		if (thisBatchMessage.batchIsOpen &&
+			thisBatchMessage.queuedEntriesCount < _batchEntryLimit &&
+			self.heldBatchLineCount < _heldBatchLineLimit)
+		{
 			[thisBatchMessage queueEntry:m];
+
+			self.heldBatchLineCount += 1;
 
 			return YES;
 		}
@@ -2929,6 +2935,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	for (id queuedEntry in queuedEntries) {
 		if ([queuedEntry isKindOfClass:[IRCMessage class]]) {
+			if (self.heldBatchLineCount > 0) {
+				self.heldBatchLineCount -= 1;
+			}
+
 			[self processIncomingMessage:queuedEntry];
 		} else if ([queuedEntry isKindOfClass:[IRCMessageBatchMessage class]]) {
 			/* A multi-line message in history (chathistory, playback) */
@@ -2944,6 +2954,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Nested batches are registered by token too, so each one goes */
 	[self.batchMessages dequeueEntry:batchMessage];
+
+	/* Nothing held any more, whatever path a line took */
+	if (self.batchMessages.queuedEntriesCount == 0) {
+		self.heldBatchLineCount = 0;
+	}
 }
 
 - (void)processMultilineBatchMessage:(IRCMessageBatchMessage *)batchMessage
@@ -2955,6 +2970,14 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCMessage *combinedMessage = [self messageCombiningMultilineBatch:batchMessage];
 
 	[self.batchMessages dequeueEntry:batchMessage];
+
+	NSUInteger heldLines = MIN(batchMessage.queuedEntriesCount, self.heldBatchLineCount);
+
+	self.heldBatchLineCount -= heldLines;
+
+	if (self.batchMessages.queuedEntriesCount == 0) {
+		self.heldBatchLineCount = 0;
+	}
 
 	if (combinedMessage) {
 		[self processIncomingMessage:combinedMessage];
