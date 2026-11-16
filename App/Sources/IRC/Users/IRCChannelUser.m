@@ -381,6 +381,40 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self.user.nickname caseInsensitiveCompare:other.user.nickname];
 }
 
+/* compareUsingWeights:, with each weight worked out once and the preference
+ read once: sorting a big channel compared (and decayed) them thousands of times */
++ (NSComparator)weightsComparator
+{
+	BOOL favorIRCop = [TPCPreferences memberListSortFavorsServerStaff];
+
+	NSMapTable<IRCChannelUser *, NSNumber *> *weights = [NSMapTable strongToStrongObjectsMapTable];
+
+	double (^weightOf)(IRCChannelUser *) = ^double (IRCChannelUser *user) {
+		NSNumber *weight = [weights objectForKey:user];
+
+		if (weight == nil) {
+			weight = @(user.totalWeight);
+
+			[weights setObject:weight forKey:user];
+		}
+
+		return weight.doubleValue;
+	};
+
+	return [^(IRCChannelUser *object1, IRCChannelUser *object2) {
+		double weight1 = weightOf(object1);
+		double weight2 = weightOf(object2);
+
+		if (weight1 > weight2) {
+			return NSOrderedAscending;
+		} else if (weight1 < weight2) {
+			return NSOrderedDescending;
+		}
+
+		return [object1 compareUsingRank:object2 favorIRCop:favorIRCop];
+	} copy];
+}
+
 /* The preference is read once per comparator (it was read for every comparison) */
 + (NSComparator)channelRankComparator
 {

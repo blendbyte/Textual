@@ -246,8 +246,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 		NSArray *memberList = nil;
 
+		/* Characters skipped at the start of nicknames for their trimmed form */
+		NSCharacterSet *nonAlphaCharacters = [NSCharacterSet characterSetWithCharactersInString:@"^[]-_`{}\\"];
+
 		if (searchPatternIsEmpty == NO) {
-			memberList = [channel.memberList sortedArrayUsingSelector:@selector(compareUsingWeights:)];
+			/* Only those that can match are sorted: Tab in a channel with
+			 thousands of members sorted them all on every press */
+			NSString *searchPatternLowercase = self.cachedSearchPattern.lowercaseString;
+
+			NSArray *candidates = [channel.memberList filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(IRCChannelUser *member, NSDictionary *bindings) {
+				NSString *nickname = member.user.nickname.lowercaseString;
+
+				if ([nickname hasPrefix:searchPatternLowercase]) {
+					return YES;
+				}
+
+				NSString *nicknameTrimmed = [self trimNickname:nickname usingCharacterSet:nonAlphaCharacters];
+
+				return (nicknameTrimmed && [nicknameTrimmed hasPrefix:searchPatternLowercase]);
+			}]];
+
+			memberList = [candidates sortedArrayUsingComparator:IRCChannelUser.weightsComparator];
 
 			userWithGreatestWeight = memberList.firstObject;
 		} else {
@@ -266,8 +285,8 @@ NS_ASSUME_NONNULL_BEGIN
 			}];
 		}
 
-		/* Add nicknames to list */
-		NSCharacterSet *nonAlphaCharacters = [NSCharacterSet characterSetWithCharactersInString:@"^[]-_`{}\\"];
+		/* Add nicknames to list (the set answers "already added?" at once) */
+		NSMutableSet<NSString *> *choicesLowercaseSet = [NSMutableSet set];
 
 		void (^addNickname)(NSString *, BOOL) = ^(NSString *nickname, BOOL addTrimmedVariant)
 		{
@@ -275,6 +294,8 @@ NS_ASSUME_NONNULL_BEGIN
 			[choicesUppercase addObject:nickname];
 
 			[choicesLowercase addObject:nickname.lowercaseString];
+
+			[choicesLowercaseSet addObject:nickname.lowercaseString];
 
 			/* Add choice after it has been trimmed of special characters as well. */
 			if (addTrimmedVariant == NO)
@@ -285,10 +306,12 @@ NS_ASSUME_NONNULL_BEGIN
 			if (nicknameTrimmed.length > 0 && [nickname isNotEqualTo:nicknameTrimmed]) {
 				NSString *nicknameTrimmedLowercase = nicknameTrimmed.lowercaseString;
 
-				if ([choicesLowercase containsObject:nicknameTrimmedLowercase] == NO) {
+				if ([choicesLowercaseSet containsObject:nicknameTrimmedLowercase] == NO) {
 					[choicesUppercase addObject:nickname];
 
 					[choicesLowercase addObject:nicknameTrimmedLowercase];
+
+					[choicesLowercaseSet addObject:nicknameTrimmedLowercase];
 				}
 			}
 		};

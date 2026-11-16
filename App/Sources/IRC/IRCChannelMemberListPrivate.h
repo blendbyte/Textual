@@ -77,6 +77,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)beginNamesBatch;
 - (void)endNamesBatch;
 
+/* The same for other bulk changes (a netsplit): NO when a NAMES batch is
+ running already, which then ends as usual */
+- (BOOL)beginBatchUnlessBatching;
+- (void)endBatchPostingEvent:(NSString *)eventName;
+
 /* Any thread; -1 when not found */
 - (nullable IRCChannelUser *)memberAtIndex:(NSUInteger)index;
 - (NSInteger)indexOfMember:(IRCChannelUser *)member;

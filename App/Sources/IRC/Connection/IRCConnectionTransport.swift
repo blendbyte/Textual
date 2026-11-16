@@ -76,7 +76,11 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 	/// A PONG waits at most this long for a batch to end: late is a disconnect
 	fileprivate let maximumPongHoldInterval: TimeInterval = 10
 
+	/// Lines sent in the flood control window, which starts with the first of
+	/// them; a timer runs only while a line waits for the next window, so an
+	/// idle connection doesn't wake the Mac every few seconds
 	fileprivate var floodControlCurrentMessageCount = 0
+	fileprivate var floodControlWindowStart: TimeInterval?
 	fileprivate var floodControlEnforced = false
 
 	/// Gives up on a connection (including the TLS handshake) that isn't
@@ -161,8 +165,6 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 				return
 			}
 
-			self.startFloodControlTimer()
-
 			self.startConnectTimeout()
 
 			self.socket.open()
@@ -191,6 +193,8 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 		floodControlEnforced = false
 
 		floodControlCurrentMessageCount = 0
+
+		floodControlWindowStart = nil
 
 		sendQueue.removeAll()
 
@@ -298,10 +302,27 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 			return false
 		}
 
+		let now = ProcessInfo.processInfo.systemUptime
+
+		let windowInterval = Double(config.floodControlDelayInterval)
+
+		/* A new window once the last one is over */
+		if let windowStart = floodControlWindowStart, (now - windowStart) >= windowInterval {
+			floodControlWindowStart = nil
+
+			floodControlCurrentMessageCount = 0
+		}
+
 		if (floodControlEnforced && lineIsPong(line) == false) {
 			if (floodControlCurrentMessageCount >= config.floodControlMaximumMessages) {
+				startFloodControlTimer(fireIn: windowInterval - (now - (floodControlWindowStart ?? now)))
+
 				return false
 			}
+		}
+
+		if (floodControlWindowStart == nil) {
+			floodControlWindowStart = now
 		}
 
 		floodControlCurrentMessageCount += 1
@@ -354,15 +375,14 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 		}
 	}
 
-	fileprivate func startFloodControlTimer()
+	/// Once, when the window that holds a line back ends
+	fileprivate func startFloodControlTimer(fireIn interval: TimeInterval)
 	{
 		if (floodControlTimer.timerIsActive) {
 			return
 		}
 
-		let timerInterval = Double(config.floodControlDelayInterval)
-
-		floodControlTimer.start(timerInterval, onRepeat: true)
+		floodControlTimer.start(max(interval, 0.05), onRepeat: false)
 	}
 
 	fileprivate func stopFloodControlTimer()
@@ -377,6 +397,8 @@ public final class ConnectionTransport: NSObject, ConnectionSocketDelegate
 	fileprivate func onFloodControlTimer()
 	{
 		floodControlCurrentMessageCount = 0
+
+		floodControlWindowStart = nil
 
 		tryToSend()
 	}

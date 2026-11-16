@@ -464,7 +464,7 @@ NS_ASSUME_NONNULL_BEGIN
 					}]];
 				}
 
-				members = [members sortedArrayUsingSelector:@selector(compareUsingWeights:)];
+				members = [members sortedArrayUsingComparator:IRCChannelUser.weightsComparator];
 
 				NSString *ownNickname = client.userNickname;
 

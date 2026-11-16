@@ -1942,6 +1942,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 			/* Reload window title (our nickname is shown there) */
 			[TVCMainWindow updateTitleFor:self];
+
+			/* For styles: the local user's change, as documented, not everyone's */
+			[self postEventToViewController:@"nicknameChanged"];
 		}
 		else
 		{
@@ -1957,9 +1960,6 @@ NS_ASSUME_NONNULL_BEGIN
 				[self updateUserTrackingStatusForEntry:newNicknameIgnoreInfo nickname:newNickname withMessage:m];
 			}
 		}
-
-		/* Inform style of change */
-		[self postEventToViewController:@"nicknameChanged"];
 	}
 
 	/* Inform observers (not for print-only messages: playback, not a change) */
@@ -2145,6 +2145,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Only a change of our own status can change what we may do (Delete) */
+	BOOL ownStatusChanged = NO;
+
 	if (isPrintOnlyMessage == NO) {
 		NSArray *modes = [channel.modeInfo updateModes:modeString];
 
@@ -2154,6 +2157,10 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			[channel changeMember:mode.modeParameter mode:mode.modeSymbol value:mode.modeIsSet];
+
+			if (mode.modeParameter && [self nicknameIsMyself:mode.modeParameter]) {
+				ownStatusChanged = YES;
+			}
 		}
 	}
 
@@ -2179,7 +2186,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[TVCMainWindow updateTitleFor:channel];
 
 		/* Becoming or no longer being an operator: Delete on others' messages */
-		[channel.viewController updateMessageActions];
+		if (ownStatusChanged) {
+			[channel.viewController updateMessageActions];
+		}
 	}
 }
 
@@ -2764,17 +2773,16 @@ NS_ASSUME_NONNULL_BEGIN
 		return NO;
 	}
 
-	NSMutableArray *nicknames = self.netsplitNicknames[channel.name];
+	/* Ordered set: thousands of people in a split are each checked at once */
+	NSMutableOrderedSet *nicknames = self.netsplitNicknames[channel.name];
 
 	if (nicknames == nil) {
-		nicknames = [NSMutableArray array];
+		nicknames = [NSMutableOrderedSet orderedSet];
 
 		self.netsplitNicknames[channel.name] = nicknames;
 	}
 
-	if ([nicknames containsObject:nickname] == NO) {
-		[nicknames addObject:nickname];
-	}
+	[nicknames addObject:nickname];
 
 	return YES;
 }
@@ -2824,7 +2832,21 @@ NS_ASSUME_NONNULL_BEGIN
 	self.netsplitBatch = batchMessage;
 	self.netsplitNicknames = [NSMutableDictionary dictionary];
 
+	/* As with NAMES: the member lists change all at once, with one sort, one
+	 table reload and one view event each, not one per person */
+	NSMutableArray<IRCChannel *> *batchedChannels = [NSMutableArray array];
+
+	for (IRCChannel *channel in self.channelList) {
+		if (channel.isChannel && channel.isActive && [channel.memberInfo beginBatchUnlessBatching]) {
+			[batchedChannels addObject:channel];
+		}
+	}
+
 	[self recursivelyProcessBatchMessage:batchMessage];
+
+	for (IRCChannel *channel in batchedChannels) {
+		[channel.memberInfo endBatchPostingEvent:((joined) ? @"channelMemberAdded" : @"channelMemberRemoved")];
+	}
 
 	NSDictionary *nicknamesByChannel = [self.netsplitNicknames copy];
 
@@ -2833,7 +2855,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSDate *receivedAt = ((openingMessage) ? openingMessage.receivedAt : [NSDate date]);
 
-	[nicknamesByChannel enumerateKeysAndObjectsUsingBlock:^(NSString *channelName, NSArray<NSString *> *nicknames, BOOL *stop) {
+	[nicknamesByChannel enumerateKeysAndObjectsUsingBlock:^(NSString *channelName, NSOrderedSet<NSString *> *nicknameSet, BOOL *stop) {
+		NSArray<NSString *> *nicknames = nicknameSet.array;
+
 		IRCChannel *channel = [self findChannel:channelName];
 
 		if (channel == nil) {

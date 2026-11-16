@@ -102,6 +102,7 @@ enum : unsigned long long {
 - (NSArray<IRCChannel *> *)channelsSharedWithNickname:(NSString *)nickname;
 
 - (void)updateQueryInfoBarsForNickname:(nullable NSString *)nickname;
+- (void)updateQueryInfoBarsForMembersOfChannel:(IRCChannel *)channel;
 
 - (void)noteReachabilityChanged:(BOOL)reachable;
 

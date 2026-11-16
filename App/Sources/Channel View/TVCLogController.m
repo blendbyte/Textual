@@ -94,6 +94,7 @@ static const NSTimeInterval TVCLogControllerMessageGroupingWindow = (5 * 60);
 @end
 
 @interface TVCLogController ()
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, id> *messageActionsAvailabilitySent; // what the document has, so the same isn't sent again
 @property (nonatomic, assign, readwrite, getter=viewIsLoaded) BOOL loaded; // atomic accessors below: printing operations ask from their threads (isReady)
 @property (nonatomic, assign) BOOL terminating;
 @property (nonatomic, copy, nullable) NSString *queryInfoBarText; // what the document shows
@@ -851,7 +852,16 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 - (void)updateMessageActions
 {
-	[self evaluateFunction:@"_MessageActions.setAvailable" withArguments:@[self.messageActionsAvailability]];
+	NSDictionary *availability = self.messageActionsAvailability;
+
+	/* Nothing changed: each script sent splits the batched appends */
+	if ([availability isEqualToDictionary:self.messageActionsAvailabilitySent]) {
+		return;
+	}
+
+	self.messageActionsAvailabilitySent = availability;
+
+	[self evaluateFunction:@"_MessageActions.setAvailable" withArguments:@[availability]];
 }
 
 #pragma mark -
@@ -3811,6 +3821,11 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 
 	NSUInteger scrollbackLimit = [TPCPreferences scrollbackVisibleLimit];
 
+	/* A new document starts from what it is given here */
+	NSDictionary *messageActionsAvailability = self.messageActionsAvailability;
+
+	self.messageActionsAvailabilitySent = messageActionsAvailability;
+
 	[self _evaluateFunction:@"_Textual.viewFinishedLoading"
 			  withArguments:
 	 @[
@@ -3822,7 +3837,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 			  @"scrollbackLimit" : @(scrollbackLimit),
 			  @"collapseGeneralEvents" : @((channel) ? channel.collapsesEvents : [TPCPreferences collapseEvents]),
 			  @"eventDisplay" : ((channel) ? channel.eventDisplayByLineType : [TPCPreferences eventDisplayByLineType]),
-			  @"messageActions" : self.messageActionsAvailability,
+			  @"messageActions" : messageActionsAvailability,
 			  @"chatElementStrings" : @{
 				  @"today" : TXFormatDate([NSDate date], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),
 				  @"yesterday" : TXFormatDate([NSDate dateWithTimeIntervalSinceNow:(-86400.0)], NSDateFormatterLongStyle, NSDateFormatterNoStyle, YES),

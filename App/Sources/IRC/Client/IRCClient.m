@@ -1504,6 +1504,26 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 	}
 }
 
+/* After a channel's member list arrived: only the private messages with
+ someone in it can have a new shared channel (each full update scans every
+ channel, for every private message, at every channel's end of NAMES) */
+- (void)updateQueryInfoBarsForMembersOfChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	for (IRCChannel *query in self.channelList) {
+		if ([TVCLogController channelShowsQueryInfoBar:query] == NO) {
+			continue;
+		}
+
+		if ([channel.memberInfo memberExists:query.name] == NO) {
+			continue;
+		}
+
+		[query.viewController setQueryInfoBar:[self queryInfoBarTextForQuery:query]];
+	}
+}
+
 - (NSString *)queryInfoBarTextForQuery:(IRCChannel *)query
 {
 	NSParameterAssert(query != nil);

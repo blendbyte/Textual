@@ -135,6 +135,17 @@ NS_ASSUME_NONNULL_BEGIN
 		[self fireTimer];
 	}, timerInterval, repeatTimer);
 
+	/* With some leeway (a tenth, at most a second), so the system can fire it
+	 together with others instead of waking the Mac for each */
+	if (timerSource) {
+		NSTimeInterval leeway = MIN((timerInterval / 10.0), 1.0);
+
+		dispatch_source_set_timer(timerSource,
+								  dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timerInterval * NSEC_PER_SEC)),
+								  ((repeatTimer) ? (uint64_t)(timerInterval * NSEC_PER_SEC) : DISPATCH_TIME_FOREVER),
+								  (uint64_t)(leeway * NSEC_PER_SEC));
+	}
+
 	self.interval = timerInterval;
 	self.repeatTimer = repeatTimer;
 	self.iterations = iterations;

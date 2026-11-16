@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Tab completion's order: who spoke last first */
 - (NSComparisonResult)compareUsingWeights:(IRCChannelUser *)other;
+@property (class, readonly) NSComparator weightsComparator; // the same, for sorting many at once
 
 + (NSComparator)channelRankComparator;
 @end

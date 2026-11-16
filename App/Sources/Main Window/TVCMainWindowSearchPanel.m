@@ -200,6 +200,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) TLOMessageArchiveResult *contextResult;
 @property (nonatomic, copy) NSString *previousSearchString; // for suggestions while typing
 @property (nonatomic, assign) CGFloat measuredWidth;
+@property (nonatomic, strong) NSMapTable<TLOMessageArchiveResult *, NSMutableDictionary<NSString *, id> *> *rowMeasureCache; // per result: its body, and its height per width
+@property (nonatomic, assign) BOOL rowsRemeasureAfterResize; // only the visible rows were measured while resizing
 @property (nonatomic, copy) NSArray<NSString *> *archivedNicknames; // suggested after those around now
 @property (nonatomic, copy) NSArray<NSString *> *archivedViewNames;
 @property (nonatomic, assign) BOOL archivedNamesRequested;
@@ -547,9 +549,66 @@ NS_ASSUME_NONNULL_BEGIN
 
 	NSInteger rows = self.tableView.numberOfRows;
 
+	if (rows <= 0) {
+		return;
+	}
+
+	/* While the column is dragged, every step measured every loaded row:
+	 the visible ones now, the rest once the resizing ends */
+	if (self.tableView.inLiveResize) {
+		NSRange visibleRows = [self.tableView rowsInRect:self.tableView.visibleRect];
+
+		if (visibleRows.length > 0) {
+			[self.tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:visibleRows]];
+		}
+
+		self.rowsRemeasureAfterResize = YES;
+
+		[self cs_reschedulePerformSelectorInCommonModes:@selector(remeasureRowsAfterResize) withObject:nil afterDelay:0.25];
+
+		return;
+	}
+
+	[self.tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, rows)]];
+}
+
+- (void)remeasureRowsAfterResize
+{
+	if (self.rowsRemeasureAfterResize == NO) {
+		return;
+	}
+
+	if (self.tableView.inLiveResize) {
+		[self cs_reschedulePerformSelectorInCommonModes:@selector(remeasureRowsAfterResize) withObject:nil afterDelay:0.25];
+
+		return;
+	}
+
+	self.rowsRemeasureAfterResize = NO;
+
+	NSInteger rows = self.tableView.numberOfRows;
+
 	if (rows > 0) {
 		[self.tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, rows)]];
 	}
+}
+
+/* What is measured for a result, kept while it is shown */
+- (NSMutableDictionary<NSString *, id> *)measureCacheOfResult:(TLOMessageArchiveResult *)result
+{
+	if (self.rowMeasureCache == nil) {
+		self.rowMeasureCache = [NSMapTable weakToStrongObjectsMapTable];
+	}
+
+	NSMutableDictionary *cache = [self.rowMeasureCache objectForKey:result];
+
+	if (cache == nil) {
+		cache = [NSMutableDictionary dictionary];
+
+		[self.rowMeasureCache setObject:cache forKey:result];
+	}
+
+	return cache;
 }
 
 /* Names for suggestions: a read of the whole archive, so only once someone
@@ -1277,6 +1336,26 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	BOOL isContext = (self.contextMessages != nil);
 
+	/* The same at any width: made once */
+	NSMutableDictionary *measureCache = [self measureCacheOfResult:result];
+
+	NSString *bodyKey = ((isContext) ? @"contextBody" : @"body");
+
+	NSAttributedString *cachedBody = measureCache[bodyKey];
+
+	if (cachedBody) {
+		return cachedBody;
+	}
+
+	NSAttributedString *body = [self makeBodyOfResult:result isContext:isContext];
+
+	measureCache[bodyKey] = body;
+
+	return body;
+}
+
+- (NSAttributedString *)makeBodyOfResult:(TLOMessageArchiveResult *)result isContext:(BOOL)isContext
+{
 	NSArray<NSValue *> *ranges = nil;
 
 	NSString *text = ((isContext) ? result.body : [result snippetWithMaximumLength:_snippetLength matchRanges:&ranges]);
@@ -1404,6 +1483,26 @@ NS_ASSUME_NONNULL_BEGIN
 		width = 50.0;
 	}
 
+	/* Measured once per width */
+	NSMutableDictionary *measureCache = [self measureCacheOfResult:result];
+
+	NSString *heightKey = [NSString stringWithFormat:@"%d-%.0f", (self.contextMessages != nil), width];
+
+	NSNumber *cachedHeight = measureCache[heightKey];
+
+	if (cachedHeight) {
+		return cachedHeight.doubleValue;
+	}
+
+	CGFloat rowHeight = [self measureHeightOfResult:result width:width];
+
+	measureCache[heightKey] = @(rowHeight);
+
+	return rowHeight;
+}
+
+- (CGFloat)measureHeightOfResult:(TLOMessageArchiveResult *)result width:(CGFloat)width
+{
 	NSTextField *measuringField = self.measuringField;
 
 	measuringField.attributedStringValue = [self bodyOfResult:result];

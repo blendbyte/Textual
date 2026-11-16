@@ -562,8 +562,30 @@ NS_ASSUME_NONNULL_BEGIN
 	[self cs_reschedulePerformSelectorInCommonModes:@selector(endNamesBatch) withObject:nil afterDelay:10.0];
 }
 
+- (BOOL)beginBatchUnlessBatching
+{
+	__block BOOL began = NO;
+
+	[self withContainer:^(NSMutableArray *container) {
+		if (self.batchingNames == NO) {
+			self.batchingNames = YES;
+
+			began = YES;
+		}
+	}];
+
+	return began;
+}
+
 - (void)endNamesBatch
 {
+	[self endBatchPostingEvent:@"channelMemberAdded"];
+}
+
+- (void)endBatchPostingEvent:(NSString *)eventName
+{
+	NSParameterAssert(eventName != nil);
+
 	[self cancelPerformRequestsWithSelector:@selector(endNamesBatch)];
 
 	__block BOOL wasBatching = NO;
@@ -591,7 +613,7 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCChannel *channel = self.channel;
 
 	if (channel.isChannel) {
-		[self.client postEventToViewController:@"channelMemberAdded" forChannel:channel];
+		[self.client postEventToViewController:eventName forChannel:channel];
 	}
 }
 

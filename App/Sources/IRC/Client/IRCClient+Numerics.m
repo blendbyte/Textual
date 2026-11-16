@@ -1173,7 +1173,7 @@ NS_ASSUME_NONNULL_BEGIN
 			[channel.viewController updateMessageActions];
 
 			/* People in private messages they started may be here too */
-			[self updateQueryInfoBarsForNickname:nil];
+			[self updateQueryInfoBarsForMembersOfChannel:channel];
 
 			/* We have to wait until names are processed before populating
 			 defaults for a channel so that we are certain there is actually

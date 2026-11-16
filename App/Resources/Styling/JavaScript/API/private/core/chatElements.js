@@ -131,10 +131,28 @@ _ChatElements._labelOfDay = function(element) /* PRIVATE */
 	return element.getAttribute("data-label");
 };
 
+/* Only when it changes: tidy runs for every new line, and a write here
+ followed by the layout read in tidy laid the view out once per date line */
+_ChatElements._setHidden = function(element, hidden) /* PRIVATE */
+{
+	if (element.hidden !== hidden) {
+		element.hidden = hidden;
+	}
+};
+
 /* The date line's text: its label, and "since 09:41" when a session line joined it */
 _ChatElements._renderDate = function(element) /* PRIVATE */
 {
 	var label = element._chatElementLabel;
+
+	var since = element._chatElementSince;
+
+	/* Unchanged since it was last written */
+	var rendered = (label + "\u0000" + (since || ""));
+
+	if (element._chatElementRendered === rendered) {
+		return;
+	}
 
 	var span = element.querySelector(":scope > span");
 
@@ -142,9 +160,9 @@ _ChatElements._renderDate = function(element) /* PRIVATE */
 		return;
 	}
 
-	span.textContent = label;
+	element._chatElementRendered = rendered;
 
-	var since = element._chatElementSince;
+	span.textContent = label;
 
 	if (since) {
 		var sinceSpan = document.createElement("span");
@@ -161,7 +179,7 @@ _ChatElements._renderDate = function(element) /* PRIVATE */
 
 _ChatElements._join = function(dateElement, sessionElement) /* PRIVATE */
 {
-	sessionElement.hidden = true;
+	_ChatElements._setHidden(sessionElement, true);
 
 	dateElement._chatElementSince = sessionElement.getAttribute("data-since");
 
@@ -202,12 +220,12 @@ _ChatElements.tidy = function() /* PRIVATE */
 			element._chatElementSince = null;
 
 			if (day === lastDay) {
-				element.hidden = true;
+				_ChatElements._setHidden(element, true);
 
 				continue;
 			}
 
-			element.hidden = false;
+			_ChatElements._setHidden(element, false);
 
 			lastDay = day;
 
@@ -221,7 +239,7 @@ _ChatElements.tidy = function() /* PRIVATE */
 
 			open = element;
 		} else if (element.classList.contains("session_indicator")) {
-			element.hidden = false;
+			_ChatElements._setHidden(element, false);
 
 			if (open !== null && open.classList.contains("date_indicator") && open._chatElementLabel && !open._chatElementSince && element.hasAttribute("data-since")) {
 				_ChatElements._join(open, element);
@@ -244,7 +262,7 @@ _ChatElements.tidy = function() /* PRIVATE */
 	 hidden join) waits for something to show; one joined to "since …"
 	 stays, it says where this session starts */
 	if (open !== null && open.classList.contains("date_indicator") && !open._chatElementSince) {
-		open.hidden = true;
+		_ChatElements._setHidden(open, true);
 	}
 
 	_ChatElements._placeMark(buffer);

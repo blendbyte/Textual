@@ -192,7 +192,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSImage *customIconImage; // config.customIcon, drawn
 @property (nonatomic, copy, nullable) NSData *customIconSourceData; // the data it was drawn from
 @property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed
-@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableOrderedSet<NSString *> *> *netsplitNicknames; // channel name → who quit or came back
 @property (nonatomic, strong, nullable) IRCBouncerNetworkList *bouncerNetworksReceived; // backs bouncerNetworks
 @property (nonatomic, strong, nullable) IRCBouncerNetworkList *bouncerNetworksBatchList; // while a soju.im/bouncer-networks batch is processed
 @property (nonatomic, strong, nullable) IRCZNCNetworkListReader *zncNetworkListReader; // while the answer to our ListNetworks comes
