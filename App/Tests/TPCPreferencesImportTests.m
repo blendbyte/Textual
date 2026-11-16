@@ -37,6 +37,7 @@
 #import <XCTest/XCTest.h>
 
 #import "TPCPreferencesImportExportPrivate.h"
+#import "TPCPreferencesUserDefaultsLocal.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -100,6 +101,13 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(withoutCommands[@"Theme -> Name"], @"resource:Simplified");
 
 	XCTAssertEqual([TPCPreferencesImportExport automaticCommandsInContents:withoutCommands].count, 0);
+}
+
+/* Textual 7 has no keep period: its import must not reset this one to the
+ default, which would delete older archived messages at the next launch */
+- (void)testTextual7ImportKeepsTheMessageArchiveKeepPeriod
+{
+	XCTAssertTrue([TPCPreferencesUserDefaults keyIsExcludedFromMigration:@"Message Archive -> Keep Period"]);
 }
 
 @end

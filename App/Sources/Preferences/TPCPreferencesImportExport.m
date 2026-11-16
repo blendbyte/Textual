@@ -47,6 +47,7 @@
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowLoadingScreen.h"
 #import "TVCServerList.h"
+#import "TDCSettingsBridgePrivate.h"
 #import "TPCPreferencesImportExportPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -169,6 +170,22 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
+	/* A shorter keep period deletes older archived messages: asked as on the
+	 History page once the import is done, and applied at once */
+	NSNumber *keepPeriod = propertyList[TPCPreferencesMessageArchiveKeepPeriodDefaultsKey];
+
+	if (keepPeriod) {
+		NSMutableDictionary *propertyListOut = [propertyList mutableCopy];
+
+		[propertyListOut removeObjectForKey:TPCPreferencesMessageArchiveKeepPeriodDefaultsKey];
+
+		propertyList = [propertyListOut copy];
+
+		XRPerformDelayedBlockOnMainQueue(^{
+			[self changeMessageArchiveKeepPeriodAfterImport:keepPeriod.integerValue];
+		}, 2.5);
+	}
+
 	/* The loading screen is a generic way to show something during import */
 	[mainWindowLoadingScreen() showProgressViewWithReason:TXTLS(@"TVCMainWindow[5g1-i9]")];
 
@@ -187,6 +204,34 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)importContentsOfDictionary:(NSDictionary<NSString *, id> *)aDict
 {
 	[self importContentsOfDictionary:aDict reloadPreferences:YES];
+}
+
++ (void)changeMessageArchiveKeepPeriodAfterImport:(NSInteger)keepPeriod
+{
+	switch (keepPeriod) {
+		case TPCMessageArchiveKeepPeriodOff:
+		case TPCMessageArchiveKeepPeriodForever:
+		case TPCMessageArchiveKeepPeriodTwoWeeks:
+		case TPCMessageArchiveKeepPeriodThirtyDays:
+		case TPCMessageArchiveKeepPeriodNinetyDays:
+		case TPCMessageArchiveKeepPeriodHalfYear:
+		case TPCMessageArchiveKeepPeriodOneYear:
+		case TPCMessageArchiveKeepPeriodTwoYears:
+			break;
+		default:
+			return;
+	}
+
+	NSWindow *window = mainWindow();
+
+	if (window == nil) {
+		return;
+	}
+
+	[TDCSettingsBridge messageArchiveSizeWithCompletionHandler:^(NSInteger messageCount, NSString *fileSize) {
+		[TDCSettingsBridge changeMessageArchiveKeepPeriod:keepPeriod messageCount:messageCount inWindow:window completionHandler:^{
+		}];
+	}];
 }
 
 /* A settings file can come from anyone. Import only the keys export writes

@@ -4,6 +4,8 @@
 <dict>
 	<key>File Transfers -&gt; File Transfer Download Folder Bookmark</key>
 	<integer>0</integer>
+	<key>Message Archive -&gt; Keep Period</key>
+	<integer>0</integer>
 	<key>LogTranscriptDestinationSecurityBookmark_5</key>
 	<integer>0</integer>
 	<key>SUEnableAutomaticChecks</key>
