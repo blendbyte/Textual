@@ -199,14 +199,15 @@ static NSString * const IRCStrictTransportSecurityPoliciesKey = @"IRCClient Stri
 	}
 }
 
-- (void)rescheduleExpiryForHost:(NSString *)host
+- (void)rescheduleExpiryForHost:(NSString *)host sessionStartedAt:(NSDate *)sessionStart
 {
-	[self rescheduleExpiryForHost:host atDate:[NSDate date]];
+	[self rescheduleExpiryForHost:host sessionStartedAt:sessionStart atDate:[NSDate date]];
 }
 
-- (void)rescheduleExpiryForHost:(NSString *)host atDate:(NSDate *)date
+- (void)rescheduleExpiryForHost:(NSString *)host sessionStartedAt:(NSDate *)sessionStart atDate:(NSDate *)date
 {
 	NSParameterAssert(host != nil);
+	NSParameterAssert(sessionStart != nil);
 	NSParameterAssert(date != nil);
 
 	@synchronized (self) {
@@ -218,6 +219,16 @@ static NSString * const IRCStrictTransportSecurityPoliciesKey = @"IRCClient Stri
 
 		/* No policy, or stored before durations were kept */
 		if (duration == 0) {
+			return;
+		}
+
+		/* Only one that was in effect while this session ran (or came with
+		 it): one long expired before it began stays expired, and goes */
+		NSDate *expiresAt = [policy objectForKey:@"expiresAt"];
+
+		if ([expiresAt isKindOfClass:[NSDate class]] == NO || [expiresAt compare:sessionStart] != NSOrderedDescending) {
+			[self setPolicy:nil forHost:host];
+
 			return;
 		}
 

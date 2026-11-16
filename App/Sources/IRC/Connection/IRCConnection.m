@@ -488,8 +488,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ircConnectionRequestInsecureCertificateTrust:(RCMTrustResponse)trustBlock
 {
+	/* strict-transport-security: no way past a bad certificate while a policy
+	 lasts, not even a bouncer certificate trusted earlier */
+	NSString *serverAddress = self.config.serverAddress;
+
+	IRCClient *client = self.client;
+
+	if ([[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress] > 0) {
+		[client printDebugInformationToConsole:TXTLS(@"IRC[st5-u6]", serverAddress)];
+
+		trustBlock(NO);
+
+		return;
+	}
+
 	/* A bouncer's own certificate, trusted in Add or Edit Bouncer: exactly that one */
-	NSData *trustedCertificate = self.client.bouncerAccount.trustedServerCertificate;
+	NSData *trustedCertificate = client.bouncerAccount.trustedServerCertificate;
 
 	if (trustedCertificate) {
 		__block NSData *presentedCertificate = nil;
@@ -499,23 +513,13 @@ NS_ASSUME_NONNULL_BEGIN
 		}];
 
 		if ([presentedCertificate isEqualToData:trustedCertificate]) {
+			/* Accepted, but not validated: no sts policy is learned from it */
+			self.certificateTrustedByUser = YES;
+
 			trustBlock(YES);
 
 			return;
 		}
-	}
-
-	/* strict-transport-security: no way past a bad certificate while a policy lasts */
-	NSString *serverAddress = self.config.serverAddress;
-
-	if ([[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress] > 0) {
-		IRCClient *client = self.client;
-
-		[client printDebugInformationToConsole:TXTLS(@"IRC[st5-u6]", serverAddress)];
-
-		trustBlock(NO);
-
-		return;
 	}
 
 	[self openInsecureCertificateTrustPanel:trustBlock];

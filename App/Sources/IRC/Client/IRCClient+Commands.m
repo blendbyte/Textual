@@ -417,6 +417,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.socket = [[IRCConnection alloc] initWithConfig:socketConfig onClient:self];
 
+	self.connectionStartedAt = [NSDate date];
+
 	[self.socket open];
 
 	/* Pass status to view controller */

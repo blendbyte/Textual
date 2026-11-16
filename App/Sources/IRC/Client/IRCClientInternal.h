@@ -237,6 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSMutableArray<NSString *> *silentEchoes; // folded target + text of lines Textual sent itself, oldest first; their echoes show nowhere
 @property (nonatomic, strong) NSMutableSet<NSString *> *chatHistoryPendingTargets; // folded names with an automatic CHATHISTORY request open
 @property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last logged-in connection ended
+@property (nonatomic, copy, nullable) NSDate *connectionStartedAt; // when the current connection was opened (STS)
 @property (nonatomic, assign) NSTimeInterval chatHistoryResumeTime; // the newest server time seen before this connection
 @property (nonatomic, assign) NSUInteger chatHistoryTargetsRemaining; // answers still taken to a CHATHISTORY TARGETS of ours
 @property (nonatomic, assign) BOOL chatHistoryMissedConversationsRequested; // once per connection, at the end of the MOTD

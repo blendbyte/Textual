@@ -207,8 +207,8 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL isTerminating = self.isTerminating;
 
 	/* The socket no longer says it was secured by now; its configuration does */
-	if (self.isLoggedIn && self.socket.config.connectionPrefersSecuredConnection) {
-		[[IRCStrictTransportSecurity sharedPolicies] rescheduleExpiryForHost:self.socket.config.serverAddress];
+	if (self.isLoggedIn && self.socket.config.connectionPrefersSecuredConnection && self.connectionStartedAt) {
+		[[IRCStrictTransportSecurity sharedPolicies] rescheduleExpiryForHost:self.socket.config.serverAddress sessionStartedAt:self.connectionStartedAt];
 	}
 
 	BOOL certificateRefusedByUser = self.socket.certificateRefusedByUser;

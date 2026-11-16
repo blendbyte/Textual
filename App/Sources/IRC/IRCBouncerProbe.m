@@ -48,6 +48,7 @@
 #import "IRCCapabilityNegotiatorPrivate.h"
 #import "IRCBouncerAccountPrivate.h"
 #import "IRCBouncerProbePrivate.h"
+#import "IRCStrictTransportSecurityPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -153,6 +154,19 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 
 	socketConfig.connectionPrefersSecuredConnection = account.prefersSecuredConnection;
 	socketConfig.connectionShouldValidateCertificateChain = defaults.validateServerCertificateChain;
+
+	/* strict-transport-security, as a server's own connection: TLS on the
+	 policy's port, with the certificate checked (the login never goes in clear) */
+	uint16_t policyPort = [[IRCStrictTransportSecurity sharedPolicies] portForHost:account.serverAddress];
+
+	if (policyPort > 0) {
+		if (account.prefersSecuredConnection == NO) {
+			socketConfig.serverPort = policyPort;
+		}
+
+		socketConfig.connectionPrefersSecuredConnection = YES;
+		socketConfig.connectionShouldValidateCertificateChain = YES;
+	}
 
 	socketConfig.identityClientSideCertificate = account.identityClientSideCertificate;
 	socketConfig.connectionPrefersModernCiphersOnly = [TPCPreferences preferModernCiphers];
@@ -656,6 +670,17 @@ static NSTimeInterval const IRCBouncerProbeRegistrationTimeout = 5.0;
 - (void)ircConnectionRequestInsecureCertificateTrust:(RCMTrustResponse)trustBlock
 {
 	if (self.finished || self.cancelled) {
+		trustBlock(NO);
+
+		return;
+	}
+
+	/* strict-transport-security: no "trust it anyway" while a policy lasts */
+	NSString *serverAddress = self.account.serverAddress;
+
+	if ([[IRCStrictTransportSecurity sharedPolicies] portForHost:serverAddress] > 0) {
+		[self failWithError:IRCBouncerProbeErrorCannotConnect detail:TXTLS(@"IRC[st5-u6]", serverAddress)];
+
 		trustBlock(NO);
 
 		return;
