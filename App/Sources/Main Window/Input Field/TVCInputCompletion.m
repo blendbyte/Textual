@@ -673,6 +673,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.items = @[];
 
+	/* Or a layout pass still asks the table for the old rows */
+	[self.tableView reloadData];
+
 	if (self.panel.visible) {
 		[self.panel.parentWindow removeChildWindow:self.panel];
 
@@ -962,6 +965,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row
 {
+	if (row < 0 || row >= (NSInteger)self.items.count) {
+		return nil;
+	}
+
 	NSTableCellView *cell = [tableView makeViewWithIdentifier:@"item" owner:self];
 
 	if (cell == nil) {
