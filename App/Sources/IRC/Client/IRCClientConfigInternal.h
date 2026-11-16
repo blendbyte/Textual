@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_nickname;
 	NSString *_nicknamePassword;
 	NSString *_nickServHost;
+	NSString *_saslAccountName;
 	NSString *_normalLeavingComment;
 	NSString *_proxyAddress;
 	NSString *_proxyPassword;

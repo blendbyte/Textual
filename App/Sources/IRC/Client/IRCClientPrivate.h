@@ -227,6 +227,8 @@ enum : unsigned long long {
 @end
 
 @interface IRCClient (CapabilitiesPrivate)
++ (BOOL)usernameIsDefaultIdent:(NSString *)username; // the ident new servers get, never an account name
+
 - (void)enableCapability:(ClientIRCv3SupportedCapability)capability;
 - (void)disableCapability:(ClientIRCv3SupportedCapability)capability;
 @end

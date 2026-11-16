@@ -465,12 +465,9 @@ final class SetupServersModel: ObservableObject
 		if let account = accounts[server.id], account.enabled {
 			let login = account.name.trimmingCharacters(in: .whitespacesAndNewlines)
 
-			/* Left blank: the account is the nickname, as on most networks (the
-			 username's own default, "textual", was sent as the account) */
+			/* Left blank: the account is the nickname, as on most networks */
 			if (login.isEmpty == false) {
-				config.username = login
-			} else if (config.nickname.isEmpty == false) {
-				config.username = config.nickname
+				config.saslAccountName = login
 			}
 
 			if (account.password.isEmpty == false) {

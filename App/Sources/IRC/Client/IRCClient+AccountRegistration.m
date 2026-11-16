@@ -257,9 +257,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	config.nicknamePassword = password;
 
-	/* SASL logs in with the username, or the nickname without one */
+	/* SASL logs in with the account name, or the nickname without one */
 	if ([account isEqualToStringIgnoringCase:[self saslUsername]] == NO) {
-		config.username = account;
+		config.saslAccountName = account;
 	}
 
 	[self updateConfig:config];

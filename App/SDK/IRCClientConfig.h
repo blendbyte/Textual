@@ -103,6 +103,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (readonly, copy, nullable) NSString *awayNickname;
 @property (readonly, copy, nullable) NSString *nicknamePassword;
 @property (readonly, copy, nullable) NSString *nickServHost; // Host NickServ must have before the password is sent; nil = built-in host for known networks
+@property (readonly, copy, nullable) NSString *saslAccountName; // Account SASL logs in to; nil = the username if it isn't the default ident, else the nickname
 @property (readonly, copy, nullable) NSString *nicknamePasswordFromKeychain;
 @property (readonly, copy, nullable) NSString *proxyAddress;
 @property (readonly, copy, nullable) NSString *proxyPassword;
@@ -169,6 +170,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (nonatomic, copy, readwrite, nullable) NSString *awayNickname;
 @property (nonatomic, copy, readwrite, nullable) NSString *nicknamePassword;
 @property (nonatomic, copy, readwrite, nullable) NSString *nickServHost;
+@property (nonatomic, copy, readwrite, nullable) NSString *saslAccountName;
 @property (nonatomic, copy, readwrite, nullable) NSString *proxyAddress;
 @property (nonatomic, copy, readwrite, nullable) NSString *proxyPassword;
 @property (nonatomic, copy, readwrite, nullable) NSString *proxyUsername;

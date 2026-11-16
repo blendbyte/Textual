@@ -124,6 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 	config.awayNickname = @"alice|away";
 	config.realName = @"Alice Example";
 	config.username = @"alice";
+	config.saslAccountName = @"alice-account";
 	config.nicknamePassword = @"secret";
 	config.nickServHost = @"services.example.net";
 	config.autojoinWaitsForNickServ = YES;
@@ -149,6 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(saved.awayNickname, @"alice|away");
 	XCTAssertEqualObjects(saved.realName, @"Alice Example");
 	XCTAssertEqualObjects(saved.username, @"alice");
+	XCTAssertEqualObjects(saved.saslAccountName, @"alice-account");
 	XCTAssertEqualObjects(saved.nicknamePassword, @"secret");
 	XCTAssertEqualObjects(saved.nickServHost, @"services.example.net");
 	XCTAssertTrue(saved.autojoinWaitsForNickServ);

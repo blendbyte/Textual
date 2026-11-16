@@ -110,7 +110,7 @@ Certificates must meet the following criteria:
 "spp-t-you" = "You";
 "spp-l-you" = "How others see you here.";
 "spp-t-account" = "Account";
-"spp-l-account" = "Log in to your registered nickname.";
+"spp-l-account" = "Log in to your registered account.";
 "spp-t-channels" = "Channels";
 "spp-l-channels" = "Channels to join when you connect.";
 "spp-t-people" = "People";
@@ -172,8 +172,10 @@ Certificates must meet the following criteria:
 "spp-you-realh" = "Shown when someone looks you up. It doesn’t have to be your real name.";
 "spp-you-user" = "Username";
 "spp-you-userh" = "Part of your address (the ident). It rarely needs changing.";
+"spp-acc-name" = "Account name";
+"spp-acc-nameh" = "The account you log in to with SASL. Leave it empty for the name shown.";
 "spp-acc-pass" = "Password";
-"spp-acc-passh" = "The password of your registered nickname, sent to NickServ or with SASL.";
+"spp-acc-passh" = "The password of your account, sent to NickServ or with SASL.";
 "spp-acc-wait" = "Wait until logged in before joining channels";
 "spp-acc-waith" = "For channels that only let in people who are logged in.";
 "spp-acc-warn" = "Remind me while joining waits";

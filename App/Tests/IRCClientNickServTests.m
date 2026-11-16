@@ -49,6 +49,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation IRCClientNickServTests
 
+/* SASL logs in to the account name, else a username someone chose, else the
+ nickname: the default ident is never an account (Add Server sent "textual") */
+- (void)testSASLAccountIsAccountNameThenUsernameThenNickname
+{
+	IRCClientConfigMutable *config = [IRCClientConfigMutable new];
+
+	config.nickname = @"alice";
+
+	XCTAssertEqualObjects(config.username, @"textual");
+	XCTAssertEqualObjects([[IRCClient alloc] initWithConfig:config].saslUsername, @"alice");
+
+	config.username = @"alice-account";
+
+	XCTAssertEqualObjects([[IRCClient alloc] initWithConfig:config].saslUsername, @"alice-account");
+
+	config.saslAccountName = @"alice2";
+
+	XCTAssertEqualObjects([[IRCClient alloc] initWithConfig:config].saslUsername, @"alice2");
+}
+
 /* The NickServ password is only sent to this host, so a look-alike domain must never match */
 - (void)testKnownNickServHostMatchesOnlyTheNetworkDomain
 {

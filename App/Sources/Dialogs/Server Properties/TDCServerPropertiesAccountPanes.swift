@@ -353,6 +353,7 @@ func ChooseClientCertificate() -> Data?
 @objc(TDCServerPropertiesAccountPane)
 final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObject
 {
+	@Published var accountName = ""
 	@Published var password = ""
 	@Published var nickServHost = ""
 	@Published private(set) var knownNickServHost: String?
@@ -373,10 +374,15 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 
 	@objc weak var serverPane: TDCServerPropertiesSecuredConnection?
 
+	/* For what an empty account name logs in as */
+	@objc weak var youPane: ServerPropertiesYouPane?
+
 	private var choosingCertificate = false
 
 	override func load(from config: IRCClientConfig)
 	{
+		accountName = (config.saslAccountName ?? "")
+
 		password = (config.nicknamePassword ?? "")
 
 		nickServHost = (config.nickServHost ?? "")
@@ -394,6 +400,10 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 
 	override func save(toConfig config: IRCClientConfigMutable)
 	{
+		let account = firstWord(accountName)
+
+		config.saslAccountName = ((account.isEmpty == false) ? account : nil)
+
 		config.nicknamePassword = trimmed(password)
 
 		let host = trimmed(nickServHost)
@@ -420,6 +430,22 @@ final class ServerPropertiesAccountPane: TDCServerPropertiesPane, ObservableObje
 	private var window: NSWindow?
 	{
 		propertiesSheet?.sheet
+	}
+
+	/* The name SASL uses while the account name is empty, as IRCClient.saslUsername picks it */
+	var accountNameFallback: String
+	{
+		guard let youPane = youPane else {
+			return ServerPropertiesText("spp-optional")
+		}
+
+		let username = firstWord(youPane.username)
+
+		if (username.isEmpty == false && IRCClient.usernameIsDefaultIdent(username) == false) {
+			return username
+		}
+
+		return firstWord(youPane.nickname)
 	}
 
 	/* Waiting for a login that can't happen */
@@ -625,6 +651,12 @@ struct AccountPage: View
 			}
 
 			Section {
+				ServerPropertiesField(title: ServerPropertiesText("spp-acc-name"),
+									  help: ServerPropertiesText("spp-acc-nameh"),
+									  error: nil) {
+					TextField(ServerPropertiesText("spp-acc-name"), text: $pane.accountName, prompt: Text(verbatim: pane.accountNameFallback))
+				}
+
 				ServerPropertiesField(title: ServerPropertiesText("spp-acc-pass"),
 									  help: ServerPropertiesText("spp-acc-passh"),
 									  error: nil) {

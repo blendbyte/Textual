@@ -574,8 +574,10 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 	}
 }
 
-/* Like registration (USER), an empty username means the nickname (R3.14);
- a soju network logs in with its bouncer account's */
+/* A soju network logs in with its bouncer account's. Otherwise the account
+ name from the Account page; without one, a username someone set (setup, /register
+ and Textual 7 kept the account there), else the nickname: the default ident
+ ("textual") is never an account */
 - (NSString *)saslUsername
 {
 	NSString *bouncerUsername = [self bouncerSASLUsername];
@@ -584,13 +586,27 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		return bouncerUsername;
 	}
 
-	NSString *username = self.config.username;
+	NSString *accountName = self.config.saslAccountName.trim;
 
-	if (username.length == 0) {
-		username = self.config.nickname;
+	if (accountName.length > 0) {
+		return accountName;
 	}
 
-	return username;
+	NSString *username = self.config.username;
+
+	if (username.length > 0 && [IRCClient usernameIsDefaultIdent:username] == NO) {
+		return username;
+	}
+
+	return self.config.nickname;
+}
+
++ (BOOL)usernameIsDefaultIdent:(NSString *)username
+{
+	NSParameterAssert(username != nil);
+
+	return ([username isEqualToString:@"textual"] ||
+			[username isEqualToString:[TPCPreferences defaultUsername]]);
 }
 
 - (nullable NSString *)saslPassword

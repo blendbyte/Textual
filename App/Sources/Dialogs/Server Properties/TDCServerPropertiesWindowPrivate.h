@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TDCServerPropertiesAccountPane : TDCServerPropertiesPane
 @property (nonatomic, weak, nullable) id <TDCServerPropertiesSecuredConnection> serverPane;
+@property (nonatomic, weak, nullable) TDCServerPropertiesYouPane *youPane; // for what an empty account name logs in as
 @end
 
 /* The Channels, People and Messages pages (TDCServerPropertiesListPages.swift) */

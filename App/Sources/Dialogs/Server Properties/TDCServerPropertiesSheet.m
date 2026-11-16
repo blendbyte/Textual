@@ -103,9 +103,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	TDCServerPropertiesServerPane *serverPane = [TDCServerPropertiesServerPane new];
 
+	TDCServerPropertiesYouPane *youPane = [TDCServerPropertiesYouPane new];
+
 	TDCServerPropertiesAccountPane *accountPane = [TDCServerPropertiesAccountPane new];
 
 	accountPane.serverPane = serverPane;
+
+	accountPane.youPane = youPane;
 
 	TDCServerPropertiesSecurityPane *securityPane = [TDCServerPropertiesSecurityPane new];
 
@@ -124,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.panes = @[
 		_pane(serverPane, General),
-		_pane([TDCServerPropertiesYouPane new], You),
+		_pane(youPane, You),
 		_pane(accountPane, Account),
 		_pane([TDCServerPropertiesChannelsPane new], Autojoin),
 		_pane(peoplePane, AddressBook),

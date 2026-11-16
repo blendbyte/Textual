@@ -289,6 +289,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignStringTo:&self->_bouncerAccountIdentifier forKey:@"bouncerAccountIdentifier"];
 	[defaultsMutable assignStringTo:&self->_bouncerNetwork forKey:@"bouncerNetwork"];
 	[defaultsMutable assignStringTo:&self->_nickServHost forKey:@"nickServHost"];
+	[defaultsMutable assignStringTo:&self->_saslAccountName forKey:@"saslAccountName"];
 	[defaultsMutable assignStringTo:&self->_connectionName forKey:@"connectionName"];
 	[defaultsMutable assignStringTo:&self->_nickname forKey:@"nickname"];
 	[defaultsMutable assignStringTo:&self->_normalLeavingComment forKey:@"normalLeavingComment"];
@@ -736,6 +737,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic maybeSetObject:self.alternateNicknames forKey:@"alternateNicknames"];
 	[dic maybeSetObject:self.awayNickname forKey:@"awayNickname"];
 	[dic maybeSetObject:self.nickServHost forKey:@"nickServHost"];
+	[dic maybeSetObject:self.saslAccountName forKey:@"saslAccountName"];
 	[dic maybeSetObject:self.connectionName forKey:@"connectionName"];
 	[dic maybeSetObject:self.loginCommands forKey:@"onConnectCommands"];
 	[dic maybeSetObject:self.nickname forKey:@"nickname"];
@@ -1047,6 +1049,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic autojoinWaitsForNickServ;
 @dynamic awayNickname;
 @dynamic nickServHost;
+@dynamic saslAccountName;
 @dynamic channelList;
 @dynamic cipherSuites;
 @dynamic connectionName;
@@ -1374,6 +1377,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_nickServHost != nickServHost) {
 		self->_nickServHost = [nickServHost copy];
+	}
+}
+
+- (void)setSaslAccountName:(nullable NSString *)saslAccountName
+{
+	if (self->_saslAccountName != saslAccountName) {
+		self->_saslAccountName = [saslAccountName copy];
 	}
 }
 
