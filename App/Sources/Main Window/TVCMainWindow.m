@@ -989,6 +989,8 @@ static BOOL _popOutsOpened = NO;
 			}
 
 			[c resetState];
+
+			[u markChannelAsReadEverywhere:c];
 		}
 	}
 

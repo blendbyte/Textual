@@ -62,6 +62,13 @@ TEXTUAL_EXTERN NSNotificationName const IRCChannelMemberListWasCreatedNotificati
 /* draft/read-marker (IRCClient+ReadMarker) */
 @property (nonatomic, copy, nullable) NSDate *readMarkerTime; // read up to here, by any client
 @property (nonatomic, copy, nullable) NSDate *newestMessageTime; // newest message printed here
+
+/* What the unread and highlight counts are made of, so a read marker from
+ another client can take away the messages it covers */
+@property (nonatomic, strong, nullable) NSMutableArray<NSDictionary *> *countedUnreadMessages;
+
+- (void)countUnreadMessageAt:(nullable NSDate *)receivedAt highlight:(BOOL)highlight dock:(BOOL)dock;
+- (BOOL)uncountUnreadMessagesUpTo:(NSDate *)readMarkerTime; // YES when a count changed
 @property (nonatomic, assign, readwrite) IRCChannelStatus status;
 @property (nonatomic, assign) BOOL sentInitialWhoRequest;
 @property (nonatomic, assign) BOOL receivedWhoxAccountData; // WHOX answered: a nil account now means logged out, not unknown

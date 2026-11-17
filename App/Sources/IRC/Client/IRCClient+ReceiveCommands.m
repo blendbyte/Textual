@@ -371,7 +371,7 @@ NS_ASSUME_NONNULL_BEGIN
 				[self setHighlightStateForChannel:channel];
 			}
 
-			[self setUnreadStateForChannel:channel isHighlight:isHighlight];
+			[self setUnreadStateForChannel:channel isHighlight:isHighlight receivedAt:m.receivedAt];
 		};
 	}
 
@@ -480,7 +480,7 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		if (postEvent && [self readMarkerCoversMessage:m inChannel:contextChannel] == NO) {
-			[self setUnreadStateForChannel:contextChannel];
+			[self setUnreadStateForChannel:contextChannel isHighlight:NO receivedAt:m.receivedAt];
 		}
 	}];
 
@@ -577,7 +577,7 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			if (postEvent && query != nil && [self readMarkerCoversMessage:m inChannel:query] == NO) {
-				[self setUnreadStateForChannel:query];
+				[self setUnreadStateForChannel:query isHighlight:NO receivedAt:m.receivedAt];
 			}
 		};
 	}
@@ -637,7 +637,7 @@ NS_ASSUME_NONNULL_BEGIN
 				[self setHighlightStateForChannel:query];
 			}
 
-			[self setUnreadStateForChannel:query isHighlight:isHighlight];
+			[self setUnreadStateForChannel:query isHighlight:isHighlight receivedAt:m.receivedAt];
 		};
 	}
 

@@ -105,6 +105,85 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	[self updateConfig:config fireChangedNotification:YES updateStoredChannelList:YES];
 }
 
+#pragma mark -
+#pragma mark Counted Messages
+
+/* Enough for a long absence; the oldest drop off first and then just stay counted */
+#define _countedUnreadMessagesLimit		5000
+
+- (void)resetState
+{
+	[super resetState];
+
+	self.countedUnreadMessages = nil;
+}
+
+- (void)countUnreadMessageAt:(nullable NSDate *)receivedAt highlight:(BOOL)highlight dock:(BOOL)dock
+{
+	if (receivedAt == nil) {
+		return;
+	}
+
+	if (self.countedUnreadMessages == nil) {
+		self.countedUnreadMessages = [NSMutableArray array];
+	}
+
+	[self.countedUnreadMessages addObject:@{@"at" : receivedAt, @"highlight" : @(highlight), @"dock" : @(dock)}];
+
+	if (self.countedUnreadMessages.count > _countedUnreadMessagesLimit) {
+		[self.countedUnreadMessages removeObjectAtIndex:0];
+	}
+}
+
+- (BOOL)uncountUnreadMessagesUpTo:(NSDate *)readMarkerTime
+{
+	NSParameterAssert(readMarkerTime != nil);
+
+	NSMutableArray<NSDictionary *> *counted = self.countedUnreadMessages;
+
+	if (counted.count == 0) {
+		return NO;
+	}
+
+	NSUInteger unread = 0;
+	NSUInteger highlights = 0;
+	NSUInteger dock = 0;
+
+	NSMutableIndexSet *covered = [NSMutableIndexSet indexSet];
+
+	[counted enumerateObjectsUsingBlock:^(NSDictionary *message, NSUInteger index, BOOL *stop) {
+		if ([message[@"at"] compare:readMarkerTime] == NSOrderedDescending) {
+			return;
+		}
+
+		[covered addIndex:index];
+	}];
+
+	if (covered.count == 0) {
+		return NO;
+	}
+
+	for (NSDictionary *message in [counted objectsAtIndexes:covered]) {
+		unread += 1;
+
+		if ([message[@"highlight"] boolValue]) {
+			highlights += 1;
+		}
+
+		if ([message[@"dock"] boolValue]) {
+			dock += 1;
+		}
+	}
+
+	[counted removeObjectsAtIndexes:covered];
+
+	self.treeUnreadCount -= MIN(unread, self.treeUnreadCount);
+	self.nicknameHighlightCount -= MIN(highlights, self.nicknameHighlightCount);
+	self.dockUnreadCount -= MIN(dock, self.dockUnreadCount);
+
+	return YES;
+}
+
 - (void)updateConfig:(IRCChannelConfig *)config fireChangedNotification:(BOOL)fireChangedNotification
 {
 	[self updateConfig:config fireChangedNotification:fireChangedNotification updateStoredChannelList:YES];

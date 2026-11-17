@@ -144,6 +144,7 @@ enum : unsigned long long {
 
 /* draft/read-marker: tells the server a channel being viewed is read up to its newest message */
 - (void)markChannelAsRead:(IRCChannel *)channel;
+- (void)markChannelAsReadEverywhere:(IRCChannel *)channel; // Mark All as Read; the send queue paces them
 
 /* Typing notifications, from the input field */
 - (void)typingInputChanged:(NSString *)text inChannel:(IRCChannel *)channel;

@@ -167,6 +167,30 @@ static NSTimeInterval const IRCClientReadMarkerDelay = 2.0;
 	[self sendLine:request];
 }
 
+/* Mark All as Read: read up to the newest message, whether viewed or not */
+- (void)markChannelAsReadEverywhere:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityReadMarker] == NO || self.isLoggedIn == NO) {
+		return;
+	}
+
+	if (channel.associatedClient != self || (channel.isChannel && channel.isActive == NO)) {
+		return;
+	}
+
+	NSString *request = [self readMarkerRequestForChannel:channel];
+
+	if (request == nil) {
+		return;
+	}
+
+	channel.readMarkerTime = channel.newestMessageTime;
+
+	[self sendLine:request];
+}
+
 /* Read elsewhere already. Lines are rendered off the main thread, so a
  backfilled one can finish after the marker for it has arrived. */
 - (BOOL)readMarkerCoversMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel
@@ -232,8 +256,13 @@ static NSTimeInterval const IRCClientReadMarkerDelay = 2.0;
 
 	NSDate *newestMessageTime = channel.newestMessageTime;
 
-	if (newestMessageTime == nil || [readMarkerTime compare:newestMessageTime] == NSOrderedAscending) {
+	if (newestMessageTime == nil) {
 		return NO;
+	}
+
+	/* Read part of the way: the messages up to it no longer count */
+	if ([readMarkerTime compare:newestMessageTime] == NSOrderedAscending) {
+		return [channel uncountUnreadMessagesUpTo:readMarkerTime];
 	}
 
 	if (channel.treeUnreadCount == 0 && channel.nicknameHighlightCount == 0 && channel.dockUnreadCount == 0) {

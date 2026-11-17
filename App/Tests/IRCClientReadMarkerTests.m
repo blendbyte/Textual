@@ -137,6 +137,31 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqual(self.channel.nicknameHighlightCount, 0);
 }
 
+/* A marker part of the way takes away the messages it covers, and only those */
+- (void)testPartialMarkerUncountsCoveredMessages
+{
+	[self.client readMarkerNoteMessageAt:[self dateAt:20] inChannel:self.channel];
+
+	for (NSUInteger second = 5; second <= 20; second += 5) {
+		[self.channel countUnreadMessageAt:[self dateAt:second] highlight:(second == 15) dock:YES];
+	}
+
+	self.channel.treeUnreadCount = 4;
+	self.channel.dockUnreadCount = 4;
+	self.channel.nicknameHighlightCount = 1;
+
+	XCTAssertTrue([self apply:@"2023-11-14T22:13:32.000Z"]);
+	XCTAssertEqual(self.channel.treeUnreadCount, 2);
+	XCTAssertEqual(self.channel.dockUnreadCount, 2);
+	XCTAssertEqual(self.channel.nicknameHighlightCount, 1);
+
+	XCTAssertFalse([self apply:@"2023-11-14T22:13:33.000Z"], @"Nothing more covered");
+
+	XCTAssertTrue([self apply:@"2023-11-14T22:13:36.000Z"]);
+	XCTAssertEqual(self.channel.treeUnreadCount, 1);
+	XCTAssertEqual(self.channel.nicknameHighlightCount, 0);
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

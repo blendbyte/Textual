@@ -412,6 +412,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)requestReadMarkerForTarget:(NSString *)target;
 - (void)requestReadMarkersForQueries;
 - (BOOL)applyReadMarker:(IRCMessage *)m;
+- (void)setUnreadStateForChannel:(IRCChannel *)channel isHighlight:(BOOL)isHighlight receivedAt:(nullable NSDate *)receivedAt;
 
 /* draft/event-playback: an event (JOIN, QUIT, …) from history as one to print
  only, in the channel the history is for; nil when it was seen live, is ours

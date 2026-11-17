@@ -1445,19 +1445,29 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 - (void)setUnreadStateForChannel:(IRCChannel *)channel isHighlight:(BOOL)isHighlight
 {
+	[self setUnreadStateForChannel:channel isHighlight:isHighlight receivedAt:nil];
+}
+
+/* With the message's time, a read marker from another client can take it away again */
+- (void)setUnreadStateForChannel:(IRCChannel *)channel isHighlight:(BOOL)isHighlight receivedAt:(nullable NSDate *)receivedAt
+{
 	NSParameterAssert(channel != nil);
 
 	if ([TVCMainWindow isUserLookingAtItem:channel]) {
 		return;
 	}
 
-	if (channel.isChannel == NO || [TPCPreferences displayPublicMessageCountOnDockBadge]) {
+	BOOL countsOnDock = (channel.isChannel == NO || [TPCPreferences displayPublicMessageCountOnDockBadge]);
+
+	if (countsOnDock) {
 		channel.dockUnreadCount += 1;
 
 		[TVCDockIcon updateDockIcon];
 	}
 
 	channel.treeUnreadCount += 1;
+
+	[channel countUnreadMessageAt:receivedAt highlight:isHighlight dock:countsOnDock];
 
 	// The isHighlight flag is not sent for the purpose of incrementing
 	// a count. It's passed so that we can know whether the option to

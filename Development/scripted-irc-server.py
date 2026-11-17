@@ -464,6 +464,61 @@ async def scenario_review_replies(client):
 		seen = len(client.received)
 
 
+async def scenario_review_readmarker(client):
+	"""Read markers (draft/read-marker). The client joins #lobby, then #read.
+	"go" in #lobby: eight messages in #read (server-time, the fourth names
+	the client), then 6 s later another client's marker up to the fifth:
+	#read must drop from 8 to 3 unread, the mention gone. "more" adds three
+	messages to #read. Every MARKREAD the client sends is logged and
+	echoed back, as servers do; Mark All as Read must send one for #read."""
+	if not await client.register_with_capabilities("draft/read-marker server-time message-tags"):
+		return
+
+	import datetime
+
+	def stamp(moment):
+		return "time=" + moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	me = client.nickname
+
+	for channel in ("#lobby", "#read"):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{me} alice bob")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+		await client.send(f":{SERVER} MARKREAD {channel} timestamp=*")
+
+	await client.send(f"@{stamp(datetime.datetime.now(datetime.timezone.utc))} :alice!a@alice.test PRIVMSG #lobby :say go here, then watch #read")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() == "MARKREAD":
+				log("··", f"client: {line}")
+				target, _, value = rest.partition(" ")
+				await client.send(f":{SERVER} MARKREAD {target} {value or 'timestamp=*'}")
+				continue
+			if command.upper() != "PRIVMSG":
+				continue
+			now = datetime.datetime.now(datetime.timezone.utc)
+			if rest.endswith(" :go"):
+				times = [now + datetime.timedelta(milliseconds=100 * n) for n in range(8)]
+				for n, moment in enumerate(times, start=1):
+					text = f"{me}: message {n}, this one is for you" if n == 4 else f"message {n}"
+					sender = "alice" if n % 2 else "bob"
+					await client.send(f"@{stamp(moment)} :{sender}!x@{sender}.test PRIVMSG #read :{text}")
+				log("··", "8 messages in #read; the marker up to the fifth in 6 s")
+				await asyncio.sleep(6)
+				await client.send(f":{SERVER} MARKREAD #read {stamp(times[4]).replace('time=', 'timestamp=')}")
+				log("··", f"sent MARKREAD #read up to message 5")
+			elif rest.endswith(" :more"):
+				for n in range(3):
+					moment = now + datetime.timedelta(milliseconds=100 * n)
+					await client.send(f"@{stamp(moment)} :alice!a@alice.test PRIVMSG #read :later message {n + 1}")
+		seen = len(client.received)
+
+
 async def scenario_review_typing(client):
 	"""In #typing alice keeps typing (a +typing=active TAGMSG every 3 s, as
 	clients repeat it), so the indicator stays up while connected: with
@@ -3868,6 +3923,7 @@ SCENARIOS = {
 	"review-held-batches": scenario_review_held_batches,
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
+	"review-readmarker": scenario_review_readmarker,
 	"review-replies": scenario_review_replies,
 	"review-typing": scenario_review_typing,
 	"review-banned": scenario_review_banned,
@@ -3929,7 +3985,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 
