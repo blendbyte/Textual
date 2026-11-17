@@ -42,10 +42,14 @@ NS_ASSUME_NONNULL_BEGIN
 /* An irc:// or ircs:// link, read but not acted on (or a textual:// link, whose
  host names an app action):
 
-	irc[s]://host[:port][/[#]channel[,[#]channel…][,needssl]]
+	irc[s]://host[:port][/[#]channel[,[#]channel…][,flag…]][?key=channelkey]
+	irc[s]://host[:port]/nickname,isuser
 
  Channels get a # when they have none. At most five sections after the slash
- count; a last section "needssl" asks for TLS. */
+ count. After the first, the flags "needssl" (asks for TLS), "isuser" or
+ "isnick" (the targets are people: a private message opens), "ischannel",
+ "needkey" and "needpass" aren't targets (draft-butcher-irc-url-04).
+ "?key=" is the first channel's key. */
 @interface IRCProtocolLink : NSObject
 /* The link with percent escapes decoded and surrounding spaces trimmed */
 @property (readonly, copy) NSString *location;
@@ -58,6 +62,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL secure;
 
 @property (readonly, copy) NSArray<NSString *> *channels;
+
+/* "?key=": the key of the first channel */
+@property (readonly, copy, nullable) NSString *channelKey;
+
+/* ",isuser" or ",isnick": the people to open a private message with (no channels then) */
+@property (readonly, copy) NSArray<NSString *> *nicknames;
 
 /* "host:port", or "-SSL host:port", with an IPv6 address in brackets:
  as +[IRCExtras createConnectionToServer:…] reads it */

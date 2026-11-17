@@ -110,6 +110,56 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(link.channels, (@[]));
 }
 
+/* draft-butcher-irc-url-04: "?key=" is the channel's key, not part of its
+ name, and ",isuser" means a person, not two channels */
+- (void)testChannelKeyAndPeople
+{
+	IRCProtocolLink *link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/%23secret?key=hunter2"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#secret"]));
+	XCTAssertEqualObjects(link.channelKey, @"hunter2");
+	XCTAssertEqualObjects(link.nicknames, (@[]));
+
+	/* Decoded, and other options ignored */
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/chat?x=1&key=a%2Bb"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#chat"]));
+	XCTAssertEqualObjects(link.channelKey, @"a+b");
+
+	/* A key that would break the JOIN line is dropped, the channel stays */
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/chat?key=a%20b"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#chat"]));
+	XCTAssertNil(link.channelKey);
+
+	/* An encoded ? belongs to the name */
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/%23what%3F"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#what?"]));
+	XCTAssertNil(link.channelKey);
+
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/alice,isuser"];
+
+	XCTAssertEqualObjects(link.channels, (@[]));
+	XCTAssertEqualObjects(link.nicknames, (@[@"alice"]));
+	XCTAssertNil(link.channelKey);
+
+	link = [IRCProtocolLink linkWithString:@"ircs://irc.example.com/bob,isnick"];
+
+	XCTAssertEqualObjects(link.nicknames, (@[@"bob"]));
+	XCTAssertEqualObjects(link.serverInfo, @"-SSL irc.example.com:6697");
+
+	/* Flags are no channels; the first section is always a target */
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/chat,ischannel,needkey"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#chat"]));
+
+	link = [IRCProtocolLink linkWithString:@"irc://irc.example.com/isuser"];
+
+	XCTAssertEqualObjects(link.channels, (@[@"#isuser"]));
+	XCTAssertEqualObjects(link.nicknames, (@[]));
+}
+
 - (void)testUnreadableLinksAreRefused
 {
 	for (NSString *location in @[@"irc:irc.example.com", @"irc://", @"irc://irc.example.com/a/b", @"irc.example.com/#chat", @""]) {

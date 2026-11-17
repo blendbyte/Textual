@@ -54,6 +54,7 @@
 #import "IRCClientConfig.h"
 #import "IRCClientPrivate.h"
 #import "IRCChannelConfig.h"
+#import "IRCChannelPrivate.h"
 #import "IRCChannel.h"
 #import "IRCServerPrivate.h"
 #import "IRCWorldPrivate.h"
@@ -188,18 +189,38 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	BOOL connectNow = NO;
+
 #ifdef DEBUG
 	/* Development/dev connect: test servers on this Mac are connected to
 	 straight away, as a new server each time (they differ only by port) */
-	if ([self isConnectingToDevelopmentServer:link.host]) {
-		[self createConnectionToServer:link.serverInfo channelList:link.channelList connectWhenCreated:YES mergeConnectionIfPossible:NO selectFirstChannelAdded:NO];
-
-		return;
-	}
+	connectNow = [self isConnectingToDevelopmentServer:link.host];
 #endif
 
 	/* A link is untrusted: it doesn't connect by itself */
-	[self createConnectionToServer:link.serverInfo channelList:link.channelList connectWhenCreated:NO mergeConnectionIfPossible:YES selectFirstChannelAdded:NO];
+	IRCClient *client = [self _createConnectionToServer:link.serverInfo
+											channelList:link.channelList
+											 channelKey:link.channelKey
+									 connectWhenCreated:connectNow
+							  mergeConnectionIfPossible:(connectNow == NO)
+								selectFirstChannelAdded:NO];
+
+	/* ",isuser": a private message with them, which sends nothing yet */
+	if (client && link.nicknames.count > 0) {
+		IRCChannel *firstQuery = nil;
+
+		for (NSString *nickname in link.nicknames) {
+			IRCChannel *query = [client findChannelOrCreate:nickname isPrivateMessage:YES];
+
+			if (firstQuery == nil) {
+				firstQuery = query;
+			}
+		}
+
+		if (firstQuery) {
+			[mainWindow() select:firstQuery];
+		}
+	}
 }
 
 + (void)createConnectionToServer:(NSString *)serverInfo channelList:(nullable NSString *)channelList connectWhenCreated:(BOOL)connectWhenCreated
@@ -212,6 +233,22 @@ NS_ASSUME_NONNULL_BEGIN
 			  connectWhenCreated:(BOOL)connectWhenCreated
 	   mergeConnectionIfPossible:(BOOL)mergeConnectionIfPossible
 		 selectFirstChannelAdded:(BOOL)selectFirstChannelAdded
+{
+	(void)[self _createConnectionToServer:serverInfo
+							  channelList:channelList
+							   channelKey:nil
+					   connectWhenCreated:connectWhenCreated
+				mergeConnectionIfPossible:mergeConnectionIfPossible
+				  selectFirstChannelAdded:selectFirstChannelAdded];
+}
+
+/* The server used (an existing one, merged into) or created; nil if the address can't be read */
++ (nullable IRCClient *)_createConnectionToServer:(NSString *)serverInfo
+									  channelList:(nullable NSString *)channelList
+									   channelKey:(nullable NSString *)channelKey
+							   connectWhenCreated:(BOOL)connectWhenCreated
+						mergeConnectionIfPossible:(BOOL)mergeConnectionIfPossible
+						  selectFirstChannelAdded:(BOOL)selectFirstChannelAdded
 {
 	NSParameterAssert(serverInfo != nil);
 
@@ -244,17 +281,16 @@ NS_ASSUME_NONNULL_BEGIN
 				serverPassword = serverInfoMutable.token;
 			}
 
-			[self createConnectionToServer:serverAddress
-								serverPort:serverPort
-							serverPassword:serverPassword
-						   connectSecurely:connectSecurely
-							 webSocketPath:webSocketPath
-							   channelList:[self channelNamesInList:channelList]
-						connectWhenCreated:connectWhenCreated
-				 mergeConnectionIfPossible:mergeConnectionIfPossible
-				   selectFirstChannelAdded:selectFirstChannelAdded];
-
-			return;
+			return [self createConnectionToServer:serverAddress
+									   serverPort:serverPort
+								   serverPassword:serverPassword
+								  connectSecurely:connectSecurely
+									webSocketPath:webSocketPath
+									  channelList:[self channelNamesInList:channelList]
+									   channelKey:channelKey
+							   connectWhenCreated:connectWhenCreated
+						mergeConnectionIfPossible:mergeConnectionIfPossible
+						  selectFirstChannelAdded:selectFirstChannelAdded];
 		}
 	}
 
@@ -291,7 +327,7 @@ NS_ASSUME_NONNULL_BEGIN
 		if (tempServerAddress.IPv6Address == NO) {
 			LogToConsoleError("Server address was surrounded by square brackets but the enclosed value was not an IPv6 address");
 
-			return;
+			return nil;
 		}
 
 		serverAddress = tempServerAddress;
@@ -319,13 +355,13 @@ NS_ASSUME_NONNULL_BEGIN
 		 as an IPv4 address so any colon will be considered
 		 for port use only. */
 
-		return;
+		return nil;
 	}
 
 	if (serverAddress.validInternetAddress == NO) {
 		LogToConsoleError("Invalid internet address");
 
-		return;
+		return nil;
 	}
 
 	serverAddress = serverAddress.lowercaseString;
@@ -349,7 +385,7 @@ NS_ASSUME_NONNULL_BEGIN
 		if (tempServerPort.validInternetPort == NO) {
 			LogToConsoleError("Invalid internet port");
 
-			return;
+			return nil;
 		}
 
 		serverPort = tempServerPort.integerValue;
@@ -370,15 +406,16 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Create connection */
-	[self createConnectionToServer:serverAddress
-						serverPort:serverPort
-					serverPassword:serverPassword
-				   connectSecurely:connectSecurely
-					 webSocketPath:nil
-					   channelList:[self channelNamesInList:channelList]
-				connectWhenCreated:connectWhenCreated
-		 mergeConnectionIfPossible:mergeConnectionIfPossible
-		   selectFirstChannelAdded:selectFirstChannelAdded];
+	return [self createConnectionToServer:serverAddress
+							   serverPort:serverPort
+						   serverPassword:serverPassword
+						  connectSecurely:connectSecurely
+							webSocketPath:nil
+							  channelList:[self channelNamesInList:channelList]
+							   channelKey:channelKey
+					   connectWhenCreated:connectWhenCreated
+				mergeConnectionIfPossible:mergeConnectionIfPossible
+				  selectFirstChannelAdded:selectFirstChannelAdded];
 }
 
 /* A comma separated list of channel names, without duplicates or invalid names */
@@ -409,15 +446,17 @@ NS_ASSUME_NONNULL_BEGIN
 	return [channelListArray copy];
 }
 
-+ (void)createConnectionToServer:(NSString *)serverAddress
-					  serverPort:(uint16_t)serverPort
-				  serverPassword:(nullable NSString *)serverPassword
-				 connectSecurely:(BOOL)connectSecurely
-				   webSocketPath:(nullable NSString *)webSocketPath
-					 channelList:(nullable NSArray<NSString *> *)channelList
-			  connectWhenCreated:(BOOL)connectWhenCreated
-	   mergeConnectionIfPossible:(BOOL)mergeConnectionIfPossible
-		 selectFirstChannelAdded:(BOOL)selectFirstChannelAdded
+/* channelKey: the first channel's (an irc:// link's "?key=") */
++ (IRCClient *)createConnectionToServer:(NSString *)serverAddress
+							 serverPort:(uint16_t)serverPort
+						 serverPassword:(nullable NSString *)serverPassword
+						connectSecurely:(BOOL)connectSecurely
+						  webSocketPath:(nullable NSString *)webSocketPath
+							channelList:(nullable NSArray<NSString *> *)channelList
+							 channelKey:(nullable NSString *)channelKey
+					 connectWhenCreated:(BOOL)connectWhenCreated
+			  mergeConnectionIfPossible:(BOOL)mergeConnectionIfPossible
+				selectFirstChannelAdded:(BOOL)selectFirstChannelAdded
 {
 	NSParameterAssert(serverAddress != nil);
 	NSParameterAssert(serverPort > 0);
@@ -436,7 +475,7 @@ NS_ASSUME_NONNULL_BEGIN
 	if (existingClient != nil && channelListCount == 0) {
 		[mainWindow() select:existingClient];
 
-		return;
+		return existingClient;
 	}
 
 	/* The alert below says the link connects and joins: once the user
@@ -476,13 +515,26 @@ NS_ASSUME_NONNULL_BEGIN
 		for (NSString *channelName in channelList) {
 			IRCChannel *channel = [existingClient findChannelOrCreate:channelName isPrivateMessage:NO];
 
+			NSString *key = nil;
+
 			if (firstChannelAdded == nil) {
 				firstChannelAdded = channel;
+
+				/* Kept with the channel, for joining it again later */
+				if (channelKey && channel) {
+					key = channelKey;
+
+					IRCChannelConfigMutable *config = [channel.config mutableCopy];
+
+					config.secretKey = key;
+
+					[channel updateConfig:config];
+				}
 			}
 
 			/* The user just agreed to this in the alert above */
 			if (existingClient.isLoggedIn) {
-				[existingClient joinChannel:channel];
+				[existingClient joinChannel:channel password:key];
 			}
 		}
 
@@ -491,6 +543,8 @@ NS_ASSUME_NONNULL_BEGIN
 		if (firstChannelAdded) {
 			[mainWindow() select:firstChannelAdded];
 		}
+
+		return existingClient;
 	}
 	else // existingClient
 	{
@@ -525,6 +579,14 @@ NS_ASSUME_NONNULL_BEGIN
 		for (NSString *channelName in channelList) {
 			IRCChannelConfig *channelConfig = [IRCChannelConfig seedWithName:channelName];
 
+			if (channelKey && channelListConfigs.count == 0) {
+				IRCChannelConfigMutable *configWithKey = [channelConfig mutableCopy];
+
+				configWithKey.secretKey = channelKey;
+
+				channelConfig = [configWithKey copy];
+			}
+
 			[channelListConfigs addObject:channelConfig];
 		}
 
@@ -544,6 +606,8 @@ NS_ASSUME_NONNULL_BEGIN
 		} else if (mergeConnectionIfPossible) {
 			[mainWindow() select:client];
 		}
+
+		return client;
 	}
 }
 

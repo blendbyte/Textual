@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite) uint16_t port;
 @property (readwrite) BOOL secure;
 @property (readwrite, copy) NSArray<NSString *> *channels;
+@property (readwrite, copy, nullable) NSString *channelKey;
+@property (readwrite, copy) NSArray<NSString *> *nicknames;
 @end
 
 @implementation IRCProtocolLink
@@ -110,12 +112,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 	__block BOOL secure = [scheme isEqualToString:@"ircs"];
 
-	NSMutableArray<NSString *> *channels = [NSMutableArray array];
+	__block BOOL targetsArePeople = NO;
+
+	NSMutableArray<NSString *> *targets = [NSMutableArray array];
+
+	NSString *channelKey = nil;
+
+	/* "?key=…" after the targets; an encoded ? (%3F) stays in a name */
+	if (channelInfo) {
+		NSRange queryRange = [channelInfo rangeOfString:@"?"];
+
+		if (queryRange.location != NSNotFound) {
+			NSString *query = [channelInfo substringFromIndex:NSMaxRange(queryRange)];
+
+			channelInfo = [channelInfo substringToIndex:queryRange.location];
+
+			channelKey = [self channelKeyInQuery:query];
+		}
+	}
 
 	if (channelInfo) {
 		NSArray<NSString *> *sections = [channelInfo split:@","];
 
-		NSUInteger sectionCount = sections.count;
+		NSArray<NSString *> *flags = @[@"needssl", @"isuser", @"isnick", @"ischannel", @"needkey", @"needpass"];
 
 		[sections enumerateObjectsUsingBlock:^(NSString *sectionIn, NSUInteger index, BOOL *stop) {
 			NSString *section = (sectionIn.percentDecodedString ?: sectionIn);
@@ -130,8 +149,15 @@ NS_ASSUME_NONNULL_BEGIN
 				return;
 			}
 
-			if ((index + 1) == sectionCount && [section isEqualToStringIgnoringCase:@"needssl"]) {
-				secure = YES;
+			/* The first section is always a target: irc://host/isuser is #isuser */
+			if (index > 0 && [flags containsObject:section.lowercaseString]) {
+				NSString *flag = section.lowercaseString;
+
+				if ([flag isEqualToString:@"needssl"]) {
+					secure = YES;
+				} else if ([flag isEqualToString:@"isuser"] || [flag isEqualToString:@"isnick"]) {
+					targetsArePeople = YES;
+				}
 
 				return;
 			}
@@ -142,12 +168,24 @@ NS_ASSUME_NONNULL_BEGIN
 				return;
 			}
 
-			if ([section hasPrefix:@"#"]) {
-				[channels addObject:section];
-			} else {
-				[channels addObject:[@"#" stringByAppendingString:section]];
-			}
+			[targets addObject:section];
 		}];
+	}
+
+	NSMutableArray<NSString *> *channels = [NSMutableArray array];
+	NSMutableArray<NSString *> *nicknames = [NSMutableArray array];
+
+	for (NSString *target in targets) {
+		if (targetsArePeople) {
+			/* A nickname never starts with # */
+			if ([target hasPrefix:@"#"] == NO) {
+				[nicknames addObject:target];
+			}
+		} else if ([target hasPrefix:@"#"]) {
+			[channels addObject:target];
+		} else {
+			[channels addObject:[@"#" stringByAppendingString:target]];
+		}
 	}
 
 	IRCProtocolLink *link = [self new];
@@ -157,6 +195,8 @@ NS_ASSUME_NONNULL_BEGIN
 	link.host = host;
 	link.secure = secure;
 	link.channels = channels;
+	link.nicknames = nicknames;
+	link.channelKey = ((channels.count > 0) ? channelKey : nil);
 
 	/* Without a port: the standard one for TLS or plain text (ircs:// used
 	 to default to 6667, R3.20) */
@@ -167,6 +207,40 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return link;
+}
+
+/* "key=secret" among "&"-separated options; a key has no spaces, commas or
+ control characters (it goes into a JOIN) */
++ (nullable NSString *)channelKeyInQuery:(NSString *)query
+{
+	for (NSString *option in [query componentsSeparatedByString:@"&"]) {
+		NSRange equalsRange = [option rangeOfString:@"="];
+
+		if (equalsRange.location == NSNotFound) {
+			continue;
+		}
+
+		NSString *name = [option substringToIndex:equalsRange.location];
+
+		if ([name isEqualToStringIgnoringCase:@"key"] == NO) {
+			continue;
+		}
+
+		NSString *valueIn = [option substringFromIndex:NSMaxRange(equalsRange)];
+
+		NSString *value = (valueIn.percentDecodedString ?: valueIn);
+
+		if (value.length == 0 ||
+			[value rangeOfCharacterFromSet:[self invalidChannelCharacters]].location != NSNotFound ||
+			[value containsString:@","])
+		{
+			return nil;
+		}
+
+		return value;
+	}
+
+	return nil;
 }
 
 - (NSString *)serverInfo
