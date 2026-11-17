@@ -49,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* ELIST with U: LIST takes ">N" for channels with more than N users */
 @property (nonatomic, assign) BOOL listFiltersByUserCount;
+@property (nonatomic, assign) NSUInteger monitorLimit; // MONITOR=n: how many nicknames MONITOR takes; 0 when not said
 
 /* Client-only tags (without the "+") the server lets through (CLIENTTAGDENY) */
 - (BOOL)isClientTagAllowed:(NSString *)tagName;

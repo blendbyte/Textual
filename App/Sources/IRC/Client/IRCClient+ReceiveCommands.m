@@ -2108,6 +2108,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 					channel.name = newNickname;
 
+					[self scheduleQueryMonitoringUpdate];
+
 					[mainWindow() reloadTreeItem:channel];
 
 					[self moveChannelToSortedPosition:channel];

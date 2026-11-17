@@ -1543,9 +1543,9 @@ NS_ASSUME_NONNULL_BEGIN
 				self.invokingISONCommandForFirstTime = NO;
 			}
 
-			/* Update private messages */
+			/* Update private messages (not those on MONITOR: they weren't asked about) */
 			for (IRCChannel *channel in self.channelList) {
-				if (channel.privateMessage == NO) {
+				if (channel.privateMessage == NO || [self queryIsMonitored:channel]) {
 					continue;
 				}
 
@@ -1555,6 +1555,8 @@ NS_ASSUME_NONNULL_BEGIN
 						[channel deactivate];
 
 						[mainWindow() reloadTreeItem:channel];
+
+						[self updateQueryInfoBarsForNickname:channel.name];
 					}
 				} else {
 					/* Activate the private message if the user is back online */
@@ -1562,6 +1564,8 @@ NS_ASSUME_NONNULL_BEGIN
 						[channel activate];
 
 						[mainWindow() reloadTreeItem:channel];
+
+						[self updateQueryInfoBarsForNickname:channel.name];
 					}
 				}
 			}
@@ -1638,6 +1642,8 @@ NS_ASSUME_NONNULL_BEGIN
 				}
 
 				[self _trackedNickname:nickname changedWithNumeric:numeric];
+
+				[self nickname:nickname isOnlineByMonitor:(numeric == RPL_MONONLINE)];
 			}
 
 			break;

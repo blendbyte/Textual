@@ -571,6 +571,60 @@ async def scenario_review_notifyme(client):
 		seen = len(client.received)
 
 
+async def scenario_review_monitor(client):
+	"""Private message partners on MONITOR (MONITOR=2). alice, bob and carol
+	write to the client, which opens three queries: alice and bob must be
+	added to MONITOR (the limit), carol asked about by ISON. "off" in #lobby:
+	alice goes offline (731), her topic bar must say "Offline"; "on": she is
+	back (730). Closing a query must send MONITOR -. MONITOR and ISON lines
+	are logged."""
+	client.isupport_extra = "MONITOR=2"
+	if not await client.register_with_capabilities("server-time message-tags"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #lobby")
+	await client.send(f":{SERVER} 353 {me} = #lobby :{me} dave")
+	await client.send(f":{SERVER} 366 {me} #lobby :End of /NAMES list.")
+	await client.send(f":dave!d@dave.test PRIVMSG #lobby :say off or on here")
+
+	for nickname in ("alice", "bob", "carol"):
+		await client.send(f":{nickname}!x@{nickname}.test PRIVMSG {me} :hi, this is {nickname}")
+
+	online = {"alice", "bob", "carol"}
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "MONITOR":
+				log("··", f"client: {line}")
+				parts = rest.split(" ", 1)
+				if parts[0] == "+" and len(parts) > 1:
+					names = parts[1].lstrip(":").split(",")
+					on = [n for n in names if n.lower() in online]
+					off = [n for n in names if n.lower() not in online]
+					if on:
+						await client.send(f":{SERVER} 730 {me} :" + ",".join(f"{n}!x@{n.lower()}.test" for n in on))
+					if off:
+						await client.send(f":{SERVER} 731 {me} :" + ",".join(off))
+			elif command == "ISON":
+				log("··", f"client: {line}")
+				names = rest.lstrip(":").split(" ")
+				await client.send(f":{SERVER} 303 {me} :" + " ".join(n for n in names if n.lower() in online))
+			elif command == "PRIVMSG" and rest.endswith(" :off"):
+				online.discard("alice")
+				await client.send(f":{SERVER} 731 {me} :alice")
+				log("··", "alice is offline")
+			elif command == "PRIVMSG" and rest.endswith(" :on"):
+				online.add("alice")
+				await client.send(f":{SERVER} 730 {me} :alice!x@alice.test")
+				log("··", "alice is back")
+		seen = len(client.received)
+
+
 async def scenario_review_typing(client):
 	"""In #typing alice keeps typing (a +typing=active TAGMSG every 3 s, as
 	clients repeat it), so the indicator stays up while connected: with
@@ -3987,6 +4041,7 @@ SCENARIOS = {
 	"review-held-batches": scenario_review_held_batches,
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
+	"review-monitor": scenario_review_monitor,
 	"review-notifyme": scenario_review_notifyme,
 	"review-readmarker": scenario_review_readmarker,
 	"review-replies": scenario_review_replies,
@@ -4051,7 +4106,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

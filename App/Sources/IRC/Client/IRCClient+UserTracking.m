@@ -206,6 +206,125 @@ NS_ASSUME_NONNULL_BEGIN
 	[self modifyWatchListBy:NO nicknames:watchRemovals];
 
 	[self startISONTimer];
+
+	[self updateQueryMonitoring];
+}
+
+#pragma mark -
+#pragma mark Private Message Partners
+
+/* With MONITOR the server says at once when the person of a private
+ message leaves or comes back, so its topic bar can say "Offline". Within
+ the server's limit, shared with tracked people; the rest are polled with
+ ISON as before. */
+- (void)scheduleQueryMonitoringUpdate
+{
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(updateQueryMonitoring) withObject:nil afterDelay:1.0];
+}
+
+- (BOOL)queryCanBeMonitored:(IRCChannel *)query
+{
+	NSString *name = query.name;
+
+	return (query.privateMessage && [name hasPrefix:@"*"] == NO && [name isHostmaskNicknameOn:self]);
+}
+
+- (void)updateQueryMonitoring
+{
+	if (self.isLoggedIn == NO || [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMonitorCommand] == NO) {
+		return;
+	}
+
+	if (self.monitoredQueryNicknames == nil) {
+		self.monitoredQueryNicknames = [NSMutableDictionary dictionary];
+	}
+
+	NSUInteger limit = self.supportInfo.monitorLimit;
+
+	NSUInteger used = self.trackedUsers.trackedUsers.count;
+
+	NSMutableDictionary<NSString *, NSString *> *wanted = [NSMutableDictionary dictionary];
+
+	for (IRCChannel *query in self.channelList) {
+		if ([self queryCanBeMonitored:query] == NO) {
+			continue;
+		}
+
+		NSString *nickname = query.name;
+
+		/* Tracked in the address book: on the list already */
+		if ([self findUserTrackingAddressBookEntryForNickname:nickname]) {
+			continue;
+		}
+
+		if (limit > 0 && (used + wanted.count) >= limit) {
+			break;
+		}
+
+		wanted[[self.supportInfo foldedString:nickname]] = nickname;
+	}
+
+	NSMutableDictionary<NSString *, NSString *> *monitored = self.monitoredQueryNicknames;
+
+	NSMutableArray<NSString *> *additions = [NSMutableArray array];
+	NSMutableArray<NSString *> *removals = [NSMutableArray array];
+
+	[wanted enumerateKeysAndObjectsUsingBlock:^(NSString *folded, NSString *nickname, BOOL *stop) {
+		if (monitored[folded] == nil) {
+			[additions addObject:nickname];
+		}
+	}];
+
+	[monitored enumerateKeysAndObjectsUsingBlock:^(NSString *folded, NSString *nickname, BOOL *stop) {
+		if (wanted[folded] == nil) {
+			[removals addObject:nickname];
+		}
+	}];
+
+	[monitored setDictionary:wanted];
+
+	[self modifyWatchListBy:NO nicknames:removals];
+
+	[self modifyWatchListBy:YES nicknames:additions];
+}
+
+- (BOOL)queryIsMonitored:(IRCChannel *)query
+{
+	NSParameterAssert(query != nil);
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMonitorCommand] == NO) {
+		return NO;
+	}
+
+	NSString *nickname = query.name;
+
+	if (self.monitoredQueryNicknames[[self.supportInfo foldedString:nickname]] != nil) {
+		return YES;
+	}
+
+	return ([self findUserTrackingAddressBookEntryForNickname:nickname] != nil);
+}
+
+/* RPL_MONONLINE and RPL_MONOFFLINE, for a private message with them */
+- (void)nickname:(NSString *)nickname isOnlineByMonitor:(BOOL)online
+{
+	NSParameterAssert(nickname != nil);
+
+	IRCChannel *query = [self findChannel:nickname];
+
+	if (query == nil || query.privateMessage == NO || query.isActive == online) {
+		return;
+	}
+
+	if (online) {
+		[query activate];
+	} else {
+		[query deactivate];
+	}
+
+	[mainWindow() reloadTreeItem:query];
+
+	[self updateQueryInfoBarsForNickname:query.name];
 }
 
 - (void)startISONTimer
@@ -245,9 +364,9 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	// Request ISON status for private messages
+	// Request ISON status for private messages (those on MONITOR are reported)
 	for (IRCChannel *channel in self.channelList) {
-		if (channel.privateMessage) {
+		if (channel.privateMessage && [self queryIsMonitored:channel] == NO) {
 			[nicknames addObject:channel.name];
 		}
 	}

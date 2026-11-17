@@ -154,6 +154,7 @@
 /* At the top of a private message someone else started */
 "q3i-c1" = "Channels you share with %1$@: %2$@";
 "q3i-n1" = "You share no channels with %@";
+"q3i-of" = "Offline · %@";
 
 /* The image viewer window (clicking an image in the chat view) */
 "ivw-ob" = "Open in Browser";

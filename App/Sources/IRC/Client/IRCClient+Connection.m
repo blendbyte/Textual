@@ -250,6 +250,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self clearTrackedUsers];
 
+	/* The server forgets its MONITOR list with the connection */
+	self.monitoredQueryNicknames = nil;
+
 	[self.chatHistoryPendingTargets removeAllObjects];
 
 	[self chatHistoryNoteConnectionEnded];

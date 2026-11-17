@@ -137,6 +137,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.listFiltersByUserCount = NO;
 
+	self.monitorLimit = 0;
+
 	self.clientTagDenyList = @[];
 
 	self.channelNamePrefixes = @[@"#"];
@@ -327,6 +329,8 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 		} else if ([segmentKey isEqualToStringIgnoringCase:@"MONITOR"]) {
 			[client enableCapability:ClientIRCv3SupportedCapabilityMonitorCommand];
+
+			self.monitorLimit = ((segmentValue.length > 0) ? (NSUInteger)MAX(segmentValue.integerValue, 0) : 0);
 		} else if ([segmentKey isEqualToStringIgnoringCase:@"NAMESX"]) {
 			if ([client isCapabilityEnabled:ClientIRCv3SupportedCapabilityMultiPrefix] == NO) {
 				[client sendLine:@"PROTOCTL NAMESX"];
@@ -441,6 +445,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.inviteExceptionModeSymbol = nil;
 	} else if ([token isEqualToStringIgnoringCase:@"MONITOR"]) {
 		[client disableCapability:ClientIRCv3SupportedCapabilityMonitorCommand];
+
+		self.monitorLimit = 0;
 	} else if ([token isEqualToStringIgnoringCase:@"WATCH"]) {
 		[client disableCapability:ClientIRCv3SupportedCapabilityWatchCommand];
 	}

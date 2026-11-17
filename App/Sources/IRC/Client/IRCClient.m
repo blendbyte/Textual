@@ -1160,6 +1160,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 		[self updateStoredChannelList];
 	}
+
+	if (channel.isPrivateMessage) {
+		[self scheduleQueryMonitoringUpdate];
+	}
 }
 
 + (NSComparisonResult)compareChannel:(IRCChannel *)channel1 toChannel:(IRCChannel *)channel2
@@ -1257,6 +1261,10 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 		self.channelMap = nil;
 
 		[self updateStoredChannelList];
+	}
+
+	if (channel.isPrivateMessage) {
+		[self scheduleQueryMonitoringUpdate];
 	}
 }
 
@@ -1563,6 +1571,18 @@ NSString * const IRCClientUserNicknameChangedNotification = @"IRCClientUserNickn
 
 	query.queryInfoBarChannelNames = channelNames;
 
+	NSString *text = [self queryInfoBarSharedChannelsText:channelNames shared:sharedChannelNames nickname:nickname];
+
+	/* Gone, by MONITOR or the ISON poll */
+	if (self.isLoggedIn && query.isActive == NO) {
+		return TXTLS(@"TVCMainWindow[q3i-of]", text);
+	}
+
+	return text;
+}
+
+- (NSString *)queryInfoBarSharedChannelsText:(NSArray<NSString *> *)channelNames shared:(NSArray<NSString *> *)sharedChannelNames nickname:(NSString *)nickname
+{
 	if (channelNames.count == 0) {
 		return TXTLS(@"TVCMainWindow[q3i-n1]", nickname);
 	}
