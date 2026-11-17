@@ -515,7 +515,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 			[names sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
 
-			for (NSString *name in [TVCInputCompletion names:names matching:query.text limit:_maximumItems]) {
+			/* The channel you're in comes first whenever it matches, like Tab does */
+			NSString *currentName = nil;
+
+			if (channel.isChannel) {
+				currentName = [channel.name substringFromIndex:1];
+			}
+
+			NSMutableArray<NSString *> *matches = [[TVCInputCompletion names:names matching:query.text limit:names.count] mutableCopy];
+
+			if (currentName && [matches containsObject:currentName]) {
+				[matches removeObject:currentName];
+				[matches insertObject:currentName atIndex:0];
+
+				/* #help and &help: the one you're in first */
+				NSMutableArray<IRCChannel *> *sameName = channels[currentName];
+
+				if ([sameName containsObject:channel]) {
+					[sameName removeObject:channel];
+					[sameName insertObject:channel atIndex:0];
+				}
+			}
+
+			for (NSString *name in matches) {
+				if (items.count >= _maximumItems) {
+					break;
+				}
+
 				for (IRCChannel *serverChannel in channels[name]) {
 					if (items.count >= _maximumItems) {
 						break;
