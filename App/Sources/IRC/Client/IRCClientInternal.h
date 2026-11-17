@@ -254,6 +254,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger newQueryCountInLimitPeriod;
 @property (nonatomic, assign) BOOL newQueryLimitNoted;
 @property (nonatomic, assign) BOOL newQuerySummaryPosted; // in this minute
+@property (nonatomic, copy, nullable) NSDate *notificationMessageTime; // the message being notified about, kept with its notification for read markers
 @property (nonatomic, strong, nullable) NSCache<NSString *, NSDictionary *> *reactionNotificationsByMsgid; // one of our messages → who reacted with what, for the one notification about it
 @property (nonatomic, strong, nullable) NSCache<NSString *, NSDictionary *> *reactionsByMsgid; // a reaction's own msgid → what it was, so a REDACT of it takes it back
 @property (nonatomic, assign) BOOL unansweredQueryLimitNoted;

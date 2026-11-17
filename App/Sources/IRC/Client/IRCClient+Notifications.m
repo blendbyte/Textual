@@ -617,6 +617,17 @@ NS_ASSUME_NONNULL_BEGIN
 		} else {
 			userInfo = @{TXNotificationUserInfoClientIdentifierKey : self.uniqueIdentifier};
 		}
+
+		/* A read marker from another client takes it away again */
+		NSDate *messageTime = self.notificationMessageTime;
+
+		if (messageTime && target) {
+			NSMutableDictionary *userInfoWithTime = [userInfo mutableCopy];
+
+			userInfoWithTime[TXNotificationUserInfoMessageTimeKey] = messageTime;
+
+			userInfo = [userInfoWithTime copy];
+		}
 	}
 
 	switch (eventType) {

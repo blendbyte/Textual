@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 NSString * const TXNotificationUserInfoClientIdentifierKey		= @"clientId";
 NSString * const TXNotificationUserInfoChannelIdentifierKey		= @"channelId";
 NSString * const TXNotificationUserInfoReplacedIdentifierKey	= @"replacedId";
+NSString * const TXNotificationUserInfoMessageTimeKey			= @"messageTime";
 
 NSString * const TXNotificationDialogStandardNicknameFormat		= @"%@ %@";
 NSString * const TXNotificationDialogActionNicknameFormat		= @"\u2022 %@: %@";
@@ -632,6 +633,54 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 
 		LogToConsoleDebug("Dismissed %{public}ld delivered notifications",
 			notificationIdentifiers.count);
+	}];
+}
+
+- (void)dismissNotificationsForChannel:(IRCChannel *)channel onClient:(IRCClient *)client readUpTo:(NSDate *)readMarkerTime
+{
+	NSParameterAssert(channel != nil);
+	NSParameterAssert(client != nil);
+	NSParameterAssert(readMarkerTime != nil);
+
+	BOOL (^isCovered)(UNNotificationRequest *) = ^BOOL (UNNotificationRequest *request) {
+		if ([self isNotificationRequest:request inScopeOfChannel:channel onClient:client] == NO) {
+			return NO;
+		}
+
+		/* Only notifications about messages say when theirs was sent */
+		NSDate *messageTime = request.content.userInfo[TXNotificationUserInfoMessageTimeKey];
+
+		return ([messageTime isKindOfClass:[NSDate class]] && [messageTime compare:readMarkerTime] != NSOrderedDescending);
+	};
+
+	[RZUserNotificationCenter() getPendingNotificationRequestsWithCompletionHandler:^(NSArray<UNNotificationRequest *> *requests) {
+		NSMutableArray<NSString *> *notificationIdentifiers = [NSMutableArray array];
+
+		for (UNNotificationRequest *request in requests) {
+			if (isCovered(request)) {
+				[notificationIdentifiers addObject:request.identifier];
+			}
+		}
+
+		if (notificationIdentifiers.count > 0) {
+			[RZUserNotificationCenter() removePendingNotificationRequestsWithIdentifiers:notificationIdentifiers];
+		}
+	}];
+
+	[RZUserNotificationCenter() getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *notifications) {
+		NSMutableArray<NSString *> *notificationIdentifiers = [NSMutableArray array];
+
+		for (UNNotification *notification in notifications) {
+			if (isCovered(notification.request)) {
+				[notificationIdentifiers addObject:notification.request.identifier];
+			}
+		}
+
+		if (notificationIdentifiers.count > 0) {
+			[RZUserNotificationCenter() removeDeliveredNotificationsWithIdentifiers:notificationIdentifiers];
+
+			LogToConsoleDebug("Dismissed %{public}ld notifications read elsewhere", notificationIdentifiers.count);
+		}
 	}];
 }
 

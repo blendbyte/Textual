@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoClientIdentifierKey;
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoChannelIdentifierKey;
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoReplacedIdentifierKey;
+TEXTUAL_EXTERN NSString * const TXNotificationUserInfoMessageTimeKey;
 
 TEXTUAL_EXTERN NSString * const TXNotificationDialogStandardNicknameFormat;
 TEXTUAL_EXTERN NSString * const TXNotificationDialogActionNicknameFormat;
@@ -73,6 +74,9 @@ TEXTUAL_EXTERN NSString * const TXNotificationHighlightLogStandardMessageFormat;
 	  userInfo:(nullable NSDictionary<NSString *, id> *)eventContext;
 
 - (void)dismissNotificationsForChannel:(nullable IRCChannel *)channel onClient:(IRCClient *)client;
+
+/* Read elsewhere (a read marker): those about messages up to that time */
+- (void)dismissNotificationsForChannel:(IRCChannel *)channel onClient:(IRCClient *)client readUpTo:(NSDate *)readMarkerTime;
 
 /* Schedules a notification with the UserNotification framework, nothing
  more. -notify:title:description:userInfo: is the entry point for IRC

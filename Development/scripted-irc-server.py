@@ -469,8 +469,12 @@ async def scenario_review_readmarker(client):
 	"go" in #lobby: eight messages in #read (server-time, the fourth names
 	the client), then 6 s later another client's marker up to the fifth:
 	#read must drop from 8 to 3 unread, the mention gone. "more" adds three
-	messages to #read. Every MARKREAD the client sends is logged and
-	echoed back, as servers do; Mark All as Read must send one for #read."""
+	messages to #read. "notify": 8 s later three mentions in #read (each a
+	notification); "mark2" and "mark3" then send another client's marker up
+	to the second and the third: Notification Center must go from 3 to 1 to
+	none. Every MARKREAD the
+	client sends is logged and echoed back, as servers do; Mark All as
+	Read must send one for #read."""
 	if not await client.register_with_capabilities("draft/read-marker server-time message-tags"):
 		return
 
@@ -490,6 +494,7 @@ async def scenario_review_readmarker(client):
 	await client.send(f"@{stamp(datetime.datetime.now(datetime.timezone.utc))} :alice!a@alice.test PRIVMSG #lobby :say go here, then watch #read")
 
 	seen = 0
+	mention_times = []
 
 	while await client.collect(1):
 		for line in client.received[seen:]:
@@ -516,6 +521,19 @@ async def scenario_review_readmarker(client):
 				for n in range(3):
 					moment = now + datetime.timedelta(milliseconds=100 * n)
 					await client.send(f"@{stamp(moment)} :alice!a@alice.test PRIVMSG #read :later message {n + 1}")
+			elif rest.endswith(" :notify"):
+				log("··", "three mentions in #read in 8 s")
+				await asyncio.sleep(8)
+				mention_times = []
+				for n in range(1, 4):
+					moment = datetime.datetime.now(datetime.timezone.utc)
+					mention_times.append(moment)
+					await client.send(f"@{stamp(moment)} :alice!a@alice.test PRIVMSG #read :{me}: mention {n}")
+					await asyncio.sleep(1)
+			elif rest.endswith(" :mark2") or rest.endswith(" :mark3"):
+				n = int(rest[-1])
+				await client.send(f":{SERVER} MARKREAD #read {stamp(mention_times[n - 1]).replace('time=', 'timestamp=')}")
+				log("··", f"sent MARKREAD #read up to mention {n}")
 		seen = len(client.received)
 
 

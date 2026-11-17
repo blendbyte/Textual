@@ -38,6 +38,7 @@
 #import "NSStringHelper.h"
 #import "TXGlobalModelsPrivate.h"
 #import "TXMasterControllerPrivate.h"
+#import "TLONotificationControllerPrivate.h"
 #import "TVCDockIconPrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCServerListPrivate.h"
@@ -282,11 +283,20 @@ static NSTimeInterval const IRCClientReadMarkerDelay = 2.0;
 		return;
 	}
 
-	if ([self applyReadMarker:m] == NO) {
-		return;
-	}
+	BOOL countsChanged = [self applyReadMarker:m];
 
 	IRCChannel *channel = [self findChannel:[m paramAt:0]];
+
+	/* Notifications about what was read go too, whether or not it was counted */
+	NSDate *readMarkerTime = channel.readMarkerTime;
+
+	if (channel && readMarkerTime) {
+		[sharedNotificationController() dismissNotificationsForChannel:channel onClient:self readUpTo:readMarkerTime];
+	}
+
+	if (countsChanged == NO) {
+		return;
+	}
 
 	if (channel) {
 		[mainWindowServerList() refreshMessageCountForItem:channel];

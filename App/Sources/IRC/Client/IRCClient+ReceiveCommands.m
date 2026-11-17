@@ -337,9 +337,13 @@ NS_ASSUME_NONNULL_BEGIN
 		printCompletionBlock =
 		^(TVCLogControllerPrintOperationContext *context)
 		{
+			self.notificationMessageTime = m.receivedAt;
+
 			if ([self isSafeToPostNotificationForMessage:m inChannel:channel]) {
 				[self notifyPrintedText:TXNotificationTypeChannelNotice lineType:lineType target:channel nickname:sender text:text];
 			}
+
+			self.notificationMessageTime = nil;
 		};
 	} else {
 		/* Completion block for regular messages */
@@ -355,6 +359,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 			BOOL postEvent = YES;
 
+			self.notificationMessageTime = m.receivedAt;
+
 			if ([self isSafeToPostNotificationForMessage:m inChannel:channel]) {
 				if (isHighlight) {
 					postEvent = [self notifyHighlightText:text lineType:lineType target:channel nickname:sender keyword:context.highlightKeyword];
@@ -362,6 +368,8 @@ NS_ASSUME_NONNULL_BEGIN
 					postEvent = [self notifyPrintedText:TXNotificationTypeChannelMessage lineType:lineType target:channel nickname:sender text:text];
 				}
 			}
+
+			self.notificationMessageTime = nil;
 
 			if (postEvent == NO || [self readMarkerCoversMessage:m inChannel:channel]) {
 				return;
@@ -475,9 +483,13 @@ NS_ASSUME_NONNULL_BEGIN
 	completionBlock:^(TVCLogControllerPrintOperationContext *context) {
 		BOOL postEvent = YES;
 
+		self.notificationMessageTime = m.receivedAt;
+
 		if ([self isSafeToPostNotificationForMessage:m inChannel:contextChannel]) {
 			postEvent = [self notifyPrintedText:TXNotificationTypePrivateMessage lineType:lineType target:contextChannel nickname:sender text:text];
 		}
+
+		self.notificationMessageTime = nil;
 
 		if (postEvent && [self readMarkerCoversMessage:m inChannel:contextChannel] == NO) {
 			[self setUnreadStateForChannel:contextChannel isHighlight:NO receivedAt:m.receivedAt];
@@ -572,9 +584,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 			BOOL postEvent = YES;
 
+			self.notificationMessageTime = m.receivedAt;
+
 			if ([self isSafeToPostNotificationForMessage:m inChannel:query]) {
 				postEvent = [self notifyPrintedText:TXNotificationTypePrivateNotice lineType:lineType target:query nickname:sender text:text];
 			}
+
+			self.notificationMessageTime = nil;
 
 			if (postEvent && query != nil && [self readMarkerCoversMessage:m inChannel:query] == NO) {
 				[self setUnreadStateForChannel:query isHighlight:NO receivedAt:m.receivedAt];
@@ -607,6 +623,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 			BOOL postEvent = YES;
 
+			self.notificationMessageTime = m.receivedAt;
+
 			if ([self isSafeToPostNotificationForMessage:m inChannel:query]) {
 				if (isHighlight) {
 					postEvent = [self notifyHighlightText:text lineType:lineType target:query nickname:sender keyword:context.highlightKeyword];
@@ -628,6 +646,8 @@ NS_ASSUME_NONNULL_BEGIN
 					}
 				}
 			}
+
+			self.notificationMessageTime = nil;
 
 			if (postEvent == NO || [self readMarkerCoversMessage:m inChannel:query]) {
 				return;

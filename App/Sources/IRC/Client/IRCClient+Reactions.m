@@ -270,7 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[channel.viewController setReaction:((added) ?: removed) byNickname:sender onMessage:msgid added:(added != nil)];
 
 	if (added && [self isSafeToPostNotificationForMessage:m inChannel:channel]) {
-		[self notifyReaction:added byNickname:sender onMessage:msgid inChannel:channel];
+		[self notifyReaction:added byNickname:sender onMessage:msgid inChannel:channel at:m.receivedAt];
 	}
 
 	/* Remembered for this session, for a REDACT naming the reaction itself */
@@ -291,7 +291,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* One notification per message of ours: a later reaction replaces it,
  naming everyone who reacted and with what */
-- (void)notifyReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid inChannel:(IRCChannel *)channel
+- (void)notifyReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid inChannel:(IRCChannel *)channel at:(NSDate *)receivedAt
 {
 	NSParameterAssert(reaction != nil);
 	NSParameterAssert(nickname != nil);
@@ -350,7 +350,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSDictionary *userInfo = @{
 		TXNotificationUserInfoClientIdentifierKey : self.uniqueIdentifier,
 		TXNotificationUserInfoChannelIdentifierKey : channel.uniqueIdentifier,
-		TXNotificationUserInfoReplacedIdentifierKey : identifier
+		TXNotificationUserInfoReplacedIdentifierKey : identifier,
+		TXNotificationUserInfoMessageTimeKey : receivedAt
 	};
 
 	[self notifyEvent:TXNotificationTypeReaction lineType:TVCLogLineTypePrivateMessage target:channel nickname:nickname text:text userInfo:userInfo checkOutputRules:NO];
