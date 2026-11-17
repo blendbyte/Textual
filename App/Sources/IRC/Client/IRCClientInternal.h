@@ -59,7 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define _isonCheckInterval			30
 #define _pingInterval				270
 #define _pongCheckInterval			30
-#define _reconnectInterval			20
+#define _reconnectInterval			20 // doubled after each failed attempt…
+#define _reconnectIntervalMaximum	600 // …up to 10 minutes
 #define _retryInterval				240
 #define _timeoutInterval			360
 #define _whoCheckInterval			120
@@ -221,6 +222,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL inWhowasResponse;
 @property (nonatomic, assign) BOOL reconnectEnabled;
 @property (nonatomic, assign) BOOL reconnectEnabledBecauseOfSleepMode;
+@property (nonatomic, assign) NSUInteger reconnectAttempts; // since the last login; sets the next delay
 @property (nonatomic, assign) BOOL timeoutWarningShownToUser;
 @property (nonatomic, assign) BOOL zncBouncerIsSendingCertificateInfo;
 @property (nonatomic, strong) IRCCapabilityNegotiator *capabilityNegotiator;
@@ -614,6 +616,10 @@ typedef NS_ENUM(NSUInteger, IRCClientAccountRegistrationProblem) {
 - (void)startPongTimer;
 - (void)performAutoJoinInitiatedByUser:(BOOL)initiatedByUser;
 - (void)stopReconnectTimer;
+
+/* A wrong server password (464), a ban (465) or a K-/G-line ERROR: after
+ the disconnect, no reconnecting, and the console says why */
+- (void)stopReconnectingAfterRefusal;
 @end
 
 @interface IRCClient (ScriptsInternal)

@@ -344,6 +344,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.reconnectEnabled = YES;
 
+	/* Connected by the user: the next delay starts at 20 s again */
+	if (connectMode != IRCClientConnectModeReconnect) {
+		self.reconnectAttempts = 0;
+	}
+
 	/* Present status to user */
 	[TVCMainWindow updateTitleFor:self];
 
@@ -566,10 +571,25 @@ NS_ASSUME_NONNULL_BEGIN
 	[self cs_reschedulePerformSelectorInCommonModes:@selector(disconnect) withObject:nil afterDelay:2.0];
 }
 
+- (void)stopReconnectingAfterRefusal
+{
+	if (self.reconnectEnabled == NO && self.reconnectTimer.timerIsActive == NO) {
+		return;
+	}
+
+	[self afterDisconnectPerform:^(IRCClient *client) {
+		[client cancelReconnect];
+
+		[client printDebugInformationToConsole:TXTLS(@"IRC[rcn-st]")];
+	}];
+}
+
 - (void)cancelReconnect
 {
 	self.reconnectEnabled = NO;
 	self.reconnectEnabledBecauseOfSleepMode = NO;
+
+	self.reconnectAttempts = 0;
 
 	[self stopReconnectTimer];
 

@@ -406,7 +406,17 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
-	[self.reconnectTimer start:_reconnectInterval onRepeat:YES];
+	/* 20 s, 40 s, 80 s … up to 10 minutes; back to 20 s after a login */
+	NSTimeInterval interval = _reconnectInterval;
+
+	for (NSUInteger attempt = 0; attempt < self.reconnectAttempts && interval < _reconnectIntervalMaximum; attempt++) {
+		interval *= 2;
+	}
+
+	interval = MIN(interval, _reconnectIntervalMaximum);
+
+	/* Once: a failed attempt disconnects, which starts it again with the next delay */
+	[self.reconnectTimer start:interval];
 }
 
 - (void)stopReconnectTimer
@@ -424,7 +434,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	self.reconnectAttempts += 1;
+
 	[self connect:IRCClientConnectModeReconnect];
+
+	/* Didn't start (the Mac going to sleep, say): no disconnect will come
+	 to start the timer again */
+	if (self.isConnecting == NO && self.isConnected == NO && self.reconnectEnabled) {
+		[self startReconnectTimer];
+	}
 }
 
 - (void)startRetryTimer

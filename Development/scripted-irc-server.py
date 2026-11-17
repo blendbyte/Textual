@@ -419,6 +419,25 @@ async def scenario_review_typing(client):
 		await client.send("@+typing=active :alice!a@alice.test TAGMSG #typing")
 
 
+async def scenario_review_banned(client):
+	"""A refused login: 8 s after NICK and USER (time to turn on auto-reconnect
+	with vm-dev config), 465 and an ERROR naming a K-line, then the connection
+	closes. Textual must say why and not reconnect."""
+	while True:
+		line = await client.read_line()
+		if line is None:
+			return
+		if line.upper().startswith("USER"):
+			break
+
+	await asyncio.sleep(8)
+
+	await client.send(f":{SERVER} 465 * :You are banned from this server")
+	await client.send("ERROR :Closing Link: 127.0.0.1 (K-Lined)")
+
+	result(True, "sent 465 and a K-line ERROR")
+
+
 async def scenario_review_clock(client):
 	"""A server clock three minutes behind (server-time on every line, the
 	welcome too): alice's CTCP VERSION must be answered, not taken for
@@ -3787,6 +3806,7 @@ SCENARIOS = {
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
 	"review-typing": scenario_review_typing,
+	"review-banned": scenario_review_banned,
 	"review-list": scenario_review_list,
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
@@ -3845,7 +3865,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-voice", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

@@ -350,6 +350,7 @@ The identifier for a timer can be found using “/timer list”";
 "32c-87" = "%1$@ had userhost %2$@@%3$@ and real name “%4$@”";
 "11i-ev" = "You cannot send private messages to %@. Anything that you send to them will be ignored until you are added to their list of recognized users.";
 "3yj-in" = "%1$@ (%2$@) tried to send you a private message, but it was ignored due to \002umode +g\002. Perform “/accept %1$@” to allow this user to communicate with you.";
+"rcn-st" = "The server refused this connection (a wrong server password or a ban), so Textual won’t reconnect by itself. Use Connect to try again.";
 "5i4-qq" = "Reconnecting to proxy to rebuild internal state…"; // irssi proxy
 "5h5-sl" = "Server closed read stream";
 "r5h-fj" = "Joining channels has been delayed because you haven’t identified. Perform “/autojoin” to join channels without identifying.";

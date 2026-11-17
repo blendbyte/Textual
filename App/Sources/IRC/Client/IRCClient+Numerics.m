@@ -212,6 +212,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.reconnectEnabledBecauseOfSleepMode = NO;
 
+	self.reconnectAttempts = 0;
+
 	self.tryingNicknameSentNickname = nil;
 
 	self.userNickname = [m paramAt:0];
@@ -2055,6 +2057,18 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	switch (numeric) {
+		case ERR_PASSWDMISMATCH:
+		case ERR_YOUREBANNEDCREEP:
+		{
+			/* Trying again won't help: no reconnecting until the user connects */
+			[self stopReconnectingAfterRefusal];
+
+			if (printMessage) {
+				[self printErrorReply:m];
+			}
+
+			break;
+		}
 		case ERR_NOSUCHNICK:
 		{
 			NSAssertReturn(printMessage);

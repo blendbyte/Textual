@@ -2370,6 +2370,15 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	[self printError:message asCommand:m.command];
+
+	/* Banned from the server (K-line, G-line, …): trying again won't help */
+	if ([message rangeOfString:@"K-Lined" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+		[message rangeOfString:@"G-Lined" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+		[message rangeOfString:@"Z-Lined" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+		[message rangeOfString:@"Banned" options:NSCaseInsensitiveSearch].location != NSNotFound)
+	{
+		[self stopReconnectingAfterRefusal];
+	}
 }
 
 - (void)receiveCertInfo:(IRCMessage *)m
