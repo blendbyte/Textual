@@ -89,6 +89,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (readonly, copy) NSArray<IRCHighlightMatchCondition *> *highlightList;
 @property (readonly, copy) NSArray<IRCAddressBookEntry *> *ignoreList;
 @property (readonly, copy) NSArray<NSString *> *alternateNicknames;
+@property (readonly, copy) NSArray<NSString *> *excludedCapabilities; // never requested from this server, for one that misbehaves with them
 @property (readonly, copy) NSArray<NSString *> *loginCommands;
 @property (readonly, copy) NSArray<IRCServer *> *serverList;
 @property (readonly, copy) NSString *connectionName;
@@ -159,6 +160,7 @@ typedef NS_ENUM(NSUInteger, IRCClientUploadDestinationMode) {
 @property (nonatomic, copy, readwrite) NSArray<IRCHighlightMatchCondition *> *highlightList;
 @property (nonatomic, copy, readwrite) NSArray<IRCAddressBookEntry *> *ignoreList;
 @property (nonatomic, copy, readwrite) NSArray<NSString *> *alternateNicknames;
+@property (nonatomic, copy, readwrite) NSArray<NSString *> *excludedCapabilities;
 @property (nonatomic, copy, readwrite) NSArray<NSString *> *loginCommands;
 @property (nonatomic, copy, readwrite) NSArray<IRCServer *> *serverList;
 @property (nonatomic, copy, readwrite) NSString *connectionName;

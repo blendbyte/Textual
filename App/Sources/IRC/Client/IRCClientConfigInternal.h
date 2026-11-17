@@ -74,6 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSArray<IRCChannelConfig *> *_channelList;
 	NSArray<IRCHighlightMatchCondition *> *_highlightList;
 	NSArray<NSString *> *_alternateNicknames;
+	NSArray<NSString *> *_excludedCapabilities;
 	NSArray<NSString *> *_loginCommands;
 	NSArray<IRCServer *> *_serverList;
 	NSData *_identityClientSideCertificate;

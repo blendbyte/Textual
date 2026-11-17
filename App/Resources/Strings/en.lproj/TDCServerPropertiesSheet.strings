@@ -270,6 +270,10 @@ Certificates must meet the following criteria:
 "spp-con-fl2-1" = "1 second";
 "spp-con-fl2-n" = "%lu seconds";
 "spp-con-fln" = "Takes effect the next time you connect.";
+"spp-con-h5" = "Capabilities";
+"spp-con-cap" = "Don’t request these";
+"spp-con-capp" = "e.g. draft/chathistory";
+"spp-con-caph" = "Only when this server misbehaves with one of them. Names separated by spaces or commas; takes effect on the next connect. sasl isn’t affected: it’s only asked for with a SASL login.";
 "spp-sec-valid" = "Check the server’s certificate";
 "spp-sec-validh" = "Asks before connecting to a server whose certificate isn’t valid, such as a self-signed one. Without the check, any certificate is accepted.";
 "spp-sec-ciph" = "Cipher suites";

@@ -180,6 +180,7 @@ final class ServerPropertiesConnectionPane: TDCServerPropertiesPane, ObservableO
 	@Published var disconnectsOnNetworkChange = false
 	@Published var floodControlMessages: UInt = 6
 	@Published var floodControlInterval: UInt = 2
+	@Published var excludedCapabilities = ""
 
 	/* Only saved when chosen: saving it also forgets the old "prefers IPv4" setting */
 	private var addressTypeChanged = false
@@ -211,6 +212,8 @@ final class ServerPropertiesConnectionPane: TDCServerPropertiesPane, ObservableO
 
 		floodControlMessages = config.floodControlMaximumMessages
 		floodControlInterval = config.floodControlDelayTimerInterval
+
+		excludedCapabilities = config.excludedCapabilities.joined(separator: " ")
 	}
 
 	override func save(toConfig config: IRCClientConfigMutable)
@@ -228,6 +231,17 @@ final class ServerPropertiesConnectionPane: TDCServerPropertiesPane, ObservableO
 
 		config.floodControlMaximumMessages = floodControlMessages
 		config.floodControlDelayTimerInterval = floodControlInterval
+
+		/* Separated by spaces or commas; each name once */
+		var names: [String] = []
+
+		for name in excludedCapabilities.components(separatedBy: CharacterSet(charactersIn: ", \t\n")) where name.isEmpty == false {
+			if names.contains(where: { $0.caseInsensitiveCompare(name) == .orderedSame }) == false {
+				names.append(name)
+			}
+		}
+
+		config.excludedCapabilities = names
 	}
 }
 
@@ -280,6 +294,16 @@ struct ConnectionPage: View
 				Text(ServerPropertiesText("spp-con-h4"))
 			} footer: {
 				SettingFooter(text: ServerPropertiesText("spp-con-fln"))
+			}
+
+			Section(ServerPropertiesText("spp-con-h5")) {
+				LabeledContent {
+					TextField(ServerPropertiesText("spp-con-cap"), text: $pane.excludedCapabilities, prompt: Text(ServerPropertiesText("spp-con-capp")))
+						.labelsHidden()
+						.autocorrectionDisabled()
+				} label: {
+					SettingLabel(title: ServerPropertiesText("spp-con-cap"), help: ServerPropertiesText("spp-con-caph"))
+				}
 			}
 		}
 		.formStyle(.grouped)

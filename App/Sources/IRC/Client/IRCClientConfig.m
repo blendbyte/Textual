@@ -128,6 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 	SetVariableIfNil(self->_serverList, @[])
 
 	SetVariableIfNil(self->_alternateNicknames, @[])
+	SetVariableIfNil(self->_excludedCapabilities, @[])
 
 	SetVariableIfNil(self->_loginCommands, @[])
 }
@@ -259,6 +260,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignUnsignedIntegerTo:&self->_dictionaryVersion forKey:@"dictionaryVersion"];
 
 	[defaultsMutable assignArrayTo:&self->_alternateNicknames forKey:@"alternateNicknames"];
+	[defaultsMutable assignArrayTo:&self->_excludedCapabilities forKey:@"excludedCapabilities"];
 	[defaultsMutable assignArrayTo:&self->_loginCommands forKey:@"onConnectCommands"];
 
 	[defaultsMutable assignBoolTo:&self->_autoConnect forKey:@"autoConnect"];
@@ -743,6 +745,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic setUnsignedInteger:self->_dictionaryVersion forKey:@"dictionaryVersion"];
 
 	[dic maybeSetObject:self.alternateNicknames forKey:@"alternateNicknames"];
+	[dic maybeSetObject:self.excludedCapabilities forKey:@"excludedCapabilities"];
 	[dic maybeSetObject:self.awayNickname forKey:@"awayNickname"];
 	[dic maybeSetObject:self.nickServHost forKey:@"nickServHost"];
 	[dic maybeSetObject:self.saslAccountName forKey:@"saslAccountName"];
@@ -1052,6 +1055,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 @dynamic addressType;
 @dynamic alternateNicknames;
+@dynamic excludedCapabilities;
 @dynamic autoConnect;
 @dynamic autoReconnect;
 @dynamic muted;
@@ -1341,6 +1345,15 @@ TEXTUAL_IGNORE_DEPRECATION_END
 
 	if (self->_highlightList != highlightList) {
 		self->_highlightList = [highlightList copy];
+	}
+}
+
+- (void)setExcludedCapabilities:(NSArray<NSString *> *)excludedCapabilities
+{
+	NSParameterAssert(excludedCapabilities != nil);
+
+	if (self->_excludedCapabilities != excludedCapabilities) {
+		self->_excludedCapabilities = [excludedCapabilities copy];
 	}
 }
 

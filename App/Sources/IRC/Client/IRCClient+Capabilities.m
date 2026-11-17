@@ -454,6 +454,12 @@ static const IRCClientCapabilityTableEntry * _Nullable IRCClientCapabilityTableE
 		return NO;
 	}
 
+	/* Left out in Server Properties, for a server that misbehaves with it.
+	 Not sasl: it's only asked for with a SASL login, which needs it. */
+	if ([capability isEqualToString:@"sasl"] == NO && [self.config.excludedCapabilities containsObjectIgnoringCase:capability]) {
+		return NO;
+	}
+
 	const IRCClientCapabilityTableEntry *entry = IRCClientCapabilityTableEntryNamed(capability);
 
 	/* Already enabled (a repeated LS or NEW): a NEW can bring a new value */
