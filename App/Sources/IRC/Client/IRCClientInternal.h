@@ -247,6 +247,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDate *chatHistoryDisconnectTime; // when the last logged-in connection ended
 @property (nonatomic, copy, nullable) NSDate *connectionStartedAt; // when the current connection was opened (STS)
 @property (nonatomic, assign) NSTimeInterval chatHistoryResumeTime; // the newest server time seen before this connection
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSMutableArray<NSDictionary *> *> *missedHistoryMessages; // channel ID → private messages and mentions from history, for one notification each
 @property (nonatomic, assign) NSUInteger chatHistoryTargetsRemaining; // answers still taken to a CHATHISTORY TARGETS of ours
 @property (nonatomic, assign) BOOL chatHistoryMissedConversationsRequested; // once per connection, at the end of the MOTD
 @property (nonatomic, assign) BOOL channelLimitNoted;
@@ -428,6 +429,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* draft/chathistory gap-fill (IRCClient+ChatHistory.m) */
 - (BOOL)isChatHistoryMessage:(IRCMessage *)m;
+- (void)noteMissedHistoryMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel highlight:(BOOL)highlight keyword:(nullable NSString *)keyword nickname:(NSString *)nickname text:(NSString *)text lineType:(TVCLogLineType)lineType;
 - (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel;
 - (BOOL)chatHistoryShouldSkipMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel fromHistory:(BOOL)fromHistory;
 - (nullable NSString *)chatHistoryRequestForChannel:(IRCChannel *)channel;

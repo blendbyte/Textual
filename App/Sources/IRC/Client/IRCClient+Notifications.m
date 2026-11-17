@@ -658,6 +658,13 @@ NS_ASSUME_NONNULL_BEGIN
 				eventDescription = [NSString stringWithFormat:TXNotificationDialogStandardNicknameFormat, nickname, text];
 			}
 
+			/* Several messages in one, from history */
+			NSString *summary = userInfo[TXNotificationUserInfoSummaryKey];
+
+			if (summary) {
+				eventDescription = summary;
+			}
+
 			break;
 		}
 		case TXNotificationTypeFileTransferSendSuccessful:

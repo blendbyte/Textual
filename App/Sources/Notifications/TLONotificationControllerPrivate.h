@@ -46,6 +46,7 @@ TEXTUAL_EXTERN NSString * const TXNotificationUserInfoClientIdentifierKey;
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoChannelIdentifierKey;
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoReplacedIdentifierKey;
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoMessageTimeKey;
+TEXTUAL_EXTERN NSString * const TXNotificationUserInfoSummaryKey; // shown as it is, in place of "nickname: text"
 
 TEXTUAL_EXTERN NSString * const TXNotificationDialogStandardNicknameFormat;
 TEXTUAL_EXTERN NSString * const TXNotificationDialogActionNicknameFormat;

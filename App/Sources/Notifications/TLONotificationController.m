@@ -57,6 +57,7 @@ NSString * const TXNotificationUserInfoClientIdentifierKey		= @"clientId";
 NSString * const TXNotificationUserInfoChannelIdentifierKey		= @"channelId";
 NSString * const TXNotificationUserInfoReplacedIdentifierKey	= @"replacedId";
 NSString * const TXNotificationUserInfoMessageTimeKey			= @"messageTime";
+NSString * const TXNotificationUserInfoSummaryKey				= @"summary";
 
 NSString * const TXNotificationDialogStandardNicknameFormat		= @"%@ %@";
 NSString * const TXNotificationDialogActionNicknameFormat		= @"\u2022 %@: %@";

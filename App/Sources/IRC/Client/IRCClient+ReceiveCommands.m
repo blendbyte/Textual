@@ -371,6 +371,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 			self.notificationMessageTime = nil;
 
+			[self noteMissedHistoryMessage:m inChannel:channel highlight:isHighlight keyword:context.highlightKeyword nickname:sender text:text lineType:lineType];
+
 			if (postEvent == NO || [self readMarkerCoversMessage:m inChannel:channel]) {
 				return;
 			}
@@ -648,6 +650,8 @@ NS_ASSUME_NONNULL_BEGIN
 			}
 
 			self.notificationMessageTime = nil;
+
+			[self noteMissedHistoryMessage:m inChannel:query highlight:isHighlight keyword:context.highlightKeyword nickname:sender text:text lineType:lineType];
 
 			if (postEvent == NO || [self readMarkerCoversMessage:m inChannel:query]) {
 				return;

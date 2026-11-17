@@ -36,6 +36,7 @@
 
 #import "NSStringHelper.h"
 #import "TLOLocalization.h"
+#import "TLONotificationControllerPrivate.h"
 #import "IRCChannelPrivate.h"
 #import "IRCISupportInfoPrivate.h"
 #import "IRCMessagePrivate.h"
@@ -385,6 +386,153 @@ static NSUInteger const IRCClientChatHistoryRecentMessageIdLimit = 500;
 	[self sendLine:[NSString stringWithFormat:@"CHATHISTORY LATEST %@ timestamp=%@ %lu", target, from, (unsigned long)[self chatHistoryRequestLimit]]];
 
 	[self requestReadMarkerForTarget:target];
+}
+
+#pragma mark -
+#pragma mark Missed Messages
+
+/* Private messages and mentions from while we were away come in with the
+ history, which doesn't notify line by line: a moment after the last of
+ them, one notification per conversation. Only what is newer than anything
+ seen before this connection (not older history loaded by scrolling up),
+ and not what another client has read by then. */
+- (void)noteMissedHistoryMessage:(IRCMessage *)m inChannel:(IRCChannel *)channel highlight:(BOOL)highlight keyword:(nullable NSString *)keyword nickname:(NSString *)nickname text:(NSString *)text lineType:(TVCLogLineType)lineType
+{
+	NSParameterAssert(m != nil);
+	NSParameterAssert(channel != nil);
+	NSParameterAssert(nickname != nil);
+	NSParameterAssert(text != nil);
+
+	if ([self isChatHistoryMessage:m] == NO) {
+		return;
+	}
+
+	if (highlight == NO && channel.isPrivateMessage == NO) {
+		return;
+	}
+
+	if (lineType != TVCLogLineTypePrivateMessage && lineType != TVCLogLineTypeAction) {
+		return;
+	}
+
+	NSTimeInterval resumeTime = self.chatHistoryResumeTime;
+
+	if (resumeTime <= 0 || m.receivedAt.timeIntervalSince1970 <= resumeTime) {
+		return;
+	}
+
+	if ([self nicknameIsMyself:nickname] || [self readMarkerCoversMessage:m inChannel:channel]) {
+		return;
+	}
+
+	if (self.missedHistoryMessages == nil) {
+		self.missedHistoryMessages = [NSMutableDictionary dictionary];
+	}
+
+	NSString *channelId = channel.uniqueIdentifier;
+
+	NSMutableArray<NSDictionary *> *messages = self.missedHistoryMessages[channelId];
+
+	if (messages == nil) {
+		messages = [NSMutableArray array];
+
+		self.missedHistoryMessages[channelId] = messages;
+	}
+
+	NSMutableDictionary *message = [@{
+		@"at" : m.receivedAt,
+		@"nickname" : nickname,
+		@"text" : text,
+		@"lineType" : @(lineType),
+		@"highlight" : @(highlight)
+	} mutableCopy];
+
+	[message maybeSetObject:keyword forKey:@"keyword"];
+
+	[messages addObject:[message copy]];
+
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(notifyMissedHistoryMessages) withObject:nil afterDelay:2.0];
+}
+
+- (void)notifyMissedHistoryMessages
+{
+	NSDictionary<NSString *, NSMutableArray<NSDictionary *> *> *missed = [self.missedHistoryMessages copy];
+
+	self.missedHistoryMessages = nil;
+
+	[missed enumerateKeysAndObjectsUsingBlock:^(NSString *channelId, NSMutableArray<NSDictionary *> *allMessages, BOOL *stop) {
+		IRCChannel *channel = nil;
+
+		for (IRCChannel *candidate in self.channelList) {
+			if ([candidate.uniqueIdentifier isEqualToString:channelId]) {
+				channel = candidate;
+
+				break;
+			}
+		}
+
+		if (channel == nil) {
+			return;
+		}
+
+		/* Read elsewhere while the history came in */
+		NSDate *readMarkerTime = channel.readMarkerTime;
+
+		NSMutableArray<NSDictionary *> *messages = [NSMutableArray arrayWithCapacity:allMessages.count];
+
+		for (NSDictionary *message in allMessages) {
+			if (readMarkerTime && [message[@"at"] compare:readMarkerTime] != NSOrderedDescending) {
+				continue;
+			}
+
+			[messages addObject:message];
+		}
+
+		if (messages.count == 0) {
+			return;
+		}
+
+		NSDictionary *newest = messages.lastObject;
+
+		NSString *nickname = newest[@"nickname"];
+
+		TVCLogLineType lineType = [newest[@"lineType"] integerValue];
+
+		BOOL isQuery = channel.isPrivateMessage;
+
+		if (messages.count == 1) {
+			self.notificationMessageTime = newest[@"at"];
+
+			if ([newest[@"highlight"] boolValue]) {
+				[self notifyHighlightText:newest[@"text"] lineType:lineType target:channel nickname:nickname keyword:newest[@"keyword"]];
+			} else {
+				[self notifyPrintedText:TXNotificationTypePrivateMessage lineType:lineType target:channel nickname:nickname text:newest[@"text"]];
+			}
+
+			self.notificationMessageTime = nil;
+
+			return;
+		}
+
+		NSString *summary = nil;
+
+		if (isQuery) {
+			summary = TXTLS(@"IRC[hst-n1]", nickname, (unsigned long)messages.count);
+		} else {
+			summary = TXTLS(@"IRC[hst-n2]", (unsigned long)messages.count, channel.name);
+		}
+
+		NSDictionary *userInfo = @{
+			TXNotificationUserInfoClientIdentifierKey : self.uniqueIdentifier,
+			TXNotificationUserInfoChannelIdentifierKey : channel.uniqueIdentifier,
+			TXNotificationUserInfoMessageTimeKey : newest[@"at"],
+			TXNotificationUserInfoSummaryKey : summary
+		};
+
+		TXNotificationType eventType = ((isQuery) ? TXNotificationTypePrivateMessage : TXNotificationTypeHighlight);
+
+		[self notifyEvent:eventType lineType:TVCLogLineTypePrivateMessage target:channel nickname:nickname text:summary userInfo:userInfo checkOutputRules:NO];
+	}];
 }
 
 /* A full answer means there may be more than was asked for */

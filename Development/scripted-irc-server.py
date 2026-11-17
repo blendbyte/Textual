@@ -2308,6 +2308,18 @@ async def scenario_chathistory(client):
 	pass
 
 
+async def scenario_review_missed(client):
+	"""Missed private messages and mentions notify after a history fetch.
+	Connection 1: #mac with alice and bob, a line in #mac and a private
+	message from alice (her query opens); say "drop" and the server drops the
+	connection (put another app in front before the reconnect). Connection 2:
+	the history for #mac holds 3 mentions, 2 plain lines and 1 of our own;
+	alice's holds 1 private message; no read markers. Expected: one
+	notification "alice: …" and one "3 mentions in #mac", nothing else.
+	Runs for five minutes."""
+	pass
+
+
 async def scenario_chathistory_time(client):
 	"""draft/chathistory on a server that only takes times, as soju does
 	(MSGREFTYPES=timestamp). Connection 1: #ch gets line 1, a private message
@@ -3990,6 +4002,7 @@ SCENARIOS = {
 	"busy-events": scenario_busy_events,
 	"small-fixes": scenario_small_fixes,
 	"chathistory-time": scenario_chathistory_time,
+	"review-missed": scenario_review_missed,
 	"event-playback": scenario_event_playback,
 	"sasl-new": scenario_sasl_new,
 	"utf8only": scenario_utf8only,
@@ -4112,6 +4125,102 @@ async def run_backlog_scenario(port, channels=100, lines=400):
 	server = await asyncio.start_server(handle, "127.0.0.1", port)
 	print(f"Scenario 'backlog' waiting on irc://127.0.0.1:{port}", flush=True)
 	await asyncio.sleep(1800)
+	server.close()
+
+
+async def run_review_missed_scenario(port):
+	capabilities = "batch server-time message-tags draft/chathistory draft/read-marker"
+	connections = 0
+
+	def stamp(seconds_ago=0):
+		moment = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(seconds=seconds_ago)
+		return moment.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (moment.microsecond // 1000)
+
+	async def handle(reader, writer):
+		nonlocal connections
+		connections += 1
+		number = connections
+		client = Client(reader, writer)
+		client.isupport_extra = "MSGREFTYPES=timestamp CHATHISTORY=100"
+
+		if not await client.register_with_capabilities(capabilities):
+			writer.close()
+			return
+
+		nick = client.nickname
+
+		async def joined():
+			await client.send(f":{nick}!user@client.textual.test JOIN #mac")
+			await client.send(f":{SERVER} 353 {nick} = #mac :{nick} alice bob")
+			await client.send(f":{SERVER} 366 {nick} #mac :End of /NAMES list.")
+
+		async def batch(token, target, lines):
+			await client.send(f":{SERVER} BATCH +{token} chathistory {target}")
+			for line in lines:
+				await client.send(f"@batch={token};{line}")
+			await client.send(f":{SERVER} BATCH -{token}")
+
+		if number == 1:
+			await joined()
+			await client.collect(1)
+			await client.send(f"@time={stamp()} :bob!b@bob.test PRIVMSG #mac :say drop when ready")
+			await client.send(f"@time={stamp()} :alice!a@alice.test PRIVMSG {nick} :seen before the drop")
+			while True:
+				line = await client.read_line()
+				if line is None:
+					return
+				command, _, rest = line.partition(" ")
+				if command.upper() == "PING":
+					await client.send(f":{SERVER} PONG {SERVER} {rest}")
+				elif command.upper() == "PRIVMSG" and rest.endswith(" :drop"):
+					break
+			log("<<", "dropping the connection")
+			writer.close()
+			return
+
+		end = time.monotonic() + 300
+
+		while time.monotonic() < end:
+			try:
+				line = await asyncio.wait_for(client.read_line(), 1)
+			except asyncio.TimeoutError:
+				continue
+			if line is None:
+				break
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command == "PING":
+				await client.send(f":{SERVER} PONG {SERVER} {rest}")
+			elif command == "JOIN":
+				await joined()
+			elif command == "MARKREAD":
+				target = rest.split(" ")[0]
+				await client.send(f":{SERVER} MARKREAD {target} timestamp=*")
+			elif command == "CHATHISTORY":
+				log("··", line)
+				parts = rest.split(" ")
+				if parts[0] == "TARGETS":
+					await client.send(f":{SERVER} BATCH +t1 draft/chathistory-targets")
+					for target in ["#mac", "alice"]:
+						await client.send(f"@batch=t1 :{SERVER} CHATHISTORY TARGETS {target} timestamp={stamp()}")
+					await client.send(f":{SERVER} BATCH -t1")
+				elif parts[1] == "#mac":
+					await batch("h1", "#mac", [
+						f"time={stamp(9)} :alice!a@alice.test PRIVMSG #mac :{nick}: are you there?",
+						f"time={stamp(8)} :bob!b@bob.test PRIVMSG #mac :plain line one",
+						f"time={stamp(7)} :{nick}!user@client.textual.test PRIVMSG #mac :{nick}: my own line from my phone",
+						f"time={stamp(6)} :bob!b@bob.test PRIVMSG #mac :{nick}, the build is green",
+						f"time={stamp(5)} :bob!b@bob.test PRIVMSG #mac :plain line two",
+						f"time={stamp(4)} :alice!a@alice.test PRIVMSG #mac :{nick}: ping again",
+					])
+				elif parts[1].lower() == "alice":
+					await batch("h2", "alice", [f"time={stamp(3)} :alice!a@alice.test PRIVMSG {nick} :hi, did you see my question?"])
+
+		writer.close()
+
+	server = await asyncio.start_server(handle, "127.0.0.1", port)
+	print(f"Scenario 'review-missed' waiting on irc://127.0.0.1:{port}", flush=True)
+	await asyncio.sleep(900)
 	server.close()
 
 
@@ -4667,6 +4776,10 @@ async def main():
 
 	if arguments.scenario == "chathistory-time":
 		await run_chathistory_time_scenario(arguments.port)
+		return
+
+	if arguments.scenario == "review-missed":
+		await run_review_missed_scenario(arguments.port)
 		return
 
 	if arguments.scenario == "event-playback":
