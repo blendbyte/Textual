@@ -182,6 +182,50 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+- (void)selectChannelAtPosition:(NSEvent *)e
+{
+	/* A pop-out shows one item; its server list isn't the user's */
+	if (self.isPopOut || self.attachedSheet != nil) {
+		return;
+	}
+
+	NSString *characters = e.charactersIgnoringModifiers;
+
+	if (characters.length != 1) {
+		return;
+	}
+
+	unichar digit = [characters characterAtIndex:0];
+
+	if (digit < '1' || digit > '9') {
+		return;
+	}
+
+	NSUInteger position = (digit - '0');
+
+	NSUInteger counted = 0;
+
+	NSInteger entryCount = self.serverList.numberOfRows;
+
+	for (NSInteger row = 0; row < entryCount; row++) {
+		IRCTreeItem *item = [self.serverList itemAtRow:row];
+
+		if (item.isClient) {
+			continue;
+		}
+
+		counted += 1;
+
+		if (counted == position) {
+			[self select:item];
+
+			return;
+		}
+	}
+
+	NSBeep();
+}
+
 - (void)navigateChannelEntries:(BOOL)isMovingDown withNavigationType:(TVCServerListNavigationMovementType)navigationType
 {
 	if ([TPCPreferences channelNavigationIsServerSpecific]) {

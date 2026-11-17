@@ -207,6 +207,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self registerSelector:@selector(speakPendingNotifications:) character:'.' modifiers:NSEventModifierFlagCommand];
 
+	for (unichar digit = '1'; digit <= '9'; digit++) {
+		[self registerSelector:@selector(selectChannelAtPosition:) character:digit modifiers:NSEventModifierFlagCommand];
+	}
+
 	[self registerSelector:@selector(inputHistoryUp:) character:'p' modifiers:NSEventModifierFlagControl];
 	[self registerSelector:@selector(inputHistoryDown:)	character:'n' modifiers:NSEventModifierFlagControl];
 

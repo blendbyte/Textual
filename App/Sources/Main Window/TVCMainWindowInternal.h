@@ -141,6 +141,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface TVCMainWindow (NavigationInternal)
+/* ⌘1…⌘9: the Nth channel or private message the server list shows (server
+ rows and the contents of collapsed servers don't count) */
+- (void)selectChannelAtPosition:(NSEvent *)e;
 @end
 
 @interface TVCMainWindow (InputInternal)
