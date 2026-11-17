@@ -522,7 +522,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-hil-w" = "Highlight words";
 "set-hil-wh" = "Messages with them stand out, notify you and appear in Mentions (⌃5). Click a word to choose where it counts, from whom and its sound.";
 "set-hil-x" = "Never highlight";
-"set-hil-xh" = "Messages with these don’t count, even with a highlight word.";
+"set-hil-xh" = "Highlight words inside these never count, e.g. textualbot when your nickname is textual.";
 "set-hil-a" = "Add";
 "set-hil-e" = "Edit…";
 "set-hil-r" = "Remove";
