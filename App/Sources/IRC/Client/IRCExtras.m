@@ -515,13 +515,17 @@ NS_ASSUME_NONNULL_BEGIN
 		for (NSString *channelName in channelList) {
 			IRCChannel *channel = [existingClient findChannelOrCreate:channelName isPrivateMessage:NO];
 
+			if (channel == nil) {
+				continue;
+			}
+
 			NSString *key = nil;
 
 			if (firstChannelAdded == nil) {
 				firstChannelAdded = channel;
 
 				/* Kept with the channel, for joining it again later */
-				if (channelKey && channel) {
+				if (channelKey) {
 					key = channelKey;
 
 					IRCChannelConfigMutable *config = [channel.config mutableCopy];
