@@ -234,6 +234,10 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
 
+/* Settings › General "Away message", else "Be back later": for display sleep,
+ inactivity and /away without text */
+@property (class, readonly, copy) NSString *awayMessage;
+
 /* Join, part and quit lines with user@host ("alice (~a@host) joined the channel") */
 @property (class, readonly) BOOL showAddressesInJoinsAndParts;
 

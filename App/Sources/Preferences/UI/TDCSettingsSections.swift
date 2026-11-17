@@ -86,6 +86,14 @@ struct GeneralSettings: View
 					SettingLabel(title: SettingsText("set-gen-i"), help: SettingsText("set-gen-ih"))
 				}
 
+				LabeledContent {
+					TextField(SettingsText("set-gen-am"), text: store.stringRemovedWhenEmpty("AwayMessage"), prompt: Text(SettingsText("set-gen-amp")))
+						.labelsHidden()
+						.frame(maxWidth: 220)
+				} label: {
+					SettingLabel(title: SettingsText("set-gen-am"), help: SettingsText("set-gen-amh"))
+				}
+
 				SettingToggle(title: SettingsText("set-gen-l"), help: SettingsText("set-gen-lh"),
 							  isOn: store.bool("OpenClickedLinksInBackgroundBrowser"))
 			}

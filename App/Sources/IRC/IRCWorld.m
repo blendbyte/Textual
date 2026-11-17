@@ -87,6 +87,7 @@ NSString * const IRCWorldWillDestroyChannelNotification = @"IRCWorldWillDestroyC
 @property (nonatomic, strong, nullable) NSTimer *midnightTimer;
 @property (nonatomic, strong, nullable) NSTimer *inactivityTimer;
 @property (nonatomic, strong) NSHashTable<IRCClient *> *clientsAwayFromInactivity;
+@property (nonatomic, copy, nullable) NSString *inactivityAwayMessage; // what they were set away with
 @property (nonatomic, strong, nullable) NSMapTable<IRCClient *, NSArray *> *bouncerLinkingKeysCache;
 @end
 
@@ -952,15 +953,19 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 		CFTimeInterval idleTime = CGEventSourceSecondsSinceLastEventType(kCGEventSourceStateCombinedSessionState, kCGAnyInputEventType);
 
 		if (idleTime >= (minutes * 60.0)) {
+			NSString *awayMessage = [TPCPreferences awayMessage];
+
 			for (IRCClient *u in self.clientList) {
 				/* Away already, by hand or still asked for */
 				if (u.isLoggedIn == NO || u.userIsAway || u.awayMessageToRestore != nil || [self.clientsAwayFromInactivity containsObject:u]) {
 					continue;
 				}
 
-				[u toggleAwayStatus:YES];
+				[u toggleAwayStatus:YES withComment:awayMessage];
 
 				[self.clientsAwayFromInactivity addObject:u];
+
+				self.inactivityAwayMessage = awayMessage;
 			}
 
 			return;
@@ -969,7 +974,7 @@ static NSString * const IRCWorldBouncerLinkingOfferedDefaultsKey = @"World Contr
 
 	/* Back (or the setting was turned off): unless the away was changed by
 	 hand meanwhile (/back clears it, /away sets another message) */
-	NSString *inactivityMessage = TXTLS(@"IRC[xog-in]");
+	NSString *inactivityMessage = self.inactivityAwayMessage;
 
 	for (IRCClient *u in self.clientsAwayFromInactivity.allObjects) {
 		if ([u.awayMessageToRestore isEqualToString:inactivityMessage] == NO) {

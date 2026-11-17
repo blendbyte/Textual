@@ -157,6 +157,9 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-gen-s" = "Set me away when the display sleeps";
 "set-gen-sh" = "And back when it wakes up.";
 "set-gen-i" = "Set me away when I’m inactive";
+"set-gen-am" = "Away message";
+"set-gen-amh" = "When Textual sets you away, and for /away without a message.";
+"set-gen-amp" = "Be back later";
 "set-gen-ih" = "After this long without using the keyboard, mouse or trackpad. Back as soon as you do.";
 "set-gen-i0" = "Never";
 "set-gen-i5" = "After 5 minutes";

@@ -36,6 +36,7 @@
  *
  *********************************************************************** */
 
+#import "TLOLocalization.h"
 #import "TXGlobalModels.h"
 #import "IRCWorldPrivate.h"
 #import "TPCNicknameColorStyleGeneratorPrivate.h"
@@ -180,6 +181,17 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 + (BOOL)setAwayOnScreenSleep
 {
 	return [RZUserDefaults() boolForKey:@"SetAwayOnScreenSleep"];
+}
+
++ (NSString *)awayMessage
+{
+	NSString *message = [[RZUserDefaults() stringForKey:@"AwayMessage"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+	if (message.length == 0) {
+		return TXTLS(@"IRC[xog-in]");
+	}
+
+	return message;
 }
 
 + (NSUInteger)awayAfterInactivityMinutes

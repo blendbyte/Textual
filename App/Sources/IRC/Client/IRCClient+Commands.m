@@ -924,7 +924,7 @@ NS_ASSUME_NONNULL_BEGIN
 		[self toggleAwayStatus:NO withComment:nil];
 	} else {
 		if (comment.length == 0) {
-			comment = TXTLS(@"IRC[xog-in]");
+			comment = [TPCPreferences awayMessage];
 		}
 
 		[self toggleAwayStatus:YES withComment:comment];
@@ -933,7 +933,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)toggleAwayStatus:(BOOL)setAway
 {
-	NSString *comment = TXTLS(@"IRC[xog-in]");
+	NSString *comment = [TPCPreferences awayMessage];
 
 	[self toggleAwayStatus:setAway withComment:comment];
 }
