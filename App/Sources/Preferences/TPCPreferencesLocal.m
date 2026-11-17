@@ -819,6 +819,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	[RZUserDefaults() setBool:sendTypingNotifications forKey:@"Typing Notifications -> Send"];
 }
 
++ (BOOL)showAddressesInJoinsAndParts
+{
+	return [RZUserDefaults() boolForKey:@"Event Display -> Show Addresses"];
+}
+
 + (BOOL)showTypingNotifications
 {
 	return [RZUserDefaults() boolForKey:@"Typing Notifications -> Show"];

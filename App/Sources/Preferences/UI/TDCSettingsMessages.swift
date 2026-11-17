@@ -430,6 +430,9 @@ struct MessagesEventsPage: View
 			Section {
 				SettingToggle(title: SettingsText("set-mes-ec"), help: SettingsText("set-mes-ech"),
 							  isOn: store.bool(collapseEventsKey))
+
+				SettingToggle(title: SettingsText("set-mes-ea"), help: SettingsText("set-mes-eah"),
+							  isOn: store.bool("Event Display -> Show Addresses"))
 			}
 		}
 		.formStyle(.grouped)

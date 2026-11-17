@@ -1571,7 +1571,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (printMessage) {
-		NSString *message = TXTLS(@"IRC[ziu-p9]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
+		NSString *message = nil;
+
+		if ([TPCPreferences showAddressesInJoinsAndParts]) {
+			message = TXTLS(@"IRC[ziu-p9]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
+		} else {
+			message = TXTLS(@"IRC[ziu-p8]", sender);
+		}
 
 		[self printGeneralEvent:message
 				 aboutNicknames:@[sender]
@@ -1652,7 +1658,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	if (printMessage) {
-		NSString *message = TXTLS(@"IRC[nkr-kf]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
+		NSString *message = nil;
+
+		if ([TPCPreferences showAddressesInJoinsAndParts]) {
+			message = TXTLS(@"IRC[nkr-kf]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
+		} else {
+			message = TXTLS(@"IRC[nkr-kg]", sender);
+		}
 
 		if (comment.length > 0) {
 			message = TXTLS(@"IRC[ozy-6i]", message, comment.stringByAppendingIRCFormattingStop);
@@ -1788,7 +1800,13 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 	}
 
-	NSString *messageToPrint = TXTLS(@"IRC[53b-dm]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
+	NSString *messageToPrint = nil;
+
+	if ([TPCPreferences showAddressesInJoinsAndParts]) {
+		messageToPrint = TXTLS(@"IRC[53b-dm]", sender, m.senderUsername, m.senderAddress.stringByAppendingIRCFormattingStop);
+	} else {
+		messageToPrint = TXTLS(@"IRC[53b-dn]", sender);
+	}
 
 	if (comment.length > 0) {
 		messageToPrint = TXTLS(@"IRC[tok-st]", messageToPrint, comment.stringByAppendingIRCFormattingStop);

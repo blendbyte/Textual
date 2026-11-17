@@ -408,6 +408,8 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-mes-eh" = "Dim keeps them visible but quiet. Hidden ones come back when you show them again.";
 "set-mes-ehm" = "Each is set differently: see Other events.";
 "set-mes-ec" = "Combine events in a row";
+"set-mes-ea" = "Show addresses in joins and parts";
+"set-mes-eah" = "“alice (~alice@example.org) joined the channel”. When off, only the nickname. Also when someone quits.";
 "set-mes-ech" = "“dave and erin joined” instead of a line each. Also nickname and away changes.";
 "set-mes-eo" = "Other events";
 "set-mes-esa" = "Nickname changes, away and back, kicks, mode and topic changes: all shown.";

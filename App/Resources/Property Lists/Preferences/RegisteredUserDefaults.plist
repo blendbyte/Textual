@@ -296,6 +296,8 @@
 	<true/>
 	<key>Typing Notifications -&gt; Show</key>
 	<true/>
+	<key>Event Display -&gt; Show Addresses</key>
+	<true/>
 	<key>Server List -&gt; Keep Channels Sorted</key>
 	<true/>
 	<key>TrackUserAwayStatusMaximumChannelSize</key>

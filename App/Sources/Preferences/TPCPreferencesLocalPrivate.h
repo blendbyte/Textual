@@ -234,6 +234,9 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
 
+/* Join, part and quit lines with user@host ("alice (~a@host) joined the channel") */
+@property (class, readonly) BOOL showAddressesInJoinsAndParts;
+
 /* "Show when others are typing": off, the indicator is never drawn (who is typing is still kept) */
 @property (class) BOOL showTypingNotifications;
 
