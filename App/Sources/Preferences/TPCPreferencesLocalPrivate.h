@@ -129,6 +129,7 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 
 /* Muted channels and networks still notify highlights */
 @property (class, readonly) BOOL highlightsNotifyWhenMuted;
+@property (class, readonly) BOOL repliesCountAsHighlights;
 
 /* "Automatically ignore highlight spam": a message naming this many people in the channel or more */
 @property (readonly, class) NSUInteger massHighlightThreshold;

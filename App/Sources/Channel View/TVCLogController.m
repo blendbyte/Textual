@@ -2510,7 +2510,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 		NSString *body = changedLine.messageBody.stripIRCEffects;
 
-		BOOL highlighted = [TLOMessageArchive logLineIsHighlight:changedLine body:body matchType:matchType];
+		BOOL highlighted = ([TLOMessageArchive logLineIsHighlight:changedLine body:body matchType:matchType] ||
+							[self logLineRepliesToLocalUser:changedLine]);
 
 		BOOL hasLink = ([TLOLinkParser locateLinksInString:body].count > 0);
 
@@ -2587,7 +2588,8 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 						  withAttributes:[self rendererAttributesForLogLine:logLine]
 							  resultInfo:&rendererResults];
 
-		BOOL highlighted = [rendererResults boolForKey:TVCLogRendererResultsKeywordMatchFoundAttribute];
+		BOOL highlighted = ([rendererResults boolForKey:TVCLogRendererResultsKeywordMatchFoundAttribute] ||
+							[self logLineRepliesToLocalUser:logLine]);
 
 		NSString *highlightKeyword = rendererResults[TVCLogRendererResultsMatchedKeywordAttribute];
 
@@ -2771,7 +2773,8 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		@"lineNumber" : logLine.uniqueIdentifier,
 		@"nickname" : (logLine.nickname ?: @""),
 		@"excerpt" : (excerpt ?: @""),
-		@"receivedAt" : logLine.receivedAt
+		@"receivedAt" : logLine.receivedAt,
+		@"ownLine" : @(logLine.memberType == TVCLogLineMemberTypeLocalUser)
 	};
 
 	NSArray *mergedReactions = nil;
@@ -2888,6 +2891,45 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	@synchronized (self.messageReferences) {
 		return self.messageReferences[msgid];
 	}
+}
+
+/* A reply to one of our messages still known here, in a line that could
+ highlight at all (not ours, not with highlights ignored) */
+- (BOOL)logLineRepliesToLocalUser:(TVCLogLine *)logLine
+{
+	NSParameterAssert(logLine != nil);
+
+	NSString *parentMsgid = logLine.replyToMsgid;
+
+	if (parentMsgid == nil || logLine.highlightKeywords.count == 0) {
+		return NO;
+	}
+
+	TVCLogLineType lineType = logLine.lineType;
+
+	if ((lineType != TVCLogLineTypePrivateMessage && lineType != TVCLogLineTypeAction) || logLine.memberType != TVCLogLineMemberTypeNormal) {
+		return NO;
+	}
+
+	if ([TPCPreferences repliesCountAsHighlights] == NO) {
+		return NO;
+	}
+
+	return [[self messageReferenceForMsgid:parentMsgid][@"ownLine"] boolValue];
+}
+
+- (BOOL)messageIsFromLocalUser:(NSString *)msgid
+{
+	NSParameterAssert(msgid != nil);
+
+	return [[self messageReferenceForMsgid:msgid][@"ownLine"] boolValue];
+}
+
+- (nullable NSString *)excerptOfMessage:(NSString *)msgid
+{
+	NSParameterAssert(msgid != nil);
+
+	return [self messageReferenceForMsgid:msgid][@"excerpt"];
 }
 
 #pragma mark -
@@ -3326,6 +3368,12 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 	}
 
 	BOOL highlighted = [rendererResults boolForKey:TVCLogRendererResultsKeywordMatchFoundAttribute];
+
+	if (highlighted == NO && [self logLineRepliesToLocalUser:logLine]) {
+		highlighted = YES;
+
+		resultInfoTemp[TVCLogRendererResultsKeywordMatchFoundAttribute] = @(YES);
+	}
 
 	BOOL inlineMedia =
 		(self.inlineMediaEnabledForView &&

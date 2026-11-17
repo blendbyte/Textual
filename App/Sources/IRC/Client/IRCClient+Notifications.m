@@ -147,6 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case TXNotificationTypeKick:
 		case TXNotificationTypeUserJoined:
 		case TXNotificationTypeUserParted:
+		case TXNotificationTypeReaction:
 		{
 			if (channel == nil) {
 				return nil;
@@ -384,6 +385,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		case TXNotificationTypeReaction:
+		{
+			NSParameterAssert(channel != nil);
+			NSParameterAssert(nickname != nil);
+
+			formattedMessage = TXTLS(@"Notifications[rq7-kd]", nickname, channel.name.channelNameWithoutBang);
+
+			break;
+		}
 		case TXNotificationTypeUserDisconnected:
 		{
 			NSParameterAssert(nickname != nil);
@@ -489,7 +499,8 @@ NS_ASSUME_NONNULL_BEGIN
 	 eventType == TXNotificationTypeChannelMessage		||
 	 eventType == TXNotificationTypeChannelNotice		||
 	 eventType == TXNotificationTypePrivateMessage		||
-	 eventType == TXNotificationTypePrivateNotice);
+	 eventType == TXNotificationTypePrivateNotice		||
+	 eventType == TXNotificationTypeReaction);
 
 	if (isTextEvent) {
 		if ([self nicknameIsMyself:nickname]) {
@@ -720,6 +731,17 @@ NS_ASSUME_NONNULL_BEGIN
 			} else {
 				eventDescription = TXTLS(@"Notifications[3ur-i8]", nickname, target.name, text);
 			}
+
+			break;
+		}
+		case TXNotificationTypeReaction:
+		{
+			NSParameterAssert(target != nil);
+			NSParameterAssert(text != nil);
+
+			eventTitle = target.name;
+
+			eventDescription = text;
 
 			break;
 		}

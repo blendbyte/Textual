@@ -254,6 +254,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger newQueryCountInLimitPeriod;
 @property (nonatomic, assign) BOOL newQueryLimitNoted;
 @property (nonatomic, assign) BOOL newQuerySummaryPosted; // in this minute
+@property (nonatomic, strong, nullable) NSCache<NSString *, NSDictionary *> *reactionNotificationsByMsgid; // one of our messages → who reacted with what, for the one notification about it
 @property (nonatomic, strong, nullable) NSCache<NSString *, NSDictionary *> *reactionsByMsgid; // a reaction's own msgid → what it was, so a REDACT of it takes it back
 @property (nonatomic, assign) BOOL unansweredQueryLimitNoted;
 @property (nonatomic, assign) NSTimeInterval lastAnsweredLagCheckTime; // the "time" of the last /LAGCHECK answered
@@ -290,6 +291,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)clearEventsToSpeak;
 - (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType;
 - (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(null_unspecified IRCChannel *)target nickname:(null_unspecified NSString *)nickname text:(null_unspecified NSString *)text userInfo:(nullable NSDictionary<NSString *, id> *)userInfo;
+- (BOOL)notifyEvent:(TXNotificationType)eventType lineType:(TVCLogLineType)lineType target:(null_unspecified IRCChannel *)target nickname:(null_unspecified NSString *)nickname text:(null_unspecified NSString *)text userInfo:(nullable NSDictionary<NSString *, id> *)userInfo checkOutputRules:(BOOL)checkOutputRules;
 @end
 
 @interface IRCClient (BouncerInternal)

@@ -122,6 +122,9 @@ struct HighlightsSettings: View
 											set: { nickname.wrappedValue = $0 }))
 					.disabled(isRegularExpression)
 
+				SettingToggle(title: SettingsText("set-hil-r"), help: SettingsText("set-hil-rh"),
+							  isOn: store.bool("Highlights -> Replies Count"))
+
 				SettingValuePicker(title: SettingsText("set-hil-s"), help: SettingsText("set-hil-sh"),
 								   selection: massLimit, values: Self.massLimits) { (value) in
 					((value == 0) ? SettingsText("set-hil-s0") : SettingsText("set-hil-sn", value))

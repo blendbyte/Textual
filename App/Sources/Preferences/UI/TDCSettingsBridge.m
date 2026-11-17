@@ -1141,7 +1141,7 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 + (NSArray<NSArray<NSNumber *> *> *)notificationEventGroups
 {
 	return @[
-		@[@(TXNotificationTypeHighlight), @(TXNotificationTypeNewPrivateMessage), @(TXNotificationTypePrivateMessage), @(TXNotificationTypePrivateNotice)],
+		@[@(TXNotificationTypeHighlight), @(TXNotificationTypeReaction), @(TXNotificationTypeNewPrivateMessage), @(TXNotificationTypePrivateMessage), @(TXNotificationTypePrivateNotice)],
 		@[@(TXNotificationTypeChannelMessage), @(TXNotificationTypeChannelNotice), @(TXNotificationTypeInvite), @(TXNotificationTypeKick)],
 		@[@(TXNotificationTypeUserJoined), @(TXNotificationTypeUserParted), @(TXNotificationTypeUserDisconnected), @(TXNotificationTypeAddressBookMatch)],
 		@[@(TXNotificationTypeConnect), @(TXNotificationTypeDisconnect)],

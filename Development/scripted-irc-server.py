@@ -401,6 +401,69 @@ async def scenario_review_voice(client):
 		seen = len(client.received)
 
 
+async def scenario_review_replies(client):
+	"""Replies and reactions to you. In #mine (message-tags, echo-message)
+	the client's own line from another device (msgid m1), alice's question
+	(a1), then alice replies to m1 without naming anyone (must highlight)
+	and bob replies to a1 (must not). Every PRIVMSG the client sends is
+	echoed with a new msgid. "go" waits 8 s (time to put another app in
+	front), then alice 👍 and bob ❤️ react to m1 (one notification, replaced),
+	carol 🎉 reacts to a1 (none), and erin replies to m1 (a highlight)."""
+	if not await client.register_with_capabilities("message-tags echo-message server-time batch"):
+		return
+
+	import re
+	run = format(int(time.time()) % 0xfffff, "x")
+
+	def unique(line):
+		return re.sub(r"(msgid|\+reply)=([A-Za-z0-9]+)", lambda m: f"{m.group(1)}={m.group(2)}.{run}", line)
+
+	plain_send = client.send
+
+	async def send(line, raw=None):
+		await plain_send(unique(line))
+
+	client.send = send
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #mine")
+	await client.send(f":{SERVER} 353 {me} = #mine :{me} alice bob carol erin")
+	await client.send(f":{SERVER} 366 {me} #mine :End of /NAMES list.")
+	await client.send(f"@msgid=m1 :{me}!user@client.textual.test PRIVMSG #mine :I pushed the fix for the reconnect loop")
+	await client.send("@msgid=a1 :alice!a@alice.test PRIVMSG #mine :Does anyone know when the beta ships?")
+	await client.send("@msgid=a2;+reply=m1 :alice!a@alice.test PRIVMSG #mine :yes, works here")
+	await client.send("@msgid=b1;+reply=a1 :bob!b@bob.test PRIVMSG #mine :next week, I think")
+
+	seen = 0
+	echoed = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			tags = ""
+			rest_of_line = line
+			if line.startswith("@"):
+				tags, _, rest_of_line = line[1:].partition(" ")
+			command, _, rest = rest_of_line.partition(" ")
+			if command.upper() not in ("PRIVMSG", "NOTICE", "TAGMSG"):
+				continue
+			client_tags = [tag for tag in tags.split(";") if tag.startswith("+")]
+			echoed += 1
+			echo_tags = ";".join([f"msgid=me{echoed}.{run}"] + client_tags)
+			await plain_send(f"@{echo_tags} :{me}!user@client.textual.test {command.upper()} {rest}")
+			if command.upper() == "PRIVMSG" and rest.endswith(" :go"):
+				log("··", "reactions and a reply in 8 s")
+				await asyncio.sleep(8)
+				await client.send("@+draft/react=👍;+reply=m1 :alice!a@alice.test TAGMSG #mine")
+				await asyncio.sleep(3)
+				await client.send("@+draft/react=❤️;+reply=m1 :bob!b@bob.test TAGMSG #mine")
+				await client.send("@+draft/react=🎉;+reply=a1 :carol!c@carol.test TAGMSG #mine")
+				await asyncio.sleep(3)
+				await client.send("@msgid=e1;+reply=m1 :erin!r@erin.test PRIVMSG #mine :nice, thanks")
+				log("··", "sent")
+		seen = len(client.received)
+
+
 async def scenario_review_typing(client):
 	"""In #typing alice keeps typing (a +typing=active TAGMSG every 3 s, as
 	clients repeat it), so the indicator stays up while connected: with
@@ -3805,6 +3868,7 @@ SCENARIOS = {
 	"review-held-batches": scenario_review_held_batches,
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
+	"review-replies": scenario_review_replies,
 	"review-typing": scenario_review_typing,
 	"review-banned": scenario_review_banned,
 	"review-list": scenario_review_list,
@@ -3865,7 +3929,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

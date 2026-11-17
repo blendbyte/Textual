@@ -61,7 +61,8 @@ typedef NS_ENUM(NSUInteger, TXNotificationType) {
 	TXNotificationTypeFileTransferReceiveRequested		= 1015,
 	TXNotificationTypeUserJoined						= 1016,
 	TXNotificationTypeUserParted						= 1017,
-	TXNotificationTypeUserDisconnected					= 1018
+	TXNotificationTypeUserDisconnected					= 1018,
+	TXNotificationTypeReaction							= 1019
 };
 
 @interface TLONotificationController : NSObject

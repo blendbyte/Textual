@@ -117,6 +117,7 @@ struct NotificationEventOptions
 			case 1016: return "arrow.right"
 			case 1017: return "arrow.left"
 			case 1018: return "rectangle.portrait.and.arrow.right"
+			case 1019: return "face.smiling"
 			default: return "bell"
 		}
 	}

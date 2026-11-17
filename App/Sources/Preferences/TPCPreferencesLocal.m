@@ -457,6 +457,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"Notifications -> Highlights When Muted"];
 }
 
++ (BOOL)repliesCountAsHighlights
+{
+	return [RZUserDefaults() boolForKey:@"Highlights -> Replies Count"];
+}
+
 + (BOOL)inputMarkdownEnabled
 {
 	return [RZUserDefaults() boolForKey:TPCPreferencesInputMarkdownDefaultsKey];
@@ -1376,6 +1381,7 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 		_dv(TXNotificationTypeUserJoined, @"NotificationType -> User Joined -> ")
 		_dv(TXNotificationTypeUserParted, @"NotificationType -> User Parted -> ")
 		_dv(TXNotificationTypeUserDisconnected, @"NotificationType -> User Disconnected -> ")
+		_dv(TXNotificationTypeReaction, @"NotificationType -> Reaction -> ")
 
 #undef _dv
 	}

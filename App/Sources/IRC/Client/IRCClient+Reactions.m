@@ -37,6 +37,7 @@
 
 #import "NSStringHelper.h"
 #import "TLOLocalization.h"
+#import "TLONotificationControllerPrivate.h"
 #import "TXMasterControllerPrivate.h"
 #import "IRCChannelPrivate.h"
 #import "IRCISupportInfoPrivate.h"
@@ -268,6 +269,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[channel.viewController setReaction:((added) ?: removed) byNickname:sender onMessage:msgid added:(added != nil)];
 
+	if (added && [self isSafeToPostNotificationForMessage:m inChannel:channel]) {
+		[self notifyReaction:added byNickname:sender onMessage:msgid inChannel:channel];
+	}
+
 	/* Remembered for this session, for a REDACT naming the reaction itself */
 	NSString *reactionMsgid = m.msgid;
 
@@ -282,6 +287,73 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return YES;
+}
+
+/* One notification per message of ours: a later reaction replaces it,
+ naming everyone who reacted and with what */
+- (void)notifyReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid inChannel:(IRCChannel *)channel
+{
+	NSParameterAssert(reaction != nil);
+	NSParameterAssert(nickname != nil);
+	NSParameterAssert(msgid != nil);
+	NSParameterAssert(channel != nil);
+
+	if ([self nicknameIsMyself:nickname]) {
+		return;
+	}
+
+	TVCLogController *viewController = channel.viewController;
+
+	if ([viewController messageIsFromLocalUser:msgid] == NO) {
+		return;
+	}
+
+	NSString *excerpt = [viewController excerptOfMessage:msgid];
+
+	if (excerpt.length == 0) {
+		return;
+	}
+
+	if (self.reactionNotificationsByMsgid == nil) {
+		self.reactionNotificationsByMsgid = [NSCache new];
+
+		self.reactionNotificationsByMsgid.countLimit = 200;
+	}
+
+	NSDictionary *earlier = [self.reactionNotificationsByMsgid objectForKey:msgid];
+
+	NSMutableArray<NSString *> *nicknames = [NSMutableArray arrayWithArray:(earlier[@"nicknames"] ?: @[])];
+	NSMutableArray<NSString *> *reactions = [NSMutableArray arrayWithArray:(earlier[@"reactions"] ?: @[])];
+
+	/* A few names and emoji are enough to say who */
+	if ([nicknames containsObjectIgnoringCase:nickname] == NO && nicknames.count < 5) {
+		[nicknames addObject:nickname];
+	}
+
+	if ([reactions containsObject:reaction] == NO && reactions.count < 5) {
+		[reactions addObject:reaction];
+	}
+
+	NSString *identifier = earlier[@"identifier"];
+
+	if (identifier == nil) {
+		identifier = [NSString stringWithFormat:@"TXNotification-Reaction-%@", [NSUUID UUID].UUIDString];
+	}
+
+	[self.reactionNotificationsByMsgid setObject:@{@"nicknames" : nicknames, @"reactions" : reactions, @"identifier" : identifier} forKey:msgid];
+
+	NSString *text = TXTLS(@"Notifications[rq7-kc]",
+						   [nicknames componentsJoinedByString:@", "],
+						   [reactions componentsJoinedByString:@" "],
+						   excerpt);
+
+	NSDictionary *userInfo = @{
+		TXNotificationUserInfoClientIdentifierKey : self.uniqueIdentifier,
+		TXNotificationUserInfoChannelIdentifierKey : channel.uniqueIdentifier,
+		TXNotificationUserInfoReplacedIdentifierKey : identifier
+	};
+
+	[self notifyEvent:TXNotificationTypeReaction lineType:TVCLogLineTypePrivateMessage target:channel nickname:nickname text:text userInfo:userInfo checkOutputRules:NO];
 }
 
 - (void)sendReaction:(NSString *)reaction toMessage:(NSString *)msgid inChannel:(IRCChannel *)channel removing:(BOOL)removing

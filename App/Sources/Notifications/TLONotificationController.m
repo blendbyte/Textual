@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString * const TXNotificationUserInfoClientIdentifierKey		= @"clientId";
 NSString * const TXNotificationUserInfoChannelIdentifierKey		= @"channelId";
+NSString * const TXNotificationUserInfoReplacedIdentifierKey	= @"replacedId";
 
 NSString * const TXNotificationDialogStandardNicknameFormat		= @"%@ %@";
 NSString * const TXNotificationDialogActionNicknameFormat		= @"\u2022 %@: %@";
@@ -250,6 +251,7 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 			_df(TXNotificationTypeUserJoined, @"Notifications[25q-af]")
 			_df(TXNotificationTypeUserParted, @"Notifications[k3s-by]")
 			_df(TXNotificationTypeUserDisconnected, @"Notifications[0fo-bt]")
+			_df(TXNotificationTypeReaction, @"Notifications[rq7-ka]")
 	}
 
 #undef _df
@@ -378,6 +380,12 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 
 			break;
 		}
+		case TXNotificationTypeReaction:
+		{
+			eventTitle = TXTLS(@"Notifications[rq7-kb]", eventTitle);
+
+			break;
+		}
 	}
 
 	eventDescription = eventDescription.stripIRCEffects;
@@ -402,10 +410,13 @@ NSString * const TXNotificationActionIdentifierLicenseManagerMoreInfo = @"TXNoti
 
 	NSString *threadIdentifier = [self threadIdentifierForClient:clientId channel:channelId];
 
+	/* Given when a newer notification replaces the one before it */
+	NSString *notificationIdentifier = eventContext[TXNotificationUserInfoReplacedIdentifierKey];
+
 	[self scheduleNotificationWithTitle:eventTitle
 								message:eventDescription
 							   userInfo:eventContext
-				 notificationIdentifier:nil
+				 notificationIdentifier:notificationIdentifier
 					   threadIdentifier:threadIdentifier
 					 categoryIdentifier:categoryIdentifier];
 }

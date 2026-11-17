@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoClientIdentifierKey;
 TEXTUAL_EXTERN NSString * const TXNotificationUserInfoChannelIdentifierKey;
+TEXTUAL_EXTERN NSString * const TXNotificationUserInfoReplacedIdentifierKey;
 
 TEXTUAL_EXTERN NSString * const TXNotificationDialogStandardNicknameFormat;
 TEXTUAL_EXTERN NSString * const TXNotificationDialogActionNicknameFormat;

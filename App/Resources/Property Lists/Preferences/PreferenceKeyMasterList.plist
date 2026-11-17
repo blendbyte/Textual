@@ -140,6 +140,8 @@
 	<integer>0</integer>
 	<key>Notifications -&gt; Highlights When Muted</key>
 	<integer>0</integer>
+	<key>Highlights -&gt; Replies Count</key>
+	<integer>0</integer>
 	<key>Highlights -&gt; Mass Highlight Threshold</key>
 	<integer>0</integer>
 	<key>Input -&gt; Aliases</key>

@@ -67,6 +67,7 @@
 "bwu-ps" = "%1$@ joined %2$@";
 "4aq-hz" = "%1$@ parted %2$@";
 "sqf-4y" = "%1$@ disconnected"; // disconnect
+"rq7-kd" = "%1$@ reacted to your message in %2$@";
 
 /* Notification bubble titles */
 "niq-32" = "Address Book Notification";
@@ -75,6 +76,8 @@
 "mo1-vn" = "Connected: %@";
 "7xe-ig" = "Disconnected: %@";
 "qka-f3" = "Highlight: %@";
+"rq7-kb" = "Reaction: %@";
+"rq7-kc" = "%1$@ reacted %2$@ to: %3$@";
 "g4s-cq" = "Invited: %@";
 "u30-ia" = "Kicked: %@";
 "ltn-hf" = "New Private Message";
@@ -137,3 +140,4 @@
 "25q-af" = "User Joined Channel";
 "k3s-by" = "User Parted Channel";
 "0fo-bt" = "User Disconnected";
+"rq7-ka" = "Reaction to Your Message";

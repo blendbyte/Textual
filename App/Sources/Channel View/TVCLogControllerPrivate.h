@@ -66,6 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
  shown under it and saved with it */
 - (void)setReaction:(NSString *)reaction byNickname:(NSString *)nickname onMessage:(NSString *)msgid added:(BOOL)added;
 
+/* Known by the messages kept here (the last 2000) */
+- (BOOL)messageIsFromLocalUser:(NSString *)msgid;
+- (nullable NSString *)excerptOfMessage:(NSString *)msgid;
+
 /* Deleting: the message becomes "Message deleted" (by whom, why),
  in the view and in what is saved */
 - (void)deleteMessage:(NSString *)msgid byNickname:(NSString *)nickname reason:(nullable NSString *)reason;

@@ -546,6 +546,8 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-hil-n" = "My nickname is a highlight word";
 "set-hil-nh" = "On every server, whatever nickname you have there.";
 "set-hil-nhr" = "Not with regular expressions: add your nickname as one.";
+"set-hil-r" = "Replies to your messages count as mentions";
+"set-hil-rh" = "A reply highlights like your nickname would, when the message it answers is still in the conversation.";
 "set-hil-s" = "Ignore mass highlights";
 "set-hil-sh" = "Messages naming many people at once don’t count.";
 "set-hil-s0" = "Off";
