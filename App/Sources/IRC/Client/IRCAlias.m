@@ -103,6 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 										  nickname:(nullable NSString *)nickname
 										   channel:(nullable NSString *)channel
 											server:(nullable NSString *)server
+										   network:(nullable NSString *)network
 											 error:(IRCAliasError *)error
 								 requiredArguments:(NSUInteger *)requiredArguments
 {
@@ -186,22 +187,66 @@ NS_ASSUME_NONNULL_BEGIN
 				continue;
 			}
 
-			/* $1 – $9, $1- – $9- */
+			/* $* (every word, maybe none) */
+			if (next == '*') {
+				[line appendString:[words componentsJoinedByString:@" "]];
+
+				index += 2;
+
+				continue;
+			}
+
+			/* $~ (the last word) */
+			if (next == '~') {
+				if (words.count == 0) {
+					*error = IRCAliasErrorMissingArguments;
+					*requiredArguments = MAX(*requiredArguments, 1);
+				} else {
+					[line appendString:words.lastObject];
+				}
+
+				index += 2;
+
+				continue;
+			}
+
+			/* $1 – $9, $1- – $9-, $1-2 – $9-9 */
 			if (next >= '1' && next <= '9') {
 				NSUInteger position = (next - '0');
 
 				BOOL rest = ((index + 2) < trimmed.length && [trimmed characterAtIndex:(index + 2)] == '-');
 
+				NSUInteger last = 0; // with a range: its last word
+
+				if (rest && (index + 3) < trimmed.length) {
+					unichar end = [trimmed characterAtIndex:(index + 3)];
+
+					if (end >= '1' && end <= '9') {
+						last = (end - '0');
+					}
+				}
+
+				NSUInteger length = ((last > 0) ? 4 : ((rest) ? 3 : 2));
+
 				if (words.count < position) {
 					*error = IRCAliasErrorMissingArguments;
 					*requiredArguments = MAX(*requiredArguments, position);
 
-					index += ((rest) ? 3 : 2);
+					index += length;
 
 					continue;
 				}
 
-				if (rest) {
+				if (last > 0) {
+					/* As many as there are; nothing when the range runs backwards */
+					NSUInteger upTo = MIN(last, words.count);
+
+					if (upTo >= position) {
+						[line appendString:[[words subarrayWithRange:NSMakeRange((position - 1), (upTo - position + 1))] componentsJoinedByString:@" "]];
+					}
+
+					index += length;
+				} else if (rest) {
 					[line appendString:[[words subarrayWithRange:NSMakeRange((position - 1), (words.count - position + 1))] componentsJoinedByString:@" "]];
 
 					index += 3;
@@ -219,7 +264,10 @@ NS_ASSUME_NONNULL_BEGIN
 			NSString *replacement = nil;
 			NSUInteger nameLength = 0;
 
-			if ([remainder hasPrefix:@"nick"]) {
+			if ([remainder hasPrefix:@"network"]) {
+				replacement = network;
+				nameLength = 7;
+			} else if ([remainder hasPrefix:@"nick"]) {
 				replacement = nickname;
 				nameLength = 4;
 			} else if ([remainder hasPrefix:@"channel"]) {

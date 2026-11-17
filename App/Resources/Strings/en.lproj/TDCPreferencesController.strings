@@ -243,7 +243,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-cmd-ai" = "This name can’t be used: it has spaces or symbols, or one of Textual’s commands has it. It isn’t saved.";
 "set-cmd-ar" = "Remove Alias";
 "set-cmd-aa" = "Add Alias";
-"set-cmd-ah" = "Type /name to run what is written next to it, on any server. $1 to $9 are the words typed after the name, $1- is everything from the first word on; $nick is your nickname, $channel the current channel, $server the server. Separate several commands with ; (\\; for a semicolon).";
+"set-cmd-ah" = "Type /name to run what is written next to it, on any server. $1 to $9 are the words typed after the name, $2- is everything from the second word on, $2-4 the second to fourth, $* all of them and $~ the last; $nick is your nickname, $channel the current channel, $server the server and $network the network. Separate several commands with ; (\\; for a semicolon).";
 "set-cmd-h2" = "Commands";
 "set-cmd-m" = "/msg switches to the private message";
 "set-cmd-mh" = "After “/msg alice hi”, the private message with alice is selected.";

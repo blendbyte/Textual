@@ -58,8 +58,9 @@ typedef NS_ENUM(NSUInteger, IRCAliasError) {
 + (BOOL)isValidAliasName:(NSString *)name;
 
 /* The lines an alias runs: commands split at ";" ("\;" is a semicolon),
- then $1–$9 (words), $1- to $9- (from that word on), $nick, $channel, $server
- and $$ (a dollar sign). nil and an error when a word or the channel is
+ then $1–$9 (words), $1- to $9- (from that word on), $2-4 (those words, as
+ many as there are), $* (every word, maybe none), $~ (the last word), $nick,
+ $channel, $server, $network and $$ (a dollar sign). nil and an error when a word or the channel is
  missing or there are more than 10. requiredArguments is set for
  IRCAliasErrorMissingArguments. */
 + (nullable NSArray<NSString *> *)linesForCommands:(NSString *)commands
@@ -67,6 +68,7 @@ typedef NS_ENUM(NSUInteger, IRCAliasError) {
 										  nickname:(nullable NSString *)nickname
 										   channel:(nullable NSString *)channel
 											server:(nullable NSString *)server
+										   network:(nullable NSString *)network
 											 error:(IRCAliasError *)error
 								 requiredArguments:(NSUInteger *)requiredArguments;
 @end

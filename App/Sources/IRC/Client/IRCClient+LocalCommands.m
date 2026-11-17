@@ -455,6 +455,7 @@ static NSUInteger _aliasDepth = 0;
 					  nickname:self.userNickname
 					   channel:channelName
 						server:self.serverAddress
+					   network:self.networkNameAlt
 						 error:&error
 			 requiredArguments:&requiredArguments];
 

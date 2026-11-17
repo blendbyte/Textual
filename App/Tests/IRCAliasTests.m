@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSArray<NSString *> *)lines:(NSString *)commands arguments:(NSString *)arguments channel:(nullable NSString *)channel error:(IRCAliasError *)error required:(NSUInteger *)required
 {
-	return [IRCAlias linesForCommands:commands arguments:arguments nickname:@"me" channel:channel server:@"irc.libera.chat" error:error requiredArguments:required];
+	return [IRCAlias linesForCommands:commands arguments:arguments nickname:@"me" channel:channel server:@"irc.libera.chat" network:@"Libera.Chat" error:error requiredArguments:required];
 }
 
 /* What an alias runs: words, the rest, names, several commands */
@@ -74,6 +74,51 @@ NS_ASSUME_NONNULL_BEGIN
 	lines = [self lines:@"/echo a\\;b costs $$5, $nick on $server, $other" arguments:@"" channel:nil error:&error required:&required];
 
 	XCTAssertEqualObjects(lines, @[@"/echo a;b costs $5, me on irc.libera.chat, $other"]);
+}
+
+/* $network (behind a bouncer $server is the bouncer), $*, $~ and ranges */
+- (void)testMorePlaceholders
+{
+	IRCAliasError error;
+	NSUInteger required;
+
+	NSArray *lines = [self lines:@"/echo $network via $server" arguments:@"" channel:nil error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/echo Libera.Chat via irc.libera.chat"]);
+
+	/* $* may be empty, unlike $1- */
+	lines = [self lines:@"/away $*" arguments:@"" channel:nil error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/away "]);
+
+	lines = [self lines:@"/msg alice $*" arguments:@" one  two three " channel:nil error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/msg alice one two three"]);
+
+	lines = [self lines:@"/kick $channel $~" arguments:@"a b carol" channel:@"#x" error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/kick #x carol"]);
+
+	XCTAssertNil([self lines:@"/whois $~" arguments:@"" channel:nil error:&error required:&required]);
+	XCTAssertEqual(error, IRCAliasErrorMissingArguments);
+	XCTAssertEqual(required, (NSUInteger)1);
+
+	/* A range: as many words as there are */
+	lines = [self lines:@"/say $2-3 | $1" arguments:@"a b c d" channel:nil error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/say b c | a"]);
+
+	lines = [self lines:@"/say $2-4" arguments:@"a b" channel:nil error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/say b"]);
+
+	XCTAssertNil([self lines:@"/say $3-4" arguments:@"a" channel:nil error:&error required:&required]);
+	XCTAssertEqual(required, (NSUInteger)3);
+
+	/* $2- is still the rest */
+	lines = [self lines:@"/say $2-" arguments:@"a b c" channel:nil error:&error required:&required];
+
+	XCTAssertEqualObjects(lines, @[@"/say b c"]);
 }
 
 /* Missing words or channel, and too many commands, run nothing */
