@@ -931,6 +931,20 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
+- (void)comeBackBeforeSendingMessage
+{
+	if ([TPCPreferences comeBackWhenSendingMessage] == NO) {
+		return;
+	}
+
+	/* Also while the server hasn't confirmed it (306) */
+	if (self.userIsAway == NO && self.awayMessageToRestore == nil) {
+		return;
+	}
+
+	[self toggleAwayStatus:NO];
+}
+
 - (void)toggleAwayStatus:(BOOL)setAway
 {
 	NSString *comment = [TPCPreferences awayMessage];

@@ -160,6 +160,8 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-gen-am" = "Away message";
 "set-gen-amh" = "When Textual sets you away, and for /away without a message.";
 "set-gen-amp" = "Be back later";
+"set-gen-cb" = "Come back when I send a message";
+"set-gen-cbh" = "Away by hand ends with your next message or /me on that server.";
 "set-gen-ih" = "After this long without using the keyboard, mouse or trackpad. Back as soon as you do.";
 "set-gen-i0" = "Never";
 "set-gen-i5" = "After 5 minutes";

@@ -346,6 +346,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sendPassword:(NSString *)password;
 - (void)joinUnlistedChannelsWithStringAndSelectBestMatch:(NSString *)channels passwords:(nullable NSString *)passwords;
 - (void)toggleAwayStatusWithComment:(nullable NSString *)comment;
+
+/* "Come back when I send a message": back before a message or action the
+ user sends while away on this server (not notices or other commands) */
+- (void)comeBackBeforeSendingMessage;
 - (void)joinUnlistedChannelsAndSelectBestMatch:(NSArray<NSString *> *)channels;
 - (void)sendCapabilityAuthenticate:(NSString *)data;
 - (void)joinKickedChannel:(IRCChannel *)channel;

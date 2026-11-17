@@ -194,6 +194,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return message;
 }
 
++ (BOOL)comeBackWhenSendingMessage
+{
+	return [RZUserDefaults() boolForKey:@"ComeBackWhenSendingMessage"];
+}
+
 + (NSUInteger)awayAfterInactivityMinutes
 {
 	return [RZUserDefaults() unsignedIntegerForKey:@"AwayAfterInactivityMinutes"];

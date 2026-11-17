@@ -290,6 +290,15 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Typed text (not a command) or ⌘↩'s action, while away */
+	if (command != IRCRemoteCommandNotice && destination.isClient == NO) {
+		NSString *firstLine = ((NSAttributedString *)lines.firstObject).string;
+
+		if ([firstLine hasPrefix:@"/"] == NO || [firstLine hasPrefix:@"//"]) {
+			[self comeBackBeforeSendingMessage];
+		}
+	}
+
 	/* Several lines, or one too long for a line, as one message where the
 	 server takes them (draft/multiline) */
 	if ([self sendMultilineText:lines asCommand:command destination:destination]) {

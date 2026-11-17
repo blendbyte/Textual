@@ -2707,6 +2707,9 @@ static NSUInteger _aliasDepth = 0;
 			return;
 		}
 
+		/* /me counts as sending a message */
+		[self comeBackBeforeSendingMessage];
+
 		targetChannelName = targetChannel.name;
 	} else if (isOperatorMessage && [self stringIsChannelName:stringIn.string] == NO && targetChannel.isChannel) {
 		targetChannelName = targetChannel.name;

@@ -26,6 +26,8 @@
 	<integer>0</integer>
 	<key>AutomaticallyDisconnectForSleepMode</key>
 	<integer>0</integer>
+	<key>ComeBackWhenSendingMessage</key>
+	<integer>0</integer>
 	<key>AwayMessage</key>
 	<integer>0</integer>
 	<key>AwayAfterInactivityMinutes</key>

@@ -94,6 +94,9 @@ struct GeneralSettings: View
 					SettingLabel(title: SettingsText("set-gen-am"), help: SettingsText("set-gen-amh"))
 				}
 
+				SettingToggle(title: SettingsText("set-gen-cb"), help: SettingsText("set-gen-cbh"),
+							  isOn: store.bool("ComeBackWhenSendingMessage"))
+
 				SettingToggle(title: SettingsText("set-gen-l"), help: SettingsText("set-gen-lh"),
 							  isOn: store.bool("OpenClickedLinksInBackgroundBrowser"))
 			}

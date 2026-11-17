@@ -238,6 +238,9 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
  inactivity and /away without text */
 @property (class, readonly, copy) NSString *awayMessage;
 
+/* Settings › General "Come back when I send a message" */
+@property (class, readonly) BOOL comeBackWhenSendingMessage;
+
 /* Join, part and quit lines with user@host ("alice (~a@host) joined the channel") */
 @property (class, readonly) BOOL showAddressesInJoinsAndParts;
 
