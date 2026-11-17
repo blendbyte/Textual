@@ -294,6 +294,8 @@
 	<true/>
 	<key>Typing Notifications -&gt; Send</key>
 	<true/>
+	<key>Typing Notifications -&gt; Show</key>
+	<true/>
 	<key>Server List -&gt; Keep Channels Sorted</key>
 	<true/>
 	<key>TrackUserAwayStatusMaximumChannelSize</key>

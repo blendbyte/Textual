@@ -234,6 +234,9 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
 
+/* "Show when others are typing": off, the indicator is never drawn (who is typing is still kept) */
+@property (class) BOOL showTypingNotifications;
+
 /* Preferences › History */
 @property (class, readonly) TPCMessageArchiveKeepPeriod messageArchiveKeepPeriod;
 + (void)setMessageArchiveKeepPeriod:(TPCMessageArchiveKeepPeriod)messageArchiveKeepPeriod;

@@ -350,6 +350,8 @@
 	<integer>0</integer>
 	<key>Typing Notifications -&gt; Send</key>
 	<integer>0</integer>
+	<key>Typing Notifications -&gt; Show</key>
+	<integer>0</integer>
 	<key>Server List -&gt; Keep Channels Sorted</key>
 	<integer>0</integer>
 	<key>TrackUserAwayStatusMaximumChannelSize</key>

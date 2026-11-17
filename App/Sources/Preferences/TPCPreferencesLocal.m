@@ -819,6 +819,16 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	[RZUserDefaults() setBool:sendTypingNotifications forKey:@"Typing Notifications -> Send"];
 }
 
++ (BOOL)showTypingNotifications
+{
+	return [RZUserDefaults() boolForKey:@"Typing Notifications -> Show"];
+}
+
++ (void)setShowTypingNotifications:(BOOL)showTypingNotifications
+{
+	[RZUserDefaults() setBool:showTypingNotifications forKey:@"Typing Notifications -> Show"];
+}
+
 + (TPCMessageArchiveKeepPeriod)messageArchiveKeepPeriod
 {
 	return [RZUserDefaults() integerForKey:TPCPreferencesMessageArchiveKeepPeriodDefaultsKey];

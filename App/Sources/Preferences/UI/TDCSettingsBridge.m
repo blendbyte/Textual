@@ -1118,6 +1118,20 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	[TPCPreferences setSendTypingNotifications:sendTypingNotifications];
 }
 
++ (BOOL)showTypingNotifications
+{
+	return [TPCPreferences showTypingNotifications];
+}
+
++ (void)setShowTypingNotifications:(BOOL)showTypingNotifications
+{
+	[TPCPreferences setShowTypingNotifications:showTypingNotifications];
+
+	for (TVCMainWindow *window in [TVCMainWindow windows]) {
+		[window refreshTypingIndicator];
+	}
+}
+
 @end
 
 #pragma mark -

@@ -167,6 +167,10 @@ struct TypingSettings: View
 				SettingToggle(title: SettingsText("set-typ-n"), help: SettingsText("set-typ-nh"),
 							  isOn: store.value(get: { TDCSettingsBridge.sendTypingNotifications },
 												set: { TDCSettingsBridge.sendTypingNotifications = $0 }))
+
+				SettingToggle(title: SettingsText("set-typ-o"), help: SettingsText("set-typ-oh"),
+							  isOn: store.value(get: { TDCSettingsBridge.showTypingNotifications },
+												set: { TDCSettingsBridge.showTypingNotifications = $0 }))
 			}
 		}
 	}

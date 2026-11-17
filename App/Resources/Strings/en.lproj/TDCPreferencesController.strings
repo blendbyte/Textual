@@ -473,6 +473,8 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-typ-ceh" = "⌃ with Enter (⌤, on the number pad or fn ↩ on a laptop). When off, it starts a new line.";
 "set-typ-n" = "Let others see when I’m typing";
 "set-typ-nh" = "On servers that support it. Commands don’t count.";
+"set-typ-o" = "Show when others are typing";
+"set-typ-oh" = "A line under the chat: “alice is typing…”.";
 "set-typ-x1" = "Hey ";
 "set-typ-xa" = "A sample of the field with its suggestion list";
 "set-not-pt" = "Notifications are off";

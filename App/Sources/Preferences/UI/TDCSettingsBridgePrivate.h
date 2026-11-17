@@ -177,6 +177,9 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 @interface TDCSettingsBridge (Typing)
 /* Turned off while typing somewhere, "done" goes out first */
 @property (class) BOOL sendTypingNotifications;
+
+/* Every window's indicator is redrawn (or removed) at once */
+@property (class) BOOL showTypingNotifications;
 @end
 
 @interface TDCSettingsBridge (Notifications)

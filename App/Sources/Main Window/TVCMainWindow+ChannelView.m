@@ -61,7 +61,7 @@
 #import "TVCTextViewIRCFormattingMenuPrivate.h"
 #import "TVCTextViewWithIRCFormatterPrivate.h"
 #import "TPCApplicationInfo.h"
-#import "TPCPreferencesLocal.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
 #import "TPCThemeControllerPrivate.h"
 #import "TPCTheme.h"
@@ -399,7 +399,7 @@ NS_ASSUME_NONNULL_BEGIN
 	/* The console (no channel) has nobody typing */
 	NSArray *nicknames = @[];
 
-	if (channel) {
+	if (channel && [TPCPreferences showTypingNotifications]) {
 		nicknames = [channel typingNicknamesAtDate:[NSDate date]];
 	}
 

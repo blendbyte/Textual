@@ -174,6 +174,7 @@ typedef NS_OPTIONS(NSUInteger, TVCMainWindowShiftSelectionFlags) {
 
 /* Typing notifications */
 - (void)updateTypingIndicatorForChannel:(IRCChannel *)channel;
+- (void)refreshTypingIndicator; // the selected channel's, e.g. after "Show when others are typing" changed
 - (void)inputTextDidChange;
 
 /* The insertion point moved: the suggestion list follows */
