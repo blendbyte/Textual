@@ -190,6 +190,11 @@ NS_ASSUME_NONNULL_BEGIN
 	self.tryingNicknameNumber = 0;
 	self.tryingNicknameSentNickname = nil;
 
+	self.nicknameRegainStopped = NO;
+	self.nicknameRegainMonitored = nil;
+	self.nicknameRegainAskedByIson = NO;
+	self.nicknameRegainLastAttempt = nil;
+
 	self.preAwayUserNickname = nil;
 
 	self.lastMessageReceived = 0;

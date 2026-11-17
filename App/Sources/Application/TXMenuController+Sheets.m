@@ -618,6 +618,9 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Chosen by hand: the configured nickname isn't taken back */
+	u.nicknameRegainStopped = YES;
+
 	[u changeNickname:nickname];
 }
 

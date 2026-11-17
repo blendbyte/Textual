@@ -625,6 +625,99 @@ async def scenario_review_monitor(client):
 		seen = len(client.received)
 
 
+async def run_review_regain(client, monitor):
+	"""The client's nickname is taken at registration (433), so it logs in
+	under an alternate. "free" in #lobby frees it: with MONITOR the server
+	sends 731 (and answers MONITOR + with 730 or 731), without it ISON leaves
+	it out. The client must then send NICK for its configured nickname, unless
+	it changed nickname by hand first. NICK, MONITOR and ISON are logged."""
+	if monitor:
+		client.isupport_extra = "MONITOR=100"
+
+	wanted = None
+	alternate = False
+	cap_ended = False
+	seen_commands = set()
+
+	while True:
+		line = await client.read_line()
+		if line is None:
+			return
+		command, _, rest = line.partition(" ")
+		command = command.upper()
+		seen_commands.add(command)
+		if command == "CAP" and rest.upper().startswith("LS"):
+			await client.send(f":{SERVER} CAP * LS :server-time")
+		elif command == "CAP" and rest.upper().startswith("REQ"):
+			await client.send(f":{SERVER} CAP * ACK :{rest.split(' ', 1)[1].lstrip(':')}")
+		elif command == "NICK":
+			nickname = rest.lstrip(":")
+			if wanted is None:
+				wanted = nickname
+				log("··", f"{nickname} is taken")
+				await client.send(f":{SERVER} 433 * {nickname} :Nickname is already in use")
+			else:
+				client.nickname = nickname
+				alternate = True
+		elif command == "CAP" and rest.upper().startswith("END"):
+			cap_ended = True
+		if alternate and cap_ended and "USER" in seen_commands:
+			break
+
+	await client.welcome()
+
+	me = client.nickname
+	taken = True
+
+	await client.send(f":{me}!user@client.textual.test JOIN #lobby")
+	await client.send(f":{SERVER} 353 {me} = #lobby :{me} dave")
+	await client.send(f":{SERVER} 366 {me} #lobby :End of /NAMES list.")
+	await client.send(f":dave!d@dave.test PRIVMSG #lobby :{wanted} is taken; say free here to free it")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			command = command.upper()
+			if command in ("MONITOR", "ISON", "NICK"):
+				log("··", f"client: {line}")
+			if command == "NICK":
+				new = rest.lstrip(":")
+				if new.lower() == wanted.lower() and taken:
+					await client.send(f":{SERVER} 433 {me} {new} :Nickname is already in use")
+					continue
+				await client.send(f":{me}!user@client.textual.test NICK :{new}")
+				me = new
+			elif command == "MONITOR":
+				parts = rest.split(" ", 1)
+				if parts[0] == "+" and len(parts) > 1:
+					for name in parts[1].lstrip(":").split(","):
+						if name.lower() == wanted.lower() and taken:
+							await client.send(f":{SERVER} 730 {me} :{name}!x@elsewhere.test")
+						else:
+							await client.send(f":{SERVER} 731 {me} :{name}")
+			elif command == "ISON":
+				names = rest.lstrip(":").split(" ")
+				await client.send(f":{SERVER} 303 {me} :" + " ".join(n for n in names if n.lower() == wanted.lower() and taken))
+			elif command == "PRIVMSG" and rest.endswith(" :free"):
+				taken = False
+				log("··", f"{wanted} is free")
+				if monitor:
+					await client.send(f":{SERVER} 731 {me} :{wanted}")
+		seen = len(client.received)
+
+
+async def scenario_review_regain(client):
+	"""See run_review_regain: with MONITOR."""
+	await run_review_regain(client, True)
+
+
+async def scenario_review_regain_ison(client):
+	"""See run_review_regain: without MONITOR (ISON every 30 s)."""
+	await run_review_regain(client, False)
+
+
 async def scenario_review_typing(client):
 	"""In #typing alice keeps typing (a +typing=active TAGMSG every 3 s, as
 	clients repeat it), so the indicator stays up while connected: with
@@ -4042,6 +4135,8 @@ SCENARIOS = {
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
 	"review-monitor": scenario_review_monitor,
+	"review-regain": scenario_review_regain,
+	"review-regain-ison": scenario_review_regain_ison,
 	"review-notifyme": scenario_review_notifyme,
 	"review-readmarker": scenario_review_readmarker,
 	"review-replies": scenario_review_replies,
@@ -4106,7 +4201,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

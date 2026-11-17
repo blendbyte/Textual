@@ -115,6 +115,7 @@ enum : unsigned long long {
  back. In the class itself: a category's property has no storage, and setting
  it raised, so nothing typed was sent. */
 @property (nonatomic, assign) BOOL inputCancelledByUser;
+@property (nonatomic, assign) BOOL nicknameRegainStopped; // changed by hand: the configured nickname isn't taken back until the next connection
 @end
 
 @interface IRCClient (NotificationsPrivate)

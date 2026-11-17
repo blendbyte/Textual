@@ -1543,6 +1543,15 @@ NS_ASSUME_NONNULL_BEGIN
 				self.invokingISONCommandForFirstTime = NO;
 			}
 
+			/* The configured nickname, asked about because someone else had it */
+			if (self.nicknameRegainAskedByIson) {
+				self.nicknameRegainAskedByIson = NO;
+
+				if ([onlineNicknames containsObject:[self.supportInfo foldedString:self.config.nickname]] == NO) {
+					[self configuredNicknameIsFree];
+				}
+			}
+
 			/* Update private messages (not those on MONITOR: they weren't asked about) */
 			for (IRCChannel *channel in self.channelList) {
 				if (channel.privateMessage == NO || [self queryIsMonitored:channel]) {

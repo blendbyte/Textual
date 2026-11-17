@@ -208,6 +208,107 @@ NS_ASSUME_NONNULL_BEGIN
 	[self startISONTimer];
 
 	[self updateQueryMonitoring];
+
+	[self updateNicknameRegain];
+}
+
+#pragma mark -
+#pragma mark Configured Nickname
+
+/* Logged in under an alternate because the configured nickname was taken:
+ it's taken back once free (MONITOR says so, or the ISON poll). Not through
+ a bouncer, which keeps the nickname itself; not after a change by hand;
+ not while the away nickname is in use. */
+- (BOOL)wantsConfiguredNicknameBack
+{
+	if (self.isLoggedIn == NO || self.nicknameRegainStopped) {
+		return NO;
+	}
+
+	if (self.isConnectedToZNC || self.bouncerAccount != nil || self.config.bouncerNetwork != nil ||
+		[self isCapabilityEnabled:ClientIRCv3SupportedCapabilityBouncerNetworks])
+	{
+		return NO;
+	}
+
+	NSString *configured = self.config.nickname;
+
+	NSString *current = self.userNickname;
+
+	if (configured.length == 0 || current.length == 0 || [configured isHostmaskNicknameOn:self] == NO) {
+		return NO;
+	}
+
+	if (self.preAwayUserNickname != nil) {
+		return NO;
+	}
+
+	return ([[self.supportInfo foldedString:configured] isEqualToString:[self.supportInfo foldedString:current]] == NO);
+}
+
+- (void)updateNicknameRegain
+{
+	BOOL wanted = [self wantsConfiguredNicknameBack];
+
+	BOOL hasMonitor = [self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMonitorCommand];
+
+	NSString *monitored = self.nicknameRegainMonitored;
+
+	if (wanted && hasMonitor) {
+		NSString *configured = self.config.nickname;
+
+		if (monitored && [monitored isEqualToStringIgnoringCase:configured]) {
+			return;
+		}
+
+		if (monitored) {
+			[self modifyWatchListBy:NO nicknames:@[monitored]];
+		}
+
+		self.nicknameRegainMonitored = configured;
+
+		/* The answer (730 or 731) says at once whether it is free */
+		[self modifyWatchListBy:YES nicknames:@[configured]];
+
+		return;
+	}
+
+	if (monitored == nil) {
+		return;
+	}
+
+	self.nicknameRegainMonitored = nil;
+
+	/* Still wanted on the list for a private message or the address book */
+	if ([self findUserTrackingAddressBookEntryForNickname:monitored] ||
+		self.monitoredQueryNicknames[[self.supportInfo foldedString:monitored]] != nil)
+	{
+		return;
+	}
+
+	[self modifyWatchListBy:NO nicknames:@[monitored]];
+}
+
+- (void)configuredNicknameIsFree
+{
+	if ([self wantsConfiguredNicknameBack] == NO) {
+		return;
+	}
+
+	/* One NICK at a time: a refused one (433) waits for the next report */
+	NSDate *lastAttempt = self.nicknameRegainLastAttempt;
+
+	if (lastAttempt && lastAttempt.timeIntervalSinceNow > -10.0) {
+		return;
+	}
+
+	self.nicknameRegainLastAttempt = [NSDate date];
+
+	NSString *configured = self.config.nickname;
+
+	[self printDebugInformationToConsole:TXTLS(@"IRC[ngn-f1]", configured)];
+
+	[self changeNickname:configured];
 }
 
 #pragma mark -
@@ -312,6 +413,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 	IRCChannel *query = [self findChannel:nickname];
 
+	/* The configured nickname, taken by someone else, is free */
+	if (online == NO && self.nicknameRegainMonitored && [[self.supportInfo foldedString:nickname] isEqualToString:[self.supportInfo foldedString:self.nicknameRegainMonitored]]) {
+		[self configuredNicknameIsFree];
+	}
+
 	if (query == nil || query.privateMessage == NO || query.isActive == online) {
 		return;
 	}
@@ -362,6 +468,15 @@ NS_ASSUME_NONNULL_BEGIN
 		for (NSString *trackedUser in self.trackedUsers.trackedUsers) {
 			[nicknames addObject:trackedUser];
 		}
+	}
+
+	// Without MONITOR: is the configured nickname free again
+	self.nicknameRegainAskedByIson = NO;
+
+	if ([self isCapabilityEnabled:ClientIRCv3SupportedCapabilityMonitorCommand] == NO && [self wantsConfiguredNicknameBack]) {
+		[nicknames addObject:self.config.nickname];
+
+		self.nicknameRegainAskedByIson = YES;
 	}
 
 	// Request ISON status for private messages (those on MONITOR are reported)

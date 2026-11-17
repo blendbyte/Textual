@@ -2026,6 +2026,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 			/* For styles: the local user's change, as documented, not everyone's */
 			[self postEventToViewController:@"nicknameChanged"];
+
+			/* Back on the configured nickname, or away from it */
+			[self updateNicknameRegain];
 		}
 		else
 		{

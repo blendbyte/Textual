@@ -1748,7 +1748,12 @@ static NSUInteger _aliasDepth = 0;
 			continue;
 		}
 
+		/* Chosen by hand: the configured nickname isn't taken back */
+		client.nicknameRegainStopped = YES;
+
 		[client changeNickname:newNickname];
+
+		[client updateNicknameRegain];
 	}
 }
 

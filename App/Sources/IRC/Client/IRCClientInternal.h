@@ -228,6 +228,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IRCCapabilityNegotiator *capabilityNegotiator;
 @property (nonatomic, copy, nullable) dispatch_block_t terminationCallback; // run on disconnect instead of disconnectCallback; only termination sets it
 @property (nonatomic, strong) NSMutableArray<NSString *> *isonReplyNicknames; // online nicknames of a hidden ISON request so far
+@property (nonatomic, copy, nullable) NSString *nicknameRegainMonitored; // the configured nickname, on MONITOR while someone else has it
+@property (nonatomic, assign) BOOL nicknameRegainAskedByIson;
+@property (nonatomic, copy, nullable) NSDate *nicknameRegainLastAttempt;
 @property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSString *> *monitoredQueryNicknames; // folded → nickname: private message partners added to MONITOR
 @property (nonatomic, assign) NSUInteger lastServerSelected;
 @property (nonatomic, assign) NSUInteger lastWhoRequestChannelListIndex;
@@ -336,6 +339,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)scheduleQueryMonitoringUpdate; // private messages opened, closed or renamed
 - (BOOL)queryIsMonitored:(IRCChannel *)query;
 - (void)nickname:(NSString *)nickname isOnlineByMonitor:(BOOL)online;
+- (void)updateNicknameRegain; // after login and our own nickname changes
+- (BOOL)wantsConfiguredNicknameBack;
+- (void)configuredNicknameIsFree;
 - (void)stopISONTimer;
 - (void)statusOfTrackedNickname:(NSString *)nickname changedTo:(IRCAddressBookUserTrackingStatus)newStatus notify:(BOOL)notify;
 - (void)updateUserTrackingStatusForEntry:(IRCAddressBookEntry *)addressBookEntry withMessage:(IRCMessage *)message;
