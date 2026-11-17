@@ -238,6 +238,9 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
  inactivity and /away without text */
 @property (class, readonly, copy) NSString *awayMessage;
 
+/* Browse Channels "At least N people" (0 = any size), chosen in that window */
+@property (class, readonly) NSUInteger channelListMinimumPeople;
+
 /* Settings › General "Come back when I send a message" */
 @property (class, readonly) BOOL comeBackWhenSendingMessage;
 

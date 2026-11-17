@@ -135,6 +135,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.whoxSupported = NO;
 
+	self.listFiltersByUserCount = NO;
+
 	self.clientTagDenyList = @[];
 
 	self.channelNamePrefixes = @[@"#"];
@@ -343,6 +345,8 @@ NS_ASSUME_NONNULL_BEGIN
 			self.utf8Only = YES;
 		} else if ([segmentKey isEqualToStringIgnoringCase:@"WHOX"]) {
 			self.whoxSupported = YES;
+		} else if ([segmentKey isEqualToStringIgnoringCase:@"ELIST"]) {
+			self.listFiltersByUserCount = ([segmentValue rangeOfString:@"U" options:NSCaseInsensitiveSearch].location != NSNotFound);
 		}
 	} // while()
 
@@ -419,6 +423,8 @@ NS_ASSUME_NONNULL_BEGIN
 		self.utf8Only = NO;
 	} else if ([token isEqualToStringIgnoringCase:@"WHOX"]) {
 		self.whoxSupported = NO;
+	} else if ([token isEqualToStringIgnoringCase:@"ELIST"]) {
+		self.listFiltersByUserCount = NO;
 	} else if ([token isEqualToStringIgnoringCase:@"CLIENTTAGDENY"]) {
 		self.clientTagDenyList = @[];
 	} else if ([token isEqualToStringIgnoringCase:@"draft/FILEHOST"] || [token isEqualToStringIgnoringCase:@"soju.im/FILEHOST"]) {

@@ -137,6 +137,11 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.windowContent clear];
 }
 
+- (void)listRequestedWithMinimumPeople:(NSUInteger)minimumPeople
+{
+	[self.windowContent listRequestedWithMinimumPeople:minimumPeople];
+}
+
 - (void)addChannel:(NSString *)channel count:(NSUInteger)count topic:(nullable NSString *)topic
 {
 	NSParameterAssert(channel != nil);

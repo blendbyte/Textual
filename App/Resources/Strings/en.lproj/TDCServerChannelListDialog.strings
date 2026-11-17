@@ -63,5 +63,9 @@
 "cl-people1" = "1 person";
 "cl-peoplen" = "%@ people";
 
+"cl-size" = "Channel size";
+"cl-size-any" = "Any size";
+"cl-size-n" = "%ld+ people";
+"cl-empty-size" = "No channels with %ld or more people.";
 "cl-empty-search" = "No channels match “%@”";
 "cl-empty-none" = "This server lists no public channels.";

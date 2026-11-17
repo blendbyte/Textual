@@ -1244,6 +1244,39 @@ async def scenario_list_large(client):
 	result(answered > 0, f"answered {answered} LIST requests")
 
 
+async def scenario_review_list(client):
+	"""(Browse Channels) ELIST=CMNTU, so LIST takes ">N"; 300 channels of 1 to
+	300 people. "LIST >N" answers only bigger ones, and the log says which
+	LIST came. Answers every LIST while connected."""
+	await client.send(f":{SERVER} 005 {client.nickname} ELIST=CMNTU SAFELIST :are supported by this server")
+
+	channels = [(f"#room-{people}", people, f"A room with {people} people") for people in range(1, 301)]
+
+	while True:
+		count = len(client.received)
+
+		if not await client.collect(0.5):
+			break
+
+		for line in client.received[count:]:
+			command, _, rest = line.partition(" ")
+
+			if command.upper() != "LIST":
+				continue
+
+			argument = rest.strip()
+			minimum = int(argument[1:]) if argument.startswith(">") and argument[1:].isdigit() else -1
+			listed = [entry for entry in channels if entry[1] > minimum]
+
+			lines = [f":{SERVER} 321 {client.nickname} Channel :Users  Name"]
+			lines += [f":{SERVER} 322 {client.nickname} {name} {people} :{topic}" for (name, people, topic) in listed]
+			lines += [f":{SERVER} 323 {client.nickname} :End of /LIST"]
+
+			await client.send_raw(("\r\n".join(lines) + "\r\n").encode())
+
+			log("--", f"LIST {argument or '(all)'}: {len(listed)} channels")
+
+
 async def scenario_dcc_slow(client):
 	"""(DCC) alice offers 3 MB sent at 150 KB/s (about 20 s), to watch the progress."""
 	name = "textual-dev-dcc-slow.bin"
@@ -3754,6 +3787,7 @@ SCENARIOS = {
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
 	"review-typing": scenario_review_typing,
+	"review-list": scenario_review_list,
 	"review-dcc": scenario_review_dcc,
 	"review-connection": scenario_review_connection,
 	"silent-echo": scenario_silent_echo,

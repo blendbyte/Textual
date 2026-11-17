@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 /* A new list is coming */
 - (void)clear;
 
+/* What the server was asked to leave out: lowering the minimum below it
+ loads the list again */
+- (void)listRequestedWithMinimumPeople:(NSUInteger)minimumPeople;
+
 - (void)addEntries:(NSArray<TDCServerChannelListDialogEntry *> *)entries;
 
 /* The server sent the whole list */

@@ -1264,10 +1264,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 	arguments = arguments.trim;
 
-	/* Not every server says when a list starts (RPL_LISTSTART) */
-	[[self channelListDialog] clear];
+	TDCServerChannelListDialog *channelListDialog = [self channelListDialog];
 
-	if (arguments.length == 0) {
+	/* Not every server says when a list starts (RPL_LISTSTART) */
+	[channelListDialog clear];
+
+	/* Browse Channels' "At least N people": the server leaves out smaller
+	 channels when it can (ELIST U); typed arguments go as they are */
+	NSUInteger minimumOnServer = 0;
+
+	if (arguments.length == 0 && channelListDialog && self.supportInfo.listFiltersByUserCount) {
+		minimumOnServer = [TPCPreferences channelListMinimumPeople];
+	}
+
+	[channelListDialog listRequestedWithMinimumPeople:minimumOnServer];
+
+	if (minimumOnServer > 1) {
+		[self sendLine:[NSString stringWithFormat:@"LIST >%lu", (unsigned long)(minimumOnServer - 1)]];
+	} else if (arguments.length == 0) {
 		[self send:@"LIST", nil];
 	} else {
 		[self sendLine:[@"LIST " stringByAppendingString:arguments]];

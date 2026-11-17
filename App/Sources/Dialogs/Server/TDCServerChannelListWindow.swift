@@ -187,6 +187,32 @@ final class ChannelListModel: ObservableObject
 		}
 	}
 
+	/* "At least N people": 0 shows every size */
+	static let minimumChoices = [10, 50, 100]
+
+	private static let minimumKey = "Channel List -> Minimum People"
+
+	@Published var minimumPeople = TPCPreferencesUserDefaults.shared().integer(forKey: ChannelListModel.minimumKey)
+	{
+		didSet {
+			guard (minimumPeople != oldValue) else {
+				return
+			}
+
+			TPCPreferencesUserDefaults.shared().set(minimumPeople, forKey: Self.minimumKey)
+
+			update()
+
+			/* The server left out channels that should show now */
+			if (minimumPeople < minimumOnServer) {
+				refresh()
+			}
+		}
+	}
+
+	/* What the server was asked to leave out for the list shown */
+	private var minimumOnServer = 0
+
 	@Published var sortOrder = [KeyPathComparator(\ChannelListEntry.people, order: .reverse)]
 	{
 		didSet {
@@ -233,6 +259,11 @@ final class ChannelListModel: ObservableObject
 		updatedAt = nil
 
 		refreshJoined()
+	}
+
+	func listRequested(minimumPeople: Int)
+	{
+		minimumOnServer = minimumPeople
 	}
 
 	func add(_ newEntries: [TDCServerChannelListDialogEntry])
@@ -301,8 +332,14 @@ final class ChannelListModel: ObservableObject
 	{
 		let query = search.trimmingCharacters(in: .whitespaces).lowercased()
 
+		let minimum = minimumPeople
+
 		/* Entries are kept in order: filtering keeps it */
-		self.shown = (query.isEmpty ? entries : entries.filter { $0.searchText.contains(query) })
+		if (query.isEmpty && minimum == 0) {
+			self.shown = entries
+		} else {
+			self.shown = entries.filter { ($0.people >= minimum) && (query.isEmpty || $0.searchText.contains(query)) }
+		}
 	}
 
 	/* The chosen order; channels that tie go by name, so they stay put (the
@@ -382,7 +419,8 @@ final class ChannelListModel: ObservableObject
 
 		var count = ChannelListText("cl-count", total)
 
-		if (search.trimmingCharacters(in: .whitespaces).isEmpty == false) {
+		/* Only when some are left out: the server may have filtered already */
+		if (shown.count != entries.count) {
 			count = ChannelListText("cl-count-of", Self.number(shown.count), total)
 		}
 
@@ -510,6 +548,12 @@ final class ChannelListWindow: NSObject
 	{
 		model.finishLoading()
 	}
+
+	@objc(listRequestedWithMinimumPeople:)
+	func listRequested(minimumPeople: UInt)
+	{
+		model.listRequested(minimumPeople: Int(minimumPeople))
+	}
 }
 
 struct ChannelListView: View
@@ -524,6 +568,17 @@ struct ChannelListView: View
 			HStack(spacing: 10) {
 				ChannelListSearchField(text: $model.search)
 					.frame(maxWidth: 260)
+
+				Picker(ChannelListText("cl-size"), selection: $model.minimumPeople) {
+					Text(ChannelListText("cl-size-any")).tag(0)
+
+					ForEach(ChannelListModel.minimumChoices, id: \.self) { (minimum) in
+						Text(ChannelListText("cl-size-n", minimum)).tag(minimum)
+					}
+				}
+				.labelsHidden()
+				.fixedSize()
+				.help(ChannelListText("cl-size"))
 
 				Spacer(minLength: 8)
 
@@ -703,6 +758,8 @@ struct ChannelListEmptyView: View
 					} else {
 						Text(ChannelListText("cl-empty-none"))
 					}
+				} else if (model.search.trimmingCharacters(in: .whitespaces).isEmpty) {
+					Text(ChannelListText("cl-empty-size", model.minimumPeople))
 				} else {
 					Text(ChannelListText("cl-empty-search", model.search.trimmingCharacters(in: .whitespaces)))
 				}

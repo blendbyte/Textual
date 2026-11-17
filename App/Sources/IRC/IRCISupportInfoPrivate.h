@@ -47,6 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* What CHATHISTORY takes as a message reference (MSGREFTYPES, lower case); nil if not said */
 @property (atomic, copy, readwrite, nullable) NSArray<NSString *> *chatHistoryMessageReferenceTypes;
 
+/* ELIST with U: LIST takes ">N" for channels with more than N users */
+@property (nonatomic, assign) BOOL listFiltersByUserCount;
+
 /* Client-only tags (without the "+") the server lets through (CLIENTTAGDENY) */
 - (BOOL)isClientTagAllowed:(NSString *)tagName;
 

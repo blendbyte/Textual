@@ -61,6 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 /* A new list is coming: empties the window and shows it loading */
 - (void)clear;
 
+/* The list asked for leaves out channels with fewer people (0 = all) */
+- (void)listRequestedWithMinimumPeople:(NSUInteger)minimumPeople;
+
 - (void)addChannel:(NSString *)channel count:(NSUInteger)count topic:(nullable NSString *)topic;
 @end
 

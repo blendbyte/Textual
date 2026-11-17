@@ -194,6 +194,11 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return message;
 }
 
++ (NSUInteger)channelListMinimumPeople
+{
+	return [RZUserDefaults() unsignedIntegerForKey:@"Channel List -> Minimum People"];
+}
+
 + (BOOL)comeBackWhenSendingMessage
 {
 	return [RZUserDefaults() boolForKey:@"ComeBackWhenSendingMessage"];
