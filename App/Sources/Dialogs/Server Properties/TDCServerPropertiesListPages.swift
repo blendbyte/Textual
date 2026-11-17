@@ -68,6 +68,9 @@ final class ServerPropertiesChannelsPane: TDCServerPropertiesPane, ObservableObj
 	/* Channels and queries: only the channels are shown, the queries are kept where they are */
 	@Published private(set) var allConfigs: [IRCChannelConfig] = []
 
+	/* "Notify me" for the channels that leave it to the server: 0 as in Settings, 1 only highlights, 2 never */
+	@Published var channelNotifications: UInt = 0
+
 	/* Whether a channel has a key: read from the Keychain once per channel */
 	private var hasKeyCache: [String: Bool] = [:]
 
@@ -81,11 +84,15 @@ final class ServerPropertiesChannelsPane: TDCServerPropertiesPane, ObservableObj
 	override func load(from config: IRCClientConfig)
 	{
 		allConfigs = config.channelList
+
+		channelNotifications = config.channelNotifications
 	}
 
 	override func save(toConfig config: IRCClientConfigMutable)
 	{
 		config.channelList = allConfigs
+
+		config.channelNotifications = channelNotifications
 	}
 
 	override func closeChildSheets()
@@ -239,6 +246,16 @@ struct ChannelsPage: View
 		Form {
 			Section {
 				ServerPropertiesPageHeader(page: .channels)
+			}
+
+			Section {
+				Picker(selection: $pane.channelNotifications) {
+					Text(ServerPropertiesText("spp-chn-ntf0")).tag(UInt(0))
+					Text(ServerPropertiesText("spp-chn-ntf1")).tag(UInt(1))
+					Text(ServerPropertiesText("spp-chn-ntf2")).tag(UInt(2))
+				} label: {
+					SettingLabel(title: ServerPropertiesText("spp-chn-ntf"), help: ServerPropertiesText("spp-chn-ntfh\(pane.channelNotifications)"))
+				}
 			}
 
 			Section {

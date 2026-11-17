@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _zncIgnoreUserNotifications;
 	BOOL _zncOnlyPlaybackLatest;
 	BOOL _excludedFromArchive;
+	NSUInteger _channelNotifications;
 	IRCConnectionAddressType _addressType;
 	IRCConnectionProxyType _proxyType;
 	IRCClientUploadDestinationMode _uploadDestinationMode;

@@ -202,6 +202,13 @@ Certificates must meet the following criteria:
 "spp-move-up" = "Move Up";
 "spp-move-down" = "Move Down";
 "spp-chn-join" = "Join when you connect";
+"spp-chn-ntf" = "Notify me";
+"spp-chn-ntf0" = "As in Settings";
+"spp-chn-ntf1" = "Only highlights";
+"spp-chn-ntf2" = "Never";
+"spp-chn-ntfh0" = "Channels here alert you as set in Settings › Notifications. A channel’s own choice in Channel Properties comes first; private messages aren’t affected.";
+"spp-chn-ntfh1" = "Only messages that mention you alert you in these channels. A channel’s own choice in Channel Properties comes first; private messages aren’t affected.";
+"spp-chn-ntfh2" = "No alerts from these channels; highlights still alert you while “Highlights notify in muted channels” is on. A channel’s own choice in Channel Properties comes first; private messages aren’t affected.";
 "spp-chn-key" = "Has a key";
 "spp-chn-edit" = "Edit Channel…";
 "spp-chn-remove" = "Remove";

@@ -104,6 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
 	defaults[@"zncIgnoreUserNotifications"] = @(NO);
 	defaults[@"zncOnlyPlaybackLatest"] = @(YES);
 	defaults[@"excludedFromArchive"] = @(NO);
+	defaults[@"channelNotifications"] = @(0);
 
 	self->_defaults = [defaults copy];
 }
@@ -282,6 +283,11 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_zncIgnoreUserNotifications forKey:@"zncIgnoreUserNotifications"];
 	[defaultsMutable assignBoolTo:&self->_zncOnlyPlaybackLatest forKey:@"zncOnlyPlaybackLatest"];
 	[defaultsMutable assignBoolTo:&self->_excludedFromArchive forKey:@"excludedFromArchive"];
+	[defaultsMutable assignUnsignedIntegerTo:&self->_channelNotifications forKey:@"channelNotifications"];
+
+	if (self->_channelNotifications > 2) {
+		self->_channelNotifications = 0;
+	}
 
 	[defaultsMutable assignDoubleTo:&self->_lastMessageServerTime forKey:@"cachedLastServerTimeCapabilityReceivedAtTimestamp"];
 	[defaultsMutable assignObjectTo:&self->_identityClientSideCertificate forKey:@"identityClientSideCertificate"];
@@ -773,6 +779,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 	[dic setBool:self.zncIgnoreUserNotifications forKey:@"zncIgnoreUserNotifications"];
 	[dic setBool:self.zncOnlyPlaybackLatest forKey:@"zncOnlyPlaybackLatest"];
 	[dic setBool:self.excludedFromArchive forKey:@"excludedFromArchive"];
+	[dic setUnsignedInteger:self.channelNotifications forKey:@"channelNotifications"];
 
 	[dic setUnsignedInteger:self.addressType forKey:@"addressType"];
 	[dic setUnsignedInteger:self.cipherSuites forKey:@"cipherSuites"];
@@ -1101,6 +1108,7 @@ TEXTUAL_IGNORE_DEPRECATION_END
 @dynamic zncIgnoreUserNotifications;
 @dynamic zncOnlyPlaybackLatest;
 @dynamic excludedFromArchive;
+@dynamic channelNotifications;
 
 + (BOOL)isMutable
 {
@@ -1272,6 +1280,13 @@ TEXTUAL_IGNORE_DEPRECATION_END
 {
 	if (self->_excludedFromArchive != excludedFromArchive) {
 		self->_excludedFromArchive = excludedFromArchive;
+	}
+}
+
+- (void)setChannelNotifications:(NSUInteger)channelNotifications
+{
+	if (self->_channelNotifications != channelNotifications) {
+		self->_channelNotifications = channelNotifications;
 	}
 }
 

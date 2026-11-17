@@ -181,6 +181,10 @@ enum : unsigned long long {
  notifications or sounds; highlights per a preference. Saved; the row dims. */
 - (BOOL)isTreeItemMuted:(IRCTreeItem *)item;
 - (void)setMuted:(BOOL)muted forTreeItem:(IRCTreeItem *)item;
+
+/* With the server's "Notify me" for channels that leave it to the server */
+- (BOOL)channelIsMutedForNotifications:(IRCChannel *)channel;
+- (BOOL)channelNotifiesMessages:(IRCChannel *)channel;
 @end
 
 @interface IRCClient (SendingPrivate)

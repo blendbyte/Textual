@@ -516,7 +516,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Muted channel, query or network: nothing, except highlights
 	 when "Highlights still notify in muted channels" is on */
-	if (self.config.muted || target.config.muted) {
+	if (self.config.muted || (target && [self channelIsMutedForNotifications:target])) {
 		if (eventType != TXNotificationTypeHighlight || [TPCPreferences highlightsNotifyWhenMuted] == NO) {
 			return YES;
 		}
@@ -532,7 +532,7 @@ NS_ASSUME_NONNULL_BEGIN
 				return YES;
 			}
 		} else {
-			if (targetConfig.pushNotifications == NO) {
+			if ([self channelNotifiesMessages:target] == NO) {
 				return YES;
 			}
 		}
@@ -831,6 +831,37 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 
 @implementation IRCClient (MutePrivate)
+
+/* "Notify me" of a channel, or of its server when the channel's own is
+ "As for the server" (neither muted nor only highlights) */
+- (BOOL)channelFollowsServerNotifications:(IRCChannel *)channel
+{
+	IRCChannelConfig *config = channel.config;
+
+	return (channel.isChannel && config.muted == NO && config.pushNotifications);
+}
+
+- (BOOL)channelIsMutedForNotifications:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if (channel.config.muted) {
+		return YES;
+	}
+
+	return ([self channelFollowsServerNotifications:channel] && self.config.channelNotifications == 2);
+}
+
+- (BOOL)channelNotifiesMessages:(IRCChannel *)channel
+{
+	NSParameterAssert(channel != nil);
+
+	if (channel.config.pushNotifications == NO) {
+		return NO;
+	}
+
+	return ([self channelFollowsServerNotifications:channel] == NO || self.config.channelNotifications == 0);
+}
 
 - (BOOL)isTreeItemMuted:(IRCTreeItem *)item
 {

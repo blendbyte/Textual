@@ -307,10 +307,23 @@ final class ChannelPropertiesModel: ObservableObject
 		client?.name
 	}
 
+	/* A channel leaves it to its server, a private message to Settings */
+	var notifyFollowsServer: Bool
+	{
+		(config.type == .channel)
+	}
+
 	var notifyHelp: String
 	{
 		switch notify {
-			case .asInSettings: return ChannelPropertiesText("cp-ntf-h0")
+			case .asInSettings:
+				if (notifyFollowsServer) {
+					let serverChoice = (client?.config.channelNotifications ?? 0)
+
+					return ChannelPropertiesText("cp-ntf-h0s", ChannelPropertiesText("cp-ntf-\(serverChoice)"))
+				}
+
+				return ChannelPropertiesText("cp-ntf-h0")
 			case .onlyHighlights: return ChannelPropertiesText("cp-ntf-h1")
 			case .nothing: return ChannelPropertiesText("cp-ntf-h2")
 		}
@@ -677,7 +690,7 @@ struct ChannelPropertiesView: View
 	{
 		Section(ChannelPropertiesText("cp-ntf-h")) {
 			Picker(selection: $model.notify) {
-				Text(ChannelPropertiesText("cp-ntf-0")).tag(ChannelPropertiesNotify.asInSettings)
+				Text(ChannelPropertiesText(model.notifyFollowsServer ? "cp-ntf-0s" : "cp-ntf-0")).tag(ChannelPropertiesNotify.asInSettings)
 				Text(ChannelPropertiesText("cp-ntf-1")).tag(ChannelPropertiesNotify.onlyHighlights)
 				Text(ChannelPropertiesText("cp-ntf-2")).tag(ChannelPropertiesNotify.nothing)
 			} label: {

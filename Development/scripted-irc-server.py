@@ -537,6 +537,40 @@ async def scenario_review_readmarker(client):
 		seen = len(client.received)
 
 
+async def scenario_review_notifyme(client):
+	"""Server "Notify me". The client joins #lobby and #busy. "go" in #lobby:
+	8 s later (time to put another app in front) bob says a plain line in
+	#busy, alice mentions the client in #busy and carol sends a private
+	message. With Settings › Notifications › Channel Message on and the
+	server set to "Only highlights", the mention and carol notify, bob's
+	line doesn't."""
+	if not await client.register_with_capabilities("server-time message-tags"):
+		return
+
+	me = client.nickname
+
+	for channel in ("#lobby", "#busy"):
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{me} alice bob")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+			if command.upper() == "PRIVMSG" and rest.endswith(" :go"):
+				log("··", "three messages in 8 s")
+				await asyncio.sleep(8)
+				await client.send(":bob!b@bob.test PRIVMSG #busy :a plain line about lunch")
+				await asyncio.sleep(1)
+				await client.send(f":alice!a@alice.test PRIVMSG #busy :{me}: can you review this?")
+				await asyncio.sleep(1)
+				await client.send(f":carol!c@carol.test PRIVMSG {me} :hi, a private message")
+				log("··", "sent")
+		seen = len(client.received)
+
+
 async def scenario_review_typing(client):
 	"""In #typing alice keeps typing (a +typing=active TAGMSG every 3 s, as
 	clients repeat it), so the indicator stays up while connected: with
@@ -3953,6 +3987,7 @@ SCENARIOS = {
 	"review-held-batches": scenario_review_held_batches,
 	"review-clock": scenario_review_clock,
 	"review-voice": scenario_review_voice,
+	"review-notifyme": scenario_review_notifyme,
 	"review-readmarker": scenario_review_readmarker,
 	"review-replies": scenario_review_replies,
 	"review-typing": scenario_review_typing,
@@ -4016,7 +4051,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

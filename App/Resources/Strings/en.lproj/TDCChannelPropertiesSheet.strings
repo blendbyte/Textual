@@ -66,11 +66,13 @@
 "cp-ntf-h" = "Notifications";
 "cp-ntf" = "Notify me";
 "cp-ntf-0" = "As in Settings";
+"cp-ntf-0s" = "As for the server";
 "cp-ntf-1" = "Only highlights";
 "cp-ntf-2" = "Never";
 "cp-ntf-h0" = "Messages and events here alert you as set in Settings › Notifications.";
+"cp-ntf-h0s" = "As set for this server in Server Properties › Channels (now: %@).";
 "cp-ntf-h1" = "Only messages that mention you alert you here.";
-"cp-ntf-h2" = "No alerts from this channel, not even highlights. The same as Channel › Mute Channel.";
+"cp-ntf-h2" = "No alerts from this channel. Highlights still alert you while “Highlights notify in muted channels” is on in Settings › Notifications. The same as Channel › Mute Channel.";
 "cp-badge" = "Show unread count";
 "cp-badgeh" = "The number next to the channel in the list. A highlight always shows it.";
 "cp-alt-h" = "Alerts in this channel";

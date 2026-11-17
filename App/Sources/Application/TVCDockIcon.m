@@ -41,6 +41,7 @@
 #import "IRCClientConfig.h"
 #import "IRCChannel.h"
 #import "IRCWorld.h"
+#import "IRCClientPrivate.h"
 #import "TVCDockIconPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -91,9 +92,9 @@ static NSInteger _cachedMessageCount = (-1);
 		BOOL clientMuted = u.config.muted;
 
 		for (IRCChannel *c in u.channelList) {
-			BOOL muted = (clientMuted || c.config.muted);
+			BOOL muted = (clientMuted || [u channelIsMutedForNotifications:c]);
 
-			if (c.config.pushNotifications && muted == NO) {
+			if ([u channelNotifiesMessages:c] && muted == NO) {
 				messageCount += c.dockUnreadCount;
 			}
 
