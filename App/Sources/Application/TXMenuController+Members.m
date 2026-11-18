@@ -84,6 +84,210 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#pragma mark -
+#pragma mark Kick Sheet
+
+/* "Kick…" and "Ban and Kick…": the reason, and for a ban how long it lasts.
+ Built in code, a sheet on the main window; hands back the reason and the
+ duration in seconds (0: forever), or nothing when cancelled. */
+@interface TXMenuControllerKickSheet : NSObject
+@property (nonatomic, assign) BOOL ban;
+@property (nonatomic, strong) NSWindow *sheetWindow;
+@property (nonatomic, weak) NSWindow *parentWindow;
+@property (nonatomic, strong) NSTextField *reasonField;
+@property (nonatomic, strong, nullable) NSPopUpButton *durationPopup;
+@property (nonatomic, strong, nullable) NSTextField *durationNote;
+@property (nonatomic, copy, nullable) void (^completionHandler)(NSString *reason, NSTimeInterval duration);
+@end
+
+static TXMenuControllerKickSheet * _Nullable _kickSheet = nil;
+
+@implementation TXMenuControllerKickSheet
+
+- (void)beginForNicknames:(NSArray<NSString *> *)nicknames inChannel:(NSString *)channelName ban:(BOOL)ban window:(NSWindow *)window completionHandler:(void (^)(NSString *reason, NSTimeInterval duration))completionHandler
+{
+	self.ban = ban;
+	self.parentWindow = window;
+	self.completionHandler = completionHandler;
+
+	/* Heading: "Kick bob from #textual", or "Ban and kick 3 people from #textual" */
+	NSString *who = ((nicknames.count == 1) ? nicknames[0] : TXTLS(@"Prompts[kck-p1]", nicknames.count));
+
+	NSTextField *heading = [NSTextField labelWithString:TXTLS((ban) ? @"Prompts[kck-h2]" : @"Prompts[kck-h1]", who, channelName)];
+
+	heading.font = [NSFont boldSystemFontOfSize:[NSFont systemFontSize]];
+	heading.lineBreakMode = NSLineBreakByTruncatingMiddle;
+
+	NSTextField *reasonField = [NSTextField textFieldWithString:([TPCPreferences defaultKickMessage] ?: @"")];
+
+	[reasonField.widthAnchor constraintEqualToConstant:300].active = YES;
+
+	self.reasonField = reasonField;
+
+	NSTextField *reasonLabel = [NSTextField labelWithString:TXTLS(@"Prompts[kck-r1]")];
+
+	reasonLabel.alignment = NSTextAlignmentRight;
+
+	NSMutableArray *rows = [NSMutableArray array];
+
+	[rows addObject:@[reasonLabel, reasonField]];
+
+	if (ban) {
+		NSPopUpButton *durationPopup = [NSPopUpButton new];
+
+		NSArray *durations = @[@(0), @(5 * 60), @(60 * 60), @(24 * 60 * 60)];
+		NSArray *titles = @[@"Prompts[kck-d0]", @"Prompts[kck-d1]", @"Prompts[kck-d2]", @"Prompts[kck-d3]"];
+
+		for (NSUInteger i = 0; i < durations.count; i++) {
+			[durationPopup addItemWithTitle:TXTLS(titles[i])];
+
+			durationPopup.lastItem.tag = [durations[i] integerValue];
+		}
+
+		durationPopup.target = self;
+		durationPopup.action = @selector(onChangedDuration:);
+
+		self.durationPopup = durationPopup;
+
+		NSTextField *durationLabel = [NSTextField labelWithString:TXTLS(@"Prompts[kck-d]")];
+
+		durationLabel.alignment = NSTextAlignmentRight;
+
+		[rows addObject:@[durationLabel, durationPopup]];
+
+		/* A timed ban is lifted by Textual itself: only while it is connected */
+		NSTextField *durationNote = [NSTextField wrappingLabelWithString:TXTLS(@"Prompts[kck-n1]")];
+
+		durationNote.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+		durationNote.textColor = [NSColor secondaryLabelColor];
+		durationNote.preferredMaxLayoutWidth = 300;
+
+		self.durationNote = durationNote;
+
+		[rows addObject:@[[NSGridCell emptyContentView], durationNote]];
+	}
+
+	NSGridView *grid = [NSGridView gridViewWithViews:rows];
+
+	grid.rowSpacing = 10;
+	grid.columnSpacing = 8;
+	grid.rowAlignment = NSGridRowAlignmentFirstBaseline;
+
+	[grid columnAtIndex:0].xPlacement = NSGridCellPlacementTrailing;
+
+	NSButton *cancelButton = [NSButton buttonWithTitle:TXTLS(@"Prompts[qso-2g]") target:self action:@selector(onCancel:)];
+
+	cancelButton.keyEquivalent = @"\e";
+
+	NSButton *okButton = [NSButton buttonWithTitle:TXTLS((ban) ? @"Prompts[kck-b2]" : @"Prompts[kck-b1]") target:self action:@selector(onOk:)];
+
+	okButton.keyEquivalent = @"\r";
+
+	NSStackView *buttons = [NSStackView stackViewWithViews:@[cancelButton, okButton]];
+
+	buttons.spacing = 12;
+
+	NSView *contentView = [NSView new];
+
+	for (NSView *view in @[heading, grid, buttons]) {
+		view.translatesAutoresizingMaskIntoConstraints = NO;
+
+		[contentView addSubview:view];
+	}
+
+	[NSLayoutConstraint activateConstraints:@[
+		[heading.topAnchor constraintEqualToAnchor:contentView.topAnchor constant:20],
+		[heading.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:20],
+		[heading.trailingAnchor constraintLessThanOrEqualToAnchor:contentView.trailingAnchor constant:(-20)],
+
+		[grid.topAnchor constraintEqualToAnchor:heading.bottomAnchor constant:16],
+		[grid.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:20],
+		[grid.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:(-20)],
+
+		[buttons.topAnchor constraintEqualToAnchor:grid.bottomAnchor constant:20],
+		[buttons.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:(-20)],
+		[buttons.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:(-20)]
+	]];
+
+	NSWindow *sheetWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 420, 160) styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:YES];
+
+	sheetWindow.contentView = contentView;
+
+	sheetWindow.initialFirstResponder = reasonField;
+
+	self.sheetWindow = sheetWindow;
+
+	[self updateDurationNote];
+
+	[window beginSheet:sheetWindow completionHandler:nil];
+}
+
+- (void)updateDurationNote
+{
+	NSTextField *durationNote = self.durationNote;
+
+	if (durationNote == nil) {
+		return;
+	}
+
+	[self.durationPopup.superview.superview layoutSubtreeIfNeeded];
+
+	durationNote.hidden = (self.durationPopup.selectedTag == 0);
+
+	/* The note's row goes with it */
+	NSGridView *grid = (NSGridView *)durationNote.superview;
+
+	if ([grid isKindOfClass:[NSGridView class]]) {
+		[grid cellForView:durationNote].row.hidden = durationNote.hidden;
+	}
+
+	NSWindow *sheetWindow = self.sheetWindow;
+
+	[sheetWindow.contentView layoutSubtreeIfNeeded];
+
+	[sheetWindow setContentSize:sheetWindow.contentView.fittingSize];
+}
+
+- (void)onChangedDuration:(id)sender
+{
+	[self updateDurationNote];
+}
+
+- (void)_end
+{
+	[self.parentWindow endSheet:self.sheetWindow];
+
+	[self.sheetWindow orderOut:nil];
+
+	self.completionHandler = nil;
+
+	_kickSheet = nil;
+}
+
+- (void)onCancel:(id)sender
+{
+	[self _end];
+}
+
+- (void)onOk:(id)sender
+{
+	void (^completionHandler)(NSString *, NSTimeInterval) = self.completionHandler;
+
+	NSString *reason = self.reasonField.stringValue.trim;
+
+	NSTimeInterval duration = ((self.durationPopup) ? self.durationPopup.selectedTag : 0);
+
+	[self _end];
+
+	if (completionHandler) {
+		completionHandler(reason, duration);
+	}
+}
+
+@end
+
+#pragma mark -
+
 @implementation TXMenuController (Members)
 
 #pragma mark -
@@ -595,7 +799,86 @@ NS_ASSUME_NONNULL_BEGIN
 	[self _processModeChange:sender usingCommand:@"DEVOICE"];
 }
 
+/* ⌥ with the menu item (clicked, not ⌥⌘K): at once, with the default kick message */
+- (BOOL)_kickAtOnce
+{
+	NSEvent *event = NSApp.currentEvent;
+
+	return (event.type != NSEventTypeKeyDown && (event.modifierFlags & NSEventModifierFlagOption) == NSEventModifierFlagOption);
+}
+
+/* Kick, or ban and kick, the people selected: the reason (and the ban's
+ duration) from a sheet; a timed ban is lifted by a timed command, which
+ ends when Textual disconnects */
+- (void)_kickSelectedMembers:(nullable id)sender ban:(BOOL)ban
+{
+	IRCClient *u = self.selectedClient;
+	IRCChannel *c = self.selectedChannel;
+
+	if (u == nil || c == nil || u.isLoggedIn == NO || c.isChannel == NO) {
+		return;
+	}
+
+	NSArray<NSString *> *nicknames = [self selectedMembersNicknames:sender];
+
+	[self deselectMembers:sender];
+
+	if (nicknames.count == 0) {
+		return;
+	}
+
+	void (^kick)(NSString *, NSTimeInterval) = ^(NSString *reason, NSTimeInterval duration) {
+		if (u.isLoggedIn == NO || c.isActive == NO) {
+			return;
+		}
+
+		if (reason.length == 0) {
+			reason = [TPCPreferences defaultKickMessage];
+		}
+
+		for (NSString *nickname in nicknames) {
+			/* The mask KICKBAN bans, kept for lifting it */
+			NSString *banMask = ([c findMember:nickname].user.banMask ?: nickname);
+
+			NSString *command = [NSString stringWithFormat:@"%@ %@ %@", ((ban) ? @"KICKBAN" : @"KICK"), nickname, reason];
+
+			[u sendCommand:command completeTarget:YES target:c.name];
+
+			if (ban == NO || duration <= 0) {
+				continue;
+			}
+
+			/* Once, through /timer (listed by /timer list) */
+			NSString *unban = [NSString stringWithFormat:@"TIMER %lu 1 MODE %@ -b %@", (unsigned long)duration, c.name, banMask];
+
+			[u sendCommand:unban completeTarget:YES target:c.name];
+		}
+	};
+
+	if ([self _kickAtOnce]) {
+		kick([TPCPreferences defaultKickMessage], 0);
+
+		return;
+	}
+
+	NSWindow *window = TVCMainWindow.currentWindow;
+
+	if (window == nil || _kickSheet != nil) {
+		return;
+	}
+
+	_kickSheet = [TXMenuControllerKickSheet new];
+
+	[_kickSheet beginForNicknames:nicknames inChannel:c.name ban:ban window:window completionHandler:kick];
+}
+
 - (void)memberKickFromChannel:(nullable id)sender
+{
+	[self _kickSelectedMembers:sender ban:NO];
+}
+
+/* Quieted: stays, can't speak (the quiet list, +q where it isn't a status) */
+- (void)memberQuietInChannel:(nullable id)sender
 {
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
@@ -605,7 +888,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	for (NSString *nickname in [self selectedMembersNicknames:sender]) {
-		[u kick:nickname inChannel:c];
+		[u sendCommand:[NSString stringWithFormat:@"QUIET %@", nickname] completeTarget:YES target:c.name];
 	}
 
 	[self deselectMembers:sender];
@@ -660,20 +943,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)memberKickbanFromChannel:(nullable id)sender
 {
-	IRCClient *u = self.selectedClient;
-	IRCChannel *c = self.selectedChannel;
-
-	if (u == nil || c == nil || u.isLoggedIn == NO || c.isChannel == NO) {
-		return;
-	}
-
-	for (NSString *nickname in [self selectedMembersNicknames:sender]) {
-		NSString *command = [NSString stringWithFormat:@"KICKBAN %@ %@", nickname, [TPCPreferences defaultKickMessage]];
-
-		[u sendCommand:command completeTarget:YES target:c.name];
-	}
-
-	[self deselectMembers:sender];
+	[self _kickSelectedMembers:sender ban:YES];
 }
 
 - (void)memberKillFromServer:(nullable id)sender

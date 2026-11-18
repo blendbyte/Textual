@@ -1425,12 +1425,17 @@ CA
                         <action selector="memberBanAccountFromChannel:" target="267" id="bnA-cc-002"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Kick" tag="1620" keyEquivalent="k" id="1350">
+                <menuItem title="Quiet" tag="1630" id="qtM-it-001">
+                    <connections>
+                        <action selector="memberQuietInChannel:" target="267" id="qtM-it-002"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Kick…" tag="1620" keyEquivalent="k" id="1350">
                     <connections>
                         <action selector="memberKickFromChannel:" target="267" id="2639"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Ban and Kick" tag="1621" keyEquivalent="k" id="1330">
+                <menuItem title="Ban and Kick…" tag="1621" keyEquivalent="k" id="1330">
                     <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                     <connections>
                         <action selector="memberKickbanFromChannel:" target="267" id="2641"/>

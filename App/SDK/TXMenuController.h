@@ -351,6 +351,7 @@ enum
 	MTUserControlsDontPreviewLinks = 1627, // "Don't Preview Links from …"
 	MTUserControlsBanAccount = 1628, // "Ban Account …"
 	MTUserControlsIgnoreAccount = 1629, // "Ignore Account …"
+	MTUserControlsQuiet = 1630, // "Quiet"
 
 	/* Dock menu */
 	MTDockMenuDisableAllNotifications = 1700, // "Mute Notifications"

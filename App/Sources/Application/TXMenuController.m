@@ -1695,6 +1695,18 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u.isLoggedIn && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
 		}
 
+		case MTUserControlsQuiet: // "Quiet"
+		{
+			/* Where the server keeps a quiet list (not where q is the owner status) */
+			menuItem.hidden = (c.isChannel == NO || [u.supportInfo modeSymbolForList:IRCISupportInfoListTypeQuiet] == nil);
+
+			if (menuItem.hidden) {
+				return NO;
+			}
+
+			return (u.isLoggedIn && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
+		}
+
 		case MTUserControlsInviteTo: // "Invite To…"
 		{
 			/* From a channel you are in, as the action needs */

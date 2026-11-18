@@ -347,3 +347,17 @@ Information encrypted using: %2$@";
 "a8k-t2" = "Textual is built on the work of the people and projects below. Their licenses ask for these notices to come with the app.";
 
 /* The import's summary: the message archive */
+
+/* Kick… and Ban and Kick… from the member list */
+"kck-h1" = "Kick %1$@ from %2$@";
+"kck-h2" = "Ban and kick %1$@ from %2$@";
+"kck-p1" = "%lu people";
+"kck-r1" = "Reason:";
+"kck-d" = "Ban for:";
+"kck-d0" = "Forever";
+"kck-d1" = "5 minutes";
+"kck-d2" = "1 hour";
+"kck-d3" = "1 day";
+"kck-n1" = "Textual lifts the ban after that time, if it is still connected then. If it disconnects or quits first, the ban stays.";
+"kck-b1" = "Kick";
+"kck-b2" = "Ban and Kick";
