@@ -844,7 +844,7 @@ CQ
                                             <string key="keyEquivalent" base64-UTF8="YES">
 CQ
 </string>
-                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" control="YES"/>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" control="YES" command="YES"/>
                                             <connections>
                                                 <action selector="performNavigationAction:" target="267" id="C4b-0U-OJO"/>
                                             </connections>

@@ -199,6 +199,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 		[viewMenu insertItem:appearanceShortcut atIndex:([viewMenu indexOfItem:appearanceItem] + 1)];
 	}
+
+	/* Go › Channels: Previous Unread Channel is ⌃⇧⌘⇥, the pair of Next's ⌃⌘⇥;
+	 Textual 7's ⌃⇧⇥ (decided 2026-11-18) */
+	NSMenu *navigateMenu = [NSApp.mainMenu itemWithTag:MTMainMenuNavigate].submenu;
+
+	NSMenu *channelsMenu = [navigateMenu itemWithTag:MTMMNavigationChannelsMenu].submenu;
+
+	NSMenuItem *previousUnreadItem = [channelsMenu itemWithTag:MTMMNavigationChannelsMenuPreviousUnreadChannel];
+
+	if (previousUnreadItem) {
+		NSMenuItem *previousUnreadShortcut = [previousUnreadItem copy];
+
+		previousUnreadShortcut.keyEquivalentModifierMask = (NSEventModifierFlagControl | NSEventModifierFlagShift);
+
+		previousUnreadShortcut.hidden = YES;
+		previousUnreadShortcut.allowsKeyEquivalentWhenHidden = YES;
+
+		[channelsMenu insertItem:previousUnreadShortcut atIndex:([channelsMenu indexOfItem:previousUnreadItem] + 1)];
+	}
 }
 
 /* Delete Channel and Close Query share ⇧⌘⌫, the two Show Logs in Finder ⇧⌘L.
