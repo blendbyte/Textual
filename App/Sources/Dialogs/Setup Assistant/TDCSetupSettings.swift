@@ -620,6 +620,7 @@ final class SetupChoicesModel
 	static let arrangementKey = "ChannelViewArrangement"
 	static let previewsKey = "DisplayEventInLogView -> Inline Media"
 	static let cardsKey = "InlineMediaWebPageCards"
+	static let typingKey = "Typing Notifications -> Send"
 	static let sortedKey = "Server List -> Keep Channels Sorted"
 	static let archiveKey = "Message Archive -> Keep Period"
 	static let checksKey = "SUEnableAutomaticChecks"
@@ -627,7 +628,7 @@ final class SetupChoicesModel
 
 	private static var allKeys: [String]
 	{
-		eventKeys + completionKeys + [markdownKey, sortedKey, placementKey, arrangementKey, previewsKey, cardsKey, archiveKey, checksKey, installsKey]
+		eventKeys + completionKeys + [markdownKey, sortedKey, placementKey, arrangementKey, previewsKey, cardsKey, typingKey, archiveKey, checksKey, installsKey]
 	}
 
 	let upgrade: Bool
@@ -1044,6 +1045,8 @@ struct SetupPrivacyStep: View
 			rows.append(cardsRow)
 		}
 
+		rows.append(typingRow)
+
 		rows.append(archiveRow)
 
 		if (showsUpdates) {
@@ -1078,6 +1081,22 @@ struct SetupPrivacyStep: View
 								 control: AnyView(Toggle("", isOn: binding).toggleStyle(.switch).labelsHidden().controlSize(.small)),
 								 sample: AnyView(SetupCardSample(on: on)),
 								 explanation: [SetupText("sa-p-card-x1")])
+	}
+
+	/* Others see it: new in Textual 8, off after the import (decided 2026-11-18) */
+	private var typingRow: SetupExplainedRow
+	{
+		let binding = store.bool(SetupChoicesModel.typingKey)
+		let on = binding.wrappedValue
+
+		return SetupExplainedRow(id: "typing",
+								 title: SetupText("sa-p-typ-t"),
+								 help: SetupText("sa-p-typ-d"),
+								 isNew: (model.again == false),
+								 was: (model.comesFromTextual7 ? SetupText("sa-p-typ-was") : nil),
+								 control: AnyView(Toggle("", isOn: binding).toggleStyle(.switch).labelsHidden().controlSize(.small)),
+								 sample: AnyView(SetupTypingSample(on: on)),
+								 explanation: [SetupText("sa-p-typ-x1")])
 	}
 
 	private var archiveRow: SetupExplainedRow
@@ -1421,6 +1440,30 @@ struct SetupCardSample: View
 				.padding(6)
 				.frame(maxWidth: .infinity, alignment: .leading)
 				.background(RoundedRectangle(cornerRadius: 5).fill(.quinary))
+			}
+		}
+		.font(.system(size: 11))
+		.padding(8)
+	}
+}
+
+/// What the others see while you type: "Guest is typing…", or nothing
+struct SetupTypingSample: View
+{
+	let on: Bool
+
+	var body: some View
+	{
+		VStack(alignment: .leading, spacing: 3) {
+			Text(SetupText("sa-p-typ-s0")).foregroundStyle(.secondary)
+
+			if (on) {
+				Label(SetupText("sa-p-typ-s1"), systemImage: "ellipsis.bubble")
+					.foregroundStyle(.secondary)
+					.italic()
+			} else {
+				Text(SetupText("sa-p-typ-s2"))
+					.foregroundStyle(.tertiary)
 			}
 		}
 		.font(.system(size: 11))

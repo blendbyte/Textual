@@ -770,6 +770,10 @@ NS_ASSUME_NONNULL_BEGIN
 	 is sorted as it loads, and that order can't be brought back. */
 	[RZUserDefaults() _migrateObject:@(NO) forKey:@"Server List -> Keep Channels Sorted"];
 
+	/* Typing indicators are new and others see them: off for Textual 7 users
+	 (decided 2026-11-18), offered on purpose */
+	[RZUserDefaults() _migrateObject:@(NO) forKey:@"Typing Notifications -> Send"];
+
 	/* Textual 7 showed no previews unless turned on; Textual 8 does,
 	 which is offered on purpose too */
 	if (preferences[TPCPreferencesShowInlineMediaDefaultsKey] == nil) {

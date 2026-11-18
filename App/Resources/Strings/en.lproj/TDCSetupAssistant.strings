@@ -145,6 +145,13 @@
 "sa-p-card-x1" = "Without this, previews only appear for pictures and videos. With it, a link to any article shows its title and summary. Each one also contacts the linked site.";
 "sa-p-card-s1" = "A headline from that page";
 "sa-p-card-s2" = "The page’s summary, in a line or two";
+"sa-p-typ-t" = "Let others see when I’m typing";
+"sa-p-typ-d" = "In channels and private messages";
+"sa-p-typ-was" = "never sent";
+"sa-p-typ-x1" = "While you write, people in the channel or private message see that you’re typing, where their app and the server support it. Nothing of what you type is sent until you send it. It’s in Settings › Typing.";
+"sa-p-typ-s0" = "What the others see while you write:";
+"sa-p-typ-s1" = "nightowl is typing…";
+"sa-p-typ-s2" = "Nothing until you send.";
 "sa-p-arc-t" = "Keep messages for search";
 "sa-p-arc-d" = "Stored on this Mac only";
 "sa-p-arc-x1" = "IRC itself doesn’t remember anything: if you weren’t connected, you won’t see what was said. Textual can keep what it receives, so you can find it later with Search (⌘F) and Mentions (⌃5). It never leaves your Mac.";
