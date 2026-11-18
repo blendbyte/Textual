@@ -52,6 +52,7 @@
 #import "TVCLogViewInternalWK2.h"
 #import "TVCMemberList.h"
 #import "TVCMainWindowPrivate.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TVCMainWindowSplitView.h"
 #import "TVCMainWindowTextView.h"
 #import "TLOLicenseManagerPrivate.h"
@@ -875,6 +876,22 @@ static TXMenuControllerKickSheet * _Nullable _kickSheet = nil;
 - (void)memberKickFromChannel:(nullable id)sender
 {
 	[self _kickSelectedMembers:sender ban:NO];
+}
+
+/* Search Everywhere with from:nickname */
+- (void)memberSearchMessages:(nullable id)sender
+{
+	NSArray<NSString *> *nicknames = [self selectedMembersNicknames:sender];
+
+	[self deselectMembers:sender];
+
+	TVCMainWindow *window = TVCMainWindow.currentWindow;
+
+	if (nicknames.count != 1 || window == nil) {
+		return;
+	}
+
+	[window showSearchPanelWithScope:TVCMainWindowSearchScopeEverywhere text:[NSString stringWithFormat:@"from:%@ ", nicknames[0]]];
 }
 
 /* Quieted: stays, can't speak (the quiet list, +q where it isn't a status) */

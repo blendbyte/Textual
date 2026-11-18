@@ -448,6 +448,7 @@ The identifier for a timer can be found using “/timer list”";
 "cmd-remove" = "Remove someone from the channel (if the server allows)";
 "cmd-server" = "Connect to another server";
 "cmd-setcolor" = "Choose the color of a nickname";
+"cmd-search" = "Search the message archive everywhere (from: and in: narrow it)";
 "cmd-setname" = "Change your real name while connected";
 "cmd-setqueryname" = "Rename this private message";
 "cmd-shun" = "Silence someone on the network (shun)";

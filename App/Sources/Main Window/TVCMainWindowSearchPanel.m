@@ -641,6 +641,22 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.searchField selectText:nil];
 }
 
+- (void)searchForText:(NSString *)text
+{
+	NSParameterAssert(text != nil);
+
+	self.searchField.stringValue = text;
+
+	[self search];
+
+	/* More words can follow: the cursor at the end */
+	[self.view.window makeFirstResponder:self.searchField];
+
+	NSText *fieldEditor = self.searchField.currentEditor;
+
+	fieldEditor.selectedRange = NSMakeRange(text.length, 0);
+}
+
 - (void)close:(nullable id)sender
 {
 	if (self.mentionsMode) {
@@ -1901,6 +1917,15 @@ NS_ASSUME_NONNULL_BEGIN
 	panel.scope = scope;
 
 	[panel focusSearchField];
+}
+
+- (void)showSearchPanelWithScope:(TVCMainWindowSearchScope)scope text:(NSString *)text
+{
+	NSParameterAssert(text != nil);
+
+	[self showSearchPanelWithScope:scope];
+
+	[self.searchPanel searchForText:text];
 }
 
 - (void)openAdjacentSearchResult:(BOOL)forward

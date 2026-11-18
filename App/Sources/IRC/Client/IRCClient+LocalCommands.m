@@ -70,6 +70,7 @@
 #import "TVCLogViewPrivate.h"
 #import "TVCMainWindowPrivate.h"
 #import "TVCMainWindowTextViewPrivate.h"
+#import "TVCMainWindowSearchPanelPrivate.h"
 #import "TVCServerListPrivate.h"
 #import "TDCAlert.h"
 #import "TDCChannelBanListSheetPrivate.h"
@@ -288,6 +289,7 @@ NS_ASSUME_NONNULL_BEGIN
 			@(IRCLocalCommandRaw) : NSStringFromSelector(@selector(_handleLocalCommandRaw:)),
 			@(IRCLocalCommandRecv) : NSStringFromSelector(@selector(_handleLocalCommandRecv:)),
 			@(IRCLocalCommandRedact) : NSStringFromSelector(@selector(_handleLocalCommandRedact:)),
+			@(IRCLocalCommandSearch) : NSStringFromSelector(@selector(_handleLocalCommandSearch:)),
 			@(IRCLocalCommandRejoin) : NSStringFromSelector(@selector(_handleLocalCommandCycle:)),
 			@(IRCLocalCommandReconnect) : NSStringFromSelector(@selector(_handleLocalCommandReconnect:)),
 			@(IRCLocalCommandRemove) : NSStringFromSelector(@selector(_handleLocalCommandKickBan:)),
@@ -1353,6 +1355,24 @@ static NSUInteger _aliasDepth = 0;
 	self.config = mutableClientConfig;
 
 	[self clearAddressBookCache];
+}
+
+/* SEARCH: the search panel, everywhere, with the words */
+- (void)_handleLocalCommandSearch:(IRCLocalCommandContext *)context
+{
+	TVCMainWindow *window = (TVCMainWindow.currentWindow ?: mainWindow());
+
+	if (window == nil) {
+		return;
+	}
+
+	NSString *text = context.stringIn.string.trim;
+
+	if (text.length == 0) {
+		[window showSearchPanelWithScope:TVCMainWindowSearchScopeEverywhere];
+	} else {
+		[window showSearchPanelWithScope:TVCMainWindowSearchScopeEverywhere text:text];
+	}
 }
 
 /* INVITE */

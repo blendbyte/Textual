@@ -1359,6 +1359,11 @@ CA
                         <action selector="memberStartPrivateMessage:" target="267" id="2924"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Search Messages from …" tag="1631" id="srM-it-001">
+                    <connections>
+                        <action selector="memberSearchMessages:" target="267" id="srM-it-002"/>
+                    </connections>
+                </menuItem>
                 <menuItem isSeparatorItem="YES" tag="1608" id="331">
                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                 </menuItem>

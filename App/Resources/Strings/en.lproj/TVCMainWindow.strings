@@ -144,6 +144,7 @@
 "fsd-b2" = "Delete";
 "prv-l1" = "only you";
 "bac-t1" = "Ban Account %@";
+"srm-t1" = "Search Messages from %@";
 "e7g-s1" = ", ";
 
 /* The same with names, for up to three: "alice and bob joined, carol is now carl" */

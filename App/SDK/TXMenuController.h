@@ -354,6 +354,7 @@ enum
 	MTUserControlsBanAccount = 1628, // "Ban Account …"
 	MTUserControlsIgnoreAccount = 1629, // "Ignore Account …"
 	MTUserControlsQuiet = 1630, // "Quiet"
+	MTUserControlsSearchMessages = 1631, // "Search Messages from …"
 
 	/* Dock menu */
 	MTDockMenuDisableAllNotifications = 1700, // "Mute Notifications"

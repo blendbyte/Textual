@@ -80,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)memberBanAccountFromChannel:(nullable id)sender; // by services account (ACCOUNTEXTBAN)
 - (IBAction)memberQuietInChannel:(nullable id)sender; // the quiet list, where +q isn't a status
+- (IBAction)memberSearchMessages:(nullable id)sender; // Search Everywhere with from:nickname
 
 /* Files dropped or pasted: a sheet says what can be done with them there
  and nothing is sent without it. On the chat view or the input field the

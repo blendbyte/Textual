@@ -78,6 +78,9 @@ typedef NS_ENUM(NSUInteger, TVCMainWindowSearchScope)
 
 - (void)focusSearchField; // its text selected
 
+/* Puts the text in the search field and searches it ("from:alice") */
+- (void)searchForText:(NSString *)text;
+
 - (void)loadArchivedNames; // for suggestions
 
 /* ⌘G and ⌘⇧G: the next or previous result, opened */
@@ -98,6 +101,9 @@ typedef NS_ENUM(NSUInteger, TVCMainWindowSearchScope)
 @property (readonly) BOOL isSearchPanelVisible;
 
 - (void)showSearchPanelWithScope:(TVCMainWindowSearchScope)scope;
+
+/* With this text searched, the cursor after it (Search Messages from…, /search) */
+- (void)showSearchPanelWithScope:(TVCMainWindowSearchScope)scope text:(NSString *)text;
 - (void)closeSearchPanel;
 
 /* ⌘G and ⌘⇧G: the next or previous result (the panel opens when closed) */

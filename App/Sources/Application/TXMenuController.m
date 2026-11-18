@@ -1704,6 +1704,21 @@ NS_ASSUME_NONNULL_BEGIN
 			return (u.isLoggedIn && c.isActive && [self _ownStatusAllowsUserControlsItem:tag onClient:u inChannel:c]);
 		}
 
+		case MTUserControlsSearchMessages: // "Search Messages from …"
+		{
+			NSArray<NSString *> *nicknames = [self selectedMembersNicknames:menuItem];
+
+			menuItem.hidden = (nicknames.count != 1);
+
+			if (menuItem.hidden) {
+				return NO;
+			}
+
+			menuItem.title = TXTLS(@"TVCMainWindow[srm-t1]", nicknames[0]);
+
+			return YES;
+		}
+
 		case MTUserControlsQuiet: // "Quiet"
 		{
 			/* Where the server keeps a quiet list (not where q is the owner status) */
