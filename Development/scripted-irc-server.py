@@ -701,6 +701,74 @@ async def scenario_review_kick(client):
 		seen = len(client.received)
 
 
+async def run_review_quietext(client, inspircd):
+	"""Quiets as bans with an extban, where +q is the owner status. The
+	server is UnrealIRCd-like (EXTBAN=~,…q…: ~q:, listed as ~quiet:) or
+	InspIRCd-like (EXTBAN=,…m…: m:). The client owns #mod with bob and carol
+	(with addresses). The ban list starts with a plain ban and a quiet; MODE
+	+b/-b from the client changes it (logged, echoed); MODE #mod b lists it."""
+	if inspircd:
+		client.isupport_extra = "PREFIX=(qaohv)~&@%+ EXTBAN=,ABCDMNOQRSTUacjmnprsuw"
+		quiet, listed = "m:", "m:"
+	else:
+		client.isupport_extra = "PREFIX=(qaohv)~&@%+ EXTBAN=~,acfjmnpqrtCGOST"
+		quiet, listed = "~q:", "~quiet:"
+
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	bans = [("*!*@old.example", "alice!a@alice.example"), (f"{listed}*!*@noisy.example", "alice!a@alice.example")]
+
+	await client.send(f":{me}!user@client.textual.test JOIN #mod")
+	await client.send(f":{SERVER} 353 {me} = #mod :~{me}")
+	await client.send(f":{SERVER} 366 {me} #mod :End of /NAMES list.")
+
+	for nickname in ("bob", "carol"):
+		await client.send(f":{nickname}!{nickname[0]}@{nickname}.example JOIN #mod")
+
+	seen = 0
+
+	while await client.collect(1):
+		for line in client.received[seen:]:
+			command, _, rest = line.partition(" ")
+
+			if command.upper() != "MODE" or not rest.startswith("#mod"):
+				continue
+
+			parts = rest.split(" ")
+
+			if len(parts) == 2 and parts[1] in ("b", "+b"):
+				for mask, setter in bans:
+					await client.send(f":{SERVER} 367 {me} #mod {mask} {setter} 1700000000")
+				await client.send(f":{SERVER} 368 {me} #mod :End of Channel Ban List")
+				log("··", f"listed {len(bans)} bans")
+				continue
+
+			if len(parts) >= 3 and parts[1] in ("+b", "-b"):
+				for mask in parts[2:]:
+					shown = mask
+					if mask.lower().startswith(quiet) and listed != quiet:
+						shown = listed + mask[len(quiet):]
+					if parts[1] == "+b":
+						bans.append((shown, f"{me}!user@client.textual.test"))
+					else:
+						bans = [ban for ban in bans if ban[0].lower() not in (mask.lower(), shown.lower())]
+					log("··", f"MODE #mod {parts[1]} {mask}")
+					await client.send(f":{me}!user@client.textual.test MODE #mod {parts[1]} {mask}")
+
+		seen = len(client.received)
+
+
+async def scenario_review_quietext(client):
+	await run_review_quietext(client, inspircd=False)
+
+
+async def scenario_review_quietext_insp(client):
+	await run_review_quietext(client, inspircd=True)
+
+
 async def scenario_review_readmarker(client):
 	"""Read markers (draft/read-marker). The client joins #lobby, then #read.
 	"go" in #lobby: eight messages in #read (server-time, the fourth names
@@ -4405,6 +4473,8 @@ SCENARIOS = {
 	"review-eventshow": scenario_review_eventshow,
 	"review-ignorechan": scenario_review_ignorechan,
 	"review-kick": scenario_review_kick,
+	"review-quietext": scenario_review_quietext,
+	"review-quietext-insp": scenario_review_quietext_insp,
 	"review-typing": scenario_review_typing,
 	"review-banned": scenario_review_banned,
 	"review-list": scenario_review_list,
@@ -4466,7 +4536,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-kick", "review-ignorechan", "review-eventshow", "review-filters", "review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-quietext", "review-quietext-insp", "review-kick", "review-ignorechan", "review-eventshow", "review-filters", "review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

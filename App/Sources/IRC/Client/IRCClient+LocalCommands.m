@@ -1538,6 +1538,15 @@ static NSUInteger _aliasDepth = 0;
 			commandNumeric == IRCLocalCommandUnquiet)
 		{
 			modeSymbol = @"q";
+
+			/* Where +q is a status: a ban with the server's quiet extban */
+			NSString *quietPrefix = self.supportInfo.quietExtendedBanPrefix;
+
+			if (quietPrefix) {
+				modeSymbol = @"b";
+
+				banMask = [quietPrefix stringByAppendingString:banMask];
+			}
 		} else {
 			modeSymbol = @"b";
 		}

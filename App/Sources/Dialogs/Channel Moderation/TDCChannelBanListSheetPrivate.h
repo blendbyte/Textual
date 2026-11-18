@@ -56,6 +56,9 @@ typedef NS_ENUM(NSUInteger, TDCChannelBanListSheetEntryType) {
 
 @property (readonly) TDCChannelBanListSheetEntryType entryType;
 @property (readonly, copy) NSString *modeSymbol;
+
+/* Where quiets are bans with the server's extban (quietExtendedBanPrefix): its prefix */
+@property (readonly, copy, nullable) NSString *maskPrefix;
 @property (readonly, copy, nullable) NSArray<NSString *> *listOfChanges;
 @property (nonatomic, assign) BOOL contentAlreadyReceived;
 
@@ -73,6 +76,7 @@ typedef NS_ENUM(NSUInteger, TDCChannelBanListSheetEntryType) {
 @required
 
 - (void)channelBanListSheetOnUpdate:(TDCChannelBanListSheet *)sender;
+- (void)channelBanListSheet:(TDCChannelBanListSheet *)sender addEntry:(NSString *)entry; // a mask, or a nickname
 - (void)channelBanListSheetWillClose:(TDCChannelBanListSheet *)sender;
 @end
 

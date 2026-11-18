@@ -68,6 +68,39 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(info.networkName, @"Libera.Chat");
 }
 
+/* Where +q is the owner status, quieting is a ban with the server's extban */
+- (void)testQuietExtendedBan
+{
+	IRCClient *unrealClient = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	IRCISupportInfo *unreal = unrealClient.supportInfo;
+
+	[unreal processConfigurationData:@"me PREFIX=(qaohv)~&@%+ EXTBAN=~,acfjmnpqrtCGOST :are supported by this server"];
+
+	XCTAssertEqualObjects(unreal.quietExtendedBanPrefix, @"~q:");
+	XCTAssertTrue([unreal isListSupported:IRCISupportInfoListTypeQuiet]);
+	XCTAssertTrue([unreal maskIsQuietExtendedBan:@"~quiet:*!*@spam.example"]);
+	XCTAssertFalse([unreal maskIsQuietExtendedBan:@"*!*@spam.example"]);
+
+	IRCClient *inspircdClient = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	IRCISupportInfo *inspircd = inspircdClient.supportInfo;
+
+	[inspircd processConfigurationData:@"me PREFIX=(qaohv)~&@%+ EXTBAN=,ABCDMNOQRSTUacjmnprsuw :are supported by this server"];
+
+	XCTAssertEqualObjects(inspircd.quietExtendedBanPrefix, @"m:");
+
+	/* A real quiet list: no extban */
+	IRCClient *solanumClient = [[IRCClient alloc] initWithConfig:[IRCClientConfig new]];
+
+	IRCISupportInfo *solanum = solanumClient.supportInfo;
+
+	[solanum processConfigurationData:@"me PREFIX=(ov)@+ EXTBAN=$,ajrxz :are supported by this server"];
+
+	XCTAssertNil(solanum.quietExtendedBanPrefix);
+	XCTAssertEqualObjects([solanum modeSymbolForList:IRCISupportInfoListTypeQuiet], @"q");
+}
+
 /* Nicknames and channel names compare under the server's CASEMAPPING:
  under rfc1459 (also the default) [ ] \\ ~ are the upper case of { } | ^ */
 - (void)testCaseMappingFoldsNamesLikeTheServer

@@ -64,6 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) IBOutlet TVCBasicTableView *entryTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *entryTableController;
 @property (nonatomic, strong, nullable) NSMutableArray<TDCChannelBanListSheetEntry *> *pendingEntries;
+@property (nonatomic, strong) NSTextField *addEntryField;
+@property (nonatomic, strong) NSSearchField *filterField;
 
 - (IBAction)onUpdate:(nullable id)sender;
 - (IBAction)onRemoveEntry:(nullable id)sender;
@@ -126,6 +128,68 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	self.headerTitleTextField.stringValue = headerTitle;
+
+	[self buildAddAndFilterRow];
+}
+
+/* Between the heading and the list: a mask or nickname to add, and a filter */
+- (void)buildAddAndFilterRow
+{
+	NSView *contentView = self.sheet.contentView;
+
+	NSScrollView *scrollView = self.entryTable.enclosingScrollView;
+
+	if (contentView == nil || scrollView == nil) {
+		return;
+	}
+
+	NSTextField *addEntryField = [NSTextField textFieldWithString:@""];
+
+	addEntryField.placeholderString = TXTLS(@"TDCChannelBanListSheet[bls-a1]");
+	addEntryField.target = self;
+	addEntryField.action = @selector(onAddEntry:);
+
+	/* Return adds; leaving the field doesn't */
+	addEntryField.cell.sendsActionOnEndEditing = NO;
+
+	self.addEntryField = addEntryField;
+
+	NSButton *addButton = [NSButton buttonWithTitle:TXTLS(@"TDCChannelBanListSheet[bls-a2]") target:self action:@selector(onAddEntry:)];
+
+	NSSearchField *filterField = [NSSearchField new];
+
+	filterField.placeholderString = TXTLS(@"TDCChannelBanListSheet[bls-f1]");
+	filterField.target = self;
+	filterField.action = @selector(onFilterChanged:);
+
+	[filterField.widthAnchor constraintEqualToConstant:180].active = YES;
+
+	self.filterField = filterField;
+
+	NSStackView *row = [NSStackView stackViewWithViews:@[addEntryField, addButton, filterField]];
+
+	row.spacing = 8;
+	row.translatesAutoresizingMaskIntoConstraints = NO;
+
+	[addEntryField setContentHuggingPriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+	[row setCustomSpacing:20 afterView:addButton];
+
+	[contentView addSubview:row];
+
+	/* The list now starts below the row */
+	for (NSLayoutConstraint *constraint in contentView.constraints) {
+		if (constraint.firstItem == scrollView && constraint.firstAttribute == NSLayoutAttributeTop) {
+			constraint.active = NO;
+		}
+	}
+
+	[NSLayoutConstraint activateConstraints:@[
+		[row.topAnchor constraintEqualToAnchor:self.headerTitleTextField.bottomAnchor constant:10],
+		[row.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:20],
+		[row.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:(-20)],
+		[scrollView.topAnchor constraintEqualToAnchor:row.bottomAnchor constant:10]
+	]];
 }
 
 - (void)start
@@ -196,6 +260,41 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark -
 #pragma mark Actions
 
+- (void)onAddEntry:(nullable id)sender
+{
+	NSString *entry = self.addEntryField.stringValue.trim;
+
+	if (entry.length == 0) {
+		return;
+	}
+
+	self.addEntryField.stringValue = @"";
+
+	id delegate = self.delegate;
+
+	if ([delegate respondsToSelector:@selector(channelBanListSheet:addEntry:)]) {
+		[delegate channelBanListSheet:self addEntry:entry];
+	}
+
+	/* Shown once the server has it */
+	[self cs_reschedulePerformSelectorInCommonModes:@selector(onUpdate:) withObject:nil afterDelay:1.0];
+}
+
+/* The entries whose mask or author contain the text */
+- (void)onFilterChanged:(nullable id)sender
+{
+	NSString *filter = self.filterField.stringValue.trim;
+
+	if (filter.length == 0) {
+		self.entryTableController.filterPredicate = nil;
+	} else {
+		self.entryTableController.filterPredicate = [NSPredicate predicateWithFormat:@"entryMask CONTAINS[cd] %@ OR entryAuthor CONTAINS[cd] %@", filter, filter];
+	}
+
+	[self willChangeValueForKey:@"entryCount"];
+	[self didChangeValueForKey:@"entryCount"];
+}
+
 - (void)onUpdate:(nullable id)sender
 {
 	[self clear];
@@ -235,8 +334,22 @@ NS_ASSUME_NONNULL_BEGIN
 	return [channel.associatedClient.supportInfo isListSupported:(IRCISupportInfoListType)entryType];
 }
 
+- (nullable NSString *)maskPrefix
+{
+	if (self.entryType != TDCChannelBanListSheetEntryTypeQuiet) {
+		return nil;
+	}
+
+	return self.client.supportInfo.quietExtendedBanPrefix;
+}
+
 - (NSString *)modeSymbol
 {
+	/* Quiets as bans with an extban (where +q is a status) */
+	if (self.maskPrefix) {
+		return @"b";
+	}
+
 	/* -modeSymbolForList: is nullable but because we only allow this class to be
 	 created if the mode is already supported, then we can advertise it here as non-nil */
 	return [self.client.supportInfo modeSymbolForList:(IRCISupportInfoListType)self.entryType];

@@ -60,6 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readwrite, nullable) NSString *networkIconAddress;
 @property (nonatomic, copy, readwrite, nullable) NSString *fileHostAddress;
 @property (nonatomic, copy, nullable) NSString *extendedBanPrefix; // EXTBAN's prefix ("$", "~"; empty for none)
+@property (nonatomic, copy, nullable) NSString *extendedBanTypes; // EXTBAN's letters after the comma
 @property (nonatomic, copy, nullable) NSString *accountExtendedBanName; // ACCOUNTEXTBAN's first name ("R", "account")
 @property (nonatomic, assign, readwrite) BOOL whoxSupported;
 @property (nonatomic, copy) NSArray<NSString *> *clientTagDenyList;
@@ -131,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 	self.fileHostAddress = nil;
 
 	self.extendedBanPrefix = nil;
+	self.extendedBanTypes = nil;
 	self.accountExtendedBanName = nil;
 
 	self.whoxSupported = NO;
@@ -228,6 +230,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 				if (comma.location != NSNotFound) {
 					self.extendedBanPrefix = [segmentValue substringToIndex:comma.location];
+
+					self.extendedBanTypes = [segmentValue substringFromIndex:NSMaxRange(comma)];
 				}
 			} else if ([segmentKey isEqualToStringIgnoringCase:@"ACCOUNTEXTBAN"]) {
 				NSString *name = [segmentValue componentsSeparatedByString:@","].firstObject;
@@ -479,6 +483,60 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return [NSString stringWithFormat:@"%@%@:%@", prefix, name, account];
+}
+
+- (nullable NSString *)quietExtendedBanPrefix
+{
+	/* A real quiet list wins */
+	if ([self modeSymbolIsUserPrefix:@"q"] == NO) {
+		return nil;
+	}
+
+	NSString *prefix = self.extendedBanPrefix;
+	NSString *types = self.extendedBanTypes;
+
+	if (prefix == nil || types == nil) {
+		return nil;
+	}
+
+	/* UnrealIRCd: EXTBAN=~,…q… (~q: is ~quiet: in UnrealIRCd 6 too) */
+	if ([prefix isEqualToString:@"~"] && [types containsString:@"q"]) {
+		return @"~q:";
+	}
+
+	/* InspIRCd: EXTBAN=,…m… (m: mute) */
+	if (prefix.length == 0 && [types containsString:@"m"]) {
+		return @"m:";
+	}
+
+	return nil;
+}
+
+- (BOOL)maskIsQuietExtendedBan:(NSString *)mask
+{
+	NSParameterAssert(mask != nil);
+
+	NSString *prefix = self.quietExtendedBanPrefix;
+
+	if (prefix == nil) {
+		return NO;
+	}
+
+	NSArray *forms = nil;
+
+	if ([prefix isEqualToString:@"~q:"]) {
+		forms = @[@"~q:", @"~quiet:"];
+	} else {
+		forms = @[@"m:", @"mute:"];
+	}
+
+	for (NSString *form in forms) {
+		if ([mask.lowercaseString hasPrefix:form]) {
+			return YES;
+		}
+	}
+
+	return NO;
 }
 
 - (NSString *)foldedString:(NSString *)string
@@ -838,6 +896,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isListSupported:(IRCISupportInfoListType)listType
 {
+	/* Quiets as bans with an extban, where +q is a status */
+	if (listType == IRCISupportInfoListTypeQuiet && self.quietExtendedBanPrefix) {
+		return YES;
+	}
+
 	return ([self modeSymbolForList:listType] != nil);
 }
 

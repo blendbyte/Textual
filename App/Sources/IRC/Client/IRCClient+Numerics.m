@@ -1339,14 +1339,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 			TDCChannelBanListSheet *listSheet = [self banListSheetForChannelNamed:channelName entryType:entryType];
 
-			if (listSheet) {
-				if (listSheet.contentAlreadyReceived) {
-					listSheet.contentAlreadyReceived = NO;
+			/* Quiets as bans with an extban: the Quiets sheet asked for the ban list */
+			TDCChannelBanListSheet *quietListSheet = nil;
 
-					[listSheet clear];
+			if (numeric == RPL_BANLIST && [self.supportInfo maskIsQuietExtendedBan:entryMask]) {
+				quietListSheet = [self banListSheetForChannelNamed:channelName entryType:TDCChannelBanListSheetEntryTypeQuiet];
+			}
+
+			if (listSheet || quietListSheet) {
+				for (TDCChannelBanListSheet *sheet in @[(listSheet ?: (id)[NSNull null]), (quietListSheet ?: (id)[NSNull null])]) {
+					if ([sheet isKindOfClass:[TDCChannelBanListSheet class]] == NO) {
+						continue;
+					}
+
+					if (sheet.contentAlreadyReceived) {
+						sheet.contentAlreadyReceived = NO;
+
+						[sheet clear];
+					}
+
+					[sheet addEntry:entryMask setBy:entryAuthor creationDate:entryCreationDate];
 				}
-
-				[listSheet addEntry:entryMask setBy:entryAuthor creationDate:entryCreationDate];
 
 				return YES;
 			}
@@ -1407,8 +1420,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 			TDCChannelBanListSheet *listSheet = [self banListSheetForChannelNamed:[m paramAt:1] entryType:entryType];
 
-			if (listSheet) {
+			TDCChannelBanListSheet *quietListSheet = nil;
+
+			if (numeric == RPL_ENDOFBANLIST && self.supportInfo.quietExtendedBanPrefix) {
+				quietListSheet = [self banListSheetForChannelNamed:[m paramAt:1] entryType:TDCChannelBanListSheetEntryTypeQuiet];
+			}
+
+			if (listSheet || quietListSheet) {
 				listSheet.contentAlreadyReceived = YES;
+
+				quietListSheet.contentAlreadyReceived = YES;
 
 				break;
 			}

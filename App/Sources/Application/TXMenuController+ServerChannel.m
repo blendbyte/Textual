@@ -844,7 +844,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[u createChannelQuietListSheet];
 
-	[u sendModes:@"+q" withParameters:nil inChannel:c];
+	/* Where +q is a status, quiets are bans with an extban: the ban list */
+	[u sendModes:((u.supportInfo.quietExtendedBanPrefix) ? @"+b" : @"+q") withParameters:nil inChannel:c];
 }
 
 - (void)toggleChannelModerationMode:(nullable id)sender

@@ -173,6 +173,38 @@ NS_ASSUME_NONNULL_BEGIN
 	[self sendModes:modeSend withParametersString:nil inChannel:channel];
 }
 
+/* A mask, or a nickname: someone in the channel by the ban format setting
+ (as the member menu's Ban), anyone else as nickname!*@* */
+- (void)channelBanListSheet:(TDCChannelBanListSheet *)sender addEntry:(NSString *)entry
+{
+	NSParameterAssert(entry != nil);
+
+	IRCChannel *channel = sender.channel;
+
+	if (channel == nil || self.isLoggedIn == NO) {
+		return;
+	}
+
+	NSString *mask = entry;
+
+	NSCharacterSet *maskCharacters = [NSCharacterSet characterSetWithCharactersInString:@"!@*?:$~"];
+
+	if ([entry rangeOfCharacterFromSet:maskCharacters].location == NSNotFound) {
+		mask = ([channel findMember:entry].user.banMask ?: [entry stringByAppendingString:@"!*@*"]);
+	}
+
+	/* Quiets as bans: with the extban, unless it is there already */
+	NSString *maskPrefix = sender.maskPrefix;
+
+	if (maskPrefix && [self.supportInfo maskIsQuietExtendedBan:mask] == NO) {
+		mask = [maskPrefix stringByAppendingString:mask];
+	}
+
+	NSString *modeSend = [NSString stringWithFormat:@"+%@", sender.modeSymbol];
+
+	[self sendModes:modeSend withParametersString:mask inChannel:channel];
+}
+
 - (void)channelBanListSheetWillClose:(TDCChannelBanListSheet *)sender
 {
 	IRCChannel *channel = sender.channel;

@@ -1698,7 +1698,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTUserControlsQuiet: // "Quiet"
 		{
 			/* Where the server keeps a quiet list (not where q is the owner status) */
-			menuItem.hidden = (c.isChannel == NO || [u.supportInfo modeSymbolForList:IRCISupportInfoListTypeQuiet] == nil);
+			menuItem.hidden = (c.isChannel == NO || [u.supportInfo isListSupported:IRCISupportInfoListTypeQuiet] == NO);
 
 			if (menuItem.hidden) {
 				return NO;

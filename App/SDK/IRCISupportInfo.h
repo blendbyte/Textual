@@ -92,6 +92,14 @@ typedef NS_ENUM(NSUInteger, IRCISupportInfoCaseMapping)
  "~account:bob"), nil where the server has no account bans */
 - (nullable NSString *)accountBanMaskForAccount:(NSString *)account;
 
+/* Where +q is the owner status (UnrealIRCd, InspIRCd), quieting is a ban
+ with the server's extban: "~q:" (UnrealIRCd), "m:" (InspIRCd); nil where
+ there is a quiet list (+q) or no such extban */
+@property (readonly, copy, nullable) NSString *quietExtendedBanPrefix;
+
+/* A ban list entry that quiets (also as the server shows it: "~quiet:", "mute:") */
+- (BOOL)maskIsQuietExtendedBan:(NSString *)mask;
+
 /* A nickname or channel name folded with the server's CASEMAPPING: two
  names are the same when their folded strings are equal */
 - (NSString *)foldedString:(NSString *)string;
