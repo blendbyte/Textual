@@ -187,6 +187,7 @@ enum
 	MTMMNavigationChannelsMenuPreviousActiveChannelSeparator = 7010005, // "-"
 	MTMMNavigationChannelsMenuNextUnreadChannel = 7010006, // "Next Unread Channel"
 	MTMMNavigationChannelsMenuPreviousUnreadChannel = 7010007, // "Previous Unread Channel"
+	MTMMNavigationChannelsMenuNextImportantChannel = 7010008, // "Next Important Channel"
 	MTMMNavigationChannelsMenuSeparator = 702, // "-"
 	MTMMNavigationMoveBackward = 703, // "Back"
 	MTMMNavigationMoveForward = 704, // "Forward"

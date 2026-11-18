@@ -395,6 +395,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 			break;
 		}
+		case MTMMNavigationChannelsMenuNextImportantChannel:
+		{
+			[mainWindow() selectNextImportantChannel:sender];
+
+			break;
+		}
 		case MTMMNavigationMoveBackward:
 		{
 			[mainWindow() selectPreviousWindow:sender];

@@ -1117,6 +1117,7 @@ NS_ASSUME_NONNULL_BEGIN
 		case MTMMNavigationChannelsMenuPreviousActiveChannel:
 		case MTMMNavigationChannelsMenuNextUnreadChannel:
 		case MTMMNavigationChannelsMenuPreviousUnreadChannel:
+		case MTMMNavigationChannelsMenuNextImportantChannel:
 		case MTMMNavigationMoveBackward:
 		case MTMMNavigationMoveForward:
 		case MTMMNavigationPreviousSelection:

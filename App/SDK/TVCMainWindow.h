@@ -146,6 +146,7 @@ TEXTUAL_EXTERN NSString * const TVCServerListDragType;
 - (void)selectPreviousWindow:(nullable NSEvent *)e;
 - (void)selectNextActiveServer:(NSEvent *)e;
 - (void)selectNextUnreadChannel:(NSEvent *)e;
+- (void)selectNextImportantChannel:(NSEvent *)e; // a mention, then an unread private message, then anything unread
 - (void)selectNextActiveChannel:(NSEvent *)e;
 - (void)selectPreviousSelection:(NSEvent *)e;
 - (void)selectPreviousActiveServer:(NSEvent *)e;

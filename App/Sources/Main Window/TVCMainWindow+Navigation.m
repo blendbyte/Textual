@@ -316,6 +316,75 @@ NS_ASSUME_NONNULL_BEGIN
 	[self navigateChannelEntries:YES withNavigationType:TVCServerListNavigationMovementTypeUnread];
 }
 
+/* Next Important Channel: a mention first, then an unread private message,
+ then anything unread; each in list order after the selection, muted ones
+ after the others */
+- (void)selectNextImportantChannel:(NSEvent *)e
+{
+	TVCServerList *serverList = self.serverList;
+
+	NSInteger entryCount = serverList.numberOfRows;
+
+	if (entryCount <= 0) {
+		return;
+	}
+
+	NSInteger startingPoint = [serverList rowForItem:self.selectedItem];
+
+	if (startingPoint < 0 || startingPoint >= entryCount) {
+		startingPoint = -1;
+	}
+
+	BOOL (^isImportant)(IRCChannel *, NSUInteger) = ^BOOL (IRCChannel *channel, NSUInteger kind) {
+		switch (kind) {
+			case 0: return (channel.nicknameHighlightCount > 0);
+			case 1: return (channel.isPrivateMessage && channel.isUnread);
+			default: return channel.isUnread;
+		}
+	};
+
+	for (NSUInteger pass = 0; pass < 6; pass++) {
+		BOOL mutedPass = (pass >= 3);
+
+		NSUInteger kind = (pass % 3);
+
+		/* Every row once, the selection last */
+		for (NSInteger step = 1; step <= entryCount; step++) {
+			NSInteger row = ((startingPoint + step) % entryCount);
+
+			if (row < 0) {
+				row += entryCount;
+			}
+
+			id item = [serverList itemAtRow:row];
+
+			if ([item isKindOfClass:[IRCChannel class]] == NO) {
+				continue;
+			}
+
+			IRCChannel *channel = item;
+
+			if (channel.isChannel == NO && channel.isPrivateMessage == NO) {
+				continue;
+			}
+
+			if (channel == self.selectedItem) {
+				continue;
+			}
+
+			BOOL muted = (channel.config.muted || channel.associatedClient.config.muted);
+
+			if (muted != mutedPass || isImportant(channel, kind) == NO) {
+				continue;
+			}
+
+			[self select:channel];
+
+			return;
+		}
+	}
+}
+
 - (void)selectPreviousActiveChannel:(NSEvent *)e
 {
 	[self navigateChannelEntries:NO withNavigationType:TVCServerListNavigationMovementTypeActive];

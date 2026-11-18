@@ -849,6 +849,11 @@ CQ
                                                 <action selector="performNavigationAction:" target="267" id="C4b-0U-OJO"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Next Important Channel" tag="7010008" keyEquivalent="j" id="nIc-it-001">
+                                            <connections>
+                                                <action selector="performNavigationAction:" target="267" id="nIc-it-002"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                     <connections>
                                         <outlet property="delegate" destination="267" id="fwF-bl-9az"/>
