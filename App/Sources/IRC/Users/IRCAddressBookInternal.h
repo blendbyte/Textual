@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *_hostmaskRegularExpression;
 	NSString *_trackingNickname;
 	NSArray<IRCAddressBookEntry *> *_parentEntries;
+	NSArray<NSString *> *_limitedToChannels;
 
 @private
 	NSString *_uniqueIdentifier;

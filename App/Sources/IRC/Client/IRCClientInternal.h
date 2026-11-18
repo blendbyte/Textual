@@ -324,6 +324,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetAwayStatusForUsers;
 - (IRCUser *)addUserAndReturn:(IRCUser *)user;
 - (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask;
+
+/* For a line in that channel: also the ignores limited to it */
+- (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask inChannelNamed:(nullable NSString *)channelName;
 - (nullable IRCAddressBookEntry *)findUserTrackingAddressBookEntryForNickname:(NSString *)nickname;
 - (void)modifyUser:(IRCUser *)user asAway:(BOOL)away;
 - (void)modifyUserWithNickname:(NSString *)nickname asAway:(BOOL)away;

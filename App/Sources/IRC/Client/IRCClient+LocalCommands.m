@@ -1136,9 +1136,24 @@ static NSUInteger _aliasDepth = 0;
 
 	NSString *nickname = stringIn.tokenAsString;
 
+	/* /ignore -channel #channel nickname: only in that channel */
+	NSString *channelName = nil;
+
+	if ([nickname isEqualIgnoringCase:@"-channel"]) {
+		channelName = stringIn.tokenAsString;
+
+		nickname = stringIn.tokenAsString;
+
+		if ([self stringIsChannelName:channelName] == NO || nickname.length == 0) {
+			[self printDebugInformation:TXTLS(@"IRC[ign-c1]", context.command.lowercaseString)];
+
+			return;
+		}
+	}
+
 	/* /ignore $a:account: by services account */
 	if (nickname.length > 3 && [nickname.lowercaseString hasPrefix:@"$a:"]) {
-		[self ignoreAccount:[nickname substringFromIndex:3] ignore:isIgnoreCommand];
+		[self ignoreAccount:[nickname substringFromIndex:3] ignore:isIgnoreCommand inChannelNamed:channelName];
 
 		return;
 	}
@@ -1169,9 +1184,16 @@ static NSUInteger _aliasDepth = 0;
 			continue;
 		}
 
-		if ([ignore checkMatch:hostmask]) {
-			[matchedIgnores addObject:ignore];
+		if ([ignore checkMatch:hostmask] == NO) {
+			continue;
 		}
+
+		/* With -channel: those that count there (ignore) or are limited to it (unignore) */
+		if (channelName && [self ignore:ignore coversChannelNamed:channelName everywhereCounts:isIgnoreCommand] == NO) {
+			continue;
+		}
+
+		[matchedIgnores addObject:ignore];
 	}
 
 	/* Cancel if there is nothing to change */
@@ -1197,10 +1219,13 @@ static NSUInteger _aliasDepth = 0;
 	NSMutableArray *mutableIgnoreList = [self.config.ignoreList mutableCopy];
 
 	if (isIgnoreCommand) {
-		IRCAddressBookEntry *ignore =
-		[IRCAddressBookEntry newIgnoreEntryForHostmask:member.banMask];
+		IRCAddressBookEntry *ignore = [self newIgnoreEntryForHostmask:member.banMask inChannelNamed:channelName];
 
-		[self printDebugInformation:TXTLS(@"IRC[ret-20]", member.nickname, ignore.hostmask)];
+		if (channelName) {
+			[self printDebugInformation:TXTLS(@"IRC[ret-21]", member.nickname, ignore.hostmask, channelName)];
+		} else {
+			[self printDebugInformation:TXTLS(@"IRC[ret-20]", member.nickname, ignore.hostmask)];
+		}
 
 		[mutableIgnoreList addObject:ignore];
 	} else{
@@ -1223,7 +1248,55 @@ static NSUInteger _aliasDepth = 0;
 	[self clearAddressBookCache];
 }
 
+/* A new ignore of everything, everywhere or only in that channel */
+- (IRCAddressBookEntry *)newIgnoreEntryForHostmask:(NSString *)hostmask inChannelNamed:(nullable NSString *)channelName
+{
+	NSParameterAssert(hostmask != nil);
+
+	IRCAddressBookEntry *ignore = [IRCAddressBookEntry newIgnoreEntryForHostmask:hostmask];
+
+	if (channelName == nil) {
+		return ignore;
+	}
+
+	IRCAddressBookEntryMutable *ignoreMutable = [ignore mutableCopy];
+
+	ignoreMutable.limitedToChannels = @[channelName];
+
+	return [ignoreMutable copy];
+}
+
+/* everywhereCounts: an ignore without channels covers it too */
+- (BOOL)ignore:(IRCAddressBookEntry *)ignore coversChannelNamed:(NSString *)channelName everywhereCounts:(BOOL)everywhereCounts
+{
+	NSParameterAssert(ignore != nil);
+	NSParameterAssert(channelName != nil);
+
+	NSArray *limitedToChannels = ignore.limitedToChannels;
+
+	if (limitedToChannels.count == 0) {
+		return everywhereCounts;
+	}
+
+	IRCISupportInfo *supportInfo = self.supportInfo;
+
+	NSString *foldedChannelName = [supportInfo foldedString:channelName];
+
+	for (NSString *limitedToChannel in limitedToChannels) {
+		if ([[supportInfo foldedString:limitedToChannel] isEqualToString:foldedChannelName]) {
+			return YES;
+		}
+	}
+
+	return NO;
+}
+
 - (void)ignoreAccount:(NSString *)account ignore:(BOOL)ignore
+{
+	[self ignoreAccount:account ignore:ignore inChannelNamed:nil];
+}
+
+- (void)ignoreAccount:(NSString *)account ignore:(BOOL)ignore inChannelNamed:(nullable NSString *)channelName
 {
 	NSParameterAssert(account != nil);
 
@@ -1232,11 +1305,17 @@ static NSUInteger _aliasDepth = 0;
 	IRCAddressBookEntry *existing = nil;
 
 	for (IRCAddressBookEntry *entry in ignoreList) {
-		if ([entry checkAccountMatch:account]) {
-			existing = entry;
-
-			break;
+		if ([entry checkAccountMatch:account] == NO) {
+			continue;
 		}
+
+		if (channelName && [self ignore:entry coversChannelNamed:channelName everywhereCounts:ignore] == NO) {
+			continue;
+		}
+
+		existing = entry;
+
+		break;
 	}
 
 	NSString *mask = [@"$a:" stringByAppendingString:account];
@@ -1248,9 +1327,13 @@ static NSUInteger _aliasDepth = 0;
 			return;
 		}
 
-		[ignoreList addObject:[IRCAddressBookEntry newIgnoreEntryForHostmask:mask]];
+		[ignoreList addObject:[self newIgnoreEntryForHostmask:mask inChannelNamed:channelName]];
 
-		[self printDebugInformation:TXTLS(@"IRC[ret-20]", account, mask)];
+		if (channelName) {
+			[self printDebugInformation:TXTLS(@"IRC[ret-21]", account, mask, channelName)];
+		} else {
+			[self printDebugInformation:TXTLS(@"IRC[ret-20]", account, mask)];
+		}
 	} else {
 		if (existing == nil) {
 			[self printDebugInformation:TXTLS(@"IRC[wu0-jp]", account)];

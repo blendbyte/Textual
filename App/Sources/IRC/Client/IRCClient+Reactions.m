@@ -227,13 +227,17 @@ NS_ASSUME_NONNULL_BEGIN
 		return NO;
 	}
 
-	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+	NSString *target = [m paramAt:0];
+
+	BOOL targetIsChannel = [self stringIsChannelName:target];
+
+	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:((targetIsChannel) ? target : nil)];
 
 	if (ignoreInfo == nil) {
 		return NO;
 	}
 
-	if ([self stringIsChannelName:[m paramAt:0]]) {
+	if (targetIsChannel) {
 		return ignoreInfo.ignorePublicMessages;
 	}
 

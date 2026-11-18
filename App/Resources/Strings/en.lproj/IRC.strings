@@ -118,6 +118,8 @@ Surround \002<token>\002 with double quotes (\") if it contains a space.";
 
 /* /ignore/ command */
 "ret-20" = "Added ignore that matches \002%1$@\002 with pattern: %2$@";
+"ret-21" = "Added ignore that matches \002%1$@\002 in %3$@ only, with pattern: %2$@";
+"ign-c1" = "Usage: /%@ -channel #channel nickname";
 "jzg-g8" = "Removed ignore that matches \002%1$@\002 with pattern: %2$@";
 "wu0-jp" = "No ignores could be found that matches \002%@\002";
 "5ix-zn" = "An ignore already exists that matches \002%@\002. To change it, open the \002Ignore List\002 (\002Control 3\002).";

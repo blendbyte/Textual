@@ -39,6 +39,7 @@
 #import "IRCClient.h"
 #import "IRCClientConfig.h"
 #import "IRCAddressBook.h"
+#import "IRCISupportInfo.h"
 #import "IRCAddressBookMatchCachePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -86,26 +87,42 @@ NS_ASSUME_NONNULL_BEGIN
 	[self.cachedMatchesInt removeObjectForKey:hostmask];
 }
 
+/* Every ignore for that person, also those limited to channels (for editing them) */
 - (NSArray<IRCAddressBookEntry *> *)findIgnoresForHostmask:(NSString *)hostmask
 {
-	IRCAddressBookEntry *match = [self findAddressBookEntryForHostmask:hostmask];
-	
-	if (match && match.entryType == IRCAddressBookEntryTypeIgnore) {
-		return @[match];
+	NSParameterAssert(hostmask != nil);
+
+	IRCClient *client = self.client;
+
+	NSString *account = nil;
+
+	NSUInteger nicknameEnd = [hostmask rangeOfString:@"!"].location;
+
+	if (nicknameEnd != NSNotFound && nicknameEnd > 0) {
+		account = [client findUser:[hostmask substringToIndex:nicknameEnd]].account;
 	}
 
-	if (match && match.entryType == IRCAddressBookEntryTypeMixed) {
-		NSArray *parentEntries = match.parentEntries;
-		
-		return
-		[parentEntries filteredArrayUsingPredicate:
-		 [NSPredicate predicateWithFormat:@"entryType == %d", IRCAddressBookEntryTypeIgnore]];
+	NSMutableArray<IRCAddressBookEntry *> *ignores = [NSMutableArray array];
+
+	for (IRCAddressBookEntry *entry in client.config.ignoreList) {
+		if (entry.entryType != IRCAddressBookEntryTypeIgnore) {
+			continue;
+		}
+
+		if ([entry checkMatch:hostmask] || [entry checkAccountMatch:account]) {
+			[ignores addObject:entry];
+		}
 	}
-	
-	return @[];
+
+	return [ignores copy];
 }
 
 - (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask
+{
+	return [self findAddressBookEntryForHostmask:hostmask inChannelNamed:nil];
+}
+
+- (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask inChannelNamed:(nullable NSString *)channelName
 {
 	NSParameterAssert(hostmask != nil);
 
@@ -122,6 +139,15 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	NSString *cacheKey = ((account.length > 0) ? [NSString stringWithFormat:@"%@\n%@", hostmask, account] : hostmask);
+
+	/* Ignores limited to channels count only in those, compared as the server does */
+	IRCISupportInfo *supportInfo = client.supportInfo;
+
+	NSString *foldedChannelName = ((channelName.length > 0) ? [supportInfo foldedString:channelName] : nil);
+
+	if (foldedChannelName) {
+		cacheKey = [NSString stringWithFormat:@"%@\n#%@", cacheKey, foldedChannelName];
+	}
 
 	IRCAddressBookEntry *cachedEntry = [self.cachedMatchesInt objectForKey:cacheKey];
 	
@@ -147,6 +173,28 @@ NS_ASSUME_NONNULL_BEGIN
 	for (IRCAddressBookEntry *entry in client.config.ignoreList) {
 		if ([entry checkMatch:hostmask] == NO && [entry checkAccountMatch:account] == NO) {
 			continue;
+		}
+
+		NSArray *limitedToChannels = entry.limitedToChannels;
+
+		if (limitedToChannels.count > 0) {
+			if (foldedChannelName == nil) {
+				continue;
+			}
+
+			BOOL limitedToThisChannel = NO;
+
+			for (NSString *limitedToChannel in limitedToChannels) {
+				if ([[supportInfo foldedString:limitedToChannel] isEqualToString:foldedChannelName]) {
+					limitedToThisChannel = YES;
+
+					break;
+				}
+			}
+
+			if (limitedToThisChannel == NO) {
+				continue;
+			}
 		}
 		
 		if (matchedEntries) {

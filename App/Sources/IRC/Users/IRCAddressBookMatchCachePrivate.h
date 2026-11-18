@@ -50,6 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
  IRCAddressBookEntryTypeMixed. */
 - (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask;
 
+/* With the ignores limited to that channel too; nil: as above, where an
+ ignore limited to channels never counts */
+- (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask inChannelNamed:(nullable NSString *)channelName;
+
 - (NSArray<IRCAddressBookEntry *> *)findIgnoresForHostmask:(NSString *)hostmask;
 
 - (void)clearCachedMatches;

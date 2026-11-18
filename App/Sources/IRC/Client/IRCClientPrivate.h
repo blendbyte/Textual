@@ -170,6 +170,7 @@ enum : unsigned long long {
 /* An address book ignore entry for this person turns off previews of their
  links. Main thread (the match cache isn't thread safe). */
 - (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname;
+- (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname inChannelNamed:(nullable NSString *)channelName; // also ignores limited to that channel
 
 /* "Don't Preview Links from …": on sets it on the one ignore entry
  that matches the person, or adds an entry that only does this; off clears

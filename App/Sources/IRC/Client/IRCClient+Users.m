@@ -135,7 +135,17 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self.addressBookMatchCache findAddressBookEntryForHostmask:hostmask];
 }
 
+- (nullable IRCAddressBookEntry *)findAddressBookEntryForHostmask:(NSString *)hostmask inChannelNamed:(nullable NSString *)channelName
+{
+	return [self.addressBookMatchCache findAddressBookEntryForHostmask:hostmask inChannelNamed:channelName];
+}
+
 - (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname
+{
+	return [self ignoresInlineMediaFromNickname:nickname inChannelNamed:nil];
+}
+
+- (BOOL)ignoresInlineMediaFromNickname:(NSString *)nickname inChannelNamed:(nullable NSString *)channelName
 {
 	NSParameterAssert(nickname != nil);
 
@@ -146,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
 		hostmask = [NSString stringWithFormat:@"%@!*@*", nickname];
 	}
 
-	return [self findAddressBookEntryForHostmask:hostmask].ignoreInlineMedia;
+	return [self findAddressBookEntryForHostmask:hostmask inChannelNamed:channelName].ignoreInlineMedia;
 }
 
 - (void)setIgnoresInlineMedia:(BOOL)ignoresInlineMedia fromNickname:(NSString *)nickname

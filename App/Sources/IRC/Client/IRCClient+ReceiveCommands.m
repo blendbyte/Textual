@@ -255,10 +255,10 @@ NS_ASSUME_NONNULL_BEGIN
 		target = [target substringFromIndex:1];
 	}
 
-	/* Perform ignore check */
-	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
-
 	BOOL targetIsChannel = [self stringIsChannelName:target];
+
+	/* Perform ignore check (in a channel, also the ignores limited to it) */
+	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:((targetIsChannel) ? target : nil)];
 
 	BOOL ignoreHighlights = ((targetIsChannel) ? ignoreInfo.ignorePublicMessageHighlights : ignoreInfo.ignorePrivateMessageHighlights);
 
@@ -1435,12 +1435,12 @@ NS_ASSUME_NONNULL_BEGIN
 		message = TXTLS(@"IRC[awy-a2]", nickname);
 	}
 
-	IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
-
 	for (IRCChannel *channel in self.channelList) {
 		if (channel.isChannel == NO || [user userAssociatedWithChannel:channel] == nil) {
 			continue;
 		}
+
+		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name];
 
 		if ([self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo] == NO) {
 			continue;
@@ -1584,7 +1584,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = [self postReceivedMessage:m withText:nil destinedFor:channel];
 
 	if (printMessage && myself == NO) {
-		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
+		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:[self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name]];
 	}
 
 	/* Back after a netsplit: one line for all of them */
@@ -1672,7 +1672,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = [self postReceivedMessage:m withText:comment destinedFor:channel];
 
 	if (printMessage && myself == NO) {
-		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name];
 
 		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
@@ -1758,7 +1758,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL printMessage = [self postReceivedMessage:m withText:comment destinedFor:channel];
 
 	if (printMessage && myself == NO) {
-		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask];
+		IRCAddressBookEntry *ignoreInfo = [self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name];
 
 		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}
@@ -1887,7 +1887,7 @@ NS_ASSUME_NONNULL_BEGIN
 			BOOL printMessage = [self postReceivedMessage:m withText:comment destinedFor:channel];
 
 			if (printMessage && myself == NO) {
-				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
+				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:[self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name]];
 			}
 
 			[TVCMainWindow updateTitleFor:channel];
@@ -2133,7 +2133,7 @@ NS_ASSUME_NONNULL_BEGIN
 			BOOL printMessage = [self postReceivedMessage:m withText:newNickname destinedFor:channel];
 
 			if (printMessage && myself == NO) {
-				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:oldNicknameIgnoreInfo];
+				printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:[self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name]];
 			}
 
 			if (printMessage == NO) {
@@ -2257,7 +2257,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	/* Our own changes always show, a server has no address book entry */
 	if (printMessage && [self nicknameIsMyself:sender] == NO) {
-		IRCAddressBookEntry *ignoreInfo = ((m.senderIsServer) ? nil : [self findAddressBookEntryForHostmask:m.senderHostmask]);
+		IRCAddressBookEntry *ignoreInfo = ((m.senderIsServer) ? nil : [self findAddressBookEntryForHostmask:m.senderHostmask inChannelNamed:channel.name]);
 
 		printMessage = [self shouldPrintGeneralEventInChannel:channel addressBookEntry:ignoreInfo];
 	}

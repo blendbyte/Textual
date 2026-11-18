@@ -232,6 +232,7 @@ Certificates must meet the following criteria:
 "spp-ppl-i6" = "joins, leaves and other events";
 "spp-ppl-i7" = "file transfers";
 "spp-ppl-i8" = "previews";
+"spp-ppl-ic" = "only in %@";
 "spp-msg-leave" = "Leaving message";
 "spp-msg-leaveh" = "Shown to others when you leave a channel or disconnect.";
 "spp-msg-sleep" = "Leaving message when the Mac sleeps";

@@ -37,6 +37,8 @@
 #import <XCTest/XCTest.h>
 
 #import "IRCAddressBook.h"
+#import "IRCClientConfig.h"
+#import "IRCClientInternal.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -64,6 +66,34 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue([host checkMatch:@"anyone!user@host.example"]);
 	XCTAssertFalse([host checkMatch:@"anyone!user@hostXexample"]);
+}
+
+/* An ignore limited to a channel counts there only (any case), never
+ where there is no channel; listed for editing either way */
+- (void)testIgnoreLimitedToChannel
+{
+	IRCAddressBookEntryMutable *ignore = [[IRCAddressBookEntry newIgnoreEntryForHostmask:@"bob!*@*"] mutableCopy];
+
+	ignore.limitedToChannels = @[@"#Offtopic"];
+
+	IRCClientConfigMutable *config = [IRCClientConfig new].mutableCopy;
+
+	config.ignoreList = @[[ignore copy]];
+
+	IRCClient *client = [[IRCClient alloc] initWithConfig:config];
+
+	NSString *bob = @"bob!b@bob.example";
+
+	XCTAssertTrue([client findAddressBookEntryForHostmask:bob inChannelNamed:@"#offtopic"].ignorePublicMessages);
+	XCTAssertNil([client findAddressBookEntryForHostmask:bob inChannelNamed:@"#support"]);
+	XCTAssertNil([client findAddressBookEntryForHostmask:bob]);
+
+	XCTAssertEqual([client findIgnoresForHostmask:bob].count, (NSUInteger)1);
+
+	/* Saved and loaded with the server */
+	IRCClientConfig *reloaded = [[IRCClientConfig alloc] initWithDictionary:config.dictionaryValue];
+
+	XCTAssertEqualObjects(reloaded.ignoreList.firstObject.limitedToChannels, @[@"#Offtopic"]);
 }
 
 /* A tracked nickname is literal, even with regular expression characters */

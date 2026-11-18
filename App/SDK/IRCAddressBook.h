@@ -77,6 +77,10 @@ typedef NS_ENUM(NSUInteger, IRCAddressBookUserTrackingStatus) {
 @property (readonly) BOOL ignoreMessagesContainingMatch TEXTUAL_DEPRECATED("Never set; always NO");
 @property (readonly) BOOL trackUserActivity;
 
+/* An ignore limited to these channels (names as typed); empty: everywhere.
+ Such an ignore covers channel lines only, never private messages. */
+@property (readonly, copy) NSArray<NSString *> *limitedToChannels;
+
 /* When IRCAddressBookEntryTypeMixed is mixed, this array holds
  a reference to each entry that is mixed into the current object. */
 @property (readonly, copy, nullable) NSArray<IRCAddressBookEntry *> *parentEntries;
@@ -111,6 +115,7 @@ typedef NS_ENUM(NSUInteger, IRCAddressBookUserTrackingStatus) {
 @property (nonatomic, assign, readwrite) BOOL ignoreFileTransferRequests;
 @property (nonatomic, assign, readwrite) BOOL ignoreInlineMedia;
 @property (nonatomic, assign, readwrite) BOOL trackUserActivity;
+@property (nonatomic, copy, readwrite) NSArray<NSString *> *limitedToChannels;
 @property (nonatomic, copy, readwrite, nullable) NSArray<IRCAddressBookEntry *> *parentEntries;
 @end
 

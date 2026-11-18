@@ -441,15 +441,24 @@ final class ServerPropertiesPeoplePane: TDCServerPropertiesPane, ObservableObjec
 
 		let ignored = parts.filter { $0.0 }.map { ServerPropertiesText($0.1) }
 
+		var summary: String
+
 		if (ignored.isEmpty) {
-			return ServerPropertiesText("spp-ppl-i0")
+			summary = ServerPropertiesText("spp-ppl-i0")
 		} else if (ignored.count == parts.count) {
-			return ServerPropertiesText("spp-ppl-ia")
+			summary = ServerPropertiesText("spp-ppl-ia")
+		} else {
+			let list = ListFormatter.localizedString(byJoining: ignored)
+
+			summary = (list.prefix(1).uppercased() + list.dropFirst())
 		}
 
-		let summary = ListFormatter.localizedString(byJoining: ignored)
+		/* Limited to channels: where */
+		if (entry.limitedToChannels.isEmpty == false) {
+			summary += " · " + ServerPropertiesText("spp-ppl-ic", entry.limitedToChannels.joined(separator: ", "))
+		}
 
-		return (summary.prefix(1).uppercased() + summary.dropFirst())
+		return summary
 	}
 }
 

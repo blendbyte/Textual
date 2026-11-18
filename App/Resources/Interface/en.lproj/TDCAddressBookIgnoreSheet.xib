@@ -10,6 +10,7 @@
             <connections>
                 <outlet property="ignoreClientToClientProtocolCheck" destination="dej-2i-HSG" id="FzP-Lw-FT4"/>
                 <outlet property="ignoreEntryHostmaskTextField" destination="298" id="8f4-Xr-W55"/>
+                <outlet property="limitedToChannelsTextField" destination="onl-Ch-F01" id="onl-Ch-O01"/>
                 <outlet property="okButton" destination="485" id="5P8-TR-FGV"/>
                 <outlet property="sheet" destination="5" id="nse-Nb-KaW"/>
                 <outlet property="ignoreFileTransferRequestsCheck" destination="FDs-Jz-PlJ" id="xHx-kw-Fld"/>
@@ -27,12 +28,34 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="5" userLabel="Ignore User Window">
             <windowStyleMask key="styleMask" titled="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="407" y="164" width="526" height="378"/>
+            <rect key="contentRect" x="407" y="164" width="526" height="408"/>
             <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1440"/>
             <view key="contentView" id="6">
-                <rect key="frame" x="0.0" y="0.0" width="534" height="378"/>
+                <rect key="frame" x="0.0" y="0.0" width="534" height="408"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
+                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="onl-Ch-L01">
+                        <rect key="frame" x="18" y="310" width="69" height="16"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Only in:" id="onl-Ch-C01">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="onl-Ch-F01">
+                        <rect key="frame" x="93" y="306" width="421" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="22" id="onl-Ch-K01"/>
+                        </constraints>
+                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Channels, separated by spaces (empty: everywhere)" drawsBackground="YES" usesSingleLineMode="YES" id="onl-Ch-C02">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <accessibilityConnection property="title" destination="onl-Ch-L01" id="onl-Ch-A01"/>
+                        </connections>
+                    </textField>
                     <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="298" customClass="TVCValidatedTextField">
                         <rect key="frame" x="93" y="336" width="421" height="22"/>
                         <constraints>
@@ -299,7 +322,12 @@ DQ
                     <constraint firstItem="314" firstAttribute="top" secondItem="tB2-1G-iBQ" secondAttribute="bottom" constant="18" id="Iuj-2v-YoV"/>
                     <constraint firstItem="632" firstAttribute="top" secondItem="sN8-a1-QLi" secondAttribute="bottom" constant="18" id="Lgl-Ge-q4K"/>
                     <constraint firstItem="296" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="20" symbolic="YES" id="McC-id-swD"/>
-                    <constraint firstItem="tB2-1G-iBQ" firstAttribute="top" secondItem="298" secondAttribute="bottom" constant="16" id="O6l-Qf-0og"/>
+                    <constraint firstItem="tB2-1G-iBQ" firstAttribute="top" secondItem="onl-Ch-F01" secondAttribute="bottom" constant="16" id="O6l-Qf-0og"/>
+                    <constraint firstItem="onl-Ch-F01" firstAttribute="top" secondItem="298" secondAttribute="bottom" constant="8" id="onl-Ch-K02"/>
+                    <constraint firstItem="onl-Ch-F01" firstAttribute="leading" secondItem="298" secondAttribute="leading" id="onl-Ch-K03"/>
+                    <constraint firstItem="onl-Ch-F01" firstAttribute="trailing" secondItem="298" secondAttribute="trailing" id="onl-Ch-K04"/>
+                    <constraint firstItem="onl-Ch-L01" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="20" symbolic="YES" id="onl-Ch-K05"/>
+                    <constraint firstItem="onl-Ch-L01" firstAttribute="firstBaseline" secondItem="onl-Ch-F01" secondAttribute="firstBaseline" id="onl-Ch-K06"/>
                     <constraint firstItem="298" firstAttribute="leading" secondItem="296" secondAttribute="trailing" constant="8" symbolic="YES" id="Qt2-Ua-ETG"/>
                     <constraint firstItem="sN8-a1-QLi" firstAttribute="top" secondItem="PQp-5W-SVj" secondAttribute="bottom" constant="16" id="Xgm-Tr-9Cb"/>
                     <constraint firstItem="tB2-1G-iBQ" firstAttribute="centerX" secondItem="6" secondAttribute="centerX" id="adg-sE-RqU"/>

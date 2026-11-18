@@ -1477,7 +1477,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 		if (nickname.length > 0 &&
 			logLine.memberType != TVCLogLineMemberTypeLocalUser &&
-			[self.associatedClient ignoresInlineMediaFromNickname:nickname])
+			[self.associatedClient ignoresInlineMediaFromNickname:nickname inChannelNamed:self.ignoreChannelName])
 		{
 			return;
 		}
@@ -1531,7 +1531,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 				NSString *nickname = message.nickname;
 
-				if (nickname.length > 0 && message.isSelf == NO && [self.associatedClient ignoresInlineMediaFromNickname:nickname]) {
+				if (nickname.length > 0 && message.isSelf == NO && [self.associatedClient ignoresInlineMediaFromNickname:nickname inChannelNamed:self.ignoreChannelName]) {
 					return;
 				}
 
@@ -2316,7 +2316,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	NSString *senderNickname = logLine.nickname;
 
 	if (senderNickname.length > 0 && logLine.memberType != TVCLogLineMemberTypeLocalUser && [NSThread isMainThread]) {
-		ignoreInlineMedia = [self.associatedClient ignoresInlineMediaFromNickname:senderNickname];
+		ignoreInlineMedia = [self.associatedClient ignoresInlineMediaFromNickname:senderNickname inChannelNamed:self.ignoreChannelName];
 
 		/* A private message from a stranger: a link to their own server would
 		 tell them this Mac's address. Previews load once you wrote there, or
@@ -2654,6 +2654,14 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	contextObject.lineNumber = logLine.uniqueIdentifier;
 
 	completionBlock(contextObject);
+}
+
+/* For ignores limited to channels: this view's channel, if it is one */
+- (nullable NSString *)ignoreChannelName
+{
+	IRCChannel *channel = self.associatedChannel;
+
+	return ((channel.isChannel) ? channel.name : nil);
 }
 
 - (NSDictionary<NSString *, id> *)rendererAttributesForLogLine:(TVCLogLine *)logLine

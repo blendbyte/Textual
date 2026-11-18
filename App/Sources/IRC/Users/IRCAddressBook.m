@@ -71,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	SetVariableIfNil(self->_hostmask, @"")
 	SetVariableIfNil(self->_hostmaskRegularExpression, @"")
+	SetVariableIfNil(self->_limitedToChannels, @[])
 
 	SetVariableIfNil(self->_uniqueIdentifier, [NSString stringWithUUID])
 }
@@ -147,6 +148,8 @@ NS_ASSUME_NONNULL_BEGIN
 		[dic assignBoolTo:&self->_ignorePrivateMessages forKey:@"ignorePrivateMessages"];
 		[dic assignBoolTo:&self->_ignorePublicMessageHighlights forKey:@"ignorePublicMessageHighlights"];
 		[dic assignBoolTo:&self->_ignorePublicMessages forKey:@"ignorePublicMessages"];
+
+		[dic assignArrayTo:&self->_limitedToChannels forKey:@"limitedToChannels"];
 
 		/* Load legacy keys (if they exist) */
 		[dic assignBoolTo:&self->_ignoreClientToClientProtocol forKey:@"ignoreCTCP"];
@@ -316,6 +319,10 @@ NS_ASSUME_NONNULL_BEGIN
 		[dic setBool:self.ignorePrivateMessages forKey:@"ignorePrivateMessages"];
 		[dic setBool:self.ignorePublicMessageHighlights forKey:@"ignorePublicMessageHighlights"];
 		[dic setBool:self.ignorePublicMessages forKey:@"ignorePublicMessages"];
+
+		if (self.limitedToChannels.count > 0) {
+			[dic setObject:self.limitedToChannels forKey:@"limitedToChannels"];
+		}
 	}
 
 	if (entryType == IRCAddressBookEntryTypeUserTracking ||
@@ -345,6 +352,8 @@ NS_ASSUME_NONNULL_BEGIN
 	config->_trackingNickname = self->_trackingNickname;
 
 	config->_parentEntries = self->_parentEntries;
+
+	config->_limitedToChannels = self->_limitedToChannels;
 
 	config = [config initWithDictionary:self.dictionaryValueForCopy];
 
@@ -379,6 +388,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic ignorePublicMessageHighlights;
 @dynamic ignorePublicMessages;
 @dynamic trackUserActivity;
+@dynamic limitedToChannels;
 @dynamic parentEntries;
 
 + (BOOL)isMutable
@@ -471,6 +481,15 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_ignorePublicMessages != ignorePublicMessages) {
 		self->_ignorePublicMessages = ignorePublicMessages;
+	}
+}
+
+- (void)setLimitedToChannels:(NSArray<NSString *> *)limitedToChannels
+{
+	NSParameterAssert(limitedToChannels != nil);
+
+	if (self->_limitedToChannels != limitedToChannels) {
+		self->_limitedToChannels = [limitedToChannels copy];
 	}
 }
 

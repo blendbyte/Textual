@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TDCAddressBookIgnoreSheet ()
 @property (nonatomic, strong) IBOutlet TVCValidatedTextField *ignoreEntryHostmaskTextField;
+@property (nonatomic, strong) IBOutlet NSTextField *limitedToChannelsTextField;
 @property (nonatomic, strong) IBOutlet NSButton *ignoreClientToClientProtocolCheck;
 @property (nonatomic, strong) IBOutlet NSButton *ignoreFileTransferRequestsCheck;
 @property (nonatomic, strong) IBOutlet NSButton *ignoreGeneralEventMessagesCheck;
@@ -84,6 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	self.ignoreEntryHostmaskTextField.stringValue = self.config.hostmask;
 
+	self.limitedToChannelsTextField.stringValue = [self.config.limitedToChannels componentsJoinedByString:@" "];
+
 	self.ignoreClientToClientProtocolCheck.state = self.config.ignoreClientToClientProtocol;
 	self.ignoreFileTransferRequestsCheck.state = self.config.ignoreFileTransferRequests;
 	self.ignoreGeneralEventMessagesCheck.state = self.config.ignoreGeneralEventMessages;
@@ -98,6 +101,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)saveConfig
 {
 	self.config.hostmask = self.ignoreEntryHostmaskTextField.value;
+
+	/* Channel names, separated by spaces or commas (which a name can't contain) */
+	NSMutableArray<NSString *> *limitedToChannels = [NSMutableArray array];
+
+	for (NSString *channelName in [self.limitedToChannelsTextField.stringValue componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" ,\t"]]) {
+		if (channelName.length > 0 && [limitedToChannels containsObjectIgnoringCase:channelName] == NO) {
+			[limitedToChannels addObject:channelName];
+		}
+	}
+
+	self.config.limitedToChannels = limitedToChannels;
 
 	self.config.ignoreClientToClientProtocol = (self.ignoreClientToClientProtocolCheck.state == NSControlStateValueOn);
 	self.config.ignoreFileTransferRequests = (self.ignoreFileTransferRequestsCheck.state == NSControlStateValueOn);
