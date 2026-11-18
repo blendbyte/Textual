@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 		@"filterIgnoresOperators"		: @(YES),
 		@"filterLimitedToMyself"		: @(NO),
 		@"filterLogMatch"				: @(NO),
+		@"filterKeepsChecking"			: @(NO),
 
 		@"filterLimitedToValue"			: @(TPI_ChatFilterLimitToValueNoLimit),
 		@"filterAgeComparator"			: @(TPI_ChatFilterAgeComparatorGreaterThan)
@@ -118,6 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[defaultsMutable assignBoolTo:&self->_filterIgnoreOperators forKey:@"filterIgnoresOperators"];
 	[defaultsMutable assignBoolTo:&self->_filterLimitedToMyself forKey:@"filterLimitedToMyself"];
 	[defaultsMutable assignBoolTo:&self->_filterLogMatch forKey:@"filterLogMatch"];
+	[defaultsMutable assignBoolTo:&self->_filterKeepsChecking forKey:@"filterKeepsChecking"];
 
 	[defaultsMutable assignStringTo:&self->_filterAction forKey:@"filterAction"];
 	[defaultsMutable assignStringTo:&self->_filterForwardToDestination forKey:@"filterForwardToDestination"];
@@ -192,6 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 	[dic setBool:self.filterIgnoreOperators forKey:@"filterIgnoresOperators"];
 	[dic setBool:self.filterLimitedToMyself forKey:@"filterLimitedToMyself"];
 	[dic setBool:self.filterLogMatch forKey:@"filterLogMatch"];
+	[dic setBool:self.filterKeepsChecking forKey:@"filterKeepsChecking"];
 
 	[dic setUnsignedInteger:self.filterActionFloodControlInterval forKey:@"filterActionFloodControlInterval"];
 	[dic setUnsignedInteger:self.filterEvents forKey:@"filterEvents"];
@@ -344,6 +347,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic filterIgnoreContent;
 @dynamic filterIgnoreOperators;
 @dynamic filterLogMatch;
+@dynamic filterKeepsChecking;
 @dynamic filterLimitedToMyself;
 @dynamic filterEvents;
 @dynamic filterLimitedToValue;
@@ -379,6 +383,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	if (self->_filterIgnoreOperators != filterIgnoreOperators) {
 		self->_filterIgnoreOperators = filterIgnoreOperators;
+	}
+}
+
+- (void)setFilterKeepsChecking:(BOOL)filterKeepsChecking
+{
+	if (self->_filterKeepsChecking != filterKeepsChecking) {
+		self->_filterKeepsChecking = filterKeepsChecking;
 	}
 }
 

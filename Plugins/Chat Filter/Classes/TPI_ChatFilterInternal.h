@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _filterIgnoreContent;
 	BOOL _filterIgnoreOperators;
 	BOOL _filterLogMatch;
+	BOOL _filterKeepsChecking;
 	BOOL _filterLimitedToMyself;
 	TPI_ChatFilterEventType _filterEvents;
 	TPI_ChatFilterLimitToValue _filterLimitedToValue;

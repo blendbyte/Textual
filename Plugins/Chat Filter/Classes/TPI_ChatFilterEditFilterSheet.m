@@ -80,6 +80,7 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 @property (nonatomic, weak) IBOutlet NSButton *filterIgnoreContentCheck;
 @property (nonatomic, weak) IBOutlet NSButton *filterIgnoreOperatorsCheck;
 @property (nonatomic, weak) IBOutlet NSButton *filterLogMatchCheck;
+@property (nonatomic, weak) IBOutlet NSButton *filterKeepsCheckingCheck;
 @property (nonatomic, weak) IBOutlet NSButton *filterEventPlainTextMessageCheck;
 @property (nonatomic, weak) IBOutlet NSButton *filterEventActionMessageCheck;
 @property (nonatomic, weak) IBOutlet NSButton *filterEventNoticeMessageCheck;
@@ -197,6 +198,8 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 
 	self.filterLogMatchCheck.state = self.filter.filterLogMatch;
 
+	self.filterKeepsCheckingCheck.state = self.filter.filterKeepsChecking;
+
 	self.filterLimitedToMyselfCheck.state = self.filter.filterLimitedToMyself;
 
 	self.filterEventPlainTextMessageCheck.state = [self.filter isEventTypeEnabled:TPI_ChatFilterEventTypePlainTextMessage];
@@ -267,6 +270,8 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 	self.filter.filterIgnoreContent = (self.filterIgnoreContentCheck.state == NSControlStateValueOn);
 
 	self.filter.filterLogMatch = (self.filterLogMatchCheck.state == NSControlStateValueOn);
+
+	self.filter.filterKeepsChecking = (self.filterKeepsCheckingCheck.state == NSControlStateValueOn);
 
 	self.filter.filterLimitedToMyself = (self.filterLimitedToMyselfCheck.state == NSControlStateValueOn);
 
@@ -922,7 +927,16 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 		   @"%_Parameter_5_%",
 		   @"%_Parameter_6_%",
 		   @"%_Parameter_7_%",
-		   @"%_Parameter_8_%"
+		   @"%_Parameter_8_%",
+		   @"%_match_1_%",
+		   @"%_match_2_%",
+		   @"%_match_3_%",
+		   @"%_match_4_%",
+		   @"%_match_5_%",
+		   @"%_match_6_%",
+		   @"%_match_7_%",
+		   @"%_match_8_%",
+		   @"%_match_9_%"
 		];
 	}
 
@@ -953,7 +967,16 @@ typedef NS_ENUM(NSUInteger, TPI_ChatFilterEditFilterSheetSelection)
 		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[jen-7o]"),
 		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[t5v-4o]"),
 		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[vyf-el]"),
-		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[0x4-ib]")
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[0x4-ib]"),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 1UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 2UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 3UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 4UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 5UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 6UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 7UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 8UL),
+		   TPILocalizedString(@"TPI_ChatFilterEditFilterSheet[mg1-tk]", 9UL)
 		];
 	}
 

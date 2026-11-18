@@ -27,7 +27,7 @@
 
 Click the + button in the bottom left corner to add your first filter.
 
-Drag and drop filters to change their priority. The table is ranked highest priority to lowest. Only one filter can match a specific message or event. </string>
+Drag and drop filters to change their priority. The table is ranked highest priority to lowest. The first filter that matches a message or event handles it, unless it lets later filters check it too (Advanced). </string>
                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>

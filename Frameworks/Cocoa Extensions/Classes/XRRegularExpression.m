@@ -171,6 +171,25 @@ NS_ASSUME_NONNULL_BEGIN
 	return ([self resultsInString:haystack withRegex:needle withoutCase:caseless firstOnly:YES timedOut:timedOut].count > 0);
 }
 
++ (nullable NSArray<NSString *> *)captureGroupsOfFirstMatchInString:(NSString *)haystack withRegex:(NSString *)needle withoutCase:(BOOL)caseless timedOut:(nullable BOOL *)timedOut
+{
+	NSTextCheckingResult *result = [self resultsInString:haystack withRegex:needle withoutCase:caseless firstOnly:YES timedOut:timedOut].firstObject;
+
+	if (result == nil) {
+		return nil;
+	}
+
+	NSMutableArray<NSString *> *groups = [NSMutableArray arrayWithCapacity:result.numberOfRanges];
+
+	for (NSUInteger rangeIndex = 1; rangeIndex < result.numberOfRanges; rangeIndex++) {
+		NSRange range = [result rangeAtIndex:rangeIndex];
+
+		[groups addObject:((range.location == NSNotFound) ? @"" : [haystack substringWithRange:range])];
+	}
+
+	return [groups copy];
+}
+
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle
 {
 	return [self string:haystack rangeOfRegex:needle withoutCase:NO];

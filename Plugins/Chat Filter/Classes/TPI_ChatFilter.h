@@ -72,6 +72,7 @@ typedef NS_OPTIONS(NSUInteger, TPI_ChatFilterEventType) {
 @property (readonly) BOOL filterIgnoreContent;
 @property (readonly) BOOL filterIgnoreOperators;
 @property (readonly) BOOL filterLogMatch;
+@property (readonly) BOOL filterKeepsChecking; // after a match, later filters see the line too
 @property (readonly) BOOL filterLimitedToMyself;
 @property (readonly) TPI_ChatFilterEventType filterEvents;
 @property (readonly) TPI_ChatFilterLimitToValue filterLimitedToValue;
@@ -104,6 +105,7 @@ typedef NS_OPTIONS(NSUInteger, TPI_ChatFilterEventType) {
 @property (nonatomic, assign, readwrite) BOOL filterIgnoreContent;
 @property (nonatomic, assign, readwrite) BOOL filterIgnoreOperators;
 @property (nonatomic, assign, readwrite) BOOL filterLogMatch;
+@property (nonatomic, assign, readwrite) BOOL filterKeepsChecking;
 @property (nonatomic, assign, readwrite) BOOL filterLimitedToMyself;
 @property (nonatomic, assign, readwrite) TPI_ChatFilterEventType filterEvents;
 @property (nonatomic, assign, readwrite) TPI_ChatFilterLimitToValue filterLimitedToValue;

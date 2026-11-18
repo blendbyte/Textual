@@ -48,6 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle withoutCase:(BOOL)caseless;
 + (BOOL)string:(NSString *)haystack isMatchedByRegex:(NSString *)needle withoutCase:(BOOL)caseless timedOut:(nullable BOOL *)timedOut; // timedOut: YES when the search was abandoned (NO is returned)
 
+/* The first match's capture groups, group 1 first (an empty string for a
+ group that took no part); nil without a match, or when the search was
+ abandoned (timedOut says which) */
++ (nullable NSArray<NSString *> *)captureGroupsOfFirstMatchInString:(NSString *)haystack withRegex:(NSString *)needle withoutCase:(BOOL)caseless timedOut:(nullable BOOL *)timedOut;
+
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle; // caseless = NO
 + (NSRange)string:(NSString *)haystack rangeOfRegex:(NSString *)needle withoutCase:(BOOL)caseless;
 

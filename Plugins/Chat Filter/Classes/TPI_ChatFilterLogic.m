@@ -237,8 +237,11 @@ NS_ASSUME_NONNULL_BEGIN
 	return YES;
 }
 
-- (BOOL)testFilterMatch:(TPI_ChatFilter *)filter againstText:(nullable NSString *)text allowingNilText:(BOOL)allowingNilText matchTimedOut:(BOOL *)matchTimedOut
+/* matchGroups: the text pattern's capture groups, for %_match_1_% and on */
+- (BOOL)testFilterMatch:(TPI_ChatFilter *)filter againstText:(nullable NSString *)text allowingNilText:(BOOL)allowingNilText matchTimedOut:(BOOL *)matchTimedOut matchGroups:(NSArray<NSString *> * _Nullable * _Nonnull)matchGroups
 {
+	*matchGroups = nil;
+
 	/* Filter text */
 	if (text == nil) {
 		if (allowingNilText) {
@@ -258,7 +261,9 @@ NS_ASSUME_NONNULL_BEGIN
 		/* A search that took too long counts as a match (see the sender match) */
 		BOOL timedOut = NO;
 
-		if ([XRRegularExpression string:text isMatchedByRegex:filterMatch withoutCase:YES timedOut:&timedOut] == NO && timedOut == NO) {
+		NSArray *groups = [XRRegularExpression captureGroupsOfFirstMatchInString:text withRegex:filterMatch withoutCase:YES timedOut:&timedOut];
+
+		if (groups == nil && timedOut == NO) {
 			/* The input text is not matched by the filter match.
 			 Continue to the next filter to try again. */
 
@@ -268,6 +273,8 @@ NS_ASSUME_NONNULL_BEGIN
 		if (timedOut) {
 			*matchTimedOut = YES;
 		}
+
+		*matchGroups = groups;
 	}
 
 	return YES;
@@ -277,6 +284,9 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	/* Begin processing filters */
 	NSArray *filters = self.parentObject.filterArrayController.content;
+
+	/* Any filter that matched hides the line, also one that let later filters see it */
+	BOOL hideContent = NO;
 
 	for (TPI_ChatFilter *filter in filters) {
 		@autoreleasepool {
@@ -298,8 +308,14 @@ NS_ASSUME_NONNULL_BEGIN
 				continue;
 			}
 
-			if ([self testFilterMatch:filter againstText:text allowingNilText:YES matchTimedOut:&matchTimedOut] == NO) {
+			NSArray<NSString *> *matchGroups = nil;
+
+			if ([self testFilterMatch:filter againstText:text allowingNilText:YES matchTimedOut:&matchTimedOut matchGroups:&matchGroups] == NO) {
 				continue;
+			}
+
+			if (filter.filterIgnoreContent) {
+				hideContent = YES;
 			}
 
 			/* Matched only because a search took too long: hide the line (if the
@@ -307,14 +323,22 @@ NS_ASSUME_NONNULL_BEGIN
 			if (matchTimedOut) {
 				[self reportTimedOutFilter:filter onClient:client];
 
-				return (filter.filterIgnoreContent == NO);
+				if (filter.filterKeepsChecking) {
+					continue;
+				}
+
+				return (hideContent == NO);
 			}
 
 			/* History, playback and the user's own lines are filtered (hidden)
 			 like any other, but their actions and copies ran when they first
 			 happened */
 			if (client.receivedMessageIsReplay) {
-				return (filter.filterIgnoreContent == NO);
+				if (filter.filterKeepsChecking) {
+					continue;
+				}
+
+				return (hideContent == NO);
 			}
 
 			/* Perform actions defined by filter */
@@ -324,7 +348,8 @@ NS_ASSUME_NONNULL_BEGIN
 								  authoredBy:textAuthor
 								 destinedFor:textDestination
 									onClient:client
-							referenceMessage:referenceMessage];
+							referenceMessage:referenceMessage
+								 matchGroups:matchGroups];
 			});
 
 			/* Forward a copy of the message to a query? */
@@ -348,22 +373,25 @@ NS_ASSUME_NONNULL_BEGIN
 				 }];
 			}
 
-			if (filter.filterIgnoreContent) {
-				return NO; // Ignore original content
+			/* Once a filter matches, unless it lets later filters see the line too */
+			if (filter.filterKeepsChecking) {
+				continue;
 			}
 
-			/* Return once the first filter matches */
-			return YES;
+			return (hideContent == NO); // NO: hide the original content
 		} // @autorelease
 	} // for
 
-	return YES;
+	return (hideContent == NO);
 }
 
 - (BOOL)receivedText:(NSString *)text authoredBy:(IRCPrefix *)textAuthor destinedFor:(nullable IRCChannel *)textDestination asLineType:(TVCLogLineType)lineType onClient:(IRCClient *)client receivedAt:(NSDate *)receivedAt wasEncrypted:(BOOL)wasEncrypted
 {
 	/* Begin processing filters */
 	NSArray *filters = self.parentObject.filterArrayController.content;
+
+	/* Any filter that matched hides the line, also one that let later filters see it */
+	BOOL hideContent = NO;
 
 	for (TPI_ChatFilter *filter in filters) {
 		@autoreleasepool {
@@ -393,8 +421,14 @@ NS_ASSUME_NONNULL_BEGIN
 				continue;
 			}
 
-			if ([self testFilterMatch:filter againstText:text allowingNilText:NO matchTimedOut:&matchTimedOut] == NO) {
+			NSArray<NSString *> *matchGroups = nil;
+
+			if ([self testFilterMatch:filter againstText:text allowingNilText:NO matchTimedOut:&matchTimedOut matchGroups:&matchGroups] == NO) {
 				continue;
+			}
+
+			if (filter.filterIgnoreContent) {
+				hideContent = YES;
 			}
 
 			/* Matched only because a search took too long: hide the line (if the
@@ -402,14 +436,22 @@ NS_ASSUME_NONNULL_BEGIN
 			if (matchTimedOut) {
 				[self reportTimedOutFilter:filter onClient:client];
 
-				return (filter.filterIgnoreContent == NO);
+				if (filter.filterKeepsChecking) {
+					continue;
+				}
+
+				return (hideContent == NO);
 			}
 
 			/* History, playback and the user's own lines are filtered (hidden)
 			 like any other, but their actions and copies ran when they first
 			 happened */
 			if (client.receivedMessageIsReplay) {
-				return (filter.filterIgnoreContent == NO);
+				if (filter.filterKeepsChecking) {
+					continue;
+				}
+
+				return (hideContent == NO);
 			}
 
 			/* Perform actions defined by filter */
@@ -419,7 +461,8 @@ NS_ASSUME_NONNULL_BEGIN
 								  authoredBy:textAuthor
 								 destinedFor:textDestination
 									onClient:client
-							referenceMessage:nil];
+							referenceMessage:nil
+								 matchGroups:matchGroups];
 			});
 
 			/* Forward a copy of the message to a query? */
@@ -463,19 +506,19 @@ NS_ASSUME_NONNULL_BEGIN
 				 }];
 			}
 
-			if (filter.filterIgnoreContent) {
-				return NO; // Ignore original content
+			/* Once a filter matches, unless it lets later filters see the line too */
+			if (filter.filterKeepsChecking) {
+				continue;
 			}
 
-			/* Return once the first filter matches */
-			return YES;
+			return (hideContent == NO); // NO: hide the original content
 		} // @autorelease
 	} // for
 
-	return YES;
+	return (hideContent == NO);
 }
 
-- (void)performActionForFilter:(TPI_ChatFilter *)filter withOriginalMessage:(nullable NSString *)text authoredBy:(IRCPrefix *)textAuthor destinedFor:(IRCChannel *)textDestination onClient:(IRCClient *)client referenceMessage:(nullable IRCMessage *)referenceMessage
+- (void)performActionForFilter:(TPI_ChatFilter *)filter withOriginalMessage:(nullable NSString *)text authoredBy:(IRCPrefix *)textAuthor destinedFor:(IRCChannel *)textDestination onClient:(IRCClient *)client referenceMessage:(nullable IRCMessage *)referenceMessage matchGroups:(nullable NSArray<NSString *> *)matchGroups
 {
 	if ([self isItSafeToPerformActionForFilter:filter] == NO) {
 		return;
@@ -510,6 +553,13 @@ NS_ASSUME_NONNULL_BEGIN
 		NSString *placeholder = [NSString stringWithFormat:@"%%_Parameter_%lu_%%", paramIndex];
 
 		values[placeholder] = ((paramIndex < params.count) ? params[paramIndex] : @"");
+	}
+
+	/* The text pattern's groups: "deployed (\S+)" puts the version in %_match_1_% */
+	for (NSUInteger groupIndex = 1; groupIndex <= 9; groupIndex++) {
+		NSString *placeholder = [NSString stringWithFormat:@"%%_match_%lu_%%", groupIndex];
+
+		values[placeholder] = ((groupIndex <= matchGroups.count) ? matchGroups[(groupIndex - 1)] : @"");
 	}
 
 	for (NSString *actionCommand in [self.class commandsForFilterAction:filterAction withValues:values]) {

@@ -48,6 +48,7 @@
                 <outlet property="filterLimitedToMyselfCheck" destination="X5X-m4-re0" id="9Zk-xV-VDm"/>
                 <outlet property="filterLimitedToSelectionHostView" destination="akH-fU-k99" id="E06-30-IMS"/>
                 <outlet property="filterLogMatchCheck" destination="A8t-L5-qUs" id="ER5-sB-xJw"/>
+                <outlet property="filterKeepsCheckingCheck" destination="kpC-Lt-r01" id="kpC-Lt-o01"/>
                 <outlet property="filterMatchTextField" destination="TYu-Qh-WKq" id="ODf-sf-0P0"/>
                 <outlet property="filterNotesTextField" destination="Poo-f2-StF" id="gsx-YB-cca"/>
                 <outlet property="filterSenderMatchTextField" destination="ovl-ei-0Qj" id="xra-9z-BwJ"/>
@@ -964,10 +965,10 @@ This information is for your records and does not alter the behavior of the filt
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="14" verticalStackHuggingPriority="250" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RDw-Uz-qQG">
-                                            <rect key="frame" x="47" y="422" width="449" height="46"/>
+                                            <rect key="frame" x="47" y="390" width="449" height="78"/>
                                             <subviews>
                                                 <button translatesAutoresizingMaskIntoConstraints="NO" id="vdu-cW-fcy">
-                                                    <rect key="frame" x="-2" y="29" width="160" height="18"/>
+                                                    <rect key="frame" x="-2" y="61" width="160" height="18"/>
                                                     <buttonCell key="cell" type="check" title="Hide original message" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="EeO-VK-V0E">
                                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                         <font key="font" metaFont="system"/>
@@ -977,7 +978,7 @@ This information is for your records and does not alter the behavior of the filt
                                                     </buttonCell>
                                                 </button>
                                                 <button translatesAutoresizingMaskIntoConstraints="NO" id="A8t-L5-qUs">
-                                                    <rect key="frame" x="-2" y="-1" width="451" height="18"/>
+                                                    <rect key="frame" x="-2" y="31" width="451" height="18"/>
                                                     <buttonCell key="cell" type="check" title="Log to a query when a filter match is found and an action is performed" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="EgQ-6a-Tdo">
                                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                         <font key="font" metaFont="system"/>
@@ -986,12 +987,21 @@ This information is for your records and does not alter the behavior of the filt
                                                         </connections>
                                                     </buttonCell>
                                                 </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="kpC-Lt-r01">
+                                                    <rect key="frame" x="-2" y="-1" width="400" height="18"/>
+                                                    <buttonCell key="cell" type="check" title="Keep checking later filters after this one matches" bezelStyle="regularSquare" imagePosition="left" inset="2" id="kpC-Lt-c01">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                </button>
                                             </subviews>
                                             <visibilityPriorities>
                                                 <integer value="1000"/>
                                                 <integer value="1000"/>
+                                                <integer value="1000"/>
                                             </visibilityPriorities>
                                             <customSpacing>
+                                                <real value="3.4028234663852886e+38"/>
                                                 <real value="3.4028234663852886e+38"/>
                                                 <real value="3.4028234663852886e+38"/>
                                             </customSpacing>
