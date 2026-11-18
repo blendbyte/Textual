@@ -481,6 +481,17 @@ final class ChannelPropertiesModel: ObservableObject
 		(TPCPreferences.messageArchiveKeepPeriod != .off)
 	}
 
+	/* The switch covers text logs too */
+	var textLogsAreOn: Bool
+	{
+		TPCPreferences.logToDiskIsEnabled()
+	}
+
+	var anythingIsKept: Bool
+	{
+		(archiveIsOn || textLogsAreOn)
+	}
+
 	/* Left out with its whole server */
 	var serverIsExcludedFromArchive: Bool
 	{
@@ -489,10 +500,14 @@ final class ChannelPropertiesModel: ObservableObject
 
 	var archiveHelp: String
 	{
-		if (archiveIsOn == false) {
+		if (anythingIsKept == false) {
 			return ChannelPropertiesText("cp-arc-off")
 		} else if (serverIsExcludedFromArchive) {
 			return ChannelPropertiesText("cp-arc-srv")
+		} else if (archiveIsOn == false) {
+			return ChannelPropertiesText("cp-arc-hl")
+		} else if (textLogsAreOn == false) {
+			return ChannelPropertiesText("cp-arc-ha")
 		}
 
 		return ChannelPropertiesText("cp-arc-h")
@@ -768,7 +783,7 @@ struct ChannelPropertiesView: View
 	{
 		Section(ChannelPropertiesText("cp-arc-t")) {
 			SettingToggle(title: ChannelPropertiesText("arc-c1"), help: model.archiveHelp, isOn: $model.keepsInArchive)
-				.disabled(model.archiveIsOn == false)
+				.disabled(model.anythingIsKept == false)
 
 			if (model.isNew == false) {
 				LabeledContent {

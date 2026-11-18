@@ -48,6 +48,7 @@
 #import "TDCSheetBase.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TLOFileLoggerPrivate.h"
+#import "IRCClientConfig.h"
 #import "TLOInputHistoryPrivate.h"
 #import "TLOLocalization.h"
 #import "IRCClientPrivate.h"
@@ -657,6 +658,11 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	NSParameterAssert(logLine != nil);
 
 	if (self.isUtility || [TPCPreferences logToDiskIsEnabled] == NO) {
+		return;
+	}
+
+	/* Left out of the message archive: out of the text logs too */
+	if (self.config.excludedFromArchive || self.associatedClient.config.excludedFromArchive) {
 		return;
 	}
 

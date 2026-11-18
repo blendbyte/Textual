@@ -161,6 +161,11 @@ NS_ASSUME_NONNULL_BEGIN
 		return;
 	}
 
+	/* Left out of the message archive: out of the text logs too */
+	if (self.config.excludedFromArchive) {
+		return;
+	}
+
 	// Perform addition before if statement to avoid infinite loop
 	self.logFileSessionCount += 1;
 

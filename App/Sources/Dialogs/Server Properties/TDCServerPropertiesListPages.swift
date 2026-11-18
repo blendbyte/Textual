@@ -633,6 +633,25 @@ final class ServerPropertiesMessagesPane: TDCServerPropertiesPane, ObservableObj
 		(TPCPreferences.messageArchiveKeepPeriod != .off)
 	}
 
+	/* The switch covers text logs too */
+	var textLogsAreOn: Bool
+	{
+		TPCPreferences.logToDiskIsEnabled()
+	}
+
+	var archiveHelp: String
+	{
+		if (archiveIsOn == false && textLogsAreOn == false) {
+			return ServerPropertiesText("spp-msg-archoff")
+		} else if (archiveIsOn == false) {
+			return ServerPropertiesText("spp-msg-archl")
+		} else if (textLogsAreOn == false) {
+			return ServerPropertiesText("spp-msg-archa")
+		}
+
+		return ServerPropertiesText("spp-msg-arch")
+	}
+
 	private func countArchivedMessages()
 	{
 		guard let serverId = serverId else {
@@ -709,9 +728,9 @@ struct MessagesPage: View
 
 			Section {
 				SettingToggle(title: ServerPropertiesText("arc-c1"),
-							  help: (pane.archiveIsOn ? ServerPropertiesText("spp-msg-arch") : ServerPropertiesText("spp-msg-archoff")),
+							  help: pane.archiveHelp,
 							  isOn: $pane.keepsInArchive)
-					.disabled(pane.archiveIsOn == false)
+					.disabled(pane.archiveIsOn == false && pane.textLogsAreOn == false)
 
 				LabeledContent {
 					Button(ServerPropertiesText("arc-b1")) {
