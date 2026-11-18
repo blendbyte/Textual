@@ -52,7 +52,7 @@
 #import "IRCClientConfig.h"
 #import "TPCPreferencesLocalPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
-#import "TVCLogLine.h"
+#import "TVCLogLinePrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOFileLoggerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
@@ -1105,13 +1105,19 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 		return NO;
 	}
 
-	return [self _body:body matchesKeywords:logLine.highlightKeywords excludeKeywords:logLine.excludeKeywords matchType:matchType];
+	return [self _body:body matchesKeywords:logLine.highlightKeywords matchTypes:logLine.highlightKeywordMatchTypes excludeKeywords:logLine.excludeKeywords matchType:matchType];
 }
 
-+ (BOOL)_body:(NSString *)body matchesKeywords:(nullable NSArray<NSString *> *)keywords excludeKeywords:(nullable NSArray<NSString *> *)excludeKeywords matchType:(NSUInteger)matchType
+/* As -[TVCLogRenderer matchKeywords]: each keyword by its match type, or
+ all by matchType when the line has none */
++ (BOOL)_body:(NSString *)body matchesKeywords:(nullable NSArray<NSString *> *)keywords matchTypes:(nullable NSArray<NSNumber *> *)matchTypes excludeKeywords:(nullable NSArray<NSString *> *)excludeKeywords matchType:(NSUInteger)matchType
 {
 	if (keywords.count == 0 || body.length == 0) {
 		return NO;
+	}
+
+	if (matchTypes.count != keywords.count) {
+		matchTypes = nil;
 	}
 
 	NSMutableArray<NSValue *> *excludedRanges = [NSMutableArray array];
@@ -1132,21 +1138,33 @@ NSString * const TLOMessageArchiveMentionsLastSeenDefaultsKey = @"Mentions -> La
 		return NO;
 	};
 
-	if (matchType == TXNicknameHighlightMatchTypeRegularExpression) {
-		for (NSString *keyword in keywords) {
-			NSRange range = [XRRegularExpression string:body rangeOfRegex:keyword withoutCase:YES];
-
-			if (range.location != NSNotFound && excluded(range) == NO) {
-				return YES;
-			}
-		}
-
-		return NO;
-	}
-
-	BOOL exactMatching = (matchType == TXNicknameHighlightMatchTypeExact);
+	NSUInteger keywordIndex = 0;
 
 	for (NSString *keyword in keywords) {
+		NSUInteger keywordMatchType = ((matchTypes) ? [matchTypes[keywordIndex] unsignedIntegerValue] : matchType);
+
+		keywordIndex += 1;
+
+		if (keywordMatchType == IRCHighlightKeywordMatchTypeEveryMessage) {
+			return YES;
+		}
+
+		if (keyword.length == 0) {
+			continue;
+		}
+
+		if (keywordMatchType == TXNicknameHighlightMatchTypeRegularExpression) {
+			NSRange range = [XRRegularExpression string:body rangeOfRegex:keyword withoutCase:YES];
+
+			if (range.location != NSNotFound && range.length > 0 && excluded(range) == NO) {
+				return YES;
+			}
+
+			continue;
+		}
+
+		BOOL exactMatching = (keywordMatchType == TXNicknameHighlightMatchTypeExact);
+
 		__block BOOL found = NO;
 
 		[body enumerateMatchesOfString:keyword withBlock:^(NSRange range, BOOL *stop) {
@@ -1982,7 +2000,7 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	row.dedupeKey = [self _dedupeKeyOfString:[NSString stringWithFormat:@"l:%lld:%@:%@", (long long)row.time, row.nickname, body]];
 
 	if (row.isHighlight == NO && row.isSelf == NO && row.lineType != TVCLogLineTypeNotice) {
-		row.isHighlight = [self _body:body matchesKeywords:target.highlightKeywords excludeKeywords:target.excludeKeywords matchType:target.matchType];
+		row.isHighlight = [self _body:body matchesKeywords:target.highlightKeywords matchTypes:target.highlightKeywordMatchTypes excludeKeywords:target.excludeKeywords matchType:target.matchType];
 	}
 }
 
@@ -2111,7 +2129,7 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 	BOOL isSelf = (localNickname && [nickname caseInsensitiveCompare:localNickname] == NSOrderedSame);
 
 	BOOL highlighted = (isSelf == NO && lineType != TVCLogLineTypeNotice &&
-						[self _body:body matchesKeywords:target.highlightKeywords excludeKeywords:target.excludeKeywords matchType:target.matchType]);
+						[self _body:body matchesKeywords:target.highlightKeywords matchTypes:target.highlightKeywordMatchTypes excludeKeywords:target.excludeKeywords matchType:target.matchType]);
 
 	TLOMessageArchiveRow *row = [TLOMessageArchiveRow new];
 
@@ -2344,29 +2362,32 @@ static NSInteger _numberInString(NSString *string, NSUInteger location, NSUInteg
 		return target;
 	}
 
-	NSArray<NSString *> *(^keywords)(NSArray<IRCHighlightKeyword *> *) = ^NSArray<NSString *> *(NSArray<IRCHighlightKeyword *> *entries) {
-		NSMutableArray<NSString *> *keywords = [NSMutableArray array];
+	/* Text logs don't say who sent a line as a server would: words limited to people are left out */
+	NSArray<IRCHighlightKeyword *> *(^keywords)(NSArray<IRCHighlightKeyword *> *) = ^NSArray<IRCHighlightKeyword *> *(NSArray<IRCHighlightKeyword *> *entries) {
+		NSMutableArray<IRCHighlightKeyword *> *keywords = [NSMutableArray array];
 
 		for (IRCHighlightKeyword *e in entries) {
-			if (e.nicknames.count > 0 || [e appliesToChannelWithId:view.viewId clientId:view.serverId] == NO) {
+			if (e.nicknames.count > 0 || e.keyword.length == 0 || [e appliesToChannelWithId:view.viewId clientId:view.serverId] == NO) {
 				continue;
 			}
 
-			[keywords addObjectWithoutDuplication:e.keyword];
+			[keywords addObject:e];
 		}
 
 		return [keywords copy];
 	};
 
-	NSMutableArray<NSString *> *matchKeywords = [keywords([TPCPreferences highlightMatchKeywordEntries]) mutableCopy];
+	NSMutableArray<IRCHighlightKeyword *> *matchKeywords = [keywords([TPCPreferences highlightMatchKeywordEntries]) mutableCopy];
 
 	if (localNickname) {
-		[matchKeywords addObjectWithoutDuplication:localNickname];
+		[matchKeywords addObject:[IRCHighlightKeyword keywordWithString:localNickname matchType:[TPCPreferences highlightNicknameMatchingMethod]]];
 	}
 
-	target.highlightKeywords = matchKeywords;
+	target.highlightKeywords = [matchKeywords valueForKey:@"keyword"];
 
-	target.excludeKeywords = keywords([TPCPreferences highlightExcludeKeywordEntries]);
+	target.highlightKeywordMatchTypes = [matchKeywords valueForKey:@"lineMatchType"];
+
+	target.excludeKeywords = [keywords([TPCPreferences highlightExcludeKeywordEntries]) valueForKey:@"keyword"];
 
 	return target;
 }

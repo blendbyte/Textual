@@ -43,12 +43,14 @@ NSString * const IRCHighlightKeywordStringKey = @"string";
 NSString * const IRCHighlightKeywordLimitedToKey = @"limitedTo";
 NSString * const IRCHighlightKeywordNicknamesKey = @"nicknames";
 NSString * const IRCHighlightKeywordSoundKey = @"sound";
+NSString * const IRCHighlightKeywordMatchTypeKey = @"matchType";
 
 @interface IRCHighlightKeyword ()
 @property (readwrite, copy) NSString *keyword;
 @property (readwrite, copy) NSArray<NSString *> *limitedTo;
 @property (readwrite, copy) NSArray<NSString *> *nicknames;
 @property (readwrite, copy, nullable) NSString *sound;
+@property (readwrite) TXNicknameHighlightMatchType matchType;
 @end
 
 @implementation IRCHighlightKeyword
@@ -70,7 +72,21 @@ NSString * const IRCHighlightKeywordSoundKey = @"sound";
 	return [strings copy];
 }
 
-+ (NSArray<IRCHighlightKeyword *> *)keywordsWithDictionaries:(nullable NSArray *)dictionaries
++ (IRCHighlightKeyword *)keywordWithString:(NSString *)string matchType:(TXNicknameHighlightMatchType)matchType
+{
+	NSParameterAssert(string != nil);
+
+	IRCHighlightKeyword *keyword = [IRCHighlightKeyword new];
+
+	keyword.keyword = string;
+	keyword.limitedTo = @[];
+	keyword.nicknames = @[];
+	keyword.matchType = matchType;
+
+	return keyword;
+}
+
++ (NSArray<IRCHighlightKeyword *> *)keywordsWithDictionaries:(nullable NSArray *)dictionaries defaultMatchType:(TXNicknameHighlightMatchType)defaultMatchType
 {
 	NSMutableArray<IRCHighlightKeyword *> *keywords = [NSMutableArray array];
 
@@ -81,7 +97,13 @@ NSString * const IRCHighlightKeywordSoundKey = @"sound";
 
 		NSString *string = dic[IRCHighlightKeywordStringKey];
 
-		if ([string isKindOfClass:[NSString class]] == NO || string.length == 0) {
+		if ([string isKindOfClass:[NSString class]] == NO) {
+			continue;
+		}
+
+		NSArray *nicknames = [self _stringsInArray:dic[IRCHighlightKeywordNicknamesKey]];
+
+		if (string.length == 0 && nicknames.count == 0) {
 			continue;
 		}
 
@@ -89,7 +111,15 @@ NSString * const IRCHighlightKeywordSoundKey = @"sound";
 
 		keyword.keyword = string;
 		keyword.limitedTo = [self _stringsInArray:dic[IRCHighlightKeywordLimitedToKey]];
-		keyword.nicknames = [self _stringsInArray:dic[IRCHighlightKeywordNicknamesKey]];
+		keyword.nicknames = nicknames;
+
+		id matchType = dic[IRCHighlightKeywordMatchTypeKey];
+
+		if ([matchType isKindOfClass:[NSNumber class]] && [matchType unsignedIntegerValue] <= TXNicknameHighlightMatchTypeRegularExpression) {
+			keyword.matchType = [matchType unsignedIntegerValue];
+		} else {
+			keyword.matchType = defaultMatchType;
+		}
 
 		NSString *sound = dic[IRCHighlightKeywordSoundKey];
 
@@ -101,6 +131,15 @@ NSString * const IRCHighlightKeywordSoundKey = @"sound";
 	}
 
 	return [keywords copy];
+}
+
+- (NSUInteger)lineMatchType
+{
+	if (self.keyword.length == 0) {
+		return IRCHighlightKeywordMatchTypeEveryMessage;
+	}
+
+	return self.matchType;
 }
 
 - (BOOL)appliesToChannelWithId:(NSString *)channelId clientId:(NSString *)clientId

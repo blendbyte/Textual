@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 	BOOL _isRedacted;
 	NSArray<NSString *> *_excludeKeywords;
 	NSArray<NSString *> *_highlightKeywords;
+	NSArray<NSNumber *> *_highlightKeywordMatchTypes;
 	NSArray<NSString *> *_eventNicknames;
 	NSArray<NSDictionary<NSString *, id> *> *_reactions;
 	NSDictionary<NSString *, id> *_rendererAttributes;

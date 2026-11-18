@@ -49,12 +49,21 @@ struct HighlightsSettings: View
 	/* "5 or more names"; 0 is off */
 	private static let massLimits = [0, 3, 4, 5, 6, 8, 10, 15, 20]
 
-	private static let regularExpression = 2
+	private static let partOfWord = 0
+	private static let wholeWord = 1
 
 	var body: some View
 	{
-		let matchType = store.integer("NicknameHighlightMatchingType")
-		let isRegularExpression = (matchType.wrappedValue == Self.regularExpression)
+		/* The nickname's and new words'; each word has its own. A regular
+		 expression from before, which words saved then still have, shows as
+		 whole words, which is what the nickname uses then. */
+		let storedMatchType = store.integer("NicknameHighlightMatchingType")
+
+		let matchType = Binding<Int>(get: {
+			((storedMatchType.wrappedValue == Self.partOfWord) ? Self.partOfWord : Self.wholeWord)
+		}, set: { (value) in
+			storedMatchType.wrappedValue = value
+		})
 
 		let keywords = TDCSettingsBridge.highlightKeywordEntriesExcluded(false)
 		let excluded = TDCSettingsBridge.highlightKeywordEntriesExcluded(true)
@@ -82,8 +91,8 @@ struct HighlightsSettings: View
 			}
 
 			Section {
-				HighlightsSample(nickname: ((nickname.wrappedValue && isRegularExpression == false) ? TDCSettingsBridge.highlightSampleNickname : nil),
-								 keyword: (keywords.first?["string"] as? String))
+				HighlightsSample(nickname: (nickname.wrappedValue ? TDCSettingsBridge.highlightSampleNickname : nil),
+								 keyword: keywords.lazy.compactMap({ $0["string"] as? String }).first(where: { $0.isEmpty == false }))
 			}
 
 			Section {
@@ -106,7 +115,6 @@ struct HighlightsSettings: View
 				Picker(selection: matchType) {
 					Text(SettingsText("set-hil-m1")).tag(1)
 					Text(SettingsText("set-hil-m0")).tag(0)
-					Text(SettingsText("set-hil-m2")).tag(2)
 				} label: {
 					SettingLabel(title: SettingsText("set-hil-m"), help: SettingsText("set-hil-mh\(matchType.wrappedValue)"))
 				}
@@ -116,11 +124,8 @@ struct HighlightsSettings: View
 						.foregroundStyle(.orange)
 				}
 
-				SettingToggle(title: SettingsText("set-hil-n"),
-							  help: SettingsText(isRegularExpression ? "set-hil-nhr" : "set-hil-nh"),
-							  isOn: Binding(get: { nickname.wrappedValue && isRegularExpression == false },
-											set: { nickname.wrappedValue = $0 }))
-					.disabled(isRegularExpression)
+				SettingToggle(title: SettingsText("set-hil-n"), help: SettingsText("set-hil-nh"),
+							  isOn: nickname)
 
 				SettingToggle(title: SettingsText("set-hil-rp"), help: SettingsText("set-hil-rph"),
 							  isOn: store.bool("Highlights -> Replies Count"))
@@ -158,7 +163,10 @@ struct HighlightKeywordTags: View
 						edit(index)
 					} label: {
 						HStack(spacing: 4) {
-							Text((entry["string"] as? String) ?? "")
+							/* Empty: every message from the people in its summary */
+							let word = ((entry["string"] as? String) ?? "")
+
+							Text(word.isEmpty ? SettingsText("set-hil-ev") : word)
 
 							if let summary = TDCSettingsBridge.summary(ofHighlightKeywordEntry: entry) {
 								Text(summary)

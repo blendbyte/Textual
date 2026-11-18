@@ -42,6 +42,7 @@
 #import "TVCLogLine.h"
 #import "TVCLogLinePrivate.h"
 #import "TLOMessageArchivePrivate.h"
+#import "IRCHighlightKeywordPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -346,6 +347,29 @@ NS_ASSUME_NONNULL_BEGIN
 	logLine.lineType = TVCLogLineTypeNotice;
 
 	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"Guest66: notice" matchType:TXNicknameHighlightMatchTypeExact]);
+}
+
+/* Each word by its own match type, whatever the method given for older lines */
+- (void)testFindsHighlightsByEachWordsMatchType
+{
+	TVCLogLineMutable *logLine = [TVCLogLineMutable new];
+
+	logLine.lineType = TVCLogLineTypePrivateMessage;
+	logLine.memberType = TVCLogLineMemberTypeNormal;
+	logLine.highlightKeywords = @[@"bug", @"textual", @"v\\d+\\.\\d+"];
+	logLine.highlightKeywordMatchTypes = @[@(TXNicknameHighlightMatchTypeExact), @(TXNicknameHighlightMatchTypePartial), @(TXNicknameHighlightMatchTypeRegularExpression)];
+
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"found a bug" matchType:TXNicknameHighlightMatchTypeRegularExpression]);
+	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"debugging now" matchType:TXNicknameHighlightMatchTypePartial]);
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"see textualapp.com" matchType:TXNicknameHighlightMatchTypeExact]);
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"out in V8.0 today" matchType:TXNicknameHighlightMatchTypeExact]);
+	XCTAssertFalse([TLOMessageArchive logLineIsHighlight:logLine body:@"v.8 is not it" matchType:TXNicknameHighlightMatchTypePartial]);
+
+	/* Every message from someone: an empty word */
+	logLine.highlightKeywords = @[@""];
+	logLine.highlightKeywordMatchTypes = @[@(IRCHighlightKeywordMatchTypeEveryMessage)];
+
+	XCTAssertTrue([TLOMessageArchive logLineIsHighlight:logLine body:@"anything at all" matchType:TXNicknameHighlightMatchTypeExact]);
 }
 
 #pragma mark -

@@ -86,6 +86,7 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveViewType)
 @property (readonly) TLOMessageArchiveView *view;
 @property (copy, nullable) NSString *localNickname; // own lines, and a highlight word
 @property (copy) NSArray<NSString *> *highlightKeywords;
+@property (copy) NSArray<NSNumber *> *highlightKeywordMatchTypes; // as TVCLogLine's
 @property (copy) NSArray<NSString *> *excludeKeywords;
 @property (assign) NSUInteger matchType; // TXNicknameHighlightMatchType
 @end
@@ -219,7 +220,8 @@ typedef NS_ENUM(NSUInteger, TLOMessageArchiveSearchOrder)
 
 /* Whether the line highlighted, as the renderer decides it, for lines
  rendered before the archive (the renderer also skips keywords inside links) */
-+ (BOOL)logLineIsHighlight:(TVCLogLine *)logLine body:(NSString *)body matchType:(NSUInteger)matchType; // TXNicknameHighlightMatchType
+/* matchType: for lines printed before words had their own (TXNicknameHighlightMatchType) */
++ (BOOL)logLineIsHighlight:(TVCLogLine *)logLine body:(NSString *)body matchType:(NSUInteger)matchType;
 
 /* A deleted message (REDACT): out of the archive too */
 - (void)removeMessageWithMsgid:(NSString *)msgid inView:(NSString *)viewId;

@@ -43,6 +43,7 @@
 #import "IRCClient.h"
 #import "IRCChannelPrivate.h"
 #import "IRCChannelUser.h"
+#import "IRCHighlightKeywordPrivate.h"
 #import "IRCColorFormat.h"
 #import "IRCISupportInfo.h"
 #import "IRCUser.h"
@@ -88,6 +89,7 @@ NSString * const TVCLogRendererConfigurationRenderLinksAttribute = @"TVCLogRende
 NSString * const TVCLogRendererConfigurationLineTypeAttribute = @"TVCLogRendererConfigurationLineTypeAttribute";
 NSString * const TVCLogRendererConfigurationMemberTypeAttribute = @"TVCLogRendererConfigurationMemberTypeAttribute";
 NSString * const TVCLogRendererConfigurationHighlightKeywordsAttribute = @"TVCLogRendererConfigurationHighlightKeywordsAttribute";
+NSString * const TVCLogRendererConfigurationHighlightKeywordMatchTypesAttribute = @"TVCLogRendererConfigurationHighlightKeywordMatchTypesAttribute";
 NSString * const TVCLogRendererConfigurationExcludedKeywordsAttribute = @"TVCLogRendererConfigurationExcludedKeywordsAttribute";
 NSString * const TVCLogRendererConfigurationDoNotEscapeBodyAttribute = @"TVCLogRendererConfigurationDoNotEscapeBodyAttribute";
 
@@ -410,21 +412,25 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 		} options:NSCaseInsensitiveSearch];
 	}
 
+	NSArray *matchTypes = [self->_rendererAttributes arrayForKey:TVCLogRendererConfigurationHighlightKeywordMatchTypesAttribute];
+
+	if (matchTypes.count != [highlightKeywords count]) {
+		matchTypes = nil;
+	}
+
+	TXNicknameHighlightMatchType defaultMatchType = [TPCPreferences highlightMatchingMethod];
+
 	NSString *foundKeyword = nil;
 
-	TXNicknameHighlightMatchType matchingMethod = [TPCPreferences highlightMatchingMethod];
+	NSUInteger keywordIndex = 0;
 
-	switch (matchingMethod) {
-		case TXNicknameHighlightMatchTypeExact:
-		case TXNicknameHighlightMatchTypePartial:
-		{
-			foundKeyword = [self matchKeywordsUsingNormalMatching:highlightKeywords excludedRanges:excludeRanges exactMatching:(matchingMethod == TXNicknameHighlightMatchTypeExact)];
+	for (NSString *keyword in highlightKeywords) {
+		NSUInteger matchType = ((matchTypes) ? [matchTypes[keywordIndex] unsignedIntegerValue] : defaultMatchType);
 
-			break;
-		}
-		case TXNicknameHighlightMatchTypeRegularExpression:
-		{
-			foundKeyword = [self matchKeywordsUsingRegularExpression:highlightKeywords excludedRanges:excludeRanges];
+		keywordIndex += 1;
+
+		if ([self matchKeyword:keyword matchType:matchType excludedRanges:excludeRanges]) {
+			foundKeyword = keyword;
 
 			break;
 		}
@@ -438,84 +444,90 @@ NSString * const TVCLogRendererResultsOriginalBodyWithoutEffectsAttribute = @"TV
 	}
 }
 
-/* The keyword that matched, or nil */
-- (nullable NSString *)matchKeywordsUsingNormalMatching:(NSArray<NSString *> *)keywords excludedRanges:(NSArray<NSValue *> *)excludedRanges exactMatching:(BOOL)exactMatching
+/* YES when the keyword is in the body (marked), outside what is excluded and links */
+- (BOOL)matchKeyword:(NSString *)keyword matchType:(NSUInteger)matchType excludedRanges:(NSArray<NSValue *> *)excludedRanges
 {
-	NSParameterAssert(keywords != nil);
+	NSParameterAssert(keyword != nil);
 	NSParameterAssert(excludedRanges != nil);
 
-	NSString *body = self->_body;
+	switch (matchType) {
+		case IRCHighlightKeywordMatchTypeEveryMessage:
+		{
+			return YES;
+		}
+		case TXNicknameHighlightMatchTypeRegularExpression:
+		{
+			return [self matchKeywordUsingRegularExpression:keyword excludedRanges:excludedRanges];
+		}
+		case TXNicknameHighlightMatchTypeExact:
+		{
+			return [self matchKeywordUsingNormalMatching:keyword excludedRanges:excludedRanges exactMatching:YES];
+		}
+		default:
+		{
+			return [self matchKeywordUsingNormalMatching:keyword excludedRanges:excludedRanges exactMatching:NO];
+		}
+	}
+}
+
+- (BOOL)matchKeywordUsingNormalMatching:(NSString *)keyword excludedRanges:(NSArray<NSValue *> *)excludedRanges exactMatching:(BOOL)exactMatching
+{
+	if (keyword.length == 0) {
+		return NO;
+	}
 
 	__block BOOL foundKeyword = NO;
 
-	for (NSString *keyword in keywords) {
-		[body enumerateMatchesOfString:keyword withBlock:^(NSRange range, BOOL *stop) {
-			for (NSValue *excludedRange in excludedRanges) {
-				if (NSIntersectionRange(range, excludedRange.rangeValue).length > 0) {
-					return;
-				}
-			}
-
-			if (exactMatching) {
-				if ([self sectionOfBodyIsSurroundedByNonAlphabeticals:range] == NO) {
-					return;
-				}
-			}
-
-			if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingURLAttribute inRange:range] == NO) {
-				[self->_bodyWithAttributes addAttribute:TVCLogRendererFormattingKeywordHighlightAttribute value:@(YES) range:range];
-
-				foundKeyword = YES;
-
-				*stop = YES;
-			}
-		} options:NSCaseInsensitiveSearch];
-
-		if (foundKeyword) {
-			return keyword;
-		}
-	}
-
-	return nil;
-}
-
-/* The keyword that matched, or nil */
-- (nullable NSString *)matchKeywordsUsingRegularExpression:(NSArray<NSString *> *)keywords excludedRanges:(NSArray<NSValue *> *)excludedRanges
-{
-	NSParameterAssert(keywords != nil);
-	NSParameterAssert(excludedRanges != nil);
-
-	NSString *body = self->_body;
-
-	for (NSString *keyword in keywords) {
-		NSRange range = [XRRegularExpression string:body rangeOfRegex:keyword withoutCase:YES];
-
-		if (range.location == NSNotFound) {
-			continue;
-		}
-
-		BOOL enabled = YES;
-
+	[self->_body enumerateMatchesOfString:keyword withBlock:^(NSRange range, BOOL *stop) {
 		for (NSValue *excludedRange in excludedRanges) {
 			if (NSIntersectionRange(range, excludedRange.rangeValue).length > 0) {
-				enabled = NO;
-
-				break;
+				return;
 			}
 		}
 
-		if (enabled == NO) {
-			continue;
+		if (exactMatching) {
+			if ([self sectionOfBodyIsSurroundedByNonAlphabeticals:range] == NO) {
+				return;
+			}
 		}
 
 		if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingURLAttribute inRange:range] == NO) {
 			[self->_bodyWithAttributes addAttribute:TVCLogRendererFormattingKeywordHighlightAttribute value:@(YES) range:range];
 
-			return keyword;
+			foundKeyword = YES;
+
+			*stop = YES;
+		}
+	} options:NSCaseInsensitiveSearch];
+
+	return foundKeyword;
+}
+
+- (BOOL)matchKeywordUsingRegularExpression:(NSString *)keyword excludedRanges:(NSArray<NSValue *> *)excludedRanges
+{
+	if (keyword.length == 0) {
+		return NO;
+	}
+
+	NSRange range = [XRRegularExpression string:self->_body rangeOfRegex:keyword withoutCase:YES];
+
+	if (range.location == NSNotFound || range.length == 0) {
+		return NO;
+	}
+
+	for (NSValue *excludedRange in excludedRanges) {
+		if (NSIntersectionRange(range, excludedRange.rangeValue).length > 0) {
+			return NO;
 		}
 	}
 
-	return nil;
+	if ([self->_bodyWithAttributes isAttributeSet:TVCLogRendererFormattingURLAttribute inRange:range]) {
+		return NO;
+	}
+
+	[self->_bodyWithAttributes addAttribute:TVCLogRendererFormattingKeywordHighlightAttribute value:@(YES) range:range];
+
+	return YES;
 }
 
 /* A channel name starts with one of the server's channel prefixes (CHANTYPES) and

@@ -36,6 +36,7 @@
 
 #import "IRCHighlightMatchCondition.h"
 #import "IRCISupportInfo.h"
+#import "TPCPreferencesLocal.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,20 +44,34 @@ NS_ASSUME_NONNULL_BEGIN
  Highlights for every server. A keyword can be limited to channels or whole
  networks and to people; a highlight word can have its own sound. Stored in
  "Highlight List -> Primary Matches" and "Highlight List -> Excluded Matches"
- as dictionaries with these keys (only "string" is required). */
+ as dictionaries with these keys (only "string" is required). An empty
+ keyword limited to people is every message from them. */
 extern NSString * const IRCHighlightKeywordStringKey; // the keyword
 extern NSString * const IRCHighlightKeywordLimitedToKey; // client and channel ids; none = everywhere
 extern NSString * const IRCHighlightKeywordNicknamesKey; // nicknames; none = anyone
 extern NSString * const IRCHighlightKeywordSoundKey; // a sound name; none = the highlight sound
+extern NSString * const IRCHighlightKeywordMatchTypeKey; // TXNicknameHighlightMatchType; none = Settings' method
+
+/* How a keyword in a printed line matches: a TXNicknameHighlightMatchType,
+ or this for every message (an empty keyword limited to people) */
+static NSUInteger const IRCHighlightKeywordMatchTypeEveryMessage = 3;
 
 @interface IRCHighlightKeyword : NSObject
 @property (readonly, copy) NSString *keyword;
 @property (readonly, copy) NSArray<NSString *> *limitedTo;
 @property (readonly, copy) NSArray<NSString *> *nicknames;
 @property (readonly, copy, nullable) NSString *sound;
+@property (readonly) TXNicknameHighlightMatchType matchType;
 
-/* Entries without a keyword are left out */
-+ (NSArray<IRCHighlightKeyword *> *)keywordsWithDictionaries:(nullable NSArray *)dictionaries;
+/* As it goes into a printed line: the match type, or every message */
+@property (readonly) NSUInteger lineMatchType;
+
+/* Entries without a keyword are left out, unless they are limited to
+ people; an entry without a match type takes the one given */
++ (NSArray<IRCHighlightKeyword *> *)keywordsWithDictionaries:(nullable NSArray *)dictionaries defaultMatchType:(TXNicknameHighlightMatchType)defaultMatchType;
+
+/* The own nickname, or another keyword not from the stored entries */
++ (IRCHighlightKeyword *)keywordWithString:(NSString *)string matchType:(TXNicknameHighlightMatchType)matchType;
 
 - (BOOL)appliesToChannelWithId:(NSString *)channelId clientId:(NSString *)clientId;
 

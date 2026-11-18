@@ -60,7 +60,7 @@
 #import "TVCLogViewPrivate.h"
 #import "TVCLogLine.h"
 #import "TVCLogLinePrivate.h"
-#import "TVCLogRenderer.h"
+#import "TVCLogRendererPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
@@ -2670,6 +2670,7 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 
 	[rendererAttributes maybeSetObject:logLine.excludeKeywords forKey:TVCLogRendererConfigurationExcludedKeywordsAttribute];
 	[rendererAttributes maybeSetObject:logLine.highlightKeywords forKey:TVCLogRendererConfigurationHighlightKeywordsAttribute];
+	[rendererAttributes maybeSetObject:logLine.highlightKeywordMatchTypes forKey:TVCLogRendererConfigurationHighlightKeywordMatchTypesAttribute];
 
 	[rendererAttributes setBool:renderLinks forKey:TVCLogRendererConfigurationRenderLinksAttribute];
 
@@ -2985,6 +2986,7 @@ NS_INLINE BOOL _lineTypeIsGroupable(TVCLogLineType lineType)
 		changedLine.reactions = nil;
 
 		changedLine.highlightKeywords = nil;
+		changedLine.highlightKeywordMatchTypes = nil;
 
 		return [changedLine copy];
 	}];

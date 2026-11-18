@@ -1278,17 +1278,18 @@ static TDCHighlightKeywordSheet * _Nullable _highlightKeywordSheet = nil;
 	return (nickname ?: @"");
 }
 
+/* Words matched as regular expressions that don't compile */
 + (NSArray<NSString *> *)invalidRegularExpressionKeywords
 {
-	if ([TPCPreferences highlightMatchingMethod] != TXNicknameHighlightMatchTypeRegularExpression) {
-		return @[];
-	}
-
 	NSMutableArray<NSString *> *invalidKeywords = [NSMutableArray array];
 
-	for (NSString *keyword in [TPCPreferences highlightMatchKeywords]) {
-		if ([XRRegularExpression isValidRegex:keyword] == NO) {
-			[invalidKeywords addObject:keyword];
+	for (IRCHighlightKeyword *e in [TPCPreferences highlightMatchKeywordEntries]) {
+		if (e.lineMatchType != TXNicknameHighlightMatchTypeRegularExpression) {
+			continue;
+		}
+
+		if ([XRRegularExpression isValidRegex:e.keyword] == NO) {
+			[invalidKeywords addObjectWithoutDuplication:e.keyword];
 		}
 	}
 

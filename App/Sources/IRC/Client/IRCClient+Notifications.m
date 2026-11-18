@@ -465,7 +465,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* The sound of the highlight keyword that matched, if it has one */
-- (nullable NSString *)soundForHighlightKeyword:(NSString *)keyword inChannel:(nullable IRCChannel *)channel
+- (nullable NSString *)soundForHighlightKeyword:(NSString *)keyword inChannel:(nullable IRCChannel *)channel nickname:(nullable NSString *)nickname
 {
 	NSParameterAssert(keyword != nil);
 
@@ -478,6 +478,11 @@ NS_ASSUME_NONNULL_BEGIN
 		}
 
 		if (channelId && [e appliesToChannelWithId:channelId clientId:clientId] == NO) {
+			continue;
+		}
+
+		/* "Every message from" alice and from bob can have a sound each */
+		if (nickname && [e appliesToNickname:nickname supportInfo:self.supportInfo] == NO) {
 			continue;
 		}
 
@@ -577,7 +582,7 @@ NS_ASSUME_NONNULL_BEGIN
 			NSString *soundName = nil;
 
 			if (highlightKeyword) {
-				soundName = [self soundForHighlightKeyword:highlightKeyword inChannel:target];
+				soundName = [self soundForHighlightKeyword:highlightKeyword inChannel:target nickname:nickname];
 			}
 
 			if (soundName == nil) {

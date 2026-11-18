@@ -61,6 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) NSWindow *parentWindow;
 @property (nonatomic, strong) NSGridView *grid;
 @property (nonatomic, strong) NSTextField *keywordField;
+@property (nonatomic, strong, nullable) NSPopUpButton *matchTypePopup;
+@property (nonatomic, assign) NSInteger placesRowIndex;
+@property (nonatomic, assign) NSInteger peopleRowIndex;
 @property (nonatomic, strong) NSPopUpButton *placesPopup;
 @property (nonatomic, strong) NSTableView *placesTable;
 @property (nonatomic, strong) NSPopUpButton *peoplePopup;
@@ -108,6 +111,19 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(entry != nil);
 
 	NSMutableArray<NSString *> *parts = [NSMutableArray array];
+
+	/* Whole words, the usual, go without saying */
+	id matchType = entry[IRCHighlightKeywordMatchTypeKey];
+
+	NSString *keyword = entry[IRCHighlightKeywordStringKey];
+
+	if ([matchType isKindOfClass:[NSNumber class]] && [keyword isKindOfClass:[NSString class]] && keyword.length > 0) {
+		if ([matchType unsignedIntegerValue] == TXNicknameHighlightMatchTypePartial) {
+			[parts addObject:TXTLS(@"TDCPreferencesController[hkw-m4]")];
+		} else if ([matchType unsignedIntegerValue] == TXNicknameHighlightMatchTypeRegularExpression) {
+			[parts addObject:TXTLS(@"TDCPreferencesController[hkw-m5]")];
+		}
+	}
 
 	NSMutableArray<NSString *> *placeNames = [NSMutableArray array];
 
@@ -225,6 +241,41 @@ NS_ASSUME_NONNULL_BEGIN
 
 	self.keywordField = keywordField;
 
+	/* How it matches: highlight words only, excluded words are plain text */
+	if (self.excluded == NO) {
+		keywordField.placeholderString = TXTLS(@"TDCPreferencesController[hkw-t2]");
+
+		NSPopUpButton *matchTypePopup = [NSPopUpButton new];
+
+		[matchTypePopup addItemWithTitle:TXTLS(@"TDCPreferencesController[hkw-k2]")];
+		matchTypePopup.lastItem.tag = TXNicknameHighlightMatchTypeExact;
+
+		[matchTypePopup addItemWithTitle:TXTLS(@"TDCPreferencesController[hkw-k3]")];
+		matchTypePopup.lastItem.tag = TXNicknameHighlightMatchTypePartial;
+
+		[matchTypePopup addItemWithTitle:TXTLS(@"TDCPreferencesController[hkw-k4]")];
+		matchTypePopup.lastItem.tag = TXNicknameHighlightMatchTypeRegularExpression;
+
+		/* A new word starts as Settings says; one saved before has Settings' old method */
+		id matchType = entry[IRCHighlightKeywordMatchTypeKey];
+
+		NSInteger matchTypeTag = 0;
+
+		if ([matchType isKindOfClass:[NSNumber class]]) {
+			matchTypeTag = [matchType integerValue];
+		} else if (entry[IRCHighlightKeywordStringKey] != nil) {
+			matchTypeTag = [TPCPreferences highlightMatchingMethod];
+		} else {
+			matchTypeTag = [TPCPreferences highlightNicknameMatchingMethod];
+		}
+
+		if ([matchTypePopup selectItemWithTag:matchTypeTag] == NO) {
+			[matchTypePopup selectItemWithTag:TXNicknameHighlightMatchTypeExact];
+		}
+
+		self.matchTypePopup = matchTypePopup;
+	}
+
 	/* Where */
 	[self _buildPlaces];
 
@@ -314,9 +365,20 @@ NS_ASSUME_NONNULL_BEGIN
 	NSMutableArray *rows = [NSMutableArray array];
 
 	[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-t1]")], keywordField]];
+
+	if (self.matchTypePopup) {
+		[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-k1]")], self.matchTypePopup]];
+	}
+
 	[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-p1]")], placesPopup]];
+
+	self.placesRowIndex = rows.count;
+
 	[rows addObject:@[[NSGridCell emptyContentView], placesView]];
 	[rows addObject:@[[self _labelWithString:TXTLS(@"TDCPreferencesController[hkw-f1]")], peoplePopup]];
+
+	self.peopleRowIndex = rows.count;
+
 	[rows addObject:@[[NSGridCell emptyContentView], peopleField]];
 
 	/* A sound for highlight words only */
@@ -436,8 +498,8 @@ NS_ASSUME_NONNULL_BEGIN
 /* The channel list and the nickname field show only when they're used */
 - (void)updateVisibleRows
 {
-	[self.grid rowAtIndex:2].hidden = (self.placesPopup.indexOfSelectedItem != _placesOnlyThese);
-	[self.grid rowAtIndex:4].hidden = (self.peoplePopup.indexOfSelectedItem != _peopleOnlyThese);
+	[self.grid rowAtIndex:self.placesRowIndex].hidden = (self.placesPopup.indexOfSelectedItem != _placesOnlyThese);
+	[self.grid rowAtIndex:self.peopleRowIndex].hidden = (self.peoplePopup.indexOfSelectedItem != _peopleOnlyThese);
 
 	NSWindow *sheetWindow = self.sheetWindow;
 
@@ -463,10 +525,21 @@ NS_ASSUME_NONNULL_BEGIN
 	return [nicknames copy];
 }
 
+/* A highlight word limited to people may be empty: every message from them */
+- (BOOL)_matchesEveryMessage
+{
+	return (self.excluded == NO &&
+			self.keywordField.stringValue.trim.length == 0 &&
+			self.peoplePopup.indexOfSelectedItem == _peopleOnlyThese);
+}
+
 /* "Only in" and "Only these" need at least one channel or person */
 - (void)updateSaveButton
 {
-	BOOL enabled = (self.keywordField.stringValue.trim.length > 0);
+	BOOL enabled = (self.keywordField.stringValue.trim.length > 0 || [self _matchesEveryMessage]);
+
+	/* Every message: nothing to match */
+	self.matchTypePopup.enabled = (self.keywordField.stringValue.trim.length > 0);
 
 	if (self.placesPopup.indexOfSelectedItem == _placesOnlyThese) {
 		NSMutableSet<NSString *> *chosenPlaces = [self.selectedPlaces mutableCopy];
@@ -540,13 +613,16 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSString *keyword = self.keywordField.stringValue.trim;
 
-	if (keyword.length == 0) {
+	if (keyword.length == 0 && [self _matchesEveryMessage] == NO) {
 		return;
 	}
 
-	/* With regular expression matching, a keyword that doesn't compile would never match */
-	if (self.excluded == NO &&
-		[TPCPreferences highlightMatchingMethod] == TXNicknameHighlightMatchTypeRegularExpression &&
+	TXNicknameHighlightMatchType matchType = (TXNicknameHighlightMatchType)self.matchTypePopup.selectedTag;
+
+	/* A regular expression that doesn't compile would never match */
+	if (keyword.length > 0 &&
+		self.matchTypePopup != nil &&
+		matchType == TXNicknameHighlightMatchTypeRegularExpression &&
 		[XRRegularExpression isValidRegex:keyword] == NO)
 	{
 		[TDCAlert alertWithMessage:TXTLS(@"TDCPreferencesController[r7x-q2]", keyword)
@@ -560,6 +636,10 @@ NS_ASSUME_NONNULL_BEGIN
 	NSMutableDictionary<NSString *, id> *entry = [self.entry mutableCopy];
 
 	entry[IRCHighlightKeywordStringKey] = keyword;
+
+	if (self.matchTypePopup) {
+		entry[IRCHighlightKeywordMatchTypeKey] = @(matchType);
+	}
 
 	/* Where: a whole server covers its channels */
 	[entry removeObjectForKey:IRCHighlightKeywordLimitedToKey];

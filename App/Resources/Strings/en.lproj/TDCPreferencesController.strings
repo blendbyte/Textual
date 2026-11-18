@@ -36,7 +36,7 @@
  *********************************************************************** */
 
 "r7x-q1" = "This is not a valid regular expression";
-"r7x-q2" = "“%@” can’t be used as a highlight keyword: it would never match anything. Correct it, or switch highlight matching away from regular expressions.";
+"r7x-q2" = "“%@” can’t be used as a regular expression: it would never match anything. Correct it, or match it as a whole word or part of a word.";
 
 "5jv-aw" = "Are you opening this style because you are interested in modifying it?";
 "ojj-ap" = "It’s possible to modify the appearance of this style without editing its source files.
@@ -61,6 +61,11 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "hkw-h1" = "Highlight word";
 "hkw-h2" = "Excluded word";
 "hkw-t1" = "Word:";
+"hkw-t2" = "Empty: every message from the people below";
+"hkw-k1" = "Match as:";
+"hkw-k2" = "Whole word";
+"hkw-k3" = "Part of a word";
+"hkw-k4" = "Regular expression";
 "hkw-p1" = "Where:";
 "hkw-p2" = "Everywhere";
 "hkw-p3" = "Only in these channels";
@@ -74,6 +79,8 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "hkw-m1" = "♪ %@";
 "hkw-m2" = "from %@";
 "hkw-m3" = "only in removed channels";
+"hkw-m4" = "part of a word";
+"hkw-m5" = "regular expression";
 "hkw-r1" = "Also the removed channels it was limited to (%@)";
 
 "evt-k0" = "Joins:";
@@ -538,14 +545,12 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-hil-m" = "Match";
 "set-hil-m0" = "Parts of words";
 "set-hil-m1" = "Whole words";
-"set-hil-m2" = "Regular expressions";
-"set-hil-mh0" = "“dan” also matches “daniel”.";
-"set-hil-mh1" = "“daniel” doesn’t match “danielle”.";
-"set-hil-mh2" = "Each word is a regular expression (ICU), for experts.";
+"set-hil-mh0" = "For your nickname and new words: “dan” also matches “daniel”. Click a word to match it another way, also as a regular expression.";
+"set-hil-mh1" = "For your nickname and new words: “daniel” doesn’t match “danielle”. Click a word to match it another way, also as a regular expression.";
 "set-hil-mi" = "These aren’t valid regular expressions and never match: %@";
+"set-hil-ev" = "Every message";
 "set-hil-n" = "My nickname is a highlight word";
 "set-hil-nh" = "On every server, whatever nickname you have there.";
-"set-hil-nhr" = "Not with regular expressions: add your nickname as one.";
 "set-hil-rp" = "Replies to your messages count as mentions";
 "set-hil-rph" = "A reply highlights like your nickname would, when the message it answers is still in the conversation.";
 "set-hil-s" = "Ignore mass highlights";

@@ -233,6 +233,9 @@ typedef NS_ENUM(NSUInteger, TPCEventDisplay) {
 
 + (void)cleanUpHighlightKeywords;
 
+/* How the own nickname matches, and new words start: whole word or part of a word */
++ (TXNicknameHighlightMatchType)highlightNicknameMatchingMethod;
+
 + (void)setSendTypingNotifications:(BOOL)sendTypingNotifications;
 
 /* Settings › General "Away message", else "Be back later": for display sleep,

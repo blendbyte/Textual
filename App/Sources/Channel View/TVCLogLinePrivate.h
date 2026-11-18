@@ -40,6 +40,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCLogLine ()
+/* How each of highlightKeywords matches, in the same order: a
+ TXNicknameHighlightMatchType or IRCHighlightKeywordMatchTypeEveryMessage.
+ nil on lines printed before: they match with Settings' method. */
+@property (readonly, copy, nullable) NSArray<NSNumber *> *highlightKeywordMatchTypes;
+
 
 - (NSString *)renderedBodyForTranscriptLog;
 - (NSString *)renderedBodyForTranscriptLogInChannel:(nullable IRCChannel *)channel;
@@ -51,6 +56,10 @@ NS_ASSUME_NONNULL_BEGIN
 /* nil if the data is not an archived log line */
 + (nullable TVCLogLine *)logLineWithData:(NSData *)data uniqueIdentifier:(nullable NSString *)uniqueIdentifier;
 - (nullable NSData *)archivedData;
+@end
+
+@interface TVCLogLineMutable ()
+@property (nonatomic, copy, readwrite, nullable) NSArray<NSNumber *> *highlightKeywordMatchTypes;
 @end
 
 NS_ASSUME_NONNULL_END

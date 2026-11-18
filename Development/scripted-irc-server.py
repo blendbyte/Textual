@@ -464,6 +464,47 @@ async def scenario_review_replies(client):
 		seen = len(client.received)
 
 
+async def scenario_review_match(client):
+	"""Each highlight word's own match type. Joins #words (alice, bob,
+	carol). "go" there: 5 s later bob says a bug (whole word: highlight),
+	debugging (no), textualapp (part of a word: highlight), v8.0
+	(regular expression: highlight) and the client's nickname (highlight
+	with regular-expression words around); alice says hello (every message
+	from alice: highlight); carol says nothing much (no highlight)."""
+	if not await client.register_with_capabilities("server-time"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #words")
+	await client.send(f":{SERVER} 353 {me} = #words :{me} alice bob carol")
+	await client.send(f":{SERVER} 366 {me} #words :End of /NAMES list.")
+
+	round = 0
+	seen = 0
+
+	while await client.collect(1):
+		said = [line for line in client.received[seen:] if line.upper().startswith("PRIVMSG ") and line.endswith(" :go")]
+		seen = len(client.received)
+
+		if not said:
+			continue
+
+		if not await client.collect(5):
+			return
+
+		seen = len(client.received)
+		round += 1
+
+		await client.send(f":bob!b@bob.test PRIVMSG #words :{round}: found a bug in the parser (highlight)")
+		await client.send(f":bob!b@bob.test PRIVMSG #words :{round}: debugging the parser (no highlight)")
+		await client.send(f":bob!b@bob.test PRIVMSG #words :{round}: textualapp is up again (highlight)")
+		await client.send(f":bob!b@bob.test PRIVMSG #words :{round}: out in v8.0 today (highlight)")
+		await client.send(f":bob!b@bob.test PRIVMSG #words :{round}: {me}, are you there? (highlight)")
+		await client.send(f":alice!a@alice.test PRIVMSG #words :{round}: just saying hello (highlight)")
+		await client.send(f":carol!c@carol.test PRIVMSG #words :{round}: nothing much here (no highlight)")
+
+
 async def scenario_review_readmarker(client):
 	"""Read markers (draft/read-marker). The client joins #lobby, then #read.
 	"go" in #lobby: eight messages in #read (server-time, the fourth names
@@ -4163,6 +4204,7 @@ SCENARIOS = {
 	"review-notifyme": scenario_review_notifyme,
 	"review-readmarker": scenario_review_readmarker,
 	"review-replies": scenario_review_replies,
+	"review-match": scenario_review_match,
 	"review-typing": scenario_review_typing,
 	"review-banned": scenario_review_banned,
 	"review-list": scenario_review_list,
@@ -4224,7 +4266,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

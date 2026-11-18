@@ -134,6 +134,11 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 	self->_highlightKeywords = [aDecoder decodeObjectOfClasses:[NSSet setWithObjects:[NSArray class], [NSString class], nil]
 													 forKey:@"highlightKeywords"];
 
+	id highlightKeywordMatchTypes = [aDecoder decodeObjectOfClasses:[NSSet setWithObjects:[NSArray class], [NSNumber class], nil]
+															forKey:@"highlightKeywordMatchTypes"];
+
+	self->_highlightKeywordMatchTypes = ([highlightKeywordMatchTypes isKindOfClass:[NSArray class]] ? highlightKeywordMatchTypes : nil);
+
 	id rendererAttributes = [aDecoder decodeObjectOfClasses:[NSSet setWithObjects:[NSDictionary class], [NSString class], [NSNumber class], nil]
 													 forKey:@"rendererAttributes"];
 
@@ -188,10 +193,12 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 		self->_lineType = TVCLogLineTypeAction;
 
 		self->_highlightKeywords = nil;
+		self->_highlightKeywordMatchTypes = nil;
 	} else if (self->_lineType == TVCLogLineTypePrivateMessageNoHighlight) {
 		self->_lineType = TVCLogLineTypePrivateMessage;
 
 		self->_highlightKeywords = nil;
+		self->_highlightKeywordMatchTypes = nil;
 	}
 }
 
@@ -235,6 +242,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	[aCoder maybeEncodeObject:self.excludeKeywords forKey:@"excludeKeywords"];
 	[aCoder maybeEncodeObject:self.highlightKeywords forKey:@"highlightKeywords"];
+	[aCoder maybeEncodeObject:self.highlightKeywordMatchTypes forKey:@"highlightKeywordMatchTypes"];
 	[aCoder maybeEncodeObject:self.rendererAttributes forKey:@"rendererAttributes"];
 	[aCoder maybeEncodeObject:self.eventNicknames forKey:@"eventNicknames"];
 	[aCoder maybeEncodeObject:self.reactions forKey:@"reactions"];
@@ -482,6 +490,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 
 	object->_excludeKeywords = self->_excludeKeywords;
 	object->_highlightKeywords = self->_highlightKeywords;
+	object->_highlightKeywordMatchTypes = self->_highlightKeywordMatchTypes;
 
 	object->_rendererAttributes = self->_rendererAttributes;
 
@@ -527,6 +536,7 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 @dynamic command;
 @dynamic excludeKeywords;
 @dynamic highlightKeywords;
+@dynamic highlightKeywordMatchTypes;
 @dynamic rendererAttributes;
 @dynamic isEncrypted;
 @dynamic isFirstForDay;
@@ -580,6 +590,13 @@ DESIGNATED_INITIALIZER_EXCEPTION_BODY_END
 {
 	if (self->_highlightKeywords != highlightKeywords) {
 		self->_highlightKeywords = [highlightKeywords copy];
+	}
+}
+
+- (void)setHighlightKeywordMatchTypes:(nullable NSArray<NSNumber *> *)highlightKeywordMatchTypes
+{
+	if (self->_highlightKeywordMatchTypes != highlightKeywordMatchTypes) {
+		self->_highlightKeywordMatchTypes = [highlightKeywordMatchTypes copy];
 	}
 }
 

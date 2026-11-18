@@ -906,6 +906,20 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return (TXNicknameHighlightMatchType)[RZUserDefaults() unsignedIntegerForKey:@"NicknameHighlightMatchingType"];
 }
 
+/* Each word has its own match type: Settings' method is the nickname's and
+ new words', which a regular expression can't be. It stays what it was so
+ that words saved before, and lines printed before, keep their meaning. */
++ (TXNicknameHighlightMatchType)highlightNicknameMatchingMethod
+{
+	TXNicknameHighlightMatchType matchType = [self highlightMatchingMethod];
+
+	if (matchType == TXNicknameHighlightMatchTypePartial) {
+		return TXNicknameHighlightMatchTypePartial;
+	}
+
+	return TXNicknameHighlightMatchTypeExact;
+}
+
 + (TXUserDoubleClickAction)userDoubleClickOption
 {
 	return (TXUserDoubleClickAction)[RZUserDefaults() unsignedIntegerForKey:@"UserListDoubleClickAction"];
@@ -1587,7 +1601,7 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 {
 	NSArray *keywordArrayIn = [RZUserDefaults() arrayForKey:@"Highlight List -> Excluded Matches"];
 
-	_excludeKeywordEntries = [IRCHighlightKeyword keywordsWithDictionaries:keywordArrayIn];
+	_excludeKeywordEntries = [IRCHighlightKeyword keywordsWithDictionaries:keywordArrayIn defaultMatchType:TXNicknameHighlightMatchTypePartial];
 
 	_excludeKeywords = [_excludeKeywordEntries valueForKey:@"keyword"];
 }
@@ -1596,15 +1610,24 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 {
 	NSArray *keywordArrayIn = [RZUserDefaults() arrayForKey:@"Highlight List -> Primary Matches"];
 
-	_matchKeywordEntries = [IRCHighlightKeyword keywordsWithDictionaries:keywordArrayIn];
+	_matchKeywordEntries = [IRCHighlightKeyword keywordsWithDictionaries:keywordArrayIn defaultMatchType:[self highlightMatchingMethod]];
 
 	_matchKeywords = [_matchKeywordEntries valueForKey:@"keyword"];
 }
 
-/* Empty rows go, the rest is sorted; a keyword's limits and sound stay */
+/* Empty rows go (an empty highlight word limited to people stays: every
+ message from them), the rest is sorted; a keyword's limits and sound stay.
+ A highlight word without a match type gets Settings' method, which was
+ every word's before they had their own. */
 + (void)_cleanUpKeywords:(NSString *)key
 {
+	BOOL excluded = [key isEqualToString:@"Highlight List -> Excluded Matches"];
+
 	NSArray *keywordArrayIn = [RZUserDefaults() arrayForKey:key];
+
+	if (keywordArrayIn == nil) {
+		return;
+	}
 
 	NSMutableArray<NSDictionary *> *keywordArrayOut = [NSMutableArray array];
 
@@ -1615,14 +1638,30 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 
 		NSString *s = keyword[IRCHighlightKeywordStringKey];
 
-		if ([s isKindOfClass:[NSString class]] && s.length > 0) {
-			[keywordArrayOut addObject:[keyword mutableCopy]];
+		if ([s isKindOfClass:[NSString class]] == NO) {
+			continue;
 		}
+
+		if (s.length == 0 && (excluded || [keyword[IRCHighlightKeywordNicknamesKey] count] == 0)) {
+			continue;
+		}
+
+		NSMutableDictionary *keywordOut = [keyword mutableCopy];
+
+		if (excluded == NO && [keywordOut[IRCHighlightKeywordMatchTypeKey] isKindOfClass:[NSNumber class]] == NO) {
+			keywordOut[IRCHighlightKeywordMatchTypeKey] = @([self highlightMatchingMethod]);
+		}
+
+		[keywordArrayOut addObject:keywordOut];
 	}
 
 	[keywordArrayOut sortUsingComparator:^NSComparisonResult(NSDictionary *keyword1, NSDictionary *keyword2) {
 		return [keyword1[IRCHighlightKeywordStringKey] caseInsensitiveCompare:keyword2[IRCHighlightKeywordStringKey]];
 	}];
+
+	if ([keywordArrayOut isEqualToArray:keywordArrayIn]) {
+		return;
+	}
 
 	[RZUserDefaults() setObject:keywordArrayOut forKey:key];
 }
@@ -1896,6 +1935,8 @@ static NSArray<IRCHighlightKeyword *> *_matchKeywordEntries = nil;
 	[self migrateInlineMediaLimits];
 
 	[self migrateMemberListWidth];
+
+	[self cleanUpHighlightKeywords];
 
 	/* App Nap is no longer a setting: a choice to turn it off made in Textual 7 goes */
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"NSAppSleepDisabled"];

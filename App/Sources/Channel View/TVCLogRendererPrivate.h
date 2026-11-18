@@ -53,6 +53,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addColorTokens:(NSMutableDictionary<NSString *, id> *)templateTokens forAttributes:(NSDictionary<NSString *, id> *)stringAttributes isFirstFragment:(BOOL)isFirstFragment isLastFragment:(BOOL)isLastFragment;
 @end
 
+/* NSArray<NSNumber *>: how each highlight keyword matches, in the same order
+ (TVCLogLine's highlightKeywordMatchTypes); without it, Settings' method */
+extern NSString * const TVCLogRendererConfigurationHighlightKeywordMatchTypesAttribute;
+
 extern NSString * const TVCLogRendererFormattingForegroundColorAttribute;
 extern NSString * const TVCLogRendererFormattingBackgroundColorAttribute;
 

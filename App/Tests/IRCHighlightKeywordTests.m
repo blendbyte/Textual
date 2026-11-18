@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
 		@{@"string" : @""}
 	];
 
-	NSArray<IRCHighlightKeyword *> *keywords = [IRCHighlightKeyword keywordsWithDictionaries:dictionaries];
+	NSArray<IRCHighlightKeyword *> *keywords = [IRCHighlightKeyword keywordsWithDictionaries:dictionaries defaultMatchType:TXNicknameHighlightMatchTypeExact];
 
 	XCTAssertEqual(keywords.count, (NSUInteger)3);
 
@@ -116,6 +116,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue([keywords[2] appliesToChannelWithId:@"channel-b" clientId:@"server-1"]);
 	XCTAssertFalse([keywords[2] appliesToChannelWithId:@"channel-a" clientId:@"server-2"]);
+}
+
+/* A word's own match type; words saved before take the one given; an
+ empty word limited to people is every message from them */
+- (void)testMatchTypes
+{
+	NSArray *dictionaries = @[
+		@{@"string" : @"older"},
+		@{@"string" : @"part", @"matchType" : @(TXNicknameHighlightMatchTypePartial)},
+		@{@"string" : @"b.g", @"matchType" : @(TXNicknameHighlightMatchTypeRegularExpression)},
+		@{@"string" : @"", @"nicknames" : @[@"alice"], @"matchType" : @(TXNicknameHighlightMatchTypeExact)}
+	];
+
+	NSArray<IRCHighlightKeyword *> *keywords = [IRCHighlightKeyword keywordsWithDictionaries:dictionaries defaultMatchType:TXNicknameHighlightMatchTypeRegularExpression];
+
+	XCTAssertEqual(keywords.count, (NSUInteger)4);
+
+	XCTAssertEqual(keywords[0].lineMatchType, (NSUInteger)TXNicknameHighlightMatchTypeRegularExpression);
+	XCTAssertEqual(keywords[1].lineMatchType, (NSUInteger)TXNicknameHighlightMatchTypePartial);
+	XCTAssertEqual(keywords[2].lineMatchType, (NSUInteger)TXNicknameHighlightMatchTypeRegularExpression);
+	XCTAssertEqual(keywords[3].lineMatchType, IRCHighlightKeywordMatchTypeEveryMessage);
 }
 
 @end
