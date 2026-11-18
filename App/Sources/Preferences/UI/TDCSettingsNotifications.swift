@@ -316,6 +316,17 @@ struct NotificationsSettings: View
 			} footer: {
 				SettingFooter(text: SettingsText("set-not-h3h"))
 			}
+
+			/* Sounds added with "Other…" */
+			Section {
+				LabeledContent {
+					Button(SettingsText("set-ext-o")) {
+						TDCSettingsBridge.openSoundsFolder()
+					}
+				} label: {
+					SettingLabel(title: SettingsText("snd-f"), help: SettingsText("snd-fh"))
+				}
+			}
 		}
 	}
 }
@@ -330,6 +341,9 @@ struct NotificationEventPage: View
 
 	private static let noSound = ""
 
+	/* "Other…": an audio file of your own */
+	static let otherSound = "\u{1}other"
+
 	var body: some View
 	{
 		let options = NotificationEventOptions(event: event)
@@ -338,6 +352,16 @@ struct NotificationEventPage: View
 		let sound = Binding<String>(get: {
 			(options.sound ?? Self.noSound)
 		}, set: { (value) in
+			if (value == Self.otherSound) {
+				TDCSettingsBridge.chooseAlertSound(in: model.window) { (name) in
+					if let name = name {
+						store.string(options.soundKey).wrappedValue = name
+					}
+				}
+
+				return
+			}
+
 			store.string(options.soundKey).wrappedValue = ((value == Self.noSound) ? "None" : value)
 
 			if (value != Self.noSound) {
@@ -371,6 +395,10 @@ struct NotificationEventPage: View
 					ForEach((sounds.contains(sound.wrappedValue) || sound.wrappedValue == Self.noSound) ? sounds : (sounds + [sound.wrappedValue]), id: \.self) { (name) in
 						Text(name).tag(name)
 					}
+
+					Divider()
+
+					Text(SettingsText("snd-o1")).tag(Self.otherSound)
 				} label: {
 					SettingLabel(title: SettingsText("set-not-e2"), help: SettingsText("set-not-e2h"))
 				}

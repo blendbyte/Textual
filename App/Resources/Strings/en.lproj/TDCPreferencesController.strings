@@ -557,6 +557,13 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-hil-mh1" = "For your nickname and new words: “daniel” doesn’t match “danielle”. Click a word to match it another way, also as a regular expression.";
 "set-hil-mi" = "These aren’t valid regular expressions and never match: %@";
 "set-hil-ev" = "Every message";
+"snd-o1" = "Other…";
+"snd-o2" = "Use Sound";
+"snd-o3" = "Choose an audio file (AIFF, WAV, MP3, M4A or CAF). Textual keeps a copy and lists it with the other sounds.";
+"snd-e1" = "The sound can’t be used";
+"snd-e2" = "Textual couldn’t copy it into its Sounds folder.";
+"snd-f" = "Your sounds";
+"snd-fh" = "Sounds added with “Other…” in a sound menu. Rename or remove them in this folder.";
 "set-hil-n" = "My nickname is a highlight word";
 "set-hil-nh" = "On every server, whatever nickname you have there.";
 "set-hil-rp" = "Replies to your messages count as mentions";

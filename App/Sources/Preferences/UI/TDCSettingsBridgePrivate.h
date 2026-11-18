@@ -197,6 +197,12 @@ TEXTUAL_EXTERN NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotificat
 
 @property (class, readonly, copy) NSArray<NSString *> *alertSounds;
 
+/* "Other…" in a sound menu: an audio file copied into Textual's Sounds
+ folder; the handler gets its name, or nil when cancelled */
++ (void)chooseAlertSoundInWindow:(nullable NSWindow *)window completionHandler:(void (^)(NSString * _Nullable name))completionHandler;
+
++ (void)openSoundsFolder;
+
 + (void)playAlertSound:(NSString *)name;
 @end
 

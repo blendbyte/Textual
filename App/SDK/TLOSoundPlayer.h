@@ -42,6 +42,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)playAlertSound:(NSString *)name;
 
 + (NSArray<NSString *> *)uniqueListOfSounds;
+
+/* Textual's own Sounds folder (Application Support, in its container),
+ made when needed; the sounds in it are listed with the system's */
++ (nullable NSURL *)userSoundsFolderURL;
+
+/* Copies an audio file into that folder (replacing one of the same name);
+ returns its name for the sound menus, or nil */
++ (nullable NSString *)importSoundFromURL:(NSURL *)fileURL error:(NSError **)error;
 @end
 
 NS_ASSUME_NONNULL_END

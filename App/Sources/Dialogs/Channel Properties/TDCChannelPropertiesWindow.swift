@@ -476,6 +476,19 @@ final class ChannelPropertiesModel: ObservableObject
 		Binding {
 			Self.soundName(self.config.sound(forEvent: event) ?? TPCPreferences.sound(forEvent: event))
 		} set: { (value) in
+			/* "Other…": an audio file of your own */
+			if (value == NotificationEventPage.otherSound) {
+				TDCSettingsBridge.chooseAlertSound(in: self.window) { (name) in
+					if let name = name {
+						self.objectWillChange.send()
+
+						self.config.setSound(name, forEvent: event)
+					}
+				}
+
+				return
+			}
+
 			self.objectWillChange.send()
 
 			self.config.setSound(((value == Self.noSound) ? "None" : value), forEvent: event)
@@ -913,6 +926,10 @@ struct ChannelPropertiesEventOptions: View
 				ForEach((sounds.contains(sound.wrappedValue) || sound.wrappedValue == ChannelPropertiesModel.noSound) ? sounds : (sounds + [sound.wrappedValue]), id: \.self) { (name) in
 					Text(name).tag(name)
 				}
+
+				Divider()
+
+				Text(SettingsText("snd-o1")).tag(NotificationEventPage.otherSound)
 			} label: {
 				SettingLabel(title: SettingsText("set-not-e2"))
 			}

@@ -45,6 +45,7 @@
 #import "IRCHighlightKeywordPrivate.h"
 #import "TDCAlert.h"
 #import "TDCHighlightKeywordSheetPrivate.h"
+#import "TDCSettingsBridgePrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -69,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSPopUpButton *peoplePopup;
 @property (nonatomic, strong) NSTextField *peopleField;
 @property (nonatomic, strong, nullable) NSPopUpButton *soundPopup;
+@property (nonatomic, assign) NSInteger soundPopupLastIndex; // before "Other…" was chosen
 @property (nonatomic, strong) NSButton *saveButton;
 @property (nonatomic, copy) NSArray<IRCTreeItem *> *places; // each server, then its channels
 @property (nonatomic, strong) NSMutableSet<NSString *> *selectedPlaces;
@@ -411,6 +413,15 @@ NS_ASSUME_NONNULL_BEGIN
 			[soundPopup selectItemAtIndex:soundIndex];
 		}
 
+		/* An audio file of your own */
+		[soundPopup.menu addItem:[NSMenuItem separatorItem]];
+
+		[soundPopup addItemWithTitle:TXTLS(@"TDCPreferencesController[snd-o1]")];
+
+		soundPopup.lastItem.tag = 1;
+
+		self.soundPopupLastIndex = soundPopup.indexOfSelectedItem;
+
 		soundPopup.target = self;
 		soundPopup.action = @selector(onChangedSound:);
 
@@ -582,6 +593,38 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)onChangedSound:(NSPopUpButton *)sender
 {
+	/* "Other…": copied in, then added above the separator and chosen */
+	if (sender.selectedItem.tag == 1) {
+		[sender selectItemAtIndex:self.soundPopupLastIndex];
+
+		[TDCSettingsBridge chooseAlertSoundInWindow:self.sheetWindow completionHandler:^(NSString * _Nullable name) {
+			if (name == nil) {
+				return;
+			}
+
+			NSInteger soundIndex = [sender indexOfItemWithRepresentedObject:name];
+
+			if (soundIndex == (-1)) {
+				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:name action:NULL keyEquivalent:@""];
+
+				item.representedObject = name;
+
+				/* Before the separator and "Other…" */
+				[sender.menu insertItem:item atIndex:(sender.numberOfItems - 2)];
+
+				soundIndex = [sender indexOfItem:item];
+			}
+
+			[sender selectItemAtIndex:soundIndex];
+
+			self.soundPopupLastIndex = soundIndex;
+		}];
+
+		return;
+	}
+
+	self.soundPopupLastIndex = sender.indexOfSelectedItem;
+
 	NSString *sound = sender.selectedItem.representedObject;
 
 	if (sound) {

@@ -40,6 +40,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 
 #import "TLOSoundPlayer.h"
+#import "TPCPathInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -101,6 +102,19 @@ NS_ASSUME_NONNULL_BEGIN
 	return [self soundFilesAtPath:folder];
 }
 
+/* Sounds added with "Other…" (the container's Library/Sounds is a link to
+ ~/Library/Sounds, which the sandbox can't create or write to) */
++ (nullable NSDictionary<NSString *, NSString *> *)ownSoundFiles
+{
+	NSURL *folderURL = [self userSoundsFolderURL];
+
+	if (folderURL == nil) {
+		return nil;
+	}
+
+	return [self soundFilesAtPath:folderURL.path];
+}
+
 + (void)doesSoundFileDictionary:(NSDictionary<NSString *, NSString *> *)fileList containName:(NSString *)name returnedPath:(NSString **)path
 {
 	NSString *filePath = fileList[name];
@@ -124,9 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
-/* One system sound per name for the life of the app: every alert created a
- new one (never disposed of) after listing up to three folders */
-+ (SystemSoundID)alertSoundNamed:(NSString *)name
++ (NSMutableDictionary<NSString *, NSNumber *> *)cachedSoundIDs
 {
 	static NSMutableDictionary<NSString *, NSNumber *> *cachedSoundIDs = nil;
 
@@ -135,6 +147,15 @@ NS_ASSUME_NONNULL_BEGIN
 	dispatch_once(&onceToken, ^{
 		cachedSoundIDs = [NSMutableDictionary dictionary];
 	});
+
+	return cachedSoundIDs;
+}
+
+/* One system sound per name for the life of the app: every alert created a
+ new one (never disposed of) after listing up to three folders */
++ (SystemSoundID)alertSoundNamed:(NSString *)name
+{
+	NSMutableDictionary<NSString *, NSNumber *> *cachedSoundIDs = [self cachedSoundIDs];
 
 	@synchronized (cachedSoundIDs) {
 		NSNumber *cachedSoundID = cachedSoundIDs[name];
@@ -157,9 +178,15 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSString *soundPath = nil;
 
-	NSDictionary *soundFiles = [self userLibrarySoundFiles];
+	NSDictionary *soundFiles = [self ownSoundFiles];
 
 	[self doesSoundFileDictionary:soundFiles containName:name returnedPath:&soundPath];
+
+	if (soundPath == nil) {
+		soundFiles = [self userLibrarySoundFiles];
+
+		[self doesSoundFileDictionary:soundFiles containName:name returnedPath:&soundPath];
+	}
 
 	if (soundPath == nil) {
 		soundFiles = [self systemLibrarySoundFiles];
@@ -217,6 +244,68 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 }
 
++ (nullable NSURL *)userSoundsFolderURL
+{
+	NSURL *supportURL = [TPCPathInfo applicationSupportURL];
+
+	if (supportURL == nil) {
+		return nil;
+	}
+
+	NSURL *folderURL = [supportURL URLByAppendingPathComponent:@"Sounds" isDirectory:YES];
+
+	if ([RZFileManager() createDirectoryAtURL:folderURL withIntermediateDirectories:YES attributes:nil error:NULL] == NO) {
+		return nil;
+	}
+
+	return folderURL;
+}
+
++ (nullable NSString *)importSoundFromURL:(NSURL *)fileURL error:(NSError **)error
+{
+	NSParameterAssert(fileURL != nil);
+
+	UTType *fileType = [UTType typeWithFilenameExtension:fileURL.pathExtension];
+
+	if (fileType == nil || [fileType conformsToType:UTTypeAudio] == NO) {
+		return nil;
+	}
+
+	NSURL *folderURL = [self userSoundsFolderURL];
+
+	if (folderURL == nil) {
+		return nil;
+	}
+
+	NSURL *destinationURL = [folderURL URLByAppendingPathComponent:fileURL.lastPathComponent];
+
+	/* The same file chosen again: already there */
+	if ([destinationURL.URLByStandardizingPath isEqual:fileURL.URLByStandardizingPath] == NO) {
+		[RZFileManager() removeItemAtURL:destinationURL error:NULL];
+
+		if ([RZFileManager() copyItemAtURL:fileURL toURL:destinationURL error:error] == NO) {
+			return nil;
+		}
+	}
+
+	NSString *name = fileURL.lastPathComponent.stringByDeletingPathExtension;
+
+	/* A replaced file plays from now on */
+	NSMutableDictionary<NSString *, NSNumber *> *cachedSoundIDs = [self cachedSoundIDs];
+
+	@synchronized (cachedSoundIDs) {
+		NSNumber *cachedSoundID = cachedSoundIDs[name];
+
+		if (cachedSoundID) {
+			AudioServicesDisposeSystemSoundID((SystemSoundID)cachedSoundID.unsignedIntValue);
+
+			[cachedSoundIDs removeObjectForKey:name];
+		}
+	}
+
+	return name;
+}
+
 + (NSArray<NSString *> *)uniqueListOfSounds
 {
 	NSMutableArray<NSString *> *sounds = [NSMutableArray array];
@@ -236,6 +325,12 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	for (NSString *sound in [self userLibrarySoundFiles]) {
+		if ([sounds containsObject:sound] == NO) {
+			[sounds addObject:sound];
+		}
+	}
+
+	for (NSString *sound in [self ownSoundFiles]) {
 		if ([sounds containsObject:sound] == NO) {
 			[sounds addObject:sound];
 		}

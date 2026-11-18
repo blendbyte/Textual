@@ -73,6 +73,7 @@
 #import "TDCLicenseManagerDialogPrivate.h"
 #import "TLOLicenseManagerPrivate.h"
 #import "TLOSoundPlayer.h"
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "TLOMessageArchivePrivate.h"
 #import "TPCPathInfoPrivate.h"
 #import "ICPCoreMediaPrivate.h"
@@ -1196,6 +1197,69 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	NSParameterAssert(name != nil);
 
 	[TLOSoundPlayer playAlertSound:name];
+}
+
++ (void)chooseAlertSoundInWindow:(nullable NSWindow *)window completionHandler:(void (^)(NSString * _Nullable name))completionHandler
+{
+	NSParameterAssert(completionHandler != nil);
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+	panel.canChooseFiles = YES;
+	panel.canChooseDirectories = NO;
+	panel.allowsMultipleSelection = NO;
+	panel.prompt = TXTLS(@"TDCPreferencesController[snd-o2]");
+	panel.message = TXTLS(@"TDCPreferencesController[snd-o3]");
+
+	NSMutableArray<UTType *> *types = [NSMutableArray array];
+
+	for (NSString *extension in @[@"aiff", @"aif", @"wav", @"mp3", @"m4a", @"caf"]) {
+		UTType *type = [UTType typeWithFilenameExtension:extension];
+
+		if (type) {
+			[types addObject:type];
+		}
+	}
+
+	panel.allowedContentTypes = types;
+
+	void (^handler)(NSModalResponse) = ^(NSModalResponse response) {
+		if (response != NSModalResponseOK || panel.URL == nil) {
+			completionHandler(nil);
+
+			return;
+		}
+
+		NSError *error = nil;
+
+		NSString *name = [TLOSoundPlayer importSoundFromURL:panel.URL error:&error];
+
+		if (name == nil) {
+			[TDCAlert alertWithMessage:(error.localizedDescription ?: TXTLS(@"TDCPreferencesController[snd-e2]"))
+								 title:TXTLS(@"TDCPreferencesController[snd-e1]")
+						 defaultButton:TXTLS(@"Prompts[c7s-dq]")
+					   alternateButton:nil];
+		} else {
+			[TLOSoundPlayer playAlertSound:name];
+		}
+
+		completionHandler(name);
+	};
+
+	if (window) {
+		[panel beginSheetModalForWindow:window completionHandler:handler];
+	} else {
+		[panel beginWithCompletionHandler:handler];
+	}
+}
+
++ (void)openSoundsFolder
+{
+	NSURL *folderURL = [TLOSoundPlayer userSoundsFolderURL];
+
+	if (folderURL) {
+		[RZWorkspace() openURL:folderURL];
+	}
 }
 
 @end
