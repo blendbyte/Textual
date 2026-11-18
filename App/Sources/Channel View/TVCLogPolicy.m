@@ -48,6 +48,7 @@
 #import "TVCLogControllerPrivate.h"
 #import "TVCLogViewPrivate.h"
 #import "TVCLogPolicyPrivate.h"
+#import "TVCMessageTranslatorPrivate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -157,11 +158,18 @@ NS_ASSUME_NONNULL_BEGIN
 		if (messageMenu.count > 1 && viewController) {
 			NSString *lineNumber = messageMenu.firstObject;
 
-			NSDictionary<NSString *, NSString *> *titles = @{
+			NSMutableDictionary<NSString *, NSString *> *titles = [@{
 				@"reply" : TXTLS(@"TVCMainWindow[rpl-b1]"),
 				@"react" : TXTLS(@"TVCMainWindow[rct-m1]"),
 				@"delete" : TXTLS(@"TVCMainWindow[del-m1]")
-			};
+			} mutableCopy];
+
+			/* Apple's Translation, macOS 15 and later */
+			if (TVCMessageTranslator.isAvailable) {
+				titles[@"translate"] = TXTLS(@"TVCMainWindow[trn-m1]");
+			}
+
+			BOOL addedItem = NO;
 
 			for (NSString *command in [messageMenu subarrayWithRange:NSMakeRange(1, (messageMenu.count - 1))]) {
 				NSString *title = titles[command];
@@ -175,9 +183,13 @@ NS_ASSUME_NONNULL_BEGIN
 				item.representedObject = @[lineNumber, command];
 
 				[menuItems addObject:item];
+
+				addedItem = YES;
 			}
 
-			[menuItems addObject:[NSMenuItem separatorItem]];
+			if (addedItem) {
+				[menuItems addObject:[NSMenuItem separatorItem]];
+			}
 		}
 
 		NSMenu *menu = menuController().channelViewGeneralMenu;
@@ -185,9 +197,13 @@ NS_ASSUME_NONNULL_BEGIN
 		NSMenuItem *inspectElementItem = nil;
 		NSMenuItem *lookupInDictionaryItem = nil;
 		NSMenuItem *searchWithGoogleItem = nil;
+		NSMenuItem *translateItem = nil;
 
 		for (NSMenuItem *item in defaultMenuItems) {
-			if (item.tag == _WebKit2MenuItemTagLookupInDictionary) {
+			/* macOS's Translate for the selection, as in Safari (by identifier: its tag is private) */
+			if ([item.identifier isEqualToString:@"WKMenuItemIdentifierTranslate"]) {
+				translateItem = [item copy];
+			} else if (item.tag == _WebKit2MenuItemTagLookupInDictionary) {
 				lookupInDictionaryItem = [item copy];
 			} else if (item.tag == _WebKit2MenuItemTagInspectElement) {
 				inspectElementItem = [item copy];
@@ -208,6 +224,11 @@ NS_ASSUME_NONNULL_BEGIN
 			} else if (newItem.tag == MTWKGeneralLookUpInDictionary) {
 				if (lookupInDictionaryItem != nil) {
 					[menuItems addObject:lookupInDictionaryItem];
+
+					/* Translate goes with Look Up */
+					if (translateItem != nil) {
+						[menuItems addObject:translateItem];
+					}
 
 					continue;
 				}

@@ -145,6 +145,8 @@
 "prv-l1" = "only you";
 "bac-t1" = "Ban Account %@";
 "srm-t1" = "Search Messages from %@";
+"trn-m1" = "Translate";
+"trn-e1" = "This message couldn’t be translated.";
 "e7g-s1" = ", ";
 
 /* The same with names, for up to three: "alice and bob joined, carol is now carl" */

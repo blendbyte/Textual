@@ -118,6 +118,7 @@ _MessageActions._applyStyles = function() /* PRIVATE */
 		":where(div.line .reaction .reactionCount) { margin-left: 0.3em; font-variant-numeric: tabular-nums; }",
 		":where(div.line.failed .innerMessage) { opacity: 0.5; }",
 		":where(div.line .failedNote) { display: block; margin: 2px 0 1px 0; font-size: 0.85em; color: #d70015; }",
+		":where(div.line .translationNote) { display: block; margin: 2px 0 1px 0; font-size: 0.9em; opacity: 0.7; font-style: italic; }",
 		"@media (prefers-color-scheme: dark) { :where(div.line .failedNote) { color: #ff6961; } }",
 		":where(div.line .failedNote button) { appearance: none; margin: 0 0 0 0.6em; padding: 0; border: 0; background: none; " +
 			"font: inherit; color: -apple-system-control-accent; cursor: pointer; }",
@@ -251,6 +252,58 @@ _MessageActions._excerptOfLine = function(line) /* PRIVATE */
 	}
 
 	return text;
+};
+
+/* A message's whole text: not its reactions, quote, previews or spoken-only parts */
+_MessageActions._textOfLine = function(line) /* PRIVATE */
+{
+	var message = (line.querySelector(".innerMessage") || line.querySelector(".message"));
+
+	if (!message) {
+		return "";
+	}
+
+	var copy = message.cloneNode(true);
+
+	copy.querySelectorAll(".reactions, .replyQuote, .inlineMediaContainer, .spokenOnly, .translationNote").forEach(function(element) {
+		element.remove();
+	});
+
+	return copy.textContent.replace(/\s+/g, " ").trim();
+};
+
+/* From the app: for Translate */
+_MessageActions.textOfLine = function(lineNumber) /* PRIVATE */
+{
+	var line = document.getElementByLineNumber(lineNumber);
+
+	return ((line) ? _MessageActions._textOfLine(line) : "");
+};
+
+/* From the app: a message's translation, under it (the saved line stays as it was) */
+_MessageActions.showTranslation = function(lineNumber, text) /* PRIVATE */
+{
+	var line = document.getElementByLineNumber(lineNumber);
+
+	if (line === null) {
+		return;
+	}
+
+	var atBottom = TextualScroller.isScrolledToBottom();
+
+	var note = line.querySelector(":scope > .translationNote");
+
+	if (note === null) {
+		note = document.createElement("div");
+
+		note.className = "translationNote";
+
+		line.appendChild(note);
+	}
+
+	note.textContent = text;
+
+	_MessageActions._keepAtBottom(atBottom);
 };
 
 _MessageActions._senderOfLine = function(line) /* PRIVATE */
@@ -1241,12 +1294,20 @@ _MessageActions.menuCommand = function(lineNumber, command) /* PRIVATE */
 	_MessageActions._perform(line, command);
 };
 
-/* The context menu learns which message it is for, and what it can do */
+/* The context menu learns which message it is for, and what it can do:
+ Reply, React… and Delete… where it has a message ID; Translate on any message
+ (offered by the app where macOS can) */
 _MessageActions._contextMenu = function(event) /* PRIVATE */
 {
-	var line = _MessageActions._messageLineForElement(event.target);
+	var target = event.target;
 
-	var actions = ((line) ? _MessageActions._actionsForLine(line) : []);
+	var line = ((target && target.closest) ? target.closest("div.line.text:not(.redacted)") : null);
+
+	var actions = ((line && line.dataset.msgid) ? _MessageActions._actionsForLine(line) : []);
+
+	if (line && _MessageActions._textOfLine(line).length > 0) {
+		actions = actions.concat(["translate"]);
+	}
 
 	if (actions.length === 0) {
 		/* One empty value: the bridge refuses an empty list, which left the last menu in place */

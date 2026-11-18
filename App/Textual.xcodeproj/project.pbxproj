@@ -506,6 +506,7 @@
 		4C33341E20CC471A00ACB9AD /* Bundled Scripts in Resources */ = {isa = PBXBuildFile; fileRef = 4C33341B20CC471A00ACB9AD /* Bundled Scripts */; };
 		4C33342320CC475300ACB9AD /* Bundled Styles in Resources */ = {isa = PBXBuildFile; fileRef = 4C33342020CC475300ACB9AD /* Bundled Styles */; };
 		4C469E3D20EC5BDB00094EA4 /* TLOLinkParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515520EB673E00448776 /* TLOLinkParser.swift */; };
+		578D59CFFC3D53D7DDA634DF /* TVCMessageTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56854EDAAB0A15B49A64634D /* TVCMessageTranslator.swift */; };
 		4C469E3E20EC5BDB00094EA4 /* TLOpenLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C31515920EB673E00448776 /* TLOpenLink.swift */; };
 		4C51327A20F76E980033B703 /* TLOLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C51327720F76E980033B703 /* TLOLocalization.swift */; };
 		4C52379415C18F6700414852 /* Style Default Templates in Resources */ = {isa = PBXBuildFile; fileRef = 4C52379215C18F6700414852 /* Style Default Templates */; };
@@ -990,6 +991,8 @@
 		4C681E8BDAA0BF760194D9D1 /* TVCInputCompletionPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCInputCompletionPrivate.h; sourceTree = "<group>"; };
 		4C2C5810BA5563BFC2E650E0 /* TVCInputMarkdownPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCInputMarkdownPrivate.h; sourceTree = "<group>"; };
 		4C31515520EB673E00448776 /* TLOLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLOLinkParser.swift; sourceTree = "<group>"; };
+		56854EDAAB0A15B49A64634D /* TVCMessageTranslator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVCMessageTranslator.swift; sourceTree = "<group>"; };
+		470508345B24853C0AA66237 /* TVCMessageTranslatorPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVCMessageTranslatorPrivate.h; sourceTree = "<group>"; };
 		4C31515620EB673E00448776 /* TLOInternetAddressLookup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOInternetAddressLookup.m; sourceTree = "<group>"; };
 		4C31515620EB673E004487A1 /* TLOKeychain.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOKeychain.m; sourceTree = "<group>"; };
 		4C1C0F11E0A0000000000A14 /* TLOUploadDestination.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TLOUploadDestination.m; sourceTree = "<group>"; };
@@ -1761,6 +1764,8 @@
 			isa = PBXGroup;
 			children = (
 				4C31515520EB673E00448776 /* TLOLinkParser.swift */,
+				56854EDAAB0A15B49A64634D /* TVCMessageTranslator.swift */,
+				470508345B24853C0AA66237 /* TVCMessageTranslatorPrivate.h */,
 				4C3152BA20EB673E00448776 /* TVCLogController.m */,
 				4C3152C320EB673E00448776 /* TVCLogControllerOperationQueue.m */,
 				4C3151C920EB673E00448776 /* TVCLogControllerOperationQueuePrivate.h */,
@@ -3777,6 +3782,7 @@
 				4C06E68920EC55B90055D09A /* IRCHighlightMatchCondition.m in Sources */,
 				4C3614BEB78C374590C2FC99 /* IRCHighlightKeyword.m in Sources */,
 				4C469E3D20EC5BDB00094EA4 /* TLOLinkParser.swift in Sources */,
+				578D59CFFC3D53D7DDA634DF /* TVCMessageTranslator.swift in Sources */,
 				4C06E68A20EC55B90055D09A /* IRCISupportInfo.m in Sources */,
 				4C06E68B20EC55B90055D09A /* IRCMessage.m in Sources */,
 				4C06E68C20EC55B90055D09A /* IRCMessageBatch.m in Sources */,

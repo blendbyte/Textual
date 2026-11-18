@@ -61,6 +61,7 @@
 #import "TVCLogLine.h"
 #import "TVCLogLinePrivate.h"
 #import "TVCLogRendererPrivate.h"
+#import "TVCMessageTranslatorPrivate.h"
 #import "HLSHistoricLogManagerPrivate.h"
 #import "TLOMessageArchivePrivate.h"
 #import "TVCLogControllerInlineMediaServicePrivate.h"
@@ -841,6 +842,13 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 		return;
 	}
 
+	/* Translate: the message's text, translated, shown under it */
+	if ([lineAndCommand[1] isEqual:@"translate"]) {
+		[self translateMessageOnLine:lineAndCommand[0]];
+
+		return;
+	}
+
 	/* The reaction choices are then picked with the keys too */
 	if ([lineAndCommand[1] isEqual:@"react"]) {
 		NSView *webView = self.backingView.webView;
@@ -851,6 +859,31 @@ NSString * const TVCLogControllerViewFinishedLoadingNotification = @"TVCLogContr
 	}
 
 	[self evaluateFunction:@"_MessageActions.menuCommand" withArguments:lineAndCommand];
+}
+
+- (void)translateMessageOnLine:(NSString *)lineNumber
+{
+	NSParameterAssert(lineNumber != nil);
+
+	TVCLogView *backingView = self.backingView;
+
+	[backingView evaluateFunction:@"_MessageActions.textOfLine" withArguments:@[lineNumber] completionHandler:^(id _Nullable result) {
+		if ([result isKindOfClass:[NSString class]] == NO || [result length] == 0) {
+			return;
+		}
+
+		NSView *webView = backingView.webView;
+
+		if (webView == nil) {
+			return;
+		}
+
+		[TVCMessageTranslator translateText:result inView:webView completionHandler:^(NSString * _Nullable translation) {
+			NSString *shown = ((translation.length > 0) ? translation : TXTLS(@"TVCMainWindow[trn-e1]"));
+
+			[self evaluateFunction:@"_MessageActions.showTranslation" withArguments:@[lineNumber, shown]];
+		}];
+	}];
 }
 
 - (void)updateMessageActions

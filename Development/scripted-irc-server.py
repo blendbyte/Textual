@@ -806,6 +806,24 @@ async def scenario_review_important(client):
 		await client.send(f":bob!b@bob.example PRIVMSG {me} :{round}: a private question")
 
 
+async def scenario_review_translate(client):
+	"""Translate: #world with a German line from hans (with a message ID) and
+	a French one from marie (without), already there when the client joins."""
+	if not await client.register_with_capabilities("server-time message-tags"):
+		return
+
+	me = client.nickname
+
+	await client.send(f":{me}!user@client.textual.test JOIN #world")
+	await client.send(f":{SERVER} 353 {me} = #world :{me} hans marie")
+	await client.send(f":{SERVER} 366 {me} #world :End of /NAMES list.")
+	await client.send("@msgid=de1 :hans!h@hans.example PRIVMSG #world :Guten Morgen! Das neue Update ist heute Abend fertig.")
+	await client.send(":marie!m@marie.example PRIVMSG #world :Bonjour à tous, quelqu'un a testé la nouvelle version ?")
+
+	while await client.collect(1):
+		pass
+
+
 async def scenario_review_readmarker(client):
 	"""Read markers (draft/read-marker). The client joins #lobby, then #read.
 	"go" in #lobby: eight messages in #read (server-time, the fourth names
@@ -4511,6 +4529,7 @@ SCENARIOS = {
 	"review-ignorechan": scenario_review_ignorechan,
 	"review-kick": scenario_review_kick,
 	"review-important": scenario_review_important,
+	"review-translate": scenario_review_translate,
 	"review-quietext": scenario_review_quietext,
 	"review-quietext-insp": scenario_review_quietext_insp,
 	"review-typing": scenario_review_typing,
@@ -4574,7 +4593,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-important", "review-quietext", "review-quietext-insp", "review-kick", "review-ignorechan", "review-eventshow", "review-filters", "review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-translate", "review-important", "review-quietext", "review-quietext-insp", "review-kick", "review-ignorechan", "review-eventshow", "review-filters", "review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 
