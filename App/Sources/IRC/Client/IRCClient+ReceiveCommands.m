@@ -713,6 +713,9 @@ NS_ASSUME_NONNULL_BEGIN
 		[query activate];
 
 		[mainWindow() reloadTreeItem:query];
+
+		/* Back: its topic bar no longer says "Offline" */
+		[self updateQueryInfoBarsForNickname:query.name];
 	}
 }
 
@@ -1559,6 +1562,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 		if (senderQuery && senderQuery.isActive == NO) {
 			[senderQuery activate];
+
+			/* Back: its topic bar no longer says "Offline" */
+			[self updateQueryInfoBarsForNickname:sender];
 
 			[self print:TXTLS(@"IRC[q0q-ch]", sender)
 					 by:nil
