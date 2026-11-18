@@ -43,6 +43,7 @@
 #import "NSViewHelperPrivate.h"
 #import "TXMasterController.h"
 #import "TXMenuControllerPrivate.h"
+#import "TXMenuControllerInternal.h"
 #import "TVCMainWindow.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
@@ -598,6 +599,19 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 	}
 
 	return nil;
+}
+
+/* The member menu isn't in the menu bar, so its shortcuts (Ban, Give Op…)
+ would only work while it's open: with the list focused, they act on the
+ selected members. The main window asks before its own shortcuts, as ⌘B
+ is also bold in the input field. */
+- (BOOL)performMemberMenuKeyEquivalent:(NSEvent *)event
+{
+	if (self.window.firstResponder != self || self.selectedRowIndexes.count == 0) {
+		return NO;
+	}
+
+	return [menuController().userControlMenu performKeyEquivalent:event];
 }
 
 - (void)keyDown:(NSEvent *)e

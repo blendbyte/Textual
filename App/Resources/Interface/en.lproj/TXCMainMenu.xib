@@ -1445,7 +1445,7 @@ CA
                         <action selector="memberQuietInChannel:" target="267" id="qtM-it-002"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Kick…" tag="1620" keyEquivalent="k" id="1350">
+                <menuItem title="Kick…" tag="1620" id="1350">
                     <connections>
                         <action selector="memberKickFromChannel:" target="267" id="2639"/>
                     </connections>

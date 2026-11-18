@@ -117,6 +117,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSResponder *firstResponder = self.firstResponder;
 
+	if (firstResponder == self.memberList && [self.memberList performMemberMenuKeyEquivalent:e]) {
+		return YES;
+	}
+
 	/* The search panel's field and list take their keys as they are:
 	 the shortcuts here are the input field's and the chat's */
 	if (self.isSearchPanelVisible) {

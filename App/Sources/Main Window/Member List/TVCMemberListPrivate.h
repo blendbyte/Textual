@@ -58,6 +58,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* From its controller: rows now hold other people */
 - (void)memberListContentChanged;
+
+/* The member menu's shortcuts, for the selected members: YES when one matched */
+- (BOOL)performMemberMenuKeyEquivalent:(NSEvent *)event;
 @end
 
 @protocol TVCMemberListDelegate <NSObject>
