@@ -1052,6 +1052,14 @@ NS_ASSUME_NONNULL_BEGIN
 			return YES;
 		}
 
+		case MTMMQueryProperties: // "Properties…"
+		{
+			/* The Query menu is used for utility windows too */
+			menuItem.hidden = (c.isPrivateMessage == NO);
+
+			return c.isPrivateMessage;
+		}
+
 		case MTMMQueryQueryLogs: // "Show Logs in Finder"
 		{
 			/* Query menu is used for utility windows too so we

@@ -1263,6 +1263,11 @@ CA
                         <action selector="openChannelLogs:" target="267" id="Fgb-hr-F9e"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Properties…" tag="1805" keyEquivalent="i" id="qPr-it-001">
+                    <connections>
+                        <action selector="showChannelPropertiesSheet:" target="267" id="qPr-it-002"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Mute Private Message" tag="1803" id="mTq-s3-c2m">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>

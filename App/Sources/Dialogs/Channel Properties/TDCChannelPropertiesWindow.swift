@@ -107,7 +107,20 @@ final class ChannelPropertiesModel: ObservableObject
 
 	let errors = ServerPropertiesFieldErrors()
 
-	static let events: [TXNotificationType] = [.highlight, .channelMessage, .channelNotice, .userJoined, .userParted]
+	/* The events of a channel, or of a private conversation */
+	static let channelEvents: [TXNotificationType] = [.highlight, .channelMessage, .channelNotice, .userJoined, .userParted]
+	static let privateMessageEvents: [TXNotificationType] = [.highlight, .newPrivateMessage, .privateMessage, .privateNotice]
+
+	var alertEvents: [TXNotificationType]
+	{
+		((isPrivateMessage) ? Self.privateMessageEvents : Self.channelEvents)
+	}
+
+	/* A private conversation: no name, key, joining, events or "when empty" */
+	var isPrivateMessage: Bool
+	{
+		(config.type == .privateMessage)
+	}
 
 	init(config: IRCChannelConfigMutable, client: IRCClient?)
 	{
@@ -158,7 +171,7 @@ final class ChannelPropertiesModel: ObservableObject
 		topic = (config.defaultTopic ?? "")
 		modes = (config.defaultModes ?? "")
 
-		for event in Self.events where hasOwnAlerts(event) {
+		for event in alertEvents where hasOwnAlerts(event) {
 			customEvents.insert(event.rawValue)
 		}
 	}
@@ -629,10 +642,14 @@ struct ChannelPropertiesView: View
 		VStack(spacing: 0) {
 			Form {
 				Section {
-					ChannelPropertiesHeader(title: model.title, subtitle: model.subtitle)
+					ChannelPropertiesHeader(title: model.title, subtitle: model.subtitle, isPrivateMessage: model.isPrivateMessage)
 				}
 
-				channelSection
+				if (model.isPrivateMessage) {
+					privateMessageSection
+				} else {
+					channelSection
+				}
 
 				notificationsSection
 
@@ -644,12 +661,15 @@ struct ChannelPropertiesView: View
 
 				archiveSection
 
-				Section {
-					ServerPropertiesMoreRow(isExpanded: $showsMore)
-				}
+				/* "When the channel is empty": channels only */
+				if (model.isPrivateMessage == false) {
+					Section {
+						ServerPropertiesMoreRow(isExpanded: $showsMore)
+					}
 
-				if (showsMore) {
-					emptyChannelSection
+					if (showsMore) {
+						emptyChannelSection
+					}
 				}
 			}
 			.formStyle(.grouped)
@@ -701,6 +721,18 @@ struct ChannelPropertiesView: View
 		}
 	}
 
+	/* A private conversation: its label only */
+	private var privateMessageSection: some View
+	{
+		Section {
+			ServerPropertiesField(title: ChannelPropertiesText("cp-label"),
+								  help: ChannelPropertiesText("cp-labelh"),
+								  error: nil) {
+				TextField(ChannelPropertiesText("cp-label"), text: $model.label, prompt: Text(ServerPropertiesText("spp-optional")))
+			}
+		}
+	}
+
 	private var notificationsSection: some View
 	{
 		Section(ChannelPropertiesText("cp-ntf-h")) {
@@ -719,7 +751,7 @@ struct ChannelPropertiesView: View
 	private var alertsSection: some View
 	{
 		Section {
-			ForEach(ChannelPropertiesModel.events, id: \.rawValue) { (event) in
+			ForEach(model.alertEvents, id: \.rawValue) { (event) in
 				Picker(selection: model.customBinding(event)) {
 					Text(ChannelPropertiesText("cp-alt-0")).tag(false)
 					Text(ChannelPropertiesText("cp-alt-1")).tag(true)
@@ -732,9 +764,9 @@ struct ChannelPropertiesView: View
 				}
 			}
 		} header: {
-			Text(ChannelPropertiesText("cp-alt-h"))
+			Text(ChannelPropertiesText((model.isPrivateMessage) ? "cp-alt-hp" : "cp-alt-h"))
 		} footer: {
-			SettingFooter(text: ChannelPropertiesText("cp-alt-n"))
+			SettingFooter(text: ChannelPropertiesText((model.isPrivateMessage) ? "cp-alt-np" : "cp-alt-n"))
 		}
 	}
 
@@ -765,6 +797,16 @@ struct ChannelPropertiesView: View
 
 			SettingToggle(title: ChannelPropertiesText("cp-hil"), help: ChannelPropertiesText("cp-hilh"), isOn: $model.mentionsAreHighlights)
 
+			/* Joins and leaves: channels only */
+			if (model.isPrivateMessage == false) {
+				eventDisplayPicker
+			}
+		}
+	}
+
+	private var eventDisplayPicker: some View
+	{
+		Group {
 			Picker(selection: $model.events) {
 				Text(ChannelPropertiesText("cp-same", model.eventsDefault)).tag(IRCChannelEventDisplay.global)
 
@@ -822,11 +864,13 @@ struct ChannelPropertiesHeader: View
 {
 	let title: String
 	let subtitle: String?
+	var isPrivateMessage = false
 
 	var body: some View
 	{
 		VStack(spacing: 6) {
-			Image(systemName: "number")
+			/* A person for a private conversation, as in the channel list */
+			Image(systemName: ((isPrivateMessage) ? "person.fill" : "number"))
 				.font(.system(size: 26, weight: .semibold))
 				.foregroundStyle(.white)
 				.frame(width: 48, height: 48)

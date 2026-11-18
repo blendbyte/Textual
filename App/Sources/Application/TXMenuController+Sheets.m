@@ -101,7 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 	IRCClient *u = self.selectedClient;
 	IRCChannel *c = self.selectedChannel;
 
-	if (u == nil || c == nil || c.isChannel == NO) {
+	/* Channels and private conversations; not utility windows */
+	if (u == nil || c == nil || (c.isChannel == NO && c.isPrivateMessage == NO)) {
 		return;
 	}
 

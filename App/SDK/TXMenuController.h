@@ -169,6 +169,7 @@ enum
 	MTMMQueryQueryLogs = 1802, // "Show Logs in Finder"
 	MTMMQueryMuteQuery = 1803, // "Mute Conversation"
 	MTMMQueryOpenInNewWindow = 1804, // "Open in New Window"
+	MTMMQueryProperties = 1805, // "Properties…"
 
 	/* Main menu - Navigation menu */
 	MTMMNavigationServersMenu = 700, // "Servers"

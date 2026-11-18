@@ -79,6 +79,8 @@
 "cp-alt-0" = "Same as Settings";
 "cp-alt-1" = "Custom";
 "cp-alt-n" = "Custom alerts apply to this channel only. Everything else follows Settings › Notifications.";
+"cp-alt-hp" = "Alerts in this conversation";
+"cp-alt-np" = "Custom alerts apply to this conversation only. Everything else follows Settings › Notifications.";
 "cp-msg-h" = "Messages";
 "cp-same" = "Same as Settings (%@)";
 "cp-pre" = "Previews";
