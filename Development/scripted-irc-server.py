@@ -550,6 +550,61 @@ async def scenario_review_filters(client):
 		await client.send(f":alice!a@alice.test PRIVMSG #filters :{round}: lunch?")
 
 
+async def scenario_review_eventshow(client):
+	"""A channel's Show or Combine against events hidden in Settings: #show
+	and #plain, both with bob, carol and dave (away-notify on). "go" in
+	either: 5 s later erin and frank join both, bob leaves both, carol quits,
+	dave goes away, and a message in each. With joins, leaves, quits and away
+	hidden in Settings and #show set to Show (or Combine): #show lists the
+	joins, the leave and the quit, never the away; #plain shows none of them."""
+	if not await client.register_with_capabilities("server-time away-notify"):
+		return
+
+	me = client.nickname
+	channels = ("#show", "#plain")
+
+	for channel in channels:
+		await client.send(f":{me}!user@client.textual.test JOIN {channel}")
+		await client.send(f":{SERVER} 353 {me} = {channel} :{me} bob carol dave")
+		await client.send(f":{SERVER} 366 {me} {channel} :End of /NAMES list.")
+
+	round = 0
+	seen = 0
+
+	while await client.collect(1):
+		said = [line for line in client.received[seen:] if line.upper().startswith("PRIVMSG ") and line.endswith(" :go")]
+		seen = len(client.received)
+
+		if not said:
+			continue
+
+		if not await client.collect(5):
+			return
+
+		seen = len(client.received)
+		round += 1
+
+		for channel in channels:
+			await client.send(f":erin{round}!e@erin.test JOIN {channel}")
+			await client.send(f":frank{round}!f@frank.test JOIN {channel}")
+
+		for channel in channels:
+			await client.send(f":bob!b@bob.test PART {channel} :later")
+
+		await client.send(":carol!c@carol.test QUIT :gone")
+		await client.send(":dave!d@dave.test AWAY :lunch")
+
+		for channel in channels:
+			await client.send(f":dave!d@dave.test PRIVMSG {channel} :{round}: message in {channel}")
+
+		# Back for the next round
+		for channel in channels:
+			await client.send(f":bob!b@bob.test JOIN {channel}")
+			await client.send(f":carol!c@carol.test JOIN {channel}")
+
+		await client.send(":dave!d@dave.test AWAY")
+
+
 async def scenario_review_readmarker(client):
 	"""Read markers (draft/read-marker). The client joins #lobby, then #read.
 	"go" in #lobby: eight messages in #read (server-time, the fourth names
@@ -4251,6 +4306,7 @@ SCENARIOS = {
 	"review-replies": scenario_review_replies,
 	"review-match": scenario_review_match,
 	"review-filters": scenario_review_filters,
+	"review-eventshow": scenario_review_eventshow,
 	"review-typing": scenario_review_typing,
 	"review-banned": scenario_review_banned,
 	"review-list": scenario_review_list,
@@ -4312,7 +4368,7 @@ SCENARIOS = {
 }
 
 # Scenarios that register the client themselves
-OWN_REGISTRATION_SCENARIOS = {"review-filters", "review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
+OWN_REGISTRATION_SCENARIOS = {"review-eventshow", "review-filters", "review-match", "review-caps", "review-regain", "review-regain-ison", "review-monitor", "review-notifyme", "review-readmarker", "review-replies", "review-voice", "review-banned", "review-typing", "review-clock", "review-chat", "review-held-batches", "busy-events", "review-connection", "review-receive", "safety", "scrollback-hole", "small-fixes", "review-mentions", "review-upload-login", "review-cap-flood", "review-limits", "uploads-own", "uploads", "uploads-sasl", "failed", "failed-plain", "failed-echo", "styles", "collapse", "query-info", "query-scroll", "media", "services", "pages", "previews", "previews-short", "drafts", "sorting", "events", "labels", "multiline", "sasl-new", "bots", "network-icon", "replies", "register", "mute", "keywords", "mass", "accounts", "legacy-accounts", "znc-disconnect", "cap-ls", "protocol-fixes", "sasl-scram", "sasl-scram-fallback", "sasl-scram-badsig", "sasl-scram-noproof", "sasl-scram-badsig-success", "review-irc", "silent-echo", "sasl-ecdsa", "sasl-ecdsa-wrongkey"}
 
 TLS_SCENARIOS = {"redirect-tls", "conn-tls"}
 

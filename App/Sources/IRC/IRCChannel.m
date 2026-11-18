@@ -301,22 +301,34 @@ NSString * const IRCChannelMemberListWasCreatedNotification = @"IRCChannelMember
 	}
 }
 
-/* Settings decide which kinds of events show: the channel's Show and Collapse
- keep those hidden there hidden (Collapse is about how they look, not which),
- and its Hide hides the events its old "Show joins, leaves and other events"
- covered. Topic changes follow Settings. */
+/* Settings decide which kinds of events show. A channel's Show and Collapse
+ bring back joins, parts and quits hidden there (joins hidden everywhere,
+ shown in a small channel); the other kinds, away and back among them, stay
+ as Settings has them, and dimmed ones stay dimmed. Its Hide hides the events
+ its old "Show joins, leaves and other events" covered. Topic changes follow
+ Settings. */
 - (NSDictionary<NSString *, NSString *> *)eventDisplayByLineType
 {
 	NSDictionary<NSString *, NSString *> *global = [TPCPreferences eventDisplayByLineType];
 
-	if (self.config.eventDisplay != IRCChannelEventDisplayHide) {
+	IRCChannelEventDisplay eventDisplay = self.config.eventDisplay;
+
+	if (eventDisplay == IRCChannelEventDisplayGlobal) {
 		return global;
 	}
 
 	NSMutableDictionary<NSString *, NSString *> *display = [global mutableCopy];
 
-	for (NSString *lineType in @[@"join", @"part", @"quit", @"nick", @"away", @"back", @"kick", @"mode"]) {
-		display[lineType] = @"hide";
+	if (eventDisplay == IRCChannelEventDisplayHide) {
+		for (NSString *lineType in @[@"join", @"part", @"quit", @"nick", @"away", @"back", @"kick", @"mode"]) {
+			display[lineType] = @"hide";
+		}
+	} else {
+		for (NSString *lineType in @[@"join", @"part", @"quit"]) {
+			if ([display[lineType] isEqualToString:@"hide"]) {
+				display[lineType] = @"show";
+			}
+		}
 	}
 
 	return [display copy];
