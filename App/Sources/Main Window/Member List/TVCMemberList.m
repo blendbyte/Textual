@@ -46,7 +46,7 @@
 #import "TVCMainWindow.h"
 #import "TLOLocalization.h"
 #import "TPCPreferencesLocal.h"
-#import "TVCMemberListCellPrivate.h"
+#import "TVCMemberListCellInternal.h"
 #import "TVCMemberListAppearancePrivate.h"
 #import "TVCMemberListUserInfoPopoverPrivate.h"
 #import "TVCMemberListPrivate.h"
@@ -509,6 +509,19 @@ NSString * const TVCMemberListDragType = @"TVCMemberListDragType";
 	TVCMemberListAppearance *appearance = self.mainWindow.userInterfaceObjects.memberList;
 
 	[self _updateAppearance:appearance];
+
+	/* Settings › Lists' text size: the rows, and the badges of those on screen */
+	self.rowHeight = appearance.rowHeight;
+
+	[self enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView *rowView, NSInteger row) {
+		id cell = [rowView viewAtColumn:0];
+
+		if ([cell isKindOfClass:[TVCMemberListCell class]]) {
+			[(TVCMemberListCell *)cell defineConstraints];
+
+			[rowView layoutSubtreeIfNeeded];
+		}
+	}];
 
 	[self invalidateBackgroundForSelection];
 

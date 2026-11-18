@@ -142,6 +142,8 @@
 	<integer>0</integer>
 	<key>Highlights -&gt; Replies Count</key>
 	<integer>0</integer>
+	<key>Lists -&gt; Text Size</key>
+	<integer>0</integer>
 	<key>Highlights -&gt; Mass Highlight Threshold</key>
 	<integer>0</integer>
 	<key>Input -&gt; Aliases</key>

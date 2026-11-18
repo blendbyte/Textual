@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
  it can flush the top level group which will cause it to disappear from
  memory, thus reducing overall memory use. */
 - (void)flushAppearanceProperties;
+
+/* Fonts made after this is set are this much larger (the lists' text size) */
+@property (nonatomic, assign) CGFloat fontScale;
 @end
 
 @interface TVCApplicationAppearance ()

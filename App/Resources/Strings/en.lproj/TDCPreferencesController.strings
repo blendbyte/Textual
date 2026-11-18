@@ -187,6 +187,11 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-gen-c" = "Copy selected text automatically";
 "set-gen-ch" = "Hold ⌥ while selecting to skip it once.";
 
+"set-lst-z" = "List text size";
+"set-lst-zh" = "The server list and the member list: names, badges and rows.";
+"set-lst-z0" = "Standard";
+"set-lst-z1" = "Large";
+"set-lst-z2" = "Larger";
 "set-lst-h1" = "Server list";
 "set-lst-s" = "Keep channels sorted by name";
 "set-lst-sh" = "New channels and private messages go in their place. Dragging them elsewhere is off while this is on.";

@@ -162,6 +162,22 @@ struct ListsSettings: View
 				SettingsPageHeader(section: .lists)
 			}
 
+			/* Both lists: their text, badges and rows */
+			Section {
+				LabeledContent {
+					Picker("", selection: store.integer("Lists -> Text Size")) {
+						Text(SettingsText("set-lst-z0")).tag(0)
+						Text(SettingsText("set-lst-z1")).tag(1)
+						Text(SettingsText("set-lst-z2")).tag(2)
+					}
+					.labelsHidden()
+					.pickerStyle(.segmented)
+					.fixedSize()
+				} label: {
+					SettingLabel(title: SettingsText("set-lst-z"), help: SettingsText("set-lst-zh"))
+				}
+			}
+
 			Section(SettingsText("set-lst-h1")) {
 				SettingToggle(title: SettingsText("set-lst-s"), help: SettingsText("set-lst-sh"),
 							  isOn: store.value(get: { TDCSettingsBridge.keepChannelListSorted }, set: { TDCSettingsBridge.keepChannelListSorted = $0 }))

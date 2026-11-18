@@ -51,6 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) TVCMemberListAppearance *userInterfaceObjects;
 @property (readonly) IRCChannelUser *cellItem;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *markBadgeLeftMarginConstraint;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *markBadgeHeightConstraint;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *markBadgeTopConstraint;
 
 - (void)defineConstraints;
 @end

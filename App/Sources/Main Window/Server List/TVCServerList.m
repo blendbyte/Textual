@@ -260,6 +260,11 @@ NSString * const TVCServerListDragType = @"TVCServerListDragType";
 
 	[self _updateAppearance:appearance];
 
+	/* Settings › Lists' text size changes the rows' heights */
+	if (self.numberOfRows > 0) {
+		[self noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.numberOfRows)]];
+	}
+
 	[self invalidateBackgroundForSelection];
 
 	[self refreshAllDrawings:YES];

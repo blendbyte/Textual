@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCMemberListAppearance ()
 - (nullable instancetype)initWithMemberList:(TVCMemberList *)MemberList inWindow:(TVCMainWindow *)mainWindow;
+
+/* At Settings › Lists' text size (20 and 15 at Standard) */
+@property (readonly) CGFloat rowHeight;
+@property (readonly) CGFloat markBadgeSize;
 @end
 
 NS_ASSUME_NONNULL_END

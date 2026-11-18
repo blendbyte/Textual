@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TVCServerListAppearance ()
 - (nullable instancetype)initWithServerList:(TVCServerList *)serverList inWindow:(TVCMainWindow *)mainWindow;
+
+/* Row heights at Settings › Lists' text size (Textual 7's 23 and 20 at Standard) */
+@property (readonly) CGFloat serverRowHeight;
+@property (readonly) CGFloat channelRowHeight;
 @end
 
 NS_ASSUME_NONNULL_END

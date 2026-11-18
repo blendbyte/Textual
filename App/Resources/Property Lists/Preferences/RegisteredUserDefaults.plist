@@ -120,6 +120,8 @@
 	<true/>
 	<key>Highlights -&gt; Replies Count</key>
 	<true/>
+	<key>Lists -&gt; Text Size</key>
+	<integer>0</integer>
 	<key>Highlights -&gt; Mass Highlight Threshold</key>
 	<integer>5</integer>
 	<key>Input -&gt; Aliases</key>

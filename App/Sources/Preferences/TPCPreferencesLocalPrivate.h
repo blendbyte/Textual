@@ -131,6 +131,9 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 @property (class, readonly) BOOL highlightsNotifyWhenMuted;
 @property (class, readonly) BOOL repliesCountAsHighlights;
 
+/* The server and member lists' size: their fonts, badges and rows, 1.0 for Standard */
+@property (class, readonly) CGFloat listTextScale;
+
 /* "Automatically ignore highlight spam": a message naming this many people in the channel or more */
 @property (readonly, class) NSUInteger massHighlightThreshold;
 

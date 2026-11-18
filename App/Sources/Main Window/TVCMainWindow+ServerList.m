@@ -1295,11 +1295,14 @@ static NSString * const TVCMainWindowGroupsServersByBouncerDefaultsKey = @"Windo
 		return 10.0;
 	}
 
+	/* At Settings › Lists' text size */
+	TVCServerListAppearance *appearance = self.userInterfaceObjects.serverList;
+
 	if (item == nil || [item isClient]) {
-		return 23.0;
+		return appearance.serverRowHeight;
 	}
 
-	return 20.0;
+	return appearance.channelRowHeight;
 }
 
 - (nullable NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(nullable NSTableColumn *)tableColumn item:(id)item

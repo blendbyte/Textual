@@ -39,6 +39,7 @@
 #import "NSObjectHelperPrivate.h"
 #import "NSViewHelperPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TVCAppearancePrivate.h"
 #import "TVCMainWindow.h"
 #import "TVCServerListPrivate.h"
@@ -139,9 +140,24 @@ NS_ASSUME_NONNULL_BEGIN
 	return [RZMainBundle() URLForResource:@"TVCServerListAppearance" withExtension:@"plist"];
 }
 
+- (CGFloat)serverRowHeight
+{
+	return round(23.0 * [TPCPreferences listTextScale]);
+}
+
+- (CGFloat)channelRowHeight
+{
+	return round(20.0 * [TPCPreferences listTextScale]);
+}
+
 - (void)prepareInitialState
 {
 	NSDictionary *properties = self.appearanceProperties;
+
+	/* Settings › Lists' text size: fonts and badges */
+	CGFloat listScale = [TPCPreferences listTextScale];
+
+	self.fontScale = listScale;
 
 	self.defaultWidth = [self measurementForKey:@"defaultWidth"];
 	self.minimumWidth = [self measurementForKey:@"minimumWidth"];
@@ -193,9 +209,9 @@ NS_ASSUME_NONNULL_BEGIN
 	self.unreadBadgeHighlightTextColorInactiveWindow = [self colorInGroup:unreadBadge withKey:@"highlightTextColor" forActiveWindow:NO];
 	self.unreadBadgeFont = [self fontInGroup:unreadBadge withKey:@"font"];
 	self.unreadBadgeFontSelected = [self fontInGroup:unreadBadge withKey:@"fontSelected"];
-	self.unreadBadgeMinimumWidth = [self measurementInGroup:unreadBadge withKey:@"minimumWidth"];
-	self.unreadBadgeHeight = [self measurementInGroup:unreadBadge withKey:@"height"];
-	self.unreadBadgePadding = [self measurementInGroup:unreadBadge withKey:@"padding"];
+	self.unreadBadgeMinimumWidth = round([self measurementInGroup:unreadBadge withKey:@"minimumWidth"] * listScale);
+	self.unreadBadgeHeight = round([self measurementInGroup:unreadBadge withKey:@"height"] * listScale);
+	self.unreadBadgePadding = round([self measurementInGroup:unreadBadge withKey:@"padding"] * listScale);
 
 	[self flushAppearanceProperties];
 }

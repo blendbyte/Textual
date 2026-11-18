@@ -39,6 +39,7 @@
 #import "NSObjectHelperPrivate.h"
 #import "NSViewHelperPrivate.h"
 #import "TPCPreferencesUserDefaults.h"
+#import "TPCPreferencesLocalPrivate.h"
 #import "TVCAppearancePrivate.h"
 #import "TVCMainWindow.h"
 #import "TVCMemberListPrivate.h"
@@ -118,9 +119,22 @@ NS_ASSUME_NONNULL_BEGIN
 	return [RZMainBundle() URLForResource:@"TVCMemberListAppearance" withExtension:@"plist"];
 }
 
+- (CGFloat)rowHeight
+{
+	return round(20.0 * [TPCPreferences listTextScale]);
+}
+
+- (CGFloat)markBadgeSize
+{
+	return round(15.0 * [TPCPreferences listTextScale]);
+}
+
 - (void)prepareInitialState
 {
 	NSDictionary *properties = self.appearanceProperties;
+
+	/* Settings › Lists' text size */
+	self.fontScale = [TPCPreferences listTextScale];
 
 	self.defaultWidth = [self measurementForKey:@"defaultWidth"];
 	self.minimumWidth = [self measurementForKey:@"minimumWidth"];

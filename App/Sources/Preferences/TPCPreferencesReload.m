@@ -144,7 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	/* Main window appearance */
-	if ([keys containsObject:@"Appearance"] || [keys containsObject:@"DisableSidebarTranslucency"]) {
+	if ([keys containsObject:@"Appearance"] || [keys containsObject:@"DisableSidebarTranslucency"] || [keys containsObject:@"Lists -> Text Size"]) {
 		reloadAction |= TPCPreferencesReloadActionAppearance;
 	}
 

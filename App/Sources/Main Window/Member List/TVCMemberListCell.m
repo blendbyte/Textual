@@ -43,7 +43,7 @@
 #import "IRCChannelUser.h"
 #import "IRCUserPrivate.h"
 #import "TVCMainWindow.h"
-#import "TVCMemberListAppearance.h"
+#import "TVCMemberListAppearancePrivate.h"
 #import "TVCMemberListPrivate.h"
 #import "TVCMemberListUserInfoPopoverPrivate.h"
 #import "TVCMemberListCellInternal.h"
@@ -65,6 +65,14 @@ NS_ASSUME_NONNULL_BEGIN
 	TVCMemberListAppearance *appearance = self.userInterfaceObjects;
 
 	self.markBadgeLeftMarginConstraint.constant = appearance.markBadgeLeftMargin;
+
+	/* Settings › Lists' text size: the badge grows with the row, centred in it */
+	CGFloat markBadgeSize = appearance.markBadgeSize;
+
+	if (markBadgeSize > 0) {
+		self.markBadgeHeightConstraint.constant = markBadgeSize;
+		self.markBadgeTopConstraint.constant = floor((appearance.rowHeight - markBadgeSize) / 2.0);
+	}
 }
 
 - (void)applicationAppearanceChanged

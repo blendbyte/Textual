@@ -581,6 +581,13 @@ typedef NS_ENUM(NSUInteger, TVCListAppearanceImageType)
 
 	CGFloat size = [fontProperties doubleForKey:@"size"];
 
+	/* Settings › Lists' text size, in whole points */
+	CGFloat fontScale = self.fontScale;
+
+	if (fontScale > 0 && fontScale != 1.0) {
+		size = round(size * fontScale);
+	}
+
 	/* Minimum font size is 5 points */
 	if (name == nil || size < 5.0) {
 		return nil;

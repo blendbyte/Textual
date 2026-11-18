@@ -284,6 +284,8 @@
                                                                         <outlet property="cellTextField" destination="jld-0X-vn0" id="L5s-IO-xaA"/>
                                                                         <outlet property="imageView" destination="Lq2-t9-aDp" id="3RI-Vl-ylD"/>
                                                                         <outlet property="markBadgeLeftMarginConstraint" destination="fBT-mI-gYa" id="h1u-iC-3ui"/>
+                                                                        <outlet property="markBadgeHeightConstraint" destination="mbd-h1-t15" id="lts-mb-o01"/>
+                                                                        <outlet property="markBadgeTopConstraint" destination="fAn-nx-R4H" id="lts-mb-o02"/>
                                                                     </connections>
                                                                 </tableCellView>
                                                             </prototypeCellViews>

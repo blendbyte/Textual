@@ -457,6 +457,16 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 	return [RZUserDefaults() boolForKey:@"Notifications -> Highlights When Muted"];
 }
 
+/* Settings › Lists: Standard, Large, Larger */
++ (CGFloat)listTextScale
+{
+	switch ([RZUserDefaults() integerForKey:@"Lists -> Text Size"]) {
+		case 1: return (14.0 / 12.0);
+		case 2: return (16.0 / 12.0);
+		default: return 1.0;
+	}
+}
+
 + (BOOL)repliesCountAsHighlights
 {
 	return [RZUserDefaults() boolForKey:@"Highlights -> Replies Count"];
