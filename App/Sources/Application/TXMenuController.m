@@ -200,6 +200,21 @@ NS_ASSUME_NONNULL_BEGIN
 		[viewMenu insertItem:appearanceShortcut atIndex:([viewMenu indexOfItem:appearanceItem] + 1)];
 	}
 
+	/* View: ⌘+ for Increase Font Size, as ⌘= is ⇧⌘0 on keyboards like the German one */
+	NSMenuItem *increaseFontItem = [viewMenu itemWithTag:MTMMViewIncreaseFontSize];
+
+	if (increaseFontItem) {
+		NSMenuItem *increaseFontShortcut = [increaseFontItem copy];
+
+		increaseFontShortcut.keyEquivalent = @"+";
+		increaseFontShortcut.keyEquivalentModifierMask = NSEventModifierFlagCommand;
+
+		increaseFontShortcut.hidden = YES;
+		increaseFontShortcut.allowsKeyEquivalentWhenHidden = YES;
+
+		[viewMenu insertItem:increaseFontShortcut atIndex:([viewMenu indexOfItem:increaseFontItem] + 1)];
+	}
+
 	/* Go › Channels: Previous Unread Channel is ⌃⇧⌘⇥, the pair of Next's ⌃⌘⇥;
 	 Textual 7's ⌃⇧⇥ (decided 2026-11-18) */
 	NSMenu *navigateMenu = [NSApp.mainMenu itemWithTag:MTMainMenuNavigate].submenu;
