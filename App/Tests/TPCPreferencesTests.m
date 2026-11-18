@@ -170,7 +170,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /* "Only inline images and videos": service cards and web page cards
- off, files and clip services stay; every Textual 7 limit is gone afterwards */
+ off, files and clip services stay; "Load everything" alone turns web page
+ cards on; every Textual 7 limit is gone afterwards */
 - (void)testInlineMediaLimitsMigration
 {
 	NSArray<NSString *> *limitKeys = @[@"InlineMediaLimitToBasics", @"InlineMediaLimitBasicsToFiles", @"InlineMediaLimitInsecureContent", @"InlineMediaLimitNaughtyContent", @"InlineMediaLimitUnsafeContent", @"InlineMediaCheckEverything"];
@@ -212,6 +213,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 	XCTAssertTrue([TPCPreferences inlineMediaWebPageCards]);
 	XCTAssertEqualObjects([TPCPreferences inlineMediaDisabledServices], @[]);
+
+	/* "Load everything" alone: web page cards on (they are off by default) */
+	[TPCPreferences setInlineMediaWebPageCards:NO];
+
+	[RZUserDefaults() setBool:YES forKey:@"InlineMediaCheckEverything"];
+
+	[TPCPreferences migrateInlineMediaLimits];
+
+	XCTAssertTrue([TPCPreferences inlineMediaWebPageCards]);
+	XCTAssertNil([RZUserDefaults() objectForKey:@"InlineMediaCheckEverything"]);
+
+	/* Without it, they stay off */
+	[TPCPreferences setInlineMediaWebPageCards:NO];
+
+	[TPCPreferences migrateInlineMediaLimits];
+
+	XCTAssertFalse([TPCPreferences inlineMediaWebPageCards]);
 
 	TPCPreferences.inlineMediaDisabledServices = savedServices;
 

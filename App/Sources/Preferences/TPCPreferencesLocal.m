@@ -625,12 +625,21 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 									   @"InlineMediaLimitUnsafeContent",
 									   @"InlineMediaCheckEverything"];
 
+	/* "Load everything" previewed any link: web page cards, off by default
+	 now, stay on for those who had it (decided 2026-11-18). Before the limit
+	 below, which turns them off again. */
+	id checkEverything = [RZUserDefaults() objectForKey:@"InlineMediaCheckEverything"];
+
+	if ([checkEverything respondsToSelector:@selector(boolValue)] && [checkEverything boolValue]) {
+		[self setInlineMediaWebPageCards:YES];
+	}
+
 	id limitToBasics = [RZUserDefaults() objectForKey:@"InlineMediaLimitToBasics"];
 
 	/* Files and clip services (Giphy, Gyazo, …) stay; "Including video
 	 services" folds into this; the other limits go without effect: "safe
 	 to view in public" (Pornhub only), plain HTTP (never previewed), "safe
-	 sources" (X cards show for everyone), "Load everything" (web page cards) */
+	 sources" (X cards show for everyone) */
 	if ([limitToBasics respondsToSelector:@selector(boolValue)] && [limitToBasics boolValue]) {
 		[self setInlineMediaWebPageCards:NO];
 
