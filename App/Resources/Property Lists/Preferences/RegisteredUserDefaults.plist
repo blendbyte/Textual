@@ -290,6 +290,8 @@
 	<integer>1</integer>
 	<key>Theme -&gt; Name</key>
 	<string>resource:Lumen</string>
+	<key>Theme -&gt; Dark Mode Name</key>
+	<string></string>
 	<key>Theme -&gt; Nickname Format</key>
 	<string>&lt;%@%n&gt;</string>
 	<key>Theme -&gt; Timestamp Format</key>

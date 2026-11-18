@@ -47,6 +47,7 @@ struct SettingsStyle: Identifiable
 	let location: Int
 	let displayName: String
 	let bundled: Bool
+	var filename = ""
 
 	var id: String { "\(location)/\(name)" }
 
@@ -74,7 +75,8 @@ struct AppearanceSettings: View
 			SettingsStyle(name: ($0["name"] as? String ?? ""),
 						  location: ($0["location"] as? Int ?? 0),
 						  displayName: ($0["displayName"] as? String ?? ""),
-						  bundled: ($0["bundled"] as? Bool ?? false))
+						  bundled: ($0["bundled"] as? Bool ?? false),
+						  filename: ($0["filename"] as? String ?? ""))
 		}
 	}
 
@@ -138,6 +140,21 @@ struct AppearanceSettings: View
 						}
 					}
 					.padding(.vertical, 2)
+				}
+
+				/* Automatic: another style while the Mac is dark */
+				if (appearance.wrappedValue == 0) {
+					Picker(selection: store.value(get: { TDCSettingsBridge.darkModeStyleFilename }, set: { TDCSettingsBridge.darkModeStyleFilename = $0 })) {
+						Text(SettingsText("set-app-dk0")).tag("")
+
+						Divider()
+
+						ForEach(styles) { style in
+							Text(style.displayName).tag(style.filename)
+						}
+					} label: {
+						SettingLabel(title: SettingsText("set-app-dk"), help: SettingsText("set-app-dkh"))
+					}
 				}
 
 				if let chosen = TDCSettingsBridge.settingsChosenByStyle {

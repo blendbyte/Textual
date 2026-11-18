@@ -342,6 +342,8 @@
 	<integer>0</integer>
 	<key>Theme -&gt; Name</key>
 	<integer>0</integer>
+	<key>Theme -&gt; Dark Mode Name</key>
+	<integer>0</integer>
 	<key>Theme -&gt; Name -&gt; Did Not Exist During Last Sync</key>
 	<integer>0</integer>
 	<key>Theme -&gt; Nickname Format</key>

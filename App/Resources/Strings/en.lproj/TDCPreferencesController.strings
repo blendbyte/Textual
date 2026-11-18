@@ -349,6 +349,9 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-app-a1" = "Light";
 "set-app-a2" = "Dark";
 "set-app-h1" = "Style";
+"set-app-dk" = "In dark mode use";
+"set-app-dkh" = "Another style while the Mac is dark; the style above while it is light.";
+"set-app-dk0" = "Same style";
 "set-app-s" = "More styles";
 "set-app-sh" = "Styles are folders of CSS. Download more, or make your own from one of these.";
 "set-app-sb" = "Browse Style Files…";

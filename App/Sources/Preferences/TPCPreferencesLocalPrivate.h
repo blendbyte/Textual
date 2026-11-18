@@ -101,6 +101,9 @@ typedef NS_ENUM(NSUInteger, TXInlineMediaDomainRuleMode) {
 + (void)setAppearance:(TXPreferredAppearance)appearance;
 
 + (void)setThemeName:(NSString *)value;
+
+/* Settings › Appearance › "In dark mode use": nil for the same style */
+@property (class, copy, nullable) NSString *themeNameForDarkMode;
 + (void)setThemeNameWithExistenceCheck:(NSString *)value;
 
 + (void)setThemeChannelViewFontName:(NSString *)value;

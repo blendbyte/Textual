@@ -726,7 +726,41 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 
 - (void)applicationAppearanceChanged:(NSNotification *)notification
 {
+	/* Light and dark have styles of their own: the other one now */
+	NSString *themeName = [self preferredThemeName];
+
+	if (self.cachedThemeName && [themeName isEqualToString:self.cachedThemeName] == NO) {
+		XRPerformBlockAsynchronouslyOnMainQueue(^{
+			[TPCPreferences performReloadAction:(TPCPreferencesReloadActionStyle | TPCPreferencesReloadActionTextDirection)];
+		});
+
+		return;
+	}
+
 	[self.theme updateAppearance];
+}
+
+/* The style to use now: Settings › Appearance's, or the one for dark mode
+ while the appearance is Automatic and the Mac is dark (if it still exists) */
+- (NSString *)preferredThemeName
+{
+	NSString *themeName = [TPCPreferences themeName];
+
+	NSString *darkThemeName = [TPCPreferences themeNameForDarkMode];
+
+	if (darkThemeName == nil || [darkThemeName isEqualToString:themeName]) {
+		return themeName;
+	}
+
+	if ([TPCPreferences appearance] != TXPreferredAppearanceInherited || [TXAppearancePropertyCollection systemWideDarkModeEnabled] == NO) {
+		return themeName;
+	}
+
+	if ([self themeExists:darkThemeName] == NO) {
+		return themeName;
+	}
+
+	return darkThemeName;
 }
 
 - (void)themeVarietyChanged:(NSNotification *)notification
@@ -833,7 +867,7 @@ typedef NSMutableDictionary	<NSString *, id> 	*TPCThemeControllerThemeListMutabl
 
 - (void)reload
 {
-	NSString *themeName = [TPCPreferences themeName];
+	NSString *themeName = [self preferredThemeName];
 
 	TPCTheme *theme = [self themeNamed:themeName createIfNecessary:YES];
 

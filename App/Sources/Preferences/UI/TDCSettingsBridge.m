@@ -810,9 +810,8 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 {
 	NSMutableArray *styles = [NSMutableArray array];
 
-	NSString *currentName = themeController().name;
-
-	TPCThemeStorageLocation currentLocation = themeController().storageLocation;
+	/* Settings' style, also while the one for dark mode is shown */
+	NSString *chosenTheme = [TPCPreferences themeName];
 
 	[themeController() enumerateAvailableThemesWithBlock:^(NSString *name, TPCThemeStorageLocation location, BOOL multipleVariants, BOOL *stop) {
 		NSString *displayName = name;
@@ -827,7 +826,7 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 			@"displayName" : displayName,
 			@"bundled" : @(location == TPCThemeStorageLocationBundle),
 			@"filename" : ([TPCThemeController buildFilename:name forStorageLocation:location] ?: @""),
-			@"selected" : @([name isEqualToString:currentName] && location == currentLocation)
+			@"selected" : @([[TPCThemeController buildFilename:name forStorageLocation:location] isEqualToString:chosenTheme])
 		}];
 	}];
 
@@ -845,6 +844,31 @@ NSString * const TDCSettingsBridgeStylePreviewsDidChangeNotification = @"TDCSett
 	}
 
 	[TPCPreferences setThemeName:newTheme];
+
+	[TPCPreferences performReloadAction:(TPCPreferencesReloadActionStyle | TPCPreferencesReloadActionTextDirection)];
+}
+
+/* Settings › Appearance › "In dark mode use": a style's filename, or "" for the same style */
++ (NSString *)darkModeStyleFilename
+{
+	NSString *themeName = [TPCPreferences themeNameForDarkMode];
+
+	if (themeName == nil || [themeController() themeExists:themeName] == NO) {
+		return @"";
+	}
+
+	return themeName;
+}
+
++ (void)setDarkModeStyleFilename:(NSString *)filename
+{
+	NSParameterAssert(filename != nil);
+
+	if ([filename isEqualToString:[self darkModeStyleFilename]]) {
+		return;
+	}
+
+	[TPCPreferences setThemeNameForDarkMode:((filename.length > 0) ? filename : nil)];
 
 	[TPCPreferences performReloadAction:(TPCPreferencesReloadActionStyle | TPCPreferencesReloadActionTextDirection)];
 }

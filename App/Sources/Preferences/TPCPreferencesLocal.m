@@ -53,6 +53,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 NSString * const TPCPreferencesThemeNameDefaultsKey	= @"Theme -> Name";
+NSString * const TPCPreferencesThemeDarkModeNameDefaultsKey = @"Theme -> Dark Mode Name";
 
 NSString * const TPCPreferencesThemeFontNameDefaultsKey	= @"Theme -> Font Name";
 NSString * const TPCPreferencesThemeFontSizeDefaultsKey	= @"Theme -> Font Size";
@@ -1058,6 +1059,19 @@ NSNotificationName const TPCPreferencesPreventSleepWhileConnectedChangedNotifica
 + (NSString *)themeName
 {
 	return [RZUserDefaults() objectForKey:TPCPreferencesThemeNameDefaultsKey];
+}
+
+/* With the appearance on Automatic, the style while the Mac is dark; empty: the same style */
++ (nullable NSString *)themeNameForDarkMode
+{
+	NSString *value = [RZUserDefaults() stringForKey:TPCPreferencesThemeDarkModeNameDefaultsKey];
+
+	return ((value.length > 0) ? value : nil);
+}
+
++ (void)setThemeNameForDarkMode:(nullable NSString *)value
+{
+	[RZUserDefaults() setObject:(value ?: @"") forKey:TPCPreferencesThemeDarkModeNameDefaultsKey];
 }
 
 + (void)setThemeName:(NSString *)value
