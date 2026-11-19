@@ -38,8 +38,8 @@ NETWORKS = {
 		"server": "tungsten.libera.chat",
 		"icon": "https://libera.chat/favicon.ico",
 		"channels": {
-			"#macdev": {
-				"topic": "Mac and iOS development · SwiftUI, AppKit, Xcode · be kind, paste long code to a pastebin",
+			"#textual-dev": {
+				"topic": "Textual development · Textual 8 betas · be kind, paste long code to a pastebin",
 				# The whole list (70 with alex): who joins and quits below is in it too
 				"members": {"mira": "@", "kenji": "@", "nullptr": "@", "alice": "+", "theo_": "+", "priya": "+", "felix": "+",
 							"RelBot": "+", "mdlog": "+",
