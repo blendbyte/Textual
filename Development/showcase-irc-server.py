@@ -125,6 +125,13 @@ NETWORKS = {
 				"away": set(),
 				# Bursts seconds apart; ("*pause", minutes) between them
 				"history": [
+					("plutil", "is beta 3 out yet or am i early?"),
+					("vesper", "plutil: later tonight, waiting on notarization"),
+					("plutil", "🤞"),
+					("hana", "anyone else still up?"),
+					("kai^", "always"),
+					("ines", "barely"),
+					("*pause", 13),
 					("ines", "is there a way to get the member list on the left side?"),
 					("vesper", "ines: not yet, it's on the list for after 8.0"),
 					("kai^", "+1 for that one"),
