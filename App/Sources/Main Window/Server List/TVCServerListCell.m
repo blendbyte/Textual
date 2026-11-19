@@ -203,9 +203,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 		IRCChannel *channel = (IRCChannel *)cellItem;
 
-		/* The system's outlined symbols, in the row's colour when selected and
-		 faint otherwise, fainter for a channel not joined */
-		NSString *symbolName = ((channel.isChannel) ? @"bubble.left" : @"person");
+		/* The system's symbols, filled for a joined channel or an active
+		 private message and outlined otherwise, in the row's colour when
+		 selected and faint otherwise, fainter for a channel not joined */
+		NSString *symbolName = ((channel.isChannel) ? @"bubble.left.and.bubble.right" : @"person");
+
+		if (isActive) {
+			symbolName = [symbolName stringByAppendingString:@".fill"];
+		}
 
 		NSImageSymbolConfiguration *configuration = [NSImageSymbolConfiguration configurationWithPointSize:12.0 weight:NSFontWeightRegular];
 

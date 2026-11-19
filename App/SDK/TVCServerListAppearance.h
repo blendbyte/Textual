@@ -99,21 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) CGFloat unreadBadgeMinimumWidth;
 @property (readonly) CGFloat unreadBadgeHeight;
 @property (readonly) CGFloat unreadBadgePadding;
-
-#pragma mark -
-#pragma mark Accessors
-
-// no longer used: the server list shows system symbols
-- (nullable NSString *)statusIconForActiveChannel:(BOOL)isActive
-										 selected:(BOOL)isSelected
-									 activeWindow:(BOOL)isActiveWindow
-								  treatAsTemplate:(BOOL *)treatAsTemplate;
-
-// no longer used
-- (nullable NSString *)statusIconForActiveQuery:(BOOL)isActive
-									   selected:(BOOL)isSelected
-								   activeWindow:(BOOL)isActiveWindow
-								treatAsTemplate:(BOOL *)treatAsTemplate;
 @end
 
 NS_ASSUME_NONNULL_END
