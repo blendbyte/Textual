@@ -6,9 +6,9 @@
 # private message, a picture and a link, then a few live messages a minute.
 # The people and what they say are invented.
 #
-# Usage: showcase-irc-server.py [--nick alex] [--still] [--clock HH:MM:SS] [--listen <address>]...
+# Usage: showcase-irc-server.py [--nick alex] [--still] [--clock HH:MM:SS] [--late SECONDS] [--listen <address>]...
 #        Libera.Chat on 127.0.0.1:6690, OFTC on 127.0.0.1:6691, hackint on
-#        127.0.0.1:6692 (plain). --still sends no new messages after the
+#        127.0.0.1:6692, ergo on 127.0.0.1:6693 (plain). --still sends no new messages after the
 #        history (someone keeps typing), so shots taken a while apart match.
 #        --clock ends the history at that local time today (yesterday if it
 #        is still to come), so every shot shows the same times.
@@ -26,6 +26,8 @@ NICK = "alex"
 STILL = False
 
 CLOCK = None  # --clock: the local time of day the history ends at
+
+LATE = 0  # --late: seconds before a channel's "late" line arrives (its time unchanged)
 
 # Unsplash licence (free to use, no attribution needed), served by Lorem Picsum
 PHOTO = "https://fastly.picsum.photos/id/1015/1600/1067.jpg?hmac=KcEKhxeliVc8ubKOh05esbmHkJYvmfGYwn6iVZi7OTU"
@@ -50,22 +52,30 @@ NETWORKS = {
 							"jules[m]": "", "hannah-k[m]": "", "Guest48213": "", "emma_k": "", "fynn": "",
 							"vik": "", "dag": "", "bo": "", "pk": "", "ndrw": "", "cwebb": "", "jkl": "", "xvi": "", "irina__": "", "lowpass": ""},
 				"complete": True,
-				"away": {"hugo_", "dani|away", "petra|away", "tess", "lars__", "MossyRock", "sv3n", "yuki", "elif", "hana",
+				"away": {"hugo_", "dani|away", "tess", "lars__", "MossyRock", "sv3n", "yuki", "elif", "hana",
 						 "bo", "dag", "cwebb", "jkl", "t0m", "rosa_", "kai^", "hannah-k[m]"},
 				# The first ones are from yesterday evening: a day line above today's
-				"yesterday": 5,
+				"yesterday": 6,
+				# Days before, (days ago, "HH:MM:SS", sender, text): older mentions of alex, out of the shots' view
+				"days": [
+					(5, "16:22:41", "mira", "alex: can you review the sparkle update PR when you have a minute?"),
+					(4, "20:05:12", "sofia", "alex: which xcode version do you build textual with?"),
+					(2, "18:40:27", "felix", "alex: thanks for the fix, the menu doesn't crash anymore"),
+					(1, "21:12:09", "kenji", "alex: could you look over my toolbar PR tomorrow?"),
+				],
 				# Bursts seconds apart; ("*pause", minutes) between them
 				"history": [
 					("sofia", "anyone around to look at a crash log?"),
 					("felix", "sure, gist it"),
 					("sofia", "nvm found it. force unwrap in the menu code 🙈"),
 					("theo_", "the classic"),
+					("mira", "alex: crash fix build is up, can you give it a spin tomorrow?"),
 					("kenji", "night all"),
 					("priya", "anyone else getting xcode stuck on \"indexing\" forever on a fresh clone? cleaned the build folder, restarted xcode, rebooted, still sitting there after 20 min"),
 					("theo_", "nuke DerivedData and give it a minute"),
 					("theo_", "settles after the first build here"),
 					("priya", "yep that did it, ty"),
-					("*pause", 11),
+					("*pause", 13),
 					("RelBot", "📦 swift-format 601.0.0 released · https://github.com/swiftlang/swift-format/releases"),
 					("*pause", 8),
 					("jonas", "swiftui q: how do you get a sidebar to remember its width?"),
@@ -76,29 +86,29 @@ NETWORKS = {
 					("kenji", "    Sidebar().frame(minWidth: width)"),
 					("mira", "kenji: topic 👆"),
 					("kenji", "yeah yeah, sorry"),
-					("kenji", "https://gist.github.com/310e941eb13c22750d0308c2dd7815ac"),
 					("jonas", "perfect, thx"),
-					("*pause", 6),
+					("*pause", 5),
 					("sofia", "swift 6 strict concurrency finally clicked for me this week"),
 					("sofia", "moved all the ui state into one @MainActor model and the warnings just went away"),
-					("nadia", "just shipped our first mac app to testflight 🎉", "launch"),
+					("nadia", "just shipped our first mac app to testflight 🎉"),
 					("felix", "sofia: yeah once you treat actors as little islands it gets easy"),
 					("dyld", "meanwhile i'm at 312 Sendable warnings 🙃"),
-					("alice", "dyld: the getting started guide has a decent concurrency section now https://www.swift.org/getting-started/"),
-					("alice", "congrats!! what does it do?", None, "launch"),
-					("nadia", "tiny menu bar app that watches your build times"),
-					("nadia", "pings you when a build is suddenly way slower than usual"),
-					("nadia", "caught a 40% regresion from one macro last week"),
-					("nadia", "s/regresion/regression/"),
+					("alice", "dyld: the swift book has a decent concurrency guide now https://github.com/swiftlang/swift-book"),
+					("alice", "nadia: congrats!! what does it do?"),
+					("nadia", "tiny menu bar app, pings you when a build is suddenly way slower than usal"),
+					("nadia", "s/usal/usual/"),
+					("*nick", ("petra|away", "petra")),
 					("lucas", "nadia: link? want it"),
 					("nadia", "lucas: https://cdn.imgpile.com/f/PhmxPYA.webp"),
-					("nadia", "testflight link's still stuck in beta review, will post it when it clears"),
-					("*pause", 5),
+					("*pause", 4),
+					("kenji", "the suggestion list crash fix from yesterday is on main now, if you build it from source https://github.com/blendbyte/Textual"),
+					("*pause", 1),
 					("*join", "mkdir"), ("*join", "jules[m]"), ("*quit", "zoe92"), ("*join", "Guest48213"),
 					("*pause", 3),
-					("mira", "alex: did the build with the crash fix help on your side?", "mention"),
+					("mira", "alex: did the build with the crash fix help on your side?"),
 					("*pause", 4),
 					("omar", "instruments' new hangs view saved me an afternoon today"),
+					("omar", "went straight to a json decode on the main thread"),
 					("nullptr", "same, found a sync file read on the main thread in like 5 min"),
 				],
 				"live": [
@@ -106,7 +116,8 @@ NETWORKS = {
 					("kenji", "builds feel a bit faster here, previews too"),
 				],
 				"typing": "alice",
-				"reactions": [("launch", "👍", ["kenji", "lucas"]), ("launch", "🎉", ["sofia"]), ("mention", "👀", ["theo_"])],
+				# Libera.Chat drops +reply and +react (CLIENTTAGDENY): no reply quotes or reactions here
+				"reactions": [],
 			},
 			"#textual": {
 				"topic": "Textual, the IRC client for macOS · https://www.textualapp.com · Textual 8 betas: see GitHub",
@@ -132,23 +143,18 @@ NETWORKS = {
 					("ines", "kai^: Settings → Messages, it moved there"),
 					("kai^", "found it, thx"),
 					("*pause", 9),
-					("vesper", "8.0 beta 3 is out, lumen is the default style now", "beta"),
+					("vesper", "8.0 beta 3 is out, lumen is the default style now"),
 					("plutil", "nice, updating"),
-					("*pause", 6),
-					("plutil", "/msg NickServ IDENTIFY plutil correct-horse-battery", "oops"),
-					("*redact", "oops"),
-					("plutil", "wrong window 🤦 changing it now"),
-					("ines", "happens to the best of us"),
 					("*pause", 7),
-					("noor", ["scrollback still jumps for me on beta 3:", "1. scroll up a few pages in a busy channel",
-							  "2. switch to another channel and back", "3. it's at the bottom again"], "bug"),
-					("vesper", "noor: thanks, i can reproduce it. the fix is in for beta 4", None, "bug"),
+					("noor", "scrollback still jumps for me on beta 3: scroll up a few pages, switch channels and back, and it's at the bottom again"),
+					("vesper", "noor: thanks, i can reproduce it. the fix is in for beta 4"),
 					("noor", "great, ty"),
 				],
 				"live": [],
 				"crowd": 41,
 				"typing": "alice",
-				"reactions": [("beta", "👍", ["ines", "kai^"]), ("beta", "🎉", ["plutil"])],
+				# Libera.Chat drops +reply and +react (CLIENTTAGDENY): no reply quotes or reactions here
+				"reactions": [],
 			},
 			"#photography": {
 				"topic": "Photography · gear, edits, critique · share your shots",
@@ -312,8 +318,6 @@ MORE_CHANNELS = {
 			("alice", "restic to a storage box, nightly from a systemd timer"),
 			("alice", "docs are really good: https://restic.readthedocs.io/"),
 			("noah", "ty, trying it this weekend"),
-			("*pause", 6),
-			("tobi", "alex: you had the same box, right? what idle draw do you get?"),
 		], [("tobi", "backups first, then the fun stuff")], crowd=27, away=("vera",)),
 		"#books": channel("Books · what are you reading? · no spoilers without warning", {"iris": "@"}, [
 			("iris", "finished Piranesi last night, what a book"),
@@ -331,6 +335,58 @@ CROWD = ["ravi", "tess", "piotr", "ines", "ola", "kai", "nora", "bram", "tobi", 
 		 "nils", "oona", "pablo", "quinn", "rosa", "sven", "tara", "ugo", "vik", "wren", "xavi", "yara", "zeno", "abby", "bao",
 		 "cleo", "dev", "eva", "finn", "gabi", "henk", "ivy", "jana", "karl", "luca", "mona", "nate", "olli", "pia", "rami",
 		 "sol", "tim", "uma", "vito", "wim", "yoel", "zara", "ada", "bo", "cyra", "dag", "esme", "fynn", "gwen", "hal", "ida"]
+
+# ergo.chat (Ergo): relays client tags such as +reply and +react (no CLIENTTAGDENY)
+NETWORKS[6693] = {"network": "ergo", "server": "irc.ergo.chat", "icon": "https://irc.ergo.chat/favicon.ico",
+				  "channels": {}, "query": None}
+MORE_CHANNELS[6693] = {
+	"#ergo": channel("Ergo, the IRCv3 server in Go · https://ergo.chat · docs: https://github.com/ergochat/ergo", {"halcyon": "@", "alice": ""}, [
+		("noor", "morning all"),
+		("noor", "anyone running ergo with the mysql history backend?"),
+		("halcyon", "noor: a few of us, it's fine once the database is set up"),
+		("noor", "and without it history is in memory only?"),
+		("halcyon", "yes, so it's gone after a restart"),
+		("noor", "ok, mysql it is"),
+		("*pause", 12),
+		("tobi", "is always-on worth turning on for a small server?"),
+		("wren", "i like it, my nick stays connected when the laptop sleeps"),
+		("halcyon", "people can turn it on for their own account too"),
+		("tobi", "turning it on then"),
+		("*pause", 10),
+		("kai", "is there a docker image?"),
+		("halcyon", "kai: yes, the readme links it"),
+		("kai", "ty, pulling it now"),
+		("*pause", 14),
+		("wren", "is there a guide for running ergo behind a reverse proxy?"),
+		("halcyon", "wren: yes, the manual has a section on it, look for \"proxy\""),
+		("wren", "found it, thanks"),
+		("*pause", 9),
+		("wren", "running behind caddy now, websocket clients and all 🎉", "caddy"),
+		("*pause", 7),
+		("kira", ["my bouncer only gives me part of the history after a restart:", "1. restart soju", "2. reconnect the client",
+				  "3. only the last 50 lines come back"], "history"),
+		("halcyon", "that's the client asking for 50, not soju. raise the limit in your client and the rest comes back", None, "history"),
+		("kira", "that was it, ty"),
+		("*pause", 11),
+		(NICK, "moved my bouncer to soju last week, chathistory against ergo just works", "soju"),
+		("halcyon", "nice, that's the setup most people here run"),
+		("*pause", 8),
+		("tobi", "did you keep your old znc logs or start fresh?", None, "soju"),
+	], reactions=[("caddy", "👍", ["halcyon", "kira"]), ("caddy", "🎉", ["alice"])], crowd=33),
+}
+MORE_CHANNELS[6693]["#ergo"]["typing"] = "alice"
+# Days before, read already (draft/read-marker at midnight): no unread count, still in Mentions
+MORE_CHANNELS[6693]["#ergo"]["days"] = [
+	(6, "19:48:03", NICK, "textual 8 talks to ergo out of the box now, multiline and all", "t8"),
+	(6, "19:49:30", "noor", "nice, does it do read markers too?", None, "t8"),
+	(3, "22:10:55", "wren", "alex: your caddy snippet worked first try, thanks"),
+	(1, "19:30:18", NICK, "is there a way to see which accounts have always-on enabled?", "aon"),
+	(1, "19:31:02", "halcyon", "the operator manual covers it, look under accounts", None, "aon"),
+]
+MORE_CHANNELS[6693]["#ergo"]["read"] = "midnight"
+# With --late: tobi's reply comes in after the rest, as if while you were away (story-mentions)
+MORE_CHANNELS[6693]["#ergo"]["late"] = "did you keep your old znc logs or start fresh?"
+NETWORKS[6693]["caps"] = ["draft/read-marker"]
 
 NETWORKS[6692] = {"network": "hackint", "server": "irc.hackint.org", "icon": "https://www.ircatlas.org/images/networks/hackint.webp",
 				  "channels": {}, "query": None}
@@ -350,7 +406,7 @@ for port, network in NETWORKS.items():
 				break
 			chan["members"].setdefault(nick, "")
 		for sender, *rest in chan["history"] + chan["live"]:
-			if not sender.startswith("*"):  # joins, parts and quits name the person second
+			if not sender.startswith("*") and sender != NICK:  # joins, parts and quits name the person second
 				chan["members"].setdefault(sender, "")
 		chan.setdefault("reactions", [])
 
@@ -469,6 +525,19 @@ class Session:
 		midnight = now.astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
 		evening = (min(start, midnight) - datetime.timedelta(minutes=earlier * 4 + 6)).astimezone(datetime.timezone.utc)
 		labels, senders = {}, {}
+		if channel.get("read") == "midnight" and "draft/read-marker" in self.caps:
+			await self.send(f":{self.config['server']} MARKREAD {name} timestamp={utc(midnight.astimezone(datetime.timezone.utc))}")
+		for days, clock, sender, text, *rest in channel.get("days", []):
+			label, reply_to = (rest + [None, None])[:2]
+			hours, minutes, seconds = map(int, clock.split(":"))
+			when = (midnight - datetime.timedelta(days=days, hours=-hours, minutes=-minutes, seconds=-seconds)).astimezone(datetime.timezone.utc)
+			msgid = f"m{next(msgids)}"
+			if label:
+				labels[label], senders[label] = msgid, sender
+			extra = [f"msgid={msgid}"] + self.sender_tags(sender)
+			if reply_to:
+				extra += [f"+reply={labels[reply_to]}", f"+draft/reply={labels[reply_to]}"]
+			await self.send(f"{self.tags(extra, when)}:{host(sender)} PRIVMSG {name} :{text}")
 		for index, entry in enumerate(history):
 			sender, text = entry[0], entry[1]
 			if sender == "*pause":
@@ -499,13 +568,22 @@ class Session:
 			extra = [f"msgid={msgid}"] + self.sender_tags(sender)
 			if reply_to and reply_to in labels:
 				extra += [f"+reply={labels[reply_to]}", f"+draft/reply={labels[reply_to]}"]
-			await self.send(f"{self.tags(extra, when)}:{host(sender)} PRIVMSG {name} :{text}")
+			line = f"{self.tags(extra, when)}:{host(sender)} PRIVMSG {name} :{text}"
+			if LATE and text == channel.get("late"):
+				asyncio.create_task(self.send_later(line))
+				continue
+			await self.send(line)
 		for label, emoji, people in channel["reactions"]:
 			if label not in labels:
 				continue
 			for person in people:
 				extra = [f"+draft/react={emoji}", f"+draft/reply={labels[label]}", f"+reply={labels[label]}", f"msgid=m{next(msgids)}"]
 				await self.send(f"{self.tags(extra, now - datetime.timedelta(minutes=1))}:{host(person)} TAGMSG {name}")
+
+	async def send_later(self, line):
+		await asyncio.sleep(LATE)
+		if not self.writer.is_closing():
+			await self.send(line)
 
 	async def event(self, name, kind, nick, when):
 		# ("*nick", (old, new)): the person changes their nickname
@@ -592,10 +670,10 @@ class Session:
 			if command == "CAP":
 				sub = parts[1].upper() if len(parts) > 1 else ""
 				if sub == "LS":
-					await self.send(f":{self.config['server']} CAP * LS :{' '.join(CAPABILITIES)}")
+					await self.send(f":{self.config['server']} CAP * LS :{' '.join(CAPABILITIES + self.config.get('caps', []))}")
 				elif sub == "REQ":
 					wanted = line.split(":", 1)[1].split() if ":" in line else parts[2:]
-					names = [c.split("=", 1)[0] for c in CAPABILITIES]
+					names = [c.split("=", 1)[0] for c in CAPABILITIES + self.config.get("caps", [])]
 					granted = [c for c in wanted if c in names]
 					self.caps.update(granted)
 					await self.send(f":{self.config['server']} CAP * ACK :{' '.join(granted)}")
@@ -623,12 +701,14 @@ async def main():
 	parser.add_argument("--nick", default=NICK)
 	parser.add_argument("--still", action="store_true")
 	parser.add_argument("--clock", type=datetime.time.fromisoformat)
+	parser.add_argument("--late", type=int, default=0)
 	parser.add_argument("--listen", action="append", default=[])
 	arguments = parser.parse_args()
 
-	global STILL, CLOCK
+	global STILL, CLOCK, LATE
 	STILL = arguments.still
 	CLOCK = arguments.clock
+	LATE = arguments.late
 
 	async def handler_for(port):
 		async def handle(reader, writer):
