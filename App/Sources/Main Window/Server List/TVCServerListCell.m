@@ -204,8 +204,8 @@ NS_ASSUME_NONNULL_BEGIN
 		IRCChannel *channel = (IRCChannel *)cellItem;
 
 		/* The system's symbols, filled for a joined channel or an active
-		 private message and outlined otherwise, in the row's colour when
-		 selected and faint otherwise, fainter for a channel not joined */
+		 private message and outlined otherwise, a step quieter than the
+		 row's text: strongest when selected, then joined, then not joined */
 		NSString *symbolName = ((channel.isChannel) ? @"bubble.left.and.bubble.right" : @"person");
 
 		if (isActive) {
@@ -219,9 +219,9 @@ NS_ASSUME_NONNULL_BEGIN
 		self.imageView.image = icon;
 
 		if (isSelected) {
-			self.imageView.contentTintColor = appearance.channelSelectedTextColorInactiveWindow;
-		} else if (isActive) {
 			self.imageView.contentTintColor = [NSColor secondaryLabelColor];
+		} else if (isActive) {
+			self.imageView.contentTintColor = [[NSColor labelColor] colorWithAlphaComponent:0.4];
 		} else {
 			self.imageView.contentTintColor = [NSColor tertiaryLabelColor];
 		}
