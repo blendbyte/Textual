@@ -664,6 +664,26 @@ NS_ASSUME_NONNULL_BEGIN
 	NSParameterAssert(destinationName != nil);
 	NSParameterAssert(printCommand != nil);
 
+	/* Not connected: nothing would go out, so the line shows as not sent,
+	 with Resend for once connected (it showed as sent, and went nowhere) */
+	if (channel && self.isLoggedIn == NO) {
+		IRCClientOutgoingMessage *outgoing = [self outgoingMessageWithText:line.string target:destinationName command:printCommand lineType:lineType channel:channel];
+
+		outgoing.printedLocally = YES;
+		outgoing.failedReason = TXTLS(@"TVCMainWindow[stb-p1]");
+
+		[self printOutgoingMessage:outgoing usingBlock:^{
+			[self print:[IRCClient textHidingPasswordInServiceCommand:outgoing.text toTarget:destinationName]
+					 by:self.userNickname
+			  inChannel:channel
+				 asType:lineType
+				command:printCommand
+			 receivedAt:outgoing.sentAt];
+		}];
+
+		return;
+	}
+
 	NSMutableAttributedString *lineMutable = [line mutableCopy];
 
 	while (lineMutable.length > 0)
