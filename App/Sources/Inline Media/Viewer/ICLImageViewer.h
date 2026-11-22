@@ -40,8 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Clicking an image in the chat view: the image at its own
  size up to the screen, pinch to zoom; Open in Browser, Copy Link and Save
- to Downloads. WebKit decodes it, never Textual; saving writes the bytes
- as they were fetched, with the same checks. */
+ Image (into the download folder from Settings, else where the user says).
+ WebKit decodes it, never Textual; saving writes the bytes as they were
+ fetched, with the same checks. */
 @interface ICLImageViewer : ICLMediaViewer
 /* mediaURL is the image's textual-media: address in the chat view, so only
  an image Textual fetched with its checks can be opened; imageSize is its

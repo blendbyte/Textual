@@ -283,7 +283,7 @@ Textual’s own styles are replaced when Textual updates: “Create Copy” make
 "set-fil-d" = "Save downloads to";
 "set-fil-dc" = "Choose Folder…";
 "set-fil-da" = "Ask each time";
-"set-fil-dh" = "With “Ask each time”, Textual asks where to save when you start a download. Files it downloads by itself go to Downloads.";
+"set-fil-dh" = "Where downloads and saved images go. With “Ask each time”, Textual asks where to save, and files sent to you wait for you to start them.";
 "set-fil-r" = "When someone sends you a file";
 "set-fil-r1" = "Ignore it";
 "set-fil-r2" = "Ask me";

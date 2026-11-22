@@ -318,7 +318,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 	[self expireOfferLater:controller];
 
-	NSString *savePath = self.downloadDestination.URL.path;
+	NSString *savePath = self.downloadPath;
 
 	/* Unasked, only out to the internet: an offer can name any address, such
 	 as a service on this Mac, and a reverse one would open a port here */
@@ -331,14 +331,13 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 #endif
 
+	/* Unasked, only into the folder chosen in Settings: the sandbox allows no
+	 other. Without one the offer waits for a click, which asks where. */
 	if ([TPCPreferences fileTransferRequestReplyAction] == TXFileTransferRequestReplyAutomaticallyDownload &&
 		client.fileTransfersGoAroundProxy == NO &&
-		offerMayOpenUnasked)
+		offerMayOpenUnasked &&
+		savePath != nil)
 	{
-		if (savePath == nil) {
-			savePath = [TPCPathInfo userDownloads];
-		}
-
 		/* Unasked, a few at a time from one person and only when the file
 		 fits; otherwise it waits for a click like any other offer */
 		if ([self unaskedDownloadsFromClient:client nickname:nickname] < _unaskedDownloadsPerPersonLimit &&
@@ -443,7 +442,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	NSParameterAssert(fileTransfers != nil);
 
-	NSString *savePath = self.downloadDestination.URL.path;
+	NSString *savePath = self.downloadPath;
 
 	NSMutableArray<TDCFileTransferDialogTransferController *> *fileTransfersPending = [NSMutableArray array];
 
@@ -874,6 +873,25 @@ NS_ASSUME_NONNULL_BEGIN
 	}
 
 	return TDCFileTransferDropAnswerSend;
+}
+
+/* The folder chosen in Settings, or nil to ask */
+- (nullable NSString *)downloadPath
+{
+	NSString *path = self.downloadDestination.URL.path;
+
+#ifdef DEBUG
+	/* For the scripted test server's DCC scenarios, Textual Dev saves into
+	 its own container, which the sandbox allows without a chosen folder;
+	 Development/dev send offers files from there */
+	if (path == nil && [[NSUserDefaults standardUserDefaults] boolForKey:@"TextualDevAllowLocalFileOffers"]) {
+		path = [NSHomeDirectory() stringByAppendingPathComponent:@"Textual Dev Downloads"];
+
+		[[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:NULL];
+	}
+#endif
+
+	return path;
 }
 
 /* The property's getter belongs to the class, not to a category */

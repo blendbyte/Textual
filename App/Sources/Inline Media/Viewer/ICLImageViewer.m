@@ -37,7 +37,8 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #import "TLOLocalization.h"
-#import "TPCPathInfo.h"
+#import "TXSharedApplicationPrivate.h"
+#import "TDCFileTransferDialogPrivate.h"
 #import "ICLMediaSchemeHandlerPrivate.h"
 #import "ICLURLSessionPrivate.h"
 #import "ICLImageViewer.h"
@@ -117,17 +118,9 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 #pragma mark -
 #pragma mark Saving
 
-- (IBAction)saveToDownloads:(nullable id)sender
+- (IBAction)saveImage:(nullable id)sender
 {
 	if (self.saveFetch) {
-		return;
-	}
-
-	NSURL *downloadsURL = [TPCPathInfo userDownloadsURL];
-
-	if (downloadsURL == nil) {
-		self.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sf]");
-
 		return;
 	}
 
@@ -164,12 +157,57 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 			return;
 		}
 
-		[self _writeData:data contentType:contentType toFolder:downloadsURL];
+		/* Into the download folder chosen in Settings, else where the user
+		 says: the sandbox allows no other folder (Downloads included) */
+		NSURL *folderURL = [TXSharedApplication sharedFileTransferDialog].downloadDestinationURL;
+
+		if (folderURL) {
+			[self _writeData:data contentType:contentType toFolder:folderURL];
+		} else {
+			[self _askWhereToSaveData:data contentType:contentType];
+		}
 	};
 
 	self.saveFetch = fetch;
 
 	[fetch start];
+}
+
+- (void)_askWhereToSaveData:(NSData *)data contentType:(nullable NSString *)contentType
+{
+	NSParameterAssert(data != nil);
+
+	NSSavePanel *panel = [NSSavePanel savePanel];
+
+	panel.nameFieldStringValue = [self.class fileNameForImageAtURL:self.entry.url contentType:contentType];
+	panel.canCreateDirectories = YES;
+
+	void (^completionHandler)(NSModalResponse) = ^(NSModalResponse result) {
+		if (result != NSModalResponseOK) {
+			return;
+		}
+
+		NSURL *fileURL = panel.URL;
+
+		NSError *writeError = nil;
+
+		if ([data writeToURL:fileURL options:NSDataWritingAtomic error:&writeError]) {
+			self.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sv]", fileURL.lastPathComponent);
+
+			return;
+		}
+
+		LogToConsoleError("Failed to save image: %{public}@", writeError.localizedDescription);
+
+		self.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sf]");
+	};
+
+	/* The window may have been closed while the image was fetched */
+	if (self.window.isVisible) {
+		[panel beginSheetModalForWindow:self.window completionHandler:completionHandler];
+	} else {
+		[panel beginWithCompletionHandler:completionHandler];
+	}
 }
 
 - (void)_writeData:(NSData *)data contentType:(nullable NSString *)contentType toFolder:(NSURL *)folderURL
@@ -202,8 +240,9 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 			self.window.subtitle = TXTLS(@"TVCMainWindow[ivw-sv]", candidate);
 
 #if TEXTUAL_BUILT_FOR_APP_STORE_DISTRIBUTION == 0
-			/* The Downloads stack in the Dock bounces (a notification of the
-			 system's own, so not in the App Store build) */
+			/* The Downloads stack in the Dock bounces when the folder is
+			 Downloads (a notification of the system's own, so not in the
+			 App Store build) */
 			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.apple.DownloadFileFinished" object:fileURL.path];
 #endif
 
@@ -276,7 +315,7 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 - (nullable NSToolbarItem *)toolbarItemForIdentifier:(NSToolbarItemIdentifier)identifier
 {
 	if ([identifier isEqualToString:ICLImageViewerSaveItem]) {
-		return [self toolbarItemWithIdentifier:identifier label:TXTLS(@"TVCMainWindow[ivw-sd]") symbolName:@"square.and.arrow.down" action:@selector(saveToDownloads:)];
+		return [self toolbarItemWithIdentifier:identifier label:TXTLS(@"TVCMainWindow[ivw-sd]") symbolName:@"square.and.arrow.down" action:@selector(saveImage:)];
 	}
 
 	return [super toolbarItemForIdentifier:identifier];
@@ -284,7 +323,7 @@ static NSToolbarItemIdentifier const ICLImageViewerSaveItem = @"ICLImageViewerSa
 
 - (NSArray<NSMenuItem *> *)contextMenuItems
 {
-	NSMenuItem *saveItem = [[NSMenuItem alloc] initWithTitle:TXTLS(@"TVCMainWindow[ivw-sd]") action:@selector(saveToDownloads:) keyEquivalent:@""];
+	NSMenuItem *saveItem = [[NSMenuItem alloc] initWithTitle:TXTLS(@"TVCMainWindow[ivw-sd]") action:@selector(saveImage:) keyEquivalent:@""];
 
 	saveItem.target = self;
 

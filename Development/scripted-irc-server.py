@@ -25,8 +25,9 @@ SERVICES_HOST = "services.textual.test"
 # Ergo's certificate, from the data folder of Development/dev
 CERTIFICATE_DIRECTORY = os.path.join(os.environ.get("TEXTUAL_DEV_DATA") or os.path.expanduser("~/Library/Application Support/Textual Development"), "ergo")
 
-# Textual Dev saves into ~/Downloads unless a download folder is set
-DOWNLOADS = os.path.expanduser("~/Downloads")
+# With -TextualDevAllowLocalFileOffers and no download folder set, Textual Dev
+# saves into its own container: it has no access to ~/Downloads
+DOWNLOADS = os.path.expanduser("~/Library/Containers/com.textualapp.app.dev/Data/Textual Dev Downloads")
 
 
 def log(direction, line):
@@ -1655,7 +1656,7 @@ async def scenario_review_dcc(client):
 async def scenario_review_dcc_send(client):
 	"""(DCC) Who may take a file: alice is seen from 8.8.8.8 but connects from here
 	(as from IPv4 for an IPv6 host, or through a bouncer). Run
-	"Development/dev send alice ~/Downloads/textual-dev-send2.bin" when asked. The
+	"Development/dev send alice <DOWNLOADS>/textual-dev-send2.bin" when asked. The
 	first connection gets the file, with a note in the console; a second gets nothing."""
 	name = "textual-dev-send2.bin"
 	remove_downloads(name)
@@ -2066,6 +2067,7 @@ async def scenario_dcc_resume_foreign(client):
 	remove_downloads(name, "textual-dev-foreign_1.txt")
 
 	foreign = b"this file belongs to someone else\n"
+	os.makedirs(DOWNLOADS, exist_ok=True)
 	open(os.path.join(DOWNLOADS, name), "wb").write(foreign)
 
 	await client.collect(1)
@@ -2133,7 +2135,7 @@ async def scenario_dcc_resume_own(client):
 
 
 async def scenario_dcc_reverse_send(client):
-	"""(DCC) alice sends a file, then run "Development/dev send alice ~/Downloads/textual-dev-send.bin"
+	"""(DCC) alice sends a file, then run "Development/dev send alice <DOWNLOADS>/textual-dev-send.bin"
 	when asked. mallory answers the reverse DCC offer first; the file must go to alice only."""
 	name = "textual-dev-send.bin"
 	remove_downloads(name)
@@ -2149,7 +2151,7 @@ async def scenario_dcc_reverse_send(client):
 	peer.close()
 	await client.collect(1)
 
-	print(f"WAITING: run Development/dev send alice ~/Downloads/{name}", flush=True)
+	print(f"WAITING: run Development/dev send alice '{os.path.join(DOWNLOADS, name)}'", flush=True)
 
 	offer = None
 	end = time.monotonic() + 60

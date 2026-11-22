@@ -345,7 +345,8 @@ static BOOL _developmentConnectRequested = NO;
 
 /* textual://dev-send?nickname=<nickname>&path=<path> offers a file to a user
  on the newest server, as dropping it on them would. The path must be one
- the sandbox can read, such as the Downloads folder. */
+ the sandbox can read, such as Textual Dev's own download folder (see
+ -downloadPath in TDCFileTransferDialog). */
 + (void)performDevelopmentSendWithURL:(NSString *)location
 {
 	NSURLComponents *components = [NSURLComponents componentsWithString:location];

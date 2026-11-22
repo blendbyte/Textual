@@ -162,8 +162,8 @@
 /* The image viewer window (clicking an image in the chat view) */
 "ivw-ob" = "Open in Browser";
 "ivw-cl" = "Copy Link";
-"ivw-sd" = "Save to Downloads";
-"ivw-sv" = "Saved to Downloads as “%@”";
+"ivw-sd" = "Save Image";
+"ivw-sv" = "Saved as “%@”";
 "ivw-sf" = "Couldn’t save the image";
 
 /* Nickname menu: previews of this person's links (a checkmark when turned off) */
