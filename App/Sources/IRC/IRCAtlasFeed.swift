@@ -63,7 +63,7 @@ struct AtlasNetwork
 	let host: String
 	let port: UInt16
 	let tls: Bool
-	let certificateValid: Bool? // nil without TLS
+	let certificateValid: Bool? // nil without TLS, or when IRC Atlas hasn't checked it yet
 	let sasl: Bool
 	let websiteURL: URL?
 	let registrationURL: URL?
@@ -71,10 +71,11 @@ struct AtlasNetwork
 	let channels: [AtlasChannel]
 
 	/* What Textual suggests by itself. Anything else is in the whole list only,
-	 with a warning before connecting. */
+	 with a warning before connecting. A certificate not checked yet counts as
+	 valid: only one IRC Atlas found bad is warned about. */
 	var connectsSecurely: Bool
 	{
-		(tls && certificateValid == true)
+		(tls && certificateValid != false)
 	}
 }
 
@@ -124,8 +125,7 @@ struct AtlasFeed
 		guard data.count <= Self.largestFeed,
 			  let root = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
 			  (root["schema_version"] as? Int) == Self.schemaVersion,
-			  let generatedText = root["generated_at"] as? String,
-			  let generatedAt = ISO8601DateFormatter().date(from: generatedText),
+			  let generatedAt = Self.date(root["generated_at"]),
 			  let license = Self.text(root["license"]),
 			  let attribution = Self.text(root["attribution"]),
 			  let networkEntries = root["networks"] as? [[String: Any]] else {
@@ -224,6 +224,24 @@ struct AtlasFeed
 		}
 
 		return string
+	}
+
+	/* RFC 3339, with or without fractions of a second */
+	private static func date(_ value: Any?) -> Date?
+	{
+		guard let string = value as? String else {
+			return nil
+		}
+
+		let formatter = ISO8601DateFormatter()
+
+		if let date = formatter.date(from: string) {
+			return date
+		}
+
+		formatter.formatOptions.insert(.withFractionalSeconds)
+
+		return formatter.date(from: string)
 	}
 
 	private static func strings(_ value: Any?) -> [String]

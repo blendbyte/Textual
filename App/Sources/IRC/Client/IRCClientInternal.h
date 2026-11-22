@@ -198,6 +198,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSData *atlasLogoData; // drawn, as saved
 @property (nonatomic, copy, nullable) NSString *atlasLogoSavedAddress; // the address it came from
 @property (nonatomic, copy, nullable) NSString *atlasLogoRequestAddress; // being downloaded
+@property (nonatomic, strong, nullable) NSImage *atlasInitialImage; // the network's initial, when IRC Atlas has no logo for it
+@property (nonatomic, copy, nullable) NSString *atlasInitial; // the letter drawn
 @property (nonatomic, strong, nullable) NSImage *customIconImage; // config.customIcon, drawn
 @property (nonatomic, copy, nullable) NSData *customIconSourceData; // the data it was drawn from
 @property (nonatomic, strong, nullable) IRCMessageBatchMessage *netsplitBatch; // while a netsplit or netjoin batch is processed

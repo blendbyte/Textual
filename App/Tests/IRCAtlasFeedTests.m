@@ -112,6 +112,14 @@ NS_ASSUME_NONNULL_BEGIN
 	newerSchema[@"schema_version"] = @2;
 
 	XCTAssertNil([IRCAtlasFeedStore networkIdentifiersWithFeedData:[NSJSONSerialization dataWithJSONObject:newerSchema options:0 error:NULL]]);
+
+	/* RFC 3339 allows fractions of a second */
+	NSMutableDictionary *fractions =
+	[NSJSONSerialization JSONObjectWithData:[self feedWithNetworks:@[good] tagged:@[]] options:NSJSONReadingMutableContainers error:NULL];
+
+	fractions[@"generated_at"] = @"2026-11-04T08:37:07.123Z";
+
+	XCTAssertEqualObjects([IRCAtlasFeedStore networkIdentifiersWithFeedData:[NSJSONSerialization dataWithJSONObject:fractions options:0 error:NULL]], @[@"good"]);
 }
 
 /* A logo is downloaded without asking, so only HTTPS addresses are kept */
@@ -131,28 +139,33 @@ NS_ASSUME_NONNULL_BEGIN
 	XCTAssertEqualObjects(logos, @{@"secure" : @"https://www.ircatlas.org/logos/secure.webp"});
 }
 
-/* Secure networks only, the chosen language's own first, and saying so when there are none */
+/* Secure networks only (a certificate not checked yet counts), the chosen
+ language's own first, and saying so when there are none */
 - (void)testSuggestions
 {
+	NSMutableDictionary *unchecked = [[self networkWithIdentifier:@"unchecked" languages:@[@"de"] certificate:@YES channels:@[]] mutableCopy];
+	unchecked[@"connection"] = @{@"host" : @"unchecked.example.org", @"port" : @6697, @"tls" : @YES, @"certificate_valid" : [NSNull null], @"url" : @"ircs://unchecked.example.org:6697"};
+
 	NSArray *networks = @[
 		[self networkWithIdentifier:@"biggest" languages:@[@"en", @"de"] certificate:@YES channels:@[]],
 		[self networkWithIdentifier:@"badcert" languages:@[@"de"] certificate:@NO channels:@[]],
 		[self networkWithIdentifier:@"plain" languages:@[@"de"] certificate:[NSNull null] channels:@[]],
-		[self networkWithIdentifier:@"german" languages:@[@"de"] certificate:@YES channels:@[]]
+		[self networkWithIdentifier:@"german" languages:@[@"de"] certificate:@YES channels:@[]],
+		unchecked
 	];
 
-	NSArray *tagged = @[@"biggest", @"badcert", @"plain", @"german"];
+	NSArray *tagged = @[@"biggest", @"badcert", @"plain", @"german", @"unchecked"];
 
 	NSData *feed = [self feedWithNetworks:networks tagged:tagged];
 
 	XCTAssertEqualObjects(([IRCAtlasFeedStore suggestionsWithFeedData:feed tag:@"gaming" language:@"de-DE"]),
-						  (@[@"german", @"biggest", @"language"]));
+						  (@[@"german", @"unchecked", @"biggest", @"language"]));
 
 	XCTAssertEqualObjects(([IRCAtlasFeedStore suggestionsWithFeedData:feed tag:@"gaming" language:nil]),
-						  (@[@"biggest", @"german", @"language"]));
+						  (@[@"biggest", @"german", @"unchecked", @"language"]));
 
 	XCTAssertEqualObjects(([IRCAtlasFeedStore suggestionsWithFeedData:feed tag:@"gaming" language:@"fi"]),
-						  (@[@"biggest", @"german", @"any language"]));
+						  (@[@"biggest", @"german", @"unchecked", @"any language"]));
 }
 
 /* A network with no channels stays listed, behind those someone could start in */

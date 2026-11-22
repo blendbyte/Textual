@@ -206,6 +206,19 @@ final class AtlasFeedStore: NSObject, ObservableObject
 			.logoURL?.absoluteString
 	}
 
+	/* The first letter of the name of the network at this address, shown in
+	 place of a logo when it has none; nil for a network that has one, or none listed */
+	@objc static func logoInitial(serverAddress: String) -> String?
+	{
+		guard let network = shared.feed?.networks.first(where: { $0.host.caseInsensitiveCompare(serverAddress) == .orderedSame }),
+			  network.logoURL == nil,
+			  let initial = network.name.first(where: { $0.isLetter || $0.isNumber }) else {
+			return nil
+		}
+
+		return String(initial).uppercased()
+	}
+
 	// MARK: - For tests
 
 #if DEBUG

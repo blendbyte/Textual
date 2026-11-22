@@ -43,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* The logo of the network at this address; nil without one */
 + (nullable NSString *)logoAddressWithServerAddress:(NSString *)serverAddress;
+
+/* The network's initial, for a network at this address that has no logo */
++ (nullable NSString *)logoInitialWithServerAddress:(NSString *)serverAddress;
 @end
 
 #ifdef DEBUG

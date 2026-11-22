@@ -59,7 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
  again only when the network names a different address.
 
  Until a network names one, IRC Atlas's logo for the server's address is
- shown instead: downloaded and kept the same way, beside it in the file. */
+ shown instead: downloaded and kept the same way, beside it in the file.
+ A network IRC Atlas lists without a logo shows its initial. */
 
 #define _networkIconPointSize			16
 #define _networkIconPixelSize			(_networkIconPointSize * 2)
@@ -394,7 +395,43 @@ NS_ASSUME_NONNULL_BEGIN
 {
 	[self loadNetworkIconIfNeeded];
 
-	return ((self.networkIconImage) ?: self.atlasLogoImage);
+	return ((self.networkIconImage) ?: ((self.atlasLogoImage) ?: self.atlasInitialImage));
+}
+
+/* A network IRC Atlas has no logo for shows its initial, on a gray square */
++ (NSImage *)networkInitialIcon:(NSString *)initial
+{
+	NSParameterAssert(initial != nil);
+
+	return [NSImage imageWithSize:NSMakeSize(_networkIconPointSize, _networkIconPointSize) flipped:NO drawingHandler:^BOOL(NSRect rect) {
+		[[NSColor systemGrayColor] setFill];
+
+		NSRectFill(rect);
+
+		NSDictionary *attributes = @{
+			NSFontAttributeName : [NSFont systemFontOfSize:(_networkIconPointSize * 0.62) weight:NSFontWeightSemibold],
+			NSForegroundColorAttributeName : [NSColor whiteColor]
+		};
+
+		NSSize size = [initial sizeWithAttributes:attributes];
+
+		[initial drawAtPoint:NSMakePoint(NSMidX(rect) - (size.width / 2.0), NSMidY(rect) - (size.height / 2.0)) withAttributes:attributes];
+
+		return YES;
+	}];
+}
+
+- (void)updateAtlasInitial:(nullable NSString *)initial
+{
+	if (NSObjectsAreEqual(initial, self.atlasInitial)) {
+		return;
+	}
+
+	self.atlasInitial = initial;
+
+	self.atlasInitialImage = ((initial) ? [IRCClient networkInitialIcon:initial] : nil);
+
+	[mainWindow() reloadTreeItem:self];
 }
 
 - (void)saveNetworkIconData:(NSData *)iconData fromAddress:(NSString *)address
@@ -577,6 +614,8 @@ NS_ASSUME_NONNULL_BEGIN
 	NSString *serverAddress = ((self.config.bouncerAccountIdentifier == nil) ? self.config.serverList.firstObject.serverAddress : nil);
 
 	NSString *address = ((serverAddress) ? [IRCAtlasFeedStore logoAddressWithServerAddress:serverAddress] : nil);
+
+	[self updateAtlasInitial:((serverAddress) ? [IRCAtlasFeedStore logoInitialWithServerAddress:serverAddress] : nil)];
 
 	/* Another network, or IRC Atlas has no logo for it (any more) */
 	if (address == nil) {
